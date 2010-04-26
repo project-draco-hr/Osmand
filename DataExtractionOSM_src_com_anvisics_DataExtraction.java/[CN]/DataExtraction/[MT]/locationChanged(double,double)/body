@@ -1,0 +1,57 @@
+{
+  Region reg=(Region)amenitiesTree.getUserObject();
+  List<Node> closestAmenities=reg.getClosestAmenities(newLatitude,newLongitude);
+  Collections.sort(closestAmenities,new Comparator<Node>(){
+    @Override public int compare(    Node o1,    Node o2){
+      return Double.compare(NodeUtil.getDistance(o1,newLatitude,newLongitude),NodeUtil.getDistance(o2,newLatitude,newLongitude));
+    }
+  }
+);
+  Map<String,List<Node>> filter=new TreeMap<String,List<Node>>();
+  for (  Node n : closestAmenities) {
+    String type=NodeUtil.getTag(n,"amenity");
+    if (!filter.containsKey(type)) {
+      filter.put(type,new ArrayList<Node>());
+    }
+    filter.get(type).add(n);
+  }
+  for (int i=1; i < amenitiesTree.getChildCount(); ) {
+    if (!filter.containsKey(((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).getUserObject())) {
+      amenitiesTree.remove(i);
+    }
+ else {
+      i++;
+    }
+  }
+  ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).removeAllChildren();
+  for (int i=0; i < 15 && i < closestAmenities.size(); i++) {
+    Node n=closestAmenities.get(i);
+    String type=NodeUtil.getTag(n,"amenity");
+    String name=NodeUtil.getTag(n,"name");
+    int dist=(int)(NodeUtil.getDistance(n,newLatitude,newLongitude));
+    String str=type + " " + (name == null ? n.getId() : name)+ " ["+ dist+ " m ]";
+    ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).add(new DataExtractionTreeNode(str,n));
+  }
+  for (  String s : filter.keySet()) {
+    DefaultMutableTreeNode p=null;
+    for (int i=0; i < amenitiesTree.getChildCount(); i++) {
+      if (s.equals(((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).getUserObject())) {
+        p=((DefaultMutableTreeNode)amenitiesTree.getChildAt(i));
+        break;
+      }
+    }
+    if (p == null) {
+      p=new DefaultMutableTreeNode(s);
+    }
+    p.removeAllChildren();
+    for (    Node n : filter.get(s)) {
+      String name=NodeUtil.getTag(n,"name");
+      int dist=(int)(NodeUtil.getDistance(n,newLatitude,newLongitude));
+      String str=(name == null ? n.getId() : name) + " [" + dist+ " m ]";
+      DataExtractionTreeNode node=new DataExtractionTreeNode(str,n);
+      p.add(node);
+    }
+    amenitiesTree.add(p);
+  }
+  treePlaces.updateUI();
+}

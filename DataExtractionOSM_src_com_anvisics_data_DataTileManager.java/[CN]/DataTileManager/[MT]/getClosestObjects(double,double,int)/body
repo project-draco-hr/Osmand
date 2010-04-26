@@ -1,0 +1,18 @@
+{
+  int tileX=(int)NodeUtil.getTileNumberX(zoom,longitude);
+  int tileY=(int)NodeUtil.getTileNumberY(zoom,latitude);
+  List<T> result=new ArrayList<T>();
+  putObjects(tileX,tileY,result);
+  for (int i=1; i <= depth; i++) {
+    for (int j=0; j <= i; j++) {
+      int dx=j == 0 ? 0 : -1;
+      for (; dx < 1 || (j < i && dx == 1); dx+=2) {
+        putObjects(tileX + dx * j,tileY + i,result);
+        putObjects(tileX + i,tileY - dx * j,result);
+        putObjects(tileX - dx * j,tileY - i,result);
+        putObjects(tileX - i,tileY + dx * j,result);
+      }
+    }
+  }
+  return result;
+}
