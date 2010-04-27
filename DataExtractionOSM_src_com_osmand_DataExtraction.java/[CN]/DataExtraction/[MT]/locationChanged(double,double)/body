@@ -3,13 +3,13 @@
   List<Node> closestAmenities=reg.getClosestAmenities(newLatitude,newLongitude);
   Collections.sort(closestAmenities,new Comparator<Node>(){
     @Override public int compare(    Node o1,    Node o2){
-      return Double.compare(NodeUtil.getDistance(o1,newLatitude,newLongitude),NodeUtil.getDistance(o2,newLatitude,newLongitude));
+      return Double.compare(MapUtils.getDistance(o1,newLatitude,newLongitude),MapUtils.getDistance(o2,newLatitude,newLongitude));
     }
   }
 );
   Map<String,List<Node>> filter=new TreeMap<String,List<Node>>();
   for (  Node n : closestAmenities) {
-    String type=n.getTag("amenity");
+    String type=n.getTag(OSMTagKey.AMENITY);
     if (!filter.containsKey(type)) {
       filter.put(type,new ArrayList<Node>());
     }
@@ -26,9 +26,9 @@
   ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).removeAllChildren();
   for (int i=0; i < 15 && i < closestAmenities.size(); i++) {
     Node n=closestAmenities.get(i);
-    String type=n.getTag("amenity");
-    String name=n.getTag("name");
-    int dist=(int)(NodeUtil.getDistance(n,newLatitude,newLongitude));
+    String type=n.getTag(OSMTagKey.AMENITY);
+    String name=n.getTag(OSMTagKey.NAME);
+    int dist=(int)(MapUtils.getDistance(n,newLatitude,newLongitude));
     String str=type + " " + (name == null ? n.getId() : name)+ " ["+ dist+ " m ]";
     ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).add(new DataExtractionTreeNode(str,n));
   }
@@ -45,8 +45,8 @@
     }
     p.removeAllChildren();
     for (    Node n : filter.get(s)) {
-      String name=n.getTag("name");
-      int dist=(int)(NodeUtil.getDistance(n,newLatitude,newLongitude));
+      String name=n.getTag(OSMTagKey.NAME);
+      int dist=(int)(MapUtils.getDistance(n,newLatitude,newLongitude));
       String str=(name == null ? n.getId() : name) + " [" + dist+ " m ]";
       DataExtractionTreeNode node=new DataExtractionTreeNode(str,n);
       p.add(node);

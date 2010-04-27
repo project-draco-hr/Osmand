@@ -1,10 +1,10 @@
 {
   InputStream stream;
-  if (parseMinsk) {
-    stream=new FileInputStream(Constants.pathToTestDataDir + "minsk.osm");
+  if (parseSmallFile) {
+    stream=new FileInputStream(DefaultLauncherConstants.pathToOsmFile);
   }
  else {
-    stream=new FileInputStream(Constants.pathToTestDataDir + "belarus_2010_04_01.osm.bz2");
+    stream=new FileInputStream(DefaultLauncherConstants.pathToOsmBz2File);
     if (stream.read() != 66 || stream.read() != 90)     throw new RuntimeException("The source stream must start with the characters BZ if it is to be read as a BZip2 stream.");
  else     stream=new CBZip2InputStream(stream);
   }
@@ -16,8 +16,8 @@
   final List<Way> mapWays=new ArrayList<Way>();
   OsmBaseStorage storage=new OsmBaseStorage(){
     @Override public boolean acceptEntityToLoad(    Entity e){
-      if ("yes".equals(e.getTag("building"))) {
-        if (e.getTag(Constants.ADDR_HOUSE_NUMBER) != null && e.getTag(Constants.ADDR_STREET) != null) {
+      if ("yes".equals(e.getTag(OSMTagKey.BUILDING))) {
+        if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && e.getTag(OSMTagKey.ADDR_STREET) != null) {
           buildings.add(e);
           return true;
         }
@@ -25,14 +25,18 @@
       return super.acceptEntityToLoad(e);
     }
     @Override public boolean acceptNodeToLoad(    Node n){
-      if (n.getTag("amenity") != null) {
+      if (n.getTag(OSMTagKey.AMENITY) != null) {
         amenities.add(n);
       }
- else       if (n.getTag("shop") != null) {
-        n.putTag("amenity","shop");
+ else       if (n.getTag(OSMTagKey.SHOP) != null) {
+        n.putTag(OSMTagKey.AMENITY.getValue(),OSMTagKey.SHOP.getValue());
         amenities.add(n);
       }
-      if (n.getTag("place") != null) {
+ else       if (n.getTag(OSMTagKey.LEISURE) != null) {
+        n.putTag(OSMTagKey.AMENITY.getValue(),OSMTagKey.LEISURE.getValue());
+        amenities.add(n);
+      }
+      if (n.getTag(OSMTagKey.PLACE) != null) {
         places.add(n);
         if (places.size() % 500 == 0)         System.out.println();
         System.out.print("-");
@@ -43,7 +47,7 @@
       return false;
     }
     @Override public boolean acceptWayToLoad(    Way w){
-      if (WayUtil.wayForCar(w.getTag("highway"))) {
+      if (OSMSettings.wayForCar(w.getTag(OSMTagKey.HIGHWAY))) {
         mapWays.add(w);
         return true;
       }
@@ -57,7 +61,7 @@
   System.out.println(System.currentTimeMillis() - st);
   Region country=new Region(null);
   for (  Node s : places) {
-    String place=s.getTag("place");
+    String place=s.getTag(OSMTagKey.PLACE);
     if (place == null) {
       continue;
     }
@@ -67,7 +71,7 @@
  else {
       City registerCity=country.registerCity(s);
       if (registerCity == null) {
-        System.out.println(place + " - " + s.getTag("name"));
+        System.out.println(place + " - " + s.getTag(OSMTagKey.NAME));
       }
     }
   }
@@ -97,10 +101,12 @@
   mapPanel.setPoints(waysManager);
   runUI(country);
   List<Long> interestedObjects=new ArrayList<Long>();
-  NodeUtil.fillList(places,interestedObjects);
-  NodeUtil.fillList(amenities,interestedObjects);
-  NodeUtil.fillList(mapWays,interestedObjects);
-  storage.saveStorage(new FileOutputStream("C:/1_tmp.osm"),interestedObjects,true);
+  MapUtils.addIdsToList(places,interestedObjects);
+  MapUtils.addIdsToList(amenities,interestedObjects);
+  MapUtils.addIdsToList(mapWays,interestedObjects);
+  if (DefaultLauncherConstants.writeTestOsmFile != null) {
+    storage.saveStorage(new FileOutputStream(DefaultLauncherConstants.writeTestOsmFile),interestedObjects,true);
+  }
   System.out.println();
   System.out.println("USED Memory " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1e6);
   System.out.println("TIME : " + (System.currentTimeMillis() - st));
