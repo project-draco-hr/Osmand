@@ -1,71 +1,63 @@
 {
   InputStream stream;
   if (parseMinsk) {
-    stream=new FileInputStream(Constants.pathToTestDataDir + "minsk_old.osm");
+    stream=new FileInputStream(Constants.pathToTestDataDir + "minsk.osm");
   }
  else {
-    stream=new FileInputStream(Constants.pathToTestDataDir + "minsk_2010_04_26.osm.bz2");
+    stream=new FileInputStream(Constants.pathToTestDataDir + "belarus_2010_04_01.osm.bz2");
     if (stream.read() != 66 || stream.read() != 90)     throw new RuntimeException("The source stream must start with the characters BZ if it is to be read as a BZip2 stream.");
  else     stream=new CBZip2InputStream(stream);
   }
   System.out.println("USED Memory " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1e6);
   long st=System.currentTimeMillis();
   final List<Node> places=new ArrayList<Node>();
-  final Map<Long,LatLon> nodes=new HashMap<Long,LatLon>();
   final List<Entity> buildings=new ArrayList<Entity>();
   final List<Node> amenities=new ArrayList<Node>();
-  final Map<String,Integer> mapWays=new LinkedHashMap<String,Integer>();
-  if (parseOSM) {
-    SAXParser parser=SAXParserFactory.newInstance().newSAXParser();
-    parser.parse(stream,new OsmHandler(new Sink(){
-      @Override public void process(      EntityContainer entityContainer){
-        if (entityContainer instanceof NodeContainer) {
-          NodeContainer rc=(NodeContainer)entityContainer;
-          if (NodeUtil.getTag(rc.getEntity(),"place") != null) {
-            places.add(rc.getEntity());
-            if (places.size() % 500 == 0) {
-              System.out.println();
-            }
-            System.out.print("-");
-          }
-          nodes.put(rc.getEntity().getId(),new LatLon(rc.getEntity().getLatitude(),rc.getEntity().getLongitude()));
-          if (NodeUtil.getTag(entityContainer.getEntity(),"amenity") != null) {
-            amenities.add((Node)entityContainer.getEntity());
-          }
- else           if (NodeUtil.getTag(entityContainer.getEntity(),"shop") != null) {
-            Entity n=entityContainer.getEntity();
-            n.getTags().add(new Tag("amenity","shop"));
-            amenities.add((Node)n);
-          }
-        }
- else {
-          if (NodeUtil.tag(entityContainer.getEntity(),"building","yes")) {
-            Entity e=entityContainer.getEntity();
-            if (NodeUtil.getTag(e,Constants.ADDR_HOUSE_NUMBER) != null && NodeUtil.getTag(e,Constants.ADDR_STREET) != null) {
-              buildings.add(e);
-            }
-          }
-          if (NodeUtil.getTag(entityContainer.getEntity(),"highway") != null) {
-            String h=NodeUtil.getTag(entityContainer.getEntity(),"highway");
-            if (!mapWays.containsKey(h)) {
-              mapWays.put(h,0);
-            }
-            mapWays.put(h,mapWays.get(h) + 1);
-          }
+  final List<Way> mapWays=new ArrayList<Way>();
+  OsmBaseStorage storage=new OsmBaseStorage(){
+    @Override public boolean acceptEntityToLoad(    Entity e){
+      if ("yes".equals(e.getTag("building"))) {
+        if (e.getTag(Constants.ADDR_HOUSE_NUMBER) != null && e.getTag(Constants.ADDR_STREET) != null) {
+          buildings.add(e);
+          return true;
         }
       }
-      @Override public void complete(){
-      }
-      @Override public void release(){
-      }
+      return super.acceptEntityToLoad(e);
     }
-,false));
+    @Override public boolean acceptNodeToLoad(    Node n){
+      if (n.getTag("amenity") != null) {
+        amenities.add(n);
+      }
+ else       if (n.getTag("shop") != null) {
+        n.putTag("amenity","shop");
+        amenities.add(n);
+      }
+      if (n.getTag("place") != null) {
+        places.add(n);
+        if (places.size() % 500 == 0)         System.out.println();
+        System.out.print("-");
+      }
+      return true;
+    }
+    @Override public boolean acceptRelationToLoad(    Relation w){
+      return false;
+    }
+    @Override public boolean acceptWayToLoad(    Way w){
+      if (WayUtil.wayForCar(w.getTag("highway"))) {
+        mapWays.add(w);
+        return true;
+      }
+      return false;
+    }
   }
-  System.out.println("\n" + mapWays);
+;
+  if (parseOSM) {
+    storage.parseOSM(stream);
+  }
   System.out.println(System.currentTimeMillis() - st);
   Region country=new Region(null);
   for (  Node s : places) {
-    String place=NodeUtil.getTag(s,"place");
+    String place=s.getTag("place");
     if (place == null) {
       continue;
     }
@@ -75,26 +67,34 @@
  else {
       City registerCity=country.registerCity(s);
       if (registerCity == null) {
-        System.out.println(place + " - " + NodeUtil.getTag(s,"name"));
+        System.out.println(place + " - " + s.getTag("name"));
       }
     }
   }
   for (  Entity b : buildings) {
-    LatLon center;
-    if (b instanceof Node) {
-      center=NodeUtil.getLatLon((Node)b);
+    LatLon center=b.getLatLon();
+    if (center == null) {
     }
  else {
-      center=NodeUtil.getWeightCenter((Way)b,nodes);
-    }
-    City city=country.getClosestCity(center);
-    if (city != null) {
-      city.registerBuilding(center,b);
+      City city=country.getClosestCity(center);
+      if (city != null) {
+        city.registerBuilding(center,b);
+      }
     }
   }
   for (  Node node : amenities) {
     country.registerAmenity(node);
   }
+  DataTileManager<LatLon> waysManager=new DataTileManager<LatLon>();
+  for (  Way w : mapWays) {
+    for (    Node n : w.getNodes()) {
+      if (n != null) {
+        LatLon latLon=n.getLatLon();
+        waysManager.registerObject(latLon.getLatitude(),latLon.getLongitude(),latLon);
+      }
+    }
+  }
+  mapPanel.setPoints(waysManager);
   runUI(country);
   System.out.println();
   System.out.println("USED Memory " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1e6);

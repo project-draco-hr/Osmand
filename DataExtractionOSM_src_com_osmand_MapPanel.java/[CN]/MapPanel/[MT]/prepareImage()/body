@@ -22,6 +22,21 @@
         images[i][j]=getImageFor(xStartInd + i,yStartInd + j);
       }
     }
+    if (points != null) {
+      double latDown=NodeUtil.getLatitudeFromTile(zoom,NodeUtil.getTileNumberY(zoom,latitude) + ((double)getHeight() / tileSize));
+      double longDown=NodeUtil.getLongitudeFromTile(zoom,NodeUtil.getTileNumberX(zoom,longitude) + ((double)getWidth() / tileSize));
+      double latUp=NodeUtil.getLatitudeFromTile(zoom,NodeUtil.getTileNumberY(zoom,latitude) - ((double)getHeight() / tileSize));
+      double longUp=NodeUtil.getLongitudeFromTile(zoom,NodeUtil.getTileNumberX(zoom,longitude) - ((double)getWidth() / tileSize));
+      List<LatLon> objects=points.getObjects(latUp,longUp,latDown,longDown);
+      pointsToDraw.clear();
+      for (      LatLon n : objects) {
+        int pixX=NodeUtil.getPixelShiftX(zoom,n.getLongitude(),this.longitude,tileSize) + getWidth() / 2;
+        int pixY=NodeUtil.getPixelShiftY(zoom,n.getLatitude(),this.latitude,tileSize) + getHeight() / 2;
+        if (pixX >= 0 && pixY >= 0) {
+          pointsToDraw.add(new Point(pixX,pixY));
+        }
+      }
+    }
     repaint();
   }
  catch (  IOException e) {
