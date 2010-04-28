@@ -1,0 +1,38 @@
+{
+  super.onCreate(savedInstanceState);
+  setContentView(R.layout.main);
+  mapView=(OsmandMapTileView)findViewById(R.id.View01);
+  mapView.setFileWithTiles(new File(Environment.getExternalStorageDirectory(),"osmand/tiles/Mapnik"));
+  mapView.addMapLocationListener(this);
+  ZoomControls zoomControls=(ZoomControls)findViewById(R.id.ZoomControls01);
+  zoomControls.setOnZoomInClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      mapView.setZoom(mapView.getZoom() + 1);
+    }
+  }
+);
+  zoomControls.setOnZoomOutClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      mapView.setZoom(mapView.getZoom() - 1);
+    }
+  }
+);
+  pointOfView=(PointOfView)findViewById(R.id.PointOfView);
+  backToLocation=(ImageButton)findViewById(R.id.BackToLocation);
+  backToLocation.setVisibility(linkLocationWithMap ? View.INVISIBLE : View.VISIBLE);
+  backToLocation.setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      if (!linkLocationWithMap) {
+        linkLocationWithMap=true;
+        backToLocation.setVisibility(View.INVISIBLE);
+        if (lastKnownLocation != null) {
+          mapView.setLatLon(lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude());
+        }
+      }
+    }
+  }
+);
+  LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
+  service.requestLocationUpdates(LocationManager.GPS_PROVIDER,1000,0,this);
+  service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,1000,0,this);
+}
