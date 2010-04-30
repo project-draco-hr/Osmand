@@ -1,0 +1,42 @@
+{
+synchronized (requestsToLoad) {
+    if (!requestsToLoad.containsKey(downloadUrl)) {
+      return;
+    }
+    request=requestsToLoad.remove(downloadUrl);
+  }
+  try {
+    URL url=new URL(downloadUrl);
+    log.debug("Downloading tile : " + downloadUrl);
+    URLConnection connection=url.openConnection();
+    connection.setRequestProperty("User-Agent",DefaultLauncherConstants.APP_NAME + "/" + DefaultLauncherConstants.APP_VERSION);
+    BufferedInputStream inputStream=new BufferedInputStream(connection.getInputStream(),8 * 1024);
+    try {
+      if (request != null && request.fileToSave != null) {
+        request.fileToSave.getParentFile().mkdirs();
+        FileOutputStream stream=new FileOutputStream(request.fileToSave);
+        try {
+          Algoritms.streamCopy(inputStream,stream);
+        }
+  finally {
+          Algoritms.closeStream(stream);
+        }
+      }
+    }
+  finally {
+      Algoritms.closeStream(inputStream);
+    }
+    if (log.isDebugEnabled()) {
+      log.debug("Downloading tile : " + downloadUrl + " successfull");
+    }
+    if (callback != null) {
+      callback.tileDownloaded(downloadUrl,request);
+    }
+  }
+ catch (  UnknownHostException e) {
+    log.error("UnknownHostException, cannot download tile " + downloadUrl,e);
+  }
+catch (  IOException e) {
+    log.warn("Cannot download tile : " + downloadUrl,e);
+  }
+}
