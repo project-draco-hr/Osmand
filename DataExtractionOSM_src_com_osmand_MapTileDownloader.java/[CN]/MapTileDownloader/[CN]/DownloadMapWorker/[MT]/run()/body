@@ -1,13 +1,9 @@
 {
-synchronized (requestsToLoad) {
-    if (!requestsToLoad.containsKey(downloadUrl)) {
-      return;
-    }
-    request=requestsToLoad.remove(downloadUrl);
-  }
   try {
+    if (log.isDebugEnabled()) {
+      log.debug("Start downloading tile : " + downloadUrl);
+    }
     URL url=new URL(downloadUrl);
-    log.debug("Downloading tile : " + downloadUrl);
     URLConnection connection=url.openConnection();
     connection.setRequestProperty("User-Agent",DefaultLauncherConstants.APP_NAME + "/" + DefaultLauncherConstants.APP_VERSION);
     BufferedInputStream inputStream=new BufferedInputStream(connection.getInputStream(),8 * 1024);
@@ -15,10 +11,13 @@ synchronized (requestsToLoad) {
       if (request != null && request.fileToSave != null) {
         request.fileToSave.getParentFile().mkdirs();
         FileOutputStream stream=new FileOutputStream(request.fileToSave);
+        currentlyDownloaded.add(request.fileToSave);
         try {
           Algoritms.streamCopy(inputStream,stream);
+          stream.flush();
         }
   finally {
+          currentlyDownloaded.remove(request.fileToSave);
           Algoritms.closeStream(stream);
         }
       }
@@ -27,7 +26,7 @@ synchronized (requestsToLoad) {
       Algoritms.closeStream(inputStream);
     }
     if (log.isDebugEnabled()) {
-      log.debug("Downloading tile : " + downloadUrl + " successfull");
+      log.debug("Downloading tile : " + downloadUrl + " successfull "+ (System.currentTimeMillis() - time)+ " ms");
     }
     if (callback != null) {
       callback.tileDownloaded(downloadUrl,request);
