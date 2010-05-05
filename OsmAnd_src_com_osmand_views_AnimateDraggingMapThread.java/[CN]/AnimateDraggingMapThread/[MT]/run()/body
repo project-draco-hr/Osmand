@@ -1,0 +1,23 @@
+{
+  currentThread=Thread.currentThread();
+  try {
+    while (!stopped && (vx > 0 || vy > 0)) {
+      Thread.sleep((long)(40d / (Math.max(vx,vy) + 0.45)));
+      long curT=System.currentTimeMillis();
+      int dt=(int)(curT - time);
+      float newX=vx > 0 ? curX + dirX * vx * dt : curX;
+      float newY=vy > 0 ? curY + dirY * vy * dt : curY;
+      if (!stopped && callback != null) {
+        callback.dragTo(curX,curY,newX,newY);
+      }
+      vx-=ax * dt;
+      vy-=ay * dt;
+      time=curT;
+      curX=newX;
+      curY=newY;
+    }
+  }
+ catch (  InterruptedException e) {
+  }
+  currentThread=null;
+}

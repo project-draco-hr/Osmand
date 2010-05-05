@@ -1,0 +1,23 @@
+{
+  while (true) {
+    try {
+      boolean update=false;
+      while (!requests.isEmpty()) {
+        TileLoadDownloadRequest r=requests.pop();
+        if (cacheOfImages.get(r.fileToLoad) == null) {
+          update|=getRequestedImageTile(r) != null;
+        }
+      }
+      if (update) {
+        downloader.getDownloaderCallback().tileDownloaded(null);
+      }
+      sleep(750);
+    }
+ catch (    InterruptedException e) {
+      log.error(e);
+    }
+catch (    RuntimeException e) {
+      log.error(e);
+    }
+  }
+}

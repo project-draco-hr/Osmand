@@ -1,27 +1,22 @@
 {
-  if (event.getAction() == MotionEvent.ACTION_DOWN) {
-    if (previousShownToast != null) {
-      previousShownToast.cancel();
-      previousShownToast=null;
-    }
-    int x=(int)event.getX();
-    int y=(int)event.getY();
-    for (    Node n : points.keySet()) {
-      Point p=points.get(n);
-      if (Math.abs(p.x - x) <= radiusClick && Math.abs(p.y - y) <= radiusClick) {
-        StringBuilder b=new StringBuilder();
-        b.append("This is an amenity : \n");
-        b.append("type - ").append(n.getTag(OSMTagKey.AMENITY)).append("\n");
-        if (n.getTag(OSMTagKey.NAME) != null) {
-          b.append("name - ").append(n.getTag(OSMTagKey.NAME)).append("\n");
-        }
-        b.append("id - ").append(n.getId());
-        previousShownToast=Toast.makeText(getContext(),b.toString(),Toast.LENGTH_SHORT);
-        previousShownToast.show();
-        log.debug("Precision is " + event.getXPrecision());
+  if (event.getAction() == MotionEvent.ACTION_DOWN && objects != null) {
+    double tileNumberX=MapUtils.getTileNumberX(view.getZoom(),view.getLongitude());
+    double tileNumberY=MapUtils.getTileNumberY(view.getZoom(),view.getLatitude());
+    double xTileLeft=tileNumberX - view.getWidth() / (2d * getTileSize());
+    double yTileUp=tileNumberY - view.getHeight() / (2d * getTileSize());
+    int ex=(int)event.getX();
+    int ey=(int)event.getY();
+    int radius=getRadiusPoi(view.getZoom()) * 3 / 2;
+    for (    Amenity n : objects) {
+      double tileX=MapUtils.getTileNumberX(view.getZoom(),n.getNode().getLongitude());
+      int x=(int)((tileX - xTileLeft) * getTileSize());
+      double tileY=MapUtils.getTileNumberY(view.getZoom(),n.getNode().getLatitude());
+      int y=(int)((tileY - yTileUp) * getTileSize());
+      if (Math.abs(x - ex) <= radius && Math.abs(y - ey) <= radius) {
+        Toast.makeText(view.getContext(),n.getSimpleFormat(),Toast.LENGTH_SHORT).show();
         return true;
       }
     }
   }
-  return super.onTouchEvent(event);
+  return false;
 }

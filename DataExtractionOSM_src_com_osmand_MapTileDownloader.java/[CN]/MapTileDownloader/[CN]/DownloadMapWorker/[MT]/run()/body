@@ -1,43 +1,42 @@
 {
-  try {
-    if (log.isDebugEnabled()) {
-      log.debug("Start downloading tile : " + downloadUrl);
-    }
-    URL url=new URL(downloadUrl);
-    URLConnection connection=url.openConnection();
-    connection.setRequestProperty("User-Agent",DefaultLauncherConstants.APP_NAME + "/" + DefaultLauncherConstants.APP_VERSION);
-    BufferedInputStream inputStream=new BufferedInputStream(connection.getInputStream(),8 * 1024);
+  if (log.isDebugEnabled()) {
+    log.debug("Start downloading tile : " + request.url);
+  }
+  if (request != null && request.fileToSave != null && request.url != null) {
+    currentlyDownloaded.add(request.fileToSave);
     try {
-      if (request != null && request.fileToSave != null) {
-        request.fileToSave.getParentFile().mkdirs();
-        FileOutputStream stream=new FileOutputStream(request.fileToSave);
-        currentlyDownloaded.add(request.fileToSave);
-        try {
-          Algoritms.streamCopy(inputStream,stream);
-          stream.flush();
-        }
+      request.fileToSave.getParentFile().mkdirs();
+      URL url=new URL(request.url);
+      URLConnection connection=url.openConnection();
+      connection.setRequestProperty("User-Agent",DefaultLauncherConstants.APP_NAME + "/" + DefaultLauncherConstants.APP_VERSION);
+      BufferedInputStream inputStream=new BufferedInputStream(connection.getInputStream(),8 * 1024);
+      FileOutputStream stream=null;
+      try {
+        stream=new FileOutputStream(request.fileToSave);
+        Algoritms.streamCopy(inputStream,stream);
+        stream.flush();
+      }
   finally {
-          currentlyDownloaded.remove(request.fileToSave);
-          Algoritms.closeStream(stream);
-        }
+        Algoritms.closeStream(inputStream);
+        Algoritms.closeStream(stream);
+      }
+      if (log.isDebugEnabled()) {
+        log.debug("Downloading tile : " + request.url + " successfull "+ (System.currentTimeMillis() - time)+ " ms");
       }
     }
-  finally {
-      Algoritms.closeStream(inputStream);
+ catch (    UnknownHostException e) {
+      currentErrors++;
+      log.error("UnknownHostException, cannot download tile " + request.url,e);
     }
-    if (log.isDebugEnabled()) {
-      log.debug("Downloading tile : " + downloadUrl + " successfull "+ (System.currentTimeMillis() - time)+ " ms");
+catch (    IOException e) {
+      currentErrors++;
+      log.warn("Cannot download tile : " + request.url,e);
+    }
+ finally {
+      currentlyDownloaded.remove(request.fileToSave);
     }
     if (callback != null) {
-      callback.tileDownloaded(downloadUrl,request);
+      callback.tileDownloaded(request);
     }
-  }
- catch (  UnknownHostException e) {
-    currentErrors++;
-    log.error("UnknownHostException, cannot download tile " + downloadUrl,e);
-  }
-catch (  IOException e) {
-    currentErrors++;
-    log.warn("Cannot download tile : " + downloadUrl,e);
   }
 }

@@ -1,0 +1,19 @@
+{
+  if (map == null) {
+    return null;
+  }
+  StringBuilder builder=new StringBuilder(40);
+  builder.append(map.getName()).append('/').append(zoom).append('/').append(x).append('/').append(y).append(map.getTileFormat()).append(".tile");
+  String file=builder.toString();
+  if (cacheOfImages.get(file) == null) {
+    String url=loadFromInternetIfNeeded ? map.getUrlToLoad(x,y,zoom) : null;
+    TileLoadDownloadRequest req=new TileLoadDownloadRequest(dirWithTiles,file,url,new File(dirWithTiles,file),x,y,zoom);
+    if (sync) {
+      return getRequestedImageTile(req);
+    }
+ else {
+      asyncLoadingTiles.requestToLoadImage(req);
+    }
+  }
+  return cacheOfImages.get(file);
+}

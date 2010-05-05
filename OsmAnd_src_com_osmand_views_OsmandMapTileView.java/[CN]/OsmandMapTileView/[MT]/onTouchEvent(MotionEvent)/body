@@ -1,35 +1,40 @@
 {
-  if (event.getAction() == MotionEvent.ACTION_DOWN) {
-    if (animatedDraggingThread != null) {
-      animatedDraggingThread.stopEvaluation();
+  for (int i=layers.size() - 1; i >= 0; i--) {
+    if (layers.get(i).onTouchEvent(event)) {
+      return true;
     }
-    if (!isStartedDragging) {
-      startDraggingX=event.getX();
-      startDraggingY=event.getY();
-      isStartedDragging=true;
-      initStartDragging=new PointF(event.getX(),event.getY());
+  }
+  if (event.getAction() == MotionEvent.ACTION_DOWN) {
+    animatedDraggingThread.stopDragging();
+    if (startDragging == null) {
+      autoStartDragging=new PointF(event.getX(),event.getY());
+      autoStartDraggingTime=event.getEventTime();
+      startDragging=new PointF(event.getX(),event.getY());
     }
   }
  else   if (event.getAction() == MotionEvent.ACTION_UP) {
-    if (isStartedDragging) {
-      dragTo(startDraggingX,startDraggingY,event.getX(),event.getY());
-      if (event.getEventTime() - event.getDownTime() < timeForDraggingAnimation && Math.abs(event.getX() - initStartDragging.x) + Math.abs(event.getY() - initStartDragging.y) > minimumDistanceForDraggingAnimation) {
-        float timeDist=(int)(event.getEventTime() - event.getDownTime());
+    if (startDragging != null) {
+      dragTo(startDragging.x,startDragging.y,event.getX(),event.getY());
+      startDragging=null;
+      if (wasMapDraggingAccelerated(event)) {
+        float timeDist=(int)(event.getEventTime() - autoStartDraggingTime);
         if (timeDist < 20) {
           timeDist=20;
         }
-        animatedDraggingThread=new AnimatedDragging(timeDist,initStartDragging.x,initStartDragging.y,event.getX(),event.getY());
-        isStartedDragging=false;
-        animatedDraggingThread.start();
+        animatedDraggingThread.startDragging(timeDist,autoStartDragging.x,autoStartDragging.y,event.getX(),event.getY());
       }
-      isStartedDragging=false;
     }
   }
  else   if (event.getAction() == MotionEvent.ACTION_MOVE) {
-    if (isStartedDragging) {
-      dragTo(startDraggingX,startDraggingY,event.getX(),event.getY());
-      startDraggingX=event.getX();
-      startDraggingY=event.getY();
+    if (startDragging != null) {
+      dragTo(startDragging.x,startDragging.y,event.getX(),event.getY());
+      startDragging.x=event.getX();
+      startDragging.y=event.getY();
+      if (event.getEventTime() - autoStartDraggingTime > timeForDraggingAnimation) {
+        autoStartDraggingTime=event.getEventTime();
+        autoStartDragging.x=event.getX();
+        autoStartDragging.y=event.getY();
+      }
     }
   }
   return super.onTouchEvent(event);

@@ -12,7 +12,7 @@
   long st=System.currentTimeMillis();
   final List<Node> places=new ArrayList<Node>();
   final List<Entity> buildings=new ArrayList<Entity>();
-  final List<Node> amenities=new ArrayList<Node>();
+  final List<Amenity> amenities=new ArrayList<Amenity>();
   final List<Way> mapWays=new ArrayList<Way>();
   OsmBaseStorage storage=new OsmBaseStorage(){
     @Override public boolean acceptEntityToLoad(    Entity e){
@@ -25,20 +25,8 @@
       return super.acceptEntityToLoad(e);
     }
     @Override public boolean acceptNodeToLoad(    Node n){
-      if (n.getTag(OSMTagKey.AMENITY) != null) {
-        amenities.add(n);
-      }
- else       if (n.getTag(OSMTagKey.SHOP) != null) {
-        n.putTag(OSMTagKey.AMENITY.getValue(),OSMTagKey.SHOP.getValue());
-        amenities.add(n);
-      }
- else       if (n.getTag(OSMTagKey.LEISURE) != null) {
-        n.putTag(OSMTagKey.AMENITY.getValue(),OSMTagKey.LEISURE.getValue());
-        amenities.add(n);
-      }
- else       if (n.getTag(OSMTagKey.TOURISM) != null) {
-        n.putTag(OSMTagKey.AMENITY.getValue(),OSMTagKey.TOURISM.getValue());
-        amenities.add(n);
+      if (Amenity.isAmenity(n)) {
+        amenities.add(new Amenity(n));
       }
       if (n.getTag(OSMTagKey.PLACE) != null) {
         places.add(n);
@@ -91,9 +79,9 @@
     }
   }
   DataTileManager<LatLon> amenitiesManager=new DataTileManager<LatLon>();
-  for (  Node node : amenities) {
-    country.registerAmenity(node);
-    amenitiesManager.registerObject(node.getLatitude(),node.getLongitude(),node.getLatLon());
+  for (  Amenity a : amenities) {
+    country.registerAmenity(a);
+    amenitiesManager.registerObject(a.getNode().getLatitude(),a.getNode().getLongitude(),a.getNode().getLatLon());
   }
   DataTileManager<LatLon> waysManager=new DataTileManager<LatLon>();
   for (  Way w : mapWays) {
@@ -107,7 +95,9 @@
   mapPanel.setPoints(amenitiesManager);
   runUI(country);
   List<Long> interestedObjects=new ArrayList<Long>();
-  MapUtils.addIdsToList(amenities,interestedObjects);
+  for (  Amenity a : amenities) {
+    interestedObjects.add(a.getNode().getId());
+  }
   if (DefaultLauncherConstants.writeTestOsmFile != null) {
     OSMStorageWriter writer=new OSMStorageWriter(storage.getRegisteredEntities());
     OutputStream output=new FileOutputStream(DefaultLauncherConstants.writeTestOsmFile);

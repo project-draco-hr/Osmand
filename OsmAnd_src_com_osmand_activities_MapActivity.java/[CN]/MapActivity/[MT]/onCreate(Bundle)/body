@@ -3,20 +3,20 @@
   requestWindowFeature(Window.FEATURE_NO_TITLE);
   setContentView(R.layout.main);
   mapView=(OsmandMapTileView)findViewById(R.id.MapView);
-  mapView.setFileWithTiles(new File(Environment.getExternalStorageDirectory(),TILES_PATH));
-  mapView.addMapLocationListener(this);
+  mapView.setMapLocationListener(this);
+  poiMapLayer=new POIMapLayer();
+  poiMapLayer.setNodeManager(ResourceManager.getResourceManager().getPoiIndex());
+  mapView.addLayer(poiMapLayer);
   ZoomControls zoomControls=(ZoomControls)findViewById(R.id.ZoomControls01);
   zoomControls.setOnZoomInClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       mapView.setZoom(mapView.getZoom() + 1);
-      poiMapLayer.setCurrentLocationAndZoom(poiMapLayer.getCurrentLocation(),mapView.getZoom());
     }
   }
 );
   zoomControls.setOnZoomOutClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       mapView.setZoom(mapView.getZoom() - 1);
-      poiMapLayer.setCurrentLocationAndZoom(poiMapLayer.getCurrentLocation(),mapView.getZoom());
     }
   }
 );
@@ -46,7 +46,4 @@
 );
   LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
   service.requestLocationUpdates(LocationManager.GPS_PROVIDER,1000,0,this);
-  indexPOI=indexPOI();
-  poiMapLayer=(POIMapLayer)findViewById(R.id.PoiMapLayer);
-  poiMapLayer.setNodeManager(indexPOI);
 }
