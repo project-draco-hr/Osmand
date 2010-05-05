@@ -1,33 +1,10 @@
 {
-  if (map == null || fileWithTiles == null || !fileWithTiles.canRead()) {
+  if (map == null) {
     return null;
   }
   String file=getFileForImage(x,y,zoom,map.getTileFormat());
-  if (cacheOfImages.get(file) == null) {
-    File en=new File(fileWithTiles,file);
-    if (cacheOfImages.size() > maxImgCacheSize) {
-      ArrayList<String> list=new ArrayList<String>(cacheOfImages.keySet());
-      for (int i=0; i < list.size(); i+=2) {
-        Bitmap bmp=cacheOfImages.remove(list.get(i));
-        bmp.recycle();
-      }
-      System.gc();
-    }
-    if (!downloader.isFileCurrentlyDownloaded(en)) {
-      if (en.exists()) {
-        long time=System.currentTimeMillis();
-        cacheOfImages.put(file,BitmapFactory.decodeFile(en.getAbsolutePath()));
-        if (log.isDebugEnabled()) {
-          log.debug("Loaded file : " + file + " "+ -(time - System.currentTimeMillis())+ " ms");
-        }
-      }
-      if (loadIfNeeded && cacheOfImages.get(file) == null) {
-        String urlToLoad=map.getUrlToLoad(x,y,zoom);
-        if (urlToLoad != null) {
-          downloader.requestToDownload(urlToLoad,new DownloadRequest(en,x,y,zoom));
-        }
-      }
-    }
+  if (cacheOfImages.get(file) == null && loadIfNeeded) {
+    asyncLoadingTiles.requestToLoadImage(file,new DownloadRequest(null,x,y,zoom));
   }
   return cacheOfImages.get(file);
 }

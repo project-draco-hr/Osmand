@@ -1,20 +1,35 @@
 {
   if (event.getAction() == MotionEvent.ACTION_DOWN) {
-    if (startDragging == null) {
-      startDragging=new PointF(event.getX(),event.getY());
+    if (animatedDraggingThread != null) {
+      animatedDraggingThread.stopEvaluation();
+    }
+    if (!isStartedDragging) {
+      startDraggingX=event.getX();
+      startDraggingY=event.getY();
+      isStartedDragging=true;
+      initStartDragging=new PointF(event.getX(),event.getY());
     }
   }
  else   if (event.getAction() == MotionEvent.ACTION_UP) {
-    if (startDragging != null) {
-      dragTo(new PointF(event.getX(),event.getY()));
-      startDragging=null;
+    if (isStartedDragging) {
+      dragTo(startDraggingX,startDraggingY,event.getX(),event.getY());
+      if (event.getEventTime() - event.getDownTime() < timeForDraggingAnimation && Math.abs(event.getX() - initStartDragging.x) + Math.abs(event.getY() - initStartDragging.y) > minimumDistanceForDraggingAnimation) {
+        float timeDist=(int)(event.getEventTime() - event.getDownTime());
+        if (timeDist < 20) {
+          timeDist=20;
+        }
+        animatedDraggingThread=new AnimatedDragging(timeDist,initStartDragging.x,initStartDragging.y,event.getX(),event.getY());
+        isStartedDragging=false;
+        animatedDraggingThread.start();
+      }
+      isStartedDragging=false;
     }
   }
  else   if (event.getAction() == MotionEvent.ACTION_MOVE) {
-    if (startDragging != null) {
-      PointF p=new PointF(event.getX(),event.getY());
-      dragTo(p);
-      startDragging=p;
+    if (isStartedDragging) {
+      dragTo(startDraggingX,startDraggingY,event.getX(),event.getY());
+      startDraggingX=event.getX();
+      startDraggingY=event.getY();
     }
   }
   return super.onTouchEvent(event);

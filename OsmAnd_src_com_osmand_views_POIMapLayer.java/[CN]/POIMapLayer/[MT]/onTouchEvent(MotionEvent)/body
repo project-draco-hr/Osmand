@@ -1,0 +1,27 @@
+{
+  if (event.getAction() == MotionEvent.ACTION_DOWN) {
+    if (previousShownToast != null) {
+      previousShownToast.cancel();
+      previousShownToast=null;
+    }
+    int x=(int)event.getX();
+    int y=(int)event.getY();
+    for (    Node n : points.keySet()) {
+      Point p=points.get(n);
+      if (Math.abs(p.x - x) <= radiusClick && Math.abs(p.y - y) <= radiusClick) {
+        StringBuilder b=new StringBuilder();
+        b.append("This is an amenity : \n");
+        b.append("type - ").append(n.getTag(OSMTagKey.AMENITY)).append("\n");
+        if (n.getTag(OSMTagKey.NAME) != null) {
+          b.append("name - ").append(n.getTag(OSMTagKey.NAME)).append("\n");
+        }
+        b.append("id - ").append(n.getId());
+        previousShownToast=Toast.makeText(getContext(),b.toString(),Toast.LENGTH_SHORT);
+        previousShownToast.show();
+        log.debug("Precision is " + event.getXPrecision());
+        return true;
+      }
+    }
+  }
+  return super.onTouchEvent(event);
+}
