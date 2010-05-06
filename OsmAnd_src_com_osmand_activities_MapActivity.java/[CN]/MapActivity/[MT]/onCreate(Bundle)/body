@@ -9,6 +9,19 @@
   mapView.addLayer(poiMapLayer);
   locationLayer=new PointLocationLayer();
   mapView.addLayer(locationLayer);
+  SharedPreferences prefs=getPreferences(MODE_WORLD_READABLE);
+  if (prefs != null && prefs.contains(KEY_LAST_LAT)) {
+    mapView.setLatLon(prefs.getFloat(KEY_LAST_LAT,0f),prefs.getFloat(KEY_LAST_LON,0f));
+    mapView.setZoom(prefs.getInt(KEY_LAST_ZOOM,3));
+  }
+ else {
+    LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
+    Location location=service.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    if (location != null) {
+      mapView.setLatLon(location.getLatitude(),location.getLongitude());
+      mapView.setZoom(14);
+    }
+  }
   ZoomControls zoomControls=(ZoomControls)findViewById(R.id.ZoomControls01);
   zoomControls.setOnZoomInClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
@@ -29,7 +42,8 @@
       if (!linkLocationWithMap) {
         linkLocationWithMap=true;
         backToLocation.setVisibility(View.INVISIBLE);
-        if (lastKnownLocation != null) {
+        if (locationLayer.getLastKnownLocation() != null) {
+          Location lastKnownLocation=locationLayer.getLastKnownLocation();
           mapView.setLatLon(lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude());
         }
       }
