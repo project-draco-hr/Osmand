@@ -8,9 +8,6 @@
           if (log.isDebugEnabled()) {
             log.debug("Starting index POI " + f.getAbsolutePath());
           }
-          if (dlg != null) {
-            dlg.setMessage("Indexing poi " + f.getName());
-          }
           boolean zipped=f.getName().endsWith(".bz2");
           InputStream stream=null;
           try {
@@ -26,7 +23,10 @@
                 stream=new CBZip2InputStream(stream);
               }
             }
-            storage.parseOSM(stream);
+            if (progress != null) {
+              progress.startTask("Indexing poi " + f.getName(),stream.available());
+            }
+            storage.parseOSM(stream,progress);
             for (            Entity e : storage.getRegisteredEntities().values()) {
               if (e instanceof Node && Amenity.isAmenity((Node)e)) {
                 poiIndex.registerObject(((Node)e).getLatitude(),((Node)e).getLongitude(),new Amenity((Node)e));

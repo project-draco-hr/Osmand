@@ -7,6 +7,14 @@
     parseStarted=true;
   }
   if (currentParsedEntity == null) {
+    if (progress != null && !progress.isIndeterminate()) {
+      try {
+        progress.remaining(inputStream.available());
+      }
+ catch (      IOException e) {
+        progress.startWork(-1);
+      }
+    }
     if (ELEM_NODE.equals(name)) {
       currentParsedEntity=new Node(parseDouble(attributes,ATTR_LAT,0),parseDouble(attributes,ATTR_LON,0),parseId(attributes,ATTR_ID,-1));
     }

@@ -1,0 +1,106 @@
+{
+  frame=new JFrame("Tree of choose");
+  try {
+    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+  }
+  frame.addWindowListener(new ExitListener());
+  Container content=frame.getContentPane();
+  frame.setFocusable(true);
+  treePlaces=new JTree();
+  treePlaces.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("Region"),false));
+  searchList=new JList();
+  searchList.setCellRenderer(new DefaultListCellRenderer(){
+    private static final long serialVersionUID=4661949460526837891L;
+    @Override public Component getListCellRendererComponent(    JList list,    Object value,    int index,    boolean isSelected,    boolean cellHasFocus){
+      super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+      if (value instanceof City) {
+        setText(((City)value).getName());
+      }
+      return this;
+    }
+  }
+);
+  JSplitPane panelForTreeAndImage=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,new JScrollPane(treePlaces),mapPanel);
+  panelForTreeAndImage.setResizeWeight(0.2);
+  mapPanel.setFocusable(true);
+  mapPanel.addMapLocationListener(this);
+  JSplitPane pane=new JSplitPane(JSplitPane.VERTICAL_SPLIT,new JScrollPane(searchList),panelForTreeAndImage);
+  pane.setResizeWeight(0.2);
+  content.add(pane,BorderLayout.CENTER);
+  final JLabel label=new JLabel();
+  content.add(label,BorderLayout.SOUTH);
+  JPanel panel=new JPanel(new BorderLayout());
+  searchTextField=new JTextField();
+  final JButton button=new JButton();
+  button.setText("Set town");
+  panel.add(searchTextField,BorderLayout.CENTER);
+  panel.add(button,BorderLayout.WEST);
+  content.add(panel,BorderLayout.NORTH);
+  updateListCities(region,searchTextField.getText(),searchList);
+  searchTextField.getDocument().addUndoableEditListener(new UndoableEditListener(){
+    @Override public void undoableEditHappened(    UndoableEditEvent e){
+      updateListCities(region,searchTextField.getText(),searchList);
+    }
+  }
+);
+  button.addActionListener(new ActionListener(){
+    @Override public void actionPerformed(    ActionEvent e){
+      selectedCity=(City)searchList.getSelectedValue();
+    }
+  }
+);
+  searchList.addListSelectionListener(new ListSelectionListener(){
+    @Override public void valueChanged(    ListSelectionEvent e){
+      if (searchList.getSelectedValue() != null) {
+        Node node=((City)searchList.getSelectedValue()).getNode();
+        String text="Lat : " + node.getLatitude() + " Lon "+ node.getLongitude();
+        if (selectedCity != null) {
+          text+=" distance " + MapUtils.getDistance(selectedCity.getNode(),node);
+        }
+        label.setText(text);
+        mapPanel.setLatLon(node.getLatitude(),node.getLongitude());
+      }
+ else {
+        String text=selectedCity == null ? "" : selectedCity.getName();
+        label.setText(text);
+      }
+    }
+  }
+);
+  treePlaces.addTreeSelectionListener(new TreeSelectionListener(){
+    @Override public void valueChanged(    TreeSelectionEvent e){
+      if (e.getPath() != null) {
+        if (e.getPath().getLastPathComponent() instanceof DefaultMutableTreeNode) {
+          Object o=((DefaultMutableTreeNode)e.getPath().getLastPathComponent()).getUserObject();
+          if (o instanceof City) {
+            City c=(City)o;
+            mapPanel.setLatLon(c.getNode().getLatitude(),c.getNode().getLongitude());
+            mapPanel.requestFocus();
+          }
+          if (o instanceof Entity) {
+            Entity c=(Entity)o;
+            if (c instanceof Node) {
+              mapPanel.setLatLon(((Node)c).getLatitude(),((Node)c).getLongitude());
+            }
+ else {
+              DefaultMutableTreeNode n=(DefaultMutableTreeNode)e.getPath().getPathComponent(e.getPath().getPathCount() - 2);
+              if (n.getUserObject() instanceof Street) {
+                Street str=(Street)n.getUserObject();
+                LatLon l=str.getLocationBuilding(c);
+                mapPanel.setLatLon(l.getLatitude(),l.getLongitude());
+                mapPanel.requestFocus();
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+);
+  MenuBar bar=new MenuBar();
+  fillMenuWithActions(bar);
+  frame.setMenuBar(bar);
+}

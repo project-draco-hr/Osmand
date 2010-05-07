@@ -1,54 +1,56 @@
 {
-  Region reg=(Region)amenitiesTree.getUserObject();
-  List<Amenity> closestAmenities=reg.getClosestAmenities(newLatitude,newLongitude);
-  Collections.sort(closestAmenities,new Comparator<Amenity>(){
-    @Override public int compare(    Amenity o1,    Amenity o2){
-      return Double.compare(MapUtils.getDistance(o1.getNode(),newLatitude,newLongitude),MapUtils.getDistance(o2.getNode(),newLatitude,newLongitude));
-    }
-  }
-);
-  Map<String,List<Amenity>> filter=new TreeMap<String,List<Amenity>>();
-  for (  Amenity n : closestAmenities) {
-    String type=n.getType().toString();
-    if (!filter.containsKey(type)) {
-      filter.put(type,new ArrayList<Amenity>());
-    }
-    filter.get(type).add(n);
-  }
-  for (int i=1; i < amenitiesTree.getChildCount(); ) {
-    if (!filter.containsKey(((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).getUserObject())) {
-      amenitiesTree.remove(i);
-    }
- else {
-      i++;
-    }
-  }
-  ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).removeAllChildren();
-  for (int i=0; i < 15 && i < closestAmenities.size(); i++) {
-    Amenity n=closestAmenities.get(i);
-    int dist=(int)(MapUtils.getDistance(n.getNode(),newLatitude,newLongitude));
-    String str=n.getSimpleFormat() + " [" + dist+ " m ]";
-    ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).add(new DataExtractionTreeNode(str,n));
-  }
-  for (  String s : filter.keySet()) {
-    DefaultMutableTreeNode p=null;
-    for (int i=0; i < amenitiesTree.getChildCount(); i++) {
-      if (s.equals(((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).getUserObject())) {
-        p=((DefaultMutableTreeNode)amenitiesTree.getChildAt(i));
-        break;
+  if (amenitiesTree != null) {
+    Region reg=(Region)amenitiesTree.getUserObject();
+    List<Amenity> closestAmenities=reg.getClosestAmenities(newLatitude,newLongitude);
+    Collections.sort(closestAmenities,new Comparator<Amenity>(){
+      @Override public int compare(      Amenity o1,      Amenity o2){
+        return Double.compare(MapUtils.getDistance(o1.getNode(),newLatitude,newLongitude),MapUtils.getDistance(o2.getNode(),newLatitude,newLongitude));
       }
     }
-    if (p == null) {
-      p=new DefaultMutableTreeNode(s);
+);
+    Map<String,List<Amenity>> filter=new TreeMap<String,List<Amenity>>();
+    for (    Amenity n : closestAmenities) {
+      String type=n.getType().toString();
+      if (!filter.containsKey(type)) {
+        filter.put(type,new ArrayList<Amenity>());
+      }
+      filter.get(type).add(n);
     }
-    p.removeAllChildren();
-    for (    Amenity n : filter.get(s)) {
+    for (int i=1; i < amenitiesTree.getChildCount(); ) {
+      if (!filter.containsKey(((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).getUserObject())) {
+        amenitiesTree.remove(i);
+      }
+ else {
+        i++;
+      }
+    }
+    ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).removeAllChildren();
+    for (int i=0; i < 15 && i < closestAmenities.size(); i++) {
+      Amenity n=closestAmenities.get(i);
       int dist=(int)(MapUtils.getDistance(n.getNode(),newLatitude,newLongitude));
       String str=n.getSimpleFormat() + " [" + dist+ " m ]";
-      DataExtractionTreeNode node=new DataExtractionTreeNode(str,n);
-      p.add(node);
+      ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).add(new DataExtractionTreeNode(str,n));
     }
-    amenitiesTree.add(p);
+    for (    String s : filter.keySet()) {
+      DefaultMutableTreeNode p=null;
+      for (int i=0; i < amenitiesTree.getChildCount(); i++) {
+        if (s.equals(((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).getUserObject())) {
+          p=((DefaultMutableTreeNode)amenitiesTree.getChildAt(i));
+          break;
+        }
+      }
+      if (p == null) {
+        p=new DefaultMutableTreeNode(s);
+      }
+      p.removeAllChildren();
+      for (      Amenity n : filter.get(s)) {
+        int dist=(int)(MapUtils.getDistance(n.getNode(),newLatitude,newLongitude));
+        String str=n.getSimpleFormat() + " [" + dist+ " m ]";
+        DataExtractionTreeNode node=new DataExtractionTreeNode(str,n);
+        p.add(node);
+      }
+      amenitiesTree.add(p);
+    }
+    treePlaces.updateUI();
   }
-  treePlaces.updateUI();
 }

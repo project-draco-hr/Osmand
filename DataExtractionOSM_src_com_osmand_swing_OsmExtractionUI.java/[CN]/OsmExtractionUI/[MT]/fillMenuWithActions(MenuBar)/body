@@ -1,0 +1,39 @@
+{
+  Menu menu=new Menu("File");
+  bar.add(menu);
+  MenuItem loadFile=new MenuItem("Load file...");
+  menu.add(loadFile);
+  bar.add(MapPanel.getMenuToChooseSource(mapPanel));
+  loadFile.addActionListener(new ActionListener(){
+    @Override public void actionPerformed(    ActionEvent e){
+      JFileChooser fc=new JFileChooser();
+      fc.setDialogTitle("Choose osm file");
+      fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+      fc.setAcceptAllFileFilterUsed(true);
+      fc.setCurrentDirectory(new File(DefaultLauncherConstants.pathToDirWithTiles));
+      fc.setFileFilter(new FileFilter(){
+        @Override public boolean accept(        File f){
+          return f.isDirectory() || f.getName().endsWith(".bz2") || f.getName().endsWith(".osm");
+        }
+        @Override public String getDescription(){
+          return "Osm Files (*.bz2, *.osm)";
+        }
+      }
+);
+      int answer=fc.showOpenDialog(frame);
+      if (answer == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null) {
+        try {
+          Region region=new DataExtraction().readCountry(fc.getSelectedFile().getAbsolutePath());
+          setRegion(region);
+        }
+ catch (        IOException e1) {
+          e1.printStackTrace();
+        }
+catch (        SAXException e1) {
+          e1.printStackTrace();
+        }
+      }
+    }
+  }
+);
+}
