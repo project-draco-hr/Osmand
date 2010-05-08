@@ -1,9 +1,13 @@
 {
   InputStream stream=new FileInputStream(path);
+  InputStream streamFile=stream;
   long st=System.currentTimeMillis();
   if (path.endsWith(".bz2")) {
     if (stream.read() != 'B' || stream.read() != 'Z')     throw new RuntimeException("The source stream must start with the characters BZ if it is to be read as a BZip2 stream.");
  else     stream=new CBZip2InputStream(stream);
+  }
+  if (progress != null) {
+    progress.startTask("Loading file " + path,-1);
   }
   places=new ArrayList<Node>();
   buildings=new ArrayList<Entity>();
@@ -40,8 +44,10 @@
     }
   }
 ;
-  storage.parseOSM(stream,new ConsoleProgressImplementation());
-  System.out.println("File parsed : " + (System.currentTimeMillis() - st));
+  storage.parseOSM(stream,progress,streamFile);
+  if (log.isDebugEnabled()) {
+    log.debug("File parsed : " + (System.currentTimeMillis() - st));
+  }
   Region country=new Region(null);
   country.setStorage(storage);
   for (  Node s : places) {
