@@ -8,21 +8,26 @@
       }
     }
 );
-    Map<String,List<Amenity>> filter=new TreeMap<String,List<Amenity>>();
+    Map<AmenityType,List<Amenity>> filter=new TreeMap<AmenityType,List<Amenity>>();
     for (    Amenity n : closestAmenities) {
-      String type=n.getType().toString();
+      AmenityType type=n.getType();
       if (!filter.containsKey(type)) {
         filter.put(type,new ArrayList<Amenity>());
       }
       filter.get(type).add(n);
     }
-    for (int i=1; i < amenitiesTree.getChildCount(); ) {
-      if (!filter.containsKey(((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).getUserObject())) {
-        amenitiesTree.remove(i);
+    for (int i=1; i < amenitiesTree.getChildCount(); i++) {
+      AmenityType type=(AmenityType)((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).getUserObject();
+      ((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).removeAllChildren();
+      if (filter.get(type) != null) {
+        for (        Amenity n : filter.get(type)) {
+          int dist=(int)(MapUtils.getDistance(n.getNode(),newLatitude,newLongitude));
+          String str=n.getStringWithoutType() + " [" + dist+ " m ]";
+          DataExtractionTreeNode node=new DataExtractionTreeNode(str,n);
+          ((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).add(node);
+        }
       }
- else {
-        i++;
-      }
+      ((DefaultTreeModel)treePlaces.getModel()).nodeStructureChanged(amenitiesTree.getChildAt(i));
     }
     ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).removeAllChildren();
     for (int i=0; i < 15 && i < closestAmenities.size(); i++) {
@@ -30,27 +35,7 @@
       int dist=(int)(MapUtils.getDistance(n.getNode(),newLatitude,newLongitude));
       String str=n.getSimpleFormat() + " [" + dist+ " m ]";
       ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).add(new DataExtractionTreeNode(str,n));
+      ((DefaultTreeModel)treePlaces.getModel()).nodeStructureChanged(amenitiesTree.getChildAt(0));
     }
-    for (    String s : filter.keySet()) {
-      DefaultMutableTreeNode p=null;
-      for (int i=0; i < amenitiesTree.getChildCount(); i++) {
-        if (s.equals(((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).getUserObject())) {
-          p=((DefaultMutableTreeNode)amenitiesTree.getChildAt(i));
-          break;
-        }
-      }
-      if (p == null) {
-        p=new DefaultMutableTreeNode(s);
-      }
-      p.removeAllChildren();
-      for (      Amenity n : filter.get(s)) {
-        int dist=(int)(MapUtils.getDistance(n.getNode(),newLatitude,newLongitude));
-        String str=n.getSimpleFormat() + " [" + dist+ " m ]";
-        DataExtractionTreeNode node=new DataExtractionTreeNode(str,n);
-        p.add(node);
-      }
-      amenitiesTree.add(p);
-    }
-    treePlaces.updateUI();
   }
 }
