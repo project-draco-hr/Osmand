@@ -3,16 +3,16 @@
     return;
   }
   this.region=region;
-  DefaultMutableTreeNode root=new DefaultMutableTreeNode();
-  amenitiesTree=new DataExtractionTreeNode("Amenities",region);
-  amenitiesTree.add(new DataExtractionTreeNode("closest",region));
+  DefaultMutableTreeNode root=new DataExtractionTreeNode(name,region);
+  amenitiesTree=new DataExtractionTreeNode("Closest amenities",region);
+  amenitiesTree.add(new DataExtractionTreeNode("First 15",region));
   for (  AmenityType type : AmenityType.values()) {
-    amenitiesTree.add(new DataExtractionTreeNode(type.toString().toLowerCase(),type));
+    amenitiesTree.add(new DataExtractionTreeNode(Algoritms.capitalizeFirstLetterAndLowercase(type.toString()),type));
   }
   root.add(amenitiesTree);
   if (region != null) {
     for (    CityType t : CityType.values()) {
-      DefaultMutableTreeNode cityTree=new DataExtractionTreeNode(t.toString(),t);
+      DefaultMutableTreeNode cityTree=new DataExtractionTreeNode(Algoritms.capitalizeFirstLetterAndLowercase(t.toString()),t);
       root.add(cityTree);
       for (      City ct : region.getCitiesByType(t)) {
         DefaultMutableTreeNode cityNodeTree=new DataExtractionTreeNode(ct.getName(),ct);
@@ -28,14 +28,9 @@
       }
     }
   }
-  DataTileManager<LatLon> amenitiesManager=new DataTileManager<LatLon>();
-  if (region != null) {
-    for (    Amenity a : region.getAmenityManager().getAllObjects()) {
-      amenitiesManager.registerObject(a.getNode().getLatitude(),a.getNode().getLongitude(),a.getNode().getLatLon());
-    }
+  if (searchList != null) {
+    updateListCities(region,searchTextField.getText(),searchList);
   }
-  mapPanel.setPoints(amenitiesManager);
-  updateListCities(region,searchTextField.getText(),searchList);
-  mapPanel.updateUI();
+  mapPanel.repaint();
   treePlaces.setModel(new DefaultTreeModel(root,false));
 }

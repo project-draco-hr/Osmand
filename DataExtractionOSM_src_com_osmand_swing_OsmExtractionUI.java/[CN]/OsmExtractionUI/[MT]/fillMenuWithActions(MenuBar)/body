@@ -1,11 +1,20 @@
 {
   Menu menu=new Menu("File");
   bar.add(menu);
-  MenuItem loadFile=new MenuItem("Load file...");
+  MenuItem loadFile=new MenuItem("Load osm file...");
   menu.add(loadFile);
   MenuItem specifyWorkingDir=new MenuItem("Specify working directory...");
   menu.add(specifyWorkingDir);
+  menu.addSeparator();
+  MenuItem exitMenu=new MenuItem("Exit");
+  menu.add(exitMenu);
   bar.add(MapPanel.getMenuToChooseSource(mapPanel));
+  exitMenu.addActionListener(new ActionListener(){
+    @Override public void actionPerformed(    ActionEvent e){
+      frame.setVisible(false);
+    }
+  }
+);
   specifyWorkingDir.addActionListener(new ActionListener(){
     @Override public void actionPerformed(    ActionEvent e){
       JFileChooser fc=new JFileChooser();
@@ -16,6 +25,8 @@
       }
       if (fc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null && fc.getSelectedFile().isDirectory()) {
         workingDir=fc.getSelectedFile();
+        workingDirLabel.setText(fc.getSelectedFile().getAbsolutePath());
+        generateDataButton.setEnabled(true);
       }
     }
   }

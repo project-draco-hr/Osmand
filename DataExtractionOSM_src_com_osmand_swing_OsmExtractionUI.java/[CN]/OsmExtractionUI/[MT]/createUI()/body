@@ -4,72 +4,28 @@
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
   }
  catch (  Exception e) {
-    e.printStackTrace();
+    log.error("Can't set look and feel",e);
   }
   frame.addWindowListener(new ExitListener());
   Container content=frame.getContentPane();
   frame.setFocusable(true);
+  statusBarLabel=new JLabel();
+  content.add(statusBarLabel,BorderLayout.SOUTH);
   treePlaces=new JTree();
   treePlaces.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("Region"),false));
-  searchList=new JList();
-  searchList.setCellRenderer(new DefaultListCellRenderer(){
-    private static final long serialVersionUID=4661949460526837891L;
-    @Override public Component getListCellRendererComponent(    JList list,    Object value,    int index,    boolean isSelected,    boolean cellHasFocus){
-      super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-      if (value instanceof City) {
-        setText(((City)value).getName());
-      }
-      return this;
-    }
-  }
-);
-  JSplitPane panelForTreeAndImage=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,new JScrollPane(treePlaces),mapPanel);
-  panelForTreeAndImage.setResizeWeight(0.2);
+  JSplitPane panelForTreeAndMap=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,new JScrollPane(treePlaces),mapPanel);
+  panelForTreeAndMap.setResizeWeight(0.2);
   mapPanel.setFocusable(true);
   mapPanel.addMapLocationListener(this);
-  JSplitPane pane=new JSplitPane(JSplitPane.VERTICAL_SPLIT,new JScrollPane(searchList),panelForTreeAndImage);
-  pane.setResizeWeight(0.2);
-  content.add(pane,BorderLayout.CENTER);
-  final JLabel label=new JLabel();
-  content.add(label,BorderLayout.SOUTH);
-  JPanel panel=new JPanel(new BorderLayout());
-  searchTextField=new JTextField();
-  final JButton button=new JButton();
-  button.setText("Set town");
-  panel.add(searchTextField,BorderLayout.CENTER);
-  panel.add(button,BorderLayout.WEST);
-  content.add(panel,BorderLayout.NORTH);
-  updateListCities(region,searchTextField.getText(),searchList);
-  searchTextField.getDocument().addUndoableEditListener(new UndoableEditListener(){
-    @Override public void undoableEditHappened(    UndoableEditEvent e){
-      updateListCities(region,searchTextField.getText(),searchList);
-    }
+  createButtonsBar(content);
+  if (searchList != null) {
+    JSplitPane pane=new JSplitPane(JSplitPane.VERTICAL_SPLIT,new JScrollPane(searchList),panelForTreeAndMap);
+    pane.setResizeWeight(0.2);
+    content.add(pane,BorderLayout.CENTER);
   }
-);
-  button.addActionListener(new ActionListener(){
-    @Override public void actionPerformed(    ActionEvent e){
-      selectedCity=(City)searchList.getSelectedValue();
-    }
-  }
-);
-  searchList.addListSelectionListener(new ListSelectionListener(){
-    @Override public void valueChanged(    ListSelectionEvent e){
-      if (searchList.getSelectedValue() != null) {
-        Node node=((City)searchList.getSelectedValue()).getNode();
-        String text="Lat : " + node.getLatitude() + " Lon "+ node.getLongitude();
-        if (selectedCity != null) {
-          text+=" distance " + MapUtils.getDistance(selectedCity.getNode(),node);
-        }
-        label.setText(text);
-        mapPanel.setLatLon(node.getLatitude(),node.getLongitude());
-      }
  else {
-        String text=selectedCity == null ? "" : selectedCity.getName();
-        label.setText(text);
-      }
-    }
+    content.add(panelForTreeAndMap,BorderLayout.CENTER);
   }
-);
   treePlaces.addTreeSelectionListener(new TreeSelectionListener(){
     @Override public void valueChanged(    TreeSelectionEvent e){
       if (e.getPath() != null) {
@@ -89,6 +45,7 @@
             Entity c=(Entity)o;
             if (c instanceof Node) {
               mapPanel.setLatLon(((Node)c).getLatitude(),((Node)c).getLongitude());
+              mapPanel.requestFocus();
             }
  else {
               DefaultMutableTreeNode n=(DefaultMutableTreeNode)e.getPath().getPathComponent(e.getPath().getPathCount() - 2);
@@ -105,7 +62,4 @@
     }
   }
 );
-  MenuBar bar=new MenuBar();
-  fillMenuWithActions(bar);
-  frame.setMenuBar(bar);
 }
