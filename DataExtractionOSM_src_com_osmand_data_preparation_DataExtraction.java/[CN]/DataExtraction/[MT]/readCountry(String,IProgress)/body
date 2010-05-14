@@ -59,28 +59,16 @@
       country.setEntity(s);
     }
  else {
-      City registerCity=country.registerCity(s);
-      if (registerCity == null) {
-        System.out.println(place + " - " + s.getTag(OSMTagKey.NAME));
-      }
-    }
-  }
-  for (  Entity b : buildings) {
-    LatLon center=b.getLatLon();
-    if (center == null) {
-    }
- else {
-      City city=country.getClosestCity(center);
-      if (city != null) {
-        city.registerBuilding(center,b);
-      }
+      country.registerCity(s);
     }
   }
   for (  Amenity a : amenities) {
     country.registerAmenity(a);
   }
+  progress.startTask("Indexing streets...",ways.size());
   waysManager=new DataTileManager<Way>();
   for (  Way w : ways) {
+    progress.progress(1);
     if (w.getTag(OSMTagKey.NAME) != null) {
       String street=w.getTag(OSMTagKey.NAME);
       LatLon center=MapUtils.getWeightCenterForNodes(w.getNodes());
@@ -94,6 +82,21 @@
       waysManager.registerObject(center.getLatitude(),center.getLongitude(),w);
     }
   }
+  progress.finishTask();
+  progress.startTask("Indexing buildings...",buildings.size());
+  for (  Entity b : buildings) {
+    LatLon center=b.getLatLon();
+    progress.progress(1);
+    if (center == null) {
+    }
+ else {
+      City city=country.getClosestCity(center);
+      if (city != null) {
+        city.registerBuilding(b);
+      }
+    }
+  }
+  progress.finishTask();
   country.doDataPreparation();
   return country;
 }

@@ -1,18 +1,12 @@
 {
-  int tileX=(int)MapUtils.getTileNumberX(zoom,longitude);
-  int tileY=(int)MapUtils.getTileNumberY(zoom,latitude);
-  List<T> result=new ArrayList<T>();
-  putObjects(tileX,tileY,result);
-  for (int i=1; i <= depth; i++) {
-    for (int j=0; j <= i; j++) {
-      int dx=j == 0 ? 0 : -1;
-      for (; dx < 1 || (j < i && dx == 1); dx+=2) {
-        putObjects(tileX + dx * j,tileY + i,result);
-        putObjects(tileX + i,tileY - dx * j,result);
-        putObjects(tileX - dx * j,tileY - i,result);
-        putObjects(tileX - i,tileY + dx * j,result);
-      }
-    }
+  if (isEmpty()) {
+    return Collections.emptyList();
   }
-  return result;
+  int dp=1;
+  List<T> l=null;
+  while (l == null || l.isEmpty()) {
+    l=getClosestObjects(latitude,longitude,dp,dp + defaultStep);
+    dp+=defaultStep;
+  }
+  return l;
 }

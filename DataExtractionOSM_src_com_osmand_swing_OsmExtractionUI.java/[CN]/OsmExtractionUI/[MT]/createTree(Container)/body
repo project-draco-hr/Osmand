@@ -4,42 +4,24 @@
   treePlaces.setEditable(true);
   treePlaces.setCellEditor(new RegionCellEditor(treePlaces,(DefaultTreeCellRenderer)treePlaces.getCellRenderer()));
   treePlaces.addTreeSelectionListener(new TreeSelectionListener(){
-    @Override public void valueChanged(    TreeSelectionEvent e){
+    @SuppressWarnings("unchecked") @Override public void valueChanged(    TreeSelectionEvent e){
       if (e.getPath() != null) {
         if (e.getPath().getLastPathComponent() instanceof DataExtractionTreeNode) {
           Object o=((DataExtractionTreeNode)e.getPath().getLastPathComponent()).getModelObject();
-          if (o instanceof City) {
-            City c=(City)o;
-            mapPanel.setLatLon(c.getNode().getLatitude(),c.getNode().getLongitude());
-            mapPanel.requestFocus();
-          }
- else           if (o instanceof Street) {
-            Street s=(Street)o;
-            LatLon center=MapUtils.getWeightCenterForNodes(s.getWayNodes());
-            if (center != null) {
-              mapPanel.setLatLon(center.getLatitude(),center.getLongitude());
+          if (o instanceof MapObject<?>) {
+            MapObject<Entity> c=(MapObject<Entity>)o;
+            LatLon location=c.getLocation();
+            if (location != null) {
+              mapPanel.setLatLon(location.getLatitude(),location.getLongitude());
               mapPanel.requestFocus();
             }
-          }
- else           if (o instanceof Amenity) {
-            Amenity c=(Amenity)o;
-            mapPanel.setLatLon(c.getNode().getLatitude(),c.getNode().getLongitude());
-            mapPanel.requestFocus();
           }
  else           if (o instanceof Entity) {
             Entity c=(Entity)o;
-            if (c instanceof Node) {
-              mapPanel.setLatLon(((Node)c).getLatitude(),((Node)c).getLongitude());
+            LatLon latLon=c.getLatLon();
+            if (latLon != null) {
+              mapPanel.setLatLon(latLon.getLatitude(),latLon.getLongitude());
               mapPanel.requestFocus();
-            }
- else {
-              DataExtractionTreeNode n=(DataExtractionTreeNode)e.getPath().getPathComponent(e.getPath().getPathCount() - 2);
-              if (n.getModelObject() instanceof Street) {
-                Street str=(Street)n.getModelObject();
-                LatLon l=str.getLocationBuilding(c);
-                mapPanel.setLatLon(l.getLatitude(),l.getLongitude());
-                mapPanel.requestFocus();
-              }
             }
           }
         }

@@ -1,15 +1,13 @@
 {
   City closest=null;
   double relDist=Double.POSITIVE_INFINITY;
-  for (  CityType t : CityType.values()) {
-    for (    City c : cities.get(t)) {
-      double rel=MapUtils.getDistance(c.getNode(),point) / t.getRadius();
-      if (rel < 1) {
-        return c;
-      }
-      if (rel < relDist) {
-        closest=c;
-        relDist=rel;
+  for (  City c : cityManager.getClosestObjects(point.getLatitude(),point.getLongitude())) {
+    double rel=MapUtils.getDistance(c.getEntity(),point) / c.getType().getRadius();
+    if (rel < relDist) {
+      closest=c;
+      relDist=rel;
+      if (relDist < 0.2d) {
+        break;
       }
     }
   }

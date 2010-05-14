@@ -4,7 +4,7 @@
     List<Amenity> closestAmenities=reg.getClosestAmenities(newLatitude,newLongitude);
     Collections.sort(closestAmenities,new Comparator<Amenity>(){
       @Override public int compare(      Amenity o1,      Amenity o2){
-        return Double.compare(MapUtils.getDistance(o1.getNode(),newLatitude,newLongitude),MapUtils.getDistance(o2.getNode(),newLatitude,newLongitude));
+        return Double.compare(MapUtils.getDistance(o2.getLocation(),newLatitude,newLongitude),MapUtils.getDistance(o2.getLocation(),newLatitude,newLongitude));
       }
     }
 );
@@ -21,7 +21,7 @@
       ((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).removeAllChildren();
       if (filter.get(type) != null) {
         for (        Amenity n : filter.get(type)) {
-          int dist=(int)(MapUtils.getDistance(n.getNode(),newLatitude,newLongitude));
+          int dist=(int)(MapUtils.getDistance(n.getLocation(),newLatitude,newLongitude));
           String str=n.getStringWithoutType() + " [" + dist+ " m ]";
           DataExtractionTreeNode node=new DataExtractionTreeNode(str,n);
           ((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).add(node);
@@ -32,7 +32,7 @@
     ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).removeAllChildren();
     for (int i=0; i < 15 && i < closestAmenities.size(); i++) {
       Amenity n=closestAmenities.get(i);
-      int dist=(int)(MapUtils.getDistance(n.getNode(),newLatitude,newLongitude));
+      int dist=(int)(MapUtils.getDistance(n.getLocation(),newLatitude,newLongitude));
       String str=n.getSimpleFormat() + " [" + dist+ " m ]";
       ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).add(new DataExtractionTreeNode(str,n));
       ((DefaultTreeModel)treePlaces.getModel()).nodeStructureChanged(amenitiesTree.getChildAt(0));
