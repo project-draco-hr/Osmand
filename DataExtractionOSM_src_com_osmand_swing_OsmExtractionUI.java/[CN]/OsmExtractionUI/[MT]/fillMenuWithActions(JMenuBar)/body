@@ -1,0 +1,57 @@
+{
+  JMenu menu=new JMenu("File");
+  bar.add(menu);
+  JMenuItem loadFile=new JMenuItem("Load osm file...");
+  menu.add(loadFile);
+  JMenuItem specifyWorkingDir=new JMenuItem("Specify working directory...");
+  menu.add(specifyWorkingDir);
+  menu.addSeparator();
+  JMenuItem exitMenu=new JMenuItem("Exit");
+  menu.add(exitMenu);
+  bar.add(MapPanel.getMenuToChooseSource(mapPanel));
+  exitMenu.addActionListener(new ActionListener(){
+    @Override public void actionPerformed(    ActionEvent e){
+      frame.setVisible(false);
+    }
+  }
+);
+  specifyWorkingDir.addActionListener(new ActionListener(){
+    @Override public void actionPerformed(    ActionEvent e){
+      JFileChooser fc=new JFileChooser();
+      fc.setDialogTitle("Choose working directory");
+      fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+      if (workingDir != null) {
+        fc.setCurrentDirectory(workingDir);
+      }
+      if (fc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null && fc.getSelectedFile().isDirectory()) {
+        workingDir=fc.getSelectedFile();
+        statusBarLabel.setText("Working directory : " + fc.getSelectedFile().getAbsolutePath());
+        updateButtonsBar();
+      }
+    }
+  }
+);
+  loadFile.addActionListener(new ActionListener(){
+    @Override public void actionPerformed(    ActionEvent e){
+      JFileChooser fc=new JFileChooser();
+      fc.setDialogTitle("Choose osm file");
+      fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+      fc.setAcceptAllFileFilterUsed(true);
+      fc.setCurrentDirectory(new File(DefaultLauncherConstants.pathToTestDataDir));
+      fc.setFileFilter(new FileFilter(){
+        @Override public boolean accept(        File f){
+          return f.isDirectory() || f.getName().endsWith(".bz2") || f.getName().endsWith(".osm");
+        }
+        @Override public String getDescription(){
+          return "Osm Files (*.bz2, *.osm)";
+        }
+      }
+);
+      int answer=fc.showOpenDialog(frame);
+      if (answer == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null) {
+        loadCountry(fc.getSelectedFile());
+      }
+    }
+  }
+);
+}

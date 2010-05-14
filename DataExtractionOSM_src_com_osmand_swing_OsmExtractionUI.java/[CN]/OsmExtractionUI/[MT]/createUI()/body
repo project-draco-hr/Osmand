@@ -11,9 +11,8 @@
   frame.setFocusable(true);
   statusBarLabel=new JLabel();
   content.add(statusBarLabel,BorderLayout.SOUTH);
-  treePlaces=new JTree();
-  treePlaces.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("Region"),false));
-  JSplitPane panelForTreeAndMap=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,new JScrollPane(treePlaces),mapPanel);
+  statusBarLabel.setText(workingDir == null ? "<working directory unspecified>" : "Working directory : " + workingDir.getAbsolutePath());
+  JSplitPane panelForTreeAndMap=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,new JScrollPane(createTree(content)),mapPanel);
   panelForTreeAndMap.setResizeWeight(0.2);
   mapPanel.setFocusable(true);
   mapPanel.addMapLocationListener(this);
@@ -26,40 +25,7 @@
  else {
     content.add(panelForTreeAndMap,BorderLayout.CENTER);
   }
-  treePlaces.addTreeSelectionListener(new TreeSelectionListener(){
-    @Override public void valueChanged(    TreeSelectionEvent e){
-      if (e.getPath() != null) {
-        if (e.getPath().getLastPathComponent() instanceof DefaultMutableTreeNode) {
-          Object o=((DefaultMutableTreeNode)e.getPath().getLastPathComponent()).getUserObject();
-          if (o instanceof City) {
-            City c=(City)o;
-            mapPanel.setLatLon(c.getNode().getLatitude(),c.getNode().getLongitude());
-            mapPanel.requestFocus();
-          }
-          if (o instanceof Amenity) {
-            Amenity c=(Amenity)o;
-            mapPanel.setLatLon(c.getNode().getLatitude(),c.getNode().getLongitude());
-            mapPanel.requestFocus();
-          }
-          if (o instanceof Entity) {
-            Entity c=(Entity)o;
-            if (c instanceof Node) {
-              mapPanel.setLatLon(((Node)c).getLatitude(),((Node)c).getLongitude());
-              mapPanel.requestFocus();
-            }
- else {
-              DefaultMutableTreeNode n=(DefaultMutableTreeNode)e.getPath().getPathComponent(e.getPath().getPathCount() - 2);
-              if (n.getUserObject() instanceof Street) {
-                Street str=(Street)n.getUserObject();
-                LatLon l=str.getLocationBuilding(c);
-                mapPanel.setLatLon(l.getLatitude(),l.getLongitude());
-                mapPanel.requestFocus();
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-);
+  JMenuBar bar=new JMenuBar();
+  fillMenuWithActions(bar);
+  frame.setJMenuBar(bar);
 }

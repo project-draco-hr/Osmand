@@ -1,11 +1,41 @@
 {
-  JPanel panel=new JPanel(new BorderLayout());
+  JPanel panel=new JPanel(new FlowLayout(FlowLayout.LEFT));
   content.add(panel,BorderLayout.NORTH);
   generateDataButton=new JButton();
   generateDataButton.setText("Generate data ");
+  generateDataButton.setToolTipText("Data with selected preferences will be generated in working directory." + " 	The index files will be named as region in tree. All existing data will be overwritten.");
   panel.add(generateDataButton);
-  generateDataButton.setEnabled(workingDir != null);
-  workingDirLabel=new JLabel();
-  workingDirLabel.setText(workingDir == null ? "<working dir unspecified>" : workingDir.getAbsolutePath());
-  panel.add(workingDirLabel);
+  generateDataButton.addActionListener(new ActionListener(){
+    @Override public void actionPerformed(    ActionEvent e){
+      DataIndexBuilder builder=new DataIndexBuilder(workingDir,region);
+      StringBuilder msg=new StringBuilder();
+      try {
+        msg.append("Indices checked for ").append(region.getName());
+        if (buildPoiIndex.isEnabled()) {
+          builder.buildPOI();
+          msg.append(", POI index ").append("successfully created");
+        }
+        msg.append(".");
+        JOptionPane pane=new JOptionPane(msg);
+        JDialog dialog=pane.createDialog(frame,"Generation data");
+        dialog.setVisible(true);
+      }
+ catch (      XMLStreamException e1) {
+        ExceptionHandler.handle(e1);
+      }
+catch (      IOException e1) {
+        ExceptionHandler.handle(e1);
+      }
+    }
+  }
+);
+  buildPoiIndex=new JCheckBox();
+  buildPoiIndex.setText("Build POI index");
+  panel.add(buildPoiIndex);
+  buildPoiIndex.setSelected(true);
+  buildAddressIndex=new JCheckBox();
+  buildAddressIndex.setText("Build Address index");
+  panel.add(buildAddressIndex);
+  buildAddressIndex.setSelected(true);
+  updateButtonsBar();
 }

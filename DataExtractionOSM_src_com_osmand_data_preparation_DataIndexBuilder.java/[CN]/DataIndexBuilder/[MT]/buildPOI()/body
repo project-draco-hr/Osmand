@@ -1,0 +1,16 @@
+{
+  List<Amenity> list=region.getAmenityManager().getAllObjects();
+  List<Long> interestedObjects=new ArrayList<Long>(list.size());
+  for (  Amenity a : list) {
+    interestedObjects.add(a.getNode().getId());
+  }
+  OutputStream output=checkFile("POI/" + region.getName() + ".osm");
+  try {
+    OSMStorageWriter writer=new OSMStorageWriter(region.getStorage().getRegisteredEntities());
+    writer.saveStorage(output,interestedObjects,false);
+  }
+  finally {
+    output.close();
+  }
+  return this;
+}

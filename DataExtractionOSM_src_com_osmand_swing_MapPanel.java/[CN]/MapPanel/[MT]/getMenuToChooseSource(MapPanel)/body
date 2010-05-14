@@ -1,14 +1,25 @@
 {
-  Menu tiles=new Menu("Source tile");
-  List<TileSourceTemplate> list=TileSourceManager.getKnownSourceTemplates();
+  final JMenu tiles=new JMenu("Source tile");
+  final List<TileSourceTemplate> list=TileSourceManager.getKnownSourceTemplates();
   for (  final TileSourceTemplate l : list) {
-    MenuItem menuItem=new MenuItem(l.getName());
+    JCheckBoxMenuItem menuItem=new JCheckBoxMenuItem(l.getName());
     menuItem.addActionListener(new ActionListener(){
       @Override public void actionPerformed(      ActionEvent e){
+        for (int i=0; i < tiles.getItemCount(); i++) {
+          if (list.get(i).equals(l)) {
+            ((JCheckBoxMenuItem)tiles.getItem(i)).setSelected(true);
+          }
+ else {
+            ((JCheckBoxMenuItem)tiles.getItem(i)).setSelected(false);
+          }
+        }
         panel.setMapName(l);
       }
     }
 );
+    if (l.equals(DefaultLauncherConstants.MAP_defaultTileSource)) {
+      menuItem.setSelected(true);
+    }
     tiles.add(menuItem);
   }
   return tiles;

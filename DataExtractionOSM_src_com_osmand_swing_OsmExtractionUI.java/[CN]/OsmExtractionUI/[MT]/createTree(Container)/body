@@ -1,0 +1,69 @@
+{
+  treePlaces=new JTree();
+  treePlaces.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("Region"),false));
+  treePlaces.setEditable(true);
+  treePlaces.setCellEditor(new RegionCellEditor(treePlaces,(DefaultTreeCellRenderer)treePlaces.getCellRenderer()));
+  treePlaces.addTreeSelectionListener(new TreeSelectionListener(){
+    @Override public void valueChanged(    TreeSelectionEvent e){
+      if (e.getPath() != null) {
+        if (e.getPath().getLastPathComponent() instanceof DataExtractionTreeNode) {
+          Object o=((DataExtractionTreeNode)e.getPath().getLastPathComponent()).getModelObject();
+          if (o instanceof City) {
+            City c=(City)o;
+            mapPanel.setLatLon(c.getNode().getLatitude(),c.getNode().getLongitude());
+            mapPanel.requestFocus();
+          }
+ else           if (o instanceof Street) {
+            Street s=(Street)o;
+            LatLon center=MapUtils.getWeightCenterForNodes(s.getWayNodes());
+            if (center != null) {
+              mapPanel.setLatLon(center.getLatitude(),center.getLongitude());
+              mapPanel.requestFocus();
+            }
+          }
+ else           if (o instanceof Amenity) {
+            Amenity c=(Amenity)o;
+            mapPanel.setLatLon(c.getNode().getLatitude(),c.getNode().getLongitude());
+            mapPanel.requestFocus();
+          }
+ else           if (o instanceof Entity) {
+            Entity c=(Entity)o;
+            if (c instanceof Node) {
+              mapPanel.setLatLon(((Node)c).getLatitude(),((Node)c).getLongitude());
+              mapPanel.requestFocus();
+            }
+ else {
+              DataExtractionTreeNode n=(DataExtractionTreeNode)e.getPath().getPathComponent(e.getPath().getPathCount() - 2);
+              if (n.getModelObject() instanceof Street) {
+                Street str=(Street)n.getModelObject();
+                LatLon l=str.getLocationBuilding(c);
+                mapPanel.setLatLon(l.getLatitude(),l.getLongitude());
+                mapPanel.requestFocus();
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+);
+  treeModelListener=new TreeModelListener(){
+    public void treeNodesChanged(    TreeModelEvent e){
+      DefaultMutableTreeNode node;
+      node=(DefaultMutableTreeNode)(e.getTreePath().getLastPathComponent());
+      if (node instanceof DataExtractionTreeNode && ((DataExtractionTreeNode)node).getModelObject() instanceof Region) {
+        Region r=(Region)((DataExtractionTreeNode)node).getModelObject();
+        r.setName(node.getUserObject().toString());
+      }
+    }
+    public void treeNodesInserted(    TreeModelEvent e){
+    }
+    public void treeNodesRemoved(    TreeModelEvent e){
+    }
+    public void treeStructureChanged(    TreeModelEvent e){
+    }
+  }
+;
+  treePlaces.getModel().addTreeModelListener(treeModelListener);
+  return treePlaces;
+}
