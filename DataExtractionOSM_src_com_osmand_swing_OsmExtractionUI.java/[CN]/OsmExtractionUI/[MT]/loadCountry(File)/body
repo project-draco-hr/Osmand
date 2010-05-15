@@ -1,11 +1,19 @@
 {
+  final IOsmStorageFilter filter;
+  if (filterAreaToLoad.isSelected() && mapPanel.getSelectionArea().isVisible()) {
+    MapSelectionArea area=mapPanel.getSelectionArea();
+    filter=new OsmBoundsFilter(area.getLat1(),area.getLon1(),area.getLat2(),area.getLon2());
+  }
+ else {
+    filter=null;
+  }
   try {
     final ProgressDialog dlg=new ProgressDialog(frame,"Loading osm file");
     dlg.setRunnable(new Runnable(){
       @Override public void run(){
         Region res;
         try {
-          res=new DataExtraction().readCountry(f.getAbsolutePath(),dlg);
+          res=new DataExtraction().readCountry(f.getAbsolutePath(),dlg,filter);
         }
  catch (        IOException e) {
           throw new IllegalArgumentException(e);

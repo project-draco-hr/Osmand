@@ -3,6 +3,8 @@
   bar.add(menu);
   JMenuItem loadFile=new JMenuItem("Load osm file...");
   menu.add(loadFile);
+  JMenuItem saveOsmFile=new JMenuItem("Save data to osm file...");
+  menu.add(saveOsmFile);
   JMenuItem specifyWorkingDir=new JMenuItem("Specify working directory...");
   menu.add(specifyWorkingDir);
   menu.addSeparator();
@@ -39,7 +41,7 @@
       fc.setDialogTitle("Choose osm file");
       fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
       fc.setAcceptAllFileFilterUsed(true);
-      fc.setCurrentDirectory(DataExtractionSettings.getSettings().getDefaultWorkingDir());
+      fc.setCurrentDirectory(DataExtractionSettings.getSettings().getDefaultWorkingDir().getParentFile());
       fc.setFileFilter(new FileFilter(){
         @Override public boolean accept(        File f){
           return f.isDirectory() || f.getName().endsWith(".bz2") || f.getName().endsWith(".osm");
@@ -52,6 +54,32 @@
       int answer=fc.showOpenDialog(frame);
       if (answer == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null) {
         loadCountry(fc.getSelectedFile());
+      }
+    }
+  }
+);
+  saveOsmFile.addActionListener(new ActionListener(){
+    @Override public void actionPerformed(    ActionEvent e){
+      if (region == null) {
+        return;
+      }
+      JFileChooser fc=new JFileChooser();
+      fc.setDialogTitle("Choose osm file to save");
+      fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+      fc.setAcceptAllFileFilterUsed(true);
+      fc.setCurrentDirectory(DataExtractionSettings.getSettings().getDefaultWorkingDir().getParentFile());
+      fc.setFileFilter(new FileFilter(){
+        @Override public boolean accept(        File f){
+          return f.isDirectory() || f.getName().endsWith(".bz2") || f.getName().endsWith(".osm");
+        }
+        @Override public String getDescription(){
+          return "Osm Files (*.bz2, *.osm)";
+        }
+      }
+);
+      int answer=fc.showSaveDialog(frame);
+      if (answer == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null) {
+        saveCountry(fc.getSelectedFile());
       }
     }
   }

@@ -1,0 +1,27 @@
+{
+  if (entity instanceof Node) {
+    double lon=((Node)entity).getLongitude();
+    double lat=((Node)entity).getLatitude();
+    if (latDown <= lat && lat <= latUp && lonStart <= lon && lon <= lonEnd) {
+      return true;
+    }
+    return false;
+  }
+  if (entity instanceof Way) {
+    for (    Long l : ((Way)entity).getNodeIds()) {
+      if (!storage.getRegisteredEntities().containsKey(l)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  if (entity instanceof Relation) {
+    for (    Long l : ((Relation)entity).getMemberIds()) {
+      if (!storage.getRegisteredEntities().containsKey(l)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return false;
+}
