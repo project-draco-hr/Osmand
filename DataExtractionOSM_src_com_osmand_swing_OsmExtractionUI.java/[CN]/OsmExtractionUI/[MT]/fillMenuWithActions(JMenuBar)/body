@@ -20,11 +20,13 @@
       JFileChooser fc=new JFileChooser();
       fc.setDialogTitle("Choose working directory");
       fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+      File workingDir=DataExtractionSettings.getSettings().getDefaultWorkingDir();
       if (workingDir != null) {
         fc.setCurrentDirectory(workingDir);
       }
       if (fc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null && fc.getSelectedFile().isDirectory()) {
-        workingDir=fc.getSelectedFile();
+        DataExtractionSettings.getSettings().saveDefaultWorkingDir(fc.getSelectedFile());
+        mapPanel.setTilesLocation(DataExtractionSettings.getSettings().getTilesDirectory());
         statusBarLabel.setText("Working directory : " + fc.getSelectedFile().getAbsolutePath());
         updateButtonsBar();
       }
@@ -37,7 +39,7 @@
       fc.setDialogTitle("Choose osm file");
       fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
       fc.setAcceptAllFileFilterUsed(true);
-      fc.setCurrentDirectory(new File(DefaultLauncherConstants.pathToTestDataDir));
+      fc.setCurrentDirectory(DataExtractionSettings.getSettings().getDefaultWorkingDir());
       fc.setFileFilter(new FileFilter(){
         @Override public boolean accept(        File f){
           return f.isDirectory() || f.getName().endsWith(".bz2") || f.getName().endsWith(".osm");

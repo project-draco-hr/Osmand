@@ -1,14 +1,22 @@
 {
-  JFrame frame=new JFrame("Tree of choose");
+  JFrame frame=new JFrame("Map view");
   try {
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
   }
  catch (  Exception e) {
     e.printStackTrace();
   }
-  frame.addWindowListener(new OsmExtractionUI.ExitListener());
+  final MapPanel panel=new MapPanel(DataExtractionSettings.getSettings().getTilesDirectory());
+  frame.addWindowListener(new WindowAdapter(){
+    @Override public void windowClosing(    WindowEvent e){
+      DataExtractionSettings settings=DataExtractionSettings.getSettings();
+      settings.saveDefaultLocation(panel.getLatitude(),panel.getLongitude());
+      settings.saveDefaultZoom(panel.getZoom());
+      System.exit(0);
+    }
+  }
+);
   Container content=frame.getContentPane();
-  MapPanel panel=new MapPanel(new File(DefaultLauncherConstants.pathToDirWithTiles));
   content.add(panel,BorderLayout.CENTER);
   JMenuBar bar=new JMenuBar();
   bar.add(getMenuToChooseSource(panel));
