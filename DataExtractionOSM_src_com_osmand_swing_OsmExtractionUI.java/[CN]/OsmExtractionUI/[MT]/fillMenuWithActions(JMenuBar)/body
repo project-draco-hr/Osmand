@@ -3,6 +3,9 @@
   bar.add(menu);
   JMenuItem loadFile=new JMenuItem("Load osm file...");
   menu.add(loadFile);
+  JMenuItem loadSpecifiedAreaFile=new JMenuItem("Load osm file for specifed area...");
+  menu.add(loadSpecifiedAreaFile);
+  menu.addSeparator();
   JMenuItem saveOsmFile=new JMenuItem("Save data to osm file...");
   menu.add(saveOsmFile);
   JMenuItem specifyWorkingDir=new JMenuItem("Specify working directory...");
@@ -35,25 +38,49 @@
     }
   }
 );
-  loadFile.addActionListener(new ActionListener(){
+  loadSpecifiedAreaFile.addActionListener(new ActionListener(){
     @Override public void actionPerformed(    ActionEvent e){
-      JFileChooser fc=new JFileChooser();
-      fc.setDialogTitle("Choose osm file");
-      fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-      fc.setAcceptAllFileFilterUsed(true);
-      fc.setCurrentDirectory(DataExtractionSettings.getSettings().getDefaultWorkingDir().getParentFile());
-      fc.setFileFilter(new FileFilter(){
-        @Override public boolean accept(        File f){
-          return f.isDirectory() || f.getName().endsWith(".bz2") || f.getName().endsWith(".osm");
-        }
-        @Override public String getDescription(){
-          return "Osm Files (*.bz2, *.osm)";
-        }
-      }
-);
+      JFileChooser fc=getOsmFileChooser();
       int answer=fc.showOpenDialog(frame);
       if (answer == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null) {
-        loadCountry(fc.getSelectedFile());
+        final JDialog dlg=new JDialog(frame,true);
+        dlg.setTitle("Select area to filter");
+        MapPanel panel=new MapPanel(DataExtractionSettings.getSettings().getTilesDirectory());
+        panel.setLatLon(mapPanel.getLatitude(),mapPanel.getLongitude());
+        panel.setZoom(mapPanel.getZoom());
+        final StringBuilder res=new StringBuilder();
+        panel.setAreaActionHandler(new AbstractAction("Select area"){
+          private static final long serialVersionUID=-3452957517341961969L;
+          @Override public void actionPerformed(          ActionEvent e){
+            res.append(true);
+            dlg.setVisible(false);
+          }
+        }
+);
+        dlg.add(panel);
+        JMenuBar bar=new JMenuBar();
+        bar.add(MapPanel.getMenuToChooseSource(panel));
+        dlg.setJMenuBar(bar);
+        dlg.setSize(512,512);
+        double x=frame.getBounds().getCenterX();
+        double y=frame.getBounds().getCenterY();
+        dlg.setLocation((int)x - dlg.getWidth() / 2,(int)y - dlg.getHeight() / 2);
+        dlg.setVisible(true);
+        if (res.length() > 0 && panel.getSelectionArea().isVisible()) {
+          MapSelectionArea area=panel.getSelectionArea();
+          IOsmStorageFilter filter=new OsmBoundsFilter(area.getLat1(),area.getLon1(),area.getLat2(),area.getLon2());
+          loadCountry(fc.getSelectedFile(),filter);
+        }
+      }
+    }
+  }
+);
+  loadFile.addActionListener(new ActionListener(){
+    @Override public void actionPerformed(    ActionEvent e){
+      JFileChooser fc=getOsmFileChooser();
+      int answer=fc.showOpenDialog(frame);
+      if (answer == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null) {
+        loadCountry(fc.getSelectedFile(),null);
       }
     }
   }
@@ -63,20 +90,7 @@
       if (region == null) {
         return;
       }
-      JFileChooser fc=new JFileChooser();
-      fc.setDialogTitle("Choose osm file to save");
-      fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-      fc.setAcceptAllFileFilterUsed(true);
-      fc.setCurrentDirectory(DataExtractionSettings.getSettings().getDefaultWorkingDir().getParentFile());
-      fc.setFileFilter(new FileFilter(){
-        @Override public boolean accept(        File f){
-          return f.isDirectory() || f.getName().endsWith(".bz2") || f.getName().endsWith(".osm");
-        }
-        @Override public String getDescription(){
-          return "Osm Files (*.bz2, *.osm)";
-        }
-      }
-);
+      JFileChooser fc=getOsmFileChooser();
       int answer=fc.showSaveDialog(frame);
       if (answer == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null) {
         saveCountry(fc.getSelectedFile());
