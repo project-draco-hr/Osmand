@@ -1,0 +1,44 @@
+{
+  try {
+    final ProgressDialog dlg=new ProgressDialog(frame,"Generating data");
+    dlg.setRunnable(new Runnable(){
+      @Override public void run(){
+        dlg.startTask("Generating indices...",-1);
+        DataIndexBuilder builder=new DataIndexBuilder(DataExtractionSettings.getSettings().getDefaultWorkingDir(),region);
+        StringBuilder msg=new StringBuilder();
+        try {
+          builder.setZipped(zipIndexFiles.isSelected());
+          msg.append("Indices checked for ").append(region.getName());
+          if (buildPoiIndex.isEnabled()) {
+            dlg.startTask("Generating POI index...",-1);
+            builder.buildPOI();
+            msg.append(", POI index ").append("successfully created");
+          }
+          if (buildAddressIndex.isEnabled()) {
+            dlg.startTask("Generating address index...",-1);
+            builder.buildAddress();
+            msg.append(", Address index ").append("successfully created");
+          }
+          msg.append(".");
+          JOptionPane pane=new JOptionPane(msg);
+          JDialog dialog=pane.createDialog(frame,"Generation data");
+          dialog.setVisible(true);
+        }
+ catch (        XMLStreamException e1) {
+          throw new IllegalArgumentException(e1);
+        }
+catch (        IOException e1) {
+          throw new IllegalArgumentException(e1);
+        }
+      }
+    }
+);
+    dlg.run();
+  }
+ catch (  InterruptedException e1) {
+    log.error("Interrupted",e1);
+  }
+catch (  InvocationTargetException e1) {
+    ExceptionHandler.handle((Exception)e1.getCause());
+  }
+}

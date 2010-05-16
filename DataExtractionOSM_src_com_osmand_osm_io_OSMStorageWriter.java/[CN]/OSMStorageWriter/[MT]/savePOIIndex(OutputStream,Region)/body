@@ -1,0 +1,19 @@
+{
+  PropertyManager propertyManager=new PropertyManager(PropertyManager.CONTEXT_WRITER);
+  XMLStreamWriter streamWriter=new XMLStreamWriterImpl(output,propertyManager);
+  writeStartElement(streamWriter,ELEM_OSMAND,"");
+  streamWriter.writeAttribute(ATTR_VERSION,OSMAND_VERSION);
+  List<Amenity> amenities=region.getAmenityManager().getAllObjects();
+  for (  Amenity n : amenities) {
+    if (couldBeWrited(n)) {
+      writeStartElement(streamWriter,ELEM_AMENITY,INDENT);
+      writeAttributesMapObject(streamWriter,n);
+      streamWriter.writeAttribute(ATTR_TYPE,AmenityType.valueToString(n.getType()));
+      streamWriter.writeAttribute(ATTR_SUBTYPE,n.getSubType());
+      writeEndElement(streamWriter,INDENT);
+    }
+  }
+  writeEndElement(streamWriter,"");
+  streamWriter.writeEndDocument();
+  streamWriter.flush();
+}

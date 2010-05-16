@@ -1,0 +1,19 @@
+{
+  PropertyManager propertyManager=new PropertyManager(PropertyManager.CONTEXT_WRITER);
+  XMLStreamWriter streamWriter=new XMLStreamWriterImpl(output,propertyManager);
+  writeStartElement(streamWriter,ELEM_OSMAND,"");
+  streamWriter.writeAttribute(ATTR_VERSION,OSMAND_VERSION);
+  for (  CityType t : CityType.values()) {
+    Collection<City> cities=region.getCitiesByType(t);
+    if (cities != null) {
+      for (      City c : cities) {
+        if (couldBeWrited(c)) {
+          writeCity(streamWriter,c);
+        }
+      }
+    }
+  }
+  writeEndElement(streamWriter,"");
+  streamWriter.writeEndDocument();
+  streamWriter.flush();
+}

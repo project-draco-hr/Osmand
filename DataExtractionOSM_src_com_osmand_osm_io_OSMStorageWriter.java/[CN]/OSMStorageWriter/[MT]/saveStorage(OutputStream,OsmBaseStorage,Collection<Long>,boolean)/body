@@ -1,4 +1,5 @@
 {
+  Map<Long,Entity> entities=storage.getRegisteredEntities();
   PropertyManager propertyManager=new PropertyManager(PropertyManager.CONTEXT_WRITER);
   XMLStreamWriter streamWriter=new XMLStreamWriterImpl(output,propertyManager);
   List<Node> nodes=new ArrayList<Node>();
@@ -36,7 +37,7 @@
     streamWriter.writeAttribute(ATTR_LON,n.getLongitude() + "");
     streamWriter.writeAttribute(ATTR_ID,n.getId() + "");
     writeTags(streamWriter,n);
-    streamWriter.writeEndElement();
+    writeEndElement(streamWriter,INDENT);
   }
   for (  Way w : ways) {
     writeStartElement(streamWriter,ELEM_WAY,INDENT);
@@ -44,10 +45,10 @@
     for (    Long r : w.getNodeIds()) {
       writeStartElement(streamWriter,ELEM_ND,INDENT2);
       streamWriter.writeAttribute(ATTR_REF,r + "");
-      streamWriter.writeEndElement();
+      writeEndElement(streamWriter,INDENT2);
     }
     writeTags(streamWriter,w);
-    streamWriter.writeEndElement();
+    writeEndElement(streamWriter,INDENT);
   }
   for (  Relation r : relations) {
     writeStartElement(streamWriter,ELEM_RELATION,INDENT);
@@ -60,13 +61,13 @@
         s="";
       }
       streamWriter.writeAttribute(ATTR_ROLE,s);
-      streamWriter.writeAttribute(ATTR_TYPE,getEntityType(e.getKey()));
-      streamWriter.writeEndElement();
+      streamWriter.writeAttribute(ATTR_TYPE,getEntityType(entities,e.getKey()));
+      writeEndElement(streamWriter,INDENT2);
     }
     writeTags(streamWriter,r);
-    streamWriter.writeEndElement();
+    writeEndElement(streamWriter,INDENT);
   }
-  streamWriter.writeEndElement();
+  writeEndElement(streamWriter,"");
   streamWriter.writeEndDocument();
   streamWriter.flush();
 }
