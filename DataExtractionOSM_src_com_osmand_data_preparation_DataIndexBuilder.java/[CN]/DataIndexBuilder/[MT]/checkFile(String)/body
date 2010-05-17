@@ -1,17 +1,20 @@
 {
-  if (zipped && !name.endsWith(".bz2")) {
-    name+=".bz2";
+  String fileName=name;
+  if (zipped) {
+    name=new File(name).getName();
+    fileName+=".zip";
   }
-  File f=new File(workingDir,name);
+  File f=new File(workingDir,fileName);
   f.mkdirs();
   if (f.exists()) {
     f.delete();
   }
   OutputStream output=new FileOutputStream(f);
-  if (name.endsWith(".bz2")) {
-    output.write('B');
-    output.write('Z');
-    output=new CBZip2OutputStream(output);
+  if (zipped) {
+    ZipOutputStream zipStream=new ZipOutputStream(output);
+    zipStream.setLevel(5);
+    zipStream.putNextEntry(new ZipEntry(name));
+    output=zipStream;
   }
   return output;
 }

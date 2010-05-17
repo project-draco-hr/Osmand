@@ -1,0 +1,56 @@
+{
+  File file=new File(Environment.getExternalStorageDirectory(),pathToIndex);
+  if (file.exists() && file.canRead()) {
+    for (    File f : file.listFiles()) {
+      InputStream stream=null;
+      ZipFile zipFile=null;
+      Enumeration<? extends ZipEntry> entries=null;
+      try {
+        if (f.getName().endsWith(".zip")) {
+          zipFile=new ZipFile(f);
+          entries=zipFile.entries();
+        }
+ else {
+          stream=new FileInputStream(f);
+        }
+      }
+ catch (      IOException e) {
+        log.error("Can't read file " + f.getAbsolutePath(),e);
+        continue;
+      }
+      String entryName=f.getName();
+      do {
+        try {
+          if (entries != null && entries.hasMoreElements()) {
+            ZipEntry entry=entries.nextElement();
+            entryName=entry.getName();
+            stream=zipFile.getInputStream(entry);
+          }
+          if (entryName != null && entryName.endsWith(ext)) {
+            long start=System.currentTimeMillis();
+            if (log.isDebugEnabled()) {
+              log.debug("Starting index " + objectToIndex + " "+ f.getAbsolutePath());
+            }
+            if (progress != null) {
+              progress.startTask("Indexing " + objectToIndex + " "+ f.getName(),stream.available());
+            }
+            visitor.visitEntry(f.getName(),stream);
+            if (log.isDebugEnabled()) {
+              log.debug("Finished index " + objectToIndex + " "+ f.getAbsolutePath()+ " "+ (System.currentTimeMillis() - start)+ "ms");
+            }
+          }
+        }
+ catch (        IOException e) {
+          log.error("Can't read file " + f.getAbsolutePath(),e);
+        }
+catch (        SAXException e) {
+          log.error("Can't read file " + f.getAbsolutePath(),e);
+        }
+ finally {
+          Algoritms.closeStream(stream);
+        }
+      }
+ while (zipFile != null && entries.hasMoreElements());
+    }
+  }
+}

@@ -1,49 +1,14 @@
 {
-  File file=new File(Environment.getExternalStorageDirectory(),ADDRESS_PATH);
-  if (file.exists() && file.canRead()) {
-    for (    File f : file.listFiles()) {
-      if (f.getName().endsWith(".osmand.bz2") || f.getName().endsWith(".osmand")) {
-        long start=System.currentTimeMillis();
-        if (log.isDebugEnabled()) {
-          log.debug("Starting index address " + f.getAbsolutePath());
-        }
-        boolean zipped=f.getName().endsWith(".bz2");
-        InputStream stream=null;
-        String name=f.getName().substring(0,f.getName().indexOf('.'));
-        Region region=new Region();
-        region.setName(name);
-        addressMap.put(name,region);
-        try {
-          OsmIndexStorage storage=new OsmIndexStorage(region);
-          stream=new FileInputStream(f);
-          InputStream streamForProgress=stream;
-          if (zipped) {
-            if (stream.read() != 'B' || stream.read() != 'Z') {
-              log.error("Can't read index file " + f.getAbsolutePath() + "The source stream must start with the characters BZ if it is to be read as a BZip2 stream.");
-              continue;
-            }
- else {
-              stream=new CBZip2InputStream(stream);
-            }
-          }
-          if (progress != null) {
-            progress.startTask("Indexing address " + f.getName(),stream.available());
-          }
-          storage.parseOSM(stream,progress,streamForProgress);
-          if (log.isDebugEnabled()) {
-            log.debug("Finishing index address " + f.getAbsolutePath() + " "+ (System.currentTimeMillis() - start)+ "ms");
-          }
-        }
- catch (        IOException e) {
-          log.error("Can't read index file " + f.getAbsolutePath(),e);
-        }
-catch (        SAXException e) {
-          log.error("Can't read index file " + f.getAbsolutePath(),e);
-        }
- finally {
-          Algoritms.closeStream(stream);
-        }
-      }
+  indexingFiles(ADDRESS_PATH,".osmand",progress,"address",new IndexVisitor(){
+    @Override public boolean visitEntry(    String entryName,    InputStream stream) throws IOException, SAXException {
+      String name=entryName.substring(0,entryName.indexOf('.'));
+      Region region=new Region();
+      region.setName(name);
+      addressMap.put(name,region);
+      OsmIndexStorage storage=new OsmIndexStorage(region);
+      storage.parseOSM(stream,progress);
+      return true;
     }
   }
+);
 }
