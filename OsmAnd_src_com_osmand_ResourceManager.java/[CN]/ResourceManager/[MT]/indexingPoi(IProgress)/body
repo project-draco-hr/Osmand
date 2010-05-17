@@ -13,7 +13,7 @@
           try {
             OsmBaseStorage storage=new OsmBaseStorage();
             stream=new FileInputStream(f);
-            stream=new BufferedInputStream(stream);
+            InputStream streamForProgress=stream;
             if (zipped) {
               if (stream.read() != 'B' || stream.read() != 'Z') {
                 log.error("Can't read poi file " + f.getAbsolutePath() + "The source stream must start with the characters BZ if it is to be read as a BZip2 stream.");
@@ -26,7 +26,7 @@
             if (progress != null) {
               progress.startTask("Indexing poi " + f.getName(),stream.available());
             }
-            storage.parseOSM(stream,progress);
+            storage.parseOSM(stream,progress,streamForProgress);
             for (            Entity e : storage.getRegisteredEntities().values()) {
               if (e instanceof Node && Amenity.isAmenity((Node)e)) {
                 poiIndex.registerObject(((Node)e).getLatitude(),((Node)e).getLongitude(),new Amenity((Node)e));
