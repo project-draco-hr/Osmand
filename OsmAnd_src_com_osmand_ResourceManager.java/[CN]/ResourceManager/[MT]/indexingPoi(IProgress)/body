@@ -4,14 +4,23 @@
     poiIndex=new DataTileManager<Amenity>();
     if (file.exists() && file.canRead()) {
       for (      File f : file.listFiles()) {
-        if (f.getName().endsWith(".bz2") || f.getName().endsWith(".osm")) {
+        if (f.getName().endsWith(".bz2") || f.getName().endsWith(".osm") || f.getName().endsWith(".osmand")) {
+          long start=System.currentTimeMillis();
           if (log.isDebugEnabled()) {
             log.debug("Starting index POI " + f.getAbsolutePath());
           }
           boolean zipped=f.getName().endsWith(".bz2");
           InputStream stream=null;
           try {
-            OsmBaseStorage storage=new OsmBaseStorage();
+            OsmBaseStorage storage;
+            boolean indexStorage=false;
+            if (f.getName().contains(".osmand")) {
+              storage=new OsmIndexStorage(new Region());
+              indexStorage=true;
+            }
+ else {
+              storage=new OsmBaseStorage();
+            }
             stream=new FileInputStream(f);
             InputStream streamForProgress=stream;
             if (zipped) {
@@ -27,13 +36,22 @@
               progress.startTask("Indexing poi " + f.getName(),stream.available());
             }
             storage.parseOSM(stream,progress,streamForProgress);
-            for (            Entity e : storage.getRegisteredEntities().values()) {
-              if (e instanceof Node && Amenity.isAmenity((Node)e)) {
-                poiIndex.registerObject(((Node)e).getLatitude(),((Node)e).getLongitude(),new Amenity((Node)e));
+            if (indexStorage) {
+              Region region=((OsmIndexStorage)storage).getRegion();
+              for (              Amenity a : region.getAmenityManager().getAllObjects()) {
+                LatLon location=a.getLocation();
+                poiIndex.registerObject(location.getLatitude(),location.getLongitude(),a);
+              }
+            }
+ else {
+              for (              Entity e : storage.getRegisteredEntities().values()) {
+                if (e instanceof Node && Amenity.isAmenity((Node)e)) {
+                  poiIndex.registerObject(((Node)e).getLatitude(),((Node)e).getLongitude(),new Amenity((Node)e));
+                }
               }
             }
             if (log.isDebugEnabled()) {
-              log.debug("Finishing index POI " + f.getAbsolutePath());
+              log.debug("Finishing index POI " + f.getAbsolutePath() + " "+ (System.currentTimeMillis() - start)+ "ms");
             }
           }
  catch (          IOException e) {
