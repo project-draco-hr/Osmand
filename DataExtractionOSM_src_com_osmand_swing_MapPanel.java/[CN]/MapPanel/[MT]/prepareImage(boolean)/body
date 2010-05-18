@@ -31,13 +31,36 @@
       double longDown=MapUtils.getLongitudeFromTile(zoom,xTileRight);
       double latUp=MapUtils.getLatitudeFromTile(zoom,yTileUp);
       double longUp=MapUtils.getLongitudeFromTile(zoom,xTileLeft);
-      List<LatLon> objects=points.getObjects(latUp,longUp,latDown,longDown);
+      List<? extends Entity> objects=points.getObjects(latUp,longUp,latDown,longDown);
       pointsToDraw.clear();
-      for (      LatLon n : objects) {
-        int pixX=MapUtils.getPixelShiftX(zoom,n.getLongitude(),this.longitude,tileSize) + getWidth() / 2;
-        int pixY=MapUtils.getPixelShiftY(zoom,n.getLatitude(),this.latitude,tileSize) + getHeight() / 2;
-        if (pixX >= 0 && pixY >= 0) {
-          pointsToDraw.add(new Point(pixX,pixY));
+      linesToDraw.clear();
+      for (      Entity e : objects) {
+        if (e instanceof Way) {
+          List<Node> nodes=((Way)e).getNodes();
+          if (nodes.size() > 1) {
+            int prevPixX=0;
+            int prevPixY=0;
+            for (int i=0; i < nodes.size(); i++) {
+              Node n=nodes.get(i);
+              int pixX=MapUtils.getPixelShiftX(zoom,n.getLongitude(),this.longitude,tileSize) + getWidth() / 2;
+              int pixY=MapUtils.getPixelShiftY(zoom,n.getLatitude(),this.latitude,tileSize) + getHeight() / 2;
+              if (i > 0) {
+                linesToDraw.add(new Line2D.Float(pixX,pixY,prevPixX,prevPixY));
+              }
+              prevPixX=pixX;
+              prevPixY=pixY;
+            }
+          }
+        }
+ else         if (e instanceof Node) {
+          Node n=(Node)e;
+          int pixX=MapUtils.getPixelShiftX(zoom,n.getLongitude(),this.longitude,tileSize) + getWidth() / 2;
+          int pixY=MapUtils.getPixelShiftY(zoom,n.getLatitude(),this.latitude,tileSize) + getHeight() / 2;
+          if (pixX >= 0 && pixY >= 0) {
+            pointsToDraw.add(new Point(pixX,pixY));
+          }
+        }
+ else {
         }
       }
     }

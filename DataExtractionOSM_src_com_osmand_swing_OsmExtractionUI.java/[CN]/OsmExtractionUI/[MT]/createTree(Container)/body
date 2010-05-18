@@ -12,6 +12,15 @@
             MapObject<Entity> c=(MapObject<Entity>)o;
             LatLon location=c.getLocation();
             if (location != null) {
+              if (o instanceof Street) {
+                DataTileManager<Way> ways=new DataTileManager<Way>();
+                for (                Way w : ((Street)o).getWayNodes()) {
+                  LatLon l=w.getLatLon();
+                  ways.registerObject(l.getLatitude(),l.getLongitude(),w);
+                }
+                mapPanel.setPoints(ways);
+                mapPanel.requestFocus();
+              }
               mapPanel.setLatLon(location.getLatitude(),location.getLongitude());
               mapPanel.requestFocus();
             }
