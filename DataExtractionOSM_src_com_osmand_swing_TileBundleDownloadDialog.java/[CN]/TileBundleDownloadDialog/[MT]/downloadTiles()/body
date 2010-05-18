@@ -1,0 +1,68 @@
+{
+  setVisible(false);
+  final ProgressDialog progressDialog=new ProgressDialog(this,"Downloading tiles");
+  int numberTiles=0;
+  final int startZoom=(Integer)startSpinner.getValue();
+  final int endZoom=(Integer)endSpinner.getValue();
+  for (int zoom=startZoom; zoom <= endZoom; zoom++) {
+    int x1=(int)MapUtils.getTileNumberX(zoom,selectionArea.getLon1());
+    int x2=(int)MapUtils.getTileNumberX(zoom,selectionArea.getLon2());
+    int y1=(int)MapUtils.getTileNumberY(zoom,selectionArea.getLat1());
+    int y2=(int)MapUtils.getTileNumberY(zoom,selectionArea.getLat2());
+    numberTiles+=(x2 - x1 + 1) * (y2 - y1 + 1);
+  }
+  final int number=numberTiles;
+  final MapTileDownloader instance=MapTileDownloader.getInstance();
+  progressDialog.setRunnable(new Runnable(){
+    @Override public void run(){
+      progressDialog.startTask("Loading...",number);
+      for (int zoom=startZoom; zoom <= endZoom; zoom++) {
+        int x1=(int)MapUtils.getTileNumberX(zoom,selectionArea.getLon1());
+        int x2=(int)MapUtils.getTileNumberX(zoom,selectionArea.getLon2());
+        int y1=(int)MapUtils.getTileNumberY(zoom,selectionArea.getLat1());
+        int y2=(int)MapUtils.getTileNumberY(zoom,selectionArea.getLat2());
+        for (int x=x1; x <= x2; x++) {
+          for (int y=y1; y <= y2; y++) {
+            String file=getFileForImage(x,y,zoom,map.getTileFormat());
+            if (new File(tilesLocation,file).exists()) {
+              progressDialog.progress(1);
+            }
+ else {
+              DownloadRequest req=new DownloadRequest(map.getUrlToLoad(x,y,zoom),new File(tilesLocation,file),x,y,zoom);
+              instance.requestToDownload(req);
+            }
+          }
+        }
+        while (instance.isSomethingBeingDownloaded()) {
+          try {
+            Thread.sleep(100);
+          }
+ catch (          InterruptedException e) {
+            throw new IllegalArgumentException(e);
+          }
+        }
+      }
+    }
+  }
+);
+  IMapDownloaderCallback previousCallback=instance.getDownloaderCallback();
+  instance.setDownloaderCallback(new IMapDownloaderCallback(){
+    @Override public void tileDownloaded(    DownloadRequest request){
+      progressDialog.progress(1);
+    }
+  }
+);
+  try {
+    progressDialog.run();
+    instance.refuseAllPreviousRequests();
+  }
+ catch (  InvocationTargetException e) {
+    ExceptionHandler.handle((Exception)e.getCause());
+  }
+catch (  InterruptedException e) {
+    ExceptionHandler.handle(e);
+  }
+ finally {
+    instance.setDownloaderCallback(previousCallback);
+  }
+}
