@@ -45,8 +45,9 @@
     }
   }
 );
-  IMapDownloaderCallback previousCallback=instance.getDownloaderCallback();
-  instance.setDownloaderCallback(new IMapDownloaderCallback(){
+  ArrayList<IMapDownloaderCallback> previousCallbacks=new ArrayList<IMapDownloaderCallback>(instance.getDownloaderCallbacks());
+  instance.getDownloaderCallbacks().clear();
+  instance.addDownloaderCallback(new IMapDownloaderCallback(){
     @Override public void tileDownloaded(    DownloadRequest request){
       progressDialog.progress(1);
     }
@@ -63,6 +64,7 @@ catch (  InterruptedException e) {
     ExceptionHandler.handle(e);
   }
  finally {
-    instance.setDownloaderCallback(previousCallback);
+    instance.getDownloaderCallbacks().clear();
+    instance.getDownloaderCallbacks().addAll(previousCallbacks);
   }
 }
