@@ -1,13 +1,8 @@
 {
   if (amenitiesTree != null) {
     Region reg=(Region)amenitiesTree.getModelObject();
-    List<Amenity> closestAmenities=reg.getClosestAmenities(newLatitude,newLongitude);
-    Collections.sort(closestAmenities,new Comparator<Amenity>(){
-      @Override public int compare(      Amenity o1,      Amenity o2){
-        return Double.compare(MapUtils.getDistance(o2.getLocation(),newLatitude,newLongitude),MapUtils.getDistance(o2.getLocation(),newLatitude,newLongitude));
-      }
-    }
-);
+    List<Amenity> closestAmenities=reg.getAmenityManager().getClosestObjects(newLatitude,newLongitude,0,5);
+    MapUtils.sortListOfMapObject(closestAmenities,newLatitude,newLongitude);
     Map<AmenityType,List<Amenity>> filter=new TreeMap<AmenityType,List<Amenity>>();
     for (    Amenity n : closestAmenities) {
       AmenityType type=n.getType();

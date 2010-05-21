@@ -10,10 +10,11 @@
   mapView.addLayer(poiMapLayer);
   locationLayer=new PointLocationLayer();
   mapView.addLayer(locationLayer);
-  SharedPreferences prefs=getPreferences(MODE_WORLD_READABLE);
-  if (prefs != null && prefs.contains(KEY_LAST_LAT)) {
-    mapView.setLatLon(prefs.getFloat(KEY_LAST_LAT,0f),prefs.getFloat(KEY_LAST_LON,0f));
-    mapView.setZoom(prefs.getInt(KEY_LAST_ZOOM,3));
+  SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);
+  if (prefs != null && prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
+    LatLon l=OsmandSettings.getLastKnownMapLocation(this);
+    mapView.setLatLon(l.getLatitude(),l.getLongitude());
+    mapView.setZoom(OsmandSettings.getLastKnownMapZoom(this));
   }
  else {
     LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
