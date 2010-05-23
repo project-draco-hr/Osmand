@@ -9,5 +9,26 @@
     if (radius > RADIUS) {
       canvas.drawCircle(locationX,locationY,radius,area);
     }
+    if (lastKnownLocation.hasBearing()) {
+      float bearing=lastKnownLocation.getBearing();
+      int radiusBearing=30;
+      if (lastKnownLocation.hasSpeed()) {
+        radiusBearing=Math.max(MapUtils.getLengthXFromMeters(view.getZoom(),view.getLatitude(),view.getLongitude(),lastKnownLocation.getSpeed(),view.getTileSize(),view.getWidth()) * 2,radiusBearing);
+      }
+      radiusBearing+=RADIUS / 2;
+      pathForDirection.reset();
+      pathForDirection.moveTo(0,0);
+      pathForDirection.lineTo((float)RADIUS,1f);
+      pathForDirection.lineTo((float)-RADIUS,1f);
+      pathForDirection.lineTo(0,0);
+      Matrix m=new Matrix();
+      m.reset();
+      m.postScale(1,radiusBearing * 0.5f);
+      m.postTranslate(0,-radiusBearing);
+      m.postTranslate(locationX,locationY);
+      m.postRotate(bearing,locationX,locationY);
+      pathForDirection.transform(m);
+      canvas.drawPath(pathForDirection,this.bearing);
+    }
   }
 }
