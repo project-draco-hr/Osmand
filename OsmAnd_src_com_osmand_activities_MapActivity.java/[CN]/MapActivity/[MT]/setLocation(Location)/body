@@ -1,8 +1,16 @@
 {
-  locationLayer.setLastKnownLocation(location);
+  locationLayer.setLastKnownLocation(location,true);
   if (location != null) {
     if (linkLocationWithMap) {
-      mapView.setLatLon(location.getLatitude(),location.getLongitude());
+      if (location.hasBearing() && OsmandSettings.isRotateMapToBearing(this)) {
+        mapView.setRotateWithLocation(-location.getBearing(),location.getLatitude(),location.getLongitude());
+      }
+ else {
+        mapView.setLatLon(location.getLatitude(),location.getLongitude());
+      }
+    }
+ else {
+      mapView.prepareImage();
     }
   }
  else {

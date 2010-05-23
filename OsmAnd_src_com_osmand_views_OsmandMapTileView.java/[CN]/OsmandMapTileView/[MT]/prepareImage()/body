@@ -2,27 +2,35 @@
   if (OsmandSettings.isUsingInternetToDownloadTiles(getContext())) {
     MapTileDownloader.getInstance().refuseAllPreviousRequests();
   }
-  int width=getWidth();
-  int height=getHeight();
   int tileSize=getTileSize();
-  int xTileLeft=(int)Math.floor(getXTile() - width / (2d * getTileSize()));
-  int yTileUp=(int)Math.floor(getYTile() - height / (2d * getTileSize()));
-  int startingX=(int)((xTileLeft - getXTile()) * getTileSize() + getWidth() / 2);
-  int startingY=(int)((yTileUp - getYTile()) * getTileSize() + getHeight() / 2);
+  float tileX=getXTile();
+  float tileY=getYTile();
   SurfaceHolder holder=getHolder();
 synchronized (holder) {
     Canvas canvas=holder.lockCanvas();
     if (canvas != null) {
+      ResourceManager mgr=ResourceManager.getResourceManager();
+      boolean useInternet=OsmandSettings.isUsingInternetToDownloadTiles(getContext());
+      float w=getWidth() / 2;
+      float h=getHeight() / 2;
+      canvas.rotate(rotate,w,h);
+      boundsRect.set(0,0,getWidth(),getHeight());
+      calculateTileRectangle(boundsRect,w,h,tilesRect);
       try {
-        for (int i=0; i * tileSize + startingX < width; i++) {
-          for (int j=0; j * tileSize + startingY < height; j++) {
-            ResourceManager mgr=ResourceManager.getResourceManager();
-            Bitmap bmp=mgr.getTileImageForMapAsync(map,xTileLeft + i,yTileUp + j,zoom,OsmandSettings.isUsingInternetToDownloadTiles(getContext()));
+        int left=(int)FloatMath.floor(tilesRect.left);
+        int top=(int)FloatMath.floor(tilesRect.top);
+        int width=(int)(FloatMath.ceil(tilesRect.right) - left);
+        int height=(int)(FloatMath.ceil(tilesRect.bottom) - top);
+        for (int i=0; i < width; i++) {
+          for (int j=0; j < height; j++) {
+            float x1=(i + left - tileX) * tileSize + w;
+            float y1=(j + top - tileY) * tileSize + h;
+            Bitmap bmp=mgr.getTileImageForMapAsync(map,left + i,top + j,zoom,useInternet);
             if (bmp == null) {
-              drawEmptyTile(canvas,i * tileSize + startingX,j * tileSize + startingY);
+              drawEmptyTile(canvas,(int)x1,(int)y1);
             }
  else {
-              canvas.drawBitmap(bmp,i * tileSize + startingX,j * tileSize + startingY,null);
+              canvas.drawBitmap(bmp,x1,y1,paintBitmap);
             }
           }
         }
