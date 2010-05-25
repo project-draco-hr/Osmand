@@ -1,0 +1,21 @@
+{
+  long now=System.currentTimeMillis();
+  IndexWriter writer=null;
+  try {
+    writer=new IndexWriter(FSDirectory.open(dir),new StandardAnalyzer(VERSION),true,MaxFieldLength.LIMITED);
+    for (    Amenity a : region.getAmenityManager().getAllObjects()) {
+      index(a,writer);
+    }
+    writer.optimize();
+  }
+  finally {
+    try {
+      writer.close();
+    }
+ catch (    Exception t) {
+      log.error("Failed to close index.",t);
+      throw new RuntimeException(t);
+    }
+    log.info(String.format("Indexing done in %s ms.",System.currentTimeMillis() - now));
+  }
+}
