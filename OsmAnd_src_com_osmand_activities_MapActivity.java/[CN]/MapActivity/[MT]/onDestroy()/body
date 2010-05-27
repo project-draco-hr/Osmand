@@ -1,4 +1,12 @@
 {
   super.onDestroy();
+  SharedPreferences lprefs=getPreferences(MODE_WORLD_READABLE);
+  if (navigationLayer.getPointToNavigate() == null) {
+    lprefs.edit().remove(POINT_NAVIGATE_LAT).remove(POINT_NAVIGATE_LON).commit();
+  }
+ else {
+    LatLon p=navigationLayer.getPointToNavigate();
+    lprefs.edit().putFloat(POINT_NAVIGATE_LAT,(float)p.getLatitude()).putFloat(POINT_NAVIGATE_LON,(float)p.getLongitude()).commit();
+  }
   MapTileDownloader.getInstance().removeDownloaderCallback(mapView);
 }

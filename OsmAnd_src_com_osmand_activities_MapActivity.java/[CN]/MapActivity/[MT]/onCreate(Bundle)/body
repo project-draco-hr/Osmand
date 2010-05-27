@@ -11,6 +11,10 @@
   mapView.addLayer(navigationLayer);
   locationLayer=new PointLocationLayer();
   mapView.addLayer(locationLayer);
+  SharedPreferences lprefs=getPreferences(MODE_WORLD_READABLE);
+  if (lprefs.contains(POINT_NAVIGATE_LAT)) {
+    navigationLayer.setPointToNavigate(new LatLon(lprefs.getFloat(POINT_NAVIGATE_LAT,0),lprefs.getFloat(POINT_NAVIGATE_LON,0)));
+  }
   SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);
   if (prefs != null && prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
     LatLon l=OsmandSettings.getLastKnownMapLocation(this);
@@ -39,11 +43,11 @@
   }
 );
   backToLocation=(ImageButton)findViewById(R.id.BackToLocation);
-  backToLocation.setVisibility(linkLocationWithMap ? View.INVISIBLE : View.VISIBLE);
+  backToLocation.setVisibility(View.INVISIBLE);
   backToLocation.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      if (!linkLocationWithMap) {
-        linkLocationWithMap=true;
+      if (!getBackToLocation()) {
+        getPreferences(MODE_WORLD_READABLE).edit().putBoolean(BACK_TO_LOCATION,true).commit();
         backToLocation.setVisibility(View.INVISIBLE);
         if (locationLayer.getLastKnownLocation() != null) {
           Location lastKnownLocation=locationLayer.getLastKnownLocation();

@@ -1,7 +1,24 @@
 {
+  if (location == null) {
+    if (sensorRegistered) {
+      ((SensorManager)getSystemService(SENSOR_SERVICE)).unregisterListener(this);
+      sensorRegistered=false;
+      locationLayer.setHeading(null,true);
+    }
+  }
+ else {
+    if (!sensorRegistered && OsmandSettings.isShowingViewAngle(this)) {
+      SensorManager sensorMgr=(SensorManager)getSystemService(SENSOR_SERVICE);
+      Sensor s=sensorMgr.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+      if (s != null) {
+        sensorMgr.registerListener(this,s,SensorManager.SENSOR_DELAY_UI);
+      }
+      sensorRegistered=true;
+    }
+  }
   locationLayer.setLastKnownLocation(location,true);
   if (location != null) {
-    if (linkLocationWithMap) {
+    if (getBackToLocation()) {
       if (location.hasBearing() && OsmandSettings.isRotateMapToBearing(this)) {
         mapView.setRotateWithLocation(-location.getBearing(),location.getLatitude(),location.getLongitude());
       }
@@ -14,7 +31,7 @@
     }
   }
  else {
-    if (!linkLocationWithMap) {
+    if (!getBackToLocation()) {
       backToLocation.setVisibility(View.VISIBLE);
     }
   }
