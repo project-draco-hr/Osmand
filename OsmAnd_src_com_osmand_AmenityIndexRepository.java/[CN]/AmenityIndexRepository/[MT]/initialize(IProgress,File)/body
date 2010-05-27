@@ -1,0 +1,18 @@
+{
+  long start=System.currentTimeMillis();
+  if (db != null) {
+    db.close();
+  }
+  db=SQLiteDatabase.openOrCreateDatabase(file,null);
+  name=file.getName().substring(0,file.getName().indexOf('.'));
+  Cursor query=db.query(IndexPoiTable.getTable(),new String[]{"MAX(latitude)","MAX(longitude)","MIN(latitude)","MIN(longitude)"},null,null,null,null,null);
+  if (query.moveToFirst()) {
+    dataTopLatitude=query.getDouble(0);
+    dataRightLongitude=query.getDouble(1);
+    dataBottomLatitude=query.getDouble(2);
+    dataLeftLongitude=query.getDouble(3);
+  }
+  if (log.isDebugEnabled()) {
+    log.debug("Initializing db " + file.getAbsolutePath() + " "+ (System.currentTimeMillis() - start)+ "ms");
+  }
+}

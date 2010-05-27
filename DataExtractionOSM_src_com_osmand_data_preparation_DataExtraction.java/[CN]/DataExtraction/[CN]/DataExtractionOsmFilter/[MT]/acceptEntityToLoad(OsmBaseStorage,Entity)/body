@@ -1,0 +1,42 @@
+{
+  boolean processed=false;
+  if (indexAddress) {
+    if ("yes".equals(e.getTag(OSMTagKey.BUILDING))) {
+      if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && e.getTag(OSMTagKey.ADDR_STREET) != null) {
+        buildings.add(e);
+        processed=true;
+      }
+    }
+  }
+  if (indexPOI && Amenity.isAmenity(e)) {
+    amenities.add(e);
+    processed=true;
+  }
+  if (e instanceof Node && e.getTag(OSMTagKey.PLACE) != null) {
+    places.add((Node)e);
+    processed=true;
+  }
+  if (indexAddress) {
+    if (e instanceof Way && OSMSettings.wayForCar(e.getTag(OSMTagKey.HIGHWAY)) && e.getTag(OSMTagKey.NAME) != null) {
+      ways.add((Way)e);
+      processed=true;
+    }
+  }
+  try {
+    if (e instanceof Node && indexAddress) {
+      currentCount++;
+      prep.setLong(1,e.getId());
+      prep.setDouble(2,((Node)e).getLatitude());
+      prep.setDouble(3,((Node)e).getLongitude());
+      prep.addBatch();
+      if (currentCount >= BATCH_SIZE) {
+        prep.executeBatch();
+        currentCount=0;
+      }
+    }
+  }
+ catch (  SQLException ex) {
+    log.error("Could not save node",ex);
+  }
+  return processed || loadAllObjects;
+}

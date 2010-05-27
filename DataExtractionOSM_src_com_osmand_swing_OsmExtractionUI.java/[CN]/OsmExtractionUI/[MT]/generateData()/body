@@ -4,29 +4,27 @@
     dlg.setRunnable(new Runnable(){
       @Override public void run(){
         dlg.startTask("Generating indices...",-1);
-        DataIndexBuilder builder=new DataIndexBuilder(DataExtractionSettings.getSettings().getDefaultWorkingDir(),region);
+        DataIndexWriter builder=new DataIndexWriter(DataExtractionSettings.getSettings().getDefaultWorkingDir(),region);
         StringBuilder msg=new StringBuilder();
         try {
           msg.append("Indices for ").append(region.getName());
-          if (buildPoiIndex.isEnabled()) {
+          if (buildPoiIndex.isSelected()) {
             dlg.startTask("Generating POI index...",-1);
-            builder.buildPOI();
+            builder.writePOI();
             msg.append(", POI index ").append("successfully created");
           }
-          if (buildAddressIndex.isEnabled()) {
+          if (buildAddressIndex.isSelected()) {
             dlg.startTask("Generating address index...",-1);
-            builder.buildAddress();
+            builder.writeAddress();
             msg.append(", Address index ").append("successfully created");
           }
+          new DataIndexReader().testIndex(new File(DataExtractionSettings.getSettings().getDefaultWorkingDir(),IndexConstants.ADDRESS_INDEX_DIR + region.getName() + IndexConstants.ADDRESS_INDEX_EXT));
           msg.append(".");
           JOptionPane pane=new JOptionPane(msg);
           JDialog dialog=pane.createDialog(frame,"Generation data");
           dialog.setVisible(true);
         }
  catch (        SQLException e1) {
-          throw new IllegalArgumentException(e1);
-        }
-catch (        XMLStreamException e1) {
           throw new IllegalArgumentException(e1);
         }
 catch (        IOException e1) {

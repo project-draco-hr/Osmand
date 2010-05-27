@@ -1,4 +1,8 @@
 {
+  final ArrayList<Node> places=new ArrayList<Node>();
+  final ArrayList<Entity> buildings=new ArrayList<Entity>();
+  final ArrayList<Entity> amenities=new ArrayList<Entity>();
+  final ArrayList<Way> ways=new ArrayList<Way>();
   File f=new File(path);
   InputStream stream=new FileInputStream(f);
   InputStream streamFile=stream;
@@ -14,46 +18,26 @@
   if (progress != null) {
     progress.startTask("Loading file " + path,-1);
   }
-  final ArrayList<Node> places=new ArrayList<Node>();
-  final ArrayList<Entity> buildings=new ArrayList<Entity>();
-  final ArrayList<Amenity> amenities=new ArrayList<Amenity>();
-  final ArrayList<Way> ways=new ArrayList<Way>();
-  IOsmStorageFilter filter=new IOsmStorageFilter(){
-    @Override public boolean acceptEntityToLoad(    OsmBaseStorage storage,    Entity e){
-      if (indexAddress) {
-        if ("yes".equals(e.getTag(OSMTagKey.BUILDING))) {
-          if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && e.getTag(OSMTagKey.ADDR_STREET) != null) {
-            buildings.add(e);
-            return true;
-          }
-        }
-      }
-      if (indexPOI && Amenity.isAmenity(e)) {
-        amenities.add(new Amenity(e));
-        return true;
-      }
-      if (e instanceof Node && e.getTag(OSMTagKey.PLACE) != null) {
-        places.add((Node)e);
-        return true;
-      }
-      if (indexAddress) {
-        if (e instanceof Way && OSMSettings.wayForCar(e.getTag(OSMTagKey.HIGHWAY))) {
-          ways.add((Way)e);
-          return true;
-        }
-      }
-      return (e instanceof Node && indexAddress) || loadAllObjects;
-    }
-  }
-;
   OsmBaseStorage storage=new OsmBaseStorage();
   if (addFilter != null) {
     storage.getFilters().add(addFilter);
   }
+  DataExtractionOsmFilter filter=new DataExtractionOsmFilter(amenities,buildings,places,ways);
   storage.getFilters().add(filter);
-  storage.parseOSM(stream,progress,streamFile);
-  if (log.isDebugEnabled()) {
-    log.debug("File parsed : " + (System.currentTimeMillis() - st));
+  try {
+    filter.initDatabase();
+    storage.parseOSM(stream,progress,streamFile);
+    if (log.isInfoEnabled()) {
+      log.info("File parsed : " + (System.currentTimeMillis() - st));
+    }
+    progress.finishTask();
+    filter.correlateData(storage,progress);
+  }
+  finally {
+    if (log.isInfoEnabled()) {
+      log.info("File indexed : " + (System.currentTimeMillis() - st));
+    }
+    filter.close();
   }
   Region country=new Region();
   int i=f.getName().indexOf('.');

@@ -10,37 +10,14 @@
     double leftLongitude=MapUtils.getLongitudeFromTile(view.getZoom(),xTileLeft);
     double bottomLatitude=MapUtils.getLatitudeFromTile(view.getZoom(),yTileDown);
     double rightLongitude=MapUtils.getLongitudeFromTile(view.getZoom(),xTileRight);
-    OsmLuceneRepository searcher=ResourceManager.getResourceManager().getAmenityIndexSearcher();
-    if (searcher != null) {
-      objects=searcher.searchAmenities(topLatitude,leftLongitude,bottomLatitude,rightLongitude);
-      for (      Amenity o : objects) {
-        double tileX=MapUtils.getTileNumberX(view.getZoom(),o.getLocation().getLongitude());
-        int x=(int)((tileX - xTileLeft) * getTileSize());
-        double tileY=MapUtils.getTileNumberY(view.getZoom(),o.getLocation().getLatitude());
-        int y=(int)((tileY - yTileUp) * getTileSize());
-        canvas.drawCircle(x,y,getRadiusPoi(view.getZoom()),pointAltUI);
-      }
-    }
-    OsmSQLLiteRepository sqlLite=ResourceManager.getResourceManager().getAmenityRepository();
-    if (sqlLite != null) {
-      objects=sqlLite.searchAmenities(topLatitude,leftLongitude,bottomLatitude,rightLongitude);
-      for (      Amenity o : objects) {
-        double tileX=MapUtils.getTileNumberX(view.getZoom(),o.getLocation().getLongitude());
-        int x=(int)((tileX - xTileLeft) * getTileSize());
-        double tileY=MapUtils.getTileNumberY(view.getZoom(),o.getLocation().getLatitude());
-        int y=(int)((tileY - yTileUp) * getTileSize());
-        canvas.drawCircle(x,y,getRadiusPoi(view.getZoom()),pointAltUI);
-      }
-    }
-    if (nodeManager != null) {
-      List<Amenity> objects=nodeManager.getObjects(topLatitude,leftLongitude,bottomLatitude,rightLongitude);
-      for (      Amenity o : objects) {
-        double tileX=MapUtils.getTileNumberX(view.getZoom(),o.getLocation().getLongitude());
-        int x=(int)((tileX - xTileLeft) * getTileSize());
-        double tileY=MapUtils.getTileNumberY(view.getZoom(),o.getLocation().getLatitude());
-        int y=(int)((tileY - yTileUp) * getTileSize());
-        canvas.drawCircle(x,y,getRadiusPoi(view.getZoom()),pointAltUI);
-      }
+    objects.clear();
+    resourceManager.searchAmenitiesAsync(topLatitude,leftLongitude,bottomLatitude,rightLongitude,objects);
+    for (    Amenity o : objects) {
+      double tileX=MapUtils.getTileNumberX(view.getZoom(),o.getLocation().getLongitude());
+      int x=(int)((tileX - xTileLeft) * getTileSize());
+      double tileY=MapUtils.getTileNumberY(view.getZoom(),o.getLocation().getLatitude());
+      int y=(int)((tileY - yTileUp) * getTileSize());
+      canvas.drawCircle(x,y,getRadiusPoi(view.getZoom()),pointAltUI);
     }
   }
 }

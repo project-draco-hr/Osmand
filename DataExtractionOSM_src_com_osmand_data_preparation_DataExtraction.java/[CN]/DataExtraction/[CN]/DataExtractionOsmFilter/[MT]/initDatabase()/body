@@ -1,0 +1,21 @@
+{
+  try {
+    Class.forName("org.sqlite.JDBC");
+  }
+ catch (  ClassNotFoundException e) {
+    log.error("Illegal configuration",e);
+    throw new IllegalStateException(e);
+  }
+  File file=new File(workingDir,NODES_DB);
+  if (file.exists()) {
+    file.delete();
+  }
+  conn=DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
+  Statement stat=conn.createStatement();
+  stat.executeUpdate("drop table if exists node;");
+  stat.executeUpdate("create table node (id long, latitude double, longitude double);");
+  stat.executeUpdate("create index IdIndex ON node (id);");
+  stat.close();
+  prep=conn.prepareStatement("insert into node values (?, ?, ?);");
+  conn.setAutoCommit(false);
+}

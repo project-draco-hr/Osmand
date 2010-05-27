@@ -1,0 +1,27 @@
+{
+  if (currentCount > 0) {
+    prep.executeBatch();
+  }
+  prep.close();
+  conn.setAutoCommit(true);
+  final PreparedStatement pselect=conn.prepareStatement("select * from node where id = ?");
+  Map<Long,Entity> map=new LinkedHashMap<Long,Entity>();
+  progress.startTask("Correlating data...",storage.getRegisteredEntities().size());
+  for (  Entity e : storage.getRegisteredEntities().values()) {
+    progress.progress(1);
+    if (e instanceof Way) {
+      map.clear();
+      for (      Long i : ((Way)e).getNodeIds()) {
+        pselect.setLong(1,i);
+        if (pselect.execute()) {
+          ResultSet rs=pselect.getResultSet();
+          if (rs.next()) {
+            map.put(i,new Node(rs.getDouble(2),rs.getDouble(3),rs.getLong(1)));
+          }
+          rs.close();
+        }
+      }
+      e.initializeLinks(map);
+    }
+  }
+}
