@@ -2,10 +2,21 @@
   while (true) {
     try {
       boolean update=false;
+      boolean amenityLoaded=false;
       while (!requests.isEmpty()) {
-        TileLoadDownloadRequest r=requests.pop();
-        if (cacheOfImages.get(r.fileToLoad) == null) {
-          update|=getRequestedImageTile(r) != null;
+        Object req=requests.pop();
+        if (req instanceof TileLoadDownloadRequest) {
+          TileLoadDownloadRequest r=(TileLoadDownloadRequest)req;
+          if (cacheOfImages.get(r.fileToLoad) == null) {
+            update|=getRequestedImageTile(r) != null;
+          }
+        }
+ else         if (req instanceof AmenityLoadRequest) {
+          if (!amenityLoaded) {
+            AmenityLoadRequest r=(AmenityLoadRequest)req;
+            r.repository.evaluateCachedAmenities(r.topLatitude,r.leftLongitude,r.bottomLatitude,r.rightLongitude,null);
+            amenityLoaded=true;
+          }
         }
       }
       if (update) {
