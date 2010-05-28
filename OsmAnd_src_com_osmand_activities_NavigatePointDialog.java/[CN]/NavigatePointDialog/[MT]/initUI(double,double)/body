@@ -1,0 +1,55 @@
+{
+  dlg.setContentView(R.layout.navigate_point);
+  dlg.setTitle("Navigate to point");
+  ((TextView)dlg.findViewById(R.id.LatitudeEdit)).setText(convert(latitude,Location.FORMAT_DEGREES));
+  ((TextView)dlg.findViewById(R.id.LongitudeEdit)).setText(convert(longitude,Location.FORMAT_DEGREES));
+  ((RadioButton)dlg.findViewById(R.id.Format1)).setChecked(true);
+  ((RadioGroup)dlg.findViewById(R.id.RadioGroup01)).setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    RadioGroup group,    int checkedId){
+      int newFormat=currentFormat;
+      if (checkedId == R.id.Format1) {
+        newFormat=Location.FORMAT_DEGREES;
+      }
+ else       if (checkedId == R.id.Format2) {
+        newFormat=Location.FORMAT_MINUTES;
+      }
+ else       if (checkedId == R.id.Format3) {
+        newFormat=Location.FORMAT_SECONDS;
+      }
+      try {
+        double lat=Location.convert(((TextView)dlg.findViewById(R.id.LatitudeEdit)).getText().toString());
+        double lon=Location.convert(((TextView)dlg.findViewById(R.id.LongitudeEdit)).getText().toString());
+        ((TextView)dlg.findViewById(R.id.LatitudeEdit)).setText(convert(lat,newFormat));
+        ((TextView)dlg.findViewById(R.id.LongitudeEdit)).setText(convert(lon,newFormat));
+      }
+ catch (      RuntimeException e) {
+      }
+    }
+  }
+);
+  ((Button)dlg.findViewById(R.id.Cancel)).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dlg.dismiss();
+    }
+  }
+);
+  ((Button)dlg.findViewById(R.id.ShowOnMap)).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      try {
+        double lat=Location.convert(((TextView)dlg.findViewById(R.id.LatitudeEdit)).getText().toString());
+        double lon=Location.convert(((TextView)dlg.findViewById(R.id.LongitudeEdit)).getText().toString());
+        if (view != null) {
+          view.setLatLon(lat,lon);
+        }
+ else {
+          OsmandSettings.setLastKnownMapLocation(dlg.getContext(),lat,lon);
+        }
+        dlg.dismiss();
+      }
+ catch (      RuntimeException e) {
+        ((TextView)dlg.findViewById(R.id.ValidateTextView)).setText("Locations are invalid");
+      }
+    }
+  }
+);
+}
