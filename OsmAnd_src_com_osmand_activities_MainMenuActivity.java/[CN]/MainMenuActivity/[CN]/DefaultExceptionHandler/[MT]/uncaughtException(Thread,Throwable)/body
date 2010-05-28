@@ -1,0 +1,19 @@
+{
+  File file=new File(Environment.getExternalStorageDirectory(),EXCEPTION_PATH);
+  try {
+    ByteArrayOutputStream out=new ByteArrayOutputStream();
+    PrintStream printStream=new PrintStream(out);
+    ex.printStackTrace(printStream);
+    StringBuilder msg=new StringBuilder();
+    msg.append("Exception occured in thread " + thread.toString() + " : ").append(DateFormat.format("MMMM dd, yyyy h:mm:ss",System.currentTimeMillis())).append("\n").append(new String(out.toByteArray()));
+    if (Environment.getExternalStorageDirectory().canRead()) {
+      BufferedWriter writer=new BufferedWriter(new FileWriter(file,true));
+      writer.write(msg.toString());
+      writer.close();
+    }
+    defaultHandler.uncaughtException(thread,ex);
+  }
+ catch (  Exception e) {
+    Log.e(LogUtil.TAG,"Exception while handle other exception",e);
+  }
+}
