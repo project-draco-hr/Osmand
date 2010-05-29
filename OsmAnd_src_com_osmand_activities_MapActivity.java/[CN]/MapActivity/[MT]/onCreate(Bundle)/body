@@ -18,12 +18,7 @@
     navigationLayer.setPointToNavigate(new LatLon(lprefs.getFloat(POINT_NAVIGATE_LAT,0),lprefs.getFloat(POINT_NAVIGATE_LON,0)));
   }
   SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);
-  if (prefs != null && prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
-    LatLon l=OsmandSettings.getLastKnownMapLocation(this);
-    mapView.setLatLon(l.getLatitude(),l.getLongitude());
-    mapView.setZoom(OsmandSettings.getLastKnownMapZoom(this));
-  }
- else {
+  if (prefs == null || !prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
     LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
     Location location=service.getLastKnownLocation(LocationManager.GPS_PROVIDER);
     if (location != null) {
@@ -45,7 +40,6 @@
   }
 );
   backToLocation=(ImageButton)findViewById(R.id.BackToLocation);
-  backToLocation.setVisibility(View.INVISIBLE);
   backToLocation.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       if (!isMapLinkedToLocation()) {
