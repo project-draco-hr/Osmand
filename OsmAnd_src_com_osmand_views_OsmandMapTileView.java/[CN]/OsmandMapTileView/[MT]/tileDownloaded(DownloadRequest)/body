@@ -1,34 +1,40 @@
 {
-  if (request == null || rotate != 0) {
-    prepareImage();
+  if (request == null) {
+    refreshMap();
     return;
   }
-  int xTileLeft=(int)Math.floor(getXTile() - getWidth() / (2d * getTileSize()));
-  int yTileUp=(int)Math.floor(getYTile() - getHeight() / (2d * getTileSize()));
-  int startingX=(int)((xTileLeft - getXTile()) * getTileSize() + getWidth() / 2);
-  int startingY=(int)((yTileUp - getYTile()) * getTileSize() + getHeight() / 2);
-  int i=(request.xTile - xTileLeft) * getTileSize() + startingX;
-  int j=(request.yTile - yTileUp) * getTileSize() + startingY;
-  if (request.zoom == this.zoom && (i + getTileSize() >= 0 && i < getWidth()) && (j + getTileSize() >= 0 && j < getHeight())) {
-    SurfaceHolder holder=getHolder();
+  if (request.zoom != this.zoom) {
+    return;
+  }
+  float w=getCenterPointX();
+  float h=getCenterPointY();
+  float tileX=getXTile();
+  float tileY=getYTile();
+  SurfaceHolder holder=getHolder();
 synchronized (holder) {
-      Canvas canvas=holder.lockCanvas(new Rect(i,j,getTileSize() + i,getTileSize() + j));
-      if (canvas != null) {
-        canvas.rotate(rotate,getWidth() / 2,getHeight() / 2);
-        try {
-          ResourceManager mgr=ResourceManager.getResourceManager();
-          Bitmap bmp=mgr.getTileImageForMapSync(map,request.xTile,request.yTile,zoom,false);
-          if (bmp == null) {
-            drawEmptyTile(canvas,i,j);
-          }
+    tilesRect.set(request.xTile,request.yTile,request.xTile + 1,request.yTile + 1);
+    calculatePixelRectangle(boundsRect,w,h,tileX,tileY,tilesRect);
+    if (boundsRect.left > getWidth() || boundsRect.right < 0 || boundsRect.bottom < 0 || boundsRect.top > getHeight()) {
+      return;
+    }
+    Canvas canvas=holder.lockCanvas(boundsRect);
+    if (canvas != null) {
+      canvas.rotate(rotate,w,h);
+      try {
+        ResourceManager mgr=ResourceManager.getResourceManager();
+        Bitmap bmp=mgr.getTileImageForMapSync(map,request.xTile,request.yTile,zoom,false);
+        float x=(request.xTile - getXTile()) * getTileSize() + w;
+        float y=(request.yTile - getYTile()) * getTileSize() + h;
+        if (bmp == null) {
+          drawEmptyTile(canvas,x,y);
+        }
  else {
-            canvas.drawBitmap(bmp,i,j,null);
-          }
-          drawOverMap(canvas);
+          canvas.drawBitmap(bmp,x,y,null);
         }
+        drawOverMap(canvas);
+      }
   finally {
-          holder.unlockCanvasAndPost(canvas);
-        }
+        holder.unlockCanvasAndPost(canvas);
       }
     }
   }

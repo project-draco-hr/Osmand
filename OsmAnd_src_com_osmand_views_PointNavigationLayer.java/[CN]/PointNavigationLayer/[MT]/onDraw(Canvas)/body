@@ -3,8 +3,8 @@
     return;
   }
   if (isLocationVisible()) {
-    int locationX=MapUtils.getPixelShiftX(view.getZoom(),pointToNavigate.getLongitude(),view.getLongitude(),view.getTileSize()) + view.getWidth() / 2;
-    int locationY=MapUtils.getPixelShiftY(view.getZoom(),pointToNavigate.getLatitude(),view.getLatitude(),view.getTileSize()) + view.getHeight() / 2;
+    int locationX=view.getMapXForPoint(pointToNavigate.getLongitude());
+    int locationY=view.getMapYForPoint(pointToNavigate.getLatitude());
     canvas.drawCircle(locationX,locationY,RADIUS,point);
   }
  else {
@@ -20,8 +20,8 @@
     m.reset();
     m.postScale(RADIUS * 2,RADIUS * 2);
     m.postTranslate(0,-radiusBearing);
-    m.postTranslate(view.getWidth() / 2,view.getHeight() / 2);
-    m.postRotate(bearing,view.getWidth() / 2,view.getHeight() / 2);
+    m.postTranslate(view.getCenterPointX(),view.getCenterPointY());
+    m.postRotate(bearing,view.getCenterPointX(),view.getCenterPointY());
     pathForDirection.transform(m);
     canvas.drawPath(pathForDirection,point);
   }
