@@ -1,0 +1,36 @@
+{
+  if (map.getPointToNavigate() != null) {
+    Location.distanceBetween(view.getLatitude(),view.getLongitude(),map.getPointToNavigate().getLatitude(),map.getPointToNavigate().getLongitude(),calculations);
+    if (distChanged(cachedMeters,(int)calculations[0])) {
+      cachedMeters=(int)calculations[0];
+      if (cachedMeters <= 20) {
+        cachedMeters=0;
+        cachedDistString=null;
+      }
+ else {
+        cachedDistString=MapUtils.getFormattedDistance(cachedMeters);
+        boundsForDist.right=paintBlack.measureText(cachedDistString) + 25 + boundsForDist.left;
+        boundsForSpeed.right=boundsForDist.right;
+      }
+    }
+  }
+  if (map.getLastKnownLocation() != null && map.getLastKnownLocation().hasSpeed()) {
+    if (cachedSpeed != (int)map.getLastKnownLocation().getSpeed()) {
+      cachedSpeed=(int)map.getLastKnownLocation().getSpeed();
+      cachedSpeedString=((int)(cachedSpeed * 3.6d)) + " km/h";
+    }
+    if (cachedSpeed > 0) {
+      canvas.drawRoundRect(boundsForSpeed,3,3,paintAlphaGray);
+      canvas.drawText(cachedSpeedString,boundsForSpeed.left + 5,boundsForSpeed.bottom - 9,paintBlack);
+    }
+  }
+  if (cachedDistString != null) {
+    canvas.drawRoundRect(boundsForDist,3,3,paintAlphaGray);
+    canvas.drawCircle(boundsForDist.left + 8,boundsForDist.bottom - 15,4,fillRed);
+    canvas.drawText(cachedDistString,boundsForDist.left + 15,boundsForDist.bottom - 9,paintBlack);
+  }
+  canvas.drawRoundRect(boundsForCompass,3,3,paintAlphaGray);
+  canvas.rotate(view.getRotate(),15,15);
+  canvas.drawPath(pathForCompass2,fillRed);
+  canvas.drawPath(pathForCompass,fillBlack);
+}
