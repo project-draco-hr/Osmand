@@ -28,7 +28,23 @@ synchronized (holder) {
             float y1=(j + top - tileY) * tileSize + h;
             Bitmap bmp=mgr.getTileImageForMapAsync(map,left + i,top + j,zoom,useInternet);
             if (bmp == null) {
-              drawEmptyTile(canvas,(int)x1,(int)y1);
+              if (useInternet) {
+                bmp=mgr.getTileImageFromCache(map,(left + i) / 2,(top + j) / 2,zoom - 1);
+              }
+ else {
+                bmp=mgr.getTileImageForMapAsync(map,(left + i) / 2,(top + j) / 2,zoom - 1,false);
+              }
+              if (bmp == null) {
+                drawEmptyTile(canvas,(int)x1,(int)y1);
+              }
+ else {
+                int xZoom=(left + i) % 2 == 0 ? 0 : tileSize / 2;
+                int yZoom=(top + j) % 2 == 0 ? 0 : tileSize / 2;
+                ;
+                bitmapToZoom.set(xZoom,yZoom,xZoom + tileSize / 2,yZoom + tileSize / 2);
+                bitmapToDraw.set(x1,y1,x1 + tileSize,y1 + tileSize);
+                canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
+              }
             }
  else {
               canvas.drawBitmap(bmp,x1,y1,paintBitmap);
