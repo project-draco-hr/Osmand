@@ -6,6 +6,9 @@
   if (!OsmandSettings.isRotateMapToBearing(this)) {
     mapView.setRotate(0);
   }
+  if (!OsmandSettings.isShowingViewAngle(this)) {
+    locationLayer.setHeading(null,true);
+  }
   mapView.setMapPosition(OsmandSettings.getPositionOnMap(this));
   SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);
   if (prefs != null && prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
@@ -13,7 +16,7 @@
     mapView.setLatLon(l.getLatitude(),l.getLongitude());
     mapView.setZoom(OsmandSettings.getLastKnownMapZoom(this));
   }
-  if (getLastKnownLocation() != null) {
+  if (getLastKnownLocation() != null && !isMapLinkedToLocation()) {
     backToLocation.setVisibility(View.VISIBLE);
   }
  else {

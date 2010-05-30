@@ -1,8 +1,8 @@
 {
   if (!applicationAlreadyStarted) {
-    final ProgressDialog dlg=ProgressDialog.show(this,"Loading data","Reading indices...");
+    final ProgressDialog dlg=ProgressDialog.show(this,"Loading data","Reading indices...",true);
     final ProgressDialogImplementation impl=new ProgressDialogImplementation(dlg);
-    new Thread("Reader indexes"){
+    impl.setRunnable("Initializing app",new Runnable(){
       @Override public void run(){
         try {
           ResourceManager.getResourceManager().indexingPoi(impl);
@@ -13,7 +13,8 @@
         }
       }
     }
-.start();
+);
+    impl.run();
     applicationAlreadyStarted=true;
     Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
     long size=getPreferences(MODE_WORLD_READABLE).getLong(EXCEPTION_FILE_SIZE,0);
