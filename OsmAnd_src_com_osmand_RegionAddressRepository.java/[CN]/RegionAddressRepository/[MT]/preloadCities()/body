@@ -1,6 +1,9 @@
 {
   if (cities.isEmpty()) {
-    Cursor query=db.query(IndexCityTable.getTable(),IndexConstants.generateColumnNames(IndexCityTable.values()),null,null,null,null,null);
+    log.debug("Start loading cities for " + getName());
+    StringBuilder where=new StringBuilder();
+    where.append(IndexCityTable.CITY_TYPE.toString()).append('=').append('\'').append(CityType.valueToString(CityType.CITY)).append('\'').append(" or ").append(IndexCityTable.CITY_TYPE.toString()).append('=').append('\'').append(CityType.valueToString(CityType.TOWN)).append('\'');
+    Cursor query=db.query(IndexCityTable.getTable(),IndexConstants.generateColumnNames(IndexCityTable.values()),where.toString(),null,null,null,null);
     if (query.moveToFirst()) {
       do {
         CityType type=CityType.valueFromString(query.getString(IndexCityTable.CITY_TYPE.ordinal()));
@@ -18,6 +21,7 @@
       }
  while (query.moveToNext());
     }
+    log.debug("Loaded " + cities.size() + " cities");
     query.close();
   }
 }
