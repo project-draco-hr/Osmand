@@ -1,0 +1,23 @@
+{
+  if (cities.isEmpty()) {
+    Cursor query=db.query(IndexCityTable.getTable(),IndexConstants.generateColumnNames(IndexCityTable.values()),null,null,null,null,null);
+    if (query.moveToFirst()) {
+      do {
+        CityType type=CityType.valueFromString(query.getString(IndexCityTable.CITY_TYPE.ordinal()));
+        if (type != null) {
+          City city=new City(type);
+          city.setId(query.getLong(IndexCityTable.ID.ordinal()));
+          city.setLocation(query.getDouble(IndexCityTable.LATITUDE.ordinal()),query.getDouble(IndexCityTable.LONGITUDE.ordinal()));
+          city.setName(query.getString(IndexCityTable.NAME.ordinal()));
+          cities.put(city.getId(),city);
+          if (!cityTypes.containsKey(type)) {
+            cityTypes.put(type,new ArrayList<City>());
+          }
+          cityTypes.get(type).add(city);
+        }
+      }
+ while (query.moveToNext());
+    }
+    query.close();
+  }
+}
