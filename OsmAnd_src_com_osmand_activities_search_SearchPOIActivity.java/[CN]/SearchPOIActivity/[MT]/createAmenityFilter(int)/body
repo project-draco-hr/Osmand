@@ -1,0 +1,14 @@
+{
+  ResourceManager resourceManager=ResourceManager.getResourceManager();
+  filter=new TreeMap<AmenityType,List<Amenity>>();
+  LatLon lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(this);
+  List<Amenity> closestAmenities=resourceManager.searchAmenities(lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),zoom,500);
+  MapUtils.sortListOfMapObject(closestAmenities,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude());
+  for (  Amenity n : closestAmenities) {
+    AmenityType type=n.getType();
+    if (!filter.containsKey(type)) {
+      filter.put(type,new ArrayList<Amenity>());
+    }
+    filter.get(type).add(n);
+  }
+}

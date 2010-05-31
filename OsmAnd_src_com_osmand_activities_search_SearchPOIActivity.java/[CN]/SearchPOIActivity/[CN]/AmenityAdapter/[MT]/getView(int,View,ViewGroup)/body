@@ -1,0 +1,20 @@
+{
+  LayoutInflater inflater=getLayoutInflater();
+  View row=inflater.inflate(R.layout.searchpoi_list,parent,false);
+  TextView label=(TextView)row.findViewById(R.id.poi_label);
+  TextView distanceLabel=(TextView)row.findViewById(R.id.poidistance_label);
+  ImageView icon=(ImageView)row.findViewById(R.id.poi_icon);
+  Object model=getModel(position);
+  if (model instanceof Amenity) {
+    Amenity anemity=(Amenity)model;
+    if (anemity != null) {
+      LatLon lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(SearchPOIActivity.this);
+      int dist=(int)(MapUtils.getDistance(anemity.getLocation(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
+      String str=anemity.getStringWithoutType();
+      label.setText(str);
+      icon.setImageResource(R.drawable.poi);
+      distanceLabel.setText(" " + dist + " m  ");
+    }
+  }
+  return (row);
+}
