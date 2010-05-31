@@ -1,2 +1,18 @@
 {
+  if (street.getBuildings().isEmpty()) {
+    Cursor query=db.query(IndexBuildingTable.getTable(),IndexConstants.generateColumnNames(IndexBuildingTable.values()),"? = street",new String[]{street.getId() + ""},null,null,null);
+    log.debug("Start loading buildings for " + street.getName());
+    if (query.moveToFirst()) {
+      do {
+        Building building=new Building();
+        building.setId(query.getLong(IndexBuildingTable.ID.ordinal()));
+        building.setLocation(query.getDouble(IndexBuildingTable.LATITUDE.ordinal()),query.getDouble(IndexBuildingTable.LONGITUDE.ordinal()));
+        building.setName(query.getString(IndexBuildingTable.NAME.ordinal()));
+        street.registerBuilding(building);
+      }
+ while (query.moveToNext());
+    }
+    query.close();
+    log.debug("Loaded " + street.getBuildings().size() + " buildings");
+  }
 }

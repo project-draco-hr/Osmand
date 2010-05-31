@@ -1,0 +1,49 @@
+{
+  preloadCities();
+  if (name.length() < 3) {
+    EnumSet<CityType> set=EnumSet.of(CityType.CITY,CityType.TOWN);
+    for (    CityType t : set) {
+      if (name.length() == 0) {
+        citiesToFill.addAll(cityTypes.get(t));
+      }
+ else {
+        name=name.toLowerCase();
+        for (        City c : cityTypes.get(t)) {
+          String lowerCase=c.getName().toLowerCase();
+          if (lowerCase.startsWith(name)) {
+            citiesToFill.add(c);
+          }
+        }
+      }
+    }
+  }
+ else {
+    int ind=0;
+    name=name.toLowerCase();
+    Collection<City> src=cities.values();
+    for (    City c : src) {
+      String lowerCase=c.getName().toLowerCase();
+      if (lowerCase.startsWith(name)) {
+        citiesToFill.add(ind,c);
+        ind++;
+      }
+ else       if (lowerCase.contains(name)) {
+        citiesToFill.add(c);
+      }
+    }
+    int initialsize=citiesToFill.size();
+    log.debug("Start loading cities for " + getName() + " filter "+ name);
+    name=Algoritms.capitalizeFirstLetterAndLowercase(name);
+    StringBuilder where=new StringBuilder(80);
+    where.append(IndexCityTable.CITY_TYPE.toString()).append(" not in (").append('\'').append(CityType.valueToString(CityType.CITY)).append('\'').append(", ").append('\'').append(CityType.valueToString(CityType.TOWN)).append('\'').append(") and ").append(IndexCityTable.NAME.toString()).append(" LIKE '" + name + "%'");
+    Cursor query=db.query(IndexCityTable.getTable(),IndexConstants.generateColumnNames(IndexCityTable.values()),where.toString(),null,null,null,null);
+    if (query.moveToFirst()) {
+      do {
+        citiesToFill.add(parseCityFromCursor(query));
+      }
+ while (query.moveToNext());
+    }
+    query.close();
+    log.debug("Loaded citites " + (citiesToFill.size() - initialsize));
+  }
+}

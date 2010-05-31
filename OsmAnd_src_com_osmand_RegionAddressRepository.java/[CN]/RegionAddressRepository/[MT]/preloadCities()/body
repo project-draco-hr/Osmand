@@ -6,17 +6,13 @@
     Cursor query=db.query(IndexCityTable.getTable(),IndexConstants.generateColumnNames(IndexCityTable.values()),where.toString(),null,null,null,null);
     if (query.moveToFirst()) {
       do {
-        CityType type=CityType.valueFromString(query.getString(IndexCityTable.CITY_TYPE.ordinal()));
-        if (type != null) {
-          City city=new City(type);
-          city.setId(query.getLong(IndexCityTable.ID.ordinal()));
-          city.setLocation(query.getDouble(IndexCityTable.LATITUDE.ordinal()),query.getDouble(IndexCityTable.LONGITUDE.ordinal()));
-          city.setName(query.getString(IndexCityTable.NAME.ordinal()));
+        City city=parseCityFromCursor(query);
+        if (city != null) {
           cities.put(city.getId(),city);
-          if (!cityTypes.containsKey(type)) {
-            cityTypes.put(type,new ArrayList<City>());
+          if (!cityTypes.containsKey(city.getType())) {
+            cityTypes.put(city.getType(),new ArrayList<City>());
           }
-          cityTypes.get(type).add(city);
+          cityTypes.get(city.getType()).add(city);
         }
       }
  while (query.moveToNext());
