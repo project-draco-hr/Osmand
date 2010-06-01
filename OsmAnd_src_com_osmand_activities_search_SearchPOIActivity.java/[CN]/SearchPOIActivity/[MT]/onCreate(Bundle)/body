@@ -4,6 +4,14 @@
   searchPOILevel=(Button)findViewById(R.id.SearchPOILevelButton);
   searchPOILevel.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
+      ResourceManager resourceManager=ResourceManager.getResourceManager();
+      if (zoom > 7) {
+        --zoom;
+      }
+      amenityList=resourceManager.searchAmenities(amenityType,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),zoom,-1);
+      if (amenityList != null) {
+        amenityAdapter.setNewModel(amenityList);
+      }
     }
   }
 );
@@ -11,7 +19,7 @@
   String anemity=bundle.getString(ANENITY_TYPE);
   if (anemity != null) {
     ResourceManager resourceManager=ResourceManager.getResourceManager();
-    LatLon lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(this);
+    lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(this);
     amenityType=findAmenityType(anemity);
     amenityList=resourceManager.searchAmenities(amenityType,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),zoom,maxCount);
     if (amenityList != null) {
