@@ -4,34 +4,23 @@
   String lastSearchedRegion=OsmandSettings.getLastSearchedRegion(SearchAddressActivity.this);
   region=ResourceManager.getResourceManager().getRegionRepository(lastSearchedRegion);
   String progressMsg=null;
-  if (!region.areCitiesPreloaded()) {
-    progressMsg="Loading cities...";
-  }
- else   if (city == null || city.getId() != OsmandSettings.getLastSearchedCity(this)) {
-    progressMsg="Loading streets/buildings...";
+  if (region != null) {
+    Long cityId=OsmandSettings.getLastSearchedCity(this);
+    if (!region.areCitiesPreloaded()) {
+      progressMsg="Loading cities...";
+    }
+ else     if (cityId != -1 && region.getCityById(cityId).isEmptyWithStreets()) {
+      progressMsg="Loading streets/buildings...";
+    }
+ else     if (OsmandSettings.usingEnglishNames(this) != region.useEnglishNames()) {
+      progressMsg="Converting native/english names...";
+    }
   }
   city=null;
   street=null;
   building=null;
   if (progressMsg != null) {
-    dlg=ProgressDialog.show(this,"Loading",progressMsg,true);
-    new Thread("Loader search data"){
-      @Override public void run(){
-        try {
-          loadData();
-        }
-  finally {
-          dlg.dismiss();
-          runOnUiThread(new Runnable(){
-            @Override public void run(){
-              updateUI();
-            }
-          }
-);
-        }
-      }
-    }
-.start();
+    startLoadDataInThread(progressMsg);
   }
  else {
     loadData();

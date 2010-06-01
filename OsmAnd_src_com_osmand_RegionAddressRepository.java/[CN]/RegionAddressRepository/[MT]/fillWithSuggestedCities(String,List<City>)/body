@@ -9,7 +9,8 @@
  else {
         name=name.toLowerCase();
         for (        City c : cityTypes.get(t)) {
-          String lowerCase=c.getName().toLowerCase();
+          String cName=useEnglishNames ? c.getEnName() : c.getName();
+          String lowerCase=cName.toLowerCase();
           if (lowerCase.startsWith(name)) {
             citiesToFill.add(c);
           }
@@ -22,7 +23,8 @@
     name=name.toLowerCase();
     Collection<City> src=cities.values();
     for (    City c : src) {
-      String lowerCase=c.getName().toLowerCase();
+      String cName=useEnglishNames ? c.getEnName() : c.getName();
+      String lowerCase=cName.toLowerCase();
       if (lowerCase.startsWith(name)) {
         citiesToFill.add(ind,c);
         ind++;
@@ -35,7 +37,7 @@
     log.debug("Start loading cities for " + getName() + " filter "+ name);
     name=Algoritms.capitalizeFirstLetterAndLowercase(name);
     StringBuilder where=new StringBuilder(80);
-    where.append(IndexCityTable.CITY_TYPE.toString()).append(" not in (").append('\'').append(CityType.valueToString(CityType.CITY)).append('\'').append(", ").append('\'').append(CityType.valueToString(CityType.TOWN)).append('\'').append(") and ").append(IndexCityTable.NAME.toString()).append(" LIKE '" + name + "%'");
+    where.append(IndexCityTable.CITY_TYPE.toString()).append(" not in (").append('\'').append(CityType.valueToString(CityType.CITY)).append('\'').append(", ").append('\'').append(CityType.valueToString(CityType.TOWN)).append('\'').append(") and ").append(useEnglishNames ? IndexCityTable.NAME_EN.toString() : IndexCityTable.NAME.toString()).append(" LIKE '" + name + "%'");
     Cursor query=db.query(IndexCityTable.getTable(),IndexConstants.generateColumnNames(IndexCityTable.values()),where.toString(),null,null,null,null);
     if (query.moveToFirst()) {
       do {

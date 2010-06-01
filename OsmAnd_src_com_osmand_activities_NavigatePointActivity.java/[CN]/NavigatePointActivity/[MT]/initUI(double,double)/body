@@ -1,0 +1,56 @@
+{
+  ((TextView)findViewById(R.id.LatitudeEdit)).setText(convert(latitude,Location.FORMAT_DEGREES));
+  ((TextView)findViewById(R.id.LongitudeEdit)).setText(convert(longitude,Location.FORMAT_DEGREES));
+  ((RadioButton)findViewById(R.id.Format1)).setChecked(true);
+  ((RadioGroup)findViewById(R.id.RadioGroup01)).setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    RadioGroup group,    int checkedId){
+      int newFormat=currentFormat;
+      if (checkedId == R.id.Format1) {
+        newFormat=Location.FORMAT_DEGREES;
+      }
+ else       if (checkedId == R.id.Format2) {
+        newFormat=Location.FORMAT_MINUTES;
+      }
+ else       if (checkedId == R.id.Format3) {
+        newFormat=Location.FORMAT_SECONDS;
+      }
+      try {
+        double lat=Location.convert(((TextView)findViewById(R.id.LatitudeEdit)).getText().toString());
+        double lon=Location.convert(((TextView)findViewById(R.id.LongitudeEdit)).getText().toString());
+        ((TextView)findViewById(R.id.LatitudeEdit)).setText(convert(lat,newFormat));
+        ((TextView)findViewById(R.id.LongitudeEdit)).setText(convert(lon,newFormat));
+      }
+ catch (      RuntimeException e) {
+        ((TextView)findViewById(R.id.ValidateTextView)).setText("Locations are invalid");
+        Log.w(LogUtil.TAG,"Convertion failed",e);
+      }
+    }
+  }
+);
+  ((Button)findViewById(R.id.Cancel)).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      close();
+    }
+  }
+);
+  ((Button)findViewById(R.id.ShowOnMap)).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      try {
+        double lat=Location.convert(((TextView)findViewById(R.id.LatitudeEdit)).getText().toString());
+        double lon=Location.convert(((TextView)findViewById(R.id.LongitudeEdit)).getText().toString());
+        if (view != null) {
+          view.setLatLon(lat,lon);
+        }
+ else {
+          OsmandSettings.setLastKnownMapLocation(NavigatePointActivity.this,lat,lon);
+        }
+        close();
+      }
+ catch (      RuntimeException e) {
+        ((TextView)findViewById(R.id.ValidateTextView)).setText("Locations are invalid");
+        Log.w(LogUtil.TAG,"Convertion failed",e);
+      }
+    }
+  }
+);
+}
