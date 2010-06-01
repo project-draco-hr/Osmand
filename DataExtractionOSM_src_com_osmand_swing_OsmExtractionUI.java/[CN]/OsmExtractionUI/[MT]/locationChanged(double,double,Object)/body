@@ -3,7 +3,7 @@
     Region reg=(Region)amenitiesTree.getModelObject();
     List<Amenity> closestAmenities=reg.getAmenityManager().getClosestObjects(newLatitude,newLongitude,0,5);
     MapUtils.sortListOfMapObject(closestAmenities,newLatitude,newLongitude);
-    Map<AmenityType,List<Amenity>> filter=new TreeMap<AmenityType,List<Amenity>>();
+    Map<AmenityType,List<Amenity>> filter=new HashMap<AmenityType,List<Amenity>>();
     for (    Amenity n : closestAmenities) {
       AmenityType type=n.getType();
       if (!filter.containsKey(type)) {
@@ -17,7 +17,7 @@
       if (filter.get(type) != null) {
         for (        Amenity n : filter.get(type)) {
           int dist=(int)(MapUtils.getDistance(n.getLocation(),newLatitude,newLongitude));
-          String str=n.getStringWithoutType() + " [" + dist+ " m ]";
+          String str=n.getStringWithoutType(false) + " [" + dist+ " m ]";
           DataExtractionTreeNode node=new DataExtractionTreeNode(str,n);
           ((DefaultMutableTreeNode)amenitiesTree.getChildAt(i)).add(node);
         }
@@ -28,7 +28,7 @@
     for (int i=0; i < 15 && i < closestAmenities.size(); i++) {
       Amenity n=closestAmenities.get(i);
       int dist=(int)(MapUtils.getDistance(n.getLocation(),newLatitude,newLongitude));
-      String str=n.getSimpleFormat() + " [" + dist+ " m ]";
+      String str=n.getSimpleFormat(false) + " [" + dist+ " m ]";
       ((DefaultMutableTreeNode)amenitiesTree.getChildAt(0)).add(new DataExtractionTreeNode(str,n));
       ((DefaultTreeModel)treePlaces.getModel()).nodeStructureChanged(amenitiesTree.getChildAt(0));
     }

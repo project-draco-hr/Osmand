@@ -55,5 +55,23 @@
     normalizingStreets(progress,country);
   }
   country.doDataPreparation();
+  Transliterator latin=Transliterator.getInstance("Any-Latin;NFD;[:Nonspacing Mark:] Remove;NFC");
+  if (latin != null) {
+    convertEnglishName(country,latin);
+    for (    CityType c : CityType.values()) {
+      for (      City city : country.getCitiesByType(c)) {
+        convertEnglishName(city,latin);
+        for (        Street s : city.getStreets()) {
+          convertEnglishName(s,latin);
+          for (          Building b : s.getBuildings()) {
+            convertEnglishName(b,latin);
+          }
+        }
+      }
+    }
+    for (    Amenity a : country.getAmenityManager().getAllObjects()) {
+      convertEnglishName(a,latin);
+    }
+  }
   return country;
 }
