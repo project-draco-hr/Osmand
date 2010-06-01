@@ -1,6 +1,18 @@
 {
   ((NamesAdapter)getListAdapter()).clear();
-  for (  T o : getObjects(filter)) {
-    ((NamesAdapter)getListAdapter()).add(o);
+  if (handlerToLoop == null) {
+    return;
   }
+  handlerToLoop.removeMessages(1);
+  Message msg=Message.obtain(handlerToLoop,new Runnable(){
+    @Override public void run(){
+      List<T> loadedObjects=getObjects(filter);
+      if (!handlerToLoop.hasMessages(1)) {
+        updateUIList(loadedObjects);
+      }
+    }
+  }
+);
+  msg.what=1;
+  handlerToLoop.sendMessageDelayed(msg,150);
 }
