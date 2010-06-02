@@ -1,0 +1,23 @@
+{
+  if (street.getWayNodes().isEmpty()) {
+    Cursor query=db.query(IndexStreetNodeTable.getTable(),IndexConstants.generateColumnNames(IndexStreetNodeTable.values()),"? = street",new String[]{street.getId() + ""},null,null,null);
+    log.debug("Start loading waynodes for " + street.getName());
+    Map<Long,Way> ways=new LinkedHashMap<Long,Way>();
+    if (query.moveToFirst()) {
+      do {
+        Node n=new Node(query.getDouble(IndexStreetNodeTable.LATITUDE.ordinal()),query.getDouble(IndexBuildingTable.LONGITUDE.ordinal()),query.getLong(IndexStreetNodeTable.ID.ordinal()));
+        long way=query.getLong(IndexStreetNodeTable.WAY.ordinal());
+        if (!ways.containsKey(way)) {
+          ways.put(way,new Way(way));
+        }
+        ways.get(way).addNode(n);
+      }
+ while (query.moveToNext());
+    }
+    query.close();
+    for (    Way w : ways.values()) {
+      street.getWayNodes().add(w);
+    }
+    log.debug("Loaded " + ways.size() + " ways");
+  }
+}

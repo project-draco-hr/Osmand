@@ -19,7 +19,14 @@
 );
   buildingButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      startActivity(new Intent(SearchAddressActivity.this,SearchBuildingByNameActivity.class));
+      if (radioBuilding) {
+        OsmandSettings.removeLastSearchedIntersectedStreet(SearchAddressActivity.this);
+        startActivity(new Intent(SearchAddressActivity.this,SearchBuildingByNameActivity.class));
+      }
+ else {
+        OsmandSettings.setLastSearchedIntersectedStreet(SearchAddressActivity.this,"");
+        startActivity(new Intent(SearchAddressActivity.this,SearchStreet2ByNameActivity.class));
+      }
     }
   }
 );
@@ -27,7 +34,28 @@
     @Override public void onClick(    View v){
       LatLon l=null;
       int zoom=12;
-      if (building != null) {
+      if (street2 != null && street != null) {
+        region.preloadWayNodes(street2);
+        region.preloadWayNodes(street);
+        Node inters=null;
+        for (        Way w : street2.getWayNodes()) {
+          for (          Way w2 : street.getWayNodes()) {
+            for (            Node n : w.getNodes()) {
+              for (              Node n2 : w2.getNodes()) {
+                if (n.getId() == n2.getId()) {
+                  inters=n;
+                  break;
+                }
+              }
+            }
+          }
+        }
+        if (inters != null) {
+          l=inters.getLatLon();
+          zoom=16;
+        }
+      }
+ else       if (building != null) {
         l=building.getLocation();
         zoom=16;
       }
@@ -78,6 +106,19 @@
       street=null;
       building=null;
       updateUI();
+    }
+  }
+);
+  ((RadioGroup)findViewById(R.id.RadioGroup)).setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    RadioGroup group,    int checkedId){
+      SearchAddressActivity.this.radioBuilding=checkedId == R.id.RadioBuilding;
+      if (radioBuilding) {
+        SearchAddressActivity.this.street2=null;
+      }
+ else {
+        SearchAddressActivity.this.building=null;
+      }
+      updateBuildingSection();
     }
   }
 );
