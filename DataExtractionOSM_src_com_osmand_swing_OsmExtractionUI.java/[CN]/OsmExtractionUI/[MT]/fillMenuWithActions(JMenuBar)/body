@@ -27,11 +27,16 @@
     @Override public void actionPerformed(    ActionEvent e){
       File file=new File(OsmExtractionUI.LOG_PATH);
       if (file != null && file.exists()) {
-        try {
-          Runtime.getRuntime().exec(new String[]{"notepad.exe",file.getAbsolutePath()});
+        if (System.getProperty("os.name").startsWith("Windows")) {
+          try {
+            Runtime.getRuntime().exec(new String[]{"notepad.exe",file.getAbsolutePath()});
+          }
+ catch (          IOException es) {
+            ExceptionHandler.handle("Failed to open log file ",es);
+          }
         }
- catch (        IOException es) {
-          ExceptionHandler.handle("Failed to open log file ",es);
+ else {
+          JOptionPane.showMessageDialog(frame,"Open log file manually " + LOG_PATH);
         }
       }
  else {

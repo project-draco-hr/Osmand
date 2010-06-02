@@ -40,16 +40,21 @@
 );
   treeModelListener=new TreeModelListener(){
     public void treeNodesChanged(    TreeModelEvent e){
-      DefaultMutableTreeNode node;
-      node=(DefaultMutableTreeNode)(e.getTreePath().getLastPathComponent());
-      if (node instanceof DataExtractionTreeNode) {
-        if (((DataExtractionTreeNode)node).getModelObject() instanceof Region) {
-          Region r=(Region)((DataExtractionTreeNode)node).getModelObject();
-          r.setName(node.getUserObject().toString());
-        }
- else         if (((DataExtractionTreeNode)node).getModelObject() instanceof MapObject) {
-          MapObject r=(MapObject)((DataExtractionTreeNode)node).getModelObject();
-          r.setName(node.getUserObject().toString());
+      for (      Object node : e.getChildren()) {
+        if (node instanceof DataExtractionTreeNode) {
+          DataExtractionTreeNode n=((DataExtractionTreeNode)node);
+          if (n.getModelObject() instanceof MapObject) {
+            MapObject r=(MapObject)n.getModelObject();
+            String newName=n.getUserObject().toString();
+            if (!r.getName().equals(newName)) {
+              r.setName(n.getUserObject().toString());
+            }
+            if (r instanceof Street && !((Street)r).isRegisteredInCity()) {
+              DefaultMutableTreeNode parent=((DefaultMutableTreeNode)n.getParent());
+              parent.remove(n);
+              ((DefaultTreeModel)treePlaces.getModel()).nodeStructureChanged(parent);
+            }
+          }
         }
       }
     }
