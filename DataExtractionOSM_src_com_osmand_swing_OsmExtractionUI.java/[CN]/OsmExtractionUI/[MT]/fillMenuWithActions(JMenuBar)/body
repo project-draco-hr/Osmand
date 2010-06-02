@@ -20,6 +20,26 @@
   bar.add(menu);
   JMenuItem settings=new JMenuItem("Settings...");
   menu.add(settings);
+  menu.addSeparator();
+  JMenuItem openLogFile=new JMenuItem("Open log file...");
+  menu.add(openLogFile);
+  openLogFile.addActionListener(new ActionListener(){
+    @Override public void actionPerformed(    ActionEvent e){
+      File file=new File(OsmExtractionUI.LOG_PATH);
+      if (file != null && file.exists()) {
+        try {
+          Runtime.getRuntime().exec(new String[]{"notepad.exe",file.getAbsolutePath()});
+        }
+ catch (        IOException es) {
+          ExceptionHandler.handle("Failed to open log file ",es);
+        }
+      }
+ else {
+        ExceptionHandler.handle("Log file is not found");
+      }
+    }
+  }
+);
   exitMenu.addActionListener(new ActionListener(){
     @Override public void actionPerformed(    ActionEvent e){
       frame.setVisible(false);

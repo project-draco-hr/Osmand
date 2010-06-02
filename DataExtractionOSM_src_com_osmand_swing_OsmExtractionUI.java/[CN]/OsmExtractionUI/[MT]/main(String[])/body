@@ -1,5 +1,14 @@
 {
-  OsmExtractionUI ui=new OsmExtractionUI(null);
-  ui.frame.setBounds(DataExtractionSettings.getSettings().getWindowBounds());
-  ui.frame.setVisible(true);
+  new File(LOG_PATH).getParentFile().mkdirs();
+  final UncaughtExceptionHandler defaultHandler=Thread.getDefaultUncaughtExceptionHandler();
+  Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler(){
+    @Override public void uncaughtException(    Thread t,    Throwable e){
+      log.error("Error in thread " + t.getName(),e);
+      defaultHandler.uncaughtException(t,e);
+    }
+  }
+);
+  MAIN_APP=new OsmExtractionUI(null);
+  MAIN_APP.frame.setBounds(DataExtractionSettings.getSettings().getWindowBounds());
+  MAIN_APP.frame.setVisible(true);
 }

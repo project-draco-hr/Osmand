@@ -19,6 +19,7 @@
     progress.startTask("Loading file " + path,-1);
   }
   OsmBaseStorage storage=new OsmBaseStorage();
+  storage.setSupressWarnings(DataExtractionSettings.getSettings().isSupressWarningsForDuplicatedId());
   if (addFilter != null) {
     storage.getFilters().add(addFilter);
   }
@@ -55,23 +56,20 @@
     normalizingStreets(progress,country);
   }
   country.doDataPreparation();
-  Transliterator latin=Transliterator.getInstance("Any-Latin;NFD;[:Nonspacing Mark:] Remove;NFC");
-  if (latin != null) {
-    convertEnglishName(country,latin);
-    for (    CityType c : CityType.values()) {
-      for (      City city : country.getCitiesByType(c)) {
-        convertEnglishName(city,latin);
-        for (        Street s : city.getStreets()) {
-          convertEnglishName(s,latin);
-          for (          Building b : s.getBuildings()) {
-            convertEnglishName(b,latin);
-          }
+  convertEnglishName(country);
+  for (  CityType c : CityType.values()) {
+    for (    City city : country.getCitiesByType(c)) {
+      convertEnglishName(city);
+      for (      Street s : city.getStreets()) {
+        convertEnglishName(s);
+        for (        Building b : s.getBuildings()) {
+          convertEnglishName(b);
         }
       }
     }
-    for (    Amenity a : country.getAmenityManager().getAllObjects()) {
-      convertEnglishName(a,latin);
-    }
+  }
+  for (  Amenity a : country.getAmenityManager().getAllObjects()) {
+    convertEnglishName(a);
   }
   return country;
 }
