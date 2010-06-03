@@ -9,19 +9,32 @@
       }
  else {
         cachedDistString=MapUtils.getFormattedDistance(cachedMeters);
-        boundsForDist.right=paintBlack.measureText(cachedDistString) + 25 + boundsForDist.left;
-        boundsForSpeed.right=boundsForDist.right;
+        float right=paintBlack.measureText(cachedDistString) + 25 + boundsForDist.left;
+        if (cachedSpeedString != null) {
+          boundsForSpeed.right=boundsForDist.right=Math.max(right,boundsForDist.right);
+        }
+ else {
+          boundsForDist.right=right;
+        }
       }
     }
   }
+  if (view.getZoom() != cachedZoom) {
+    cachedZoom=view.getZoom();
+    cachedZoomString=view.getZoom() + "";
+  }
+  canvas.drawRoundRect(boundsForZoom,3,3,paintAlphaGray);
+  canvas.drawText(cachedZoomString,boundsForZoom.left + 5,boundsForZoom.bottom - 9,paintBlack);
   if (map.getLastKnownLocation() != null && map.getLastKnownLocation().hasSpeed()) {
     if (cachedSpeed != (int)map.getLastKnownLocation().getSpeed()) {
       cachedSpeed=(int)map.getLastKnownLocation().getSpeed();
       cachedSpeedString=((int)(cachedSpeed * 3.6d)) + " km/h";
+      float right=paintBlack.measureText(cachedSpeedString) + 8 + boundsForSpeed.left;
+      boundsForSpeed.right=boundsForDist.right=Math.max(right,boundsForDist.right);
     }
     if (cachedSpeed > 0) {
       canvas.drawRoundRect(boundsForSpeed,3,3,paintAlphaGray);
-      canvas.drawText(cachedSpeedString,boundsForSpeed.left + 15,boundsForSpeed.bottom - 9,paintBlack);
+      canvas.drawText(cachedSpeedString,boundsForSpeed.left + 8,boundsForSpeed.bottom - 9,paintBlack);
     }
   }
   if (cachedDistString != null) {
