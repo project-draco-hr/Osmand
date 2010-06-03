@@ -1,0 +1,19 @@
+{
+  SQLiteDatabase db=getReadableDatabase();
+  ArrayList<FavouritePoint> list=new ArrayList<FavouritePoint>();
+  if (db != null) {
+    Cursor query=db.rawQuery("SELECT " + FAVOURITE_COL_NAME + ", "+ FAVOURITE_COL_LAT+ ","+ FAVOURITE_COL_LON+ " FROM "+ FAVOURITE_TABLE_NAME,null);
+    if (query.moveToFirst()) {
+      do {
+        FavouritePoint p=new FavouritePoint();
+        p.setName(query.getString(0));
+        p.setLatitude(query.getDouble(1));
+        p.setLongitude(query.getDouble(2));
+        list.add(p);
+      }
+ while (query.moveToNext());
+    }
+    query.close();
+  }
+  return list;
+}
