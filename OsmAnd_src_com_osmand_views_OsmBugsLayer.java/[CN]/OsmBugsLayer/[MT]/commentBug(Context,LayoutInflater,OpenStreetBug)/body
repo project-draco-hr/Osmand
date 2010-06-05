@@ -1,0 +1,28 @@
+{
+  Builder builder=new AlertDialog.Builder(ctx);
+  builder.setTitle("Adding comment to bug");
+  final View view=layoutInflater.inflate(R.layout.open_bug,null);
+  builder.setView(view);
+  ((EditText)view.findViewById(R.id.AuthorName)).setText(OsmandSettings.getUserName(ctx));
+  builder.setNegativeButton("Cancel",null);
+  builder.setPositiveButton("Add comment",new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      String text=((EditText)view.findViewById(R.id.BugMessage)).getText().toString();
+      String author=((EditText)view.findViewById(R.id.AuthorName)).getText().toString();
+      OsmandSettings.setUserName(ctx,author);
+      boolean added=addingComment(bug.getId(),text,author);
+      if (added) {
+        Toast.makeText(ctx,"Comment was successfully added",Toast.LENGTH_LONG).show();
+        clearCache();
+        if (OsmBugsLayer.this.view.getLayers().contains(OsmBugsLayer.this)) {
+          OsmBugsLayer.this.view.refreshMap();
+        }
+      }
+ else {
+        Toast.makeText(ctx,"Exception occured : comment was not added",Toast.LENGTH_LONG).show();
+      }
+    }
+  }
+);
+  builder.show();
+}
