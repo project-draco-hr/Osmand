@@ -1,0 +1,29 @@
+{
+  boolean inside=cTopLatitude >= topLatitude && cLeftLongitude <= leftLongitude && cRightLongitude >= rightLongitude && cBottomLatitude <= bottomLatitude;
+  if (!inside || (czoom != zoom && objects.size() >= SEARCH_LIMIT)) {
+    handlerToLoop.removeMessages(1);
+    final double nTopLatitude=topLatitude + (topLatitude - bottomLatitude);
+    final double nBottomLatitude=bottomLatitude - (topLatitude - bottomLatitude);
+    final double nLeftLongitude=leftLongitude - (rightLongitude - leftLongitude);
+    final double nRightLongitude=rightLongitude + (rightLongitude - leftLongitude);
+    Message msg=Message.obtain(handlerToLoop,new Runnable(){
+      @Override public void run(){
+        if (handlerToLoop != null && !handlerToLoop.hasMessages(1)) {
+          boolean inside=cTopLatitude >= nTopLatitude && cLeftLongitude <= nLeftLongitude && cRightLongitude >= nRightLongitude && cBottomLatitude <= nBottomLatitude;
+          if (!inside || czoom != zoom) {
+            objects=loadingBugs(nTopLatitude,nLeftLongitude,nBottomLatitude,nRightLongitude);
+            cTopLatitude=nTopLatitude;
+            cLeftLongitude=nLeftLongitude;
+            cRightLongitude=nRightLongitude;
+            cBottomLatitude=nBottomLatitude;
+            czoom=zoom;
+            view.refreshMap();
+          }
+        }
+      }
+    }
+);
+    msg.what=1;
+    handlerToLoop.sendMessage(msg);
+  }
+}

@@ -1,0 +1,37 @@
+{
+  List<OpenStreetBug> bugs=new ArrayList<OpenStreetBug>();
+  StringBuilder b=new StringBuilder();
+  b.append("http://openstreetbugs.schokokeks.org/api/0.1/getBugs?");
+  b.append("b=").append(bottomLatitude);
+  b.append("&t=").append(topLatitude);
+  b.append("&l=").append(leftLongitude);
+  b.append("&r=").append(rightLongitude);
+  try {
+    URL url=new URL(b.toString());
+    URLConnection connection=url.openConnection();
+    BufferedReader reader=new BufferedReader(new InputStreamReader(connection.getInputStream()));
+    String st=null;
+    while ((st=reader.readLine()) != null) {
+      Matcher matcher=patternToParse.matcher(st);
+      if (matcher.find()) {
+        OpenStreetBug bug=new OpenStreetBug();
+        bug.setId(Long.parseLong(matcher.group(1)));
+        bug.setLongitude(Double.parseDouble(matcher.group(2)));
+        bug.setLatitude(Double.parseDouble(matcher.group(4)));
+        bug.setName(matcher.group(6));
+        bug.setOpened(matcher.group(7).equals("0"));
+        bugs.add(bug);
+      }
+    }
+  }
+ catch (  IOException e) {
+    log.warn("Error loading bugs",e);
+  }
+catch (  NumberFormatException e) {
+    log.warn("Error loading bugs",e);
+  }
+catch (  RuntimeException e) {
+    log.warn("Error loading bugs",e);
+  }
+  return bugs;
+}
