@@ -1,0 +1,41 @@
+{
+  Map<String,Node> correlated=new LinkedHashMap<String,Node>();
+  Map<Node,String> reverse=new LinkedHashMap<Node,String>();
+  List<TransportStop> stopsToCheck=new ArrayList<TransportStop>(stopsMap.values());
+  for (int k=0; k < stopsToCheck.size(); k++) {
+    TransportStop r=stopsToCheck.get(k);
+    List<Node> closestObjects=busStops.getClosestObjects(r.latitude,r.longitude,0,1);
+    for (int i=0; i < closestObjects.size(); ) {
+      if (MapUtils.getDistance(closestObjects.get(i),r.latitude,r.longitude) > default_dist_to_stop) {
+        closestObjects.remove(i);
+      }
+ else {
+        i++;
+      }
+    }
+    MapUtils.sortListOfEntities(closestObjects,r.latitude,r.longitude);
+    int ind=0;
+    boolean ccorrelated=false;
+    while (ind < closestObjects.size() && !ccorrelated) {
+      Node foundNode=closestObjects.get(ind);
+      if (!reverse.containsKey(foundNode)) {
+        reverse.put(foundNode,r.stopId);
+        correlated.put(r.stopId,foundNode);
+        ccorrelated=true;
+      }
+ else {
+        String stopId=reverse.get(foundNode);
+        TransportStop st=stopsMap.get(stopId);
+        if (MapUtils.getDistance(foundNode,r.latitude,r.longitude) < MapUtils.getDistance(foundNode,st.latitude,st.longitude)) {
+          stopsToCheck.add(st);
+          reverse.put(foundNode,r.stopId);
+          correlated.put(r.stopId,foundNode);
+          correlated.remove(st.stopId);
+          ccorrelated=true;
+        }
+      }
+      ind++;
+    }
+  }
+  return correlated;
+}

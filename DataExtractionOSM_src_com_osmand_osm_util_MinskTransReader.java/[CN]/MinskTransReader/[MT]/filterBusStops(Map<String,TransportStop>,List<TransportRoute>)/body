@@ -1,0 +1,28 @@
+{
+  long time=System.currentTimeMillis();
+  System.out.println("Start : ");
+  OsmBaseStorage storage=new OsmBaseStorage();
+  final Map<String,Relation> definedRoutes=new HashMap<String,Relation>();
+  final DataTileManager<Node> busStops=new DataTileManager<Node>();
+  busStops.setZoom(17);
+  storage.getFilters().add(new IOsmStorageFilter(){
+    @Override public boolean acceptEntityToLoad(    OsmBaseStorage storage,    Entity entity){
+      if (entity.getTag("route") != null) {
+        definedRoutes.put(entity.getTag("route") + "_" + entity.getTag("ref"),(Relation)entity);
+        return true;
+      }
+      if (entity.getTag(OSMTagKey.HIGHWAY) != null && entity.getTag(OSMTagKey.HIGHWAY).equals("bus_stop")) {
+        LatLon e=entity.getLatLon();
+        busStops.registerObject(e.getLatitude(),e.getLongitude(),(Node)entity);
+      }
+      return entity instanceof Node;
+    }
+  }
+);
+  storage.parseOSM(new FileInputStream(pathToMinsk),new ConsoleProgressImplementation());
+  Map<String,Node> correlated=correlateExistingBusStopsWithImported(busStops,stopsMap);
+  removeGeneratedNotUsedBusStops(correlated,definedRoutes,busStops,storage);
+  registerNewRoutesAndEditExisting(stopsMap,routes,storage,definedRoutes,correlated);
+  System.out.println("End time : " + (System.currentTimeMillis() - time));
+  return storage;
+}

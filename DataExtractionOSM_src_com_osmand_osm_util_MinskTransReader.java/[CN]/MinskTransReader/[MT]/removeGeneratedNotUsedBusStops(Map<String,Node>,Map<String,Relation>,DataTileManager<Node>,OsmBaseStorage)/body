@@ -1,0 +1,17 @@
+{
+  Set<Node> usedNodes=new LinkedHashSet<Node>(correlated.values());
+  for (  Relation r : definedRoutes.values()) {
+    for (    Entity e : r.getMembers(null)) {
+      if (e instanceof Node) {
+        usedNodes.add((Node)e);
+      }
+    }
+  }
+  for (  Node stop : busStops.getAllObjects()) {
+    if (!usedNodes.contains(stop) && "yes".equals(stop.getTag("generated"))) {
+      EntityInfo info=storage.getRegisteredEntityInfo().get(stop.getId());
+      info.setAction("delete");
+      System.out.println("[DEL] Remove generated not used stop " + stop.getId() + " "+ stop.getTag("name"));
+    }
+  }
+}

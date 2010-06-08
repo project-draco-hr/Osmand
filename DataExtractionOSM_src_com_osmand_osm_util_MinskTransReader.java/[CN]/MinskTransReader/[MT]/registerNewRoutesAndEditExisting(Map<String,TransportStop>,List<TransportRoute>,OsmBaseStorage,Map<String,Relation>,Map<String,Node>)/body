@@ -1,0 +1,81 @@
+{
+  Map<String,Relation> checkedRoutes=new LinkedHashMap<String,Relation>();
+  Set<String> visitedRoutes=new HashSet<String>();
+  for (  TransportRoute r : routes) {
+    if (!r.transport.equals("bus") && !r.transport.equals("trolleybus")) {
+      continue;
+    }
+    String s=r.transport + "_" + r.routeNum;
+    boolean reverse=r.routeType.equals("B>A");
+    boolean direct=r.routeType.equals("A>B");
+    if (!reverse && !direct) {
+      continue;
+    }
+    if (!visitedRoutes.add(s + "_" + direct)) {
+      continue;
+    }
+    if (definedRoutes.containsKey(s)) {
+      checkedRoutes.put(s,definedRoutes.get(s));
+    }
+ else {
+      if (!checkedRoutes.containsKey(s)) {
+        if (reverse) {
+          System.err.println("Strange route skipped : " + s);
+          continue;
+        }
+        Relation relation=new Relation(id--);
+        relation.putTag("route",r.transport);
+        relation.putTag("ref",r.routeNum);
+        relation.putTag("name",r.routeName);
+        relation.putTag("operator","?????? \"????????????????????\"");
+        relation.putTag("type","route");
+        relation.putTag("generated","yes");
+        checkedRoutes.put(s,relation);
+        storage.getRegisteredEntities().put(relation.getId(),relation);
+        System.out.println("[ADD] Registered new route " + s);
+      }
+      Relation relation=checkedRoutes.get(s);
+      for (int i=0; i < r.routeStops.size(); i++) {
+        String stop=r.routeStops.get(i);
+        if (!stopsMap.containsKey(stop)) {
+          throw new IllegalArgumentException("Stops file is not corresponded to routes file");
+        }
+        if (!correlated.containsKey(stop)) {
+          TransportStop st=stopsMap.get(stop);
+          Node node=new Node(st.latitude,st.longitude,id--);
+          node.putTag("highway","bus_stop");
+          if (st.name != null) {
+            node.putTag("name",st.name);
+          }
+ else {
+            throw new IllegalArgumentException("Something wrong check " + st.stopId);
+          }
+          node.putTag("generated","yes");
+          storage.getRegisteredEntities().put(node.getId(),node);
+          System.out.println("[ADD] Added new bus_stop : " + node.getId() + " "+ st.name+ " minsktrans_stop_id "+ st.stopId);
+          correlated.put(stop,node);
+        }
+        if (i == 0 || i == r.routeStops.size() - 1) {
+          if (direct) {
+            relation.addMember(correlated.get(stop).getId(),"stop");
+          }
+        }
+ else {
+          if (direct) {
+            relation.addMember(correlated.get(stop).getId(),"forward:stop");
+          }
+ else {
+            relation.addMember(correlated.get(stop).getId(),"backward:stop");
+          }
+        }
+      }
+    }
+  }
+  for (  String s : definedRoutes.keySet()) {
+    if (!checkedRoutes.containsKey(s)) {
+      Relation rel=definedRoutes.get(s);
+      storage.getRegisteredEntityInfo().get(rel.getId()).setAction("delete");
+      System.out.println("[DEL] Route is deprecated : " + rel.getTag("route") + "_"+ rel.getTag("ref")+ "  "+ rel.getTag("name"));
+    }
+  }
+}

@@ -2,6 +2,7 @@
   String st=null;
   int line=0;
   List<TransportStop> stopes=new ArrayList<TransportStop>();
+  TransportStop previous=null;
   while ((st=reader.readLine()) != null) {
     if (line++ == 0) {
       continue;
@@ -16,17 +17,23 @@
         current.stopId=newS.trim();
       }
  else       if (i == 4) {
-        current.name=newS;
+        if (newS.length() == 0 && previous != null) {
+          current.name=previous.name;
+        }
+ else {
+          current.name=newS;
+        }
       }
  else       if (i == 5) {
-        current.latitude=Double.parseDouble(newS) / 1e5;
+        current.longitude=Double.parseDouble(newS) / 1e5;
       }
  else       if (i == 6) {
-        current.longitude=Double.parseDouble(newS) / 1e5;
+        current.latitude=Double.parseDouble(newS) / 1e5;
       }
       stI=endI + 1;
       i++;
     }
+    previous=current;
     stopes.add(current);
   }
   return stopes;

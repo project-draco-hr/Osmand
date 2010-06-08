@@ -1,0 +1,18 @@
+{
+  Map<String,Node> result=correlateExistingBusStopsWithImported(busStops,stopsMap);
+  DataTileManager<Entity> nodes=new DataTileManager<Entity>();
+  for (  String trId : result.keySet()) {
+    TransportStop r=stopsMap.get(trId);
+    Way way=new Way(-1);
+    way.addNode(result.get(trId));
+    way.addNode(new Node(r.latitude,r.longitude,-1));
+    nodes.registerObject(r.latitude,r.longitude,way);
+  }
+  for (  String trId : stopsMap.keySet()) {
+    if (!result.containsKey(trId)) {
+      TransportStop r=stopsMap.get(trId);
+      nodes.registerObject(r.latitude,r.longitude,new Node(r.latitude,r.longitude,-1));
+    }
+  }
+  showMapPanel(nodes);
+}

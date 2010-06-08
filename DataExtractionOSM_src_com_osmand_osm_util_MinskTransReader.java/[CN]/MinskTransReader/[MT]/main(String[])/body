@@ -1,15 +1,22 @@
 {
-  FileInputStream fis=new FileInputStream(new File("E:/routes.txt"));
-  BufferedReader reader=new BufferedReader(new InputStreamReader(fis,Charset.forName("cp1251")));
+  FileInputStream fis=new FileInputStream(new File(pathToRoutes));
+  BufferedReader reader=new BufferedReader(new InputStreamReader(fis,Charset.forName("UTF-8")));
   List<TransportRoute> routes=readRoutes(reader);
-  fis=new FileInputStream(new File("E:/stops.txt"));
-  reader=new BufferedReader(new InputStreamReader(fis,Charset.forName("cp1251")));
+  fis=new FileInputStream(new File(pathToStops));
+  reader=new BufferedReader(new InputStreamReader(fis,Charset.forName("UTF-8")));
   List<TransportStop> stops=readStopes(reader);
-  OutputStreamWriter writer=new OutputStreamWriter(new FileOutputStream("E:/routes_out.txt"),Charset.forName("cp1251"));
-  for (  TransportStop r : stops) {
-    writer.write(r.stopId + " lat : " + r.latitude+ " lon : "+ r.longitude+ " "+ r.name+ "\n");
+  Map<String,TransportStop> stopsMap=new LinkedHashMap<String,TransportStop>();
+  for (  TransportStop s : stops) {
+    stopsMap.put(s.stopId,s);
   }
   for (  TransportRoute r : routes) {
-    writer.write(r.routeId + "  " + r.routeNum+ " "+ r.routeType+ " "+ r.routeName+ "\n");
+    for (    String string : r.routeStops) {
+      if (!stopsMap.containsKey(string)) {
+        throw new IllegalArgumentException("Check stop " + string + " of route "+ r.routeName);
+      }
+    }
   }
+  OsmBaseStorage storage=filterBusStops(stopsMap,routes);
+  OsmStorageWriter writer=new OsmStorageWriter();
+  writer.saveStorage(new FileOutputStream(pathToSave),storage,null,true);
 }
