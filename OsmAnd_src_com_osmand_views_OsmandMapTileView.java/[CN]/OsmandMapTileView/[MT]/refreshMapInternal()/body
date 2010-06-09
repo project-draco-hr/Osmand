@@ -1,0 +1,64 @@
+{
+  if (handler.hasMessages(1)) {
+    return;
+  }
+  if (OsmandSettings.isUsingInternetToDownloadTiles(getContext())) {
+    MapTileDownloader.getInstance().refuseAllPreviousRequests();
+  }
+  int tileSize=getTileSize();
+  float tileX=getXTile();
+  float tileY=getYTile();
+  float w=getCenterPointX();
+  float h=getCenterPointY();
+  SurfaceHolder holder=getHolder();
+synchronized (holder) {
+    Canvas canvas=holder.lockCanvas();
+    if (canvas != null) {
+      ResourceManager mgr=ResourceManager.getResourceManager();
+      boolean useInternet=OsmandSettings.isUsingInternetToDownloadTiles(getContext());
+      canvas.save();
+      canvas.rotate(rotate,w,h);
+      boundsRect.set(0,0,getWidth(),getHeight());
+      calculateTileRectangle(boundsRect,w,h,tileX,tileY,tilesRect);
+      try {
+        int left=(int)FloatMath.floor(tilesRect.left);
+        int top=(int)FloatMath.floor(tilesRect.top);
+        int width=(int)(FloatMath.ceil(tilesRect.right) - left);
+        int height=(int)(FloatMath.ceil(tilesRect.bottom) - top);
+        for (int i=0; i < width; i++) {
+          for (int j=0; j < height; j++) {
+            float x1=(i + left - tileX) * tileSize + w;
+            float y1=(j + top - tileY) * tileSize + h;
+            Bitmap bmp=mgr.getTileImageForMapAsync(map,left + i,top + j,zoom,useInternet);
+            if (bmp == null) {
+              if (useInternet) {
+                bmp=mgr.getTileImageFromCache(map,(left + i) / 2,(top + j) / 2,zoom - 1);
+              }
+ else               if (!mgr.tileExistOnFileSystem(map,left + i,top + j,zoom)) {
+                bmp=mgr.getTileImageForMapAsync(map,(left + i) / 2,(top + j) / 2,zoom - 1,false);
+              }
+              if (bmp == null) {
+                drawEmptyTile(canvas,(int)x1,(int)y1);
+              }
+ else {
+                int xZoom=(left + i) % 2 == 0 ? 0 : tileSize / 2;
+                int yZoom=(top + j) % 2 == 0 ? 0 : tileSize / 2;
+                ;
+                bitmapToZoom.set(xZoom,yZoom,xZoom + tileSize / 2,yZoom + tileSize / 2);
+                bitmapToDraw.set(x1,y1,x1 + tileSize,y1 + tileSize);
+                canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
+              }
+            }
+ else {
+              canvas.drawBitmap(bmp,x1,y1,paintBitmap);
+            }
+          }
+        }
+        drawOverMap(canvas);
+      }
+  finally {
+        holder.unlockCanvasAndPost(canvas);
+      }
+    }
+  }
+}

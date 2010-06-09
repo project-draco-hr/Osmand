@@ -14,10 +14,8 @@
   mapInfoLayer=new MapInfoLayer(this);
   mapView.addLayer(mapInfoLayer);
   osmBugsLayer=new OsmBugsLayer(this);
-  SharedPreferences lprefs=getPreferences(MODE_WORLD_READABLE);
-  if (lprefs.contains(POINT_NAVIGATE_LAT)) {
-    navigationLayer.setPointToNavigate(new LatLon(lprefs.getFloat(POINT_NAVIGATE_LAT,0),lprefs.getFloat(POINT_NAVIGATE_LON,0)));
-  }
+  LatLon pointToNavigate=OsmandSettings.getPointToNavigate(this);
+  navigationLayer.setPointToNavigate(pointToNavigate);
   SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);
   if (prefs == null || !prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
     LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
@@ -45,7 +43,7 @@
     @Override public void onClick(    View v){
       backToLocation.setVisibility(View.INVISIBLE);
       if (!isMapLinkedToLocation()) {
-        getPreferences(MODE_WORLD_READABLE).edit().putBoolean(BACK_TO_LOCATION,true).commit();
+        OsmandSettings.setSyncMapToGpsLocation(MapActivity.this,true);
         if (locationLayer.getLastKnownLocation() != null) {
           Location lastKnownLocation=locationLayer.getLastKnownLocation();
           mapView.setLatLon(lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude());

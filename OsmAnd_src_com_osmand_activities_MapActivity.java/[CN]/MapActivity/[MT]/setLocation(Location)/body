@@ -4,7 +4,7 @@
       Log.d(LogUtil.TAG,"Disable sensor");
       ((SensorManager)getSystemService(SENSOR_SERVICE)).unregisterListener(this);
       sensorRegistered=false;
-      locationLayer.setHeading(null,true);
+      locationLayer.setHeading(null);
     }
   }
  else {
@@ -19,18 +19,15 @@
     }
   }
   Log.d(LogUtil.TAG,"Location changed");
-  locationLayer.setLastKnownLocation(location,true);
+  locationLayer.setLastKnownLocation(location);
   if (location != null) {
     if (isMapLinkedToLocation()) {
       if (location.hasBearing() && OsmandSettings.isRotateMapToBearing(this)) {
-        mapView.setRotateWithLocation(-location.getBearing(),location.getLatitude(),location.getLongitude());
+        mapView.setRotate(-location.getBearing());
       }
- else {
-        mapView.setLatLon(location.getLatitude(),location.getLongitude());
-      }
+      mapView.setLatLon(location.getLatitude(),location.getLongitude());
     }
  else {
-      mapView.refreshMap();
       if (backToLocation.getVisibility() != View.VISIBLE) {
         backToLocation.setVisibility(View.VISIBLE);
       }
