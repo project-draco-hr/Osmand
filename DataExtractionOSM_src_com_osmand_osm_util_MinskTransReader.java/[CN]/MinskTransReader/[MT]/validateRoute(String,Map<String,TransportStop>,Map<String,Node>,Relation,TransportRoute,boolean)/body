@@ -1,0 +1,48 @@
+{
+  Collection<Entity> stops=relation.getMembers("stop");
+  routeStr+=direct ? "_forward" : "_backward";
+  if (stops.size() != 2) {
+    System.out.println("[INVALID ] " + routeStr + " : doesn't contain start/final stop.");
+    return false;
+  }
+  List<Entity> list=new ArrayList<Entity>(relation.getMembers(direct ? "forward:stop" : "backward:stop"));
+  if ((list.size() + 2) != route.routeStops.size()) {
+    System.out.println("[INVALID ] " + routeStr + " number of stops isn't equal ("+ ((list.size() + 2))+ " relation != "+ route.routeStops.size()+ " route) ");
+    return false;
+  }
+  Iterator<Entity> it=stops.iterator();
+  Entity start=it.next();
+  Entity end=it.next();
+  if (direct) {
+    list.add(0,start);
+    list.add(end);
+  }
+ else {
+    list.add(0,end);
+    list.add(start);
+  }
+  for (int i=0; i < list.size(); i++) {
+    String st=route.routeStops.get(i);
+    Node correlatedNode=correlated.get(st);
+    TransportStop trStop=trStops.get(st);
+    String stStr=trStop.stopId + " " + trStop.name;
+    Entity e=list.get(i);
+    if (correlatedNode == null) {
+      double dist=MapUtils.getDistance(e.getLatLon(),trStop.latitude,trStop.longitude);
+      if (dist > 20) {
+        System.out.println("[INVALID ]" + routeStr + " stop "+ (i + 1)+ " was not correlated "+ stStr+ " distance = "+ dist);
+        return false;
+      }
+    }
+ else     if (correlatedNode.getId() != e.getId()) {
+      double dist=MapUtils.getDistance(correlatedNode,e.getLatLon());
+      if (i == list.size() - 1 && !direct && dist < 150) {
+        continue;
+      }
+      String eStop=e.getId() + " " + e.getTag(OSMTagKey.NAME);
+      System.out.println("[INVALID ] " + routeStr + " stop "+ (i + 1)+ " wrong : "+ stStr+ " != "+ eStop+ " dist = "+ dist+ " current correlated to "+ correlatedNode.getId());
+      return false;
+    }
+  }
+  return true;
+}

@@ -27,11 +27,13 @@
   storage.getFilters().add(filter);
   try {
     filter.initDatabase();
+    progress.setGeneralProgress("[40 of 100]");
     storage.parseOSM(stream,progress,streamFile,parseEntityInfo);
     if (log.isInfoEnabled()) {
       log.info("File parsed : " + (System.currentTimeMillis() - st));
     }
     progress.finishTask();
+    progress.setGeneralProgress("[55 of 100]");
     filter.correlateData(storage,progress);
   }
   finally {
@@ -44,14 +46,21 @@
   int i=f.getName().indexOf('.');
   country.setName(Algoritms.capitalizeFirstLetterAndLowercase(f.getName().substring(0,i)));
   country.setStorage(storage);
+  progress.setGeneralProgress("[60 of 100]");
+  progress.startTask("Indexing poi...",-1);
   if (indexPOI) {
     readingAmenities(amenities,country);
   }
+  progress.setGeneralProgress("[65 of 100]");
+  progress.startTask("Indexing cities...",-1);
   readingCities(places,country);
   if (indexAddress) {
+    progress.setGeneralProgress("[80 of 100]");
     readingStreets(progress,ways,country);
+    progress.setGeneralProgress("[95 of 100]");
     readingBuildings(progress,buildings,country);
   }
+  progress.setGeneralProgress("[100 of 100]");
   if (normalizeStreets) {
     normalizingStreets(progress,country);
   }

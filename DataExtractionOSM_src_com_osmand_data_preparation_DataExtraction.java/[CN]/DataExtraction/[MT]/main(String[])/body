@@ -1,0 +1,35 @@
+{
+  ArrayList<Entity> amenities=new ArrayList<Entity>();
+  ArrayList<Entity> buildings=new ArrayList<Entity>();
+  ArrayList<Node> places=new ArrayList<Node>();
+  ArrayList<Way> ways=new ArrayList<Way>();
+  long time=System.currentTimeMillis();
+  OsmBaseStorage storage=new OsmBaseStorage();
+  String path="E:\\Information\\OSM maps\\belarus_2010_06_02.osm";
+  String wDir="E:\\Information\\OSM maps\\osmand\\";
+  File f=new File(path);
+  InputStream stream=new FileInputStream(f);
+  InputStream streamFile=stream;
+  if (path.endsWith(".bz2")) {
+    if (stream.read() != 'B' || stream.read() != 'Z') {
+      throw new RuntimeException("The source stream must start with the characters BZ if it is to be read as a BZip2 stream.");
+    }
+ else {
+      stream=new CBZip2InputStream(stream);
+    }
+  }
+  storage.getFilters().add(new IOsmStorageFilter(){
+    @Override public boolean acceptEntityToLoad(    OsmBaseStorage storage,    Entity entity){
+      return false;
+    }
+  }
+);
+  DataExtraction e=new DataExtraction(true,true,true,false,true,new File(wDir));
+  DataExtractionOsmFilter filter=e.new DataExtractionOsmFilter(amenities,buildings,places,ways);
+  filter.initDatabase();
+  storage.getFilters().add(filter);
+  storage.parseOSM(stream,new ConsoleProgressImplementation(),streamFile,true);
+  System.out.println("Total mem: " + Runtime.getRuntime().totalMemory() + " free : "+ Runtime.getRuntime().freeMemory());
+  System.out.println("All time " + (System.currentTimeMillis() - time) + " ms");
+  System.out.println(amenities.size() + " " + buildings.size()+ " "+ places.size()+ " "+ ways.size());
+}

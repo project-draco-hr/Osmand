@@ -1,0 +1,45 @@
+{
+  Action start=new AbstractAction("Mark start point"){
+    private static final long serialVersionUID=507156107455281238L;
+    public void actionPerformed(    ActionEvent e){
+      Point popupMenuPoint=map.getPopupMenuPoint();
+      double fy=(popupMenuPoint.y - map.getCenterPointY()) / map.getTileSize();
+      double fx=(popupMenuPoint.x - map.getCenterPointX()) / map.getTileSize();
+      double latitude=MapUtils.getLatitudeFromTile(map.getZoom(),map.getYTile() + fy);
+      double longitude=MapUtils.getLongitudeFromTile(map.getZoom(),map.getXTile() + fx);
+      startRoute=new LatLon(latitude,longitude);
+      map.repaint();
+    }
+  }
+;
+  menu.add(start);
+  Action end=new AbstractAction("Mark end point"){
+    private static final long serialVersionUID=4446789424902471319L;
+    public void actionPerformed(    ActionEvent e){
+      Point popupMenuPoint=map.getPopupMenuPoint();
+      double fy=(popupMenuPoint.y - map.getCenterPointY()) / map.getTileSize();
+      double fx=(popupMenuPoint.x - map.getCenterPointX()) / map.getTileSize();
+      double latitude=MapUtils.getLatitudeFromTile(map.getZoom(),map.getYTile() + fy);
+      double longitude=MapUtils.getLongitudeFromTile(map.getZoom(),map.getXTile() + fx);
+      endRoute=new LatLon(latitude,longitude);
+      map.repaint();
+    }
+  }
+;
+  menu.add(end);
+  Action route=new AbstractAction("Calculate route"){
+    private static final long serialVersionUID=507156107455281238L;
+    public void actionPerformed(    ActionEvent e){
+      List<Way> ways=route(startRoute,endRoute);
+      DataTileManager<Way> points=new DataTileManager<Way>();
+      points.setZoom(11);
+      for (      Way w : ways) {
+        LatLon n=w.getLatLon();
+        points.registerObject(n.getLatitude(),n.getLongitude(),w);
+      }
+      map.setPoints(points);
+    }
+  }
+;
+  menu.add(route);
+}

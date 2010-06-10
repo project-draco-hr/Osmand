@@ -23,52 +23,13 @@
       }
     }
   }
-  g.setColor(Color.black);
-  for (  Point p : pointsToDraw) {
-    g.drawOval(p.x,p.y,3,3);
-    g.fillOval(p.x,p.y,3,3);
-  }
-  g.setColor(Color.green);
-  if (startRoute != null) {
-    int x=getMapXForPoint(startRoute.getLongitude());
-    int y=getMapYForPoint(startRoute.getLatitude());
-    g.drawOval(x,y,12,12);
-    g.fillOval(x,y,12,12);
-  }
-  g.setColor(Color.red);
-  if (endRoute != null) {
-    int x=getMapXForPoint(endRoute.getLongitude());
-    int y=getMapYForPoint(endRoute.getLatitude());
-    g.drawOval(x,y,12,12);
-    g.fillOval(x,y,12,12);
-  }
-  g.setColor(Color.black);
-  int[] xPoints=new int[4];
-  int[] yPoints=new int[4];
-  for (  Line2D p : linesToDraw) {
-    AffineTransform transform=new AffineTransform();
-    transform.translate(p.getX1(),p.getY1());
-    transform.rotate(p.getX2() - p.getX1(),p.getY2() - p.getY1());
-    xPoints[1]=xPoints[0]=0;
-    xPoints[2]=xPoints[3]=(int)Math.sqrt((p.getX2() - p.getX1()) * (p.getX2() - p.getX1()) + (p.getY2() - p.getY1()) * (p.getY2() - p.getY1())) + 1;
-    yPoints[3]=yPoints[0]=0;
-    yPoints[2]=yPoints[1]=2;
-    for (int i=0; i < 4; i++) {
-      Point2D po=transform.transform(new Point(xPoints[i],yPoints[i]),null);
-      xPoints[i]=(int)po.getX();
-      yPoints[i]=(int)po.getY();
-    }
-    g.drawPolygon(xPoints,yPoints,4);
-    g.fillPolygon(xPoints,yPoints,4);
+  for (  MapPanelLayer l : layers) {
+    l.paintLayer(g);
   }
   if (selectionArea.isVisible()) {
     g.setColor(new Color(0,0,230,50));
     Rectangle r=selectionArea.getSelectedArea();
     g.fillRect(r.x,r.y,r.width,r.height);
   }
-  g.setColor(Color.black);
-  g.fillOval(getWidth() / 2 - 2,getHeight() / 2 - 2,4,4);
-  g.drawOval(getWidth() / 2 - 2,getHeight() / 2 - 2,4,4);
-  g.drawOval(getWidth() / 2 - 5,getHeight() / 2 - 5,10,10);
   super.paintComponent(g);
 }

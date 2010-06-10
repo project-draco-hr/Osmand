@@ -1,0 +1,44 @@
+{
+  if (points != null) {
+    double xTileLeft=map.getXTile() - map.getCenterPointX() / map.getTileSize();
+    double xTileRight=map.getXTile() + map.getCenterPointX() / map.getTileSize();
+    double yTileUp=map.getYTile() - map.getCenterPointY() / map.getTileSize();
+    double yTileDown=map.getYTile() + map.getCenterPointY() / map.getTileSize();
+    double latDown=MapUtils.getLatitudeFromTile(map.getZoom(),yTileDown);
+    double longDown=MapUtils.getLongitudeFromTile(map.getZoom(),xTileRight);
+    double latUp=MapUtils.getLatitudeFromTile(map.getZoom(),yTileUp);
+    double longUp=MapUtils.getLongitudeFromTile(map.getZoom(),xTileLeft);
+    List<? extends Entity> objects=points.getObjects(latUp,longUp,latDown,longDown);
+    pointsToDraw.clear();
+    linesToDraw.clear();
+    for (    Entity e : objects) {
+      if (e instanceof Way) {
+        List<Node> nodes=((Way)e).getNodes();
+        if (nodes.size() > 1) {
+          int prevPixX=0;
+          int prevPixY=0;
+          for (int i=0; i < nodes.size(); i++) {
+            Node n=nodes.get(i);
+            int pixX=(int)(MapUtils.getPixelShiftX(map.getZoom(),n.getLongitude(),map.getLongitude(),map.getTileSize()) + map.getCenterPointX());
+            int pixY=(int)(MapUtils.getPixelShiftY(map.getZoom(),n.getLatitude(),map.getLatitude(),map.getTileSize()) + map.getCenterPointY());
+            if (i > 0) {
+              linesToDraw.add(new Line2D.Float(pixX,pixY,prevPixX,prevPixY));
+            }
+            prevPixX=pixX;
+            prevPixY=pixY;
+          }
+        }
+      }
+ else       if (e instanceof Node) {
+        Node n=(Node)e;
+        int pixX=(int)(MapUtils.getPixelShiftX(map.getZoom(),n.getLongitude(),map.getLongitude(),map.getTileSize()) + map.getCenterPointX());
+        int pixY=(int)(MapUtils.getPixelShiftY(map.getZoom(),n.getLatitude(),map.getLatitude(),map.getTileSize()) + map.getCenterPointY());
+        if (pixX >= 0 && pixY >= 0) {
+          pointsToDraw.add(new Point(pixX,pixY));
+        }
+      }
+ else {
+      }
+    }
+  }
+}
