@@ -7,22 +7,17 @@
   TextView label=(TextView)row.findViewById(R.id.poi_label);
   TextView distanceLabel=(TextView)row.findViewById(R.id.poidistance_label);
   ImageView icon=(ImageView)row.findViewById(R.id.poi_icon);
-  Object model=getModel(position);
-  if (model instanceof Amenity) {
-    Amenity anemity=(Amenity)model;
-    if (anemity != null) {
-      LatLon lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(SearchPOIActivity.this);
-      int dist=(int)(MapUtils.getDistance(anemity.getLocation(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
-      String str=anemity.getStringWithoutType(OsmandSettings.usingEnglishNames(SearchPOIActivity.this));
-      label.setText(str);
-      if (anemity.getOpeningHours() != null) {
-        icon.setImageResource(R.drawable.poi);
-      }
- else {
-        icon.setImageResource(R.drawable.closed_poi);
-      }
-      distanceLabel.setText(" " + dist + " m  ");
-    }
+  Amenity amenity=getItem(position);
+  LatLon lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(SearchPOIActivity.this);
+  int dist=(int)(MapUtils.getDistance(amenity.getLocation(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
+  String str=amenity.getStringWithoutType(OsmandSettings.usingEnglishNames(SearchPOIActivity.this));
+  label.setText(str);
+  if (amenity.getOpeningHours() != null) {
+    icon.setImageResource(R.drawable.poi);
   }
+ else {
+    icon.setImageResource(R.drawable.closed_poi);
+  }
+  distanceLabel.setText(" " + dist + " m  ");
   return (row);
 }

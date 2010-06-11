@@ -8,7 +8,7 @@
       if (zoom > finalZoom) {
         --zoom;
       }
-      amenityList=resourceManager.searchAmenities(amenityType,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),zoom,-1);
+      amenityList=resourceManager.searchAmenities(filter,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),zoom,-1);
       if (amenityList != null) {
         MapUtils.sortListOfMapObject(amenityList,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude());
         amenityAdapter.setNewModel(amenityList);
@@ -18,20 +18,15 @@
   }
 );
   Bundle bundle=this.getIntent().getExtras();
-  String anemity=bundle.getString(AMENITY_TYPE);
-  if (anemity != null) {
+  String filterId=bundle.getString(AMENITY_FILTER);
+  if (filterId != null) {
     ResourceManager resourceManager=ResourceManager.getResourceManager();
     lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(this);
-    amenityType=findAmenityType(anemity);
-    if (amenityType != null) {
-      amenityList=resourceManager.searchAmenities(amenityType,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),zoom,maxCount);
-    }
- else {
-      amenityList=resourceManager.searchAmenities(amenityType,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),zoom + 2,maxCount);
-    }
+    filter=PoiFiltersHelper.getFilterById(this,filterId);
+    amenityList=resourceManager.searchAmenities(filter,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),zoom,maxCount);
     if (amenityList != null) {
       MapUtils.sortListOfMapObject(amenityList,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude());
-      if (amenityType == null) {
+      if (filter.isStandardFilter()) {
         while (amenityList.size() > limitOfClosest) {
           amenityList.remove(amenityList.size() - 1);
         }
