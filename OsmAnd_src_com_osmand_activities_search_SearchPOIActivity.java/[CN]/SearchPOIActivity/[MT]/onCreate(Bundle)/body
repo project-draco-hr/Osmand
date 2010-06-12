@@ -2,20 +2,23 @@
   super.onCreate(icicle);
   setContentView(R.layout.searchpoi);
   searchPOILevel=(Button)findViewById(R.id.SearchPOILevelButton);
+  searchArea=(TextView)findViewById(R.id.SearchAreaText);
   searchPOILevel.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       amenityAdapter.setNewModel(filter.searchFurther(lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
+      searchArea.setText(filter.getSearchArea());
       searchPOILevel.setEnabled(filter.isSearchFurtherAvailable());
     }
   }
 );
   Bundle bundle=this.getIntent().getExtras();
   String filterId=bundle.getString(AMENITY_FILTER);
-  if (filterId != null) {
-    lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(this);
-    filter=PoiFiltersHelper.getFilterById(this,filterId);
+  lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(this);
+  filter=PoiFiltersHelper.getFilterById(this,filterId);
+  if (filter != null) {
     amenityAdapter=new AmenityAdapter(filter.initializeNewSearch(lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),40));
     setListAdapter(amenityAdapter);
+    searchArea.setText(filter.getSearchArea());
   }
   ListView lv=getListView();
   lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
