@@ -1,14 +1,21 @@
 {
   File file=new File(Environment.getExternalStorageDirectory(),POI_PATH);
+  List<String> warnings=new ArrayList<String>();
   closeAmenities();
   if (file.exists() && file.canRead()) {
     for (    File f : file.listFiles()) {
       if (f.getName().endsWith(IndexConstants.POI_INDEX_EXT)) {
         AmenityIndexRepository repository=new AmenityIndexRepository();
         progress.startTask("Indexing poi " + f.getName(),-1);
-        repository.initialize(progress,f);
-        amenityRepositories.add(repository);
+        boolean initialized=repository.initialize(progress,f);
+        if (initialized) {
+          amenityRepositories.add(repository);
+        }
+ else {
+          warnings.add("The version of index '" + f.getName() + "'is not supported");
+        }
       }
     }
   }
+  return warnings;
 }

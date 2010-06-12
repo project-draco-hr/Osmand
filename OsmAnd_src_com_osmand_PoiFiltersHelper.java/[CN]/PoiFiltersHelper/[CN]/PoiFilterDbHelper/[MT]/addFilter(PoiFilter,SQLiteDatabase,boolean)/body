@@ -1,0 +1,20 @@
+{
+  if (db != null) {
+    if (!addOnlyCategories) {
+      db.execSQL("INSERT INTO " + FILTER_NAME + " VALUES (?, ?, ?)",new Object[]{p.getName(),p.getFilterId(),p.getFilterByName()});
+    }
+    Map<AmenityType,List<String>> types=p.getAcceptedTypes();
+    for (    AmenityType a : types.keySet()) {
+      if (types.get(a) == null) {
+        db.execSQL("INSERT INTO " + CATEGORIES_NAME + " VALUES (?, ?, ?)",new Object[]{p.getFilterId(),AmenityType.valueToString(a),null});
+      }
+ else {
+        for (        String s : types.get(a)) {
+          db.execSQL("INSERT INTO " + CATEGORIES_NAME + " VALUES (?, ?, ?)",new Object[]{p.getFilterId(),AmenityType.valueToString(a),s});
+        }
+      }
+    }
+    return true;
+  }
+  return false;
+}

@@ -1,0 +1,44 @@
+{
+  SQLiteDatabase db=getReadableDatabase();
+  ArrayList<PoiFilter> list=new ArrayList<PoiFilter>();
+  if (db != null) {
+    Cursor query=db.rawQuery("SELECT " + CATEGORIES_FILTER_ID + ", "+ CATEGORIES_COL_CATEGORY+ ","+ CATEGORIES_COL_SUBCATEGORY+ " FROM "+ CATEGORIES_NAME,null);
+    Map<String,Map<AmenityType,List<String>>> map=new LinkedHashMap<String,Map<AmenityType,List<String>>>();
+    if (query.moveToFirst()) {
+      do {
+        String filterId=query.getString(0);
+        if (!map.containsKey(filterId)) {
+          map.put(filterId,new LinkedHashMap<AmenityType,List<String>>());
+        }
+        Map<AmenityType,List<String>> m=map.get(filterId);
+        AmenityType a=AmenityType.fromString(query.getString(1));
+        String subCategory=query.getString(2);
+        if (subCategory == null) {
+          m.put(a,null);
+        }
+ else {
+          if (m.get(a) == null) {
+            m.put(a,new ArrayList<String>());
+          }
+          m.get(a).add(subCategory);
+        }
+      }
+ while (query.moveToNext());
+    }
+    query.close();
+    query=db.rawQuery("SELECT " + FILTER_COL_ID + ", "+ FILTER_COL_NAME+ ","+ FILTER_COL_FILTERBYNAME+ " FROM "+ FILTER_NAME,null);
+    if (query.moveToFirst()) {
+      do {
+        String filterId=query.getString(0);
+        if (map.containsKey(filterId)) {
+          PoiFilter filter=new PoiFilter(query.getString(1),filterId,map.get(filterId));
+          filter.setFilterByName(query.getString(2));
+          list.add(filter);
+        }
+      }
+ while (query.moveToNext());
+    }
+    query.close();
+  }
+  return list;
+}
