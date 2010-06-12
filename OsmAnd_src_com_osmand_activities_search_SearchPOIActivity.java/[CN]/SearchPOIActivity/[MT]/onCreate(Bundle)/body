@@ -4,36 +4,19 @@
   searchPOILevel=(Button)findViewById(R.id.SearchPOILevelButton);
   searchPOILevel.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      ResourceManager resourceManager=ResourceManager.getResourceManager();
-      if (zoom > finalZoom) {
-        --zoom;
-      }
-      amenityList=resourceManager.searchAmenities(filter,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),zoom,-1);
-      if (amenityList != null) {
-        MapUtils.sortListOfMapObject(amenityList,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude());
-        amenityAdapter.setNewModel(amenityList);
-      }
-      searchPOILevel.setEnabled(zoom > finalZoom);
+      amenityList=filter.searchFurther(lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude());
+      amenityAdapter.setNewModel(amenityList);
+      searchPOILevel.setEnabled(filter.isSearchFurtherAvailable());
     }
   }
 );
   Bundle bundle=this.getIntent().getExtras();
   String filterId=bundle.getString(AMENITY_FILTER);
   if (filterId != null) {
-    ResourceManager resourceManager=ResourceManager.getResourceManager();
     lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(this);
     filter=PoiFiltersHelper.getFilterById(this,filterId);
-    amenityList=resourceManager.searchAmenities(filter,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),zoom,maxCount);
-    if (amenityList != null) {
-      MapUtils.sortListOfMapObject(amenityList,lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude());
-      if (filter.isStandardFilter()) {
-        while (amenityList.size() > limitOfClosest) {
-          amenityList.remove(amenityList.size() - 1);
-        }
-      }
-      amenityAdapter=new AmenityAdapter(amenityList);
-      setListAdapter(amenityAdapter);
-    }
+    amenityAdapter=new AmenityAdapter(filter.initializeNewSearch(lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),40));
+    setListAdapter(amenityAdapter);
   }
   ListView lv=getListView();
   lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
