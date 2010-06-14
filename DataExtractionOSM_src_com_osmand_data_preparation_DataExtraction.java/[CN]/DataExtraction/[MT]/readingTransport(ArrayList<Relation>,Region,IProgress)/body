@@ -1,0 +1,56 @@
+{
+  progress.startTask("Reading transport...",-1);
+  Map<String,List<TransportRoute>> routes=country.getTransportRoutes();
+  Map<Long,TransportStop> routeStops=new LinkedHashMap<Long,TransportStop>();
+  for (  Relation rel : transport) {
+    String ref=rel.getTag(OSMTagKey.REF);
+    String route=rel.getTag(OSMTagKey.ROUTE);
+    if (route == null || ref == null) {
+      continue;
+    }
+    String operator=rel.getTag(OSMTagKey.OPERATOR);
+    if (operator != null) {
+      route=operator + " : " + route;
+    }
+    if (!routes.containsKey(route)) {
+      routes.put(route,new ArrayList<TransportRoute>());
+    }
+    TransportRoute r=new TransportRoute(rel,ref);
+    for (    Entry<Entity,String> e : rel.getMemberEntities().entrySet()) {
+      if (e.getValue().contains("stop")) {
+        if (e.getKey() instanceof Node) {
+          if (!routeStops.containsKey(e.getKey().getId())) {
+            routeStops.put(e.getKey().getId(),new TransportStop(e.getKey()));
+          }
+          TransportStop stop=routeStops.get(e.getKey().getId());
+          boolean forward=e.getValue().contains("forward") || !e.getValue().contains("backward");
+          if (forward) {
+            r.getForwardStops().add(stop);
+          }
+ else {
+            r.getBackwardStops().add(stop);
+          }
+        }
+      }
+ else       if (e.getKey() instanceof Way) {
+        r.addWay((Way)e.getKey());
+      }
+    }
+    if (r.getBackwardStops().isEmpty() && !r.getForwardStops().isEmpty()) {
+      List<TransportStop> stops=r.getBackwardStops();
+      for (      TransportStop s : r.getForwardStops()) {
+        stops.add(0,s);
+      }
+    }
+ else     if (!r.getForwardStops().isEmpty()) {
+      if (r.getForwardStops().get(0) != r.getBackwardStops().get(r.getBackwardStops().size() - 1)) {
+        r.getBackwardStops().add(r.getForwardStops().get(0));
+      }
+    }
+ else {
+      continue;
+    }
+    routes.get(route).add(r);
+  }
+  progress.finishTask();
+}

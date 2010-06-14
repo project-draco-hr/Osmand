@@ -24,6 +24,23 @@
               mapPanel.setLatLon(location.getLatitude(),location.getLongitude());
               mapPanel.requestFocus();
             }
+            if (o instanceof TransportRoute) {
+              DataTileManager<Entity> ways=new DataTileManager<Entity>();
+              for (              Way w : ((TransportRoute)o).getWays()) {
+                LatLon l=w.getLatLon();
+                ways.registerObject(l.getLatitude(),l.getLongitude(),w);
+              }
+              for (              TransportStop w : ((TransportRoute)o).getBackwardStops()) {
+                LatLon l=w.getLocation();
+                ways.registerObject(l.getLatitude(),l.getLongitude(),new Node(l.getLatitude(),l.getLongitude(),w.getId()));
+              }
+              for (              TransportStop w : ((TransportRoute)o).getForwardStops()) {
+                LatLon l=w.getLocation();
+                ways.registerObject(l.getLatitude(),l.getLongitude(),new Node(l.getLatitude(),l.getLongitude(),w.getId()));
+              }
+              mapPanel.setPoints(ways);
+              mapPanel.requestFocus();
+            }
           }
  else           if (o instanceof Entity) {
             Entity c=(Entity)o;

@@ -3,6 +3,7 @@
   final ArrayList<Entity> buildings=new ArrayList<Entity>();
   final ArrayList<Entity> amenities=new ArrayList<Entity>();
   final ArrayList<Way> ways=new ArrayList<Way>();
+  final ArrayList<Relation> transport=new ArrayList<Relation>();
   File f=new File(path);
   InputStream stream=new FileInputStream(f);
   InputStream streamFile=stream;
@@ -23,7 +24,7 @@
   if (addFilter != null) {
     storage.getFilters().add(addFilter);
   }
-  DataExtractionOsmFilter filter=new DataExtractionOsmFilter(amenities,buildings,places,ways);
+  DataExtractionOsmFilter filter=new DataExtractionOsmFilter(amenities,buildings,places,ways,transport);
   storage.getFilters().add(filter);
   try {
     filter.initDatabase();
@@ -64,6 +65,9 @@
   if (normalizeStreets) {
     normalizingStreets(progress,country);
   }
+  if (indexTransport) {
+    readingTransport(transport,country,progress);
+  }
   country.doDataPreparation();
   convertEnglishName(country);
   for (  CityType c : CityType.values()) {
@@ -79,6 +83,17 @@
   }
   for (  Amenity a : country.getAmenityManager().getAllObjects()) {
     convertEnglishName(a);
+  }
+  for (  List<TransportRoute> r : country.getTransportRoutes().values()) {
+    for (    TransportRoute route : r) {
+      convertEnglishName(route);
+      for (      TransportStop s : route.getBackwardStops()) {
+        convertEnglishName(s);
+      }
+      for (      TransportStop s : route.getForwardStops()) {
+        convertEnglishName(s);
+      }
+    }
   }
   return country;
 }

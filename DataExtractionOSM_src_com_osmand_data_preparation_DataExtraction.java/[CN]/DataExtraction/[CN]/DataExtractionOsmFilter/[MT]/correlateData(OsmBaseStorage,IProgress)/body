@@ -7,18 +7,25 @@
   final PreparedStatement pselect=conn.prepareStatement("select * from node where id = ?");
   Map<Long,Entity> map=new LinkedHashMap<Long,Entity>();
   progress.startTask("Correlating data...",storage.getRegisteredEntities().size());
-  for (  Entity e : storage.getRegisteredEntities().values()) {
+  Collection<Entity> values=new ArrayList<Entity>(storage.getRegisteredEntities().values());
+  for (  Entity e : values) {
     progress.progress(1);
-    if (e instanceof Way) {
+    if (e instanceof Way || e instanceof Relation) {
       map.clear();
-      for (      Long i : ((Way)e).getNodeIds()) {
-        pselect.setLong(1,i);
-        if (pselect.execute()) {
-          ResultSet rs=pselect.getResultSet();
-          if (rs.next()) {
-            map.put(i,new Node(rs.getDouble(2),rs.getDouble(3),rs.getLong(1)));
+      Collection<Long> ids=e instanceof Way ? ((Way)e).getNodeIds() : ((Relation)e).getMemberIds();
+      for (      Long i : ids) {
+        if (!storage.getRegisteredEntities().containsKey(i)) {
+          pselect.setLong(1,i);
+          if (pselect.execute()) {
+            ResultSet rs=pselect.getResultSet();
+            if (rs.next()) {
+              storage.getRegisteredEntities().put(i,new Node(rs.getDouble(2),rs.getDouble(3),rs.getLong(1)));
+            }
+            rs.close();
           }
-          rs.close();
+        }
+        if (storage.getRegisteredEntities().containsKey(i)) {
+          map.put(i,storage.getRegisteredEntities().get(i));
         }
       }
       e.initializeLinks(map);
