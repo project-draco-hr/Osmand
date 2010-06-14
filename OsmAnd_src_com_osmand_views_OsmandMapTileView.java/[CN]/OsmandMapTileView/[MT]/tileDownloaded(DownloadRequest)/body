@@ -1,6 +1,9 @@
 {
-  if (request == null) {
+  if (request == null || rotate != 0) {
     refreshMap();
+    return;
+  }
+  if (request.error) {
     return;
   }
   if (request.zoom != this.zoom) {
@@ -23,13 +26,13 @@ synchronized (holder) {
       try {
         ResourceManager mgr=ResourceManager.getResourceManager();
         Bitmap bmp=mgr.getTileImageForMapSync(map,request.xTile,request.yTile,zoom,false);
-        float x=(request.xTile - getXTile()) * getTileSize() + w;
-        float y=(request.yTile - getYTile()) * getTileSize() + h;
+        float x=(request.xTile - tileX) * getTileSize() + w;
+        float y=(request.yTile - tileY) * getTileSize() + h;
         if (bmp == null) {
           drawEmptyTile(canvas,x,y);
         }
  else {
-          canvas.drawBitmap(bmp,x,y,null);
+          canvas.drawBitmap(bmp,x,y,paintBitmap);
         }
         drawOverMap(canvas);
       }
