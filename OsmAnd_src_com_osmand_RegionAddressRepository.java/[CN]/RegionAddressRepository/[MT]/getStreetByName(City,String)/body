@@ -2,5 +2,12 @@
   if (city.isEmptyWithStreets()) {
     preloadStreets(city);
   }
-  return city.getStreet(name);
+  if (city.getPostcodes().isEmpty()) {
+    preloadPostcodes(city);
+  }
+  Street street=city.getStreet(name);
+  if (street == null) {
+    street=city.getPostcodes().contains(name.toUpperCase()) ? new PostcodeBasedStreet(city,name) : null;
+  }
+  return street;
 }
