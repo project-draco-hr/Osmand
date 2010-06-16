@@ -1,22 +1,17 @@
 {
   if (city.getPostcodes().isEmpty()) {
-    try {
-      Cursor query=db.query(true,IndexBuildingTable.getTable(),new String[]{IndexBuildingTable.POSTCODE.toString()},null,null,null,null,null,null);
-      log.debug("Start loading postcodes for " + city.getName());
-      if (query.moveToFirst()) {
-        do {
-          String postcode=query.getString(0);
-          if (postcode != null) {
-            city.getPostcodes().add(postcode);
-          }
+    Cursor query=db.query(true,IndexBuildingTable.getTable(),new String[]{IndexBuildingTable.POSTCODE.toString()},null,null,null,null,null,null);
+    log.debug("Start loading postcodes for " + city.getName());
+    if (query.moveToFirst()) {
+      do {
+        String postcode=query.getString(0);
+        if (postcode != null) {
+          city.getPostcodes().add(postcode);
         }
- while (query.moveToNext());
       }
-      query.close();
-      log.debug("Loaded " + city.getPostcodes().size() + " buildings");
+ while (query.moveToNext());
     }
- catch (    Throwable t) {
-      log.warn("Can't load postcodes information. It might be that you are using old version of index.",t);
-    }
+    query.close();
+    log.debug("Loaded " + city.getPostcodes().size() + " postcodes ");
   }
 }

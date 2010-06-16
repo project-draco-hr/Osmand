@@ -1,25 +1,12 @@
 {
-  if (objects != null) {
-    int ex=(int)point.x;
-    int ey=(int)point.y;
-    int radius=getRadiusPoi(view.getZoom()) * 3 / 2;
-    try {
-      for (int i=0; i < objects.size(); i++) {
-        Amenity n=objects.get(i);
-        int x=view.getRotatedMapXForPoint(n.getLocation().getLatitude(),n.getLocation().getLongitude());
-        int y=view.getRotatedMapYForPoint(n.getLocation().getLatitude(),n.getLocation().getLongitude());
-        if (Math.abs(x - ex) <= radius && Math.abs(y - ey) <= radius) {
-          String format=n.getSimpleFormat(OsmandSettings.usingEnglishNames(view.getContext()));
-          if (n.getOpeningHours() != null) {
-            format+="\n Opening hours : " + n.getOpeningHours();
-          }
-          Toast.makeText(view.getContext(),format,Toast.LENGTH_SHORT).show();
-          return true;
-        }
-      }
+  Amenity n=getAmenityFromPoint(point);
+  if (n != null) {
+    String format=n.getSimpleFormat(OsmandSettings.usingEnglishNames(view.getContext()));
+    if (n.getOpeningHours() != null) {
+      format+="\nOpening hours : " + n.getOpeningHours();
     }
- catch (    IndexOutOfBoundsException e) {
-    }
+    Toast.makeText(view.getContext(),format,Toast.LENGTH_SHORT).show();
+    return true;
   }
   return false;
 }

@@ -1,0 +1,31 @@
+{
+  long id=-1;
+  StringWriter writer=new StringWriter(256);
+  XmlSerializer ser=Xml.newSerializer();
+  try {
+    ser.setOutput(writer);
+    ser.startDocument("UTF-8",true);
+    ser.startTag(null,"osm");
+    ser.startTag(null,"changeset");
+    ser.startTag(null,"tag");
+    ser.attribute(null,"k","comment");
+    ser.attribute(null,"v",comment);
+    ser.endTag(null,"tag");
+    ser.startTag(null,"tag");
+    ser.attribute(null,"k","created_by");
+    ser.attribute(null,"v",Version.APP_NAME_VERSION);
+    ser.endTag(null,"tag");
+    ser.endTag(null,"changeset");
+    ser.endTag(null,"osm");
+    ser.endDocument();
+    writer.close();
+  }
+ catch (  IOException e) {
+    log.error("Unhandled exception",e);
+  }
+  String response=sendRequest(SITE_API + "api/0.6/changeset/create/","PUT",writer.getBuffer().toString(),"Opening changeset",true);
+  if (response != null && response.length() > 0) {
+    id=Long.parseLong(response);
+  }
+  return id;
+}

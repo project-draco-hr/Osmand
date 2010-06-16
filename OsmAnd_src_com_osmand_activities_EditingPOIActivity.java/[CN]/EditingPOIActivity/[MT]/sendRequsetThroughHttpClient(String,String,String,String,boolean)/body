@@ -1,0 +1,65 @@
+{
+  StringBuilder responseBody=new StringBuilder();
+  try {
+    HttpParams params=new BasicHttpParams();
+    HttpConnectionParams.setConnectionTimeout(params,15000);
+    DefaultHttpClient httpclient=new DefaultHttpClient(params);
+    if (doAuthenticate) {
+      UsernamePasswordCredentials credentials=new UsernamePasswordCredentials(OsmandSettings.getUserName(ctx) + ":" + OsmandSettings.getUserPassword(ctx));
+      httpclient.getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY_HOST,AuthScope.ANY_PORT),credentials);
+    }
+    HttpRequestBase method=null;
+    if (requestMethod.equals("GET")) {
+      method=new HttpGet(url);
+    }
+ else     if (requestMethod.equals("POST")) {
+      method=new HttpPost(url);
+    }
+ else     if (requestMethod.equals("PUT")) {
+      method=new HttpPut(url);
+    }
+ else     if (requestMethod.equals("DELETE")) {
+      method=new HttpDelete(url);
+    }
+ else {
+      throw new IllegalArgumentException(requestMethod + " is invalid method");
+    }
+    if (requestMethod.equals("PUT") || requestMethod.equals("POST") || requestMethod.equals("DELETE")) {
+    }
+    HttpResponse response=httpclient.execute(method);
+    if (response.getStatusLine() == null || response.getStatusLine().getStatusCode() != 200) {
+      String msg;
+      if (response.getStatusLine() != null) {
+        msg=userOperation + " failed";
+      }
+ else {
+        msg=userOperation + " failed " + response.getStatusLine().getStatusCode()+ " : "+ response.getStatusLine().getReasonPhrase();
+      }
+      log.error(msg);
+      Toast.makeText(ctx,msg,Toast.LENGTH_LONG).show();
+    }
+ else {
+      InputStream is=response.getEntity().getContent();
+      if (is != null) {
+        BufferedReader in=new BufferedReader(new InputStreamReader(is,"UTF-8"));
+        String s;
+        while ((s=in.readLine()) != null) {
+          responseBody.append(s);
+          responseBody.append("\n");
+        }
+        is.close();
+      }
+      httpclient.getConnectionManager().shutdown();
+      return responseBody.toString();
+    }
+  }
+ catch (  MalformedURLException e) {
+    log.error(userOperation + " failed",e);
+    Toast.makeText(ctx,"Unexpected exception while " + userOperation + " ocurred",Toast.LENGTH_LONG).show();
+  }
+catch (  IOException e) {
+    log.error(userOperation + " failed",e);
+    Toast.makeText(ctx,"Input/output exception while " + userOperation + " ocurred",Toast.LENGTH_LONG).show();
+  }
+  return null;
+}

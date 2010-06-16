@@ -1,0 +1,22 @@
+{
+  List<AmenityIndexRepository> repos=ResourceManager.getResourceManager().searchRepositories(n.getLatitude(),n.getLongitude());
+  if (DELETE_ACTION.equals(action)) {
+    for (    AmenityIndexRepository r : repos) {
+      r.deleteAmenity(n.getId());
+      r.clearCache();
+    }
+  }
+ else {
+    boolean changed=MODIFY_ACTION.equals(action);
+    Amenity a=new Amenity(n);
+    for (    AmenityIndexRepository r : repos) {
+      if (changed) {
+        r.updateAmenity(a.getId(),n.getLatitude(),n.getLongitude(),a.getName(),a.getEnName(),a.getType(),a.getSubType(),a.getOpeningHours());
+      }
+ else {
+        r.addAmenity(a.getId(),n.getLatitude(),n.getLongitude(),a.getName(),a.getEnName(),a.getType(),a.getSubType(),a.getOpeningHours());
+      }
+      r.clearCache();
+    }
+  }
+}

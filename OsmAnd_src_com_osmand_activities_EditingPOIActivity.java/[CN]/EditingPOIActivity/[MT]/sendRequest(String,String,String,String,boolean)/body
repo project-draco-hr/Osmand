@@ -1,0 +1,65 @@
+{
+  log.info("Sending request " + url);
+  try {
+    HttpURLConnection connection=(HttpURLConnection)new URL(url).openConnection();
+    connection.setConnectTimeout(15000);
+    connection.setRequestMethod(requestMethod);
+    StringBuilder responseBody=new StringBuilder();
+    if (doAuthenticate) {
+      String token=OsmandSettings.getUserName(ctx) + ":" + OsmandSettings.getUserPassword(ctx);
+      connection.addRequestProperty("Authorization","Basic " + Base64.encode(token.getBytes("UTF-8")));
+    }
+    connection.setDoInput(true);
+    if (requestMethod.equals("PUT") || requestMethod.equals("POST") || requestMethod.equals("DELETE")) {
+      connection.setDoOutput(true);
+      connection.setRequestProperty("Content-type","text/xml");
+      OutputStream out=connection.getOutputStream();
+      if (requestBody != null) {
+        BufferedWriter bwr=new BufferedWriter(new OutputStreamWriter(out,"UTF-8"),1024);
+        bwr.write(requestBody);
+        bwr.flush();
+      }
+      out.close();
+    }
+    connection.connect();
+    if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+      String msg=userOperation + " failed : " + connection.getResponseMessage();
+      log.error(msg);
+      Toast.makeText(ctx,msg,Toast.LENGTH_LONG).show();
+    }
+ else {
+      log.info("Response : " + connection.getResponseMessage());
+      responseBody.setLength(0);
+      InputStream i=connection.getInputStream();
+      if (i != null) {
+        BufferedReader in=new BufferedReader(new InputStreamReader(i,"UTF-8"),256);
+        String s;
+        boolean f=true;
+        while ((s=in.readLine()) != null) {
+          if (!f) {
+            responseBody.append("\n");
+          }
+ else {
+            f=false;
+          }
+          responseBody.append(s);
+        }
+      }
+      return responseBody.toString();
+    }
+  }
+ catch (  NullPointerException e) {
+    String msg="Authorization failed";
+    log.error(msg,e);
+    Toast.makeText(ctx,msg,Toast.LENGTH_LONG).show();
+  }
+catch (  MalformedURLException e) {
+    log.error(userOperation + " failed",e);
+    Toast.makeText(ctx,"Unexpected exception while " + userOperation + " ocurred",Toast.LENGTH_LONG).show();
+  }
+catch (  IOException e) {
+    log.error(userOperation + " failed",e);
+    Toast.makeText(ctx,"Input/output exception while " + userOperation + " ocurred",Toast.LENGTH_LONG).show();
+  }
+  return null;
+}

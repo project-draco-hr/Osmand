@@ -1,0 +1,65 @@
+{
+  final Amenity a=new Amenity(n);
+  dlg.setContentView(R.layout.editing_poi);
+  nameText=((EditText)dlg.findViewById(R.id.Name));
+  nameText.setText(a.getName());
+  typeText=((AutoCompleteTextView)dlg.findViewById(R.id.Type));
+  typeButton=((Button)dlg.findViewById(R.id.TypeButton));
+  openingHours=((EditText)dlg.findViewById(R.id.OpeningHours));
+  openingHours.setText(a.getOpeningHours());
+  typeText=((AutoCompleteTextView)dlg.findViewById(R.id.Type));
+  typeText.setThreshold(1);
+  commentText=((EditText)dlg.findViewById(R.id.Comment));
+  updateType(a);
+  typeButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      Builder builder=new AlertDialog.Builder(ctx);
+      String[] vals=new String[AmenityType.values().length];
+      for (int i=0; i < vals.length; i++) {
+        vals[i]=AmenityType.toPublicString(AmenityType.values()[i]);
+      }
+      builder.setItems(vals,new Dialog.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          AmenityType aType=AmenityType.values()[which];
+          if (aType != a.getType()) {
+            a.setType(aType);
+            a.setSubType("");
+            updateType(a);
+          }
+        }
+      }
+);
+      builder.show();
+    }
+  }
+);
+  ((Button)dlg.findViewById(R.id.Cancel)).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dlg.dismiss();
+    }
+  }
+);
+  ((Button)dlg.findViewById(R.id.Commit)).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      String msg=n.getId() == -1 ? "added" : "changed";
+      String action=n.getId() == -1 ? CREATE_ACTION : MODIFY_ACTION;
+      n.putTag(a.convertToAmenityTag(),typeText.getText().toString());
+      n.putTag(OSMTagKey.NAME.getValue(),nameText.getText().toString());
+      if (openingHours.getText().toString().length() == 0) {
+        n.removeTag(OSMTagKey.OPENING_HOURS.getValue());
+      }
+ else {
+        n.putTag(OSMTagKey.OPENING_HOURS.getValue(),openingHours.getText().toString());
+      }
+      if (commitNode(action,n,entityInfo,commentText.getText().toString())) {
+        Toast.makeText(ctx,"POI was successfully " + msg,Toast.LENGTH_LONG).show();
+        if (view != null) {
+          view.refreshMap();
+        }
+      }
+      dlg.dismiss();
+    }
+  }
+);
+  dlg.show();
+}
