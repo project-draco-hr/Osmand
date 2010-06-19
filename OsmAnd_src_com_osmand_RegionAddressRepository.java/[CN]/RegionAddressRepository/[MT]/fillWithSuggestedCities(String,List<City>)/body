@@ -1,17 +1,35 @@
 {
   preloadCities();
+  int ind=0;
+  if (name.length() >= 2 && Character.isDigit(name.charAt(0)) && Character.isDigit(name.charAt(1))) {
+    preloadPostcodes();
+    name=name.toLowerCase();
+    for (    String code : postCodes) {
+      String lcode=code.toLowerCase();
+      City c=new City(CityType.CITY);
+      c.setName(code);
+      c.setEnName(code);
+      if (lcode.startsWith(name)) {
+        citiesToFill.add(ind++,c);
+      }
+ else       if (lcode.contains(name)) {
+        citiesToFill.add(c);
+      }
+    }
+  }
   if (name.length() < 3) {
     EnumSet<CityType> set=EnumSet.of(CityType.CITY,CityType.TOWN);
     for (    CityType t : set) {
+      List<City> list=cityTypes.get(t);
+      if (list == null) {
+        continue;
+      }
       if (name.length() == 0) {
-        List<City> list=cityTypes.get(t);
-        if (list != null) {
-          citiesToFill.addAll(list);
-        }
+        citiesToFill.addAll(list);
       }
  else {
         name=name.toLowerCase();
-        for (        City c : cityTypes.get(t)) {
+        for (        City c : list) {
           String cName=useEnglishNames ? c.getEnName() : c.getName();
           String lowerCase=cName.toLowerCase();
           if (lowerCase.startsWith(name)) {
@@ -22,7 +40,6 @@
     }
   }
  else {
-    int ind=0;
     name=name.toLowerCase();
     Collection<City> src=cities.values();
     for (    City c : src) {
