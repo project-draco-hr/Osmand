@@ -8,6 +8,12 @@
           List<String> warnings=new ArrayList<String>();
           warnings.addAll(ResourceManager.getResourceManager().indexingPoi(impl));
           warnings.addAll(ResourceManager.getResourceManager().indexingAddresses(impl));
+          SavingTrackHelper helper=new SavingTrackHelper(MainMenuActivity.this);
+          if (helper.hasDataToSave()) {
+            impl.startTask("Saving gpx tracks to SD...",-1);
+            helper.saveDataToGpx();
+          }
+          helper.close();
           showWarnings(warnings);
         }
   finally {
@@ -35,8 +41,5 @@
         getPreferences(MODE_WORLD_READABLE).edit().putLong(EXCEPTION_FILE_SIZE,0).commit();
       }
     }
-    SavingTrackHelper helper=new SavingTrackHelper(this);
-    helper.saveDataToGpx();
-    helper.close();
   }
 }

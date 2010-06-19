@@ -1,0 +1,64 @@
+{
+  if (finalLocation == null || currentLocation == null) {
+    return;
+  }
+  boolean calculateRoute=false;
+synchronized (this) {
+    if (routeNodes.isEmpty() || routeNodes.size() <= currentRoute) {
+      calculateRoute=true;
+    }
+ else {
+      float dist=currentLocation.distanceTo(routeNodes.get(currentRoute));
+      while (currentRoute + 1 < routeNodes.size()) {
+        float newDist=currentLocation.distanceTo(routeNodes.get(currentRoute + 1));
+        if (newDist < dist) {
+          currentRoute++;
+          dist=newDist;
+        }
+ else {
+          break;
+        }
+      }
+      if (finishAtLocation(currentLocation)) {
+        return;
+      }
+      if (currentRoute + 1 < routeNodes.size()) {
+        float bearing=routeNodes.get(currentRoute).bearingTo(routeNodes.get(currentRoute + 1));
+        float bearingMovement=currentLocation.bearingTo(routeNodes.get(currentRoute));
+        if (Math.abs(bearing - bearingMovement) > 130 && Math.abs(bearing - bearingMovement) < 230) {
+          currentRoute++;
+        }
+      }
+      if (currentRoute > 0) {
+        float bearing=routeNodes.get(currentRoute - 1).bearingTo(routeNodes.get(currentRoute));
+        float bearingMovement=currentLocation.bearingTo(routeNodes.get(currentRoute));
+        float d=Math.abs(currentLocation.distanceTo(routeNodes.get(currentRoute)) * FloatMath.sin((bearingMovement - bearing) * 3.14f / 180f));
+        if (d > 50) {
+          log.info("Recalculate route, because correlation  : " + d);
+          calculateRoute=true;
+        }
+      }
+      if (!calculateRoute) {
+        float d=currentLocation.distanceTo(routeNodes.get(currentRoute));
+        if (d > 80) {
+          if (currentRoute > 0) {
+            float f1=currentLocation.distanceTo(routeNodes.get(currentRoute - 1)) + d;
+            float c=routeNodes.get(currentRoute - 1).distanceTo(routeNodes.get(currentRoute));
+            if (c * 2 < d + f1) {
+              log.info("Recalculate route, because too far from points : " + d + " "+ f1+ " >> "+ c);
+              calculateRoute=true;
+            }
+          }
+ else {
+            log.info("Recalculate route, because too far from start : " + d);
+            calculateRoute=true;
+          }
+        }
+      }
+    }
+  }
+  lastFixedLocation=currentLocation;
+  if (calculateRoute) {
+    calculateRoute(lastFixedLocation,finalLocation);
+  }
+}

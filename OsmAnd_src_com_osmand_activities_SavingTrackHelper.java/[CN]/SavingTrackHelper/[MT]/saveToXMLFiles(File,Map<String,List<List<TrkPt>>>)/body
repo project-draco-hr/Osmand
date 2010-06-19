@@ -2,7 +2,12 @@
   SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
   try {
     for (    String f : data.keySet()) {
-      FileOutputStream output=new FileOutputStream(new File(dir,f + ".gpx"));
+      File fout=new File(dir,f + ".gpx");
+      int ind=1;
+      while (fout.exists()) {
+        fout=new File(dir,f + "_" + (++ind)+ ".gpx");
+      }
+      FileOutputStream output=new FileOutputStream(fout);
       XmlSerializer serializer=Xml.newSerializer();
       serializer.setOutput(output,"UTF-8");
       serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output",true);

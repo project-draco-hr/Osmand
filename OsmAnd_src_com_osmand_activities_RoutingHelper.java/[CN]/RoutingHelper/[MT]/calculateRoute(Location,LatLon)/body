@@ -1,0 +1,44 @@
+{
+  if (currentRunningJob == null) {
+    if (System.currentTimeMillis() - lastTimeEvaluatedRoute > evalWaitInterval) {
+synchronized (this) {
+        currentRunningJob=new Thread(new Runnable(){
+          @Override public void run(){
+            RouteCalculationResult res=calculateRouteImpl(start,end);
+synchronized (RoutingHelper.this) {
+              if (res.isCalculated()) {
+                setNewRoute(res.list);
+                evalWaitInterval=3000;
+              }
+ else {
+                evalWaitInterval=evalWaitInterval * 3 / 2;
+                if (evalWaitInterval > 120000) {
+                  evalWaitInterval=120000;
+                }
+              }
+              currentRunningJob=null;
+            }
+            if (res.isCalculated()) {
+              showMessage("New route is calculated distance : " + MapUtils.getFormattedDistance(sumDistance(res.list)));
+              activity.getMapView().refreshMap();
+            }
+ else {
+              if (res.errorMessage != null) {
+                showMessage("Error calculating route : " + res.errorMessage);
+              }
+ else               if (res.list == null) {
+                showMessage("Error occurred while calculating route");
+              }
+ else {
+                showMessage("Empty route is calculated");
+              }
+            }
+            lastTimeEvaluatedRoute=System.currentTimeMillis();
+          }
+        }
+,"Calculating route");
+        currentRunningJob.start();
+      }
+    }
+  }
+}

@@ -1,8 +1,15 @@
 {
   if (map.getPointToNavigate() != null) {
-    Location.distanceBetween(view.getLatitude(),view.getLongitude(),map.getPointToNavigate().getLatitude(),map.getPointToNavigate().getLongitude(),calculations);
-    if (distChanged(cachedMeters,(int)calculations[0])) {
-      cachedMeters=(int)calculations[0];
+    int d=0;
+    if (map.getRoutingHelper().getFinalLocation() != null) {
+      d=map.getRoutingHelper().getDistance();
+    }
+    if (d == 0) {
+      Location.distanceBetween(view.getLatitude(),view.getLongitude(),map.getPointToNavigate().getLatitude(),map.getPointToNavigate().getLongitude(),calculations);
+      d=(int)calculations[0];
+    }
+    if (distChanged(cachedMeters,d)) {
+      cachedMeters=d;
       if (cachedMeters <= 20) {
         cachedMeters=0;
         cachedDistString=null;
@@ -31,7 +38,7 @@
   canvas.drawText(cachedZoomString,boundsForZoom.left + 5,boundsForZoom.bottom - 9,paintBlack);
   if (map.getLastKnownLocation() != null && map.getLastKnownLocation().hasSpeed()) {
     if (Math.abs(map.getLastKnownLocation().getSpeed() - cachedSpeed) > .3f) {
-      cachedSpeed=(int)map.getLastKnownLocation().getSpeed();
+      cachedSpeed=map.getLastKnownLocation().getSpeed();
       cachedSpeedString=((int)(cachedSpeed * 3.6f)) + " km/h";
       float right=paintBlack.measureText(cachedSpeedString) + 8 + boundsForSpeed.left;
       boundsForSpeed.right=boundsForDist.right=Math.max(right,boundsForDist.right);
