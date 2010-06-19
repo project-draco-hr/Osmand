@@ -3,14 +3,21 @@
     if (region.useEnglishNames() != OsmandSettings.usingEnglishNames(this)) {
       region.setUseEnglishNames(OsmandSettings.usingEnglishNames(this));
     }
-    city=region.getCityById(OsmandSettings.getLastSearchedCity(SearchAddressActivity.this));
-    if (city != null) {
-      street=region.getStreetByName(city,OsmandSettings.getLastSearchedStreet(SearchAddressActivity.this));
+    String postcodeStr=OsmandSettings.getLastSearchedPostcode(this);
+    if (postcodeStr != null) {
+      postcode=region.getPostcode(postcodeStr);
+    }
+ else {
+      city=region.getCityById(OsmandSettings.getLastSearchedCity(SearchAddressActivity.this));
+    }
+    if (postcode != null || city != null) {
+      MapObject o=postcode == null ? city : postcode;
+      street=region.getStreetByName(o,OsmandSettings.getLastSearchedStreet(SearchAddressActivity.this));
       if (street != null) {
         String str=OsmandSettings.getLastSearchedIntersectedStreet(SearchAddressActivity.this);
         radioBuilding=str == null;
         if (str != null) {
-          street2=region.getStreetByName(city,str);
+          street2=region.getStreetByName(o,str);
         }
  else {
           building=region.getBuildingByName(street,OsmandSettings.getLastSearchedBuilding(SearchAddressActivity.this));

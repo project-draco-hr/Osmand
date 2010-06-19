@@ -1,0 +1,33 @@
+{
+  Builder builder=new AlertDialog.Builder(this);
+  Resources resources=this.getResources();
+  String[] res;
+  if (menu) {
+    res=new String[]{resources.getString(R.string.context_menu_item_navigate_point),resources.getString(R.string.context_menu_item_add_favorite),resources.getString(R.string.context_menu_item_open_bug),resources.getString(R.string.context_menu_item_create_poi)};
+  }
+ else {
+    res=new String[]{resources.getString(R.string.context_menu_item_navigate_point),resources.getString(R.string.context_menu_item_add_favorite),resources.getString(R.string.context_menu_item_open_bug),resources.getString(R.string.context_menu_item_create_poi),resources.getString(R.string.context_menu_item_update_map)};
+  }
+  builder.setItems(res,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (which == 0) {
+        navigateToPoint(new LatLon(latitude,longitude));
+      }
+ else       if (which == 1) {
+        addFavouritePoint(latitude,longitude);
+      }
+ else       if (which == 2) {
+        osmBugsLayer.openBug(MapActivity.this,getLayoutInflater(),mapView,latitude,longitude);
+      }
+ else       if (which == 3) {
+        EditingPOIActivity activity=new EditingPOIActivity(MapActivity.this);
+        activity.showCreateDialog(latitude,longitude);
+      }
+ else       if (which == 4) {
+        reloadTile(mapView.getZoom(),latitude,longitude);
+      }
+    }
+  }
+);
+  builder.create().show();
+}

@@ -1,0 +1,26 @@
+{
+  progress.startTask("Indexing buildings...",buildings.size());
+  for (  Entity b : buildings) {
+    LatLon center=b.getLatLon();
+    progress.progress(1);
+    if (center == null) {
+    }
+ else {
+      City city=country.getClosestCity(center);
+      if (city == null) {
+        Node n=new Node(center.getLatitude(),center.getLongitude(),-1);
+        n.putTag(OSMTagKey.PLACE.getValue(),CityType.TOWN.name());
+        n.putTag(OSMTagKey.NAME.getValue(),"Uknown city");
+        country.registerCity(n);
+        city=country.getClosestCity(center);
+      }
+      if (city != null) {
+        Building building=city.registerBuilding(b);
+        if (postalCodes.containsKey(building.getId())) {
+          building.setPostcode(postalCodes.get(building.getId()));
+        }
+      }
+    }
+  }
+  progress.finishTask();
+}

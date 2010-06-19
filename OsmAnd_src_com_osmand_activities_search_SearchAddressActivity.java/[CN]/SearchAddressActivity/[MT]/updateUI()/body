@@ -6,12 +6,17 @@
  else {
     countryButton.setText(region.getName());
   }
-  findViewById(R.id.ResetCity).setEnabled(city != null);
-  if (city == null) {
+  findViewById(R.id.ResetCity).setEnabled(postcode != null || city != null);
+  if (city == null && postcode == null) {
     cityButton.setText(R.string.choose_city);
   }
  else {
-    cityButton.setText(city.getName(region.useEnglishNames()));
+    if (postcode != null) {
+      cityButton.setText(postcode.getName());
+    }
+ else {
+      cityButton.setText(city.getName(region.useEnglishNames()));
+    }
   }
   cityButton.setEnabled(region != null);
   findViewById(R.id.ResetStreet).setEnabled(street != null);
@@ -21,7 +26,7 @@
  else {
     streetButton.setText(street.getName(region.useEnglishNames()));
   }
-  streetButton.setEnabled(city != null);
+  streetButton.setEnabled(city != null || postcode != null);
   if (radioBuilding) {
     ((RadioButton)findViewById(R.id.RadioBuilding)).setChecked(true);
   }
@@ -30,5 +35,6 @@
   }
   updateBuildingSection();
   buildingButton.setEnabled(street != null);
-  showOnMap.setEnabled(building != null || city != null || street != null);
+  showOnMap.setEnabled(city != null || street != null);
+  navigateTo.setEnabled(city != null || street != null);
 }

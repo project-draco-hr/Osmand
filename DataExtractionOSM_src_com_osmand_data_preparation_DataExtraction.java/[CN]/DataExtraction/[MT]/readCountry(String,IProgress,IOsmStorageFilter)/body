@@ -1,9 +1,4 @@
 {
-  final ArrayList<Node> places=new ArrayList<Node>();
-  final ArrayList<Entity> buildings=new ArrayList<Entity>();
-  final ArrayList<Entity> amenities=new ArrayList<Entity>();
-  final ArrayList<Way> ways=new ArrayList<Way>();
-  final ArrayList<Relation> transport=new ArrayList<Relation>();
   File f=new File(path);
   InputStream stream=new FileInputStream(f);
   InputStream streamFile=stream;
@@ -24,7 +19,13 @@
   if (addFilter != null) {
     storage.getFilters().add(addFilter);
   }
-  DataExtractionOsmFilter filter=new DataExtractionOsmFilter(amenities,buildings,places,ways,transport);
+  DataExtractionOsmFilter filter=new DataExtractionOsmFilter();
+  final ArrayList<Node> places=filter.getPlaces();
+  final ArrayList<Entity> buildings=filter.getBuildings();
+  final ArrayList<Entity> amenities=filter.getAmenities();
+  final ArrayList<Way> ways=filter.getWays();
+  final ArrayList<Relation> transport=filter.getTransport();
+  Map<Long,String> postalCodes=filter.getPostalCodes();
   storage.getFilters().add(filter);
   try {
     filter.initDatabase();
@@ -59,7 +60,7 @@
     progress.setGeneralProgress("[80 of 100]");
     readingStreets(progress,ways,country);
     progress.setGeneralProgress("[95 of 100]");
-    readingBuildings(progress,buildings,country);
+    readingBuildings(progress,buildings,country,postalCodes);
   }
   progress.setGeneralProgress("[100 of 100]");
   if (normalizeStreets) {

@@ -1,9 +1,18 @@
 {
   region=ResourceManager.getResourceManager().getRegionRepository(OsmandSettings.getLastSearchedRegion(this));
   if (region != null) {
+    postcode=region.getPostcode(OsmandSettings.getLastSearchedPostcode(this));
     city=region.getCityById(OsmandSettings.getLastSearchedCity(this));
-    if (city != null) {
+    if (postcode != null) {
+      street1=region.getStreetByName(postcode,(OsmandSettings.getLastSearchedStreet(this)));
+      if (street1 != null) {
+        city=street1.getCity();
+      }
+    }
+ else     if (city != null) {
       street1=region.getStreetByName(city,(OsmandSettings.getLastSearchedStreet(this)));
+    }
+    if (city != null) {
       startLoadDataInThread("Finding streets...");
     }
   }

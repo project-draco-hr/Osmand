@@ -1,12 +1,6 @@
 {
   if (street.getBuildings().isEmpty()) {
-    Cursor query=null;
-    if (street instanceof PostcodeBasedStreet) {
-      query=db.query(IndexBuildingTable.getTable(),IndexConstants.generateColumnNames(IndexBuildingTable.values()),"? = postcode",new String[]{street.getName().toUpperCase()},null,null,null);
-    }
- else {
-      query=db.query(IndexBuildingTable.getTable(),IndexConstants.generateColumnNames(IndexBuildingTable.values()),"? = street",new String[]{street.getId() + ""},null,null,null);
-    }
+    Cursor query=db.query(IndexBuildingTable.getTable(),IndexConstants.generateColumnNames(IndexBuildingTable.values()),"? = street",new String[]{street.getId() + ""},null,null,null);
     log.debug("Start loading buildings for " + street.getName());
     if (query.moveToFirst()) {
       do {
@@ -15,9 +9,11 @@
         building.setLocation(query.getDouble(IndexBuildingTable.LATITUDE.ordinal()),query.getDouble(IndexBuildingTable.LONGITUDE.ordinal()));
         building.setName(query.getString(IndexBuildingTable.NAME.ordinal()));
         building.setEnName(query.getString(IndexBuildingTable.NAME_EN.ordinal()));
+        building.setPostcode(query.getString(IndexBuildingTable.POSTCODE.ordinal()));
         street.registerBuilding(building);
       }
  while (query.moveToNext());
+      street.sortBuildings();
     }
     query.close();
     log.debug("Loaded " + street.getBuildings().size() + " buildings");
