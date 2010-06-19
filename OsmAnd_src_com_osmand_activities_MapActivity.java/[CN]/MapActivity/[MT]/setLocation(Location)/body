@@ -20,7 +20,16 @@
   }
   Log.d(LogUtil.TAG,"Location changed");
   if (!location.hasSpeed() && locationLayer.getLastKnownLocation() != null) {
-    location.setSpeed(location.distanceTo(locationLayer.getLastKnownLocation()));
+    float d=location.distanceTo(locationLayer.getLastKnownLocation());
+    if (d > 100) {
+      d=100;
+    }
+    location.setSpeed(d);
+  }
+  if (!location.hasBearing() && locationLayer.getLastKnownLocation() != null) {
+    if (locationLayer.getLastKnownLocation().distanceTo(location) > 10) {
+      location.setBearing(locationLayer.getLastKnownLocation().bearingTo(location));
+    }
   }
   locationLayer.setLastKnownLocation(location);
   routingHelper.setCurrentLocation(location);

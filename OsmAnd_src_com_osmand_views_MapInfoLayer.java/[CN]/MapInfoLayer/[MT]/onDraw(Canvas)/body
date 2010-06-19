@@ -1,8 +1,8 @@
 {
   if (map.getPointToNavigate() != null) {
     int d=0;
-    if (map.getRoutingHelper().getFinalLocation() != null) {
-      d=map.getRoutingHelper().getDistance();
+    if (map.getRoutingHelper().isRouterEnabled()) {
+      d=map.getRoutingHelper().getDistance(view.getLatitude(),view.getLongitude());
     }
     if (d == 0) {
       Location.distanceBetween(view.getLatitude(),view.getLongitude(),map.getPointToNavigate().getLatitude(),map.getPointToNavigate().getLongitude(),calculations);
@@ -35,7 +35,8 @@
     cachedZoomString=view.getZoom() + "";
   }
   canvas.drawRoundRect(boundsForZoom,3,3,paintAlphaGray);
-  canvas.drawText(cachedZoomString,boundsForZoom.left + 5,boundsForZoom.bottom - 9,paintBlack);
+  canvas.drawRoundRect(boundsForZoom,3,3,paintBlack);
+  canvas.drawText(cachedZoomString,boundsForZoom.left + 5,boundsForZoom.bottom - 7,paintBlack);
   if (map.getLastKnownLocation() != null && map.getLastKnownLocation().hasSpeed()) {
     if (Math.abs(map.getLastKnownLocation().getSpeed() - cachedSpeed) > .3f) {
       cachedSpeed=map.getLastKnownLocation().getSpeed();
@@ -45,15 +46,30 @@
     }
     if (cachedSpeed > 0) {
       canvas.drawRoundRect(boundsForSpeed,3,3,paintAlphaGray);
+      canvas.drawRoundRect(boundsForSpeed,3,3,paintBlack);
       canvas.drawText(cachedSpeedString,boundsForSpeed.left + 8,boundsForSpeed.bottom - 9,paintBlack);
     }
   }
   if (cachedDistString != null) {
     canvas.drawRoundRect(boundsForDist,3,3,paintAlphaGray);
+    canvas.drawRoundRect(boundsForDist,3,3,paintBlack);
     canvas.drawCircle(boundsForDist.left + 8,boundsForDist.bottom - 15,4,fillRed);
     canvas.drawText(cachedDistString,boundsForDist.left + 15,boundsForDist.bottom - 9,paintBlack);
   }
+  if (routeLayer != null && !routeLayer.getPath().isEmpty()) {
+    canvas.save();
+    canvas.clipRect(boundsForMiniRoute);
+    canvas.drawRoundRect(boundsForMiniRoute,3,3,paintAlphaGray);
+    canvas.drawRoundRect(boundsForMiniRoute,3,3,paintBlack);
+    canvas.translate(centerMiniRouteX - view.getCenterPointX(),centerMiniRouteY - view.getCenterPointY());
+    canvas.scale(scaleMiniRoute,scaleMiniRoute,view.getCenterPointX(),view.getCenterPointY());
+    canvas.rotate(view.getRotate(),view.getCenterPointX(),view.getCenterPointY());
+    canvas.drawCircle(view.getCenterPointX(),view.getCenterPointY(),3 / scaleMiniRoute,fillBlack);
+    canvas.drawPath(routeLayer.getPath(),paintMiniRoute);
+    canvas.restore();
+  }
   canvas.drawRoundRect(boundsForCompass,3,3,paintAlphaGray);
+  canvas.drawRoundRect(boundsForCompass,3,3,paintBlack);
   canvas.rotate(view.getRotate(),15,15);
   canvas.drawPath(pathForCompass2,fillRed);
   canvas.drawPath(pathForCompass,fillBlack);

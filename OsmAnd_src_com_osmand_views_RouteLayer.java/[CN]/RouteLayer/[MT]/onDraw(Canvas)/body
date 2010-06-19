@@ -1,7 +1,10 @@
 {
+  path.reset();
   if (helper.hasPointsToShow()) {
     long time=System.currentTimeMillis();
-    boundsRect=new Rect(0,0,view.getWidth(),view.getHeight());
+    int w=view.getWidth();
+    int h=view.getHeight();
+    boundsRect=new Rect(-w / 2,-h,3 * w / 2,h);
     view.calculateTileRectangle(boundsRect,view.getCenterPointX(),view.getCenterPointY(),view.getXTile(),view.getYTile(),tileRect);
     double topLatitude=MapUtils.getLatitudeFromTile(view.getZoom(),tileRect.top);
     double leftLongitude=MapUtils.getLongitudeFromTile(view.getZoom(),tileRect.left);
@@ -14,11 +17,14 @@
     if (points.size() > 0) {
       int px=view.getMapXForPoint(points.get(0).getLongitude());
       int py=view.getMapYForPoint(points.get(0).getLatitude());
-      path.reset();
       path.moveTo(px,py);
-      for (      Location o : points) {
+      for (int i=1; i < points.size(); i++) {
+        Location o=points.get(i);
         int x=view.getMapXForPoint(o.getLongitude());
         int y=view.getMapYForPoint(o.getLatitude());
+        if (i == 1) {
+          pathBearing=(float)(Math.atan2(y - py,x - px) / Math.PI * 180);
+        }
         path.lineTo(x,y);
       }
       canvas.drawPath(path,paint);
