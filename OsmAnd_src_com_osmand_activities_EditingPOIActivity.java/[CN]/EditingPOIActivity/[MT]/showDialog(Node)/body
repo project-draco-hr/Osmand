@@ -41,7 +41,8 @@
 );
   ((Button)dlg.findViewById(R.id.Commit)).setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      String msg=n.getId() == -1 ? "added" : "changed";
+      Resources resources=v.getResources();
+      String msg=n.getId() == -1 ? resources.getString(R.string.poi_action_add) : resources.getString(R.string.poi_action_change);
       String action=n.getId() == -1 ? CREATE_ACTION : MODIFY_ACTION;
       n.putTag(a.convertToAmenityTag(),typeText.getText().toString());
       n.putTag(OSMTagKey.NAME.getValue(),nameText.getText().toString());
@@ -52,7 +53,7 @@
         n.putTag(OSMTagKey.OPENING_HOURS.getValue(),openingHours.getText().toString());
       }
       if (commitNode(action,n,entityInfo,commentText.getText().toString())) {
-        Toast.makeText(ctx,"POI was successfully " + msg,Toast.LENGTH_LONG).show();
+        Toast.makeText(ctx,MessageFormat.format(ctx.getResources().getString(R.string.poi_action_succeded_template),msg),Toast.LENGTH_LONG).show();
         if (view != null) {
           view.refreshMap();
         }

@@ -1,20 +1,20 @@
 {
   final Node n=loadNode(id);
   if (n == null) {
-    Toast.makeText(ctx,"POI doesn't found",Toast.LENGTH_LONG).show();
+    Toast.makeText(ctx,ctx.getResources().getString(R.string.poi_error_poi_not_found),Toast.LENGTH_LONG).show();
     return;
   }
   Builder builder=new AlertDialog.Builder(ctx);
-  builder.setTitle("Are you sure to delete " + n.getTag(OSMTagKey.NAME) + " (enter comment) ?");
+  builder.setTitle(MessageFormat.format(this.view.getResources().getString(R.string.poi_remove_confirm_template),n.getTag(OSMTagKey.NAME)));
   final EditText comment=new EditText(ctx);
-  comment.setText("Delete POI");
+  comment.setText(R.string.poi_remove_title);
   builder.setView(comment);
-  builder.setNegativeButton("Cancel",null);
-  builder.setPositiveButton("Delete",new DialogInterface.OnClickListener(){
+  builder.setNegativeButton(R.string.default_buttons_cancel,null);
+  builder.setPositiveButton(R.string.default_buttons_delete,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       String c=comment.getText().toString();
       if (commitNode(DELETE_ACTION,n,entityInfo,c)) {
-        Toast.makeText(ctx,"POI was successfully deleted",Toast.LENGTH_LONG).show();
+        Toast.makeText(ctx,ctx.getResources().getString(R.string.poi_remove_success),Toast.LENGTH_LONG).show();
         if (view != null) {
           view.refreshMap();
         }
