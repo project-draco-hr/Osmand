@@ -1,20 +1,21 @@
 {
+  final Resources resources=this.getResources();
   final FavouritePoint p=new FavouritesActivity.FavouritePoint();
   p.setLatitude(latitude);
   p.setLongitude(longitude);
-  p.setName("Favourite");
+  p.setName(resources.getString(R.string.add_favorite_dialog_default_favourite_name));
   Builder builder=new AlertDialog.Builder(this);
-  builder.setTitle("Input name of favourite point");
+  builder.setTitle(R.string.add_favorite_dialog_top_text);
   final EditText editText=new EditText(this);
   builder.setView(editText);
-  builder.setNegativeButton("Cancel",null);
-  builder.setPositiveButton("Add",new DialogInterface.OnClickListener(){
+  builder.setNegativeButton(R.string.default_buttons_cancel,null);
+  builder.setPositiveButton(R.string.default_buttons_add,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       FavouritesDbHelper helper=new FavouritesActivity.FavouritesDbHelper(MapActivity.this);
       p.setName(editText.getText().toString());
       boolean added=helper.addFavourite(p);
       if (added) {
-        Toast.makeText(MapActivity.this,"Favourite point " + p.getName() + " was succesfully added.",Toast.LENGTH_SHORT).show();
+        Toast.makeText(MapActivity.this,MessageFormat.format(resources.getString(R.string.add_favorite_dialog_favourite_added_template),p.getName()),Toast.LENGTH_SHORT).show();
       }
       helper.close();
     }
