@@ -3,7 +3,17 @@
   requestWindowFeature(Window.FEATURE_NO_TITLE);
   setContentView(R.layout.main);
   mapView=(OsmandMapTileView)findViewById(R.id.MapView);
-  MapTileDownloader.getInstance().addDownloaderCallback(mapView);
+  MapTileDownloader.getInstance().addDownloaderCallback(new IMapDownloaderCallback(){
+    @Override public void tileDownloaded(    DownloadRequest request){
+      if (request != null && !request.error && request.fileToSave != null) {
+        ResourceManager mgr=ResourceManager.getResourceManager();
+        String tile=mgr.calculateTileId(mapView.getMap(),request.xTile,request.yTile,request.zoom);
+        mgr.tileDownloaded(tile);
+      }
+      mapView.tileDownloaded(request);
+    }
+  }
+);
   mapView.setMapLocationListener(this);
   poiMapLayer=new POIMapLayer();
   mapView.addLayer(poiMapLayer);
@@ -22,7 +32,11 @@
   LatLon pointToNavigate=OsmandSettings.getPointToNavigate(this);
   if (OsmandSettings.isUsingInternetToCalculateRoute(this)) {
     routingHelper.setAppMode(OsmandSettings.getApplicationMode(this));
+    calculateRouteOnGps=true;
     routingHelper.setFinalLocation(pointToNavigate);
+  }
+ else {
+    routingHelper.setFinalLocation(null);
   }
   navigationLayer.setPointToNavigate(pointToNavigate);
   SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);

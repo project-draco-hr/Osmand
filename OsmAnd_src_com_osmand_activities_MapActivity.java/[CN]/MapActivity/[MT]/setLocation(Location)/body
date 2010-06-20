@@ -1,37 +1,10 @@
 {
-  if (location == null) {
-    if (sensorRegistered) {
-      Log.d(LogUtil.TAG,"Disable sensor");
-      ((SensorManager)getSystemService(SENSOR_SERVICE)).unregisterListener(this);
-      sensorRegistered=false;
-      locationLayer.setHeading(null);
-    }
-  }
- else {
-    if (!sensorRegistered && OsmandSettings.isShowingViewAngle(this)) {
-      Log.d(LogUtil.TAG,"Enable sensor");
-      SensorManager sensorMgr=(SensorManager)getSystemService(SENSOR_SERVICE);
-      Sensor s=sensorMgr.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-      if (s != null) {
-        sensorMgr.registerListener(this,s,SensorManager.SENSOR_DELAY_UI);
-      }
-      sensorRegistered=true;
-    }
-  }
-  if (!location.hasSpeed() && locationLayer.getLastKnownLocation() != null) {
-    float d=location.distanceTo(locationLayer.getLastKnownLocation());
-    if (d > 100) {
-      d=100;
-    }
-    location.setSpeed(d);
-  }
-  if (!location.hasBearing() && locationLayer.getLastKnownLocation() != null) {
-    if (locationLayer.getLastKnownLocation().distanceTo(location) > 10) {
-      location.setBearing(locationLayer.getLastKnownLocation().bearingTo(location));
-    }
-  }
+  registerUnregisterSensor(location);
+  updateSpeedBearing(location);
   locationLayer.setLastKnownLocation(location);
-  routingHelper.setCurrentLocation(location);
+  if (calculateRouteOnGps) {
+    routingHelper.setCurrentLocation(location);
+  }
   if (location != null) {
     if (isMapLinkedToLocation()) {
       if (OsmandSettings.isAutoZoomEnabled(this) && location.hasSpeed()) {

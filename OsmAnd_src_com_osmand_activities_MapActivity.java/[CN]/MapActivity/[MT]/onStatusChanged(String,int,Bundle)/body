@@ -1,5 +1,21 @@
 {
-  if (LocationProvider.OUT_OF_SERVICE == status) {
-    setLocation(null);
+  LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
+  if (LocationManager.GPS_PROVIDER.equals(provider)) {
+    LocationProvider prov=service.getProvider(LocationManager.NETWORK_PROVIDER);
+    if (LocationProvider.OUT_OF_SERVICE == status || LocationProvider.TEMPORARILY_UNAVAILABLE == status) {
+      if (LocationProvider.OUT_OF_SERVICE == status) {
+        setLocation(null);
+      }
+      service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,this);
+      providerSupportsBearing=prov == null ? false : prov.supportsBearing() && !isRunningOnEmulator();
+      providerSupportsSpeed=prov == null ? false : prov.supportsSpeed() && !isRunningOnEmulator();
+    }
+ else     if (LocationProvider.AVAILABLE == status) {
+      service.removeUpdates(this);
+      service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,this);
+      prov=service.getProvider(LocationManager.GPS_PROVIDER);
+      providerSupportsBearing=prov == null ? false : prov.supportsBearing() && !isRunningOnEmulator();
+      providerSupportsSpeed=prov == null ? false : prov.supportsSpeed() && !isRunningOnEmulator();
+    }
   }
 }

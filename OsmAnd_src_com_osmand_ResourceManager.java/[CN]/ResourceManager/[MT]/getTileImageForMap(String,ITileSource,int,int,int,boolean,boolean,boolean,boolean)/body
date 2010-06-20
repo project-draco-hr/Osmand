@@ -1,0 +1,30 @@
+{
+  if (file == null) {
+    file=calculateTileId(map,x,y,zoom);
+    if (file == null) {
+      return null;
+    }
+  }
+  if (deleteBefore) {
+    cacheOfImages.remove(file);
+    File f=new File(dirWithTiles,file);
+    if (f.exists()) {
+      f.delete();
+      imagesOnFS.put(file,null);
+    }
+  }
+  if (loadFromFs && cacheOfImages.get(file) == null) {
+    if (!loadFromInternetIfNeeded && !tileExistOnFileSystem(file)) {
+      return null;
+    }
+    String url=loadFromInternetIfNeeded ? map.getUrlToLoad(x,y,zoom) : null;
+    TileLoadDownloadRequest req=new TileLoadDownloadRequest(dirWithTiles,file,url,new File(dirWithTiles,file),x,y,zoom);
+    if (sync) {
+      return getRequestedImageTile(req);
+    }
+ else {
+      asyncLoadingTiles.requestToLoadImage(req);
+    }
+  }
+  return cacheOfImages.get(file);
+}

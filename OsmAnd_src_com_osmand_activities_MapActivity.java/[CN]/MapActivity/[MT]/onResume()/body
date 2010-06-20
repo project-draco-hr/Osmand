@@ -35,7 +35,14 @@
     }
   }
   LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
-  service.requestLocationUpdates(LocationManager.GPS_PROVIDER,2000,0,this);
+  service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,this);
+  LocationProvider prov=service.getProvider(LocationManager.GPS_PROVIDER);
+  if (!service.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+    service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,this);
+    prov=service.getProvider(LocationManager.NETWORK_PROVIDER);
+  }
+  providerSupportsBearing=prov == null ? false : prov.supportsBearing() && !isRunningOnEmulator();
+  providerSupportsSpeed=prov == null ? false : prov.supportsSpeed() && !isRunningOnEmulator();
   if (wakeLock == null) {
     PowerManager powerManager=(PowerManager)getSystemService(POWER_SERVICE);
     wakeLock=powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,"com.osmand.map");

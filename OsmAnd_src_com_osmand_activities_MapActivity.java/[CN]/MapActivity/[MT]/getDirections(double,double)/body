@@ -1,0 +1,31 @@
+{
+  if (navigationLayer.getPointToNavigate() == null) {
+    Toast.makeText(this,R.string.mark_final_location_first,Toast.LENGTH_LONG).show();
+    return;
+  }
+  Builder builder=new AlertDialog.Builder(this);
+  builder.setTitle(R.string.follow_route);
+  builder.setMessage(R.string.recalculate_route_to_your_location);
+  builder.setPositiveButton(R.string.follow,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      routingHelper.setFinalLocation(navigationLayer.getPointToNavigate());
+      Location map=new Location("map");
+      map.setLatitude(lat);
+      map.setLongitude(lon);
+      calculateRouteOnGps=true;
+      routingHelper.setFinalAndCurrentLocation(navigationLayer.getPointToNavigate(),map);
+    }
+  }
+);
+  builder.setNegativeButton(R.string.only_show,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      Location map=new Location("map");
+      map.setLatitude(lat);
+      map.setLongitude(lon);
+      calculateRouteOnGps=false;
+      routingHelper.setFinalAndCurrentLocation(navigationLayer.getPointToNavigate(),map);
+    }
+  }
+);
+  builder.show();
+}
