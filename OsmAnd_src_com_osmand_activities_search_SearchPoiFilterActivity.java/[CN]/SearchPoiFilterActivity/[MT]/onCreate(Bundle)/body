@@ -5,4 +5,19 @@
   filters.addAll(PoiFiltersHelper.getOsmDefinedPoiFilters(this));
   setListAdapter(new AmenityAdapter(filters));
   typeFace=Typeface.create((String)null,Typeface.ITALIC);
+  ListView lv=getListView();
+  lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+    @Override public boolean onItemLongClick(    AdapterView<?> av,    View v,    int pos,    long id){
+      PoiFilter poi=((AmenityAdapter)getListAdapter()).getItem(pos);
+      if (!poi.isStandardFilter()) {
+        Bundle bundle=new Bundle();
+        Intent newIntent=new Intent(SearchPoiFilterActivity.this,EditPOIFilterActivity.class);
+        bundle.putString(SearchPOIActivity.AMENITY_FILTER,poi.getFilterId());
+        newIntent.putExtras(bundle);
+        startActivityForResult(newIntent,0);
+      }
+      return true;
+    }
+  }
+);
 }
