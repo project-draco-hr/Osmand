@@ -1,0 +1,34 @@
+{
+  MessageFormat format=new MessageFormat("{0,date,dd.MM.yyyy} : {1, number,##.#} MB",Locale.US);
+  for (  File f : indexDirFiles.listFiles()) {
+    String summary;
+    double mbLengh=(double)f.length() / MB;
+    String descriptionFile="{" + format.format(new Object[]{new Date(),mbLengh}) + "}";
+    if (f.getName().endsWith(IndexConstants.POI_INDEX_EXT)) {
+      String regionName=f.getName().substring(0,f.getName().length() - IndexConstants.POI_INDEX_EXT.length() - 2);
+      summary="POI index for " + regionName + " "+ descriptionFile;
+    }
+ else     if (f.getName().endsWith(IndexConstants.ADDRESS_INDEX_EXT)) {
+      String regionName=f.getName().substring(0,f.getName().length() - IndexConstants.ADDRESS_INDEX_EXT.length() - 2);
+      summary="Adress index for " + regionName + " "+ descriptionFile;
+    }
+ else {
+      continue;
+    }
+    GoogleCodeUploadIndex uploader=new GoogleCodeUploadIndex();
+    uploader.setFileName(f.getAbsolutePath());
+    uploader.setTargetFileName(f.getName());
+    uploader.setProjectName("osmand");
+    uploader.setUserName(user);
+    uploader.setPassword(password);
+    uploader.setLabels("Type-Archive, Testdata");
+    uploader.setSummary(summary);
+    try {
+      uploader.upload();
+    }
+ catch (    IOException e) {
+      log.error("Input/output exception uploading " + f.getName(),e);
+    }
+  }
+  System.out.println("UPLOADING INDEXES FINISHED ");
+}
