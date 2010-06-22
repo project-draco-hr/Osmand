@@ -4,16 +4,24 @@
       db.execSQL("INSERT INTO " + FILTER_NAME + " VALUES (?, ?, ?)",new Object[]{p.getName(),p.getFilterId(),p.getFilterByName()});
     }
     Map<AmenityType,List<String>> types=p.getAcceptedTypes();
+    SQLiteStatement insertCategories=db.compileStatement("INSERT INTO " + CATEGORIES_NAME + " VALUES (?, ?, ?)");
     for (    AmenityType a : types.keySet()) {
       if (types.get(a) == null) {
-        db.execSQL("INSERT INTO " + CATEGORIES_NAME + " VALUES (?, ?, ?)",new Object[]{p.getFilterId(),AmenityType.valueToString(a),null});
+        insertCategories.bindString(1,p.getFilterId());
+        insertCategories.bindString(2,AmenityType.valueToString(a));
+        insertCategories.bindNull(3);
+        insertCategories.execute();
       }
  else {
         for (        String s : types.get(a)) {
-          db.execSQL("INSERT INTO " + CATEGORIES_NAME + " VALUES (?, ?, ?)",new Object[]{p.getFilterId(),AmenityType.valueToString(a),s});
+          insertCategories.bindString(1,p.getFilterId());
+          insertCategories.bindString(2,AmenityType.valueToString(a));
+          insertCategories.bindString(3,s);
+          insertCategories.execute();
         }
       }
     }
+    insertCategories.close();
     return true;
   }
   return false;

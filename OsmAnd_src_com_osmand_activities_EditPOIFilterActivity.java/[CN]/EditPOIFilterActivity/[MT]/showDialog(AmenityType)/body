@@ -2,7 +2,6 @@
   Builder builder=new AlertDialog.Builder(this);
   ScrollView scroll=new ScrollView(this);
   ListView listView=new ListView(this);
-  final List<String> accepted=new ArrayList<String>();
   final LinkedHashSet<String> subCategories=new LinkedHashSet<String>(AmenityType.getSubCategories(amenity));
   List<String> subtypes=filter.getAcceptedSubtypes(amenity);
   boolean allSubTypesAccepted=subtypes == null;
@@ -15,50 +14,47 @@
     }
   }
   final String[] array=subCategories.toArray(new String[0]);
-  boolean[] selected=new boolean[array.length];
+  final boolean[] selected=new boolean[array.length];
   for (int i=0; i < selected.length; i++) {
     if (allSubTypesAccepted) {
       selected[i]=true;
-      accepted.add(array[i]);
     }
  else {
       selected[i]=acceptedCategories.contains(array[i]);
-      if (selected[i]) {
-        accepted.add(array[i]);
-      }
     }
   }
   scroll.addView(listView);
   builder.setView(scroll);
-  builder.setNegativeButton(EditPOIFilterActivity.this.getText(R.string.default_buttons_cancel),new DialogInterface.OnClickListener(){
+  builder.setNeutralButton(EditPOIFilterActivity.this.getText(R.string.close),new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
+      List<String> accepted=new ArrayList<String>();
+      for (int i=0; i < selected.length; i++) {
+        if (selected[i]) {
+          accepted.add(array[i]);
+        }
+      }
       if (subCategories.size() == accepted.size()) {
         filter.selectSubTypesToAccept(amenity,null);
       }
  else {
         filter.selectSubTypesToAccept(amenity,accepted);
       }
-      PoiFiltersHelper.editPoiFilter(EditPOIFilterActivity.this,filter);
+      PoiFiltersHelper.editPoiFilter(helper,filter);
       ((AmenityAdapter)EditPOIFilterActivity.this.getListAdapter()).notifyDataSetInvalidated();
     }
   }
 );
-  builder.setNeutralButton(EditPOIFilterActivity.this.getText(R.string.default_buttons_selectall),new DialogInterface.OnClickListener(){
+  builder.setPositiveButton(EditPOIFilterActivity.this.getText(R.string.default_buttons_selectall),new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       filter.selectSubTypesToAccept(amenity,null);
-      PoiFiltersHelper.editPoiFilter(EditPOIFilterActivity.this,filter);
+      PoiFiltersHelper.editPoiFilter(helper,filter);
       ((AmenityAdapter)EditPOIFilterActivity.this.getListAdapter()).notifyDataSetInvalidated();
     }
   }
 );
   builder.setMultiChoiceItems(array,selected,new DialogInterface.OnMultiChoiceClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int item,    boolean isChecked){
-      if (isChecked && !accepted.contains(array[item])) {
-        accepted.add(array[item]);
-      }
- else       if (!isChecked && accepted.contains(array[item])) {
-        accepted.remove(array[item]);
-      }
+      selected[item]=isChecked;
     }
   }
 );
