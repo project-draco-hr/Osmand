@@ -9,13 +9,41 @@
   final EditText editText=new EditText(this);
   builder.setView(editText);
   builder.setNegativeButton(R.string.default_buttons_cancel,null);
+  builder.setNeutralButton(R.string.update_existing,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      Builder b=new AlertDialog.Builder(MapActivity.this);
+      final FavouritesDbHelper helper=new FavouritesActivity.FavouritesDbHelper(MapActivity.this);
+      final List<FavouritePoint> points=helper.getFavouritePoints();
+      final String[] ar=new String[points.size()];
+      for (int i=0; i < ar.length; i++) {
+        ar[i]=points.get(i).getName();
+      }
+      b.setItems(ar,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          if (helper.editFavourite(points.get(which),latitude,longitude)) {
+            Toast.makeText(MapActivity.this,getString(R.string.fav_points_edited),Toast.LENGTH_SHORT).show();
+          }
+          helper.close();
+        }
+      }
+);
+      if (ar.length == 0) {
+        Toast.makeText(MapActivity.this,getString(R.string.fav_points_not_exist),Toast.LENGTH_SHORT).show();
+        helper.close();
+      }
+ else {
+        b.show();
+      }
+    }
+  }
+);
   builder.setPositiveButton(R.string.default_buttons_add,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       FavouritesDbHelper helper=new FavouritesActivity.FavouritesDbHelper(MapActivity.this);
       p.setName(editText.getText().toString());
       boolean added=helper.addFavourite(p);
       if (added) {
-        Toast.makeText(MapActivity.this,MessageFormat.format(resources.getString(R.string.add_favorite_dialog_favourite_added_template),p.getName()),Toast.LENGTH_SHORT).show();
+        Toast.makeText(MapActivity.this,MessageFormat.format(getString(R.string.add_favorite_dialog_favourite_added_template),p.getName()),Toast.LENGTH_SHORT).show();
       }
       helper.close();
     }

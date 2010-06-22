@@ -15,23 +15,24 @@
   }
 );
   mapView.setMapLocationListener(this);
-  poiMapLayer=new POIMapLayer();
-  mapView.addLayer(poiMapLayer);
-  routingHelper=new RoutingHelper(this);
+  routingHelper=RoutingHelper.getInstance(this);
   routeLayer=new RouteLayer(routingHelper);
   mapView.addLayer(routeLayer);
   osmBugsLayer=new OsmBugsLayer(this);
-  mapInfoLayer=new MapInfoLayer(this,routeLayer);
-  mapView.addLayer(mapInfoLayer);
+  poiMapLayer=new POIMapLayer();
   navigationLayer=new PointNavigationLayer();
   mapView.addLayer(navigationLayer);
   locationLayer=new PointLocationLayer();
   mapView.addLayer(locationLayer);
+  mapInfoLayer=new MapInfoLayer(this,routeLayer);
+  mapView.addLayer(mapInfoLayer);
   savingTrackHelper=new SavingTrackHelper(this);
   locationLayer.setAppMode(OsmandSettings.getApplicationMode(this));
   LatLon pointToNavigate=OsmandSettings.getPointToNavigate(this);
   routingHelper.setAppMode(OsmandSettings.getApplicationMode(this));
-  routingHelper.setFinalAndCurrentLocation(pointToNavigate,null);
+  if (!Algoritms.objectEquals(routingHelper.getFinalLocation(),pointToNavigate)) {
+    routingHelper.setFinalAndCurrentLocation(pointToNavigate,null);
+  }
   navigationLayer.setPointToNavigate(pointToNavigate);
   SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);
   if (prefs == null || !prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
