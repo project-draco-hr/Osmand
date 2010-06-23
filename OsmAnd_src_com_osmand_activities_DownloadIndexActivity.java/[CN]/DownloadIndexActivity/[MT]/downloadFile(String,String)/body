@@ -1,0 +1,64 @@
+{
+  File parent=null;
+  if (key.endsWith(IndexConstants.ADDRESS_INDEX_EXT)) {
+    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.ADDRESS_PATH);
+    regionName+=IndexConstants.ADDRESS_INDEX_EXT;
+  }
+ else   if (key.endsWith(IndexConstants.POI_INDEX_EXT)) {
+    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.ADDRESS_PATH);
+    regionName+=IndexConstants.POI_INDEX_EXT;
+  }
+  if (parent != null) {
+    parent.mkdirs();
+  }
+  if (parent == null || !parent.exists()) {
+    Toast.makeText(DownloadIndexActivity.this,getString(R.string.download_sd_dir_not_accessible),Toast.LENGTH_LONG);
+    return;
+  }
+  final File file=new File(parent,regionName);
+  final ProgressDialog dlg=ProgressDialog.show(this,getString(R.string.downloading),getString(R.string.downloading_file),true,true);
+  dlg.show();
+  final ProgressDialogImplementation impl=new ProgressDialogImplementation(dlg,true);
+  impl.setRunnable("DownloadIndex",new Runnable(){
+    @Override public void run(){
+      try {
+        FileOutputStream out=new FileOutputStream(file);
+        try {
+          InputStream is=DownloaderIndexFromGoogleCode.getInputStreamToLoadIndex(key);
+          impl.startTask(getString(R.string.downloading_file),is.available());
+          byte[] buffer=new byte[BUFFER_SIZE];
+          int read=0;
+          while ((read=is.read(buffer)) != -1) {
+            out.write(buffer,0,read);
+            impl.progress(read);
+          }
+          ArrayList<String> warnings=new ArrayList<String>();
+          if (file.getName().endsWith(IndexConstants.ADDRESS_INDEX_EXT)) {
+            ResourceManager.getResourceManager().indexingAddress(impl,warnings,file);
+          }
+ else           if (file.getName().endsWith(IndexConstants.POI_INDEX_EXT)) {
+            ResourceManager.getResourceManager().indexingPoi(impl,warnings,file);
+          }
+          if (warnings.isEmpty()) {
+            showWarning(getString(R.string.download_index_success));
+          }
+ else {
+            showWarning(warnings.get(0));
+          }
+        }
+  finally {
+          out.close();
+        }
+      }
+ catch (      IOException e) {
+        log.error("Exception ocurred",e);
+        showWarning(getString(R.string.error_io_error));
+      }
+ finally {
+        dlg.dismiss();
+      }
+    }
+  }
+);
+  impl.run();
+}
