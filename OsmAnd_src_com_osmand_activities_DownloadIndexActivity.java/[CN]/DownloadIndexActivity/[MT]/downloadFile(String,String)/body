@@ -5,7 +5,7 @@
     regionName+=IndexConstants.ADDRESS_INDEX_EXT;
   }
  else   if (key.endsWith(IndexConstants.POI_INDEX_EXT)) {
-    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.ADDRESS_PATH);
+    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.POI_PATH);
     regionName+=IndexConstants.POI_INDEX_EXT;
   }
   if (parent != null) {
@@ -24,8 +24,10 @@
       try {
         FileOutputStream out=new FileOutputStream(file);
         try {
-          InputStream is=DownloaderIndexFromGoogleCode.getInputStreamToLoadIndex(key);
-          impl.startTask(getString(R.string.downloading_file),is.available());
+          URL url=DownloaderIndexFromGoogleCode.getInputStreamToLoadIndex(key);
+          URLConnection conn=url.openConnection();
+          InputStream is=conn.getInputStream();
+          impl.startTask(getString(R.string.downloading_file),conn.getContentLength());
           byte[] buffer=new byte[BUFFER_SIZE];
           int read=0;
           while ((read=is.read(buffer)) != -1) {
@@ -53,6 +55,7 @@
  catch (      IOException e) {
         log.error("Exception ocurred",e);
         showWarning(getString(R.string.error_io_error));
+        file.delete();
       }
  finally {
         dlg.dismiss();
