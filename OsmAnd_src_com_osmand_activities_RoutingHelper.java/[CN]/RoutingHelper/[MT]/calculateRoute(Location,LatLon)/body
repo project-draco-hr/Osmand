@@ -4,10 +4,10 @@
 synchronized (this) {
         currentRunningJob=new Thread(new Runnable(){
           @Override public void run(){
-            RouteCalculationResult res=calculateRouteImpl(start,end);
+            RouteCalculationResult res=provider.calculateRouteImpl(start,end,mode);
 synchronized (RoutingHelper.this) {
               if (res.isCalculated()) {
-                setNewRoute(res.list);
+                setNewRoute(res);
                 evalWaitInterval=3000;
               }
  else {
@@ -20,14 +20,16 @@ synchronized (RoutingHelper.this) {
             }
             if (activity != null) {
               if (res.isCalculated()) {
-                showMessage(activity.getString(R.string.new_route_calculated_dist) + MapUtils.getFormattedDistance(sumDistance(res.list)));
+                int[] dist=res.getListDistance();
+                int l=dist != null && dist.length > 0 ? dist[0] : 0;
+                showMessage(activity.getString(R.string.new_route_calculated_dist) + MapUtils.getFormattedDistance(l));
                 activity.getMapView().refreshMap();
               }
  else {
-                if (res.errorMessage != null) {
-                  showMessage(activity.getString(R.string.error_calculating_route) + res.errorMessage);
+                if (res.getErrorMessage() != null) {
+                  showMessage(activity.getString(R.string.error_calculating_route) + res.getErrorMessage());
                 }
- else                 if (res.list == null) {
+ else                 if (res.getLocations() == null) {
                   showMessage(activity.getString(R.string.error_calculating_route_occured));
                 }
  else {

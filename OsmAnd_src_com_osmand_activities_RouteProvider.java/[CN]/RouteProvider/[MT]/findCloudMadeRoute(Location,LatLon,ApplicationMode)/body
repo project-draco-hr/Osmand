@@ -1,0 +1,72 @@
+{
+  List<Location> res=new ArrayList<Location>();
+  List<RouteDirectionInfo> directions=null;
+  StringBuilder uri=new StringBuilder();
+  uri.append("http://routes.cloudmade.com/A6421860EBB04234AB5EF2D049F2CD8F/api/0.3/");
+  uri.append(start.getLatitude() + "").append(",");
+  uri.append(start.getLongitude() + "").append(",");
+  uri.append(end.getLatitude() + "").append(",");
+  uri.append(end.getLongitude() + "").append("/");
+  if (ApplicationMode.PEDESTRIAN == mode) {
+    uri.append("foot.gpx");
+  }
+ else   if (ApplicationMode.BICYCLE == mode) {
+    uri.append("bicycle.gpx");
+  }
+ else {
+    uri.append("car.gpx");
+  }
+  uri.append("?lang=").append(Locale.getDefault().getLanguage());
+  URL url=new URL(uri.toString());
+  URLConnection connection=url.openConnection();
+  DocumentBuilder dom=DocumentBuilderFactory.newInstance().newDocumentBuilder();
+  Document doc=dom.parse(new InputSource(new InputStreamReader(connection.getInputStream())));
+  NodeList list=doc.getElementsByTagName("wpt");
+  for (int i=0; i < list.getLength(); i++) {
+    Element item=(Element)list.item(i);
+    try {
+      Location l=new Location("router");
+      l.setLatitude(Double.parseDouble(item.getAttribute("lat")));
+      l.setLongitude(Double.parseDouble(item.getAttribute("lon")));
+      res.add(l);
+    }
+ catch (    NumberFormatException e) {
+    }
+  }
+  list=doc.getElementsByTagName("rtept");
+  if (list.getLength() > 0) {
+    directions=new ArrayList<RouteDirectionInfo>();
+  }
+  for (int i=0; i < list.getLength(); i++) {
+    Element item=(Element)list.item(i);
+    try {
+      RouteDirectionInfo dirInfo=new RouteDirectionInfo();
+      dirInfo.descriptionRoute=getContentFromNode(item,"desc");
+      String stime=getContentFromNode(item,"time");
+      if (stime != null) {
+        dirInfo.expectedTime=Integer.parseInt(stime);
+      }
+      String sturn=getContentFromNode(item,"turn-angle");
+      if (sturn != null) {
+        dirInfo.turnAngle=(float)Double.parseDouble(sturn);
+      }
+      String stype=getContentFromNode(item,"turn");
+      if (stype != null) {
+        dirInfo.turnType=TurnType.valueOf(stype.toUpperCase());
+      }
+ else {
+        dirInfo.turnType=TurnType.C;
+      }
+      int offset=Integer.parseInt(getContentFromNode(item,"offset"));
+      dirInfo.routePointOffset=offset;
+      directions.add(dirInfo);
+    }
+ catch (    NumberFormatException e) {
+      log.info("Exception",e);
+    }
+catch (    IllegalArgumentException e) {
+      log.info("Exception",e);
+    }
+  }
+  return new RouteCalculationResult(res,directions,null);
+}

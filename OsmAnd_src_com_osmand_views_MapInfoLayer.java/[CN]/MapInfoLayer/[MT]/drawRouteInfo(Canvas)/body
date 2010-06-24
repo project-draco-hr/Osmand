@@ -1,0 +1,53 @@
+{
+  if (routeLayer != null && routeLayer.getHelper().isRouterEnabled()) {
+    if (showMiniMap) {
+      if (!routeLayer.getPath().isEmpty()) {
+        canvas.save();
+        canvas.clipRect(boundsForMiniRoute);
+        canvas.drawRoundRect(boundsForMiniRoute,3,3,paintAlphaGray);
+        canvas.drawRoundRect(boundsForMiniRoute,3,3,paintBlack);
+        canvas.translate(centerMiniRouteX - view.getCenterPointX(),centerMiniRouteY - view.getCenterPointY());
+        canvas.scale(scaleMiniRoute,scaleMiniRoute,view.getCenterPointX(),view.getCenterPointY());
+        canvas.rotate(view.getRotate(),view.getCenterPointX(),view.getCenterPointY());
+        canvas.drawCircle(view.getCenterPointX(),view.getCenterPointY(),3 / scaleMiniRoute,fillBlack);
+        canvas.drawPath(routeLayer.getPath(),paintMiniRoute);
+        canvas.restore();
+      }
+    }
+ else {
+      int d=routeLayer.getHelper().getDistanceToNextRouteDirection();
+      if (d > 0) {
+        canvas.drawRoundRect(boundsForMiniRoute,3,3,paintAlphaGray);
+        canvas.drawRoundRect(boundsForMiniRoute,3,3,paintBlack);
+        RouteDirectionInfo next=routeLayer.getHelper().getNextRouteDirectionInfo();
+        if (next != null) {
+          calcTurnPath(next.turnType);
+          canvas.drawPath(pathForTurn,paintRouteDirection);
+          canvas.drawPath(pathForTurn,paintBlack);
+          canvas.drawText(MapUtils.getFormattedDistance(d),boundsForMiniRoute.left + 10,boundsForMiniRoute.bottom - 9,paintBlack);
+        }
+      }
+ else {
+      }
+    }
+    int time=routeLayer.getHelper().getLeftTime() * 1000;
+    if (time == 0) {
+      cachedLeftTime=0;
+      cachedLeftTimeString=null;
+    }
+ else {
+      if (Math.abs(System.currentTimeMillis() + time - cachedLeftTime) > 30000) {
+        cachedLeftTime=System.currentTimeMillis() + time;
+        cachedLeftTimeString=DateFormat.format("k:mm",cachedLeftTime).toString();
+      }
+    }
+    if (cachedLeftTimeString != null) {
+      int w=(int)(boundsForLeftTime.right - boundsForLeftTime.left);
+      boundsForLeftTime.right=view.getWidth();
+      boundsForLeftTime.left=view.getWidth() - w;
+      canvas.drawRoundRect(boundsForLeftTime,3,3,paintAlphaGray);
+      canvas.drawRoundRect(boundsForLeftTime,3,3,paintBlack);
+      canvas.drawText(cachedLeftTimeString,boundsForLeftTime.left + 5,boundsForLeftTime.bottom - 9,paintBlack);
+    }
+  }
+}
