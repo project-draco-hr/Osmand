@@ -1,10 +1,11 @@
 {
+  final RouteService service=OsmandSettings.getRouterService(activity);
   if (currentRunningJob == null) {
     if (System.currentTimeMillis() - lastTimeEvaluatedRoute > evalWaitInterval) {
 synchronized (this) {
         currentRunningJob=new Thread(new Runnable(){
           @Override public void run(){
-            RouteCalculationResult res=provider.calculateRouteImpl(start,end,mode);
+            RouteCalculationResult res=provider.calculateRouteImpl(start,end,mode,service);
 synchronized (RoutingHelper.this) {
               if (res.isCalculated()) {
                 setNewRoute(res);
@@ -18,23 +19,23 @@ synchronized (RoutingHelper.this) {
               }
               currentRunningJob=null;
             }
-            if (activity != null) {
-              if (res.isCalculated()) {
-                int[] dist=res.getListDistance();
-                int l=dist != null && dist.length > 0 ? dist[0] : 0;
-                showMessage(activity.getString(R.string.new_route_calculated_dist) + MapUtils.getFormattedDistance(l));
-                activity.getMapView().refreshMap();
+            if (res.isCalculated()) {
+              int[] dist=res.getListDistance();
+              int l=dist != null && dist.length > 0 ? dist[0] : 0;
+              showMessage(activity.getString(R.string.new_route_calculated_dist) + MapUtils.getFormattedDistance(l));
+              if (activity instanceof MapActivity) {
+                ((MapActivity)activity).getMapView().refreshMap();
+              }
+            }
+ else {
+              if (res.getErrorMessage() != null) {
+                showMessage(activity.getString(R.string.error_calculating_route) + res.getErrorMessage());
+              }
+ else               if (res.getLocations() == null) {
+                showMessage(activity.getString(R.string.error_calculating_route_occured));
               }
  else {
-                if (res.getErrorMessage() != null) {
-                  showMessage(activity.getString(R.string.error_calculating_route) + res.getErrorMessage());
-                }
- else                 if (res.getLocations() == null) {
-                  showMessage(activity.getString(R.string.error_calculating_route_occured));
-                }
- else {
-                  showMessage(activity.getString(R.string.empty_route_calculated));
-                }
+                showMessage(activity.getString(R.string.empty_route_calculated));
               }
             }
             lastTimeEvaluatedRoute=System.currentTimeMillis();

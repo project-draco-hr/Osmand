@@ -37,6 +37,7 @@
   if (list.getLength() > 0) {
     directions=new ArrayList<RouteDirectionInfo>();
   }
+  RouteDirectionInfo previous=null;
   for (int i=0; i < list.getLength(); i++) {
     Element item=(Element)list.item(i);
     try {
@@ -59,13 +60,46 @@
       }
       int offset=Integer.parseInt(getContentFromNode(item,"offset"));
       dirInfo.routePointOffset=offset;
+      if (previous != null && previous.turnType != TurnType.C && previous.turnType != null) {
+        if (previous.routePointOffset > 0) {
+          float paz=res.get(previous.routePointOffset - 1).bearingTo(res.get(previous.routePointOffset));
+          float caz;
+          if (previous.turnType.isExit() && dirInfo.routePointOffset < res.size() - 1) {
+            caz=res.get(dirInfo.routePointOffset).bearingTo(res.get(dirInfo.routePointOffset + 1));
+          }
+ else {
+            caz=res.get(dirInfo.routePointOffset - 1).bearingTo(res.get(dirInfo.routePointOffset));
+          }
+          float angle=caz - paz;
+          if (angle < 0) {
+            angle+=360;
+          }
+          if (previous.turnAngle == 0f) {
+            previous.turnAngle=angle;
+          }
+        }
+      }
       directions.add(dirInfo);
+      previous=dirInfo;
     }
  catch (    NumberFormatException e) {
       log.info("Exception",e);
     }
 catch (    IllegalArgumentException e) {
       log.info("Exception",e);
+    }
+  }
+  if (previous != null && previous.turnType != TurnType.C && previous.turnType != null) {
+    if (previous.routePointOffset > 0 && previous.routePointOffset < res.size() - 1) {
+      float paz=res.get(previous.routePointOffset - 1).bearingTo(res.get(previous.routePointOffset));
+      float caz=res.get(previous.routePointOffset).bearingTo(res.get(res.size() - 1));
+      float angle=caz - paz;
+      if (angle < 0) {
+        angle+=360;
+      }
+      if (previous.turnAngle == 0f) {
+        previous.turnAngle=angle;
+      }
     }
   }
   return new RouteCalculationResult(res,directions,null);

@@ -1,0 +1,25 @@
+{
+  View row=convertView;
+  if (row == null) {
+    LayoutInflater inflater=getLayoutInflater();
+    row=inflater.inflate(R.layout.route_info_list_item,parent,false);
+  }
+  RouteDirectionInfo model=(RouteDirectionInfo)getItem(position);
+  TextView label=(TextView)row.findViewById(R.id.description);
+  TextView distanceLabel=(TextView)row.findViewById(R.id.distance);
+  TextView timeLabel=(TextView)row.findViewById(R.id.time);
+  ImageView icon=(ImageView)row.findViewById(R.id.direction);
+  if (!(icon.getDrawable() instanceof RouteDrawable)) {
+    icon.setImageDrawable(new RouteDrawable());
+  }
+  ((RouteDrawable)icon.getDrawable()).setRouteType(model.turnType);
+  distanceLabel.setText(MapUtils.getFormattedDistance(model.distance));
+  label.setText(model.descriptionRoute);
+  if (model.expectedTime < 3600) {
+    timeLabel.setText(DateFormat.format("mm:ss",model.expectedTime * 1000));
+  }
+ else {
+    timeLabel.setText(DateFormat.format("k:mm:ss",model.expectedTime * 1000));
+  }
+  return row;
+}
