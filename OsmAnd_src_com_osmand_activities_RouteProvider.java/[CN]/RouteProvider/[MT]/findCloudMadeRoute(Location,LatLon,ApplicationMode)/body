@@ -47,20 +47,20 @@
       if (stime != null) {
         dirInfo.expectedTime=Integer.parseInt(stime);
       }
-      String sturn=getContentFromNode(item,"turn-angle");
-      if (sturn != null) {
-        dirInfo.turnAngle=(float)Double.parseDouble(sturn);
-      }
       String stype=getContentFromNode(item,"turn");
       if (stype != null) {
         dirInfo.turnType=TurnType.valueOf(stype.toUpperCase());
       }
  else {
-        dirInfo.turnType=TurnType.C;
+        dirInfo.turnType=TurnType.valueOf(TurnType.C);
+      }
+      String sturn=getContentFromNode(item,"turn-angle");
+      if (sturn != null) {
+        dirInfo.turnType.setTurnAngle((float)Double.parseDouble(sturn));
       }
       int offset=Integer.parseInt(getContentFromNode(item,"offset"));
       dirInfo.routePointOffset=offset;
-      if (previous != null && previous.turnType != TurnType.C && previous.turnType != null) {
+      if (previous != null && previous.turnType != null && !TurnType.C.equals(previous.turnType.getValue())) {
         if (previous.routePointOffset > 0) {
           float paz=res.get(previous.routePointOffset - 1).bearingTo(res.get(previous.routePointOffset));
           float caz;
@@ -70,12 +70,15 @@
  else {
             caz=res.get(dirInfo.routePointOffset - 1).bearingTo(res.get(dirInfo.routePointOffset));
           }
-          float angle=caz - paz;
+          float angle=caz - paz + 60f;
           if (angle < 0) {
             angle+=360;
           }
-          if (previous.turnAngle == 0f) {
-            previous.turnAngle=angle;
+ else           if (angle > 360) {
+            angle-=360;
+          }
+          if (previous.turnType.getTurnAngle() < 0.5f) {
+            previous.turnType.setTurnAngle(angle);
           }
         }
       }
@@ -89,7 +92,7 @@ catch (    IllegalArgumentException e) {
       log.info("Exception",e);
     }
   }
-  if (previous != null && previous.turnType != TurnType.C && previous.turnType != null) {
+  if (previous != null && previous.turnType != null && !TurnType.C.equals(previous.turnType.getValue())) {
     if (previous.routePointOffset > 0 && previous.routePointOffset < res.size() - 1) {
       float paz=res.get(previous.routePointOffset - 1).bearingTo(res.get(previous.routePointOffset));
       float caz=res.get(previous.routePointOffset).bearingTo(res.get(res.size() - 1));
@@ -97,8 +100,8 @@ catch (    IllegalArgumentException e) {
       if (angle < 0) {
         angle+=360;
       }
-      if (previous.turnAngle == 0f) {
-        previous.turnAngle=angle;
+      if (previous.turnType.getTurnAngle() < 0.5f) {
+        previous.turnType.setTurnAngle(angle);
       }
     }
   }

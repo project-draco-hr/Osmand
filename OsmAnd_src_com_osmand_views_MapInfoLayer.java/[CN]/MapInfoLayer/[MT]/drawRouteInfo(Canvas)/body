@@ -1,5 +1,5 @@
 {
-  if (routeLayer != null && routeLayer.getHelper().isRouterEnabled() && !routeLayer.getHelper().isFollowingMode()) {
+  if (routeLayer != null && routeLayer.getHelper().isRouterEnabled() && routeLayer.getHelper().isFollowingMode()) {
     int d=routeLayer.getHelper().getDistanceToNextRouteDirection();
     if (showMiniMap || d == 0) {
       if (!routeLayer.getPath().isEmpty()) {
@@ -23,9 +23,18 @@
         if (!Algoritms.objectEquals(cachedTurnType,next.turnType)) {
           cachedTurnType=next.turnType;
           calcTurnPath(pathForTurn,cachedTurnType,pathTransform);
+          if (cachedTurnType.getExitOut() > 0) {
+            cachedExitOut=cachedTurnType.getExitOut() + "";
+          }
+ else {
+            cachedExitOut=null;
+          }
         }
         canvas.drawPath(pathForTurn,paintRouteDirection);
         canvas.drawPath(pathForTurn,paintBlack);
+        if (cachedExitOut != null) {
+          canvas.drawText(cachedExitOut,boundsForMiniRoute.centerX() - 6,boundsForMiniRoute.centerY() - 9,paintBlack);
+        }
         canvas.drawText(MapUtils.getFormattedDistance(d),boundsForMiniRoute.left + 10,boundsForMiniRoute.bottom - 9,paintBlack);
       }
     }
@@ -53,7 +62,5 @@
       canvas.drawRoundRect(boundsForLeftTime,3,3,paintBlack);
       canvas.drawText(cachedLeftTimeString,boundsForLeftTime.left + 5,boundsForLeftTime.bottom - 9,paintBlack);
     }
-  }
- else {
   }
 }

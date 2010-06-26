@@ -1,4 +1,7 @@
 {
+  if (turnType == null) {
+    return;
+  }
   pathForTurn.reset();
   int c=48;
   int w=16;
@@ -7,7 +10,7 @@
   float harrowL=(float)Math.sqrt(2) * sarrowL;
   float spartArrowL=(float)((sarrowL - w / Math.sqrt(2)) / 2);
   float hpartArrowL=(float)(harrowL - w) / 2;
-  if (turnType == TurnType.C) {
+  if (TurnType.C.equals(turnType.getValue())) {
     int h=65;
     pathForTurn.rMoveTo(w / 2,0);
     pathForTurn.rLineTo(0,-h);
@@ -17,8 +20,8 @@
     pathForTurn.rLineTo(hpartArrowL,0);
     pathForTurn.rLineTo(0,h);
   }
- else   if (turnType == TurnType.TR || turnType == TurnType.TL) {
-    int b=turnType == TurnType.TR ? 1 : -1;
+ else   if (TurnType.TR.equals(turnType.getValue()) || TurnType.TL.equals(turnType.getValue())) {
+    int b=TurnType.TR.equals(turnType.getValue()) ? 1 : -1;
     int h=36;
     float quadShiftX=22;
     float quadShiftY=22;
@@ -32,8 +35,8 @@
     pathForTurn.rQuadTo(-b * (quadShiftX + w),0,-b * (quadShiftX + w),quadShiftY + w);
     pathForTurn.rLineTo(0,h);
   }
- else   if (turnType == TurnType.TSLR || turnType == TurnType.TSLL) {
-    int b=turnType == TurnType.TSLR ? 1 : -1;
+ else   if (TurnType.TSLR.equals(turnType.getValue()) || TurnType.TSLL.equals(turnType.getValue())) {
+    int b=TurnType.TSLR.equals(turnType.getValue()) ? 1 : -1;
     int h=40;
     int quadShiftY=22;
     float quadShiftX=(float)(quadShiftY / (1 + Math.sqrt(2)));
@@ -49,8 +52,8 @@
     pathForTurn.rQuadTo(b * nQuadShiftX,-nQuadShiftX,b * nQuadShiftX,nQuadShifty);
     pathForTurn.rLineTo(0,h);
   }
- else   if (turnType == TurnType.TSHR || turnType == TurnType.TSHL) {
-    int b=turnType == TurnType.TSHR ? 1 : -1;
+ else   if (TurnType.TSHR.equals(turnType.getValue()) || TurnType.TSHL.equals(turnType.getValue())) {
+    int b=TurnType.TSHR.equals(turnType.getValue()) ? 1 : -1;
     int h=45;
     float quadShiftX=22;
     float quadShiftY=-(float)(quadShiftX / (1 + Math.sqrt(2)));
@@ -66,7 +69,7 @@
     pathForTurn.rCubicTo(b * nQuadShiftX / 2,nQuadShiftX / 2,b * nQuadShiftX,nQuadShiftX / 2,b * nQuadShiftX,nQuadShiftY);
     pathForTurn.rLineTo(0,h);
   }
- else   if (turnType == TurnType.TU) {
+ else   if (TurnType.TU.equals(turnType.getValue())) {
     int h=54;
     float quadShiftX=13;
     float quadShiftY=13;
@@ -83,6 +86,36 @@
     pathForTurn.rLineTo(0,h);
   }
  else   if (turnType != null && turnType.isExit()) {
+    float t=turnType.getTurnAngle();
+    if (t >= 170 && t < 220) {
+      t=220;
+    }
+ else     if (t > 160 && t < 170) {
+      t=160;
+    }
+    float sweepAngle=(t - 360) - 180;
+    if (sweepAngle < -360) {
+      sweepAngle+=360;
+    }
+    float r1=32f;
+    float r2=24f;
+    float angleToRot=0.3f;
+    pathForTurn.moveTo(48,48 + r1 + 8);
+    pathForTurn.lineTo(48,48 + r1);
+    RectF r=new RectF(48 - r1,48 - r1,48 + r1,48 + r1);
+    pathForTurn.arcTo(r,90,sweepAngle);
+    float angleRad=(float)((180 + sweepAngle) * Math.PI / 180f);
+    pathForTurn.lineTo(48 + (r1 + 4) * FloatMath.sin(angleRad),48 - (r1 + 4) * FloatMath.cos(angleRad));
+    pathForTurn.lineTo(48 + (r1 + 6) * FloatMath.sin(angleRad + angleToRot / 2),48 - (r1 + 6) * FloatMath.cos(angleRad + angleToRot / 2));
+    pathForTurn.lineTo(48 + (r1 + 12) * FloatMath.sin(angleRad - angleToRot / 2),48 - (r1 + 12) * FloatMath.cos(angleRad - angleToRot / 2));
+    pathForTurn.lineTo(48 + (r1 + 6) * FloatMath.sin(angleRad - 3 * angleToRot / 2),48 - (r1 + 6) * FloatMath.cos(angleRad - 3 * angleToRot / 2));
+    pathForTurn.lineTo(48 + (r1 + 4) * FloatMath.sin(angleRad - angleToRot),48 - (r1 + 4) * FloatMath.cos(angleRad - angleToRot));
+    pathForTurn.lineTo(48 + r2 * FloatMath.sin(angleRad - angleToRot),48 - r2 * FloatMath.cos(angleRad - angleToRot));
+    r.set(48 - r2,48 - r2,48 + r2,48 + r2);
+    pathForTurn.arcTo(r,360 + sweepAngle + 90,-sweepAngle);
+    pathForTurn.lineTo(40,48 + r2);
+    pathForTurn.lineTo(40,48 + r1 + 8);
+    pathForTurn.close();
   }
   pathForTurn.close();
   pathForTurn.transform(transform);
