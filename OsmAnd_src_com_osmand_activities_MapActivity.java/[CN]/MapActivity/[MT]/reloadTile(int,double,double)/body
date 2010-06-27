@@ -2,12 +2,27 @@
   Builder builder=new AlertDialog.Builder(this);
   builder.setMessage(R.string.context_menu_item_update_map_confirm);
   builder.setNegativeButton(R.string.default_buttons_cancel,null);
-  builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+  builder.setPositiveButton(R.string.context_menu_item_update_map,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      int x=(int)MapUtils.getTileNumberX(zoom,longitude);
-      int y=(int)MapUtils.getTileNumberY(zoom,latitude);
-      ResourceManager.getResourceManager().clearTileImageForMap(null,mapView.getMap(),x,y,zoom);
+      Rect pixRect=new Rect(0,0,mapView.getWidth(),mapView.getHeight());
+      RectF tilesRect=new RectF();
+      mapView.calculateTileRectangle(pixRect,mapView.getCenterPointX(),mapView.getCenterPointY(),mapView.getXTile(),mapView.getYTile(),tilesRect);
+      int left=(int)FloatMath.floor(tilesRect.left);
+      int top=(int)FloatMath.floor(tilesRect.top);
+      int width=(int)(FloatMath.ceil(tilesRect.right) - left);
+      int height=(int)(FloatMath.ceil(tilesRect.bottom) - top);
+      for (int i=0; i < width; i++) {
+        for (int j=0; j < height; j++) {
+          ResourceManager.getResourceManager().clearTileImageForMap(null,mapView.getMap(),i + left,j + top,zoom);
+        }
+      }
       mapView.refreshMap();
+    }
+  }
+);
+  builder.setNeutralButton(R.string.context_menu_item_update_poi,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      updatePoiDb(zoom,latitude,longitude);
     }
   }
 );

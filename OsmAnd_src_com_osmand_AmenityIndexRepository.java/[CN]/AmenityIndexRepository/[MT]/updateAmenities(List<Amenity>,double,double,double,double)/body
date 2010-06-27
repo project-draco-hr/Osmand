@@ -1,0 +1,19 @@
+{
+  String latCol=IndexPoiTable.LATITUDE.name();
+  String lonCol=IndexPoiTable.LONGITUDE.name();
+  db.execSQL("DELETE FROM " + IndexPoiTable.getTable() + " WHERE "+ lonCol+ ">= ? AND ? <="+ lonCol+ " AND "+ latCol+ ">= ? AND ? <="+ latCol,new Double[]{leftLon,rightLon,bottomLat,topLat});
+  SQLiteStatement stat=db.compileStatement(IndexConstants.generatePrepareStatementToInsert(IndexPoiTable.getTable(),8));
+  for (  Amenity a : amenities) {
+    stat.bindLong(IndexPoiTable.ID.ordinal() + 1,a.getId());
+    stat.bindDouble(IndexPoiTable.LATITUDE.ordinal() + 1,a.getLocation().getLatitude());
+    stat.bindDouble(IndexPoiTable.LONGITUDE.ordinal() + 1,a.getLocation().getLongitude());
+    bindString(stat,IndexPoiTable.NAME_EN.ordinal() + 1,a.getEnName());
+    bindString(stat,IndexPoiTable.NAME.ordinal() + 1,a.getName());
+    bindString(stat,IndexPoiTable.TYPE.ordinal() + 1,AmenityType.valueToString(a.getType()));
+    bindString(stat,IndexPoiTable.SUBTYPE.ordinal() + 1,a.getSubType());
+    bindString(stat,IndexPoiTable.OPENING_HOURS.ordinal() + 1,a.getOpeningHours());
+    stat.execute();
+  }
+  stat.close();
+  return true;
+}

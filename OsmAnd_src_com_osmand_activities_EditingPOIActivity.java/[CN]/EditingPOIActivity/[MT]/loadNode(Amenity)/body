@@ -1,22 +1,24 @@
 {
   try {
-    String res=sendRequest(SITE_API + "api/0.6/node/" + id,"GET",null,ctx.getString(R.string.loading_poi_obj) + id,false);
+    String res=sendRequest(SITE_API + "api/0.6/node/" + n.getId(),"GET",null,ctx.getString(R.string.loading_poi_obj) + n.getId(),false);
     if (res != null) {
       OsmBaseStorage st=new OsmBaseStorage();
       st.parseOSM(new ByteArrayInputStream(res.getBytes("UTF-8")),null,null,true);
-      Entity entity=st.getRegisteredEntities().get(id);
-      entityInfo=st.getRegisteredEntityInfo().get(id);
+      Entity entity=st.getRegisteredEntities().get(n.getId());
+      entityInfo=st.getRegisteredEntityInfo().get(n.getId());
       if (entity instanceof Node) {
-        return (Node)entity;
+        if (MapUtils.getDistance(entity.getLatLon(),n.getLocation()) < 50) {
+          return (Node)entity;
+        }
       }
     }
   }
  catch (  IOException e) {
-    log.error("Loading node failed" + id,e);
+    log.error("Loading node failed" + n.getId(),e);
     Toast.makeText(ctx,ctx.getResources().getString(R.string.error_io_error),Toast.LENGTH_LONG).show();
   }
 catch (  SAXException e) {
-    log.error("Loading node failed" + id,e);
+    log.error("Loading node failed" + n.getId(),e);
     Toast.makeText(ctx,ctx.getResources().getString(R.string.error_io_error),Toast.LENGTH_LONG).show();
   }
   return null;

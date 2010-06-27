@@ -1,0 +1,34 @@
+{
+  try {
+    String u=SITE_API + "api/0.6/map?bbox=" + leftLon+ ","+ bottomLat+ ","+ righLon+ ","+ topLat;
+    URL url=new URL(u);
+    log.info("Start loading poi : " + u);
+    InputStream is=url.openStream();
+    OsmBaseStorage st=new OsmBaseStorage();
+    final List<Entity> amen=new ArrayList<Entity>();
+    st.getFilters().add(new IOsmStorageFilter(){
+      @Override public boolean acceptEntityToLoad(      OsmBaseStorage storage,      Entity entity){
+        if (Amenity.isAmenity(entity)) {
+          amen.add(entity);
+          return true;
+        }
+        return entity instanceof Node;
+      }
+    }
+);
+    st.parseOSM(is,null,null,false);
+    for (    Entity e : amen) {
+      amenities.add(new Amenity(e));
+    }
+    log.info("Loaded " + amenities.size() + " amenities");
+  }
+ catch (  IOException e) {
+    log.error("Loading nodes failed",e);
+    return false;
+  }
+catch (  SAXException e) {
+    log.error("Loading nodes failed",e);
+    return false;
+  }
+  return true;
+}

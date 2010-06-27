@@ -1,0 +1,45 @@
+{
+  if (zoom < 15) {
+    Toast.makeText(this,getString(R.string.update_poi_is_not_available_for_zoom),Toast.LENGTH_SHORT).show();
+    return;
+  }
+  final List<AmenityIndexRepository> repos=ResourceManager.getResourceManager().searchRepositories(latitude,longitude);
+  if (repos.isEmpty()) {
+    Toast.makeText(this,getString(R.string.update_poi_no_offline_poi_index),Toast.LENGTH_SHORT).show();
+    return;
+  }
+  Rect pixRect=new Rect(-mapView.getWidth() / 2,-mapView.getHeight() / 2,3 * mapView.getWidth() / 2,3 * mapView.getHeight() / 2);
+  RectF tileRect=new RectF();
+  mapView.calculateTileRectangle(pixRect,mapView.getCenterPointX(),mapView.getCenterPointY(),mapView.getXTile(),mapView.getYTile(),tileRect);
+  final double leftLon=MapUtils.getLongitudeFromTile(zoom,tileRect.left);
+  final double topLat=MapUtils.getLatitudeFromTile(zoom,tileRect.top);
+  final double rightLon=MapUtils.getLongitudeFromTile(zoom,tileRect.right);
+  final double bottomLat=MapUtils.getLatitudeFromTile(zoom,tileRect.bottom);
+  final ProgressDialog dlg=ProgressDialog.show(this,getString(R.string.loading),getString(R.string.loading_data));
+  new Thread(new Runnable(){
+    @Override public void run(){
+      try {
+        List<Amenity> amenities=new ArrayList<Amenity>();
+        boolean loadingPOIs=AmenityIndexRepository.loadingPOIs(amenities,leftLon,topLat,rightLon,bottomLat);
+        if (!loadingPOIs) {
+          showToast(getString(R.string.update_poi_error_loading));
+        }
+ else {
+          for (          AmenityIndexRepository r : repos) {
+            r.updateAmenities(amenities,leftLon,topLat,rightLon,bottomLat);
+          }
+          showToast(MessageFormat.format(getString(R.string.update_poi_success),amenities.size()));
+          mapView.refreshMap();
+        }
+      }
+ catch (      Exception e) {
+        Log.e(LogUtil.TAG,"Error updating local data",e);
+        showToast(getString(R.string.update_poi_error_local));
+      }
+ finally {
+        dlg.dismiss();
+      }
+    }
+  }
+,"LoadingPOI").start();
+}
