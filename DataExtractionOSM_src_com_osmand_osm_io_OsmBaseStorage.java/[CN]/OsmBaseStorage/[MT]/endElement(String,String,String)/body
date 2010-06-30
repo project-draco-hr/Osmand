@@ -1,11 +1,22 @@
 {
   name=saxParser.isNamespaceAware() ? localName : name;
-  if (ELEM_NODE.equals(name) || ELEM_WAY.equals(name) || ELEM_RELATION.equals(name)) {
+  EntityType type=null;
+  if (ELEM_NODE.equals(name)) {
+    type=EntityType.NODE;
+  }
+ else   if (ELEM_WAY.equals(name)) {
+    type=EntityType.WAY;
+  }
+ else   if (ELEM_RELATION.equals(name)) {
+    type=EntityType.RELATION;
+  }
+  if (type != null) {
     if (currentParsedEntity != null) {
       if (acceptEntityToLoad(currentParsedEntity)) {
-        Entity oldEntity=entities.put(currentParsedEntity.getId(),currentParsedEntity);
+        EntityId entityId=new EntityId(type,currentParsedEntity.getId());
+        Entity oldEntity=entities.put(entityId,currentParsedEntity);
         if (parseEntityInfo && currentParsedEntityInfo != null) {
-          entityInfo.put(currentParsedEntity.getId(),currentParsedEntityInfo);
+          entityInfo.put(entityId,currentParsedEntityInfo);
         }
         if (!supressWarnings && oldEntity != null) {
           throw new UnsupportedOperationException("Entity with id=" + oldEntity.getId() + " is duplicated in osm map");

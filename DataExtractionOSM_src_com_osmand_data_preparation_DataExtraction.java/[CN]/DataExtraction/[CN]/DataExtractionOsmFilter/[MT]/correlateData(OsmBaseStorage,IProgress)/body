@@ -1,34 +1,74 @@
 {
-  if (currentCount > 0) {
-    prep.executeBatch();
+  if (currentCountNode > 0) {
+    prepNode.executeBatch();
   }
-  prep.close();
+  prepNode.close();
+  if (currentWaysCount > 0) {
+    prepWays.executeBatch();
+  }
+  prepWays.close();
+  if (currentRelationsCount > 0) {
+    prepRelations.executeBatch();
+  }
+  prepRelations.close();
   conn.setAutoCommit(true);
-  final PreparedStatement pselect=conn.prepareStatement("select * from node where id = ?");
-  Map<Long,Entity> map=new LinkedHashMap<Long,Entity>();
+  final PreparedStatement pselectNode=conn.prepareStatement("select * from node where id = ?");
+  final PreparedStatement pselectWay=conn.prepareStatement("select * from ways where id = ?");
+  final PreparedStatement pselectRelation=conn.prepareStatement("select * from relations where id = ?");
+  Map<EntityId,Entity> map=new LinkedHashMap<EntityId,Entity>();
   progress.startTask("Correlating data...",storage.getRegisteredEntities().size());
-  Collection<Entity> values=new ArrayList<Entity>(storage.getRegisteredEntities().values());
-  for (  Entity e : values) {
+  ArrayList<Entity> values=new ArrayList<Entity>(storage.getRegisteredEntities().values());
+  for (int ind=0; ind < values.size(); ind++) {
+    Entity e=values.get(ind);
     progress.progress(1);
-    if (e instanceof Way || e instanceof Relation) {
-      map.clear();
-      Collection<Long> ids=e instanceof Way ? ((Way)e).getNodeIds() : ((Relation)e).getMemberIds();
-      for (      Long i : ids) {
-        if (!storage.getRegisteredEntities().containsKey(i)) {
-          pselect.setLong(1,i);
-          if (pselect.execute()) {
-            ResultSet rs=pselect.getResultSet();
+    if (e instanceof Node) {
+      continue;
+    }
+    map.clear();
+    Collection<EntityId> ids=e instanceof Way ? ((Way)e).getEntityIds() : ((Relation)e).getMemberIds();
+    for (    EntityId i : ids) {
+      if (!storage.getRegisteredEntities().containsKey(i)) {
+        if (i.getType() == EntityType.NODE) {
+          pselectNode.setLong(1,i.getId());
+          if (pselectNode.execute()) {
+            ResultSet rs=pselectNode.getResultSet();
             if (rs.next()) {
               storage.getRegisteredEntities().put(i,new Node(rs.getDouble(2),rs.getDouble(3),rs.getLong(1)));
             }
             rs.close();
           }
         }
-        if (storage.getRegisteredEntities().containsKey(i)) {
-          map.put(i,storage.getRegisteredEntities().get(i));
+ else         if (i.getType() == EntityType.WAY) {
+          pselectWay.setLong(1,i.getId());
+          if (pselectWay.execute()) {
+            ResultSet rs=pselectWay.getResultSet();
+            Way way=new Way(i.getId());
+            storage.getRegisteredEntities().put(i,way);
+            while (rs.next()) {
+              way.addNode(rs.getLong(2));
+            }
+            values.add(way);
+            rs.close();
+          }
+        }
+ else         if (i.getType() == EntityType.RELATION) {
+          pselectRelation.setLong(1,i.getId());
+          if (pselectRelation.execute()) {
+            ResultSet rs=pselectNode.getResultSet();
+            Relation rel=new Relation(i.getId());
+            storage.getRegisteredEntities().put(i,rel);
+            while (rs.next()) {
+              rel.addMember(rs.getLong(1),EntityType.values()[rs.getByte(2)],rs.getString(3));
+            }
+            rs.close();
+          }
         }
       }
-      e.initializeLinks(map);
+      if (storage.getRegisteredEntities().containsKey(i)) {
+        map.put(i,storage.getRegisteredEntities().get(i));
+      }
     }
+    e.initializeLinks(map);
   }
+  pselectNode.close();
 }

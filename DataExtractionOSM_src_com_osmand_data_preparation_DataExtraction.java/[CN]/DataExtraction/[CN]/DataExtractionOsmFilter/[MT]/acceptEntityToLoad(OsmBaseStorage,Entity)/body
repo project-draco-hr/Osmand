@@ -24,7 +24,7 @@
     if (e instanceof Relation) {
       if (e.getTag(OSMTagKey.POSTAL_CODE) != null) {
         String tag=e.getTag(OSMTagKey.POSTAL_CODE);
-        for (        Long l : ((Relation)e).getMemberIds()) {
+        for (        EntityId l : ((Relation)e).getMemberIds()) {
           postalCodes.put(l,tag);
         }
       }
@@ -35,25 +35,50 @@
       transport.add((Relation)e);
       processed=true;
     }
-    if (e instanceof Way) {
-      processed=true;
-    }
   }
   try {
     if (e instanceof Node) {
-      currentCount++;
-      prep.setLong(1,e.getId());
-      prep.setDouble(2,((Node)e).getLatitude());
-      prep.setDouble(3,((Node)e).getLongitude());
-      prep.addBatch();
-      if (currentCount >= BATCH_SIZE) {
-        prep.executeBatch();
-        currentCount=0;
+      currentCountNode++;
+      prepNode.setLong(1,e.getId());
+      prepNode.setDouble(2,((Node)e).getLatitude());
+      prepNode.setDouble(3,((Node)e).getLongitude());
+      prepNode.addBatch();
+      if (currentCountNode >= BATCH_SIZE) {
+        prepNode.executeBatch();
+        currentCountNode=0;
+      }
+    }
+ else     if (preloadRelationAndWaysIntoDB) {
+      if (e instanceof Way) {
+        for (        Long i : ((Way)e).getNodeIds()) {
+          currentWaysCount++;
+          prepWays.setLong(1,e.getId());
+          prepWays.setLong(2,i);
+          prepWays.addBatch();
+        }
+        if (currentWaysCount >= BATCH_SIZE) {
+          prepWays.executeBatch();
+          currentWaysCount=0;
+        }
+      }
+ else {
+        for (        Entry<EntityId,String> i : ((Relation)e).getMembersMap().entrySet()) {
+          currentRelationsCount++;
+          prepRelations.setLong(1,e.getId());
+          prepRelations.setLong(2,i.getKey().getId());
+          prepRelations.setLong(3,i.getKey().getType().ordinal());
+          prepRelations.setString(4,i.getValue());
+          prepWays.addBatch();
+        }
+        if (currentRelationsCount >= BATCH_SIZE) {
+          prepRelations.executeBatch();
+          currentRelationsCount=0;
+        }
       }
     }
   }
  catch (  SQLException ex) {
-    log.error("Could not save node",ex);
+    log.error("Could not save in db",ex);
   }
   return processed || loadAllObjects;
 }
