@@ -56,10 +56,13 @@
     where.append(IndexCityTable.CITY_TYPE.toString()).append(" not in (").append('\'').append(CityType.valueToString(CityType.CITY)).append('\'').append(", ").append('\'').append(CityType.valueToString(CityType.TOWN)).append('\'').append(") and ").append(useEnglishNames ? IndexCityTable.NAME_EN.toString() : IndexCityTable.NAME.toString()).append(" LIKE '" + name + "%'");
     Cursor query=db.query(IndexCityTable.getTable(),IndexConstants.generateColumnNames(IndexCityTable.values()),where.toString(),null,null,null,null);
     if (query.moveToFirst()) {
+      List<City> hamlets=new ArrayList<City>();
       do {
-        citiesToFill.add(parseCityFromCursor(query));
+        hamlets.add(parseCityFromCursor(query));
       }
  while (query.moveToNext());
+      Collections.sort(hamlets,new MapObjectNameDistanceComparator(useEnglishNames,currentLocation));
+      citiesToFill.addAll(hamlets);
     }
     query.close();
     log.debug("Loaded citites " + (citiesToFill.size() - initialsize));
