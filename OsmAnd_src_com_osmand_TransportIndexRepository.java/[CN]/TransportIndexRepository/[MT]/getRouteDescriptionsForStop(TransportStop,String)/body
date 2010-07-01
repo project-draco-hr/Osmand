@@ -1,0 +1,26 @@
+{
+  long now=System.currentTimeMillis();
+  List<String> res=new ArrayList<String>();
+  MessageFormat f=new MessageFormat(format);
+  if (cacheSQLRouteDescriptions == null) {
+    StringBuilder sql=new StringBuilder(200);
+    sql.append("SELECT ").append(IndexTransportRoute.REF).append(",").append(IndexTransportRoute.TYPE).append(",").append(IndexTransportRoute.NAME).append(",").append(IndexTransportRoute.NAME_EN);
+    sql.append(" FROM ").append(IndexTransportRoute.getTable()).append(" JOIN ").append(IndexTransportRouteStop.getTable());
+    sql.append(" ON ").append(IndexTransportRoute.getTable()).append(".").append(IndexTransportRoute.ID).append(" = ");
+    sql.append(IndexTransportRouteStop.getTable()).append(".").append(IndexTransportRouteStop.ROUTE);
+    sql.append(" WHERE ").append(IndexTransportRouteStop.STOP).append(" = ?");
+    cacheSQLRouteDescriptions=sql.toString();
+  }
+  Cursor query=db.rawQuery(cacheSQLRouteDescriptions,new String[]{stop.getId() + ""});
+  if (query.moveToFirst()) {
+    do {
+      res.add(f.format(new String[]{query.getString(0),query.getString(1),query.getString(2),query.getString(3)}));
+    }
+ while (query.moveToNext());
+  }
+  query.close();
+  if (log.isDebugEnabled()) {
+    log.debug(String.format("Search for stop %s done in %s ms found %s.",stop.getId() + "",System.currentTimeMillis() - now,res.size()));
+  }
+  return res;
+}

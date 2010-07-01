@@ -1,0 +1,24 @@
+{
+  TransportStop n=getFromPoint(point);
+  if (n != null) {
+    StringBuilder text=new StringBuilder(250);
+    text.append("Stop").append(" : ").append(n.getName(OsmandSettings.usingEnglishNames(view.getContext())));
+    text.append("\n").append("Routes").append(" : ");
+    List<TransportIndexRepository> reps=ResourceManager.getResourceManager().searchTransportRepositories(n.getLocation().getLatitude(),n.getLocation().getLongitude());
+    if (!reps.isEmpty()) {
+      List<String> l;
+      if (OsmandSettings.usingEnglishNames(view.getContext())) {
+        l=reps.get(0).getRouteDescriptionsForStop(n,"{1} {0} - {3}");
+      }
+ else {
+        l=reps.get(0).getRouteDescriptionsForStop(n,"{1} {0} - {2}");
+      }
+      for (      String s : l) {
+        text.append("\n").append(s);
+      }
+    }
+    Toast.makeText(view.getContext(),text.toString(),Toast.LENGTH_LONG).show();
+    return true;
+  }
+  return false;
+}

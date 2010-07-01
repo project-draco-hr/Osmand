@@ -3,6 +3,7 @@
     try {
       boolean update=false;
       boolean amenityLoaded=false;
+      boolean transportLoaded=false;
       while (!requests.isEmpty()) {
         Object req=requests.pop();
         if (req instanceof TileLoadDownloadRequest) {
@@ -18,8 +19,15 @@
             amenityLoaded=true;
           }
         }
+ else         if (req instanceof TransportLoadRequest) {
+          if (!transportLoaded) {
+            TransportLoadRequest r=(TransportLoadRequest)req;
+            r.repository.evaluateCachedTransportStops(r.topLatitude,r.leftLongitude,r.bottomLatitude,r.rightLongitude,r.zoom,LIMIT_TRANSPORT,null);
+            transportLoaded=true;
+          }
+        }
       }
-      if (update || amenityLoaded) {
+      if (update || amenityLoaded || transportLoaded) {
         for (        IMapDownloaderCallback c : downloader.getDownloaderCallbacks()) {
           c.tileDownloaded(null);
         }

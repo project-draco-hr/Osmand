@@ -1,0 +1,17 @@
+{
+  if (view.getZoom() >= startZoom) {
+    pixRect.set(0,0,view.getWidth(),view.getHeight());
+    view.calculateTileRectangle(pixRect,view.getCenterPointX(),view.getCenterPointY(),view.getXTile(),view.getYTile(),tileRect);
+    double topLatitude=MapUtils.getLatitudeFromTile(view.getZoom(),tileRect.top);
+    double leftLongitude=MapUtils.getLongitudeFromTile(view.getZoom(),tileRect.left);
+    double bottomLatitude=MapUtils.getLatitudeFromTile(view.getZoom(),tileRect.bottom);
+    double rightLongitude=MapUtils.getLongitudeFromTile(view.getZoom(),tileRect.right);
+    objects.clear();
+    resourceManager.searchTransportAsync(topLatitude,leftLongitude,bottomLatitude,rightLongitude,view.getZoom(),objects);
+    for (    TransportStop o : objects) {
+      int x=view.getMapXForPoint(o.getLocation().getLongitude());
+      int y=view.getMapYForPoint(o.getLocation().getLatitude());
+      canvas.drawCircle(x,y,getRadiusPoi(view.getZoom()),pointAltUI);
+    }
+  }
+}
