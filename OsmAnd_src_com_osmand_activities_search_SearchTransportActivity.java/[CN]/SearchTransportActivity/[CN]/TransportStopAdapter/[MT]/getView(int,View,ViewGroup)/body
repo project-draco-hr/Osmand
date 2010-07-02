@@ -1,0 +1,28 @@
+{
+  View row=convertView;
+  if (row == null) {
+    LayoutInflater inflater=getLayoutInflater();
+    row=inflater.inflate(R.layout.search_transport_list_item,parent,false);
+  }
+  TextView label=(TextView)row.findViewById(R.id.label);
+  TextView distanceLabel=(TextView)row.findViewById(R.id.distance);
+  ImageView icon=(ImageView)row.findViewById(R.id.search_icon);
+  RouteInfoLocation stop=getItem(position);
+  TransportRoute route=stop.getRoute();
+  StringBuilder labelW=new StringBuilder(150);
+  labelW.append(route.getType()).append(" ").append(route.getRef());
+  if (locationToGo != null) {
+    labelW.append(" - ").append(MapUtils.getFormattedDistance(stop.getDistToLocation()));
+  }
+  labelW.append("\n").append(route.getName(OsmandSettings.usingEnglishNames(SearchTransportActivity.this)));
+  label.setText(labelW.toString());
+  if (stop.getDistToLocation() < 400) {
+    icon.setImageResource(R.drawable.poi);
+  }
+ else {
+    icon.setImageResource(R.drawable.closed_poi);
+  }
+  int dist=(int)(MapUtils.getDistance(stop.getStart().getLocation(),lastKnownMapLocation));
+  distanceLabel.setText(" " + MapUtils.getFormattedDistance(dist));
+  return (row);
+}

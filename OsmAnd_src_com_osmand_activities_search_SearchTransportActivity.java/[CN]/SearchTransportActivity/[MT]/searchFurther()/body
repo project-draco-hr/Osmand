@@ -1,0 +1,20 @@
+{
+  if (lastKnownMapLocation != null) {
+    List<TransportIndexRepository> rs=ResourceManager.getResourceManager().searchTransportRepositories(lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude());
+    if (!rs.isEmpty()) {
+      repo=rs.get(0);
+      searchTransportLevel.setEnabled(isSearchFurtherAvailable());
+      List<RouteInfoLocation> res=repo.searchTransportRouteStops(lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude(),locationToGo,zoom);
+      stopsAdapter.setNewModel(res);
+    }
+ else {
+      repo=null;
+      stopsAdapter.clear();
+    }
+  }
+ else {
+    stopsAdapter.clear();
+  }
+  searchTransportLevel.setEnabled(isSearchFurtherAvailable());
+  searchArea.setText(getSearchArea());
+}
