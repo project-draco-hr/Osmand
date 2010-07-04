@@ -1,18 +1,41 @@
 {
-  RouteInfoLocation item=((TransportStopAdapter)getListAdapter()).getItem(position);
+  final RouteInfoLocation item=((TransportStopAdapter)getListAdapter()).getItem(position);
   Builder builder=new AlertDialog.Builder(this);
   List<String> items=new ArrayList<String>();
-  List<TransportStop> stops=item.getDirection() ? item.getRoute().getForwardStops() : item.getRoute().getBackwardStops();
+  final List<TransportStop> stops=item.getDirection() ? item.getRoute().getForwardStops() : item.getRoute().getBackwardStops();
+  LatLon locationToGo=getLocationToGo();
+  LatLon locationToStart=getLocationToStart();
+  builder.setTitle(getString(R.string.transport_stop_to_go_out) + "\n" + getInformation(item,stops,getCurrentRouteLocation(),true));
+  int ind=0;
   for (  TransportStop st : stops) {
-    String n=st.getName(OsmandSettings.usingEnglishNames(this));
-    if (locationToGo != null) {
-      n+=" - [" + MapUtils.getFormattedDistance((int)MapUtils.getDistance(locationToGo,st.getLocation())) + "]";
+    StringBuilder n=new StringBuilder(50);
+    n.append(ind++);
+    if (st == item.getStop()) {
+      n.append("!! ");
     }
  else {
-      n=MapUtils.getFormattedDistance((int)MapUtils.getDistance(lastKnownMapLocation,st.getLocation())) + " - " + n;
+      n.append(". ");
     }
-    items.add(n);
+    String name=st.getName(OsmandSettings.usingEnglishNames(this));
+    if (locationToGo != null) {
+      n.append(name).append(" - [");
+      n.append(MapUtils.getFormattedDistance((int)MapUtils.getDistance(locationToGo,st.getLocation()))).append("]");
+    }
+ else {
+      n.append("[").append(MapUtils.getFormattedDistance((int)MapUtils.getDistance(locationToStart,st.getLocation()))).append("] - ");
+      n.append(name);
+    }
+    items.add(n.toString());
   }
-  builder.setItems(items.toArray(new String[items.size()]),null);
+  builder.setItems(items.toArray(new String[items.size()]),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      int i=which;
+      if (i >= 0) {
+        TransportStop stop=stops.get(i);
+        showContextMenuOnStop(stop,item,i);
+      }
+    }
+  }
+);
   builder.show();
 }

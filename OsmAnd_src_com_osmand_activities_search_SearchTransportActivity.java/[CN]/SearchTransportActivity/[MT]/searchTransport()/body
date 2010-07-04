@@ -1,0 +1,36 @@
+{
+  stopsAdapter.clear();
+  searchTransportLevel.setEnabled(false);
+  searchArea.setText(getSearchArea());
+  boolean routeCalculated=isRouteCalculated();
+  if (!routeCalculated && getLocationToStart() != null) {
+    final LatLon locationToStart=getLocationToStart();
+    final LatLon locationToGo=getLocationToGo();
+    List<TransportIndexRepository> rs=ResourceManager.getResourceManager().searchTransportRepositories(locationToStart.getLatitude(),locationToStart.getLongitude());
+    if (!rs.isEmpty()) {
+      repo=rs.get(0);
+      progress.setVisibility(View.VISIBLE);
+synchronized (this) {
+        final Thread previousThread=thread;
+        thread=new Thread(new Runnable(){
+          @Override public void run(){
+            if (previousThread != null) {
+              try {
+                previousThread.join();
+              }
+ catch (              InterruptedException e) {
+              }
+            }
+            List<RouteInfoLocation> res=repo.searchTransportRouteStops(locationToStart.getLatitude(),locationToStart.getLongitude(),locationToGo,zoom);
+            updateUIList(res);
+          }
+        }
+,"SearchingTransport");
+        thread.start();
+      }
+    }
+ else {
+      repo=null;
+    }
+  }
+}

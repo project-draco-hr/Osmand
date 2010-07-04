@@ -4,6 +4,8 @@
     LayoutInflater inflater=getLayoutInflater();
     row=inflater.inflate(R.layout.search_transport_list_item,parent,false);
   }
+  LatLon locationToGo=getLocationToGo();
+  LatLon locationToStart=getLocationToStart();
   TextView label=(TextView)row.findViewById(R.id.label);
   TextView distanceLabel=(TextView)row.findViewById(R.id.distance);
   ImageView icon=(ImageView)row.findViewById(R.id.search_icon);
@@ -16,17 +18,17 @@
     labelW.append(MapUtils.getFormattedDistance(stop.getDistToLocation()));
   }
  else {
-    labelW.append("none");
+    labelW.append(getString(R.string.transport_search_none));
   }
   labelW.append("]\n").append(route.getName(OsmandSettings.usingEnglishNames(SearchTransportActivity.this)));
   label.setText(labelW.toString());
-  if (locationToGo == null || stop.getDistToLocation() < 400) {
+  if (locationToGo != null && stop.getDistToLocation() < 400) {
     icon.setImageResource(R.drawable.poi);
   }
  else {
     icon.setImageResource(R.drawable.closed_poi);
   }
-  int dist=(int)(MapUtils.getDistance(stop.getStart().getLocation(),lastKnownMapLocation));
+  int dist=(int)(MapUtils.getDistance(stop.getStart().getLocation(),locationToStart));
   distanceLabel.setText(" " + MapUtils.getFormattedDistance(dist));
   return (row);
 }

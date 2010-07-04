@@ -1,0 +1,28 @@
+{
+  StringBuilder text=new StringBuilder(200);
+  double dist=0;
+  int ind=0;
+  int stInd=stops.size();
+  int eInd=stops.size();
+  for (  TransportStop s : stops) {
+    if (s == route.getStart()) {
+      stInd=ind;
+    }
+ else     if (s == route.getStop()) {
+      eInd=ind;
+    }
+    if (ind > stInd && ind <= eInd) {
+      dist+=MapUtils.getDistance(stops.get(ind - 1).getLocation(),s.getLocation());
+    }
+    ind++;
+  }
+  text.append(getString(R.string.transport_route_distance)).append(" ").append(MapUtils.getFormattedDistance((int)dist));
+  if (!part) {
+    text.append(", ").append(getString(R.string.transport_stops_to_pass)).append(" ").append(eInd - stInd);
+    String before=MapUtils.getFormattedDistance((int)MapUtils.getDistance(getEndStop(position - 1),route.getStart().getLocation()));
+    String after=MapUtils.getFormattedDistance((int)MapUtils.getDistance(getStartStop(position + 1),route.getStop().getLocation()));
+    text.append(", ").append(getString(R.string.transport_to_go_before)).append(" ").append(before).append(", ");
+    text.append(getString(R.string.transport_to_go_after)).append(" ").append(after);
+  }
+  return text.toString();
+}

@@ -1,0 +1,76 @@
+{
+  View row=convertView;
+  int currentRouteLocation=getCurrentRouteLocation();
+  if (position == currentRouteLocation) {
+    TextView text=new TextView(getContext());
+    LatLon st=getStartStop(position + 1);
+    LatLon end=getEndStop(position - 1);
+    if (st != null) {
+      int dist=(int)MapUtils.getDistance(st,end);
+      text.setText(MessageFormat.format(getString(R.string.transport_searching_route),MapUtils.getFormattedDistance(dist)));
+    }
+ else {
+      text.setText(getString(R.string.transport_searching_transport));
+    }
+    text.setTextSize(21);
+    text.setTypeface(null,Typeface.ITALIC);
+    text.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        if (intermediateListAdapater.getCount() > 1) {
+          intermediateListAdapater.remove(null);
+          searchTransport();
+        }
+      }
+    }
+);
+    return text;
+  }
+  if (row == null || row instanceof TextView) {
+    LayoutInflater inflater=getLayoutInflater();
+    row=inflater.inflate(R.layout.search_transport_route_item,parent,false);
+  }
+  final RouteInfoLocation info=getItem(position);
+  TextView label=(TextView)row.findViewById(R.id.label);
+  ImageButton icon=(ImageButton)row.findViewById(R.id.remove);
+  TransportRoute route=info.getRoute();
+  icon.setVisibility(View.VISIBLE);
+  StringBuilder labelW=new StringBuilder(150);
+  labelW.append(route.getType()).append(" ").append(route.getRef());
+  boolean en=OsmandSettings.usingEnglishNames(SearchTransportActivity.this);
+  labelW.append(" : ").append(info.getStart().getName(en)).append(" - ").append(info.getStop().getName(en));
+  if (currentRouteLocation == -1) {
+    labelW.append(" (");
+    labelW.append(info.getStopNumbers()).append(" ").append(getString(R.string.transport_stops)).append(", ");
+    int startDist=(int)MapUtils.getDistance(getEndStop(position - 1),info.getStart().getLocation());
+    labelW.append(getString(R.string.transport_to_go_before)).append(" ").append(MapUtils.getFormattedDistance(startDist));
+    if (position == getCount() - 1) {
+      int endDist=(int)MapUtils.getDistance(getStartStop(position + 1),info.getStop().getLocation());
+      labelW.append(", ").append(getString(R.string.transport_to_go_after)).append(" ").append(MapUtils.getFormattedDistance(endDist));
+    }
+    labelW.append(")");
+  }
+  label.setText(labelW.toString());
+  icon.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      int p=position;
+      intermediateListAdapater.remove(null);
+      if (!isRouteCalculated() && getCurrentRouteLocation() < p) {
+        p--;
+      }
+      intermediateListAdapater.insert(null,p);
+      intermediateListAdapater.remove(info);
+      intermediateListAdapater.notifyDataSetChanged();
+      zoom=initialZoom;
+      searchTransport();
+    }
+  }
+);
+  View.OnClickListener clickListener=new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      showContextMenuOnRoute(info,position);
+    }
+  }
+;
+  label.setOnClickListener(clickListener);
+  return row;
+}

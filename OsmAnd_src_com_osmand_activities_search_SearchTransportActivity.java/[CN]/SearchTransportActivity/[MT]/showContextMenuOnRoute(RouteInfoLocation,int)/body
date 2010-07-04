@@ -1,0 +1,51 @@
+{
+  Builder b=new AlertDialog.Builder(this);
+  List<TransportStop> stops=route.getDirection() ? route.getRoute().getForwardStops() : route.getRoute().getBackwardStops();
+  boolean en=OsmandSettings.isUsingInternetToDownloadTiles(this);
+  String info=getInformation(route,stops,routeInd,false);
+  StringBuilder txt=new StringBuilder(300);
+  txt.append(info);
+  boolean start=false;
+  for (  TransportStop s : stops) {
+    if (s == route.getStart()) {
+      start=true;
+    }
+    if (start) {
+      txt.append("\n").append(getString(R.string.transport_Stop)).append(" : ").append(s.getName(en));
+    }
+    if (s == route.getStop()) {
+      break;
+    }
+  }
+  b.setMessage(txt.toString());
+  b.setPositiveButton(getString(R.string.default_buttons_ok),null);
+  b.setNeutralButton(getString(R.string.transport_search_before),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      int toInsert=routeInd;
+      int c=getCurrentRouteLocation();
+      if (c >= 0 && c < routeInd) {
+        toInsert--;
+      }
+      intermediateListAdapater.remove(null);
+      intermediateListAdapater.insert(null,routeInd);
+      zoom=initialZoom;
+      searchTransport();
+    }
+  }
+);
+  b.setNegativeButton(getString(R.string.transport_search_after),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      int toInsert=routeInd;
+      int c=getCurrentRouteLocation();
+      if (c > routeInd || c == -1) {
+        toInsert++;
+      }
+      intermediateListAdapater.remove(null);
+      intermediateListAdapater.insert(null,toInsert);
+      zoom=initialZoom;
+      searchTransport();
+    }
+  }
+);
+  b.show();
+}
