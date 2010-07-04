@@ -8,7 +8,7 @@
     if (s == route.getStart()) {
       stInd=ind;
     }
- else     if (s == route.getStop()) {
+    if (s == route.getStop()) {
       eInd=ind;
     }
     if (ind > stInd && ind <= eInd) {
@@ -19,10 +19,16 @@
   text.append(getString(R.string.transport_route_distance)).append(" ").append(MapUtils.getFormattedDistance((int)dist));
   if (!part) {
     text.append(", ").append(getString(R.string.transport_stops_to_pass)).append(" ").append(eInd - stInd);
-    String before=MapUtils.getFormattedDistance((int)MapUtils.getDistance(getEndStop(position - 1),route.getStart().getLocation()));
-    String after=MapUtils.getFormattedDistance((int)MapUtils.getDistance(getStartStop(position + 1),route.getStop().getLocation()));
-    text.append(", ").append(getString(R.string.transport_to_go_before)).append(" ").append(before).append(", ");
-    text.append(getString(R.string.transport_to_go_after)).append(" ").append(after);
+    LatLon endStop=getEndStop(position - 1);
+    if (endStop != null) {
+      String before=MapUtils.getFormattedDistance((int)MapUtils.getDistance(endStop,route.getStart().getLocation()));
+      text.append(", ").append(getString(R.string.transport_to_go_before)).append(" ").append(before);
+    }
+    LatLon stStop=getStartStop(position + 1);
+    if (stStop != null) {
+      String after=MapUtils.getFormattedDistance((int)MapUtils.getDistance(stStop,route.getStop().getLocation()));
+      text.append(", ").append(getString(R.string.transport_to_go_after)).append(" ").append(after);
+    }
   }
   return text.toString();
 }

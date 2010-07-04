@@ -1,11 +1,11 @@
 {
   View row=convertView;
-  int currentRouteLocation=getCurrentRouteLocation();
-  if (position == currentRouteLocation) {
+  final RouteInfoLocation info=getItem(position);
+  if (info == null) {
     TextView text=new TextView(getContext());
     LatLon st=getStartStop(position + 1);
     LatLon end=getEndStop(position - 1);
-    if (st != null) {
+    if (st != null && end != null) {
       int dist=(int)MapUtils.getDistance(st,end);
       text.setText(MessageFormat.format(getString(R.string.transport_searching_route),MapUtils.getFormattedDistance(dist)));
     }
@@ -25,11 +25,11 @@
 );
     return text;
   }
+  int currentRouteLocation=getCurrentRouteLocation();
   if (row == null || row instanceof TextView) {
     LayoutInflater inflater=getLayoutInflater();
     row=inflater.inflate(R.layout.search_transport_route_item,parent,false);
   }
-  final RouteInfoLocation info=getItem(position);
   TextView label=(TextView)row.findViewById(R.id.label);
   ImageButton icon=(ImageButton)row.findViewById(R.id.remove);
   TransportRoute route=info.getRoute();
@@ -44,8 +44,11 @@
     int startDist=(int)MapUtils.getDistance(getEndStop(position - 1),info.getStart().getLocation());
     labelW.append(getString(R.string.transport_to_go_before)).append(" ").append(MapUtils.getFormattedDistance(startDist));
     if (position == getCount() - 1) {
-      int endDist=(int)MapUtils.getDistance(getStartStop(position + 1),info.getStop().getLocation());
-      labelW.append(", ").append(getString(R.string.transport_to_go_after)).append(" ").append(MapUtils.getFormattedDistance(endDist));
+      LatLon stop=getStartStop(position + 1);
+      if (stop != null) {
+        int endDist=(int)MapUtils.getDistance(stop,info.getStop().getLocation());
+        labelW.append(", ").append(getString(R.string.transport_to_go_after)).append(" ").append(MapUtils.getFormattedDistance(endDist));
+      }
     }
     labelW.append(")");
   }
