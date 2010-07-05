@@ -1,0 +1,18 @@
+{
+  final int[][] time=OpeningHoursParser.parseOpenedHours(openingHours.getText().toString());
+  if (time == null) {
+    Toast.makeText(ctx,"Opening hours format is not supported for editing",Toast.LENGTH_LONG).show();
+    return;
+  }
+  Builder builder=new AlertDialog.Builder(ctx);
+  final OpeningHoursView v=new OpeningHoursView(ctx);
+  builder.setView(v.createOpeningHoursEditView(time));
+  builder.setPositiveButton(ctx.getString(R.string.default_buttons_apply),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      openingHours.setText(OpeningHoursParser.toStringOpenedHours(v.getTime()));
+    }
+  }
+);
+  builder.setNegativeButton(ctx.getString(R.string.default_buttons_cancel),null);
+  builder.show();
+}
