@@ -1,16 +1,26 @@
 {
   super.onListItemClick(l,v,position,id);
   final Entry<String,String> e=((DownloadIndexAdapter)getListAdapter()).getItem(position);
-  Builder builder=new AlertDialog.Builder(this);
   int ls=e.getKey().lastIndexOf('_');
   final String regionName=e.getKey().substring(0,ls);
-  builder.setMessage(MessageFormat.format(getString(R.string.download_question),regionName,e.getValue()));
-  builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
-    @Override public void onClick(    DialogInterface dialog,    int which){
-      downloadFile(e.getKey(),regionName);
+  final File fileToSave=resolveFileName(e.getKey(),regionName);
+  if (fileToSave != null) {
+    Builder builder=new AlertDialog.Builder(this);
+    if (!fileToSave.exists()) {
+      builder.setMessage(MessageFormat.format(getString(R.string.download_question),regionName,e.getValue()));
     }
-  }
+ else {
+      MessageFormat format=new MessageFormat("{0,date,dd.MM.yyyy} : {1, number,##.#} MB",Locale.US);
+      String description=format.format(new Object[]{new Date(fileToSave.lastModified()),((float)fileToSave.length() / MB)});
+      builder.setMessage(MessageFormat.format(getString(R.string.download_question_exist),regionName,description,e.getValue()));
+    }
+    builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        downloadFile(e.getKey(),fileToSave);
+      }
+    }
 );
-  builder.setNegativeButton(R.string.default_buttons_no,null);
-  builder.show();
+    builder.setNegativeButton(R.string.default_buttons_no,null);
+    builder.show();
+  }
 }
