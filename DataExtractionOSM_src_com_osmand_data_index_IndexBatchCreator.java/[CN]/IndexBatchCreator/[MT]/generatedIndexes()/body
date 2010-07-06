@@ -2,7 +2,13 @@
   for (  File f : getSortedFiles(osmDirFiles)) {
     if (f.getName().endsWith(".osm.bz2") || f.getName().endsWith(".osm")) {
       System.gc();
-      generateIndex(f);
+      try {
+        generateIndex(f);
+      }
+ catch (      OutOfMemoryError e) {
+        log.error("OutOfMemory",e);
+        System.gc();
+      }
     }
   }
   System.out.println("GENERATING INDEXES FINISHED ");
