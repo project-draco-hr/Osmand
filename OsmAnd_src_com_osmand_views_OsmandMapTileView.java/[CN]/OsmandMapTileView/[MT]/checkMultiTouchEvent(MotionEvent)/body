@@ -1,0 +1,48 @@
+{
+  String str=event.toString();
+  Matcher m=x2Pattern.matcher(str);
+  if (m.find()) {
+    int x2=Integer.parseInt(m.group(1));
+    m=y2Pattern.matcher(str);
+    if (m.find()) {
+      int y2=Integer.parseInt(m.group(1));
+      if (x2 != lastX2 && y2 != lastY2) {
+        float dx=x2 - event.getX();
+        float dy=y2 - event.getY();
+        float dist=FloatMath.sqrt(dx * dx + dy * dy);
+        if (dist > 0) {
+          if (mtStart == null) {
+            mtStart=new PointF(event.getX(),event.getY());
+            mtStart2=new PointF(x2,y2);
+            mtZoom=zoom;
+            mtDist=dist;
+            log.debug("Multitouch  dist=" + mtDist);
+          }
+ else {
+            if (dist < mtDist) {
+              dist*=0.6f;
+            }
+ else {
+              dist*=1.3f;
+            }
+            int dz=(int)(Math.log(dist / mtDist) / Math.log(2));
+            log.debug("Mt dist=" + dist);
+            if (mtZoom + dz != zoom) {
+              setZoom(mtZoom + dz);
+            }
+          }
+          lastX2=x2;
+          lastY2=y2;
+        }
+        return true;
+      }
+ else       if (event.getAction() == MotionEvent.ACTION_UP) {
+        log.debug("UP");
+        mtStart=null;
+        mtStart2=null;
+        return true;
+      }
+    }
+  }
+  return mtStart != null;
+}
