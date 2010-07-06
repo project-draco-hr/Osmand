@@ -1,0 +1,60 @@
+{
+  View row=convertView;
+  final BasicDayOpeningHourRule item=getItem(position);
+  if (item == null) {
+    TextView text=new TextView(getContext());
+    text.setText(ctx.getString(R.string.add_new_rule));
+    text.setTextSize(21);
+    text.setTypeface(null,Typeface.ITALIC);
+    text.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        BasicDayOpeningHourRule r=new BasicDayOpeningHourRule();
+        r.setStartTime(9 * 60);
+        r.setEndTime(20 * 60);
+        boolean[] days=r.getDays();
+        Arrays.fill(days,true);
+        showDaysDialog(r,position);
+      }
+    }
+);
+    return text;
+  }
+  if (row == null || row instanceof TextView) {
+    LayoutInflater inflater=(LayoutInflater)ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    row=inflater.inflate(R.layout.open_hours_list_item,parent,false);
+  }
+  TextView label=(TextView)row.findViewById(R.id.label);
+  ImageView icon=(ImageView)row.findViewById(R.id.remove);
+  if (selectedRule == position) {
+    label.setTypeface(null,Typeface.BOLD);
+    label.setTextSize(22);
+  }
+ else {
+    label.setTypeface(null);
+    label.setTextSize(20);
+  }
+  label.setText(item.toRuleString());
+  icon.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      time.remove(item);
+      selectedRule=time.getPosition(null);
+      updateTimePickers();
+    }
+  }
+);
+  View.OnClickListener clickListener=new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (selectedRule == position) {
+        showDaysDialog(item,-1);
+      }
+ else {
+        selectedRule=position;
+        updateTimePickers();
+        time.notifyDataSetChanged();
+      }
+    }
+  }
+;
+  label.setOnClickListener(clickListener);
+  return row;
+}

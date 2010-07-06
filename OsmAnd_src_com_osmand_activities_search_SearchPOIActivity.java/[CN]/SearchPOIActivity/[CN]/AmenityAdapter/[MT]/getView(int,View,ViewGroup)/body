@@ -13,10 +13,30 @@
   String str=amenity.getStringWithoutType(OsmandSettings.usingEnglishNames(SearchPOIActivity.this));
   label.setText(str);
   if (amenity.getOpeningHours() != null) {
-    icon.setImageResource(R.drawable.poi);
+    List<OpeningHoursRule> rs=OpeningHoursParser.parseOpenedHours(amenity.getOpeningHours());
+    if (rs == null) {
+      icon.setImageResource(R.drawable.poi);
+    }
+ else {
+      Calendar inst=Calendar.getInstance();
+      inst.setTimeInMillis(System.currentTimeMillis());
+      boolean work=false;
+      for (      OpeningHoursRule p : rs) {
+        if (p.isOpenedForTime(inst)) {
+          work=true;
+          break;
+        }
+      }
+      if (work) {
+        icon.setImageResource(R.drawable.opened_poi);
+      }
+ else {
+        icon.setImageResource(R.drawable.closed_poi);
+      }
+    }
   }
  else {
-    icon.setImageResource(R.drawable.closed_poi);
+    icon.setImageResource(R.drawable.poi);
   }
   distanceLabel.setText(" " + MapUtils.getFormattedDistance(dist));
   return (row);

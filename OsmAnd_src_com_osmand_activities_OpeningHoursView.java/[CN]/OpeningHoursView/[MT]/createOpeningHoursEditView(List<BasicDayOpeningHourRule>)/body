@@ -1,0 +1,35 @@
+{
+  this.time=new TimeAdapter(t);
+  time.add(null);
+  LayoutInflater inflater=(LayoutInflater)ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+  View view=inflater.inflate(R.layout.open_hours_edit,null);
+  timePickerStart=(TimePicker)view.findViewById(R.id.TimePickerStart);
+  timePickerEnd=(TimePicker)view.findViewById(R.id.TimePickerEnd);
+  list=(ListView)view.findViewById(R.id.ListView);
+  list.setAdapter(time);
+  OnTimeChangedListener onTimeChangedListener=new TimePicker.OnTimeChangedListener(){
+    @Override public void onTimeChanged(    TimePicker view,    int hourOfDay,    int minute){
+      if (selectedRule == -1 || !notifyingTime || time.getItem(selectedRule) == null) {
+        return;
+      }
+      if (view == timePickerStart) {
+        time.getItem(selectedRule).setStartTime(hourOfDay * 60 + minute);
+      }
+ else {
+        time.getItem(selectedRule).setEndTime(hourOfDay * 60 + minute);
+      }
+      time.notifyDataSetChanged();
+    }
+  }
+;
+  timePickerEnd.setIs24HourView(true);
+  timePickerStart.setIs24HourView(true);
+  timePickerStart.setCurrentHour(8);
+  timePickerStart.setCurrentMinute(0);
+  timePickerEnd.setCurrentHour(20);
+  timePickerEnd.setCurrentMinute(0);
+  timePickerEnd.setOnTimeChangedListener(onTimeChangedListener);
+  timePickerStart.setOnTimeChangedListener(onTimeChangedListener);
+  updateTimePickers();
+  return view;
+}
