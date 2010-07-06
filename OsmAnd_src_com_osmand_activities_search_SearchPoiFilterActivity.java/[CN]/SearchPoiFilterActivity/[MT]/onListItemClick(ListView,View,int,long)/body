@@ -1,12 +1,26 @@
 {
-  PoiFilter filter=((AmenityAdapter)getListAdapter()).getItem(position);
+  final PoiFilter filter=((AmenityAdapter)getListAdapter()).getItem(position);
   if (filter.getFilterId().equals(PoiFilter.CUSTOM_FILTER_ID)) {
     showEditActivity(filter);
     return;
   }
-  Bundle bundle=new Bundle();
-  Intent newIntent=new Intent(SearchPoiFilterActivity.this,SearchPOIActivity.class);
-  bundle.putString(SearchPOIActivity.AMENITY_FILTER,filter.getFilterId());
-  newIntent.putExtras(bundle);
-  startActivityForResult(newIntent,0);
+  AlertDialog.Builder b=new AlertDialog.Builder(this);
+  b.setItems(new String[]{getString(R.string.search_nearby),getString(R.string.search_near_map)},new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      Bundle bundle=new Bundle();
+      Intent newIntent=new Intent(SearchPoiFilterActivity.this,SearchPOIActivity.class);
+      bundle.putString(SearchPOIActivity.AMENITY_FILTER,filter.getFilterId());
+      if (which == 1) {
+        LatLon last=OsmandSettings.getLastKnownMapLocation(SearchPoiFilterActivity.this);
+        if (last != null) {
+          bundle.putDouble(SearchPOIActivity.SEARCH_LAT,last.getLatitude());
+          bundle.putDouble(SearchPOIActivity.SEARCH_LON,last.getLongitude());
+        }
+      }
+      newIntent.putExtras(bundle);
+      startActivityForResult(newIntent,0);
+    }
+  }
+);
+  b.show();
 }

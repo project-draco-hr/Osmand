@@ -4,20 +4,22 @@
     LayoutInflater inflater=getLayoutInflater();
     row=inflater.inflate(R.layout.searchpoi_list,parent,false);
   }
+  float[] mes=null;
   TextView label=(TextView)row.findViewById(R.id.poi_label);
   TextView distanceLabel=(TextView)row.findViewById(R.id.poidistance_label);
   ImageView icon=(ImageView)row.findViewById(R.id.poi_icon);
   Amenity amenity=getItem(position);
-  LatLon lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(SearchPOIActivity.this);
-  int dist=(int)(MapUtils.getDistance(amenity.getLocation(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
+  if (location != null) {
+    mes=new float[2];
+    LatLon l=amenity.getLocation();
+    Location.distanceBetween(l.getLatitude(),l.getLongitude(),location.getLatitude(),location.getLongitude(),mes);
+  }
   String str=amenity.getStringWithoutType(OsmandSettings.usingEnglishNames(SearchPOIActivity.this));
   label.setText(str);
+  int opened=-1;
   if (amenity.getOpeningHours() != null) {
     List<OpeningHoursRule> rs=OpeningHoursParser.parseOpenedHours(amenity.getOpeningHours());
-    if (rs == null) {
-      icon.setImageResource(R.drawable.poi);
-    }
- else {
+    if (rs != null) {
       Calendar inst=Calendar.getInstance();
       inst.setTimeInMillis(System.currentTimeMillis());
       boolean work=false;
@@ -28,16 +30,35 @@
         }
       }
       if (work) {
-        icon.setImageResource(R.drawable.opened_poi);
+        opened=0;
       }
  else {
-        icon.setImageResource(R.drawable.closed_poi);
+        opened=1;
       }
     }
   }
- else {
-    icon.setImageResource(R.drawable.poi);
+  if (heading != null && location != null) {
+    DirectionDrawable draw=new DirectionDrawable();
+    draw.setAngle(mes[1] - heading + 180);
+    draw.setOpenedColor(opened);
+    icon.setImageDrawable(draw);
   }
-  distanceLabel.setText(" " + MapUtils.getFormattedDistance(dist));
+ else {
+    if (opened == -1) {
+      icon.setImageResource(R.drawable.poi);
+    }
+ else     if (opened == 0) {
+      icon.setImageResource(R.drawable.opened_poi);
+    }
+ else {
+      icon.setImageResource(R.drawable.closed_poi);
+    }
+  }
+  if (mes == null) {
+    distanceLabel.setText("");
+  }
+ else {
+    distanceLabel.setText(" " + MapUtils.getFormattedDistance((int)mes[0]));
+  }
   return (row);
 }

@@ -1,0 +1,26 @@
+{
+  registerUnregisterSensor(l);
+  boolean handled=false;
+  if (l != null && filter != null) {
+    if (location == null) {
+      searchedLocation=l;
+      amenityAdapter.setNewModel(filter.initializeNewSearch(l.getLatitude(),l.getLongitude(),40));
+      searchPOILevel.setEnabled(filter.isSearchFurtherAvailable());
+      searchArea.setText(filter.getSearchArea());
+      handled=true;
+    }
+ else     if (searchedLocation != null && l.distanceTo(searchedLocation) > 80) {
+      amenityAdapter.setNewModel(filter.searchAgain(l.getLatitude(),l.getLongitude()));
+      searchPOILevel.setEnabled(filter.isSearchFurtherAvailable());
+      searchArea.setText(filter.getSearchArea());
+      handled=true;
+    }
+ else     if (location.distanceTo(l) > 8) {
+      handled=true;
+    }
+  }
+  if (handled) {
+    location=l;
+    amenityAdapter.notifyDataSetChanged();
+  }
+}

@@ -1,11 +1,13 @@
 {
   super.onCreate(icicle);
   setContentView(R.layout.searchpoi);
+  uiHandler=new Handler();
   searchPOILevel=(Button)findViewById(R.id.SearchPOILevelButton);
   searchArea=(TextView)findViewById(R.id.SearchAreaText);
   searchPOILevel.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      amenityAdapter.setNewModel(filter.searchFurther(lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
+      amenityAdapter.setNewModel(filter.searchFurther(location.getLatitude(),location.getLongitude()));
+      searchedLocation=location;
       searchArea.setText(filter.getSearchArea());
       searchPOILevel.setEnabled(filter.isSearchFurtherAvailable());
     }
@@ -14,11 +16,25 @@
   Bundle bundle=this.getIntent().getExtras();
   String filterId=bundle.getString(AMENITY_FILTER);
   filter=PoiFiltersHelper.getFilterById(this,filterId);
+  if (bundle.containsKey(SEARCH_LAT) && bundle.containsKey(SEARCH_LON)) {
+    location=new Location("internal");
+    location.setLatitude(bundle.getDouble(SEARCH_LAT));
+    location.setLongitude(bundle.getDouble(SEARCH_LON));
+    searchNearBy=false;
+  }
+ else {
+    location=null;
+    searchNearBy=true;
+  }
   showOnMap=(Button)findViewById(R.id.ShowOnMap);
   showOnMap.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       OsmandSettings.setPoiFilterForMap(SearchPOIActivity.this,filter.getFilterId());
       OsmandSettings.setShowPoiOverMap(SearchPOIActivity.this,true);
+      if (searchNearBy && location != null) {
+        OsmandSettings.setMapLocationToShow(SearchPOIActivity.this,location.getLatitude(),location.getLongitude());
+        OsmandSettings.setLastKnownMapZoom(SearchPOIActivity.this,15);
+      }
       Intent newIntent=new Intent(SearchPOIActivity.this,MapActivity.class);
       startActivity(newIntent);
     }
