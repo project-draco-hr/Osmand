@@ -1,0 +1,113 @@
+{
+  if (!res.isCalculated()) {
+    return;
+  }
+  float speed=1.5f;
+  int minDistanceForTurn=5;
+  if (mode == ApplicationMode.CAR) {
+    speed=15.3f;
+    minDistanceForTurn=25;
+  }
+ else   if (mode == ApplicationMode.BICYCLE) {
+    speed=5.5f;
+    minDistanceForTurn=12;
+  }
+  List<RouteDirectionInfo> directions=new ArrayList<RouteDirectionInfo>();
+  int[] listDistance=res.getListDistance();
+  List<Location> locations=res.getLocations();
+  int previousLocation=0;
+  int prevBearingLocation=0;
+  RouteDirectionInfo previousInfo=new RouteDirectionInfo();
+  previousInfo.turnType=TurnType.valueOf(TurnType.C);
+  previousInfo.routePointOffset=0;
+  previousInfo.descriptionRoute=getString(ctx,R.string.route_head);
+  directions.add(previousInfo);
+  int distForTurn=0;
+  float previousBearing=0;
+  int startTurnPoint=0;
+  for (int i=1; i < locations.size() - 1; i++) {
+    Location next=locations.get(i + 1);
+    Location current=locations.get(i);
+    float bearing=current.bearingTo(next);
+    while (prevBearingLocation < i - 1) {
+      if (locations.get(prevBearingLocation + 1).distanceTo(current) > 70) {
+        prevBearingLocation++;
+      }
+ else {
+        break;
+      }
+    }
+    if (distForTurn == 0) {
+      previousBearing=locations.get(prevBearingLocation).bearingTo(current);
+      startTurnPoint=i;
+    }
+    TurnType type=null;
+    String description=null;
+    float delta=previousBearing - bearing;
+    while (delta < 0) {
+      delta+=360;
+    }
+    while (delta > 360) {
+      delta-=360;
+    }
+    distForTurn+=locations.get(i).distanceTo(locations.get(i + 1));
+    if (i < locations.size() - 1 && distForTurn < minDistanceForTurn) {
+      continue;
+    }
+    if (delta > 50 && delta < 310) {
+      if (delta < 70) {
+        type=TurnType.valueOf(TurnType.TSLL);
+        description=getString(ctx,R.string.route_tsll);
+      }
+ else       if (delta < 110) {
+        type=TurnType.valueOf(TurnType.TL);
+        description=getString(ctx,R.string.route_tl);
+      }
+ else       if (delta < 125) {
+        type=TurnType.valueOf(TurnType.TSHL);
+        description=getString(ctx,R.string.route_tshl);
+      }
+ else       if (delta < 225) {
+        type=TurnType.valueOf(TurnType.TU);
+        description=getString(ctx,R.string.route_tu);
+      }
+ else       if (delta < 250) {
+        description=getString(ctx,R.string.route_tshr);
+        type=TurnType.valueOf(TurnType.TSHR);
+      }
+ else       if (delta < 290) {
+        description=getString(ctx,R.string.route_tr);
+        type=TurnType.valueOf(TurnType.TR);
+      }
+ else {
+        description=getString(ctx,R.string.route_tslr);
+        type=TurnType.valueOf(TurnType.TSLR);
+      }
+      previousInfo.distance=listDistance[previousLocation] - listDistance[i];
+      previousInfo.expectedTime=(int)(previousInfo.distance / speed);
+      previousInfo.descriptionRoute+=" " + MapUtils.getFormattedDistance(previousInfo.distance);
+      previousInfo=new RouteDirectionInfo();
+      previousInfo.turnType=type;
+      previousInfo.turnType.setTurnAngle(360 - delta);
+      previousInfo.descriptionRoute=description;
+      previousInfo.routePointOffset=startTurnPoint;
+      directions.add(previousInfo);
+      previousLocation=startTurnPoint;
+      prevBearingLocation=i;
+    }
+    distForTurn=0;
+  }
+  previousInfo.distance=listDistance[previousLocation];
+  previousInfo.expectedTime=(int)(previousInfo.distance / speed);
+  previousInfo.descriptionRoute+=" " + MapUtils.getFormattedDistance(previousInfo.distance);
+  int sum=0;
+  for (int i=directions.size() - 1; i >= 0; i--) {
+    directions.get(i).afterLeftTime=sum;
+    sum+=directions.get(i).expectedTime;
+  }
+  if (res.directions == null || res.directions.isEmpty()) {
+    res.directions=new ArrayList<RouteDirectionInfo>(directions);
+  }
+ else {
+  }
+}
