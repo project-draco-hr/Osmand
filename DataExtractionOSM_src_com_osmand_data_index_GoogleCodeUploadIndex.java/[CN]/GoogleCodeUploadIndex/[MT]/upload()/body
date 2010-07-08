@@ -37,8 +37,15 @@
   sendLine(out,"");
   int count;
   byte[] buf=new byte[8192];
+  int uploaded=0;
+  int mb=0;
   while ((count=in.read(buf)) >= 0) {
     out.write(buf,0,count);
+    uploaded+=count;
+    if (uploaded > MB) {
+      uploaded=0;
+      log("Uploaded " + (++mb) + " megabytes ");
+    }
   }
   in.close();
   sendLine(out,"");
