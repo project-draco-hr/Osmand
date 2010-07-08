@@ -2,29 +2,36 @@
   if (!generateIndexes) {
     return;
   }
-  DataExtraction extr=new DataExtraction(indexAddress,indexPOI,indexTransport,indexAddress,false,false,indexDirFiles);
   try {
-    alreadyGeneratedFiles.add(f.getName());
-    Region country=extr.readCountry(f.getAbsolutePath(),new ConsoleProgressImplementation(9),null);
-    DataIndexWriter dataIndexWriter=new DataIndexWriter(indexDirFiles,country);
-    String name=country.getName();
-    if (indexAddress) {
-      String fName=name + "_" + IndexConstants.ADDRESS_TABLE_VERSION+ IndexConstants.ADDRESS_INDEX_EXT;
-      dataIndexWriter.writeAddress(fName,f.lastModified(),writeWayNodes);
-      uploadIndex(new File(indexDirFiles,fName),alreadyUploadedFiles);
+    DataExtraction extr=new DataExtraction(indexAddress,indexPOI,indexTransport,indexAddress,false,false,indexDirFiles);
+    try {
+      alreadyGeneratedFiles.add(f.getName());
+      Region country=extr.readCountry(f.getAbsolutePath(),new ConsoleProgressImplementation(9),null);
+      DataIndexWriter dataIndexWriter=new DataIndexWriter(indexDirFiles,country);
+      String name=country.getName();
+      if (indexAddress) {
+        String fName=name + "_" + IndexConstants.ADDRESS_TABLE_VERSION+ IndexConstants.ADDRESS_INDEX_EXT;
+        dataIndexWriter.writeAddress(fName,f.lastModified(),writeWayNodes);
+        uploadIndex(new File(indexDirFiles,fName),alreadyUploadedFiles);
+      }
+      if (indexPOI) {
+        String fName=name + "_" + IndexConstants.POI_TABLE_VERSION+ IndexConstants.POI_INDEX_EXT;
+        dataIndexWriter.writePOI(fName,f.lastModified());
+        uploadIndex(new File(indexDirFiles,fName),alreadyUploadedFiles);
+      }
+      if (indexTransport) {
+        String fName=name + "_" + IndexConstants.TRANSPORT_TABLE_VERSION+ IndexConstants.TRANSPORT_INDEX_EXT;
+        dataIndexWriter.writeTransport(fName,f.lastModified());
+        uploadIndex(new File(indexDirFiles,fName),alreadyUploadedFiles);
+      }
     }
-    if (indexPOI) {
-      String fName=name + "_" + IndexConstants.POI_TABLE_VERSION+ IndexConstants.POI_INDEX_EXT;
-      dataIndexWriter.writePOI(fName,f.lastModified());
-      uploadIndex(new File(indexDirFiles,fName),alreadyUploadedFiles);
-    }
-    if (indexTransport) {
-      String fName=name + "_" + IndexConstants.TRANSPORT_TABLE_VERSION+ IndexConstants.TRANSPORT_INDEX_EXT;
-      dataIndexWriter.writeTransport(fName,f.lastModified());
-      uploadIndex(new File(indexDirFiles,fName),alreadyUploadedFiles);
+ catch (    Exception e) {
+      log.error("Exception generating indexes for " + f.getName());
     }
   }
- catch (  Exception e) {
-    log.error("Exception generating indexes for " + f.getName());
+ catch (  OutOfMemoryError e) {
+    System.gc();
+    log.error("OutOfMemory",e);
   }
+  System.gc();
 }
