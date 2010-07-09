@@ -6,36 +6,56 @@
     @Override public void run(){
       try {
         FileOutputStream out=new FileOutputStream(file);
-        try {
-          URL url=DownloaderIndexFromGoogleCode.getInputStreamToLoadIndex(key);
-          URLConnection conn=url.openConnection();
-          InputStream is=conn.getInputStream();
-          impl.startTask(getString(R.string.downloading_file),conn.getContentLength());
-          byte[] buffer=new byte[BUFFER_SIZE];
-          int read=0;
-          while ((read=is.read(buffer)) != -1) {
-            out.write(buffer,0,read);
-            impl.progress(read);
-          }
-          ArrayList<String> warnings=new ArrayList<String>();
-          if (file.getName().endsWith(IndexConstants.ADDRESS_INDEX_EXT)) {
-            ResourceManager.getResourceManager().indexingAddress(impl,warnings,file);
-          }
- else           if (file.getName().endsWith(IndexConstants.POI_INDEX_EXT)) {
-            ResourceManager.getResourceManager().indexingPoi(impl,warnings,file);
-          }
- else           if (file.getName().endsWith(IndexConstants.TRANSPORT_INDEX_EXT)) {
-            ResourceManager.getResourceManager().indexingTransport(impl,warnings,file);
-          }
-          if (warnings.isEmpty()) {
-            showWarning(getString(R.string.download_index_success));
-          }
- else {
-            showWarning(warnings.get(0));
-          }
+        URL url=DownloaderIndexFromGoogleCode.getInputStreamToLoadIndex(key);
+        URLConnection conn=url.openConnection();
+        InputStream is=conn.getInputStream();
+        impl.startTask(getString(R.string.downloading_file),conn.getContentLength());
+        byte[] buffer=new byte[BUFFER_SIZE];
+        int read=0;
+        while ((read=is.read(buffer)) != -1) {
+          out.write(buffer,0,read);
+          impl.progress(read);
         }
-  finally {
-          out.close();
+        out.close();
+        File toIndex=file;
+        if (file.getName().endsWith(".zip")) {
+          impl.startTask(getString(R.string.unzipping_file),-1);
+          toIndex=new File(file.getParentFile(),file.getName().substring(0,file.getName().length() - 3) + "odb");
+          ZipInputStream zipIn=new ZipInputStream(new FileInputStream(file));
+          ZipEntry entry=null;
+          boolean found=false;
+          while (!found) {
+            if (entry != null) {
+              zipIn.closeEntry();
+            }
+            entry=zipIn.getNextEntry();
+            found=entry == null || entry.getName().endsWith(".odb");
+          }
+          if (entry != null) {
+            out=new FileOutputStream(toIndex);
+            while ((read=zipIn.read(buffer)) != -1) {
+              out.write(buffer,0,read);
+            }
+            out.close();
+          }
+          zipIn.close();
+          file.delete();
+        }
+        ArrayList<String> warnings=new ArrayList<String>();
+        if (toIndex.getName().endsWith(IndexConstants.ADDRESS_INDEX_EXT)) {
+          ResourceManager.getResourceManager().indexingAddress(impl,warnings,toIndex);
+        }
+ else         if (toIndex.getName().endsWith(IndexConstants.POI_INDEX_EXT)) {
+          ResourceManager.getResourceManager().indexingPoi(impl,warnings,toIndex);
+        }
+ else         if (toIndex.getName().endsWith(IndexConstants.TRANSPORT_INDEX_EXT)) {
+          ResourceManager.getResourceManager().indexingTransport(impl,warnings,toIndex);
+        }
+        if (warnings.isEmpty()) {
+          showWarning(getString(R.string.download_index_success));
+        }
+ else {
+          showWarning(warnings.get(0));
         }
       }
  catch (      IOException e) {
