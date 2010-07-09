@@ -3,7 +3,9 @@
   int count=0;
   int downloaded=0;
   int mbDownloaded=0;
+  File toSave=new File(osmDirFiles,country + ".osm.bz2");
   try {
+    log.info("Downloading country " + country + " from "+ url);
     FileOutputStream ostream=new FileOutputStream(toSave);
     InputStream stream=new URL(url).openStream();
     while ((count=stream.read(buffer)) != -1) {
@@ -17,6 +19,7 @@
     }
     ostream.close();
     stream.close();
+    generateIndex(toSave,alreadyGeneratedFiles,alreadyUploadedFiles);
   }
  catch (  IOException e) {
     log.error("Input/output exception " + toSave.getName() + " downloading from "+ url,e);
