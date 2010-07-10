@@ -1,20 +1,41 @@
 {
   currentThread=Thread.currentThread();
   try {
-    while (!stopped && (vx > 0 || vy > 0)) {
-      Thread.sleep((long)(40d / (Math.max(vx,vy) + 0.45)));
+    while (!stopped && (vx > 0 || vy > 0 || curZ != endZ)) {
+      long sleep=0;
+      if (vx > 0 || vy > 0) {
+        sleep=(long)(40d / (Math.max(vx,vy) + 0.45));
+      }
+ else {
+        sleep=80;
+      }
+      Thread.sleep(sleep);
       long curT=System.currentTimeMillis();
       int dt=(int)(curT - time);
       float newX=vx > 0 ? curX + dirX * vx * dt : curX;
       float newY=vy > 0 ? curY + dirY * vy * dt : curY;
+      float newZ=curZ;
+      if (timeZ > 0) {
+        newZ=newZ + dirZ * (float)dt / timeZ;
+        if (dirZ > 0 == newZ > endZ) {
+          newZ=endZ;
+        }
+      }
       if (!stopped && callback != null) {
         callback.dragTo(curX,curY,newX,newY);
+        if (newZ > 0) {
+          callback.zoomTo(newZ);
+        }
       }
       vx-=ax * dt;
       vy-=ay * dt;
       time=curT;
       curX=newX;
       curY=newY;
+      curZ=newZ;
+    }
+    if (curZ != endZ && endZ > 0) {
+      callback.zoomTo(endZ);
     }
   }
  catch (  InterruptedException e) {
