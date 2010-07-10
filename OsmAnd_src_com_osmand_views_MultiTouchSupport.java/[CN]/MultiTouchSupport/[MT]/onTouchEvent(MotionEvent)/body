@@ -1,0 +1,42 @@
+{
+  if (!isMultiTouchSupported()) {
+    return false;
+  }
+  int actionCode=event.getAction() & ACTION_MASK;
+  try {
+    Integer pointCount=(Integer)getPointerCount.invoke(event);
+    if (pointCount < 2) {
+      if (inZoomMode) {
+        listener.onZoomEnded(zoomStartedDistance * previousZoom,previousZoom);
+      }
+      return false;
+    }
+    Float x1=(Float)getX.invoke(event,0);
+    Float x2=(Float)getX.invoke(event,1);
+    Float y1=(Float)getY.invoke(event,0);
+    Float y2=(Float)getY.invoke(event,1);
+    float distance=FloatMath.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+    previousZoom=distance / zoomStartedDistance;
+    if (actionCode == ACTION_POINTER_DOWN) {
+      listener.onZoomStarted(distance);
+      zoomStartedDistance=distance;
+      inZoomMode=true;
+      return true;
+    }
+ else     if (actionCode == ACTION_POINTER_UP) {
+      if (inZoomMode) {
+        listener.onZoomEnded(distance,previousZoom);
+        inZoomMode=false;
+      }
+      return true;
+    }
+ else     if (inZoomMode && actionCode == MotionEvent.ACTION_MOVE) {
+      listener.onZooming(distance,previousZoom);
+      return true;
+    }
+  }
+ catch (  Exception e) {
+    log.debug("Multi touch exception",e);
+  }
+  return false;
+}

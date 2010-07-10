@@ -5,13 +5,15 @@
   if (OsmandSettings.isUsingInternetToDownloadTiles(getContext())) {
     MapTileDownloader.getInstance().refuseAllPreviousRequests();
   }
-  int tileSize=getTileSize();
+  float ftileSize=getTileSize();
+  int tileSize=map == null ? 256 : map.getTileSize();
   float tileX=getXTile();
   float tileY=getYTile();
   float w=getCenterPointX();
   float h=getCenterPointY();
   SurfaceHolder holder=getHolder();
 synchronized (holder) {
+    int nzoom=(int)zoom;
     Canvas canvas=holder.lockCanvas();
     if (canvas != null) {
       ResourceManager mgr=ResourceManager.getResourceManager();
@@ -28,19 +30,19 @@ synchronized (holder) {
         int height=(int)(FloatMath.ceil(tilesRect.bottom) - top);
         for (int i=0; i < width; i++) {
           for (int j=0; j < height; j++) {
-            float x1=(i + left - tileX) * tileSize + w;
-            float y1=(j + top - tileY) * tileSize + h;
-            String ordImgTile=mgr.calculateTileId(map,left + i,top + j,zoom);
+            float x1=(i + left - tileX) * ftileSize + w;
+            float y1=(j + top - tileY) * ftileSize + h;
+            String ordImgTile=mgr.calculateTileId(map,left + i,top + j,nzoom);
             boolean imgExist=mgr.tileExistOnFileSystem(ordImgTile);
             Bitmap bmp=null;
-            boolean originalBeLoaded=useInternet && zoom <= maxLevel;
+            boolean originalBeLoaded=useInternet && nzoom <= maxLevel;
             if (imgExist || originalBeLoaded) {
-              bmp=mgr.getTileImageForMapAsync(ordImgTile,map,left + i,top + j,zoom,useInternet);
+              bmp=mgr.getTileImageForMapAsync(ordImgTile,map,left + i,top + j,nzoom,useInternet);
             }
             if (bmp == null) {
               int div=2;
-              String imgTile2=mgr.calculateTileId(map,(left + i) / 2,(top + j) / 2,zoom - 1);
-              String imgTile4=mgr.calculateTileId(map,(left + i) / 4,(top + j) / 4,zoom - 2);
+              String imgTile2=mgr.calculateTileId(map,(left + i) / 2,(top + j) / 2,nzoom - 1);
+              String imgTile4=mgr.calculateTileId(map,(left + i) / 4,(top + j) / 4,nzoom - 2);
               if (originalBeLoaded || imgExist) {
                 bmp=mgr.getTileImageFromCache(imgTile2);
                 div=2;
@@ -50,12 +52,12 @@ synchronized (holder) {
                 }
               }
               if (!originalBeLoaded && !imgExist) {
-                if (mgr.tileExistOnFileSystem(imgTile2) || (useInternet && zoom - 1 <= maxLevel)) {
-                  bmp=mgr.getTileImageForMapAsync(imgTile2,map,(left + i) / 2,(top + j) / 2,zoom - 1,useInternet);
+                if (mgr.tileExistOnFileSystem(imgTile2) || (useInternet && nzoom - 1 <= maxLevel)) {
+                  bmp=mgr.getTileImageForMapAsync(imgTile2,map,(left + i) / 2,(top + j) / 2,nzoom - 1,useInternet);
                   div=2;
                 }
- else                 if (mgr.tileExistOnFileSystem(imgTile4) || (useInternet && zoom - 2 <= maxLevel)) {
-                  bmp=mgr.getTileImageForMapAsync(imgTile4,map,(left + i) / 4,(top + j) / 4,zoom - 2,useInternet);
+ else                 if (mgr.tileExistOnFileSystem(imgTile4) || (useInternet && nzoom - 2 <= maxLevel)) {
+                  bmp=mgr.getTileImageForMapAsync(imgTile4,map,(left + i) / 4,(top + j) / 4,nzoom - 2,useInternet);
                   div=4;
                 }
               }
@@ -67,12 +69,19 @@ synchronized (holder) {
                 int yZoom=((top + j) % div) * tileSize / div;
                 ;
                 bitmapToZoom.set(xZoom,yZoom,xZoom + tileSize / div,yZoom + tileSize / div);
-                bitmapToDraw.set(x1,y1,x1 + tileSize,y1 + tileSize);
+                bitmapToDraw.set(x1,y1,x1 + ftileSize,y1 + ftileSize);
                 canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
               }
             }
  else {
-              canvas.drawBitmap(bmp,x1,y1,paintBitmap);
+              if (zoom - nzoom != 0) {
+                bitmapToZoom.set(0,0,map.getTileSize(),map.getTileSize());
+                bitmapToDraw.set(x1,y1,x1 + ftileSize,y1 + ftileSize);
+                canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
+              }
+ else {
+                canvas.drawBitmap(bmp,x1,y1,paintBitmap);
+              }
             }
           }
         }
