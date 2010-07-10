@@ -49,13 +49,11 @@
     }
   }
   LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
-  service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,this);
+  service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,gpsListener);
+  currentLocationProvider=LocationManager.GPS_PROVIDER;
   if (!isRunningOnEmulator()) {
-    service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,this);
+    service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,networkListener);
     currentLocationProvider=LocationManager.NETWORK_PROVIDER;
-  }
- else {
-    currentLocationProvider=LocationManager.GPS_PROVIDER;
   }
   LocationProvider prov=service.getProvider(currentLocationProvider);
   providerSupportsBearing=prov == null ? false : prov.supportsBearing() && !isRunningOnEmulator();
