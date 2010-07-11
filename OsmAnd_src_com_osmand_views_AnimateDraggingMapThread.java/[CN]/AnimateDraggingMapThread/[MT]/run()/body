@@ -1,10 +1,11 @@
 {
   currentThread=Thread.currentThread();
   try {
-    while (!stopped && (vx > 0 || vy > 0 || curZ != endZ)) {
+    boolean conditionToCountinue=true;
+    while (!stopped && conditionToCountinue) {
       long sleep=0;
-      if (vx > 0 || vy > 0) {
-        sleep=(long)(40d / (Math.max(vx,vy) + 0.45));
+      if (animateDrag) {
+        sleep=80;
       }
  else {
         sleep=80;
@@ -12,32 +13,79 @@
       Thread.sleep(sleep);
       long curT=System.currentTimeMillis();
       int dt=(int)(curT - time);
-      float newX=vx > 0 ? curX + dirX * vx * dt : curX;
-      float newY=vy > 0 ? curY + dirY * vy * dt : curY;
+      float newX=animateDrag && vx > 0 ? curX + dirX * vx * dt : curX;
+      float newY=animateDrag && vy > 0 ? curY + dirY * vy * dt : curY;
       float newZ=curZ;
-      if (timeZ > 0) {
-        newZ=newZ + dirZ * (float)dt / timeZ;
-        if (dirZ > 0 == newZ > endZ) {
-          newZ=endZ;
+      if (!animateDrag) {
+        if (phaseOfMoving == 0 || phaseOfMoving == 2) {
+          byte dir=phaseOfMoving == 2 ? dirZ : dirIntZ;
+          int time=phaseOfMoving == 2 ? timeZEnd : timeZInt;
+          float end=phaseOfMoving == 2 ? endZ : intZ;
+          if (time > 0) {
+            newZ=newZ + dir * (float)dt / time;
+          }
+          if (dir > 0 == newZ > end) {
+            newZ=end;
+          }
+        }
+ else {
+          if (timeMove > 0) {
+            newX=newX + moveX * (float)dt / timeMove;
+            newY=newY + moveY * (float)dt / timeMove;
+            if (moveX > 0 == newX > moveX) {
+              newX=moveX;
+            }
+            if (moveY > 0 == newY > moveY) {
+              newY=moveY;
+            }
+          }
         }
       }
       if (!stopped && callback != null) {
-        if (vx > 0 || vy > 0) {
-          callback.dragTo(curX,curY,newX,newY);
+        if (animateDrag || phaseOfMoving == 1) {
+          callback.dragTo(curX,curY,newX,newY,notifyListener);
         }
-        if (newZ > 0) {
-          callback.zoomTo(newZ);
+ else {
+          callback.zoomTo(newZ,notifyListener);
         }
       }
-      vx-=ax * dt;
-      vy-=ay * dt;
       time=curT;
-      curX=newX;
-      curY=newY;
-      curZ=newZ;
+      if (animateDrag) {
+        vx-=ax * dt;
+        vy-=ay * dt;
+        curX=newX;
+        curY=newY;
+        conditionToCountinue=vx > 0 || vy > 0;
+      }
+ else {
+        if (phaseOfMoving == 0) {
+          curZ=newZ;
+          if (curZ == intZ) {
+            curX=0;
+            curY=0;
+            phaseOfMoving++;
+          }
+        }
+ else         if (phaseOfMoving == 2) {
+          curZ=newZ;
+          conditionToCountinue=curZ != endZ;
+        }
+ else {
+          curX=newX;
+          curY=newY;
+          if (curX == moveX && curY == moveY) {
+            phaseOfMoving++;
+          }
+        }
+      }
     }
-    if (curZ != endZ && endZ > 0) {
-      callback.zoomTo(endZ);
+    if (curZ != ((int)Math.round(curZ))) {
+      if (Math.abs(curZ - endZ) > 3) {
+        callback.zoomTo(Math.round(curZ),notifyListener);
+      }
+ else {
+        callback.zoomTo(endZ,notifyListener);
+      }
     }
   }
  catch (  InterruptedException e) {

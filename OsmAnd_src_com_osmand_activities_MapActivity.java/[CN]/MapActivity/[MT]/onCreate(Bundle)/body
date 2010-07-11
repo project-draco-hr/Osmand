@@ -60,6 +60,7 @@
   ZoomControls zoomControls=(ZoomControls)findViewById(R.id.ZoomControls);
   zoomControls.setOnZoomInClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
+      mapView.getAnimatedDraggingThread().stopAnimatingSync();
       mapView.getAnimatedDraggingThread().startZooming(mapView.getZoom(),mapView.getZoom() + 1);
       showAndHideMapPosition();
       if (OsmandSettings.isAutoZoomEnabled(MapActivity.this)) {
@@ -70,6 +71,7 @@
 );
   zoomControls.setOnZoomOutClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
+      mapView.getAnimatedDraggingThread().stopAnimatingSync();
       mapView.getAnimatedDraggingThread().startZooming(mapView.getZoom(),mapView.getZoom() - 1);
       showAndHideMapPosition();
       if (OsmandSettings.isAutoZoomEnabled(MapActivity.this)) {
@@ -86,7 +88,9 @@
         OsmandSettings.setSyncMapToGpsLocation(MapActivity.this,true);
         if (locationLayer.getLastKnownLocation() != null) {
           Location lastKnownLocation=locationLayer.getLastKnownLocation();
-          mapView.setLatLon(lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude());
+          AnimateDraggingMapThread thread=mapView.getAnimatedDraggingThread();
+          int fZoom=mapView.getZoom() < 15 ? 15 : mapView.getZoom();
+          thread.startMoving(mapView.getLatitude(),mapView.getLongitude(),lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude(),mapView.getZoom(),fZoom,mapView.getSourceTileSize(),false);
         }
       }
     }

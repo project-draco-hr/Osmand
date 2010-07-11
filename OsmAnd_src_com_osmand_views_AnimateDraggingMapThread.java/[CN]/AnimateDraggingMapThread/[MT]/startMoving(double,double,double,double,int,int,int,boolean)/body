@@ -1,0 +1,39 @@
+{
+  stopAnimatingSync();
+  this.notifyListener=notifyListener;
+  intZ=curZoom;
+  moveX=(float)((MapUtils.getTileNumberX(intZ,curLon) - MapUtils.getTileNumberX(intZ,finalLon)) * tileSize);
+  moveY=(float)((MapUtils.getTileNumberY(intZ,curLat) - MapUtils.getTileNumberY(intZ,finalLat)) * tileSize);
+  while (Math.abs(moveX) + Math.abs(moveY) > 1200 && intZ > 4) {
+    intZ--;
+    moveX=(float)((MapUtils.getTileNumberX(intZ,curLon) - MapUtils.getTileNumberX(intZ,finalLon)) * tileSize);
+    moveY=(float)((MapUtils.getTileNumberY(intZ,curLat) - MapUtils.getTileNumberY(intZ,finalLat)) * tileSize);
+  }
+  if (curZoom < intZ) {
+    dirIntZ=1;
+  }
+ else {
+    dirIntZ=-1;
+  }
+  if (intZ < endZoom) {
+    dirZ=1;
+  }
+ else {
+    dirZ=-1;
+  }
+  endZ=endZoom;
+  timeZInt=Math.abs(curZoom - intZ) * 300;
+  timeZEnd=500;
+  timeMove=(int)(Math.abs(moveX) + Math.abs(moveY) * 4);
+  if (timeMove > 2000) {
+    timeMove=2000;
+  }
+  animateDrag=false;
+  phaseOfMoving=(byte)(intZ == curZoom ? 1 : 0);
+  curX=0;
+  curY=0;
+  time=System.currentTimeMillis();
+  stopped=false;
+  Thread thread=new Thread(this,"Animatable dragging");
+  thread.start();
+}

@@ -17,12 +17,6 @@
   routingHelper.setAppMode(OsmandSettings.getApplicationMode(this));
   poiMapLayer.setFilter(OsmandSettings.getPoiFilterForMap(this));
   mapView.setMapPosition(OsmandSettings.getPositionOnMap(this));
-  SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);
-  if (prefs != null && prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
-    LatLon l=OsmandSettings.getLastKnownMapLocation(this);
-    mapView.setLatLon(l.getLatitude(),l.getLongitude());
-    mapView.setZoom(OsmandSettings.getLastKnownMapZoom(this));
-  }
   backToLocation.setVisibility(View.INVISIBLE);
   if (mapView.getLayers().contains(transportStopsLayer) != OsmandSettings.isShowingTransportOverMap(this)) {
     if (OsmandSettings.isShowingTransportOverMap(this)) {
@@ -63,5 +57,17 @@
     wakeLock=powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,"com.osmand.map");
     wakeLock.acquire();
   }
+  SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);
+  if (prefs != null && prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
+    LatLon l=OsmandSettings.getLastKnownMapLocation(this);
+    mapView.setLatLon(l.getLatitude(),l.getLongitude());
+    mapView.setZoom(OsmandSettings.getLastKnownMapZoom(this));
+    LatLon latLon=OsmandSettings.getAndClearMapLocationToShow(this);
+    LatLon cur=new LatLon(mapView.getLatitude(),mapView.getLongitude());
+    if (latLon != null && !latLon.equals(cur)) {
+      mapView.getAnimatedDraggingThread().startMoving(cur.getLatitude(),cur.getLongitude(),latLon.getLatitude(),latLon.getLongitude(),mapView.getZoom(),OsmandSettings.getMapZoomToShow(this),mapView.getSourceTileSize(),true);
+    }
+  }
+  checkExternalStorage();
   showAndHideMapPosition();
 }
