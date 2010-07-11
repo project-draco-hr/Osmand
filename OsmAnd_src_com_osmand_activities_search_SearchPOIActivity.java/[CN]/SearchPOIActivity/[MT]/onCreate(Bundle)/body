@@ -42,8 +42,19 @@
   showOnMap.setEnabled(filter != null);
   if (filter != null) {
     amenityAdapter=new AmenityAdapter(new ArrayList<Amenity>());
+    if (location == null) {
+      filter.clearPreviousZoom();
+    }
+ else {
+      searchedLocation=location;
+      amenityAdapter.setNewModel(filter.initializeNewSearch(location.getLatitude(),location.getLongitude(),40));
+    }
     setListAdapter(amenityAdapter);
+    searchPOILevel.setEnabled(filter.isSearchFurtherAvailable());
     searchArea.setText(filter.getSearchArea());
+  }
+ else {
+    searchPOILevel.setEnabled(false);
   }
   ListView lv=getListView();
   lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
