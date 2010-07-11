@@ -8,11 +8,15 @@
   builder.setMessage(R.string.recalculate_route_to_your_location);
   builder.setPositiveButton(R.string.follow,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      Location map=new Location("map");
-      map.setLatitude(lat);
-      map.setLongitude(lon);
+      Location location=locationLayer.getLastKnownLocation();
+      if (location == null) {
+        location=new Location("map");
+        location.setLatitude(lat);
+        location.setLongitude(lon);
+      }
       routingHelper.setFollowingMode(true);
-      routingHelper.setFinalAndCurrentLocation(navigationLayer.getPointToNavigate(),map);
+      routingHelper.setFinalAndCurrentLocation(navigationLayer.getPointToNavigate(),location);
+      updateNavigateToPointMenu();
     }
   }
 );
@@ -30,6 +34,7 @@
       map.setLatitude(lat);
       map.setLongitude(lon);
       routingHelper.setFollowingMode(false);
+      updateNavigateToPointMenu();
       routingHelper.setFinalAndCurrentLocation(navigationLayer.getPointToNavigate(),map);
     }
   }

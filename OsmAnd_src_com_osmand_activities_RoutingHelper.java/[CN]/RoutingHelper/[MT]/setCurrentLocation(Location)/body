@@ -14,10 +14,20 @@ synchronized (this) {
         boolean proccesed=false;
         if (newDist < dist) {
           if (newDist > 150) {
-            if (log.isDebugEnabled()) {
+            if (currentRoute > 0) {
+              float bearing=routeNodes.get(currentRoute - 1).bearingTo(routeNodes.get(currentRoute));
+              float bearingMovement=currentLocation.bearingTo(routeNodes.get(currentRoute));
+              float d=Math.abs(currentLocation.distanceTo(routeNodes.get(currentRoute)) * FloatMath.sin((bearingMovement - bearing) * 3.14f / 180f));
+              if (d > 50) {
+                proccesed=true;
+              }
+            }
+ else {
+              proccesed=true;
+            }
+            if (proccesed && log.isDebugEnabled()) {
               log.debug("Processed distance : " + newDist + " "+ dist);
             }
-            proccesed=true;
           }
  else {
             if (currentLocation.hasBearing() || lastFixedLocation != null) {
