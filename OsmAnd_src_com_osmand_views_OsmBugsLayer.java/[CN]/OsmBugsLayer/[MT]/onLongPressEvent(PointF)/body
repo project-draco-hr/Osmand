@@ -1,33 +1,21 @@
 {
-  if (objects != null && !objects.isEmpty()) {
-    int ex=(int)point.x;
-    int ey=(int)point.y;
-    int radius=getRadiusBug(view.getZoom()) * 3 / 2;
-    try {
-      for (      final OpenStreetBug n : objects) {
-        int x=view.getRotatedMapXForPoint(n.getLatitude(),n.getLongitude());
-        int y=view.getRotatedMapYForPoint(n.getLatitude(),n.getLongitude());
-        if (Math.abs(x - ex) <= radius && Math.abs(y - ey) <= radius) {
-          Builder builder=new AlertDialog.Builder(view.getContext());
-          Resources resources=view.getContext().getResources();
-          builder.setItems(new String[]{resources.getString(R.string.osb_comment_menu_item),resources.getString(R.string.osb_close_menu_item)},new DialogInterface.OnClickListener(){
-            @Override public void onClick(            DialogInterface dialog,            int which){
-              if (which == 0) {
-                commentBug(view.getContext(),activity.getLayoutInflater(),n);
-              }
- else               if (which == 1) {
-                closeBug(view.getContext(),activity.getLayoutInflater(),n);
-              }
-            }
-          }
-);
-          builder.create().show();
-          return true;
+  final OpenStreetBug bug=getBugFromPoint(point);
+  if (bug != null) {
+    Builder builder=new AlertDialog.Builder(view.getContext());
+    Resources resources=view.getContext().getResources();
+    builder.setItems(new String[]{resources.getString(R.string.osb_comment_menu_item),resources.getString(R.string.osb_close_menu_item)},new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        if (which == 0) {
+          commentBug(view.getContext(),activity.getLayoutInflater(),bug);
+        }
+ else         if (which == 1) {
+          closeBug(view.getContext(),activity.getLayoutInflater(),bug);
         }
       }
     }
- catch (    IndexOutOfBoundsException e) {
-    }
+);
+    builder.create().show();
+    return true;
   }
   return false;
 }

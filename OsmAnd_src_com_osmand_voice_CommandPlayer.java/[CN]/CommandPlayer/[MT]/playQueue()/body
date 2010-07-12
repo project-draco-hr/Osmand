@@ -1,0 +1,46 @@
+{
+  boolean playNext=true;
+  while (!filesToPlay.isEmpty() && playNext) {
+    String f=filesToPlay.remove(0);
+    if (f != null && voiceDir != null) {
+      File file=new File(voiceDir,f);
+      if (file.exists()) {
+        try {
+          mediaPlayer.setDataSource(file.getAbsolutePath());
+          mediaPlayer.prepare();
+          mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener(){
+            public void onCompletion(            MediaPlayer mp){
+              mediaPlayer=new MediaPlayer();
+              int sleep=60;
+              boolean delay=true;
+              while (!filesToPlay.isEmpty() && delay) {
+                delay=filesToPlay.get(0).startsWith(DELAY_CONST);
+                if (delay) {
+                  String s=filesToPlay.remove(0).substring(DELAY_CONST.length());
+                  try {
+                    sleep+=Integer.parseInt(s);
+                  }
+ catch (                  NumberFormatException e) {
+                  }
+                }
+              }
+              try {
+                Thread.sleep(sleep);
+              }
+ catch (              InterruptedException e) {
+              }
+              playQueue();
+            }
+          }
+);
+          playNext=false;
+          mediaPlayer.start();
+        }
+ catch (        Exception e) {
+          log.error("Error while playing voice command",e);
+          playNext=true;
+        }
+      }
+    }
+  }
+}

@@ -34,6 +34,30 @@
   routerPreference.setEntries(entries);
   routerPreference.setEntryValues(entries);
   routerPreference.setValue(entry);
+  File extStorage=new File(Environment.getExternalStorageDirectory(),CommandPlayer.VOICE_DIR);
+  Set<String> setFiles=new LinkedHashSet<String>();
+  if (extStorage.exists()) {
+    for (    File f : extStorage.listFiles()) {
+      if (f.isDirectory()) {
+        setFiles.add(f.getName());
+      }
+    }
+  }
+  String provider=OsmandSettings.getVoiceProvider(this);
+  entries=new String[setFiles.size() + 1];
+  int k=0;
+  entries[k++]=getString(R.string.voice_not_use);
+  for (  String s : setFiles) {
+    entries[k++]=s;
+  }
+  voicePreference.setEntries(entries);
+  voicePreference.setEntryValues(entries);
+  if (setFiles.contains(provider)) {
+    voicePreference.setValue(provider);
+  }
+ else {
+    voicePreference.setValueIndex(0);
+  }
   int startZoom=12;
   int endZoom=19;
   entries=new String[endZoom - startZoom + 1];
