@@ -1,7 +1,6 @@
 {
   RouteDirectionInfo item=((RouteInfoAdapter)getListAdapter()).getItem(position - 1);
-  RoutingHelper inst=RoutingHelper.getInstance(this);
-  Location loc=inst.getLocationFromRouteDirection(item);
+  Location loc=helper.getLocationFromRouteDirection(item);
   CommandPlayer player=CommandPlayer.getInstance(this);
   if (player != null) {
     CommandBuilder builder=player.newCommandBuilder();
@@ -28,6 +27,9 @@
     }
  else     if (item.turnType.getValue() == TurnType.TSHR) {
       builder.turnSHRight(item.distance);
+    }
+ else     if (item.turnType.isRoundAbout()) {
+      builder.roundAbout(item.distance,item.turnType.getExitOut());
     }
     builder.play();
   }
