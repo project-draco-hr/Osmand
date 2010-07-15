@@ -8,13 +8,20 @@
         FileOutputStream out=new FileOutputStream(file);
         URL url=DownloaderIndexFromGoogleCode.getInputStreamToLoadIndex(key);
         URLConnection conn=url.openConnection();
+        conn.setReadTimeout(30000);
+        conn.setConnectTimeout(30000);
         InputStream is=conn.getInputStream();
-        impl.startTask(getString(R.string.downloading_file),conn.getContentLength());
+        int length=conn.getContentLength();
+        impl.startTask(getString(R.string.downloading_file),length);
         byte[] buffer=new byte[BUFFER_SIZE];
         int read=0;
         while ((read=is.read(buffer)) != -1) {
           out.write(buffer,0,read);
           impl.progress(read);
+          length-=read;
+        }
+        if (length > 0) {
+          throw new IOException("File was not fully read");
         }
         out.close();
         File toIndex=file;
