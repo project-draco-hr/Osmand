@@ -12,18 +12,21 @@
   }
   if (voiceDir != null) {
     long time=System.currentTimeMillis();
-    File config=new File(voiceDir,"_config.p");
-    boolean wrong=!config.exists();
-    if (!wrong) {
-      try {
-        prologSystem.setTheory(new Theory(new FileInputStream(config)));
+    boolean wrong=false;
+    try {
+      InputStream config;
+      config=new FileInputStream(new File(voiceDir,"_config.p"));
+      if (!wrong) {
+        prologSystem.setTheory(new Theory(config));
       }
- catch (      InvalidTheoryException e) {
-        log.error("Loading voice config exception " + voiceProvider,e);
-      }
-catch (      IOException e) {
-        log.error("Loading voice config exception " + voiceProvider,e);
-      }
+    }
+ catch (    InvalidTheoryException e) {
+      log.error("Loading voice config exception " + voiceProvider,e);
+      wrong=true;
+    }
+catch (    IOException e) {
+      log.error("Loading voice config exception " + voiceProvider,e);
+      wrong=true;
     }
     if (wrong) {
       return ctx.getString(R.string.voice_data_corrupted);

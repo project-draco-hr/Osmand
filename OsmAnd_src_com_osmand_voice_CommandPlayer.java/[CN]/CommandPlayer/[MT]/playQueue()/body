@@ -1,10 +1,13 @@
 {
-  boolean playNext=true;
   while (!filesToPlay.isEmpty() && playNext) {
     String f=filesToPlay.remove(0);
     if (f != null && voiceDir != null) {
+      boolean exists=false;
       File file=new File(voiceDir,f);
-      if (file.exists()) {
+      exists=file.exists();
+      if (exists) {
+        log.debug("Playing file : " + f);
+        playNext=false;
         try {
           mediaPlayer.setDataSource(file.getAbsolutePath());
           mediaPlayer.prepare();
@@ -29,17 +32,20 @@
               }
  catch (              InterruptedException e) {
               }
+              playNext=true;
               playQueue();
             }
           }
 );
-          playNext=false;
           mediaPlayer.start();
         }
  catch (        Exception e) {
           log.error("Error while playing voice command",e);
           playNext=true;
         }
+      }
+ else {
+        log.info("Play file not found : " + f);
       }
     }
   }
