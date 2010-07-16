@@ -54,6 +54,18 @@
     edit.commit();
   }
  else   if (preference == routeServiceEnabled) {
+    Intent serviceIntent=new Intent(this,NavigationService.class);
+    if ((Boolean)newValue) {
+      ComponentName name=startService(serviceIntent);
+      if (name == null) {
+        routeServiceEnabled.setChecked(OsmandSettings.getServiceOffEnabled(this));
+      }
+    }
+ else {
+      if (!stopService(serviceIntent)) {
+        routeServiceEnabled.setChecked(OsmandSettings.getServiceOffEnabled(this));
+      }
+    }
   }
  else   if (preference == routerPreference) {
     RouteService s=null;
