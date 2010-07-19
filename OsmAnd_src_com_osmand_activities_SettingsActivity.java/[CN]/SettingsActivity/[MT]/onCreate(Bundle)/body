@@ -35,8 +35,16 @@
   voicePreference.setOnPreferenceChangeListener(this);
   routeServiceInterval=(ListPreference)screen.findPreference(OsmandSettings.SERVICE_OFF_INTERVAL);
   routeServiceInterval.setOnPreferenceChangeListener(this);
+  routeServiceWaitInterval=(ListPreference)screen.findPreference(OsmandSettings.SERVICE_OFF_WAIT_INTERVAL);
+  routeServiceWaitInterval.setOnPreferenceChangeListener(this);
   routeServiceProvider=(ListPreference)screen.findPreference(OsmandSettings.SERVICE_OFF_PROVIDER);
   routeServiceProvider.setOnPreferenceChangeListener(this);
   routeServiceEnabled=(CheckBoxPreference)screen.findPreference(OsmandSettings.SERVICE_OFF_ENABLED);
   routeServiceEnabled.setOnPreferenceChangeListener(this);
+  registerReceiver(new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      routeServiceEnabled.setChecked(false);
+    }
+  }
+,new IntentFilter(NavigationService.OSMAND_STOP_SERVICE_ACTION));
 }

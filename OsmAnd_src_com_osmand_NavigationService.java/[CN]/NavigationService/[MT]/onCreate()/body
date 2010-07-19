@@ -4,9 +4,21 @@
   handler=new Handler();
   serviceOffInterval=OsmandSettings.getServiceOffInterval(this);
   serviceOffProvider=OsmandSettings.getServiceOffProvider(this);
-  serviceError=OsmandSettings.getServiceOffErrorInterval(this);
+  serviceError=OsmandSettings.getServiceOffWaitInterval(this);
   savingTrackHelper=new SavingTrackHelper(this);
   delayedAction(true,500);
   routingHelper=RoutingHelper.getInstance(this);
   OsmandSettings.setServiceOffEnabled(this,true);
+  registerReceiver(new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      NavigationService.this.stopSelf();
+    }
+  }
+,new IntentFilter(OSMAND_STOP_SERVICE_ACTION));
+  Intent notificationIntent=new Intent(OSMAND_STOP_SERVICE_ACTION);
+  notification=new Notification(R.drawable.icon,"",System.currentTimeMillis());
+  notification.flags=Notification.FLAG_NO_CLEAR;
+  notification.setLatestEventInfo(this,Version.APP_NAME,getString(R.string.service_stop_background_service),PendingIntent.getBroadcast(this,0,notificationIntent,PendingIntent.FLAG_UPDATE_CURRENT));
+  NotificationManager mNotificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+  mNotificationManager.notify(NOTIFICATION_SERVICE_ID,notification);
 }
