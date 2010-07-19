@@ -1,0 +1,15 @@
+{
+  if (request instanceof TileLoadDownloadRequest) {
+    TileLoadDownloadRequest req=((TileLoadDownloadRequest)request);
+    imagesOnFS.put(req.tileId,Boolean.TRUE);
+    if (req.fileToSave != null && req.tileSource instanceof SQLiteTileSource) {
+      try {
+        ((SQLiteTileSource)req.tileSource).insertImage(req.xTile,req.yTile,req.zoom,req.fileToSave);
+      }
+ catch (      IOException e) {
+        log.warn("File " + req.fileToSave.getName() + " couldn't be read",e);
+      }
+      req.fileToSave.delete();
+    }
+  }
+}

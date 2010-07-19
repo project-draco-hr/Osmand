@@ -1,22 +1,31 @@
 {
-  if (req.fileToLoad == null || req.dirWithTiles == null) {
+  if (req.tileId == null || req.dirWithTiles == null) {
     return null;
   }
-  File en=new File(req.dirWithTiles,req.fileToLoad);
   if (cacheOfImages.size() > maxImgCacheSize) {
     clearTiles();
   }
-  if (!downloader.isFileCurrentlyDownloaded(en) && req.dirWithTiles.canRead()) {
-    if (en.exists()) {
-      long time=System.currentTimeMillis();
-      cacheOfImages.put(req.fileToLoad,BitmapFactory.decodeFile(en.getAbsolutePath()));
-      if (log.isDebugEnabled()) {
-        log.debug("Loaded file : " + req.fileToLoad + " "+ -(time - System.currentTimeMillis())+ " ms "+ cacheOfImages.size());
+  if (req.dirWithTiles.canRead() && !downloader.isFileCurrentlyDownloaded(req.fileToSave)) {
+    long time=System.currentTimeMillis();
+    Bitmap bmp=null;
+    if (req.tileSource instanceof SQLiteTileSource) {
+      bmp=((SQLiteTileSource)req.tileSource).getImage(req.xTile,req.yTile,req.zoom);
+    }
+ else {
+      File en=new File(req.dirWithTiles,req.tileId);
+      if (en.exists()) {
+        bmp=BitmapFactory.decodeFile(en.getAbsolutePath());
       }
     }
-    if (cacheOfImages.get(req.fileToLoad) == null && req.url != null) {
+    if (bmp != null) {
+      cacheOfImages.put(req.tileId,bmp);
+      if (log.isDebugEnabled()) {
+        log.debug("Loaded file : " + req.tileId + " "+ -(time - System.currentTimeMillis())+ " ms "+ cacheOfImages.size());
+      }
+    }
+    if (cacheOfImages.get(req.tileId) == null && req.url != null) {
       downloader.requestToDownload(req);
     }
   }
-  return cacheOfImages.get(req.fileToLoad);
+  return cacheOfImages.get(req.tileId);
 }

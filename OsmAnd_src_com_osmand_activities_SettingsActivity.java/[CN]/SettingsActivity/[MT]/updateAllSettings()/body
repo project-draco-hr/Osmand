@@ -88,12 +88,28 @@
   maxLevelToDownload.setEntryValues(entries);
   maxLevelToDownload.setValue(OsmandSettings.getMaximumLevelToDownloadTile(this) + "");
   List<TileSourceTemplate> list=TileSourceManager.getKnownSourceTemplates();
-  entries=new String[list.size()];
+  List<File> sqLiteFiles=new ArrayList<File>();
+  File dir=new File(Environment.getExternalStorageDirectory(),ResourceManager.TILES_PATH);
+  if (dir != null) {
+    for (    File f : dir.listFiles()) {
+      if (f.getName().endsWith(SQLiteTileSource.EXT)) {
+        sqLiteFiles.add(f);
+      }
+    }
+  }
+  entries=new String[list.size() + sqLiteFiles.size()];
+  valueEntries=new String[list.size() + sqLiteFiles.size()];
   for (int i=0; i < list.size(); i++) {
-    entries[i]=list.get(i).getName();
+    entries[i + sqLiteFiles.size()]=list.get(i).getName();
+    valueEntries[i + sqLiteFiles.size()]=list.get(i).getName();
+  }
+  for (int i=0; i < sqLiteFiles.size(); i++) {
+    String n=sqLiteFiles.get(i).getName();
+    entries[i]=n.substring(0,n.indexOf('.'));
+    valueEntries[i]=sqLiteFiles.get(i).getName();
   }
   tileSourcePreference.setEntries(entries);
-  tileSourcePreference.setEntryValues(entries);
+  tileSourcePreference.setEntryValues(valueEntries);
   tileSourcePreference.setValue(OsmandSettings.getMapTileSourceName(this));
   String mapName=" " + OsmandSettings.getMapTileSourceName(this);
   String summary=tileSourcePreference.getSummary().toString();

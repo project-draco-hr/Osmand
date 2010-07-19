@@ -4,8 +4,13 @@
     setRequestedOrientation(OsmandSettings.getMapOrientation(this));
   }
   routingHelper=RoutingHelper.getInstance(this);
-  if (mapView.getMap() != OsmandSettings.getMapTileSource(this)) {
-    mapView.setMap(OsmandSettings.getMapTileSource(this));
+  ITileSource source=OsmandSettings.getMapTileSource(this);
+  if (!Algoritms.objectEquals(mapView.getMap(),source)) {
+    if (mapView.getMap() instanceof SQLiteTileSource) {
+      ((SQLiteTileSource)mapView.getMap()).closeDB();
+    }
+    ResourceManager.getResourceManager().setMapSource(source);
+    mapView.setMap(source);
   }
   if (!OsmandSettings.isRotateMapToBearing(this)) {
     mapView.setRotate(0);
