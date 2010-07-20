@@ -43,6 +43,30 @@
     routingHelper.setFollowingMode(false);
     routingHelper.setFinalAndCurrentLocation(pointToNavigate,null);
   }
+  if (OsmandSettings.isFollowingByRoute(this)) {
+    if (pointToNavigate == null) {
+      OsmandSettings.setFollowingByRoute(this,false);
+    }
+ else     if (!routingHelper.isRouteCalculated()) {
+      Builder builder=new AlertDialog.Builder(this);
+      builder.setMessage(R.string.continue_follow_previous_route);
+      builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          routingHelper.setFollowingMode(true);
+        }
+      }
+);
+      builder.setNegativeButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          OsmandSettings.setFollowingByRoute(MapActivity.this,false);
+          routingHelper.setFinalLocation(null);
+          mapView.refreshMap();
+        }
+      }
+);
+      builder.show();
+    }
+  }
   navigationLayer.setPointToNavigate(pointToNavigate);
   SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);
   if (prefs == null || !prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
