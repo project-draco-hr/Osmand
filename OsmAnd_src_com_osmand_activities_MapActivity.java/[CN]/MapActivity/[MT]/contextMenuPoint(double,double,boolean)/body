@@ -1,23 +1,32 @@
 {
   Builder builder=new AlertDialog.Builder(this);
   Resources resources=this.getResources();
-  String[] res=new String[]{resources.getString(R.string.context_menu_item_navigate_point),resources.getString(R.string.context_menu_item_add_favorite),resources.getString(R.string.context_menu_item_open_bug),resources.getString(R.string.context_menu_item_create_poi),resources.getString(R.string.context_menu_item_update_map)};
+  String[] res=new String[]{resources.getString(R.string.context_menu_item_navigate_point),resources.getString(R.string.context_menu_item_search_poi),resources.getString(R.string.context_menu_item_show_route),resources.getString(R.string.context_menu_item_add_favorite),resources.getString(R.string.context_menu_item_create_poi),resources.getString(R.string.context_menu_item_open_bug),resources.getString(R.string.context_menu_item_update_map)};
   builder.setItems(res,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (which == 0) {
         navigateToPoint(new LatLon(latitude,longitude));
       }
  else       if (which == 1) {
-        addFavouritePoint(latitude,longitude);
+        Intent intent=new Intent(MapActivity.this,SearchPoiFilterActivity.class);
+        intent.putExtra(SearchPoiFilterActivity.SEARCH_LAT,latitude);
+        intent.putExtra(SearchPoiFilterActivity.SEARCH_LON,longitude);
+        startActivity(intent);
       }
  else       if (which == 2) {
-        osmBugsLayer.openBug(MapActivity.this,getLayoutInflater(),mapView,latitude,longitude);
+        showRoute(latitude,longitude);
       }
  else       if (which == 3) {
+        addFavouritePoint(latitude,longitude);
+      }
+ else       if (which == 4) {
         EditingPOIActivity activity=new EditingPOIActivity(MapActivity.this,mapView);
         activity.showCreateDialog(latitude,longitude);
       }
- else       if (which == 4) {
+ else       if (which == 5) {
+        osmBugsLayer.openBug(MapActivity.this,getLayoutInflater(),mapView,latitude,longitude);
+      }
+ else       if (which == 6) {
         reloadTile(mapView.getZoom(),latitude,longitude);
       }
     }
