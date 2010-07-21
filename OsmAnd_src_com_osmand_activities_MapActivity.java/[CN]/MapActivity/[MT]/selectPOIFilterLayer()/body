@@ -1,0 +1,34 @@
+{
+  final List<PoiFilter> userDefined=new ArrayList<PoiFilter>();
+  List<String> list=new ArrayList<String>();
+  list.add(getString(R.string.any_poi));
+  for (  PoiFilter f : PoiFiltersHelper.getUserDefinedPoiFilters(this)) {
+    if (!f.getFilterId().equals(PoiFilter.CUSTOM_FILTER_ID)) {
+      userDefined.add(f);
+      list.add(f.getName());
+    }
+  }
+  for (  AmenityType t : AmenityType.values()) {
+    list.add(AmenityType.toPublicString(t));
+  }
+  Builder builder=new AlertDialog.Builder(this);
+  builder.setItems(list.toArray(new String[list.size()]),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      String filterId;
+      if (which == 0) {
+        filterId=PoiFiltersHelper.getOsmDefinedFilterId(null);
+      }
+ else       if (which <= userDefined.size()) {
+        filterId=userDefined.get(which - 1).getFilterId();
+      }
+ else {
+        filterId=PoiFiltersHelper.getOsmDefinedFilterId(AmenityType.values()[which - userDefined.size() - 1]);
+      }
+      OsmandSettings.setPoiFilterForMap(MapActivity.this,filterId);
+      poiMapLayer.setFilter(PoiFiltersHelper.getFilterById(MapActivity.this,filterId));
+      mapView.refreshMap();
+    }
+  }
+);
+  builder.show();
+}

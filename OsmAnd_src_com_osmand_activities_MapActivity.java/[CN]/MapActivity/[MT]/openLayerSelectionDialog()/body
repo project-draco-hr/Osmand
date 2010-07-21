@@ -1,0 +1,46 @@
+{
+  List<String> layersList=new ArrayList<String>();
+  layersList.add(getString(R.string.layer_map));
+  layersList.add(getString(R.string.layer_poi));
+  layersList.add(getString(R.string.layer_transport));
+  layersList.add(getString(R.string.layer_osm_bugs));
+  layersList.add(getString(R.string.layer_favorites));
+  if (routingHelper != null && routingHelper.isRouteCalculated()) {
+    layersList.add(getString(R.string.layer_route));
+  }
+  if (!TransportRouteHelper.getInstance().getRoute().isEmpty()) {
+    layersList.add(getString(R.string.layer_transport_route));
+  }
+  final boolean[] selected=new boolean[layersList.size()];
+  Arrays.fill(selected,true);
+  selected[1]=OsmandSettings.isShowingPoiOverMap(this);
+  selected[2]=OsmandSettings.isShowingTransportOverMap(this);
+  selected[3]=OsmandSettings.isShowingOsmBugs(this);
+  selected[4]=OsmandSettings.isShowingFavorites(this);
+  Builder builder=new AlertDialog.Builder(this);
+  builder.setMultiChoiceItems(layersList.toArray(new String[layersList.size()]),selected,new DialogInterface.OnMultiChoiceClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int item,    boolean isChecked){
+      if (item == 0) {
+      }
+ else       if (item == 1) {
+        if (isChecked) {
+          selectPOIFilterLayer();
+        }
+        OsmandSettings.setShowPoiOverMap(MapActivity.this,isChecked);
+      }
+ else       if (item == 2) {
+        OsmandSettings.setShowTransortOverMap(MapActivity.this,isChecked);
+      }
+ else       if (item == 3) {
+        OsmandSettings.setShowingOsmBugs(MapActivity.this,isChecked);
+      }
+ else       if (item == 4) {
+        OsmandSettings.setShowingFavorites(MapActivity.this,isChecked);
+      }
+      updateLayers();
+      mapView.refreshMap();
+    }
+  }
+);
+  builder.show();
+}
