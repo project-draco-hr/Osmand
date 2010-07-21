@@ -6,17 +6,42 @@
   Builder builder=new AlertDialog.Builder(this);
   builder.setTitle(R.string.follow_route);
   View view=getLayoutInflater().inflate(R.layout.calculate_route,null);
-  ToggleButton car=(ToggleButton)view.findViewById(R.id.CarButton);
-  ToggleButton bicyle=(ToggleButton)view.findViewById(R.id.BicycleButton);
-  ToggleButton pedestrian=(ToggleButton)view.findViewById(R.id.PedestrianButton);
-  if (OsmandSettings.getApplicationMode(this) == ApplicationMode.BICYCLE) {
-    bicyle.setChecked(true);
-  }
- else   if (OsmandSettings.getApplicationMode(this) == ApplicationMode.PEDESTRIAN) {
-    pedestrian.setChecked(true);
-  }
- else   if (OsmandSettings.getApplicationMode(this) == ApplicationMode.CAR) {
-    car.setChecked(true);
+  final ToggleButton[] buttons=new ToggleButton[ApplicationMode.values().length];
+  buttons[ApplicationMode.CAR.ordinal()]=(ToggleButton)view.findViewById(R.id.CarButton);
+  buttons[ApplicationMode.BICYCLE.ordinal()]=(ToggleButton)view.findViewById(R.id.BicycleButton);
+  buttons[ApplicationMode.PEDESTRIAN.ordinal()]=(ToggleButton)view.findViewById(R.id.PedestrianButton);
+  ApplicationMode appMode=OsmandSettings.getApplicationMode(this);
+  for (int i=0; i < buttons.length; i++) {
+    if (buttons[i] != null) {
+      final int ind=i;
+      ToggleButton b=buttons[i];
+      b.setChecked(appMode == ApplicationMode.values()[i]);
+      b.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
+          if (isChecked) {
+            if (OsmandSettings.getApplicationMode(MapActivity.this) != ApplicationMode.values()[ind]) {
+              Editor edit=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_WRITEABLE).edit();
+              edit.putString(OsmandSettings.APPLICATION_MODE,ApplicationMode.values()[ind].name());
+              SettingsActivity.setAppMode(ApplicationMode.values()[ind],edit);
+              edit.commit();
+              for (int j=0; j < buttons.length; j++) {
+                if (buttons[j] != null) {
+                  buttons[j].setChecked(ind == j);
+                }
+              }
+              updateApplicationModeSettings();
+              mapView.refreshMap();
+            }
+          }
+ else {
+            if (OsmandSettings.getApplicationMode(MapActivity.this) == ApplicationMode.values()[ind]) {
+              buttons[ind].setChecked(true);
+            }
+          }
+        }
+      }
+);
+    }
   }
   builder.setView(view);
   builder.setPositiveButton(R.string.follow,new DialogInterface.OnClickListener(){
