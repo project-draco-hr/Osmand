@@ -5,10 +5,12 @@
   layersList.add(getString(R.string.layer_transport));
   layersList.add(getString(R.string.layer_osm_bugs));
   layersList.add(getString(R.string.layer_favorites));
-  if (routingHelper != null && routingHelper.isRouteCalculated()) {
+  final int routeInfoInd=routeInfoLayer.couldBeVisible() ? layersList.size() : -1;
+  if (routeInfoLayer.couldBeVisible()) {
     layersList.add(getString(R.string.layer_route));
   }
-  if (!TransportRouteHelper.getInstance().getRoute().isEmpty()) {
+  final int transportRouteInfoInd=TransportRouteHelper.getInstance().getRoute().isEmpty() ? -1 : layersList.size();
+  if (transportRouteInfoInd > -1) {
     layersList.add(getString(R.string.layer_transport_route));
   }
   final boolean[] selected=new boolean[layersList.size()];
@@ -17,6 +19,12 @@
   selected[2]=OsmandSettings.isShowingTransportOverMap(this);
   selected[3]=OsmandSettings.isShowingOsmBugs(this);
   selected[4]=OsmandSettings.isShowingFavorites(this);
+  if (routeInfoInd != -1) {
+    selected[routeInfoInd]=routeInfoLayer.isUserDefinedVisible();
+  }
+  if (transportRouteInfoInd != -1) {
+    selected[transportRouteInfoInd]=true;
+  }
   Builder builder=new AlertDialog.Builder(this);
   builder.setMultiChoiceItems(layersList.toArray(new String[layersList.size()]),selected,new DialogInterface.OnMultiChoiceClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int item,    boolean isChecked){
@@ -38,6 +46,11 @@
       }
  else       if (item == 4) {
         OsmandSettings.setShowingFavorites(MapActivity.this,isChecked);
+      }
+ else       if (item == routeInfoInd) {
+        routeInfoLayer.setVisible(isChecked);
+      }
+ else       if (item == transportRouteInfoInd) {
       }
       updateLayers();
       mapView.refreshMap();
