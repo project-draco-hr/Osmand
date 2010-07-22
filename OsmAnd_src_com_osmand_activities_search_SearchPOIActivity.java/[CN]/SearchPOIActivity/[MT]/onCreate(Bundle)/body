@@ -2,23 +2,47 @@
   super.onCreate(icicle);
   setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
   setContentView(R.layout.searchpoi);
+  Bundle bundle=this.getIntent().getExtras();
+  String filterId=bundle.getString(AMENITY_FILTER);
+  filter=PoiFiltersHelper.getFilterById(this,filterId);
   uiHandler=new Handler();
   searchPOILevel=(Button)findViewById(R.id.SearchPOILevelButton);
   searchArea=(TextView)findViewById(R.id.SearchAreaText);
   searchFilter=(EditText)findViewById(R.id.SearchFilter);
   searchFilterLayout=findViewById(R.id.SearchFilterLayout);
+  showOnMap=(Button)findViewById(R.id.ShowOnMap);
   searchPOILevel.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      amenityAdapter.setNewModel(filter.searchFurther(location.getLatitude(),location.getLongitude()));
+      if (isNameFinderFilter()) {
+        String query=searchFilter.getText().toString();
+        if (query.length() == 0) {
+          Toast.makeText(SearchPOIActivity.this,R.string.poi_namefinder_query_empty,Toast.LENGTH_LONG).show();
+          return;
+        }
+        String res=((NameFinderPoiFilter)filter).searchOnline(location.getLatitude(),location.getLongitude(),query);
+        if (res != null) {
+          Toast.makeText(SearchPOIActivity.this,res,Toast.LENGTH_LONG).show();
+        }
+        amenityAdapter.setNewModel(((NameFinderPoiFilter)filter).getSearchedAmenities());
+        showOnMap.setEnabled(amenityAdapter.getCount() > 0);
+      }
+ else {
+        amenityAdapter.setNewModel(filter.searchFurther(location.getLatitude(),location.getLongitude()));
+      }
       searchedLocation=location;
       searchArea.setText(filter.getSearchArea());
       searchPOILevel.setEnabled(filter.isSearchFurtherAvailable());
     }
   }
 );
+  if (isNameFinderFilter()) {
+    searchFilterLayout.setVisibility(View.VISIBLE);
+  }
   searchFilter.addTextChangedListener(new TextWatcher(){
     @Override public void afterTextChanged(    Editable s){
-      amenityAdapter.getFilter().filter(s);
+      if (!isNameFinderFilter()) {
+        amenityAdapter.getFilter().filter(s);
+      }
     }
     @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
     }
@@ -26,9 +50,6 @@
     }
   }
 );
-  Bundle bundle=this.getIntent().getExtras();
-  String filterId=bundle.getString(AMENITY_FILTER);
-  filter=PoiFiltersHelper.getFilterById(this,filterId);
   if (bundle.containsKey(SEARCH_LAT) && bundle.containsKey(SEARCH_LON)) {
     location=new Location("internal");
     location.setLatitude(bundle.getDouble(SEARCH_LAT));
@@ -39,7 +60,12 @@
     location=null;
     searchNearBy=true;
   }
-  showOnMap=(Button)findViewById(R.id.ShowOnMap);
+  if (isNameFinderFilter()) {
+    showOnMap.setEnabled(false);
+  }
+ else {
+    showOnMap.setEnabled(filter != null);
+  }
   showOnMap.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       OsmandSettings.setPoiFilterForMap(SearchPOIActivity.this,filter.getFilterId());
@@ -52,13 +78,12 @@
     }
   }
 );
-  showOnMap.setEnabled(filter != null);
   if (filter != null) {
     amenityAdapter=new AmenityAdapter(new ArrayList<Amenity>());
     if (location == null) {
       filter.clearPreviousZoom();
     }
- else {
+ else     if (!isNameFinderFilter()) {
       searchedLocation=location;
       amenityAdapter.setNewModel(filter.initializeNewSearch(location.getLatitude(),location.getLongitude(),40));
     }
