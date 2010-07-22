@@ -1,0 +1,16 @@
+{
+  Map<String,String> entriesMap=SettingsActivity.getTileSourceEntries();
+  Builder builder=new AlertDialog.Builder(this);
+  final ArrayList<String> keys=new ArrayList<String>(entriesMap.keySet());
+  builder.setItems(entriesMap.values().toArray(new String[entriesMap.size()]),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      Editor edit=OsmandSettings.getWriteableEditor(MapActivity.this);
+      edit.putString(OsmandSettings.MAP_TILE_SOURCES,keys.get(which));
+      edit.commit();
+      updateMapSource(OsmandSettings.getMapTileSource(MapActivity.this));
+      mapView.refreshMap();
+    }
+  }
+);
+  builder.show();
+}

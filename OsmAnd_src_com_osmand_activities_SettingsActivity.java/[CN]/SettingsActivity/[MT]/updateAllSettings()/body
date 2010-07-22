@@ -87,26 +87,14 @@
   maxLevelToDownload.setEntries(entries);
   maxLevelToDownload.setEntryValues(entries);
   maxLevelToDownload.setValue(OsmandSettings.getMaximumLevelToDownloadTile(this) + "");
-  List<TileSourceTemplate> list=TileSourceManager.getKnownSourceTemplates();
-  List<File> sqLiteFiles=new ArrayList<File>();
-  File dir=new File(Environment.getExternalStorageDirectory(),ResourceManager.TILES_PATH);
-  if (dir != null) {
-    for (    File f : dir.listFiles()) {
-      if (f.getName().endsWith(SQLiteTileSource.EXT)) {
-        sqLiteFiles.add(f);
-      }
-    }
-  }
-  entries=new String[list.size() + sqLiteFiles.size()];
-  valueEntries=new String[list.size() + sqLiteFiles.size()];
-  for (int i=0; i < list.size(); i++) {
-    entries[i + sqLiteFiles.size()]=list.get(i).getName();
-    valueEntries[i + sqLiteFiles.size()]=list.get(i).getName();
-  }
-  for (int i=0; i < sqLiteFiles.size(); i++) {
-    String n=sqLiteFiles.get(i).getName();
-    entries[i]=n.substring(0,n.indexOf('.'));
-    valueEntries[i]=sqLiteFiles.get(i).getName();
+  Map<String,String> entriesMap=getTileSourceEntries();
+  entries=new String[entriesMap.size()];
+  valueEntries=new String[entriesMap.size()];
+  int ki=0;
+  for (  Map.Entry<String,String> es : entriesMap.entrySet()) {
+    entries[ki]=es.getValue();
+    valueEntries[ki]=es.getKey();
+    ki++;
   }
   tileSourcePreference.setEntries(entries);
   tileSourcePreference.setEntryValues(valueEntries);
