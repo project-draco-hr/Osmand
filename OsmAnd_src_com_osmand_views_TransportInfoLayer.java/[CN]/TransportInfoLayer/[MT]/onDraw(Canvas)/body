@@ -1,0 +1,41 @@
+{
+  List<RouteInfoLocation> list=routeHelper.getRoute();
+  if (!list.isEmpty() && visible) {
+    pixRect.set(0,0,view.getWidth(),view.getHeight());
+    view.calculateTileRectangle(pixRect,view.getCenterPointX(),view.getCenterPointY(),view.getXTile(),view.getYTile(),tileRect);
+    double topLatitude=MapUtils.getLatitudeFromTile(view.getZoom(),tileRect.top);
+    double leftLongitude=MapUtils.getLongitudeFromTile(view.getZoom(),tileRect.left);
+    double bottomLatitude=MapUtils.getLatitudeFromTile(view.getZoom(),tileRect.bottom);
+    double rightLongitude=MapUtils.getLongitudeFromTile(view.getZoom(),tileRect.right);
+    for (    RouteInfoLocation l : list) {
+      TransportRoute route=l.getRoute();
+      boolean start=false;
+      boolean end=false;
+      List<TransportStop> stops=l.getDirection() ? route.getForwardStops() : route.getBackwardStops();
+      for (int i=0; i < stops.size() && !end; i++) {
+        Paint toShow=paintInt;
+        TransportStop st=stops.get(i);
+        if (!start) {
+          if (st == l.getStart()) {
+            start=true;
+            toShow=paintEnd;
+          }
+        }
+ else {
+          if (st == l.getStop()) {
+            end=true;
+            toShow=paintEnd;
+          }
+        }
+        if (start) {
+          LatLon location=st.getLocation();
+          if (location.getLatitude() <= topLatitude && location.getLatitude() >= bottomLatitude && location.getLongitude() >= leftLongitude && location.getLongitude() <= rightLongitude) {
+            int x=view.getRotatedMapXForPoint(location.getLatitude(),location.getLongitude());
+            int y=view.getRotatedMapYForPoint(location.getLatitude(),location.getLongitude());
+            canvas.drawRect(x - 8,y - 8,x + 8,y + 8,toShow);
+          }
+        }
+      }
+    }
+  }
+}
