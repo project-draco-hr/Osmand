@@ -9,16 +9,19 @@
   if (routeInfoLayer.couldBeVisible()) {
     layersList.add(getString(R.string.layer_route));
   }
-  final int transportRouteInfoInd=TransportRouteHelper.getInstance().getRoute().isEmpty() ? -1 : layersList.size();
+  final int transportRouteInfoInd=!TransportRouteHelper.getInstance().routeIsCalculated() ? -1 : layersList.size();
   if (transportRouteInfoInd > -1) {
     layersList.add(getString(R.string.layer_transport_route));
   }
+  final int trafficInd=layersList.size();
+  layersList.add(getString(R.string.layer_yandex_traffic));
   final boolean[] selected=new boolean[layersList.size()];
   Arrays.fill(selected,true);
   selected[1]=OsmandSettings.isShowingPoiOverMap(this);
   selected[2]=OsmandSettings.isShowingTransportOverMap(this);
   selected[3]=OsmandSettings.isShowingOsmBugs(this);
   selected[4]=OsmandSettings.isShowingFavorites(this);
+  selected[trafficInd]=trafficLayer.isVisible();
   if (routeInfoInd != -1) {
     selected[routeInfoInd]=routeInfoLayer.isUserDefinedVisible();
   }
@@ -52,6 +55,9 @@
       }
  else       if (item == transportRouteInfoInd) {
         transportInfoLayer.setVisible(isChecked);
+      }
+ else       if (item == trafficInd) {
+        trafficLayer.setVisible(isChecked);
       }
       updateLayers();
       mapView.refreshMap();

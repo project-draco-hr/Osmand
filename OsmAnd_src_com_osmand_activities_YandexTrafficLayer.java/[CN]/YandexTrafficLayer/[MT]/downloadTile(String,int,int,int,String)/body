@@ -1,0 +1,23 @@
+{
+  if (zoom >= 17) {
+    return;
+  }
+  String u="http://jgo.maps.yandex.net/tiles?l=trf&x=" + tileX + "&y="+ tileY+ "&z="+ zoom+ "&tm="+ timeStamp;
+  long time=System.currentTimeMillis();
+  try {
+    if (log.isDebugEnabled()) {
+      log.debug("Start loading traffic : " + u);
+    }
+    InputStream is=new URL(u).openStream();
+    Options opt=new BitmapFactory.Options();
+    Bitmap bmp=BitmapFactory.decodeStream(is,null,opt);
+    is.close();
+    tiles.put(tileId,bmp);
+    if (log.isDebugEnabled()) {
+      log.debug("Loaded traffic : " + tileId + " "+ (System.currentTimeMillis() - time)+ "ms "+ tiles.size());
+    }
+  }
+ catch (  IOException e) {
+    log.error("Traffic loading failed " + e.getMessage());
+  }
+}

@@ -1,0 +1,20 @@
+{
+  if (mTimestamp == null || (System.currentTimeMillis() - lastTimestampUpdated) > DELTA) {
+    log.info("Updating timestamp");
+    BufferedInputStream in=new BufferedInputStream(new URL("http://jgo.maps.yandex.net/trf/stat.js").openStream(),1024);
+    ByteArrayOutputStream dataStream=new ByteArrayOutputStream();
+    BufferedOutputStream out=new BufferedOutputStream(dataStream,1024);
+    Algoritms.streamCopy(in,out);
+    out.flush();
+    String str=dataStream.toString();
+    int start=str.indexOf("timestamp:");
+    start=str.indexOf("\"",start) + 1;
+    int end=str.indexOf("\"",start);
+    mTimestamp=str.substring(start,end);
+    lastTimestampUpdated=System.currentTimeMillis();
+    Algoritms.closeStream(in);
+    Algoritms.closeStream(out);
+    log.info("Timestamp updated");
+    clearCache();
+  }
+}
