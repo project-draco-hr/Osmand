@@ -7,23 +7,31 @@
     log.error("Illegal configuration",e);
     throw new IllegalStateException(e);
   }
-  File fileToWrite=new File(dirWithTiles,regionName + "." + tileSource+ ".sqlitedb");
+  File fileToWrite=new File(dirWithTiles,regionName + "." + template.getName()+ ".sqlitedb");
   fileToWrite.delete();
   Connection conn=DriverManager.getConnection("jdbc:sqlite:" + fileToWrite.getAbsolutePath());
   Statement statement=conn.createStatement();
   statement.execute("CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s))");
   statement.execute("CREATE INDEX IND on tiles (x,y,z,s)");
-  statement.execute("CREATE TABLE info(minzoom,maxzoom)");
+  statement.execute("CREATE TABLE info(minzoom,maxzoom,url)");
   statement.execute("CREATE TABLE android_metadata (locale TEXT)");
   statement.close();
+  PreparedStatement pStatement=conn.prepareStatement("INSERT INTO INFO VALUES(?,?,?)");
+  if (template instanceof TileSourceTemplate) {
+    pStatement.setInt(1,template.getMinimumZoomSupported());
+    pStatement.setInt(2,template.getMaximumZoomSupported());
+    pStatement.setString(3,((TileSourceTemplate)template).getUrlTemplate());
+    pStatement.execute();
+  }
+  pStatement.close();
   conn.setAutoCommit(false);
-  PreparedStatement pStatement=conn.prepareStatement("INSERT INTO tiles VALUES (?, ?, ?, ?, ?)");
+  pStatement=conn.prepareStatement("INSERT INTO tiles VALUES (?, ?, ?, ?, ?)");
   int ch=0;
   int bufSize=32 * 1024;
   byte[] buf=new byte[bufSize];
   int maxZoom=17;
   int minZoom=1;
-  File rootDir=new File(dirWithTiles,tileSource);
+  File rootDir=new File(dirWithTiles,template.getName());
   for (  File z : rootDir.listFiles()) {
     try {
       int zoom=Integer.parseInt(z.getName());
