@@ -1,18 +1,21 @@
 {
-  final ProgressDialog dlg=ProgressDialog.show(this,getString(R.string.loading),progressMsg,true);
+  progressDlg=ProgressDialog.show(this,getString(R.string.loading),progressMsg,true);
   new Thread("Loader search data"){
     @Override public void run(){
       try {
         loadData();
       }
   finally {
-        dlg.dismiss();
-        runOnUiThread(new Runnable(){
-          @Override public void run(){
-            updateUI();
+        if (progressDlg != null) {
+          progressDlg.dismiss();
+          progressDlg=null;
+          runOnUiThread(new Runnable(){
+            @Override public void run(){
+              updateUI();
+            }
           }
-        }
 );
+        }
       }
     }
   }

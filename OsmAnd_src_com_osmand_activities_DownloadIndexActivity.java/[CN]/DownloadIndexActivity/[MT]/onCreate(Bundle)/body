@@ -1,23 +1,26 @@
 {
   super.onCreate(savedInstanceState);
   setContentView(R.layout.download_index);
-  final ProgressDialog dlg=ProgressDialog.show(this,getString(R.string.downloading),getString(R.string.downloading_list_indexes));
-  dlg.setCancelable(true);
+  progressDlg=ProgressDialog.show(this,getString(R.string.downloading),getString(R.string.downloading_list_indexes));
+  progressDlg.setCancelable(true);
   new Thread(new Runnable(){
     @Override public void run(){
       final Map<String,String> indexFiles=downloadIndex();
-      dlg.dismiss();
-      runOnUiThread(new Runnable(){
-        @Override public void run(){
-          if (indexFiles != null) {
-            setListAdapter(new DownloadIndexAdapter(new ArrayList<Entry<String,String>>(indexFiles.entrySet())));
-          }
+      if (progressDlg != null) {
+        progressDlg.dismiss();
+        progressDlg=null;
+        runOnUiThread(new Runnable(){
+          @Override public void run(){
+            if (indexFiles != null) {
+              setListAdapter(new DownloadIndexAdapter(new ArrayList<Entry<String,String>>(indexFiles.entrySet())));
+            }
  else {
-            Toast.makeText(DownloadIndexActivity.this,R.string.list_index_files_was_not_loaded,Toast.LENGTH_LONG).show();
+              Toast.makeText(DownloadIndexActivity.this,R.string.list_index_files_was_not_loaded,Toast.LENGTH_LONG).show();
+            }
           }
         }
-      }
 );
+      }
     }
   }
 ,"DownloadIndexes").start();
