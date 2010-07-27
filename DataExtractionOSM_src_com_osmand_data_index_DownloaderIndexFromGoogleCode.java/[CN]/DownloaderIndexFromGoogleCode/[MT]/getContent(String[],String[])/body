@@ -1,20 +1,21 @@
 {
+  Map<String,String> files=new TreeMap<String,String>();
   try {
     URL url=new URL("http://code.google.com/p/osmand/downloads/list?num=1500&start=0");
     BufferedReader reader=new BufferedReader(new InputStreamReader(url.openStream()));
-    StringBuilder b=new StringBuilder();
     String s=null;
+    String prevFile=null;
     while ((s=reader.readLine()) != null) {
-      b.append(s);
+      for (int i=0; i < ext.length; i++) {
+        prevFile=getIndexFiles(files,s,prevFile,ext[i],version[i]);
+      }
     }
-    return b;
   }
  catch (  MalformedURLException e) {
     log.error("Unexpected exception",e);
-    return null;
   }
 catch (  IOException e) {
     log.error("Input/Output exception",e);
-    return null;
   }
+  return files;
 }
