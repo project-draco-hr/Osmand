@@ -6,25 +6,35 @@
     log.error("Illegal configuration",e);
     throw new IllegalStateException(e);
   }
-  File file=new File(workingDir,NODES_DB);
-  if (file.exists()) {
-    file.delete();
+  if (createWholeOsmDB) {
+    dbFile=new File(workingDir,regionName + IndexConstants.MAP_INDEX_EXT);
   }
-  conn=DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
+ else {
+    dbFile=new File(workingDir,TEMP_NODES_DB);
+  }
+  if (dbFile.exists()) {
+    dbFile.delete();
+  }
+  conn=DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
   Statement stat=conn.createStatement();
   stat.executeUpdate("drop table if exists node;");
   stat.executeUpdate("create table node (id long, latitude double, longitude double);");
-  stat.executeUpdate("create index IdIndex ON node (id);");
+  stat.executeUpdate("create index IdIndex ON node (id, latitude, longitude);");
   stat.executeUpdate("drop table if exists ways;");
   stat.executeUpdate("create table ways (id long, node long);");
-  stat.executeUpdate("create index IdWIndex ON ways (id);");
+  stat.executeUpdate("create index IdWIndex ON ways (id, node);");
   stat.executeUpdate("drop table if exists relations;");
   stat.executeUpdate("create table relations (id long, member long, type byte, role text);");
-  stat.executeUpdate("create index IdRIndex ON relations (id);");
+  stat.executeUpdate("create index IdRIndex ON relations (id, member, type);");
+  stat.executeUpdate("drop table if exists tags;");
+  stat.executeUpdate("create table tags (id long, type byte, key, value);");
+  stat.executeUpdate("create index IdTIndex ON tags (id, type);");
+  stat.execute("PRAGMA user_version = " + IndexConstants.MAP_TABLE_VERSION);
   stat.close();
   prepNode=conn.prepareStatement("insert into node values (?, ?, ?);");
   prepWays=conn.prepareStatement("insert into ways values (?, ?);");
   prepRelations=conn.prepareStatement("insert into relations values (?, ?, ?, ?);");
+  prepTags=conn.prepareStatement("insert into tags values (?, ?, ?, ?);");
   preloadRelationAndWaysIntoDB=indexTransport;
   conn.setAutoCommit(false);
 }

@@ -1,6 +1,8 @@
 {
   File f=new File(path);
   InputStream stream=new FileInputStream(f);
+  int i=f.getName().indexOf('.');
+  String regionName=Algoritms.capitalizeFirstLetterAndLowercase(f.getName().substring(0,i));
   InputStream streamFile=stream;
   long st=System.currentTimeMillis();
   if (path.endsWith(".bz2")) {
@@ -19,7 +21,7 @@
   if (addFilter != null) {
     storage.getFilters().add(addFilter);
   }
-  DataExtractionOsmFilter filter=new DataExtractionOsmFilter();
+  DataExtractionOsmFilter filter=new DataExtractionOsmFilter(regionName);
   final ArrayList<Node> places=filter.getPlaces();
   final ArrayList<Entity> buildings=filter.getBuildings();
   final ArrayList<Entity> amenities=filter.getAmenities();
@@ -45,8 +47,7 @@
     filter.close();
   }
   Region country=new Region();
-  int i=f.getName().indexOf('.');
-  country.setName(Algoritms.capitalizeFirstLetterAndLowercase(f.getName().substring(0,i)));
+  country.setName(regionName);
   country.setStorage(storage);
   progress.setGeneralProgress("[60 of 100]");
   progress.startTask("Indexing poi...",-1);
