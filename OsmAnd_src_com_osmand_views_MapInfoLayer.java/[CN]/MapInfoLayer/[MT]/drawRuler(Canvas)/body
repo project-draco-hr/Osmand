@@ -1,0 +1,43 @@
+{
+  double screenPercent=0.2;
+  if (view.getFloatZoom() != (int)view.getFloatZoom()) {
+    rulerDistName=null;
+  }
+ else   if (view.getFloatZoom() != rulerCZoom || Math.abs(view.getXTile() - rulerCTileX) + Math.abs(view.getYTile() - rulerCTileY) > 1) {
+    rulerCZoom=(int)view.getFloatZoom();
+    rulerCTileX=view.getXTile();
+    rulerCTileY=view.getYTile();
+    double latitude=view.getLatitude();
+    double tileNumberLeft=rulerCTileX - ((double)view.getWidth()) / (2d * view.getTileSize());
+    double tileNumberRight=rulerCTileX + ((double)view.getWidth()) / (2d * view.getTileSize());
+    double dist=MapUtils.getDistance(latitude,MapUtils.getLongitudeFromTile(view.getFloatZoom(),tileNumberLeft),latitude,MapUtils.getLongitudeFromTile(view.getFloatZoom(),tileNumberRight));
+    dist*=screenPercent;
+    int baseDist=50;
+    byte pointer=0;
+    while (dist > baseDist) {
+      if (pointer++ % 3 == 2) {
+        baseDist=baseDist * 5 / 2;
+      }
+ else {
+        baseDist*=2;
+      }
+    }
+    rulerDistPix=(int)(view.getWidth() * screenPercent / dist * baseDist);
+    rulerDistName=MapUtils.getFormattedDistance(baseDist);
+    rulerBaseLine=view.getHeight() - 70;
+    if (view.getParent() instanceof View) {
+      View zoomControls=((View)view.getParent()).findViewById(R.id.ZoomControls);
+      if (zoomControls != null) {
+        rulerBaseLine=zoomControls.getTop() - 5;
+      }
+    }
+    rulerTextLen=paintBlack.measureText(rulerDistName);
+  }
+  if (rulerDistName != null) {
+    int w2=view.getWidth() - 5;
+    canvas.drawLine(w2 - rulerDistPix,rulerBaseLine,w2,rulerBaseLine,paintBlack);
+    canvas.drawLine(w2 - rulerDistPix,rulerBaseLine,w2 - rulerDistPix,rulerBaseLine - 10,paintBlack);
+    canvas.drawLine(w2,rulerBaseLine,w2,rulerBaseLine - 10,paintBlack);
+    canvas.drawText(rulerDistName,w2 - (rulerDistPix + rulerTextLen) / 2 + 1,rulerBaseLine - 5,paintBlack);
+  }
+}
