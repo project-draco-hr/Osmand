@@ -1,0 +1,59 @@
+{
+  if (item.getItemId() == EXPORT_ID) {
+    File appDir=new File(Environment.getExternalStorageDirectory(),ResourceManager.APP_DIR);
+    if (favouritesList == null || favouritesList.isEmpty()) {
+      Toast.makeText(this,R.string.no_fav_to_save,Toast.LENGTH_LONG).show();
+    }
+ else     if (!appDir.exists()) {
+      Toast.makeText(this,R.string.sd_dir_not_accessible,Toast.LENGTH_LONG).show();
+    }
+ else {
+      File f=new File(appDir,FILE_TO_SAVE);
+      List<WptPt> wpt=new ArrayList<WptPt>();
+      for (      FavouritePoint p : favouritesList) {
+        WptPt pt=new WptPt();
+        pt.lat=p.latitude;
+        pt.lon=p.longitude;
+        pt.name=p.name;
+        wpt.add(pt);
+      }
+      if (SavingTrackHelper.saveToXMLFiles(f,wpt,this)) {
+        Toast.makeText(this,MessageFormat.format(getString(R.string.fav_saved_sucessfully),f.getAbsolutePath()),Toast.LENGTH_LONG).show();
+      }
+    }
+  }
+ else   if (item.getItemId() == IMPORT_ID) {
+    File appDir=new File(Environment.getExternalStorageDirectory(),ResourceManager.APP_DIR);
+    File f=new File(appDir,FILE_TO_SAVE);
+    if (!f.exists()) {
+      Toast.makeText(this,MessageFormat.format(getString(R.string.fav_file_to_load_not_found),f.getAbsolutePath()),Toast.LENGTH_LONG).show();
+    }
+ else {
+      Set<String> existedPoints=new LinkedHashSet<String>();
+      if (favouritesList != null) {
+        for (        FavouritePoint fp : favouritesList) {
+          existedPoints.add(fp.name);
+        }
+      }
+      List<WptPt> points=new ArrayList<WptPt>();
+      if (SavingTrackHelper.readWptPtFromFile(f,points,this)) {
+        for (        WptPt p : points) {
+          if (!existedPoints.contains(p.name)) {
+            FavouritePoint fp=new FavouritePoint();
+            fp.name=p.name;
+            fp.latitude=p.lat;
+            fp.longitude=p.lon;
+            helper.addFavourite(fp);
+            favouritesList.add(fp);
+          }
+        }
+        Toast.makeText(this,R.string.fav_imported_sucessfully,Toast.LENGTH_SHORT).show();
+        favouritesAdapter.notifyDataSetChanged();
+      }
+    }
+  }
+ else {
+    return false;
+  }
+  return true;
+}

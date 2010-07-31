@@ -1,0 +1,38 @@
+{
+  try {
+    FileOutputStream output=new FileOutputStream(fout);
+    XmlSerializer serializer=Xml.newSerializer();
+    serializer.setOutput(output,"UTF-8");
+    serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output",true);
+    serializer.startDocument("UTF-8",true);
+    serializer.startTag(null,"gpx");
+    serializer.attribute(null,"version","1.1");
+    serializer.attribute(null,"creator",Version.APP_NAME_VERSION);
+    serializer.attribute("xmlns","xsi","http://www.w3.org/2001/XMLSchema-instance");
+    serializer.attribute("xsi","schemaLocation","http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd");
+    serializer.attribute(null,"xmlns","http://www.topografix.com/GPX/1/1");
+    for (    WptPt l : data) {
+      serializer.startTag(null,"wpt");
+      serializer.attribute(null,"lat",l.lat + "");
+      serializer.attribute(null,"lon",l.lon + "");
+      serializer.startTag(null,"name");
+      serializer.text(l.name);
+      serializer.endTag(null,"name");
+      serializer.endTag(null,"wpt");
+    }
+    serializer.endTag(null,"gpx");
+    serializer.flush();
+    serializer.endDocument();
+    return true;
+  }
+ catch (  RuntimeException e) {
+    log.error("Error saving gpx",e);
+    Toast.makeText(ctx,ctx.getString(R.string.error_occurred_saving_gpx),Toast.LENGTH_LONG).show();
+    return false;
+  }
+catch (  IOException e) {
+    log.error("Error saving gpx",e);
+    Toast.makeText(ctx,ctx.getString(R.string.error_occurred_saving_gpx),Toast.LENGTH_LONG).show();
+    return false;
+  }
+}
