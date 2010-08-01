@@ -1,0 +1,108 @@
+{
+  if (navigationLayer.getPointToNavigate() == null) {
+    Toast.makeText(this,R.string.mark_final_location_first,Toast.LENGTH_LONG).show();
+    return;
+  }
+  Builder builder=new AlertDialog.Builder(this);
+  View view=getLayoutInflater().inflate(R.layout.calculate_route,null);
+  final ToggleButton[] buttons=new ToggleButton[ApplicationMode.values().length];
+  buttons[ApplicationMode.CAR.ordinal()]=(ToggleButton)view.findViewById(R.id.CarButton);
+  buttons[ApplicationMode.BICYCLE.ordinal()]=(ToggleButton)view.findViewById(R.id.BicycleButton);
+  buttons[ApplicationMode.PEDESTRIAN.ordinal()]=(ToggleButton)view.findViewById(R.id.PedestrianButton);
+  ApplicationMode appMode=OsmandSettings.getApplicationMode(this);
+  for (int i=0; i < buttons.length; i++) {
+    if (buttons[i] != null) {
+      final int ind=i;
+      ToggleButton b=buttons[i];
+      b.setChecked(appMode == ApplicationMode.values()[i]);
+      b.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
+          if (isChecked) {
+            for (int j=0; j < buttons.length; j++) {
+              if (buttons[j] != null) {
+                if (buttons[j].isChecked() != (ind == j)) {
+                  buttons[j].setChecked(ind == j);
+                }
+              }
+            }
+          }
+ else {
+            boolean revert=true;
+            for (int j=0; j < buttons.length; j++) {
+              if (buttons[j] != null) {
+                if (buttons[j].isChecked()) {
+                  revert=false;
+                  break;
+                }
+              }
+            }
+            if (revert) {
+              buttons[ind].setChecked(true);
+            }
+          }
+        }
+      }
+);
+    }
+  }
+  DialogInterface.OnClickListener onlyShowCall=new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      ApplicationMode mode=getAppMode(buttons);
+      Location map=new Location("map");
+      map.setLatitude(lat);
+      map.setLongitude(lon);
+      routingHelper.setAppMode(mode);
+      routingHelper.setFollowingMode(false);
+      routingHelper.setFinalAndCurrentLocation(navigationLayer.getPointToNavigate(),map);
+    }
+  }
+;
+  DialogInterface.OnClickListener followCall=new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      ApplicationMode mode=getAppMode(buttons);
+      if (OsmandSettings.getApplicationMode(MapActivity.this) != mode) {
+        Editor edit=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_WRITEABLE).edit();
+        edit.putString(OsmandSettings.APPLICATION_MODE,mode.name());
+        SettingsActivity.setAppMode(mode,edit);
+        edit.commit();
+        updateApplicationModeSettings();
+        mapView.refreshMap();
+      }
+      Location location=locationLayer.getLastKnownLocation();
+      if (location == null) {
+        location=new Location("map");
+        location.setLatitude(lat);
+        location.setLongitude(lon);
+      }
+      routingHelper.setAppMode(mode);
+      routingHelper.setFollowingMode(true);
+      routingHelper.setFinalAndCurrentLocation(navigationLayer.getPointToNavigate(),location);
+      OsmandSettings.setFollowingByRoute(MapActivity.this,true);
+    }
+  }
+;
+  DialogInterface.OnClickListener showRoute=new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      Intent intent=new Intent(MapActivity.this,ShowRouteInfoActivity.class);
+      intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+      startActivity(intent);
+    }
+  }
+;
+  builder.setView(view);
+  if (followEnabled) {
+    builder.setTitle(R.string.follow_route);
+    builder.setPositiveButton(R.string.follow,followCall);
+    if (routingHelper.isRouterEnabled() && routingHelper.isRouteCalculated()) {
+      builder.setNeutralButton(R.string.route_about,showRoute);
+    }
+    builder.setNegativeButton(R.string.only_show,onlyShowCall);
+  }
+ else {
+    builder.setTitle(R.string.show_route);
+    view.findViewById(R.id.TextView).setVisibility(View.GONE);
+    builder.setPositiveButton(R.string.show_route,onlyShowCall);
+    builder.setNegativeButton(R.string.default_buttons_cancel,null);
+  }
+  builder.show();
+}
