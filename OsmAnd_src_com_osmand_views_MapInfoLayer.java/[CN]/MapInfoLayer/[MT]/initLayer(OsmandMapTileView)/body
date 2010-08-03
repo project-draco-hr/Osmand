@@ -1,9 +1,17 @@
 {
   this.view=view;
   paintBlack=new Paint();
+  WindowManager mgr=(WindowManager)view.getContext().getSystemService(Context.WINDOW_SERVICE);
+  dm=new DisplayMetrics();
+  mgr.getDefaultDisplay().getMetrics(dm);
+  scaleCoefficient=dm.density;
+  if (Math.min(dm.widthPixels / dm.densityDpi,dm.heightPixels / dm.densityDpi) > 2.5f) {
+    scaleCoefficient*=1.5f;
+  }
+  roundCorner=3 * scaleCoefficient;
   paintBlack.setStyle(Style.STROKE);
   paintBlack.setColor(Color.BLACK);
-  paintBlack.setTextSize(23);
+  paintBlack.setTextSize(23 * scaleCoefficient);
   paintBlack.setAntiAlias(true);
   paintAlphaGray=new Paint();
   paintAlphaGray.setStyle(Style.FILL_AND_STROKE);
@@ -19,8 +27,10 @@
   fillBlack.setAntiAlias(true);
   paintMiniRoute=new Paint();
   paintMiniRoute.setStyle(Style.STROKE);
-  paintMiniRoute.setStrokeWidth(35);
+  paintMiniRoute.setStrokeWidth(35 * scaleCoefficient);
   paintMiniRoute.setColor(Color.BLUE);
+  paintMiniRoute.setStrokeJoin(Join.ROUND);
+  paintMiniRoute.setStrokeCap(Cap.ROUND);
   paintMiniRoute.setAntiAlias(true);
   fillRed=new Paint();
   fillRed.setStyle(Style.FILL_AND_STROKE);
@@ -32,21 +42,28 @@
   boundsForSpeed=new RectF(35,32,110,64);
   boundsForMiniRoute=new RectF(0,64,96,196);
   boundsForLeftTime=new RectF(0,0,75,32);
-  centerMiniRouteX=48;
-  centerMiniRouteY=160;
+  scaleRect(boundsForCompass);
+  scaleRect(boundsForDist);
+  scaleRect(boundsForZoom);
+  scaleRect(boundsForSpeed);
+  scaleRect(boundsForMiniRoute);
+  scaleRect(boundsForLeftTime);
+  centerMiniRouteX=(int)(boundsForMiniRoute.width() / 2);
+  centerMiniRouteY=(int)(boundsForMiniRoute.top + 3 * boundsForMiniRoute.height() / 4);
   scaleMiniRoute=0.15f;
   pathForCompass=new Path();
-  pathForCompass.moveTo(9,15.5f);
-  pathForCompass.lineTo(22f,15.5f);
-  pathForCompass.lineTo(15.5f,30f);
-  pathForCompass.lineTo(9,15.5f);
+  pathForCompass.moveTo(9 * scaleCoefficient,15.5f * scaleCoefficient);
+  pathForCompass.lineTo(22f * scaleCoefficient,15.5f * scaleCoefficient);
+  pathForCompass.lineTo(15.5f * scaleCoefficient,30f * scaleCoefficient);
+  pathForCompass.lineTo(9 * scaleCoefficient,15.5f * scaleCoefficient);
   pathForCompass2=new Path();
-  pathForCompass2.moveTo(9,15.5f);
-  pathForCompass2.lineTo(22f,15.5f);
-  pathForCompass2.lineTo(15.5f,2f);
-  pathForCompass2.lineTo(9,15);
+  pathForCompass2.moveTo(9 * scaleCoefficient,15.5f * scaleCoefficient);
+  pathForCompass2.lineTo(22f * scaleCoefficient,15.5f * scaleCoefficient);
+  pathForCompass2.lineTo(15.5f * scaleCoefficient,2f * scaleCoefficient);
+  pathForCompass2.lineTo(9 * scaleCoefficient,15.5f * scaleCoefficient);
   pathForTurn=new Path();
   pathTransform=new Matrix();
-  pathTransform.setTranslate(boundsForMiniRoute.left,boundsForMiniRoute.top);
+  pathTransform.postScale(scaleCoefficient,scaleCoefficient);
+  pathTransform.postTranslate(boundsForMiniRoute.left,boundsForMiniRoute.top);
   showArrivalTime=OsmandSettings.isShowingArrivalTime(view.getContext());
 }
