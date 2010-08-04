@@ -23,11 +23,12 @@
   }
   DataExtractionOsmFilter filter=new DataExtractionOsmFilter(regionName);
   final ArrayList<Node> places=filter.getPlaces();
-  final ArrayList<Entity> buildings=filter.getBuildings();
+  final Map<EntityId,Entity> buildings=filter.getBuildings();
+  final Map<EntityId,Way> ways=filter.getWays();
   final ArrayList<Entity> amenities=filter.getAmenities();
-  final ArrayList<Way> ways=filter.getWays();
   final ArrayList<Relation> transport=filter.getTransport();
-  Map<EntityId,String> postalCodes=filter.getPostalCodes();
+  final Map<EntityId,Relation> addressRelations=filter.getAddressRelations();
+  final Map<EntityId,String> postalCodes=filter.getPostalCodes();
   storage.getFilters().add(filter);
   try {
     filter.initDatabase();
@@ -56,9 +57,11 @@
   }
   progress.setGeneralProgress("[65 of 100]");
   progress.startTask("Indexing cities...",-1);
-  readingCities(places,country);
+  LinkedHashMap<EntityId,City> registeredCities=new LinkedHashMap<EntityId,City>();
+  readingCities(places,country,registeredCities);
   if (indexAddress) {
     progress.setGeneralProgress("[80 of 100]");
+    readingAddresses(progress,addressRelations,registeredCities,ways,buildings,postalCodes,country);
     readingStreets(progress,ways,country);
     progress.setGeneralProgress("[95 of 100]");
     readingBuildings(progress,buildings,country,postalCodes);

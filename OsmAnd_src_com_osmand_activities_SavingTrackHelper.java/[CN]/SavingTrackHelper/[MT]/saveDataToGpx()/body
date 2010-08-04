@@ -1,5 +1,6 @@
 {
   SQLiteDatabase db=getReadableDatabase();
+  List<String> warnings=new ArrayList<String>();
   File file=Environment.getExternalStorageDirectory();
   if (db != null && file.canWrite()) {
     file=new File(file,"/osmand/" + TRACKS_PATH);
@@ -50,11 +51,15 @@
  while (query.moveToNext());
       }
       query.close();
-      saveToXMLFiles(file,data,ctx);
+      String w=saveToXMLFiles(file,data,ctx);
+      if (w != null) {
+        warnings.add(w);
+      }
     }
   }
   db=getWritableDatabase();
   if (db != null) {
     db.execSQL("DELETE FROM " + TRACK_NAME + " WHERE "+ TRACK_COL_DATE+ " <= ?",new Object[]{System.currentTimeMillis()});
   }
+  return warnings;
 }

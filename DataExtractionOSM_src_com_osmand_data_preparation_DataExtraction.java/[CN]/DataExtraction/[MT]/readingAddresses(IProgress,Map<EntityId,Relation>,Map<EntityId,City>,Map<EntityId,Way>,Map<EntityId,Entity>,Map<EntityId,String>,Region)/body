@@ -1,0 +1,97 @@
+{
+  progress.startTask("Indexing addresses...",addressRelations.size());
+  for (  Relation i : addressRelations.values()) {
+    progress.progress(1);
+    String type=i.getTag(OSMTagKey.ADDRESS_TYPE);
+    boolean house="house".equals(type);
+    boolean street="a6".equals(type);
+    if (house || street) {
+      City c=null;
+      Collection<Entity> members=i.getMembers("is_in");
+      Relation a3=null;
+      Relation a6=null;
+      if (!members.isEmpty()) {
+        if (street) {
+          a6=i;
+        }
+        Entity in=members.iterator().next();
+        if (in instanceof Relation) {
+          if (house) {
+            a6=(Relation)in;
+            members=((Relation)in).getMembers("is_in");
+            if (!members.isEmpty()) {
+              in=members.iterator().next();
+              if (in instanceof Relation) {
+                a3=(Relation)in;
+              }
+            }
+          }
+ else {
+            a3=(Relation)in;
+          }
+        }
+      }
+      if (a3 != null) {
+        Collection<EntityId> memberIds=a3.getMemberIds("label");
+        if (!memberIds.isEmpty()) {
+          c=cities.get(memberIds.iterator().next());
+        }
+      }
+      if (c != null && a6 != null) {
+        String name=a6.getTag(OSMTagKey.NAME);
+        if (name != null) {
+          Street s=c.registerStreet(name);
+          if (street) {
+            for (            Map.Entry<Entity,String> r : i.getMemberEntities().entrySet()) {
+              if ("street".equals(r.getValue())) {
+                if (r.getKey() instanceof Way) {
+                  s.getWayNodes().add((Way)r.getKey());
+                  ways.remove(EntityId.valueOf(r.getKey()));
+                }
+              }
+ else               if ("house".equals(r.getValue())) {
+                if (!(r.getKey() instanceof Relation)) {
+                  EntityId id=EntityId.valueOf(r.getKey());
+                  Building b=s.registerBuilding(r.getKey());
+                  buildings.remove(id);
+                  if (b != null) {
+                    if (postalCodes.containsKey(id)) {
+                      b.setPostcode(postalCodes.get(id));
+                    }
+                  }
+                }
+              }
+            }
+          }
+ else {
+            String hno=i.getTag(OSMTagKey.ADDRESS_HOUSE);
+            if (hno == null) {
+              hno=i.getTag(OSMTagKey.ADDR_HOUSE_NUMBER);
+            }
+            if (hno == null) {
+              hno=i.getTag(OSMTagKey.NAME);
+            }
+            members=i.getMembers("border");
+            if (!members.isEmpty()) {
+              Entity border=members.iterator().next();
+              if (border != null) {
+                EntityId id=EntityId.valueOf(border);
+                if (!a6.getMemberIds().contains(id)) {
+                  Building b=s.registerBuilding(border,hno);
+                  if (b != null && postalCodes.containsKey(id)) {
+                    b.setPostcode(postalCodes.get(id));
+                  }
+                  buildings.remove(id);
+                }
+              }
+            }
+ else {
+              log.info("For relation " + i.getId() + " border not found");
+            }
+          }
+        }
+      }
+    }
+  }
+  progress.finishTask();
+}

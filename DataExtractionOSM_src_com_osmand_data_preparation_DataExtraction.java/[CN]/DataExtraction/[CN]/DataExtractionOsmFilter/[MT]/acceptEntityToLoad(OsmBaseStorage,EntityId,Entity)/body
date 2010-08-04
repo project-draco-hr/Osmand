@@ -1,13 +1,5 @@
 {
   boolean processed=false;
-  if (indexAddress) {
-    if ("yes".equals(e.getTag(OSMTagKey.BUILDING))) {
-      if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && e.getTag(OSMTagKey.ADDR_STREET) != null) {
-        buildings.add(e);
-        processed=true;
-      }
-    }
-  }
   if (indexPOI && Amenity.isAmenity(e)) {
     amenities.add(e);
     processed=true;
@@ -17,8 +9,14 @@
     processed=true;
   }
   if (indexAddress) {
+    if ("yes".equals(e.getTag(OSMTagKey.BUILDING))) {
+      if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null) {
+        buildings.put(entityId,e);
+        processed=true;
+      }
+    }
     if (e instanceof Way && OSMSettings.wayForCar(e.getTag(OSMTagKey.HIGHWAY)) && e.getTag(OSMTagKey.NAME) != null) {
-      ways.add((Way)e);
+      ways.put(entityId,(Way)e);
       processed=true;
     }
     if (e instanceof Relation) {
@@ -27,6 +25,10 @@
         for (        EntityId l : ((Relation)e).getMemberIds()) {
           postalCodes.put(l,tag);
         }
+      }
+      if ("address".equals(e.getTag(OSMTagKey.TYPE))) {
+        addressRelations.put(entityId,(Relation)e);
+        processed=true;
       }
     }
   }
@@ -76,7 +78,7 @@
           prepRelations.setLong(2,i.getKey().getId());
           prepRelations.setLong(3,i.getKey().getType().ordinal());
           prepRelations.setString(4,i.getValue());
-          prepWays.addBatch();
+          prepRelations.addBatch();
         }
         if (currentRelationsCount >= BATCH_SIZE) {
           prepRelations.executeBatch();
