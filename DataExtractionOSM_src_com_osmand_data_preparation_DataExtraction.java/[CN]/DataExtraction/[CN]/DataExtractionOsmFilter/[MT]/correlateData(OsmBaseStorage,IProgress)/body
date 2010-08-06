@@ -22,9 +22,15 @@
   Map<EntityId,Entity> map=new LinkedHashMap<EntityId,Entity>();
   progress.startTask("Correlating data...",storage.getRegisteredEntities().size());
   ArrayList<Entity> values=new ArrayList<Entity>(storage.getRegisteredEntities().values());
+  int delayedProgress=0;
   for (int ind=0; ind < values.size(); ind++) {
     Entity e=values.get(ind);
-    progress.progress(1);
+    if (delayedProgress == 0) {
+      progress.progress(1);
+    }
+ else {
+      delayedProgress--;
+    }
     if (e instanceof Node) {
       continue;
     }
@@ -52,6 +58,7 @@
               way.addNode(rs.getLong(2));
             }
             values.add(way);
+            delayedProgress++;
             rs.close();
           }
         }
