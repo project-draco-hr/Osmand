@@ -1,0 +1,30 @@
+{
+  if (pressedInTextView(point)) {
+    setLocation(null,"");
+    view.refreshMap();
+    return true;
+  }
+  selectedContextProvider=null;
+  selectedObject=null;
+  for (  OsmandMapLayer l : view.getLayers()) {
+    if (l instanceof ContextMenuLayer.IContextMenuProvider) {
+      selectedObject=((ContextMenuLayer.IContextMenuProvider)l).getPointObject(point);
+      if (selectedObject != null) {
+        selectedContextProvider=(IContextMenuProvider)l;
+        break;
+      }
+    }
+  }
+  LatLon latLon=view.getLatLonFromScreenPoint(point.x,point.y);
+  String description=MessageFormat.format(view.getContext().getString(R.string.point_on_map),latLon.getLatitude(),latLon.getLongitude());
+  if (selectedObject != null) {
+    description=selectedContextProvider.getObjectDescription(selectedObject);
+    LatLon l=selectedContextProvider.getObjectLocation(selectedObject);
+    if (l != null) {
+      latLon=l;
+    }
+  }
+  setLocation(latLon,description);
+  view.refreshMap();
+  return true;
+}

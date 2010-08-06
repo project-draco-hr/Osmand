@@ -1,9 +1,25 @@
 {
   Builder builder=new AlertDialog.Builder(this);
   Resources resources=this.getResources();
-  String[] res=new String[]{resources.getString(R.string.context_menu_item_navigate_point),resources.getString(R.string.context_menu_item_search_poi),resources.getString(R.string.context_menu_item_show_route),resources.getString(R.string.context_menu_item_add_favorite),resources.getString(R.string.context_menu_item_create_poi),resources.getString(R.string.context_menu_item_open_bug),resources.getString(R.string.context_menu_item_update_map)};
-  builder.setItems(res,new DialogInterface.OnClickListener(){
+  final int sizeAdditional=additionalActions == null || additionalItems == null ? 0 : additionalItems.size();
+  List<String> actions=new ArrayList<String>();
+  if (sizeAdditional > 0) {
+    actions.addAll(additionalItems);
+  }
+  actions.add(resources.getString(R.string.context_menu_item_navigate_point));
+  actions.add(resources.getString(R.string.context_menu_item_search_poi));
+  actions.add(resources.getString(R.string.context_menu_item_show_route));
+  actions.add(resources.getString(R.string.context_menu_item_add_favorite));
+  actions.add(resources.getString(R.string.context_menu_item_create_poi));
+  actions.add(resources.getString(R.string.context_menu_item_open_bug));
+  actions.add(resources.getString(R.string.context_menu_item_update_map));
+  builder.setItems(actions.toArray(new String[actions.size()]),new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
+      if (which < sizeAdditional) {
+        additionalActions.onClick(dialog,which);
+        return;
+      }
+      which-=sizeAdditional;
       if (which == 0) {
         navigateToPoint(new LatLon(latitude,longitude));
       }
