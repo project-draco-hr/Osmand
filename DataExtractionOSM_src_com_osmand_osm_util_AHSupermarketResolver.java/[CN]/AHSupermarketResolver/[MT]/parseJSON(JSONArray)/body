@@ -1,0 +1,25 @@
+{
+  HashMap<String,Properties> map=new HashMap<String,Properties>();
+  for (int i=0; i < array.length(); i++) {
+    try {
+      JSONObject object=(JSONObject)array.get(i);
+      String id=object.getString("no");
+      if (id != null) {
+        Iterator<String> keys=object.keys();
+        Properties properties=new Properties();
+        while (keys.hasNext()) {
+          String name=keys.next();
+          properties.put(name,object.get(name));
+        }
+        map.put(id,properties);
+      }
+ else {
+        log.warn(String.format("Shop entry '%s' has been skipped, because 'no' property was not found",object));
+      }
+    }
+ catch (    JSONException e) {
+      log.warn("Can't get object at index " + i,e);
+    }
+  }
+  return map;
+}
