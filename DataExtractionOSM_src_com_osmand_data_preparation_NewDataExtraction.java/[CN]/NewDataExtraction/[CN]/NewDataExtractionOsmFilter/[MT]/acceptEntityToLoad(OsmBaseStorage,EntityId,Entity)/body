@@ -1,0 +1,60 @@
+{
+  try {
+    if (e instanceof Node) {
+      currentCountNode++;
+      allNodes++;
+      prepNode.setLong(1,e.getId());
+      prepNode.setDouble(2,((Node)e).getLatitude());
+      prepNode.setDouble(3,((Node)e).getLongitude());
+      prepNode.addBatch();
+      if (currentCountNode >= BATCH_SIZE) {
+        prepNode.executeBatch();
+        currentCountNode=0;
+      }
+    }
+ else     if (e instanceof Way) {
+      allWays++;
+      for (      Long i : ((Way)e).getNodeIds()) {
+        currentWaysCount++;
+        prepWays.setLong(1,e.getId());
+        prepWays.setLong(2,i);
+        prepWays.addBatch();
+      }
+      if (currentWaysCount >= BATCH_SIZE) {
+        prepWays.executeBatch();
+        currentWaysCount=0;
+      }
+    }
+ else {
+      allRelations++;
+      for (      Entry<EntityId,String> i : ((Relation)e).getMembersMap().entrySet()) {
+        currentRelationsCount++;
+        prepRelations.setLong(1,e.getId());
+        prepRelations.setLong(2,i.getKey().getId());
+        prepRelations.setLong(3,i.getKey().getType().ordinal());
+        prepRelations.setString(4,i.getValue());
+        prepRelations.addBatch();
+      }
+      if (currentRelationsCount >= BATCH_SIZE) {
+        prepRelations.executeBatch();
+        currentRelationsCount=0;
+      }
+    }
+    for (    Entry<String,String> i : e.getTags().entrySet()) {
+      currentTagsCount++;
+      prepTags.setLong(1,e.getId());
+      prepTags.setLong(2,EntityType.valueOf(e).ordinal());
+      prepTags.setString(3,i.getKey());
+      prepTags.setString(4,i.getValue());
+      prepTags.addBatch();
+    }
+    if (currentTagsCount >= BATCH_SIZE) {
+      prepTags.executeBatch();
+      currentTagsCount=0;
+    }
+  }
+ catch (  SQLException ex) {
+    log.error("Could not save in db",ex);
+  }
+  return false;
+}

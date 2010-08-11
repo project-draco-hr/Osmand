@@ -1,0 +1,22 @@
+{
+  Statement stat=dbConn.createStatement();
+  stat.executeUpdate("drop table if exists node;");
+  stat.executeUpdate("create table node (id long, latitude double, longitude double);");
+  stat.executeUpdate("create index IdIndex ON node (id, latitude, longitude);");
+  stat.executeUpdate("drop table if exists ways;");
+  stat.executeUpdate("create table ways (id long, node long);");
+  stat.executeUpdate("create index IdWIndex ON ways (id, node);");
+  stat.executeUpdate("drop table if exists relations;");
+  stat.executeUpdate("create table relations (id long, member long, type byte, role text);");
+  stat.executeUpdate("create index IdRIndex ON relations (id, member, type);");
+  stat.executeUpdate("drop table if exists tags;");
+  stat.executeUpdate("create table tags (id long, type byte, key, value);");
+  stat.executeUpdate("create index IdTIndex ON tags (id, type);");
+  stat.execute("PRAGMA user_version = " + IndexConstants.MAP_TABLE_VERSION);
+  stat.close();
+  prepNode=dbConn.prepareStatement("insert into node values (?, ?, ?);");
+  prepWays=dbConn.prepareStatement("insert into ways values (?, ?);");
+  prepRelations=dbConn.prepareStatement("insert into relations values (?, ?, ?, ?);");
+  prepTags=dbConn.prepareStatement("insert into tags values (?, ?, ?, ?);");
+  dbConn.setAutoCommit(false);
+}

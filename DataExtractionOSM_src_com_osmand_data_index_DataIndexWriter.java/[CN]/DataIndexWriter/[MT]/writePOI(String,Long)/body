@@ -1,2 +1,34 @@
 {
+  File file=checkFile(fileName);
+  long now=System.currentTimeMillis();
+  try {
+    Class.forName("org.sqlite.JDBC");
+  }
+ catch (  ClassNotFoundException e) {
+    log.error("Illegal configuration",e);
+    throw new IllegalStateException(e);
+  }
+  Connection conn=DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
+  try {
+    createPoiIndexStructure(conn);
+    PreparedStatement prep=createStatementAmenityInsert(conn);
+    conn.setAutoCommit(false);
+    int currentCount=0;
+    for (    Amenity a : region.getAmenityManager().getAllObjects()) {
+      currentCount=insertAmenityIntoPoi(prep,a,currentCount,BATCH_SIZE);
+    }
+    if (currentCount > 0) {
+      prep.executeBatch();
+    }
+    prep.close();
+    conn.setAutoCommit(true);
+  }
+  finally {
+    conn.close();
+    log.info(String.format("Indexing poi done in %s ms.",System.currentTimeMillis() - now));
+  }
+  if (date != null) {
+    file.setLastModified(date);
+  }
+  return this;
 }
