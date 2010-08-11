@@ -12,12 +12,13 @@
   try {
     createPoiIndexStructure(conn);
     PreparedStatement prep=createStatementAmenityInsert(conn);
+    Map<PreparedStatement,Integer> map=new LinkedHashMap<PreparedStatement,Integer>();
+    map.put(prep,0);
     conn.setAutoCommit(false);
-    int currentCount=0;
     for (    Amenity a : region.getAmenityManager().getAllObjects()) {
-      currentCount=insertAmenityIntoPoi(prep,a,currentCount,BATCH_SIZE);
+      insertAmenityIntoPoi(prep,map,a,BATCH_SIZE);
     }
-    if (currentCount > 0) {
+    if (map.get(prep) > 0) {
       prep.executeBatch();
     }
     prep.close();

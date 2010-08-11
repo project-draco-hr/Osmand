@@ -1,2 +1,44 @@
 {
+  File file=checkFile(fileName);
+  long now=System.currentTimeMillis();
+  try {
+    Class.forName("org.sqlite.JDBC");
+  }
+ catch (  ClassNotFoundException e) {
+    log.error("Illegal configuration",e);
+    throw new IllegalStateException(e);
+  }
+  Connection conn=DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
+  try {
+    createTransportIndexStructure(conn);
+    PreparedStatement prepRoute=conn.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexTransportRoute.getTable(),IndexTransportRoute.values().length));
+    PreparedStatement prepRouteStops=conn.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexTransportRouteStop.getTable(),IndexTransportRouteStop.values().length));
+    PreparedStatement prepStops=conn.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexTransportStop.getTable(),IndexTransportStop.values().length));
+    Map<PreparedStatement,Integer> count=new HashMap<PreparedStatement,Integer>();
+    count.put(prepRouteStops,0);
+    count.put(prepRoute,0);
+    count.put(prepStops,0);
+    conn.setAutoCommit(false);
+    Set<Long> writtenStops=new LinkedHashSet<Long>();
+    for (    String t : region.getTransportRoutes().keySet()) {
+      for (      TransportRoute r : region.getTransportRoutes().get(t)) {
+        insertTransportIntoIndex(prepRoute,prepRouteStops,prepStops,writtenStops,r,count,BATCH_SIZE);
+      }
+    }
+    for (    PreparedStatement p : count.keySet()) {
+      if (count.get(p) > 0) {
+        p.executeBatch();
+      }
+      p.close();
+    }
+    conn.setAutoCommit(true);
+  }
+  finally {
+    conn.close();
+    log.info(String.format("Indexing transport done in %s ms.",System.currentTimeMillis() - now));
+  }
+  if (date != null) {
+    file.setLastModified(date);
+  }
+  return this;
 }
