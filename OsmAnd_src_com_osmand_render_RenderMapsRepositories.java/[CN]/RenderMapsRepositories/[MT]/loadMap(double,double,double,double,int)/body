@@ -1,8 +1,39 @@
 {
-  cTopLatitude=topLatitude + (topLatitude - bottomLatitude);
   cBottomLatitude=bottomLatitude - (topLatitude - bottomLatitude);
+  cTopLatitude=topLatitude + (topLatitude - bottomLatitude);
   cLeftLongitude=leftLongitude - (rightLongitude - leftLongitude);
   cRightLongitude=rightLongitude + (rightLongitude - leftLongitude);
   cZoom=zoom;
-  loadingData();
+  String query="SELECT ways.id way, node.id node, node.latitude, node.longitude FROM (" + "SELECT DISTINCT ways.id id FROM ways JOIN " + "(SELECT id, latitude, longitude FROM node WHERE ?<  latitude AND latitude < ? AND ? < longitude AND longitude < ?)  A "+ "ON  A.id = ways.node) B "+ "JOIN  ways ON B.id=ways.id JOIN node ON ways.node = node.id";
+  log.info(String.format("BLat=%s, TLat=%s, LLong=%s, RLong=%s, zoom=%s",cBottomLatitude,cTopLatitude,cLeftLongitude,cRightLongitude,zoom));
+  long now=System.currentTimeMillis();
+  Cursor result=db.rawQuery(query,new String[]{Double.toString(cBottomLatitude),Double.toString(cTopLatitude),Double.toString(cLeftLongitude),Double.toString(cRightLongitude)});
+  List<Way> local=new LinkedList<Way>();
+  try {
+    int count=0;
+    if (result.moveToFirst()) {
+      long id=result.getLong(0);
+      long prevId=-1;
+      Way way=new Way(id);
+      do {
+        count++;
+        if (prevId != -1) {
+          id=result.getLong(0);
+          if (id != prevId) {
+            local.add(way);
+            way=new Way(id);
+          }
+        }
+        Node node=new Node(result.getDouble(2),result.getDouble(3),result.getLong(1));
+        way.addNode(node);
+        prevId=id;
+      }
+ while (result.moveToNext());
+      cWays=local;
+    }
+    log.info(String.format("Search has been done in %s ms. %s results were found.",System.currentTimeMillis() - now,count));
+  }
+  finally {
+    result.close();
+  }
 }
