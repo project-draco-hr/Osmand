@@ -18,6 +18,9 @@
   if (progress != null) {
     progress.startTask("Loading file " + path,-1);
   }
+  cities.clear();
+  cityManager.clear();
+  postalCodeRelations.clear();
   OsmBaseStorage storage=new OsmBaseStorage();
   storage.setSupressWarnings(DataExtractionSettings.getSettings().isSupressWarningsForDuplicatedId());
   if (addFilter != null) {
@@ -42,7 +45,7 @@
   dbConn=DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
   NewDataExtractionOsmFilter filter=new NewDataExtractionOsmFilter();
   try {
-    progress.setGeneralProgress("[40 of 100]");
+    progress.setGeneralProgress("[50 of 100]");
     filter.initDatabase();
     storage.getFilters().add(filter);
     storage.parseOSM(stream,progress,streamFile,false);
@@ -90,7 +93,75 @@
     pStatements.put(transStopsStat,0);
     transportConnection.setAutoCommit(false);
   }
-  iterateOverAllEntities(progress,filter);
+  if (indexAddress) {
+    addressIndexFile=new File(workingDir,getAddressFileName());
+    if (addressIndexFile.exists()) {
+      addressIndexFile.delete();
+    }
+    addressIndexFile.getParentFile().mkdirs();
+    addressConnection=DriverManager.getConnection("jdbc:sqlite:" + addressIndexFile.getAbsolutePath());
+    DataIndexWriter.createAddressIndexStructure(addressConnection);
+    addressCityStat=addressConnection.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexCityTable.getTable(),IndexCityTable.values().length));
+    addressStreetStat=addressConnection.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexStreetTable.getTable(),IndexStreetTable.values().length));
+    addressSearchStreetStat=addressConnection.prepareStatement("SELECT " + IndexStreetTable.ID.name() + " FROM "+ IndexStreetTable.getTable()+ " WHERE ? = "+ IndexStreetTable.CITY.name()+ " AND ? ="+ IndexStreetTable.NAME.name());
+    addressSearchBuildingStat=addressConnection.prepareStatement("SELECT " + IndexBuildingTable.ID.name() + " FROM "+ IndexBuildingTable.getTable()+ " WHERE ? = "+ IndexBuildingTable.ID.name());
+    addressSearchStreetNodeStat=addressConnection.prepareStatement("SELECT " + IndexStreetNodeTable.WAY.name() + " FROM "+ IndexStreetNodeTable.getTable()+ " WHERE ? = "+ IndexStreetNodeTable.WAY.name());
+    addressBuildingStat=addressConnection.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexBuildingTable.getTable(),IndexBuildingTable.values().length));
+    addressStreetNodeStat=addressConnection.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexStreetNodeTable.getTable(),IndexStreetNodeTable.values().length));
+    pStatements.put(addressCityStat,0);
+    pStatements.put(addressStreetStat,0);
+    pStatements.put(addressStreetNodeStat,0);
+    pStatements.put(addressBuildingStat,0);
+    pStatements.put(addressSearchBuildingStat,0);
+    pStatements.put(addressSearchStreetNodeStat,0);
+    pStatements.put(addressSearchStreetStat,0);
+    addressConnection.setAutoCommit(false);
+  }
+  if (normalizeStreets) {
+    normalizeDefaultSuffixes=DataExtractionSettings.getSettings().getDefaultSuffixesToNormalizeStreets();
+    normalizeSuffixes=DataExtractionSettings.getSettings().getSuffixesToNormalizeStreets();
+  }
+  if (indexAddress) {
+    for (    City c : cities.values()) {
+      DataIndexWriter.writeCity(addressCityStat,pStatements,c,BATCH_SIZE);
+    }
+    if (pStatements.get(addressCityStat) > 0) {
+      addressCityStat.executeBatch();
+      pStatements.put(addressCityStat,0);
+      addressConnection.commit();
+    }
+  }
+  if (indexAddress) {
+    iterateOverEntities(progress,EntityType.RELATION,filter.getAllRelations(),STEP_ADDRESS_RELATIONS);
+    if (pStatements.get(addressBuildingStat) > 0) {
+      addressBuildingStat.executeBatch();
+      pStatements.put(addressBuildingStat,0);
+    }
+    if (pStatements.get(addressStreetNodeStat) > 0) {
+      addressStreetNodeStat.executeBatch();
+      pStatements.put(addressStreetNodeStat,0);
+    }
+    addressConnection.commit();
+  }
+  iterateOverAllEntities(progress,filter,STEP_MAIN);
+  if (indexAddress && !postalCodeRelations.isEmpty()) {
+    if (pStatements.get(addressBuildingStat) > 0) {
+      addressBuildingStat.executeBatch();
+      pStatements.put(addressBuildingStat,0);
+      addressConnection.commit();
+    }
+    progress.startTask("Registering postcodes...",-1);
+    PreparedStatement pstat=addressConnection.prepareStatement("UPDATE " + IndexBuildingTable.getTable() + " SET "+ IndexBuildingTable.POSTCODE.name()+ " = ? WHERE "+ IndexBuildingTable.ID.name()+ " = ?");
+    pStatements.put(pstat,0);
+    for (    Relation r : postalCodeRelations) {
+      String tag=r.getTag(OSMTagKey.POSTAL_CODE);
+      for (      EntityId l : r.getMemberIds()) {
+        pstat.setString(1,tag);
+        pstat.setLong(2,l.getId());
+        DataIndexWriter.addBatch(pStatements,pstat,BATCH_SIZE);
+      }
+    }
+  }
   try {
     if (pselectNode != null) {
       pselectNode.close();
@@ -107,8 +178,8 @@
     for (    PreparedStatement p : pStatements.keySet()) {
       if (pStatements.get(p) > 0) {
         p.executeBatch();
-        p.close();
       }
+      p.close();
     }
     if (poiConnection != null) {
       poiConnection.commit();
@@ -122,6 +193,13 @@
       transportConnection.close();
       if (lastModifiedDate != null) {
         transportIndexFile.setLastModified(lastModifiedDate);
+      }
+    }
+    if (addressConnection != null) {
+      addressConnection.commit();
+      addressConnection.close();
+      if (lastModifiedDate != null) {
+        addressIndexFile.setLastModified(lastModifiedDate);
       }
     }
     dbConn.close();

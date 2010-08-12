@@ -1,0 +1,67 @@
+{
+  if (step == STEP_MAIN) {
+    if (indexPOI && Amenity.isAmenity(e)) {
+      loadEntityData(e,false);
+      if (poiPreparedStatement != null) {
+        Amenity a=new Amenity(e);
+        if (a.getLocation() != null) {
+          convertEnglishName(a);
+          DataIndexWriter.insertAmenityIntoPoi(poiPreparedStatement,pStatements,a,BATCH_SIZE);
+        }
+      }
+    }
+    if (indexTransport) {
+      if (e instanceof Relation && e.getTag(OSMTagKey.ROUTE) != null) {
+        loadEntityData(e,true);
+        TransportRoute route=indexTransportRoute((Relation)e);
+        if (route != null) {
+          DataIndexWriter.insertTransportIntoIndex(transRouteStat,transRouteStopsStat,transStopsStat,visitedStops,route,pStatements,BATCH_SIZE);
+        }
+      }
+    }
+    if (indexAddress) {
+      if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && e.getTag(OSMTagKey.ADDR_STREET) != null) {
+        addressSearchBuildingStat.setLong(1,e.getId());
+        ResultSet rs=addressSearchBuildingStat.executeQuery();
+        if (!rs.next()) {
+          loadEntityData(e,false);
+          LatLon l=e.getLatLon();
+          City city=getClosestCity(l);
+          Long idStreet=getStreetInCity(city,e.getTag(OSMTagKey.ADDR_STREET),l,e.getId());
+          if (idStreet != null) {
+            Building building=new Building(e);
+            building.setName(e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER));
+            convertEnglishName(building);
+            DataIndexWriter.writeBuilding(addressBuildingStat,pStatements,idStreet,building,BATCH_SIZE);
+          }
+        }
+        rs.close();
+      }
+      if (e instanceof Way && e.getTag(OSMTagKey.HIGHWAY) != null && e.getTag(OSMTagKey.NAME) != null) {
+        addressSearchStreetNodeStat.setLong(1,e.getId());
+        ResultSet rs=addressSearchStreetNodeStat.executeQuery();
+        if (!rs.next()) {
+          loadEntityData(e,false);
+          LatLon l=e.getLatLon();
+          City city=getClosestCity(l);
+          Long idStreet=getStreetInCity(city,e.getTag(OSMTagKey.NAME),l,e.getId());
+          if (idStreet != null && saveAddressWays) {
+            DataIndexWriter.writeStreetWayNodes(addressStreetNodeStat,pStatements,idStreet,(Way)e,BATCH_SIZE);
+          }
+        }
+        rs.close();
+      }
+      if (e instanceof Relation) {
+        if (e.getTag(OSMTagKey.POSTAL_CODE) != null) {
+          loadEntityData(e,false);
+          postalCodeRelations.add((Relation)e);
+        }
+      }
+    }
+  }
+ else   if (step == STEP_ADDRESS_RELATIONS) {
+    if (e instanceof Relation && "address".equals(e.getTag(OSMTagKey.TYPE))) {
+      indexAddressRelation((Relation)e);
+    }
+  }
+}
