@@ -21,9 +21,17 @@
     }
     if (indexAddress) {
       if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && e.getTag(OSMTagKey.ADDR_STREET) != null) {
-        addressSearchBuildingStat.setLong(1,e.getId());
-        ResultSet rs=addressSearchBuildingStat.executeQuery();
-        if (!rs.next()) {
+        boolean exist=false;
+        if (loadInMemory) {
+          addressSearchBuildingStat.setLong(1,e.getId());
+          ResultSet rs=addressSearchBuildingStat.executeQuery();
+          exist=rs.next();
+          rs.close();
+        }
+ else {
+          exist=addressBuildingLocalSet.contains(e.getId());
+        }
+        if (!exist) {
           loadEntityData(e,false);
           LatLon l=e.getLatLon();
           City city=getClosestCity(l);
@@ -35,12 +43,19 @@
             DataIndexWriter.writeBuilding(addressBuildingStat,pStatements,idStreet,building,BATCH_SIZE);
           }
         }
-        rs.close();
       }
       if (e instanceof Way && e.getTag(OSMTagKey.HIGHWAY) != null && e.getTag(OSMTagKey.NAME) != null) {
-        addressSearchStreetNodeStat.setLong(1,e.getId());
-        ResultSet rs=addressSearchStreetNodeStat.executeQuery();
-        if (!rs.next()) {
+        boolean exist=false;
+        if (loadInMemory) {
+          addressSearchStreetNodeStat.setLong(1,e.getId());
+          ResultSet rs=addressSearchStreetNodeStat.executeQuery();
+          exist=rs.next();
+          rs.close();
+        }
+ else {
+          exist=addressStreetNodeLocalSet.contains(e.getId());
+        }
+        if (!exist) {
           loadEntityData(e,false);
           LatLon l=e.getLatLon();
           City city=getClosestCity(l);
@@ -49,7 +64,6 @@
             DataIndexWriter.writeStreetWayNodes(addressStreetNodeStat,pStatements,idStreet,(Way)e,BATCH_SIZE);
           }
         }
-        rs.close();
       }
       if (e instanceof Relation) {
         if (e.getTag(OSMTagKey.POSTAL_CODE) != null) {
@@ -63,5 +77,8 @@
     if (e instanceof Relation && "address".equals(e.getTag(OSMTagKey.TYPE))) {
       indexAddressRelation((Relation)e);
     }
+  }
+ else   if (step == STEP_CITY_NODES) {
+    registerCityIfNeeded(e);
   }
 }

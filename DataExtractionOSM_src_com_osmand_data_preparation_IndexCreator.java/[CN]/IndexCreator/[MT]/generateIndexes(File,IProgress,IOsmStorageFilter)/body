@@ -1,30 +1,9 @@
 {
-  File f=new File(path);
-  InputStream stream=new FileInputStream(f);
-  int i=f.getName().indexOf('.');
-  if (regionName == null) {
-    regionName=Algoritms.capitalizeFirstLetterAndLowercase(f.getName().substring(0,i));
-  }
-  InputStream streamFile=stream;
-  long st=System.currentTimeMillis();
-  if (path.endsWith(".bz2")) {
-    if (stream.read() != 'B' || stream.read() != 'Z') {
-      throw new RuntimeException("The source stream must start with the characters BZ if it is to be read as a BZip2 stream.");
+  if (readFile != null && regionName == null) {
+    int i=readFile.getName().indexOf('.');
+    if (i > -1) {
+      regionName=Algoritms.capitalizeFirstLetterAndLowercase(readFile.getName().substring(0,i));
     }
- else {
-      stream=new CBZip2InputStream(stream);
-    }
-  }
-  if (progress != null) {
-    progress.startTask("Loading file " + path,-1);
-  }
-  cities.clear();
-  cityManager.clear();
-  postalCodeRelations.clear();
-  OsmBaseStorage storage=new OsmBaseStorage();
-  storage.setSupressWarnings(DataExtractionSettings.getSettings().isSupressWarningsForDuplicatedId());
-  if (addFilter != null) {
-    storage.getFilters().add(addFilter);
   }
   try {
     Class.forName("org.sqlite.JDBC");
@@ -33,31 +12,64 @@
     log.error("Illegal configuration",e);
     throw new IllegalStateException(e);
   }
-  if (indexMap) {
-    dbFile=new File(workingDir,getMapFileName());
-  }
+  boolean loadFromPath=dbFile == null;
+  if (dbFile == null) {
+    if (indexMap) {
+      dbFile=new File(workingDir,getMapFileName());
+    }
  else {
-    dbFile=new File(workingDir,TEMP_NODES_DB);
-  }
-  if (dbFile.exists()) {
-    dbFile.delete();
+      dbFile=new File(workingDir,TEMP_NODES_DB);
+    }
+    if (dbFile.exists()) {
+      dbFile.delete();
+    }
   }
   dbConn=DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
-  NewDataExtractionOsmFilter filter=new NewDataExtractionOsmFilter();
-  try {
-    progress.setGeneralProgress("[50 of 100]");
-    filter.initDatabase();
-    storage.getFilters().add(filter);
-    storage.parseOSM(stream,progress,streamFile,false);
-    filter.finishLoading();
-    if (log.isInfoEnabled()) {
-      log.info("File parsed : " + (System.currentTimeMillis() - st));
+  cities.clear();
+  cityManager.clear();
+  postalCodeRelations.clear();
+  int allRelations=100000;
+  int allWays=1000000;
+  int allNodes=10000000;
+  if (loadFromPath) {
+    InputStream stream=new FileInputStream(readFile);
+    InputStream streamFile=stream;
+    long st=System.currentTimeMillis();
+    if (readFile.getName().endsWith(".bz2")) {
+      if (stream.read() != 'B' || stream.read() != 'Z') {
+        throw new RuntimeException("The source stream must start with the characters BZ if it is to be read as a BZip2 stream.");
+      }
+ else {
+        stream=new CBZip2InputStream(stream);
+      }
     }
-    progress.finishTask();
-  }
+    if (progress != null) {
+      progress.startTask("Loading file " + readFile.getAbsolutePath(),-1);
+    }
+    OsmBaseStorage storage=new OsmBaseStorage();
+    storage.setSupressWarnings(DataExtractionSettings.getSettings().isSupressWarningsForDuplicatedId());
+    if (addFilter != null) {
+      storage.getFilters().add(addFilter);
+    }
+    NewDataExtractionOsmFilter filter=new NewDataExtractionOsmFilter();
+    try {
+      progress.setGeneralProgress("[50 of 100]");
+      filter.initDatabase();
+      storage.getFilters().add(filter);
+      storage.parseOSM(stream,progress,streamFile,false);
+      filter.finishLoading();
+      allNodes=filter.getAllNodes();
+      allWays=filter.getAllWays();
+      allRelations=filter.getAllRelations();
+      if (log.isInfoEnabled()) {
+        log.info("File parsed : " + (System.currentTimeMillis() - st));
+      }
+      progress.finishTask();
+    }
   finally {
-    if (log.isInfoEnabled()) {
-      log.info("File indexed : " + (System.currentTimeMillis() - st));
+      if (log.isInfoEnabled()) {
+        log.info("File indexed : " + (System.currentTimeMillis() - st));
+      }
     }
   }
   progress.setGeneralProgress("[90 of 100]");
@@ -122,6 +134,9 @@
     normalizeSuffixes=DataExtractionSettings.getSettings().getSuffixesToNormalizeStreets();
   }
   if (indexAddress) {
+    if (!loadFromPath) {
+      allNodes=iterateOverEntities(progress,EntityType.NODE,allNodes,STEP_CITY_NODES);
+    }
     for (    City c : cities.values()) {
       DataIndexWriter.writeCity(addressCityStat,pStatements,c,BATCH_SIZE);
     }
@@ -132,7 +147,7 @@
     }
   }
   if (indexAddress) {
-    iterateOverEntities(progress,EntityType.RELATION,filter.getAllRelations(),STEP_ADDRESS_RELATIONS);
+    allRelations=iterateOverEntities(progress,EntityType.RELATION,allRelations,STEP_ADDRESS_RELATIONS);
     if (pStatements.get(addressBuildingStat) > 0) {
       addressBuildingStat.executeBatch();
       pStatements.put(addressBuildingStat,0);
@@ -143,7 +158,7 @@
     }
     addressConnection.commit();
   }
-  iterateOverAllEntities(progress,filter,STEP_MAIN);
+  iterateOverAllEntities(progress,allNodes,allWays,allRelations,STEP_MAIN);
   if (indexAddress && !postalCodeRelations.isEmpty()) {
     if (pStatements.get(addressBuildingStat) > 0) {
       addressBuildingStat.executeBatch();
