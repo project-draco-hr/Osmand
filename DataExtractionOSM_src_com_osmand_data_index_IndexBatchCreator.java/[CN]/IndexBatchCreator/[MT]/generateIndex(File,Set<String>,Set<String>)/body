@@ -3,26 +3,34 @@
     return;
   }
   try {
-    DataExtraction extr=new DataExtraction(indexAddress,indexPOI,indexTransport,indexAddress,false,false,indexDirFiles);
+    IndexCreator indexCreator=new IndexCreator(indexDirFiles);
+    indexCreator.setIndexAddress(indexAddress);
+    indexCreator.setIndexAddress(indexPOI);
+    indexCreator.setIndexAddress(indexTransport);
+    indexCreator.setNormalizeStreets(true);
+    indexCreator.setSaveAddressWays(writeWayNodes);
+    String regionName=f.getName();
+    int i=f.getName().indexOf('.');
+    if (i > -1) {
+      regionName=Algoritms.capitalizeFirstLetterAndLowercase(f.getName().substring(0,i));
+    }
+    String addressFileName=regionName + "_" + IndexConstants.ADDRESS_TABLE_VERSION+ IndexConstants.ADDRESS_INDEX_EXT;
+    indexCreator.setAddressFileName(addressFileName);
+    String transportFileName=regionName + "_" + IndexConstants.TRANSPORT_TABLE_VERSION+ IndexConstants.TRANSPORT_INDEX_EXT;
+    indexCreator.setTransportFileName(transportFileName);
+    String poiFileName=regionName + "_" + IndexConstants.POI_TABLE_VERSION+ IndexConstants.POI_INDEX_EXT;
+    indexCreator.setPoiFileName(poiFileName);
     try {
       alreadyGeneratedFiles.add(f.getName());
-      Region country=extr.readCountry(f.getAbsolutePath(),new ConsoleProgressImplementation(9),null);
-      DataIndexWriter dataIndexWriter=new DataIndexWriter(indexDirFiles,country);
-      String name=country.getName();
+      indexCreator.generateIndexes(f,new ConsoleProgressImplementation(3),null);
       if (indexAddress) {
-        String fName=name + "_" + IndexConstants.ADDRESS_TABLE_VERSION+ IndexConstants.ADDRESS_INDEX_EXT;
-        dataIndexWriter.writeAddress(fName,f.lastModified(),writeWayNodes);
-        uploadIndex(new File(indexDirFiles,fName),alreadyUploadedFiles);
+        uploadIndex(new File(indexDirFiles,addressFileName),alreadyUploadedFiles);
       }
       if (indexPOI) {
-        String fName=name + "_" + IndexConstants.POI_TABLE_VERSION+ IndexConstants.POI_INDEX_EXT;
-        dataIndexWriter.writePOI(fName,f.lastModified());
-        uploadIndex(new File(indexDirFiles,fName),alreadyUploadedFiles);
+        uploadIndex(new File(indexDirFiles,poiFileName),alreadyUploadedFiles);
       }
       if (indexTransport) {
-        String fName=name + "_" + IndexConstants.TRANSPORT_TABLE_VERSION+ IndexConstants.TRANSPORT_INDEX_EXT;
-        dataIndexWriter.writeTransport(fName,f.lastModified());
-        uploadIndex(new File(indexDirFiles,fName),alreadyUploadedFiles);
+        uploadIndex(new File(indexDirFiles,transportFileName),alreadyUploadedFiles);
       }
     }
  catch (    Exception e) {

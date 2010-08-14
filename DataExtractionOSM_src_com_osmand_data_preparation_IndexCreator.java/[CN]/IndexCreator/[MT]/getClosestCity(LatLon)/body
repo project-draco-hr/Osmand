@@ -4,7 +4,20 @@
   }
   City closest=null;
   double relDist=Double.POSITIVE_INFINITY;
-  for (  City c : cityManager.getClosestObjects(point.getLatitude(),point.getLongitude())) {
+  for (  City c : cityManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3)) {
+    double rel=MapUtils.getDistance(c.getLocation(),point) / c.getType().getRadius();
+    if (rel < relDist) {
+      closest=c;
+      relDist=rel;
+      if (relDist < 0.2d) {
+        break;
+      }
+    }
+  }
+  if (relDist < 0.2d) {
+    return closest;
+  }
+  for (  City c : cityVillageManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3)) {
     double rel=MapUtils.getDistance(c.getLocation(),point) / c.getType().getRadius();
     if (rel < relDist) {
       closest=c;
