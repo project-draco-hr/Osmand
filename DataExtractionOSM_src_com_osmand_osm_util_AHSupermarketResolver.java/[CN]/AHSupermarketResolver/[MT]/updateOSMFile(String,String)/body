@@ -1,0 +1,84 @@
+{
+  OsmBaseStorage storage=new OsmBaseStorage();
+  final Map<String,EntityId> winkelNumbers=new LinkedHashMap<String,EntityId>();
+  storage.getFilters().add(new IOsmStorageFilter(){
+    @Override public boolean acceptEntityToLoad(    OsmBaseStorage storage,    EntityId entityId,    Entity entity){
+      if (entity.getTag("winkelnummer") != null) {
+        winkelNumbers.put(entity.getTag("winkelnummer"),entityId);
+        return true;
+      }
+      return false;
+    }
+  }
+);
+  storage.parseOSM(new FileInputStream(pathToOsmFile),new ConsoleProgressImplementation(2),null,true);
+  Map<String,Map<String,Object>> supermarkets=getSupermarkets();
+  for (  String s : supermarkets.keySet()) {
+    Map<String,Object> props=supermarkets.get(s);
+    if (winkelNumbers.get(s) != null) {
+      EntityId id=winkelNumbers.get(s);
+      Entity e=storage.getRegisteredEntities().get(id);
+      EntityInfo info=storage.getRegisteredEntityInfo().get(id);
+      Map<String,String> newTags=new LinkedHashMap<String,String>();
+      String p=props.get("format") + "";
+      String name="Albert Heijn";
+      if (!p.equals("AH")) {
+        name+=" " + p;
+      }
+      newTags.put("name",name);
+      newTags.put("phone",props.get("phone") + "");
+      newTags.put("addr:city",props.get("city") + "");
+      newTags.put("addr:street",props.get("street") + "");
+      newTags.put("addr:housenumber",props.get("housenr") + "");
+      newTags.put("addr:postcode",props.get("zip") + "");
+      JSONArray o=(JSONArray)props.get("hours");
+      List<OpeningHoursParser.OpeningHoursRule> rules=new ArrayList<OpeningHoursRule>();
+      BasicDayOpeningHourRule prev=null;
+      for (int i=0; i < 7; i++) {
+        JSONObject obj=o.getJSONObject(i);
+        if (!obj.isNull("C") && obj.getBoolean("C")) {
+        }
+ else {
+          String opened=obj.get("F") + "";
+          String closed=obj.get("U") + "";
+          int start=Integer.parseInt(opened.substring(0,2)) * 60 + Integer.parseInt(opened.substring(2));
+          int end=Integer.parseInt(closed.substring(0,2)) * 60 + Integer.parseInt(closed.substring(2));
+          if (prev != null && prev.getStartTime() == start && prev.getEndTime() == end) {
+            prev.getDays()[i]=true;
+          }
+ else {
+            BasicDayOpeningHourRule rule=new OpeningHoursParser.BasicDayOpeningHourRule();
+            rule.getDays()[i]=true;
+            rule.setStartTime(start);
+            rule.setEndTime(end);
+            prev=rule;
+            rules.add(rule);
+          }
+        }
+      }
+      newTags.put("opening_hours",OpeningHoursParser.toStringOpenedHours(rules));
+      LatLon real=new LatLon((Double)props.get("lat"),(Double)props.get("lng"));
+      double dist=MapUtils.getDistance(e.getLatLon(),real);
+      if (dist > 150) {
+        System.err.println("Winkel number = " + s + " is to far from site info - "+ dist+ " m !!! "+ real);
+      }
+      boolean changed=false;
+      for (      String k : newTags.keySet()) {
+        String val=newTags.get(k);
+        if (!Algoritms.objectEquals(val,e.getTag(k))) {
+          e.putTag(k,val);
+          changed=true;
+        }
+      }
+      if (changed) {
+        info.setAction("modify");
+      }
+    }
+ else {
+      LatLon real=new LatLon((Double)props.get("lat"),(Double)props.get("lng"));
+      System.err.println("Winkel number = " + s + " is not found in database !!! "+ real);
+    }
+  }
+  OsmStorageWriter writer=new OsmStorageWriter();
+  writer.saveStorage(new FileOutputStream(pathToModifiedFile),storage,null,true);
+}
