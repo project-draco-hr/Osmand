@@ -3,16 +3,27 @@
   final Map<String,EntityId> winkelNumbers=new LinkedHashMap<String,EntityId>();
   storage.getFilters().add(new IOsmStorageFilter(){
     @Override public boolean acceptEntityToLoad(    OsmBaseStorage storage,    EntityId entityId,    Entity entity){
-      if (entity.getTag("winkelnummer") != null) {
+      if (entity.getTag("winkelnummer") != null && entity.getTag("name").contains("eijn")) {
         winkelNumbers.put(entity.getTag("winkelnummer"),entityId);
         return true;
       }
-      return false;
+      return true;
     }
   }
 );
   storage.parseOSM(new FileInputStream(pathToOsmFile),new ConsoleProgressImplementation(2),null,true);
   Map<String,Map<String,Object>> supermarkets=getSupermarkets();
+  DataTileManager<Entity> deleted=new DataTileManager<Entity>();
+  for (  String s : winkelNumbers.keySet()) {
+    if (!supermarkets.containsKey(s)) {
+      System.err.println("Shop " + s + " id="+ winkelNumbers.get(s)+ " doesn't present on the site.");
+      EntityId e=winkelNumbers.get(s);
+      Entity en=storage.getRegisteredEntities().get(e);
+      deleted.registerObject(en.getLatLon().getLatitude(),en.getLatLon().getLongitude(),en);
+    }
+  }
+  DataTileManager<Entity> notCorrelated=new DataTileManager<Entity>();
+  DataTileManager<Entity> notShown=new DataTileManager<Entity>();
   for (  String s : supermarkets.keySet()) {
     Map<String,Object> props=supermarkets.get(s);
     if (winkelNumbers.get(s) != null) {
@@ -60,7 +71,10 @@
       LatLon real=new LatLon((Double)props.get("lat"),(Double)props.get("lng"));
       double dist=MapUtils.getDistance(e.getLatLon(),real);
       if (dist > 150) {
-        System.err.println("Winkel number = " + s + " is to far from site info - "+ dist+ " m !!! "+ real);
+        System.err.println("Winkel number = " + s + " is too far from site info - "+ dist+ " m !!! "+ real);
+        if (dist > 300) {
+          notCorrelated.registerObject(real.getLatitude(),real.getLongitude(),e);
+        }
       }
       boolean changed=false;
       for (      String k : newTags.keySet()) {
@@ -77,8 +91,52 @@
  else {
       LatLon real=new LatLon((Double)props.get("lat"),(Double)props.get("lng"));
       System.err.println("Winkel number = " + s + " is not found in database !!! "+ real);
+      Node n=new Node(real.getLatitude(),real.getLongitude(),-1);
+      n.putTag("winkelnummer","REG : " + s);
+      notShown.registerObject(real.getLatitude(),real.getLongitude(),n);
     }
   }
   OsmStorageWriter writer=new OsmStorageWriter();
   writer.saveStorage(new FileOutputStream(pathToModifiedFile),storage,null,true);
+  if (show) {
+    try {
+      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+    }
+ catch (    Exception e) {
+      e.printStackTrace();
+    }
+    final MapPanel panel=new MapPanel(DataExtractionSettings.getSettings().getTilesDirectory());
+    panel.setFocusable(true);
+    MapPointsLayer toAdd=panel.getLayer(MapPointsLayer.class);
+    toAdd.setPoints(notShown);
+    toAdd.setPointSize(5);
+    toAdd.setTagToShow("winkelnummer");
+    MapPointsLayer red=new MapPointsLayer();
+    red.setPoints(deleted);
+    red.setColor(Color.red);
+    red.setPointSize(5);
+    panel.addLayer(red);
+    MapPointsLayer blue=new MapPointsLayer();
+    blue.setPoints(notCorrelated);
+    blue.setColor(Color.blue);
+    blue.setPointSize(4);
+    panel.addLayer(blue);
+    JFrame frame=new JFrame("Map view");
+    frame.addWindowListener(new WindowAdapter(){
+      @Override public void windowClosing(      WindowEvent e){
+        DataExtractionSettings settings=DataExtractionSettings.getSettings();
+        settings.saveDefaultLocation(panel.getLatitude(),panel.getLongitude());
+        settings.saveDefaultZoom(panel.getZoom());
+        System.exit(0);
+      }
+    }
+);
+    Container content=frame.getContentPane();
+    content.add(panel,BorderLayout.CENTER);
+    JMenuBar bar=new JMenuBar();
+    bar.add(MapPanel.getMenuToChooseSource(panel));
+    frame.setJMenuBar(bar);
+    frame.setSize(512,512);
+    frame.setVisible(true);
+  }
 }
