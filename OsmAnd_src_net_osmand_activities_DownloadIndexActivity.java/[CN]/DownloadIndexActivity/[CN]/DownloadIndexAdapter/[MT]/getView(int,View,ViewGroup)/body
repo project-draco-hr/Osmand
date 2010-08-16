@@ -1,0 +1,28 @@
+{
+  View row=convertView;
+  if (row == null) {
+    LayoutInflater inflater=getLayoutInflater();
+    row=inflater.inflate(net.osmand.R.layout.download_index_list_item,parent,false);
+  }
+  TextView item=(TextView)row.findViewById(R.id.download_item);
+  TextView description=(TextView)row.findViewById(R.id.download_descr);
+  Entry<String,String> e=getItem(position);
+  int l=e.getKey().lastIndexOf('_');
+  String s="";
+  if (e.getKey().endsWith(IndexConstants.POI_INDEX_EXT) || e.getKey().endsWith(IndexConstants.POI_INDEX_EXT_ZIP)) {
+    s=getString(R.string.poi);
+  }
+ else   if (e.getKey().endsWith(IndexConstants.ADDRESS_INDEX_EXT) || e.getKey().endsWith(IndexConstants.ADDRESS_INDEX_EXT_ZIP)) {
+    s=getString(R.string.address);
+  }
+ else   if (e.getKey().endsWith(IndexConstants.TRANSPORT_INDEX_EXT) || e.getKey().endsWith(IndexConstants.TRANSPORT_INDEX_EXT_ZIP)) {
+    s=getString(R.string.transport);
+  }
+  String name=e.getKey().substring(0,l).replace('_',' ');
+  if (e.getKey().endsWith(".zip")) {
+    name+=" (zip)";
+  }
+  item.setText(s + "\n " + name);
+  description.setText(e.getValue().replace(':','\n'));
+  return row;
+}
