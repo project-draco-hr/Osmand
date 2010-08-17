@@ -29,11 +29,14 @@ synchronized (holder) {
         Bitmap bmp=mgr.getTileImageForMapSync(null,map,request.xTile,request.yTile,request.zoom,false);
         float x=(request.xTile - tileX) * getTileSize() + w;
         float y=(request.yTile - tileY) * getTileSize() + h;
+        float tileSize=getTileSize();
         if (bmp == null) {
-          drawEmptyTile(canvas,x,y);
+          drawEmptyTile(canvas,x,y,tileSize);
         }
  else {
-          canvas.drawBitmap(bmp,x,y,paintBitmap);
+          bitmapToZoom.set(0,0,getSourceTileSize(),getSourceTileSize());
+          bitmapToDraw.set(x,y,x + tileSize,y + tileSize);
+          canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
         }
         drawOverMap(canvas);
       }
