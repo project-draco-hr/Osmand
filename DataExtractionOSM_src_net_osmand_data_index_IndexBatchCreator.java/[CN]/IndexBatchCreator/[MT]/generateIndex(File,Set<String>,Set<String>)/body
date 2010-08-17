@@ -3,18 +3,19 @@
     return;
   }
   try {
+    String regionName=f.getName();
+    int i=f.getName().indexOf('.');
+    if (i > -1) {
+      regionName=Algoritms.capitalizeFirstLetterAndLowercase(f.getName().substring(0,i));
+    }
+    boolean saveAddressWays=writeWayNodes && !doNotWriteWayNodesInUploading.contains(regionName.toLowerCase());
     IndexCreator indexCreator=new IndexCreator(indexDirFiles);
     indexCreator.setIndexAddress(indexAddress);
     indexCreator.setIndexPOI(indexPOI);
     indexCreator.setIndexTransport(indexTransport);
     indexCreator.setLastModifiedDate(f.lastModified());
     indexCreator.setNormalizeStreets(true);
-    indexCreator.setSaveAddressWays(writeWayNodes);
-    String regionName=f.getName();
-    int i=f.getName().indexOf('.');
-    if (i > -1) {
-      regionName=Algoritms.capitalizeFirstLetterAndLowercase(f.getName().substring(0,i));
-    }
+    indexCreator.setSaveAddressWays(saveAddressWays);
     String addressFileName=regionName + "_" + IndexConstants.ADDRESS_TABLE_VERSION+ IndexConstants.ADDRESS_INDEX_EXT;
     indexCreator.setAddressFileName(addressFileName);
     String transportFileName=regionName + "_" + IndexConstants.TRANSPORT_TABLE_VERSION+ IndexConstants.TRANSPORT_INDEX_EXT;
