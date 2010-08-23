@@ -1,13 +1,17 @@
 {
   long start=System.currentTimeMillis();
-  if (db != null) {
-    db.close();
+  try {
+    if (db != null) {
+      db.close();
+    }
+    db=SQLiteDatabase.openOrCreateDatabase(file,null);
+    if (db.getVersion() != IndexConstants.MAP_TABLE_VERSION) {
+      db.close();
+      db=null;
+      return false;
+    }
   }
-  db=SQLiteDatabase.openOrCreateDatabase(file,null);
-  if (db.getVersion() != IndexConstants.MAP_TABLE_VERSION) {
-    db.close();
-    db=null;
-    return false;
+ catch (  SQLException e) {
   }
   if (log.isDebugEnabled()) {
     log.debug("Initializing db " + file.getAbsolutePath() + " "+ (System.currentTimeMillis() - start)+ "ms");
