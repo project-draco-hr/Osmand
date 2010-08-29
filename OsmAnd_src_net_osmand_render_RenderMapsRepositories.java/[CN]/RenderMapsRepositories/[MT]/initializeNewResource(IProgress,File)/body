@@ -1,17 +1,28 @@
 {
   long start=System.currentTimeMillis();
   try {
-    if (db != null) {
-      db.close();
+    if (conn != null) {
+      conn.close();
+      conn=null;
+      pStatement=null;
     }
-    db=SQLiteDatabase.openOrCreateDatabase(file,null);
-    if (db.getVersion() != IndexConstants.MAP_TABLE_VERSION) {
-      db.close();
-      db=null;
+    try {
+      Class.forName("org.sqlite.JDBC");
+    }
+ catch (    Exception e) {
+      log.error("Could not load driver",e);
       return false;
     }
+    conn=DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
+    pStatement=conn.prepareStatement(loadMapQuery);
   }
  catch (  SQLException e) {
+    log.error("No connection",e);
+    return false;
+  }
+catch (  java.sql.SQLException e) {
+    log.error("No connection",e);
+    return false;
   }
   if (log.isDebugEnabled()) {
     log.debug("Initializing db " + file.getAbsolutePath() + " "+ (System.currentTimeMillis() - start)+ "ms");

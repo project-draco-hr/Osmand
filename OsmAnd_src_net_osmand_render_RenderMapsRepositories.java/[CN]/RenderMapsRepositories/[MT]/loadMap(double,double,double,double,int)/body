@@ -6,23 +6,43 @@
   cZoom=zoom;
   log.info(String.format("BLat=%s, TLat=%s, LLong=%s, RLong=%s, zoom=%s",cBottomLatitude,cTopLatitude,cLeftLongitude,cRightLongitude,zoom));
   long now=System.currentTimeMillis();
-  String query="SELECT id FROM " + IndexConstants.indexMapLocationsTable + " WHERE ? <  maxLat AND ? > minLat AND maxLon > ? AND minLon  < ?";
-  Cursor result=db.rawQuery(query,new String[]{Double.toString(cBottomLatitude),Double.toString(cTopLatitude),Double.toString(cLeftLongitude),Double.toString(cRightLongitude)});
-  List<Way> local=new LinkedList<Way>();
-  try {
-    int count=0;
-    if (result.moveToFirst()) {
-      do {
-        long id=result.getLong(0);
-        Way way=new Way(id);
-        count++;
-      }
- while (result.moveToNext());
-      cWays=local;
-    }
-    log.info(String.format("Search has been done in %s ms. %s results were found.",System.currentTimeMillis() - now,count));
+  if (pStatement == null) {
+    return;
   }
+  try {
+    pStatement.setDouble(1,cBottomLatitude);
+    pStatement.setDouble(2,cTopLatitude);
+    pStatement.setDouble(3,cLeftLongitude);
+    pStatement.setDouble(4,cRightLongitude);
+    ResultSet result=pStatement.executeQuery();
+    List<Way> local=new LinkedList<Way>();
+    try {
+      int count=0;
+      while (result.next()) {
+        long id=result.getLong(1);
+        Way way=new Way(id);
+        JSONArray nodes;
+        try {
+          nodes=new JSONArray(result.getString(2));
+          for (int i=0; i < nodes.length(); i++) {
+            JSONArray obj=nodes.getJSONArray(i);
+            Node node=new Node(obj.getDouble(1),obj.getDouble(2),obj.getLong(0));
+            way.addNode(node);
+          }
+        }
+ catch (        JSONException e) {
+        }
+        count++;
+        local.add(way);
+      }
+      cWays=local;
+      log.info(String.format("Search has been done in %s ms. %s results were found.",System.currentTimeMillis() - now,count));
+    }
   finally {
-    result.close();
+      result.close();
+    }
+  }
+ catch (  java.sql.SQLException e) {
+    log.debug("Search failed",e);
   }
 }
