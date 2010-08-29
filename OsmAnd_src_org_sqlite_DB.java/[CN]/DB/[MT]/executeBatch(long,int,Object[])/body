@@ -1,0 +1,24 @@
+{
+  if (count < 1)   throw new SQLException("count (" + count + ") < 1");
+  final int params=bind_parameter_count(stmt);
+  int rc;
+  int[] changes=new int[count];
+  try {
+    for (int i=0; i < count; i++) {
+      reset(stmt);
+      for (int j=0; j < params; j++)       if (sqlbind(stmt,j,vals[(i * params) + j]) != SQLITE_OK)       throwex();
+      rc=step(stmt);
+      if (rc != SQLITE_DONE) {
+        reset(stmt);
+        if (rc == SQLITE_ROW)         throw new BatchUpdateException("batch entry " + i + ": query returns results",changes);
+        throwex();
+      }
+      changes[i]=changes();
+    }
+  }
+  finally {
+    ensureAutoCommit();
+  }
+  reset(stmt);
+  return changes;
+}
