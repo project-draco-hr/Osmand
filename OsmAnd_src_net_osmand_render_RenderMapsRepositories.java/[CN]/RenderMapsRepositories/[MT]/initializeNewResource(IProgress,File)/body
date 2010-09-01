@@ -15,13 +15,25 @@
     }
     conn=DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
     pStatement=conn.prepareStatement(loadMapQuery);
+    Statement stat=conn.createStatement();
+    ResultSet rs=stat.executeQuery("PRAGMA user_version");
+    int v=rs.getInt(1);
+    rs.close();
+    if (v != IndexConstants.MAP_TABLE_VERSION) {
+      return false;
+    }
+    stat.close();
   }
- catch (  SQLException e) {
+ catch (  Exception e) {
     log.error("No connection",e);
-    return false;
-  }
-catch (  java.sql.SQLException e) {
-    log.error("No connection",e);
+    if (conn != null) {
+      try {
+        conn.close();
+      }
+ catch (      java.sql.SQLException e1) {
+      }
+      conn=null;
+    }
     return false;
   }
   if (log.isDebugEnabled()) {

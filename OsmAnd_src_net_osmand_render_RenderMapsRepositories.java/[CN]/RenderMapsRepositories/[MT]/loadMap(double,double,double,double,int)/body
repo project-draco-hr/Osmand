@@ -1,10 +1,10 @@
 {
   cBottomLatitude=bottomLatitude - (topLatitude - bottomLatitude) / 2;
   cTopLatitude=topLatitude + (topLatitude - bottomLatitude) / 2;
-  cLeftLongitude=leftLongitude - (rightLongitude - leftLongitude) / 2;
-  cRightLongitude=rightLongitude + (rightLongitude - leftLongitude) / 2;
+  cLeftLongitude=leftLongitude - (rightLongitude - leftLongitude);
+  cRightLongitude=rightLongitude + (rightLongitude - leftLongitude);
   cZoom=zoom;
-  log.info(String.format("BLat=%s, TLat=%s, LLong=%s, RLong=%s, zoom=%s",cBottomLatitude,cTopLatitude,cLeftLongitude,cRightLongitude,zoom));
+  log.info(String.format("BLat=%s, TLat=%s, LLong=%s, RLong=%s, zoom=%s",cBottomLatitude,cTopLatitude,cLeftLongitude,cRightLongitude,cZoom));
   long now=System.currentTimeMillis();
   if (pStatement == null) {
     return;
@@ -21,21 +21,19 @@
       while (result.next()) {
         long id=result.getLong(1);
         Way way=new Way(id);
-        JSONArray nodes;
-        try {
-          nodes=new JSONArray(result.getString(2));
-          for (int i=0; i < nodes.length(); i++) {
-            JSONArray obj=nodes.getJSONArray(i);
-            Node node=new Node(obj.getDouble(1),obj.getDouble(2),obj.getLong(0));
-            way.addNode(node);
-          }
-        }
- catch (        JSONException e) {
+        byte[] bytes=result.getBytes(2);
+        for (int i=0; i < bytes.length; i+=8) {
+          int l2=Algoritms.parseIntFromBytes(bytes,i);
+          int l3=Algoritms.parseIntFromBytes(bytes,i + 4);
+          Node node=new Node(Float.intBitsToFloat(l2),Float.intBitsToFloat(l3),-1);
+          way.addNode(node);
         }
         count++;
         local.add(way);
       }
       cWays=local;
+      cachedWaysLoc=new RectF();
+      cachedWaysLoc.set((float)cLeftLongitude,(float)cTopLatitude,(float)cRightLongitude,(float)cBottomLatitude);
       log.info(String.format("Search has been done in %s ms. %s results were found.",System.currentTimeMillis() - now,count));
     }
   finally {

@@ -1,0 +1,41 @@
+{
+  String urlText="http://code.google.com/p/osmand/downloads/delete.do?name=" + fileName;
+  System.out.println(urlText);
+  StringBuilder requestBody=new StringBuilder();
+  requestBody.append("token=cc4e4cffba19a6107d2161f85c71631f").append("&pagegen=1283283182175778").append("&filename=").append(fileName).append("&delete=Delete+download");
+  System.out.println(requestBody);
+  URL url=new URL(urlText);
+  HttpURLConnection connection=(HttpURLConnection)url.openConnection();
+  connection.setConnectTimeout(15000);
+  connection.setRequestMethod("POST");
+  connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+  connection.setRequestProperty("Content-Length",requestBody.length() + "");
+  connection.setDoInput(true);
+  connection.setDoOutput(true);
+  connection.connect();
+  OutputStream out=connection.getOutputStream();
+  if (requestBody != null) {
+    BufferedWriter bwr=new BufferedWriter(new OutputStreamWriter(out,"UTF-8"),1024);
+    bwr.write(requestBody.toString());
+    bwr.flush();
+    bwr.close();
+  }
+  log.info("Response : " + connection.getResponseMessage());
+  StringBuilder responseBody=new StringBuilder();
+  InputStream i=connection.getInputStream();
+  if (i != null) {
+    BufferedReader in=new BufferedReader(new InputStreamReader(i,"UTF-8"),256);
+    String s;
+    boolean f=true;
+    while ((s=in.readLine()) != null) {
+      if (!f) {
+        responseBody.append("\n");
+      }
+ else {
+        f=false;
+      }
+      responseBody.append(s);
+    }
+  }
+  return responseBody.toString();
+}
