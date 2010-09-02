@@ -1,0 +1,34 @@
+{
+  int type=0;
+  if (e instanceof Relation) {
+    return type;
+  }
+  int i=0;
+  if (e instanceof Node) {
+    if (Amenity.isAmenity(e)) {
+      type|=POINT_TYPE;
+    }
+  }
+ else {
+    if (e.getTag(OSMTagKey.BUILDING) != null) {
+      type<<=Integer.numberOfTrailingZeros(PG_AREA_MASK + 1);
+      type|=PG_BUILDING_TYPE;
+      type<<=Integer.numberOfTrailingZeros(TYPE_MASK + 1);
+      type|=POLYGON_TYPE;
+    }
+ else     if ((i=getHighwayType(e.getTag(OSMTagKey.HIGHWAY))) > 0) {
+      type=i;
+      type<<=1;
+      String one=e.getTag(OSMTagKey.ONEWAY);
+      type|=(one == null || one.equals("no")) ? 1 : 0;
+      type<<=Integer.numberOfTrailingZeros(PL_TYPE_MASK + 1);
+      type|=PL_HIGHWAY_TYPE;
+      type<<=Integer.numberOfTrailingZeros(TYPE_MASK + 1);
+      type|=POLYLINE_TYPE;
+    }
+ else {
+      type|=POLYLINE_TYPE;
+    }
+  }
+  return type;
+}

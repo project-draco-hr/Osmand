@@ -19,9 +19,12 @@
         }
       }
     }
-    if (indexMap && e instanceof Way) {
+    if (indexMap && (e instanceof Way) || (e instanceof Node)) {
       loadEntityData(e,true);
-      DataIndexWriter.insertMapWayIndex(pStatements,mapWaysStat,mapWayLocsStat,(Way)e,BATCH_SIZE);
+      int type=MapRenderingTypes.encodeEntityWithType(e);
+      if (type > 0) {
+        DataIndexWriter.insertMapRenderObjectIndex(pStatements,mapWaysStat,mapWayLocsStat,e,MapRenderingTypes.getEntityName(e),type,BATCH_SIZE);
+      }
     }
     if (indexAddress) {
       if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && e.getTag(OSMTagKey.ADDR_STREET) != null) {

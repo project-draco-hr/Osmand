@@ -1,0 +1,20 @@
+{
+  long now=System.currentTimeMillis();
+  if (bmp != null) {
+    bmp.recycle();
+    bmp=null;
+  }
+  if (objects != null && !objects.isEmpty() && objectLoc.width() != 0f && objectLoc.height() != 0f) {
+    double leftX=MapUtils.getTileNumberX(zoom,objectLoc.left);
+    double rightX=MapUtils.getTileNumberX(zoom,objectLoc.right);
+    double topY=MapUtils.getTileNumberY(zoom,objectLoc.top);
+    double bottomY=MapUtils.getTileNumberY(zoom,objectLoc.bottom);
+    bmp=Bitmap.createBitmap((int)((rightX - leftX) * 256),(int)((bottomY - topY) * 256),Config.RGB_565);
+    Canvas cv=new Canvas(bmp);
+    cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillWhite);
+    for (    MapRenderObject w : objects) {
+      draw(w,cv,leftX,topY,zoom,rotate);
+    }
+  }
+  log.info(String.format("Rendering has been done in %s ms. ",System.currentTimeMillis() - now));
+}

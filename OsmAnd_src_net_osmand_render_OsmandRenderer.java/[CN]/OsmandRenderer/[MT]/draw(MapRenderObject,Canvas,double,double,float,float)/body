@@ -1,0 +1,71 @@
+{
+  float xText=-1;
+  float yText=-1;
+  Path path=null;
+  if (obj.isPoint()) {
+    float x=(float)((MapUtils.getTileNumberX(zoom,obj.getPointLongitude(0)) - leftTileX) * 256f);
+    float y=(float)((MapUtils.getTileNumberY(zoom,obj.getPointLatitude(0)) - topTileY) * 256f);
+    canvas.drawCircle(x,y,6,paintFill);
+  }
+ else {
+    Paint paint;
+    if (obj.isPolygon()) {
+      paint=paintFill;
+      if (MapRenderingTypes.isPolygonBuilding(obj.getType())) {
+        paint.setColor(Color.rgb(188,169,169));
+      }
+ else {
+        paint.setColor(Color.GRAY);
+      }
+    }
+ else {
+      paint=paintStroke;
+      if (MapRenderingTypes.isHighway(obj.getType())) {
+        int hwType=MapRenderingTypes.getHighwayType(obj.getType());
+        if (hwType == MapRenderingTypes.PL_HW_MOTORWAY || hwType == MapRenderingTypes.PL_HW_TRUNK) {
+          paint.setColor(Color.BLUE);
+        }
+ else         if (hwType == MapRenderingTypes.PL_HW_PRIMARY) {
+          paint.setColor(Color.rgb(235,152,154));
+        }
+ else         if (hwType == MapRenderingTypes.PL_HW_SECONDARY) {
+          paint.setColor(Color.rgb(253,214,164));
+        }
+ else {
+          paint.setColor(Color.WHITE);
+        }
+        paint.setStrokeWidth(5);
+      }
+ else {
+        paint.setStrokeWidth(2);
+        paint.setColor(Color.DKGRAY);
+      }
+    }
+    for (int i=0; i < obj.getPointsLength(); i++) {
+      float x=(float)((MapUtils.getTileNumberX(zoom,obj.getPointLongitude(i)) - leftTileX) * 256f);
+      float y=(float)((MapUtils.getTileNumberY(zoom,obj.getPointLatitude(i)) - topTileY) * 256f);
+      xText+=x;
+      yText+=y;
+      if (path == null) {
+        path=new Path();
+        path.moveTo(x,y);
+      }
+ else {
+        path.lineTo(x,y);
+      }
+    }
+    if (path != null) {
+      xText/=obj.getPointsLength();
+      yText/=obj.getPointsLength();
+      canvas.drawPath(path,paint);
+    }
+  }
+  if (obj.getName() != null && xText > 0 && yText > 0) {
+    if (obj.isPolyLine()) {
+      canvas.drawTextOnPath(obj.getName(),path,0,0,paintText);
+    }
+ else {
+      canvas.drawText(obj.getName(),xText,yText,paintText);
+    }
+  }
+}

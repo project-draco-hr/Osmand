@@ -15,25 +15,20 @@
     pStatement.setDouble(3,cLeftLongitude);
     pStatement.setDouble(4,cRightLongitude);
     ResultSet result=pStatement.executeQuery();
-    List<Way> local=new LinkedList<Way>();
+    List<MapRenderObject> local=new LinkedList<MapRenderObject>();
     try {
       int count=0;
       while (result.next()) {
         long id=result.getLong(1);
-        Way way=new Way(id);
-        byte[] bytes=result.getBytes(2);
-        for (int i=0; i < bytes.length; i+=8) {
-          int l2=Algoritms.parseIntFromBytes(bytes,i);
-          int l3=Algoritms.parseIntFromBytes(bytes,i + 4);
-          Node node=new Node(Float.intBitsToFloat(l2),Float.intBitsToFloat(l3),-1);
-          way.addNode(node);
-        }
+        MapRenderObject obj=new MapRenderObject(id);
+        obj.setData(result.getBytes(2));
+        obj.setName(result.getString(3));
+        obj.setType(result.getInt(4));
         count++;
-        local.add(way);
+        local.add(obj);
       }
-      cWays=local;
-      cachedWaysLoc=new RectF();
-      cachedWaysLoc.set((float)cLeftLongitude,(float)cTopLatitude,(float)cRightLongitude,(float)cBottomLatitude);
+      cObjects=local;
+      cachedWaysLoc=new RectF((float)cLeftLongitude,(float)cTopLatitude,(float)cRightLongitude,(float)cBottomLatitude);
       log.info(String.format("Search has been done in %s ms. %s results were found.",System.currentTimeMillis() - now,count));
     }
   finally {
@@ -43,4 +38,5 @@
  catch (  java.sql.SQLException e) {
     log.debug("Search failed",e);
   }
+  renderer.generateNewBitmap(cachedWaysLoc,cObjects,cZoom,0);
 }
