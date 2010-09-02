@@ -1,0 +1,85 @@
+{
+  if (obj.getPointsLength() == 0) {
+    return;
+  }
+  float xText=0;
+  float yText=0;
+  Path path=null;
+  float pathRotate=0;
+  float xLength=0;
+  float yLength=0;
+  Paint paint=paintStroke;
+  int hwType=MapRenderingTypes.getHighwayType(obj.getType());
+  if (hwType == MapRenderingTypes.PL_HW_MOTORWAY || hwType == MapRenderingTypes.PL_HW_TRUNK) {
+    paint.setColor(Color.BLUE);
+  }
+ else   if (hwType == MapRenderingTypes.PL_HW_PRIMARY) {
+    paint.setColor(Color.rgb(235,152,154));
+  }
+ else   if (hwType == MapRenderingTypes.PL_HW_SECONDARY) {
+    paint.setColor(Color.rgb(253,214,164));
+  }
+ else   if (hwType == MapRenderingTypes.PL_HW_SERVICE || hwType == MapRenderingTypes.PL_HW_UNCLASSIFIED || hwType == MapRenderingTypes.PL_HW_TERTIARY || hwType == MapRenderingTypes.PL_HW_RESIDENTIAL) {
+    paint.setColor(Color.WHITE);
+  }
+ else {
+    return;
+  }
+  if (zoom < 16) {
+    paint.setStrokeWidth(6);
+  }
+ else   if (zoom == 16) {
+    paint.setStrokeWidth(7);
+  }
+ else   if (zoom == 17) {
+    paint.setStrokeWidth(11);
+  }
+ else   if (zoom >= 18) {
+    paint.setStrokeWidth(16);
+  }
+  float xPrev=0;
+  float yPrev=0;
+  int middle=obj.getPointsLength() / 2;
+  for (int i=0; i < obj.getPointsLength(); i++) {
+    float x=(float)((MapUtils.getTileNumberX(zoom,obj.getPointLongitude(i)) - leftTileX) * 256f);
+    float y=(float)((MapUtils.getTileNumberY(zoom,obj.getPointLatitude(i)) - topTileY) * 256f);
+    if (path == null) {
+      path=new Path();
+      path.moveTo(x,y);
+    }
+ else {
+      if (xPrev > 0) {
+        xLength+=x - xPrev;
+        yLength+=y - yPrev;
+      }
+      if (i == middle) {
+        double rot=-Math.atan2(x - xPrev,y - yPrev) * 180 / Math.PI + 90;
+        if (rot < 0) {
+          rot+=360;
+        }
+        if (rot < 270 && rot > 90) {
+          rot+=180;
+        }
+        pathRotate=(float)rot;
+        xText=(x + xPrev) / 2;
+        yText=(y + yPrev) / 2;
+      }
+      if (pathRotate == 0) {
+      }
+      path.lineTo(x,y);
+    }
+    xPrev=x;
+    yPrev=y;
+  }
+  if (path != null) {
+    canvas.drawPath(path,paint);
+    if (obj.getName() != null) {
+      if (paintText.measureText(obj.getName()) < Math.max(Math.abs(xLength),Math.abs(yLength))) {
+        int sv=canvas.save();
+        canvas.rotate(pathRotate,xText,yText);
+        canvas.drawText(obj.getName(),xText,yText,paintText);
+        canvas.restoreToCount(sv);
+      }
+    }
+  }
+}
