@@ -17,11 +17,18 @@
   }
   int pointType=0;
   int polylineType=0;
+  Collection<String> tagKeySet=e.getTagKeySet();
+  if (tagKeySet.size() > 1 && tagKeySet.contains("building")) {
+    LinkedHashSet<String> set=new LinkedHashSet<String>();
+    set.add("building");
+    set.addAll(tagKeySet);
+    tagKeySet=set;
+  }
   for (int i=0; i < 2; i++) {
     if (i == 1 && type != 0) {
       break;
     }
-    for (    String tag : e.getTagKeySet()) {
+    for (    String tag : tagKeySet) {
       if (types.containsKey(tag)) {
         MapRulType rType=types.get(tag);
         String val=i == 1 ? null : e.getTag(tag);
@@ -43,12 +50,7 @@
         }
  else         if (polygon && type == 0 && (pr == POLYGON_WITH_CENTER_TYPE || pr == POLYGON_TYPE)) {
           type|=POLYGON_TYPE;
-          if (pr == DEFAULT_POLYGON_BUILDING) {
-            type|=((SUBTYPE_BUILDING << 5) | MAN_MADE) << 3;
-          }
- else {
-            type|=typeVal & MASK_13;
-          }
+          type|=typeVal & MASK_13;
           if (pr == POLYGON_WITH_CENTER_TYPE) {
             pointType=POINT_TYPE | typeVal;
           }

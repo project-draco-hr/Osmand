@@ -6,8 +6,14 @@
     for (    File f : file.listFiles()) {
       if (f.getName().endsWith(IndexConstants.MAP_INDEX_EXT)) {
         progress.startTask(Messages.getMessage("indexing_map") + f.getName(),-1);
-        boolean initialized=renderer.initializeNewResource(progress,f);
-        if (!initialized) {
+        try {
+          boolean initialized=renderer.initializeNewResource(progress,f);
+          if (!initialized) {
+            warnings.add(MessageFormat.format(Messages.getMessage("version_index_is_not_supported"),f.getName()));
+          }
+        }
+ catch (        SQLiteException e) {
+          log.error("Exception reading " + f.getAbsolutePath(),e);
           warnings.add(MessageFormat.format(Messages.getMessage("version_index_is_not_supported"),f.getName()));
         }
       }
