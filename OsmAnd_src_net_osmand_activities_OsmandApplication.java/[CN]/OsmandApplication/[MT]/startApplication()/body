@@ -1,0 +1,43 @@
+{
+  startDialog=new ProgressDialogImplementation(this,null,false);
+  startDialog.setRunnable("Initializing app",new Runnable(){
+    @Override public void run(){
+      List<String> warnings=null;
+      try {
+        warnings=manager.reloadIndexes(startDialog);
+        String voice=OsmandSettings.getVoiceProvider(OsmandApplication.this);
+        player=null;
+        if (voice != null) {
+          startDialog.startTask(getString(R.string.voice_data_initializing),-1);
+          String w=initCommandPlayer();
+          if (w != null) {
+            warnings.add(w);
+          }
+        }
+        routingHelper=new RoutingHelper(OsmandSettings.getApplicationMode(OsmandApplication.this),OsmandApplication.this,player);
+        SavingTrackHelper helper=new SavingTrackHelper(OsmandApplication.this);
+        if (helper.hasDataToSave()) {
+          startDialog.startTask(getString(R.string.saving_gpx_tracks),-1);
+          warnings.addAll(helper.saveDataToGpx());
+        }
+        helper.close();
+      }
+  finally {
+synchronized (OsmandApplication.this) {
+          startDialog=null;
+          if (progressDlg != null) {
+            progressDlg.dismiss();
+            showWarnings(warnings,progressDlg.getContext());
+            progressDlg=null;
+          }
+ else {
+            startingWarnings=warnings;
+          }
+        }
+      }
+    }
+  }
+);
+  startDialog.run();
+  Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
+}

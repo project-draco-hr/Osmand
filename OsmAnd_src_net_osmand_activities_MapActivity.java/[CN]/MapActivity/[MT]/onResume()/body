@@ -1,19 +1,18 @@
 {
   super.onResume();
-  rendererLayer.setVisible(true);
   if (OsmandSettings.getMapOrientation(this) != getRequestedOrientation()) {
     setRequestedOrientation(OsmandSettings.getMapOrientation(this));
   }
   currentScreenOrientation=getWindow().getWindowManager().getDefaultDisplay().getOrientation();
-  routingHelper=RoutingHelper.getInstance(this);
   ITileSource source=OsmandSettings.getMapTileSource(this);
   if (!Algoritms.objectEquals(mapView.getMap(),source)) {
     updateMapSource(source);
   }
   updateApplicationModeSettings();
   favoritesLayer.reloadFavorites(this);
-  poiMapLayer.setFilter(OsmandSettings.getPoiFilterForMap(this));
+  poiMapLayer.setFilter(OsmandSettings.getPoiFilterForMap(this,(OsmandApplication)getApplication()));
   backToLocation.setVisibility(View.INVISIBLE);
+  routingHelper.setUiActivity(this);
   LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
   service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,gpsListener);
   currentLocationProvider=LocationManager.GPS_PROVIDER;

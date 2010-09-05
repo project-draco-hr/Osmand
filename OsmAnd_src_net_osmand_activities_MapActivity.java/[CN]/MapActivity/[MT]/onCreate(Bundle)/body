@@ -3,6 +3,7 @@
   setVolumeControlStream(AudioManager.STREAM_MUSIC);
   requestWindowFeature(Window.FEATURE_NO_TITLE);
   setContentView(R.layout.main);
+  ((OsmandApplication)getApplication()).checkApplicationIsBeingInitialized(this);
   mapView=(OsmandMapTileView)findViewById(R.id.MapView);
   mapView.setTrackBallDelegate(new OsmandMapTileView.OnTrackBallListener(){
     @Override public boolean onTrackBallEvent(    MotionEvent e){
@@ -14,7 +15,7 @@
   MapTileDownloader.getInstance().addDownloaderCallback(new IMapDownloaderCallback(){
     @Override public void tileDownloaded(    DownloadRequest request){
       if (request != null && !request.error && request.fileToSave != null) {
-        ResourceManager mgr=ResourceManager.getResourceManager();
+        ResourceManager mgr=((OsmandApplication)getApplication()).getResourceManager();
         mgr.tileDownloaded(request);
       }
       mapView.tileDownloaded(request);
@@ -22,7 +23,7 @@
   }
 );
   mapView.setMapLocationListener(this);
-  routingHelper=RoutingHelper.getInstance(this);
+  routingHelper=((OsmandApplication)getApplication()).getRoutingHelper();
   routeLayer=new RouteLayer(routingHelper);
   mapView.addLayer(routeLayer,1);
   rendererLayer=new RendererLayer();

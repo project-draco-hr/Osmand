@@ -2,7 +2,8 @@
   final List<PoiFilter> userDefined=new ArrayList<PoiFilter>();
   List<String> list=new ArrayList<String>();
   list.add(getString(R.string.any_poi));
-  for (  PoiFilter f : PoiFiltersHelper.getUserDefinedPoiFilters(this)) {
+  final PoiFiltersHelper poiFilters=((OsmandApplication)getApplication()).getPoiFilters();
+  for (  PoiFilter f : poiFilters.getUserDefinedPoiFilters()) {
     if (!f.getFilterId().equals(PoiFilter.CUSTOM_FILTER_ID)) {
       userDefined.add(f);
       list.add(f.getName());
@@ -25,7 +26,7 @@
         filterId=PoiFiltersHelper.getOsmDefinedFilterId(AmenityType.values()[which - userDefined.size() - 1]);
       }
       OsmandSettings.setPoiFilterForMap(MapActivity.this,filterId);
-      poiMapLayer.setFilter(PoiFiltersHelper.getFilterById(MapActivity.this,filterId));
+      poiMapLayer.setFilter(poiFilters.getFilterById(filterId));
       mapView.refreshMap();
     }
   }

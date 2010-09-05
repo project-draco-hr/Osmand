@@ -1,0 +1,46 @@
+{
+  long size=getPreferences(MODE_WORLD_READABLE).getLong(EXCEPTION_FILE_SIZE,0);
+  final File file=new File(Environment.getExternalStorageDirectory(),OsmandApplication.EXCEPTION_PATH);
+  if (file.exists() && file.length() > 0) {
+    if (size != file.length()) {
+      String msg=MessageFormat.format(getString(R.string.previous_run_crashed),OsmandApplication.EXCEPTION_PATH);
+      Builder builder=new AlertDialog.Builder(MainMenuActivity.this);
+      builder.setMessage(msg).setNeutralButton(getString(R.string.close),null);
+      builder.setPositiveButton(R.string.send_report,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          Intent intent=new Intent(Intent.ACTION_SEND);
+          intent.putExtra(Intent.EXTRA_EMAIL,new String[]{"osmand.app@gmail.com"});
+          intent.putExtra(Intent.EXTRA_STREAM,Uri.fromFile(file));
+          intent.setType("vnd.android.cursor.dir/email");
+          intent.putExtra(Intent.EXTRA_SUBJECT,"OsmAnd bug");
+          StringBuilder text=new StringBuilder();
+          text.append("\nDevice : ").append(Build.DEVICE);
+          text.append("\nBrand : ").append(Build.BRAND);
+          text.append("\nModel : ").append(Build.MODEL);
+          text.append("\nProduct : ").append(Build.PRODUCT);
+          text.append("\nBuild : ").append(Build.DISPLAY);
+          text.append("\nVersion : ").append(Build.VERSION.RELEASE);
+          text.append("\nApp Version : ").append(Version.APP_NAME_VERSION);
+          try {
+            PackageInfo info=getPackageManager().getPackageInfo(getPackageName(),0);
+            if (info != null) {
+              text.append("\nApk Version : ").append(info.versionName).append(" ").append(info.versionCode);
+            }
+          }
+ catch (          NameNotFoundException e) {
+          }
+          intent.putExtra(Intent.EXTRA_TEXT,text.toString());
+          startActivity(Intent.createChooser(intent,getString(R.string.send_report)));
+        }
+      }
+);
+      builder.show();
+      getPreferences(MODE_WORLD_READABLE).edit().putLong(EXCEPTION_FILE_SIZE,file.length()).commit();
+    }
+  }
+ else {
+    if (size > 0) {
+      getPreferences(MODE_WORLD_READABLE).edit().putLong(EXCEPTION_FILE_SIZE,0).commit();
+    }
+  }
+}
