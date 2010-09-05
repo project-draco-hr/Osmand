@@ -10,33 +10,59 @@
   float yLength=0;
   Paint paint=paintStroke;
   int hwType=MapRenderingTypes.getHighwayType(obj.getType());
-  if (hwType == MapRenderingTypes.PL_HW_MOTORWAY || hwType == MapRenderingTypes.PL_HW_TRUNK) {
-    paint.setColor(Color.BLUE);
+  boolean carRoad=true;
+  if (hwType == MapRenderingTypes.PL_HW_TRUNK) {
+    paint.setColor(clTrunkRoad);
+  }
+ else   if (hwType == MapRenderingTypes.PL_HW_MOTORWAY) {
+    paint.setColor(clMotorwayRoad);
   }
  else   if (hwType == MapRenderingTypes.PL_HW_PRIMARY) {
-    paint.setColor(Color.rgb(235,152,154));
+    paint.setColor(clPrimaryRoad);
   }
  else   if (hwType == MapRenderingTypes.PL_HW_SECONDARY) {
-    paint.setColor(Color.rgb(253,214,164));
+    paint.setColor(clSecondaryRoad);
   }
- else   if (hwType == MapRenderingTypes.PL_HW_SERVICE || hwType == MapRenderingTypes.PL_HW_UNCLASSIFIED || hwType == MapRenderingTypes.PL_HW_TERTIARY || hwType == MapRenderingTypes.PL_HW_RESIDENTIAL) {
-    paint.setColor(Color.WHITE);
+ else   if (hwType == MapRenderingTypes.PL_HW_TERTIARY) {
+    paint.setColor(clTertiaryRoad);
+  }
+ else   if (hwType == MapRenderingTypes.PL_HW_SERVICE || hwType == MapRenderingTypes.PL_HW_UNCLASSIFIED || hwType == MapRenderingTypes.PL_HW_RESIDENTIAL) {
+    paint.setColor(clRoadColor);
   }
  else {
-    return;
+    carRoad=false;
+    paint.setStrokeWidth(2);
+    paint.setPathEffect(pedestrianPathEffect);
+    if (hwType == MapRenderingTypes.PL_HW_TRACK || hwType == MapRenderingTypes.PL_HW_PATH) {
+      paint.setColor(clTrackRoad);
+      paint.setPathEffect(trackPathEffect);
+    }
+ else     if (hwType == MapRenderingTypes.PL_HW_CYCLEWAY || hwType == MapRenderingTypes.PL_HW_BRIDLEWAY) {
+      paint.setColor(clCycleWayRoad);
+    }
+ else {
+      paint.setColor(clPedestrianRoad);
+    }
   }
-  if (zoom < 16) {
-    paint.setStrokeWidth(6);
+  if (carRoad) {
+    paint.setPathEffect(null);
+    if (zoom < 16) {
+      paint.setStrokeWidth(6);
+    }
+ else     if (zoom == 16) {
+      paint.setStrokeWidth(7);
+    }
+ else     if (zoom == 17) {
+      paint.setStrokeWidth(11);
+    }
+ else     if (zoom >= 18) {
+      paint.setStrokeWidth(16);
+    }
+    if (hwType == MapRenderingTypes.PL_HW_SERVICE) {
+      paint.setStrokeWidth(paint.getStrokeWidth() - 2);
+    }
   }
- else   if (zoom == 16) {
-    paint.setStrokeWidth(7);
-  }
- else   if (zoom == 17) {
-    paint.setStrokeWidth(11);
-  }
- else   if (zoom >= 18) {
-    paint.setStrokeWidth(16);
-  }
+  boolean inverse=false;
   float xPrev=0;
   float yPrev=0;
   int middle=obj.getPointsLength() / 2;
@@ -59,6 +85,7 @@
         }
         if (rot < 270 && rot > 90) {
           rot+=180;
+          inverse=true;
         }
         pathRotate=(float)rot;
         xText=(x + xPrev) / 2;
@@ -73,12 +100,24 @@
   }
   if (path != null) {
     canvas.drawPath(path,paint);
-    if (obj.getName() != null) {
+    if (obj.getName() != null && carRoad) {
       if (paintText.measureText(obj.getName()) < Math.max(Math.abs(xLength),Math.abs(yLength))) {
-        int sv=canvas.save();
-        canvas.rotate(pathRotate,xText,yText);
-        canvas.drawText(obj.getName(),xText,yText,paintText);
-        canvas.restoreToCount(sv);
+        if (inverse) {
+          path.rewind();
+          boolean st=true;
+          for (int i=obj.getPointsLength() - 1; i >= 0; i--) {
+            float x=(float)((MapUtils.getTileNumberX(zoom,obj.getPointLongitude(i)) - leftTileX) * 256f);
+            float y=(float)((MapUtils.getTileNumberY(zoom,obj.getPointLatitude(i)) - topTileY) * 256f);
+            if (st) {
+              st=false;
+              path.moveTo(x,y);
+            }
+ else {
+              path.lineTo(x,y);
+            }
+          }
+        }
+        canvas.drawTextOnPath(obj.getName(),path,0,0,paintText);
       }
     }
   }

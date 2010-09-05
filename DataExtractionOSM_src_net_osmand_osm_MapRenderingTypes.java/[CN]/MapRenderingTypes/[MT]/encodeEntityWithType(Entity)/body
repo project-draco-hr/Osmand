@@ -1,34 +1,78 @@
 {
+  if (types == null) {
+    types=new LinkedHashMap<String,MapRulType>();
+    init();
+  }
   int type=0;
   if (e instanceof Relation) {
     return type;
   }
-  int i=0;
-  if (e instanceof Node) {
-    if (Amenity.isAmenity(e)) {
-      type|=POINT_TYPE;
+  boolean point=e instanceof Node;
+  boolean polygon=false;
+  if (!point) {
+    List<Long> ids=((Way)e).getNodeIds();
+    if (ids.size() > 1) {
+      polygon=((long)ids.get(0) == (long)ids.get(ids.size() - 1));
     }
   }
+  int pointType=0;
+  int polylineType=0;
+  for (int i=0; i < 2; i++) {
+    if (i == 1 && type != 0) {
+      break;
+    }
+    for (    String tag : e.getTagKeySet()) {
+      if (types.containsKey(tag)) {
+        MapRulType rType=types.get(tag);
+        String val=i == 1 ? null : e.getTag(tag);
+        int pr=point ? rType.getPointRule(val) : (polygon ? rType.getPolygonRule(val) : rType.getPolylineRule(val));
+        int typeVal=rType.getType(val,MASK_13) << 3;
+        if (pr == POINT_TYPE && pointType == 0) {
+          pointType=POINT_TYPE | typeVal;
+          if (point) {
+            type=pointType;
+            break;
+          }
+        }
+ else         if (!point && pr == POLYLINE_TYPE && polylineType == 0) {
+          polylineType=POLYLINE_TYPE | (typeVal & MASK_13);
+          if (!polygon) {
+            type=polylineType;
+            break;
+          }
+        }
+ else         if (polygon && type == 0 && (pr == POLYGON_WITH_CENTER_TYPE || pr == POLYGON_TYPE)) {
+          type|=POLYGON_TYPE;
+          if (pr == DEFAULT_POLYGON_BUILDING) {
+            type|=((SUBTYPE_BUILDING << 5) | MAN_MADE) << 3;
+          }
  else {
-    if (e.getTag(OSMTagKey.BUILDING) != null) {
-      type<<=Integer.numberOfTrailingZeros(PG_AREA_MASK + 1);
-      type|=PG_BUILDING_TYPE;
-      type<<=Integer.numberOfTrailingZeros(TYPE_MASK + 1);
-      type|=POLYGON_TYPE;
+            type|=typeVal & MASK_13;
+          }
+          if (pr == POLYGON_WITH_CENTER_TYPE) {
+            pointType=POINT_TYPE | typeVal;
+          }
+        }
+ else         if (polygon && (pr == DEFAULT_POLYGON_BUILDING)) {
+          if (type == 0) {
+            type|=POLYGON_TYPE;
+            type|=((SUBTYPE_BUILDING << 5) | MAN_MADE) << 3;
+          }
+          if (pointType == 0) {
+            pointType=POINT_TYPE | typeVal;
+          }
+        }
+      }
     }
- else     if ((i=getHighwayType(e.getTag(OSMTagKey.HIGHWAY))) > 0) {
-      type=i;
-      type<<=1;
-      String one=e.getTag(OSMTagKey.ONEWAY);
-      type|=(one == null || one.equals("no")) ? 1 : 0;
-      type<<=Integer.numberOfTrailingZeros(PL_TYPE_MASK + 1);
-      type|=PL_HIGHWAY_TYPE;
-      type<<=Integer.numberOfTrailingZeros(TYPE_MASK + 1);
-      type|=POLYLINE_TYPE;
+  }
+  if (type == 0) {
+    if (polygon && polylineType != 0) {
+      return polylineType;
     }
- else {
-      type|=POLYLINE_TYPE;
-    }
+    return pointType;
+  }
+  if (polygon && pointType != 0) {
+    type|=((pointType >> 3) << 13) | type;
   }
   return type;
 }

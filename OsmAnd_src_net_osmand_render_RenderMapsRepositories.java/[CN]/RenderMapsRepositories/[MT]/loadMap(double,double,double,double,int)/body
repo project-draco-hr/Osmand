@@ -28,7 +28,6 @@
         local.add(obj);
       }
       cObjects=local;
-      cachedWaysLoc=new RectF((float)cLeftLongitude,(float)cTopLatitude,(float)cRightLongitude,(float)cBottomLatitude);
       log.info(String.format("Search has been done in %s ms. %s results were found.",System.currentTimeMillis() - now,count));
     }
   finally {
@@ -38,5 +37,12 @@
  catch (  java.sql.SQLException e) {
     log.debug("Search failed",e);
   }
-  renderer.generateNewBitmap(cachedWaysLoc,cObjects,cZoom,0);
+  RectF newLoc=new RectF((float)cLeftLongitude,(float)cTopLatitude,(float)cRightLongitude,(float)cBottomLatitude);
+  Bitmap bmp=renderer.generateNewBitmap(newLoc,cObjects,cZoom,0);
+  Bitmap oldBmp=this.bmp;
+  this.bmp=bmp;
+  cachedWaysLoc=newLoc;
+  if (oldBmp != null) {
+    oldBmp.recycle();
+  }
 }
