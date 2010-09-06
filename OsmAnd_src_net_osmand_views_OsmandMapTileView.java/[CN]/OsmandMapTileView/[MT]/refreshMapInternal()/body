@@ -18,10 +18,9 @@ synchronized (holder) {
     if (canvas != null) {
       canvas.save();
       boundsRect.set(0,0,getWidth(),getHeight());
-      canvas.drawRect(boundsRect,paintWhiteFill);
       canvas.rotate(rotate,w,h);
       try {
-        if (showMapTiles) {
+        if (map != null) {
           ResourceManager mgr=getApplication().getResourceManager();
           boolean useInternet=OsmandSettings.isUsingInternetToDownloadTiles(getContext()) && map.couldBeDownloadedFromInternet();
           int maxLevel=Math.min(OsmandSettings.getMaximumLevelToDownloadTile(getContext()),map.getMaximumZoomSupported());
@@ -69,7 +68,6 @@ synchronized (holder) {
  else {
                   int xZoom=((left + i) % div) * tileSize / div;
                   int yZoom=((top + j) % div) * tileSize / div;
-                  ;
                   bitmapToZoom.set(xZoom,yZoom,xZoom + tileSize / div,yZoom + tileSize / div);
                   bitmapToDraw.set(x1,y1,x1 + ftileSize,y1 + ftileSize);
                   canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
@@ -80,6 +78,20 @@ synchronized (holder) {
                 bitmapToDraw.set(x1,y1,x1 + ftileSize,y1 + ftileSize);
                 canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
               }
+            }
+          }
+        }
+ else {
+          calculateTileRectangle(boundsRect,w,h,tileX,tileY,tilesRect);
+          int left=(int)FloatMath.floor(tilesRect.left);
+          int top=(int)FloatMath.floor(tilesRect.top);
+          int width=(int)(FloatMath.ceil(tilesRect.right) - left);
+          int height=(int)(FloatMath.ceil(tilesRect.bottom) - top);
+          for (int i=0; i < width; i++) {
+            for (int j=0; j < height; j++) {
+              float x1=(i + left - tileX) * ftileSize + w;
+              float y1=(j + top - tileY) * ftileSize + h;
+              drawEmptyTile(canvas,x1,y1,ftileSize);
             }
           }
         }

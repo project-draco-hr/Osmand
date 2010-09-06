@@ -2,8 +2,6 @@
   if (obj.getPointsLength() == 0) {
     return;
   }
-  float xText=0;
-  float yText=0;
   Path path=null;
   float pathRotate=0;
   float xLength=0;
@@ -67,36 +65,33 @@
   float yPrev=0;
   int middle=obj.getPointsLength() / 2;
   for (int i=0; i < obj.getPointsLength(); i++) {
-    float x=(float)((MapUtils.getTileNumberX(zoom,obj.getPointLongitude(i)) - leftTileX) * 256f);
-    float y=(float)((MapUtils.getTileNumberY(zoom,obj.getPointLatitude(i)) - topTileY) * 256f);
+    float lon=obj.getPointLongitude(i);
+    float lat=obj.getPointLatitude(i);
+    PointF p=calcPoint(leftTileX,topTileY,lat,lon,zoom,rotate);
     if (path == null) {
       path=new Path();
-      path.moveTo(x,y);
+      path.moveTo(p.x,p.y);
     }
  else {
-      if (xPrev > 0) {
-        xLength+=x - xPrev;
-        yLength+=y - yPrev;
-      }
+      xLength+=p.x - xPrev;
+      yLength+=p.y - yPrev;
       if (i == middle) {
-        double rot=-Math.atan2(x - xPrev,y - yPrev) * 180 / Math.PI + 90;
+        double rot=-Math.atan2(p.x - xPrev,p.y - yPrev) * 180 / Math.PI;
         if (rot < 0) {
           rot+=360;
         }
-        if (rot < 270 && rot > 90) {
+        if (rot < 180) {
           rot+=180;
           inverse=true;
         }
         pathRotate=(float)rot;
-        xText=(x + xPrev) / 2;
-        yText=(y + yPrev) / 2;
       }
       if (pathRotate == 0) {
       }
-      path.lineTo(x,y);
+      path.lineTo(p.x,p.y);
     }
-    xPrev=x;
-    yPrev=y;
+    xPrev=p.x;
+    yPrev=p.y;
   }
   if (path != null) {
     canvas.drawPath(path,paint);
@@ -106,14 +101,15 @@
           path.rewind();
           boolean st=true;
           for (int i=obj.getPointsLength() - 1; i >= 0; i--) {
-            float x=(float)((MapUtils.getTileNumberX(zoom,obj.getPointLongitude(i)) - leftTileX) * 256f);
-            float y=(float)((MapUtils.getTileNumberY(zoom,obj.getPointLatitude(i)) - topTileY) * 256f);
+            float lon=obj.getPointLongitude(i);
+            float lat=obj.getPointLatitude(i);
+            PointF p=calcPoint(leftTileX,topTileY,lat,lon,zoom,rotate);
             if (st) {
               st=false;
-              path.moveTo(x,y);
+              path.moveTo(p.x,p.y);
             }
  else {
-              path.lineTo(x,y);
+              path.lineTo(p.x,p.y);
             }
           }
         }

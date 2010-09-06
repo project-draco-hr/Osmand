@@ -100,13 +100,19 @@
     ((OsmandApplication)getApplication()).initCommandPlayer();
   }
  else   if (preference == tileSourcePreference) {
-    edit.putString(OsmandSettings.MAP_TILE_SOURCES,(String)newValue);
+    if (VECTOR_MAP.equals((String)newValue)) {
+      edit.putBoolean(OsmandSettings.MAP_VECTOR_DATA,true);
+    }
+ else {
+      edit.putString(OsmandSettings.MAP_TILE_SOURCES,(String)newValue);
+      edit.putBoolean(OsmandSettings.MAP_VECTOR_DATA,false);
+    }
     edit.commit();
     String summary=tileSourcePreference.getSummary().toString();
     if (summary.lastIndexOf(':') != -1) {
       summary=summary.substring(0,summary.lastIndexOf(':') + 1);
     }
-    summary+=" " + OsmandSettings.getMapTileSourceName(this);
+    summary+=" " + (OsmandSettings.isUsingMapVectorData(this) ? getString(R.string.vector_data) : OsmandSettings.getMapTileSourceName(this));
     tileSourcePreference.setSummary(summary);
   }
   return true;

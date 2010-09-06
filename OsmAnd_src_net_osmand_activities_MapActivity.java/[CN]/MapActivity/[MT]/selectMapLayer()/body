@@ -1,14 +1,25 @@
 {
-  Map<String,String> entriesMap=SettingsActivity.getTileSourceEntries();
+  Map<String,String> entriesMap=SettingsActivity.getTileSourceEntries(this);
   Builder builder=new AlertDialog.Builder(this);
   final ArrayList<String> keys=new ArrayList<String>(entriesMap.keySet());
-  builder.setItems(entriesMap.values().toArray(new String[entriesMap.size()]),new DialogInterface.OnClickListener(){
+  String[] items=new String[entriesMap.size() + 1];
+  items[0]=getString(R.string.vector_data);
+  int i=1;
+  for (  String it : entriesMap.values()) {
+    items[i++]=it;
+  }
+  builder.setItems(items,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       Editor edit=OsmandSettings.getWriteableEditor(MapActivity.this);
-      edit.putString(OsmandSettings.MAP_TILE_SOURCES,keys.get(which));
+      if (which == 0) {
+        edit.putBoolean(OsmandSettings.MAP_VECTOR_DATA,true);
+      }
+ else {
+        edit.putBoolean(OsmandSettings.MAP_VECTOR_DATA,false);
+        edit.putString(OsmandSettings.MAP_TILE_SOURCES,keys.get(which - 1));
+      }
       edit.commit();
-      updateMapSource(OsmandSettings.getMapTileSource(MapActivity.this));
-      mapView.refreshMap();
+      updateMapSource();
     }
   }
 );

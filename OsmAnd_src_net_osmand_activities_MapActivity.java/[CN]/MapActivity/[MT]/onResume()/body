@@ -1,13 +1,13 @@
 {
   super.onResume();
-  rendererLayer.setVisible(true);
   if (OsmandSettings.getMapOrientation(this) != getRequestedOrientation()) {
     setRequestedOrientation(OsmandSettings.getMapOrientation(this));
   }
   currentScreenOrientation=getWindow().getWindowManager().getDefaultDisplay().getOrientation();
-  ITileSource source=OsmandSettings.getMapTileSource(this);
-  if (!Algoritms.objectEquals(mapView.getMap(),source)) {
-    updateMapSource(source);
+  boolean showTiles=!OsmandSettings.isUsingMapVectorData(this);
+  ITileSource source=showTiles ? OsmandSettings.getMapTileSource(this) : null;
+  if (showTiles != !rendererLayer.isVisible() || !Algoritms.objectEquals(mapView.getMap(),source)) {
+    updateMapSource();
   }
   updateApplicationModeSettings();
   favoritesLayer.reloadFavorites(this);

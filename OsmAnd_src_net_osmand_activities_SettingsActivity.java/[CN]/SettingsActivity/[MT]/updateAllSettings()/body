@@ -90,10 +90,12 @@
   maxLevelToDownload.setEntries(entries);
   maxLevelToDownload.setEntryValues(entries);
   maxLevelToDownload.setValue(OsmandSettings.getMaximumLevelToDownloadTile(this) + "");
-  Map<String,String> entriesMap=getTileSourceEntries();
-  entries=new String[entriesMap.size()];
-  valueEntries=new String[entriesMap.size()];
-  int ki=0;
+  Map<String,String> entriesMap=getTileSourceEntries(this);
+  entries=new String[entriesMap.size() + 1];
+  valueEntries=new String[entriesMap.size() + 1];
+  valueEntries[0]=VECTOR_MAP;
+  entries[0]=getString(R.string.vector_data);
+  int ki=1;
   for (  Map.Entry<String,String> es : entriesMap.entrySet()) {
     entries[ki]=es.getValue();
     valueEntries[ki]=es.getKey();
@@ -101,8 +103,9 @@
   }
   tileSourcePreference.setEntries(entries);
   tileSourcePreference.setEntryValues(valueEntries);
-  tileSourcePreference.setValue(OsmandSettings.getMapTileSourceName(this));
-  String mapName=" " + OsmandSettings.getMapTileSourceName(this);
+  String value=OsmandSettings.isUsingMapVectorData(this) ? VECTOR_MAP : OsmandSettings.getMapTileSourceName(this);
+  String mapName=" " + (OsmandSettings.isUsingMapVectorData(this) ? getString(R.string.vector_data) : OsmandSettings.getMapTileSourceName(this));
+  tileSourcePreference.setValue(value);
   String summary=tileSourcePreference.getSummary().toString();
   if (summary.lastIndexOf(':') != -1) {
     summary=summary.substring(0,summary.lastIndexOf(':') + 1);

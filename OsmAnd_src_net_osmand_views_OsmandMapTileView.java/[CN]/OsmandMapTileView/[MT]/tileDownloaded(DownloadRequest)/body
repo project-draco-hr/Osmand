@@ -25,24 +25,21 @@ synchronized (holder) {
       canvas.save();
       canvas.rotate(rotate,w,h);
       try {
-        if (showMapTiles) {
+        Bitmap bmp=null;
+        if (map != null) {
           ResourceManager mgr=getApplication().getResourceManager();
-          Bitmap bmp=mgr.getTileImageForMapSync(null,map,request.xTile,request.yTile,request.zoom,false);
-          float x=(request.xTile - tileX) * getTileSize() + w;
-          float y=(request.yTile - tileY) * getTileSize() + h;
-          float tileSize=getTileSize();
-          if (bmp == null) {
-            drawEmptyTile(canvas,x,y,tileSize);
-          }
- else {
-            bitmapToZoom.set(0,0,getSourceTileSize(),getSourceTileSize());
-            bitmapToDraw.set(x,y,x + tileSize,y + tileSize);
-            canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
-          }
+          bmp=mgr.getTileImageForMapSync(null,map,request.xTile,request.yTile,request.zoom,false);
+        }
+        float x=(request.xTile - tileX) * getTileSize() + w;
+        float y=(request.yTile - tileY) * getTileSize() + h;
+        float tileSize=getTileSize();
+        if (bmp == null) {
+          drawEmptyTile(canvas,x,y,tileSize);
         }
  else {
-          boundsRect.set(0,0,getWidth(),getHeight());
-          canvas.drawRect(boundsRect,paintWhiteFill);
+          bitmapToZoom.set(0,0,getSourceTileSize(),getSourceTileSize());
+          bitmapToDraw.set(x,y,x + tileSize,y + tileSize);
+          canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
         }
         drawOverMap(canvas);
       }
