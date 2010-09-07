@@ -1,0 +1,174 @@
+{
+  if (obj.getPointsLength() == 0) {
+    return;
+  }
+  Path path=null;
+  float pathRotate=0;
+  float xLength=0;
+  float yLength=0;
+  Paint paint=paintStroke;
+  int type=MapRenderingTypes.getObjectType(obj.getType());
+  int subtype=MapRenderingTypes.getPolylineSubType(obj.getType());
+  boolean showText=true;
+  boolean showLine=true;
+  paint.setPathEffect(null);
+  paint.setShadowLayer(0,0,0,0);
+  if (type == MapRenderingTypes.HIGHWAY) {
+    int hwType=subtype;
+    boolean carRoad=true;
+    if (hwType == MapRenderingTypes.PL_HW_TRUNK) {
+      paint.setColor(clTrunkRoad);
+    }
+ else     if (hwType == MapRenderingTypes.PL_HW_MOTORWAY) {
+      paint.setColor(clMotorwayRoad);
+    }
+ else     if (hwType == MapRenderingTypes.PL_HW_PRIMARY) {
+      paint.setColor(clPrimaryRoad);
+    }
+ else     if (hwType == MapRenderingTypes.PL_HW_SECONDARY) {
+      paint.setColor(clSecondaryRoad);
+    }
+ else     if (hwType == MapRenderingTypes.PL_HW_TERTIARY) {
+      paint.setColor(clTertiaryRoad);
+      paint.setShadowLayer(2,0,0,Color.rgb(186,186,186));
+    }
+ else     if (hwType == MapRenderingTypes.PL_HW_SERVICE || hwType == MapRenderingTypes.PL_HW_UNCLASSIFIED || hwType == MapRenderingTypes.PL_HW_RESIDENTIAL) {
+      paint.setShadowLayer(1,0,0,Color.rgb(194,194,194));
+      paint.setColor(clRoadColor);
+    }
+ else     if (hwType == MapRenderingTypes.PL_HW_PEDESTRIAN) {
+      paint.setShadowLayer(1,0,0,Color.rgb(176,176,176));
+      paint.setColor(Color.rgb(236,236,236));
+    }
+ else {
+      carRoad=false;
+      paint.setStrokeWidth(2);
+      paint.setPathEffect(pedestrianPathEffect);
+      if (hwType == MapRenderingTypes.PL_HW_TRACK || hwType == MapRenderingTypes.PL_HW_PATH) {
+        paint.setColor(clTrackRoad);
+        paint.setPathEffect(trackPathEffect);
+      }
+ else       if (hwType == MapRenderingTypes.PL_HW_CYCLEWAY || hwType == MapRenderingTypes.PL_HW_BRIDLEWAY) {
+        paint.setColor(clCycleWayRoad);
+      }
+ else {
+        paint.setColor(clPedestrianRoad);
+      }
+    }
+    if (carRoad) {
+      if (zoom < 16) {
+        paint.setStrokeWidth(6);
+      }
+ else       if (zoom == 16) {
+        paint.setStrokeWidth(7);
+      }
+ else       if (zoom == 17) {
+        paint.setStrokeWidth(11);
+      }
+ else       if (zoom >= 18) {
+        paint.setStrokeWidth(16);
+      }
+      if (hwType == MapRenderingTypes.PL_HW_SERVICE) {
+        paint.setStrokeWidth(paint.getStrokeWidth() - 2);
+      }
+    }
+    showText=carRoad || zoom > 16;
+  }
+ else   if (type == MapRenderingTypes.BARRIER) {
+    showLine=zoom > 16;
+    paint.setColor(Color.rgb(137,136,132));
+    paint.setStrokeWidth(1);
+  }
+ else   if (type == MapRenderingTypes.RAILWAY) {
+    paint.setStrokeWidth(2);
+    if (subtype == 6) {
+      paint.setColor(Color.rgb(153,153,153));
+      if (zoom > 16) {
+        paint.setStrokeWidth(3);
+      }
+      paint.setPathEffect(subwayPathEffect);
+    }
+ else     if (subtype == 2) {
+      paint.setColor(Color.rgb(62,62,62));
+    }
+ else     if (subtype == 1) {
+      paint.setColor(Color.rgb(153,153,153));
+      if (zoom >= 16) {
+        paint.setStrokeWidth(3);
+      }
+      paint.setPathEffect(railwayPathEffect);
+    }
+ else {
+      paint.setColor(Color.rgb(153,153,153));
+    }
+  }
+ else   if (type == MapRenderingTypes.WATERWAY) {
+    if (subtype >= 1 && subtype <= 6) {
+      paint.setColor(Color.rgb(181,208,208));
+    }
+  }
+ else {
+    paint.setColor(Color.BLACK);
+    paint.setStrokeWidth(1);
+  }
+  if (!showLine) {
+    return;
+  }
+  boolean inverse=false;
+  float xPrev=0;
+  float yPrev=0;
+  int middle=obj.getPointsLength() / 2;
+  for (int i=0; i < obj.getPointsLength(); i++) {
+    float lon=obj.getPointLongitude(i);
+    float lat=obj.getPointLatitude(i);
+    PointF p=calcPoint(leftTileX,topTileY,lat,lon,zoom,rotate);
+    if (path == null) {
+      path=new Path();
+      path.moveTo(p.x,p.y);
+    }
+ else {
+      xLength+=p.x - xPrev;
+      yLength+=p.y - yPrev;
+      if (i == middle) {
+        double rot=-Math.atan2(p.x - xPrev,p.y - yPrev) * 180 / Math.PI;
+        if (rot < 0) {
+          rot+=360;
+        }
+        if (rot < 180) {
+          rot+=180;
+          inverse=true;
+        }
+        pathRotate=(float)rot;
+      }
+      if (pathRotate == 0) {
+      }
+      path.lineTo(p.x,p.y);
+    }
+    xPrev=p.x;
+    yPrev=p.y;
+  }
+  if (path != null) {
+    canvas.drawPath(path,paint);
+    if (obj.getName() != null && showText) {
+      if (paintText.measureText(obj.getName()) < Math.max(Math.abs(xLength),Math.abs(yLength))) {
+        if (inverse) {
+          path.rewind();
+          boolean st=true;
+          for (int i=obj.getPointsLength() - 1; i >= 0; i--) {
+            float lon=obj.getPointLongitude(i);
+            float lat=obj.getPointLatitude(i);
+            PointF p=calcPoint(leftTileX,topTileY,lat,lon,zoom,rotate);
+            if (st) {
+              st=false;
+              path.moveTo(p.x,p.y);
+            }
+ else {
+              path.lineTo(p.x,p.y);
+            }
+          }
+        }
+        canvas.drawTextOnPath(obj.getName(),path,0,0,paintText);
+      }
+    }
+  }
+}
