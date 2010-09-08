@@ -45,10 +45,10 @@
  else {
       carRoad=false;
       paint.setStrokeWidth(2);
-      paint.setPathEffect(pedestrianPathEffect);
+      paint.setPathEffect(dashEffect2_2);
       if (hwType == MapRenderingTypes.PL_HW_TRACK || hwType == MapRenderingTypes.PL_HW_PATH) {
         paint.setColor(clTrackRoad);
-        paint.setPathEffect(trackPathEffect);
+        paint.setPathEffect(dashEffect6_2);
       }
  else       if (hwType == MapRenderingTypes.PL_HW_CYCLEWAY || hwType == MapRenderingTypes.PL_HW_BRIDLEWAY) {
         paint.setColor(clCycleWayRoad);
@@ -62,13 +62,16 @@
         paint.setStrokeWidth(6);
       }
  else       if (zoom == 16) {
-        paint.setStrokeWidth(7);
+        paint.setStrokeWidth(8);
       }
  else       if (zoom == 17) {
-        paint.setStrokeWidth(11);
+        paint.setStrokeWidth(13);
       }
  else       if (zoom >= 18) {
         paint.setStrokeWidth(16);
+      }
+ else       if (zoom >= 19) {
+        paint.setStrokeWidth(20);
       }
       if (hwType == MapRenderingTypes.PL_HW_SERVICE) {
         paint.setStrokeWidth(paint.getStrokeWidth() - 2);
@@ -77,9 +80,58 @@
     showText=carRoad || zoom > 16;
   }
  else   if (type == MapRenderingTypes.BARRIER) {
-    showLine=zoom > 16;
+    showLine=zoom >= 16;
     paint.setColor(Color.rgb(137,136,132));
     paint.setStrokeWidth(1);
+  }
+ else   if (type == MapRenderingTypes.POWER) {
+    if (subtype == 3) {
+      paint.setColor(Color.rgb(186,186,186));
+      paint.setStrokeWidth(2);
+    }
+ else     if (subtype == 4) {
+      paint.setColor(Color.rgb(186,186,186));
+      paint.setStrokeWidth(1);
+    }
+  }
+ else   if (type == MapRenderingTypes.AERIALWAY) {
+    paint.setStrokeWidth(2);
+    paint.setColor(Color.rgb(186,186,186));
+  }
+ else   if (type == MapRenderingTypes.ADMINISTRATIVE) {
+    if (subtype == 29 || subtype == 30) {
+      showLine=zoom > 12;
+      paint.setColor(Color.rgb(170,86,170));
+      paint.setPathEffect(dashEffect2_2);
+      paint.setStrokeWidth(2);
+      if (zoom > 16) {
+        paint.setStrokeWidth(3);
+      }
+    }
+ else     if (subtype == 28 || subtype == 27) {
+      showLine=zoom > 11;
+      paint.setColor(Color.rgb(208,167,201));
+      paint.setStrokeWidth(2);
+      paint.setPathEffect(dashEffect6_3);
+    }
+ else     if (subtype == 26 || subtype == 25) {
+      showLine=zoom > 10;
+      paint.setColor(Color.rgb(169,193,156));
+      paint.setStrokeWidth(2);
+      paint.setPathEffect(dashEffect5_2_2_2);
+    }
+ else     if (subtype == 24 || subtype == 23) {
+      showLine=zoom > 5;
+      paint.setColor(Color.rgb(141,67,137));
+      if (zoom > 11) {
+        paint.setPathEffect(dashEffect5_2_2_2);
+        paint.setStrokeWidth(3);
+      }
+ else {
+        paint.setPathEffect(dashEffect4_4);
+        paint.setStrokeWidth(2);
+      }
+    }
   }
  else   if (type == MapRenderingTypes.RAILWAY) {
     paint.setStrokeWidth(2);
@@ -88,7 +140,7 @@
       if (zoom > 16) {
         paint.setStrokeWidth(3);
       }
-      paint.setPathEffect(subwayPathEffect);
+      paint.setPathEffect(dashEffect6_3);
     }
  else     if (subtype == 2) {
       paint.setColor(Color.rgb(62,62,62));
@@ -98,7 +150,7 @@
       if (zoom >= 16) {
         paint.setStrokeWidth(3);
       }
-      paint.setPathEffect(railwayPathEffect);
+      paint.setPathEffect(dashEffect7_7);
     }
  else {
       paint.setColor(Color.rgb(153,153,153));
@@ -116,6 +168,8 @@
   boolean inverse=false;
   float xPrev=0;
   float yPrev=0;
+  float xMid=0;
+  float yMid=0;
   int middle=obj.getPointsLength() / 2;
   for (int i=0; i < obj.getPointsLength(); i++) {
     float lon=obj.getPointLongitude(i);
@@ -129,6 +183,8 @@
       xLength+=p.x - xPrev;
       yLength+=p.y - yPrev;
       if (i == middle) {
+        xMid=p.x;
+        yMid=p.y;
         double rot=-Math.atan2(p.x - xPrev,p.y - yPrev) * 180 / Math.PI;
         if (rot < 0) {
           rot+=360;
@@ -149,6 +205,11 @@
   if (path != null) {
     canvas.drawPath(path,paint);
     if (obj.getName() != null && showText) {
+      float w=paint.getStrokeWidth() + 3;
+      if (w < 10) {
+        w=10;
+      }
+      paintText.setTextSize(w);
       if (paintText.measureText(obj.getName()) < Math.max(Math.abs(xLength),Math.abs(yLength))) {
         if (inverse) {
           path.rewind();
@@ -166,7 +227,15 @@
             }
           }
         }
-        canvas.drawTextOnPath(obj.getName(),path,0,2,paintText);
+        TextDrawInfo text=new TextDrawInfo();
+        text.text=obj.getName();
+        text.centerX=xMid;
+        text.centerY=yMid;
+        text.drawOnPath=path;
+        text.textColor=Color.BLACK;
+        text.textSize=w;
+        text.vOffset=paint.getStrokeWidth() / 2 - 1;
+        textToDraw.add(text);
       }
     }
   }

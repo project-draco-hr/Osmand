@@ -3,16 +3,38 @@
   Collections.sort(objects,this);
   Bitmap bmp=null;
   if (objects != null && !objects.isEmpty() && objectLoc.width() != 0f && objectLoc.height() != 0f) {
+    List<TextDrawInfo> textToDraw=new ArrayList<TextDrawInfo>();
+    List<IconDrawInfo> iconsToDraw=new ArrayList<IconDrawInfo>();
     double leftX=MapUtils.getTileNumberX(zoom,objectLoc.left);
     double rightX=MapUtils.getTileNumberX(zoom,objectLoc.right);
     double topY=MapUtils.getTileNumberY(zoom,objectLoc.top);
     double bottomY=MapUtils.getTileNumberY(zoom,objectLoc.bottom);
     bmp=Bitmap.createBitmap((int)((rightX - leftX) * 256),(int)((bottomY - topY) * 256),Config.RGB_565);
     Canvas cv=new Canvas(bmp);
-    cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillWhite);
+    cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillEmpty);
     cv.rotate(-rotate);
     for (    MapRenderObject w : objects) {
-      draw(w,cv,leftX,topY,zoom,rotate);
+      draw(w,cv,leftX,topY,zoom,rotate,textToDraw,iconsToDraw);
+    }
+    for (    IconDrawInfo icon : iconsToDraw) {
+      if (icon.resId != 0) {
+        Bitmap ico=BitmapFactory.decodeResource(context.getResources(),icon.resId);
+        if (ico != null) {
+          cv.drawBitmap(ico,icon.x - bmp.getWidth() / 2,icon.y - bmp.getHeight() / 2,paintIcon);
+        }
+      }
+    }
+    for (    TextDrawInfo text : textToDraw) {
+      if (text.text != null) {
+        paintText.setTextSize(text.textSize);
+        paintText.setColor(text.textColor);
+        if (text.drawOnPath != null) {
+          cv.drawTextOnPath(text.text,text.drawOnPath,0,text.vOffset,paintText);
+        }
+ else {
+          cv.drawText(text.text,text.centerX,text.centerY,paintText);
+        }
+      }
     }
   }
   log.info(String.format("Rendering has been done in %s ms. ",System.currentTimeMillis() - now));

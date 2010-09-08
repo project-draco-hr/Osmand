@@ -5,10 +5,12 @@
   Path path=null;
   int type=MapRenderingTypes.getObjectType(obj.getType());
   int subtype=MapRenderingTypes.getPolygonSubType(obj.getType());
-  int color=Color.WHITE;
+  int color=Color.rgb(245,245,245);
   int colorAround=0;
   Shader shader=null;
+  boolean showPolygon=true;
   if (type == MapRenderingTypes.MAN_MADE) {
+    showPolygon=zoom > 15;
     if (subtype == MapRenderingTypes.SUBTYPE_BUILDING) {
       color=Color.rgb(188,169,169);
     }
@@ -19,6 +21,11 @@
  else   if (type == MapRenderingTypes.WATERWAY) {
     if (subtype == 3) {
       color=Color.rgb(181,208,208);
+    }
+  }
+ else   if (type == MapRenderingTypes.POWER) {
+    if (subtype == 5 || subtype == 6) {
+      color=Color.rgb(186,186,186);
     }
   }
  else   if (type == MapRenderingTypes.HIGHWAY) {
@@ -32,6 +39,7 @@
     }
   }
  else   if (type == MapRenderingTypes.TOURISM) {
+    showPolygon=zoom > 15;
     if (subtype == 2) {
       color=Color.rgb(204,153,153);
     }
@@ -41,13 +49,13 @@
   }
  else   if (type == MapRenderingTypes.NATURAL) {
     if (subtype == 23) {
-      color=Color.rgb(114,191,129);
+      color=Color.rgb(174,209,160);
     }
  else     if (subtype == 2) {
       color=Color.rgb(238,204,85);
     }
  else     if (subtype == 21 || subtype == 5) {
-      color=Color.rgb(181,214,241);
+      color=Color.rgb(181,208,208);
     }
   }
  else   if (type == MapRenderingTypes.LANDUSE) {
@@ -74,17 +82,24 @@ break;
 case 10:
 shader=getShader(R.drawable.h_forest);
 break;
+case 11:
+color=Color.rgb(223,209,214);
+break;
 case 12:
 color=Color.rgb(207,236,168);
 break;
 case 15:
 color=Color.rgb(223,209,214);
 break;
+case 18:
+color=Color.rgb(252,216,219);
+break;
 case 23:
 color=Color.rgb(221,221,221);
 break;
 case 24:
 color=Color.rgb(254,234,234);
+colorAround=Color.rgb(245,154,152);
 break;
 case 27:
 shader=getShader(R.drawable.h_vineyard);
@@ -145,6 +160,9 @@ colorAround=Color.rgb(212,168,158);
  else {
 color=Color.rgb(188,169,169);
 }
+}
+if (!showPolygon) {
+return null;
 }
 paint.setColor(color);
 for (int i=0; i < obj.getPointsLength(); i++) {
