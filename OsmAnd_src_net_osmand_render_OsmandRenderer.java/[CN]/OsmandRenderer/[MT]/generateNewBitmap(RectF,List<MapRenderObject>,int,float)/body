@@ -3,28 +3,35 @@
   Collections.sort(objects,this);
   Bitmap bmp=null;
   if (objects != null && !objects.isEmpty() && objectLoc.width() != 0f && objectLoc.height() != 0f) {
-    List<TextDrawInfo> textToDraw=new ArrayList<TextDrawInfo>();
-    List<IconDrawInfo> iconsToDraw=new ArrayList<IconDrawInfo>();
-    double leftX=MapUtils.getTileNumberX(zoom,objectLoc.left);
-    double rightX=MapUtils.getTileNumberX(zoom,objectLoc.right);
-    double topY=MapUtils.getTileNumberY(zoom,objectLoc.top);
-    double bottomY=MapUtils.getTileNumberY(zoom,objectLoc.bottom);
-    bmp=Bitmap.createBitmap((int)((rightX - leftX) * 256),(int)((bottomY - topY) * 256),Config.RGB_565);
+    RenderingContext rc=new RenderingContext();
+    rc.leftX=(float)MapUtils.getTileNumberX(zoom,objectLoc.left);
+    rc.rightX=(float)MapUtils.getTileNumberX(zoom,objectLoc.right);
+    rc.topY=(float)MapUtils.getTileNumberY(zoom,objectLoc.top);
+    rc.bottomY=(float)MapUtils.getTileNumberY(zoom,objectLoc.bottom);
+    rc.zoom=zoom;
+    rc.rotate=rotate;
+    rc.cosRotate=FloatMath.cos((float)Math.toRadians(rotate));
+    rc.sinRotate=FloatMath.sin((float)Math.toRadians(rotate));
+    rc.tileDivisor=(int)(1 << (31 - zoom));
+    bmp=Bitmap.createBitmap((int)((rc.rightX - rc.leftX) * 256),(int)((rc.bottomY - rc.topY) * 256),Config.RGB_565);
     Canvas cv=new Canvas(bmp);
     cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillEmpty);
     cv.rotate(-rotate);
     for (    MapRenderObject w : objects) {
-      draw(w,cv,leftX,topY,zoom,rotate,textToDraw,iconsToDraw);
+      draw(w,cv,rc);
     }
-    for (    IconDrawInfo icon : iconsToDraw) {
+    for (    IconDrawInfo icon : rc.iconsToDraw) {
       if (icon.resId != 0) {
-        Bitmap ico=BitmapFactory.decodeResource(context.getResources(),icon.resId);
+        if (cachedIcons.get(icon.resId) == null) {
+          cachedIcons.put(icon.resId,BitmapFactory.decodeResource(context.getResources(),icon.resId));
+        }
+        Bitmap ico=cachedIcons.get(icon.resId);
         if (ico != null) {
           cv.drawBitmap(ico,icon.x - ico.getWidth() / 2,icon.y - ico.getHeight() / 2,paintIcon);
         }
       }
     }
-    for (    TextDrawInfo text : textToDraw) {
+    for (    TextDrawInfo text : rc.textToDraw) {
       if (text.text != null) {
         paintText.setTextSize(text.textSize);
         paintText.setColor(text.textColor);
@@ -36,7 +43,7 @@
         }
       }
     }
+    log.info(String.format("Rendering has been done in %s ms. (%s points, %s points inside)",System.currentTimeMillis() - now,rc.pointCount,rc.pointInsideCount));
   }
-  log.info(String.format("Rendering has been done in %s ms. ",System.currentTimeMillis() - now));
   return bmp;
 }

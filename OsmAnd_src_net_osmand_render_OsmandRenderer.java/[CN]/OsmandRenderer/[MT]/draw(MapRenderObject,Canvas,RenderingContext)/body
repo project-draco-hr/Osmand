@@ -1,0 +1,25 @@
+{
+  if (obj.isPoint()) {
+    drawPoint(obj,canvas,rc);
+  }
+ else   if (obj.isPolyLine()) {
+    drawPolyline(obj,canvas,rc);
+  }
+ else {
+    PointF center=drawPolygon(obj,canvas,rc);
+    if (center != null) {
+      int typeT=MapRenderingTypes.getPolygonPointType(obj.getType());
+      int subT=MapRenderingTypes.getPolygonPointSubType(obj.getType());
+      if (typeT != 0 && subT != 0) {
+        int resId=PointRenderer.getPointBitmap(rc.zoom,typeT,subT);
+        if (resId != 0) {
+          IconDrawInfo ico=new IconDrawInfo();
+          ico.x=center.x;
+          ico.y=center.y;
+          ico.resId=resId;
+          rc.iconsToDraw.add(ico);
+        }
+      }
+    }
+  }
+}
