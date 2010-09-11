@@ -12,7 +12,7 @@
     log.error("Illegal configuration",e);
     throw new IllegalStateException(e);
   }
-  boolean loadFromPath=dbFile == null;
+  boolean loadFromPath=dbFile == null || !dbFile.exists();
   if (dbFile == null) {
     dbFile=new File(workingDir,TEMP_NODES_DB);
     if (dbFile.exists()) {
@@ -82,8 +82,12 @@
     DataIndexWriter.createMapIndexStructure(mapConnection);
     mapWaysStat=DataIndexWriter.createStatementMapWaysInsert(mapConnection);
     mapWayLocsStat=DataIndexWriter.createStatementMapWaysLocationsInsert(mapConnection);
+    mapWayLocsStatLevel2=DataIndexWriter.createStatementMapWaysLocationsInsertLevel2(mapConnection);
+    mapWayLocsStatLevel3=DataIndexWriter.createStatementMapWaysLocationsInsertLevel3(mapConnection);
     pStatements.put(mapWaysStat,0);
     pStatements.put(mapWayLocsStat,0);
+    pStatements.put(mapWayLocsStatLevel2,0);
+    pStatements.put(mapWayLocsStatLevel3,0);
     mapConnection.setAutoCommit(false);
   }
   if (indexPOI) {

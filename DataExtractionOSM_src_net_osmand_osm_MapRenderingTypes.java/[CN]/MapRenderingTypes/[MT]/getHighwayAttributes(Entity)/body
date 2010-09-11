@@ -1,0 +1,40 @@
+{
+  int attr=0;
+  attr<<=2;
+  String jun=e.getTag(OSMTagKey.JUNCTION);
+  if (jun != null) {
+    if ("roundabout".equals(jun)) {
+      attr|=1;
+      if ("clockwise".equals(e.getTag("direction"))) {
+        attr|=2;
+      }
+    }
+  }
+  String toll=e.getTag(OSMTagKey.TOLL);
+  attr<<=1;
+  if (toll != null) {
+    if ("yes".equals(toll)) {
+      attr|=1;
+    }
+  }
+  String one=e.getTag(OSMTagKey.ONEWAY);
+  attr<<=1;
+  if (one != null) {
+    attr|=1;
+  }
+  attr<<=2;
+  String l=e.getTag(OSMTagKey.LAYER);
+  if (l != null) {
+    int la=Integer.parseInt(l);
+    if (la < 0) {
+      attr|=1;
+    }
+ else     if (la > 0) {
+      attr|=2;
+    }
+  }
+ else   if (e.getTag(OSMTagKey.BRIDGE) != null) {
+    attr|=2;
+  }
+  return attr;
+}
