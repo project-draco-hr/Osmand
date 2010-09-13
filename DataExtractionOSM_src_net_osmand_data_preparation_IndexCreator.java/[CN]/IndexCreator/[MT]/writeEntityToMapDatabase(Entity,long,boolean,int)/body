@@ -1,0 +1,49 @@
+{
+  int type=MapRenderingTypes.encodeEntityWithType(e,level);
+  if (type == 0) {
+    return;
+  }
+  boolean point=(type & MapRenderingTypes.TYPE_MASK) == MapRenderingTypes.POINT_TYPE;
+  PreparedStatement mapLocations;
+  int zoom;
+  long id=baseId << 3;
+  if (level == 1) {
+    id|=2;
+    mapLocations=mapLocsStatLevel1;
+    zoom=14;
+  }
+ else   if (level == 2) {
+    id|=4;
+    zoom=9;
+    mapLocations=mapLocsStatLevel2;
+  }
+ else {
+    zoom=18;
+    mapLocations=mapLocsStatLevel0;
+  }
+  boolean skip=false;
+  if (e instanceof Way) {
+    id|=1;
+    if (level > 0) {
+      List<Node> nodes=((Way)e).getNodes();
+      Way way=new Way(id);
+      int prevX=0;
+      int prevY=0;
+      for (int i=0; i < nodes.size(); i++) {
+        int r=i < nodes.size() - 1 ? 4 : 0;
+        int x=(int)(MapUtils.getTileNumberX(zoom,nodes.get(i).getLongitude()) * 256d);
+        int y=(int)(MapUtils.getTileNumberY(zoom,nodes.get(i).getLatitude()) * 256d);
+        if (Math.abs(x - prevX) > r || Math.abs(y - prevY) > r) {
+          way.addNode(nodes.get(i));
+          prevX=x;
+          prevY=y;
+        }
+      }
+      e=way;
+      skip=way.getNodes().size() < 2;
+    }
+  }
+  if (!skip) {
+    DataIndexWriter.insertMapRenderObjectIndex(pStatements,mapObjStat,mapLocations,e,MapRenderingTypes.getEntityName(e),id,type,false,point,BATCH_SIZE);
+  }
+}

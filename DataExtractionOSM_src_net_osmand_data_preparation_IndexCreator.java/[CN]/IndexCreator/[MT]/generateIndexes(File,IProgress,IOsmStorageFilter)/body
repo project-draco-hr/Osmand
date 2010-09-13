@@ -80,14 +80,14 @@
     mapFile.getParentFile().mkdirs();
     mapConnection=DriverManager.getConnection("jdbc:sqlite:" + mapFile.getAbsolutePath());
     DataIndexWriter.createMapIndexStructure(mapConnection);
-    mapWaysStat=DataIndexWriter.createStatementMapWaysInsert(mapConnection);
-    mapWayLocsStat=DataIndexWriter.createStatementMapWaysLocationsInsert(mapConnection);
-    mapWayLocsStatLevel2=DataIndexWriter.createStatementMapWaysLocationsInsertLevel2(mapConnection);
-    mapWayLocsStatLevel3=DataIndexWriter.createStatementMapWaysLocationsInsertLevel3(mapConnection);
-    pStatements.put(mapWaysStat,0);
-    pStatements.put(mapWayLocsStat,0);
-    pStatements.put(mapWayLocsStatLevel2,0);
-    pStatements.put(mapWayLocsStatLevel3,0);
+    mapObjStat=DataIndexWriter.createStatementMapWaysInsert(mapConnection);
+    mapLocsStatLevel0=DataIndexWriter.createStatementMapWaysLocationsInsert(mapConnection);
+    mapLocsStatLevel1=DataIndexWriter.createStatementMapWaysLocationsInsertLevel2(mapConnection);
+    mapLocsStatLevel2=DataIndexWriter.createStatementMapWaysLocationsInsertLevel3(mapConnection);
+    pStatements.put(mapObjStat,0);
+    pStatements.put(mapLocsStatLevel0,0);
+    pStatements.put(mapLocsStatLevel1,0);
+    pStatements.put(mapLocsStatLevel2,0);
     mapConnection.setAutoCommit(false);
   }
   if (indexPOI) {
@@ -173,12 +173,12 @@
   }
   iterateOverAllEntities(progress,allNodes,allWays,allRelations,STEP_MAIN);
   if (indexAddress && !postalCodeRelations.isEmpty()) {
+    progress.startTask("Registering postcodes...",-1);
     if (pStatements.get(addressBuildingStat) > 0) {
       addressBuildingStat.executeBatch();
       pStatements.put(addressBuildingStat,0);
       addressConnection.commit();
     }
-    progress.startTask("Registering postcodes...",-1);
     PreparedStatement pstat=addressConnection.prepareStatement("UPDATE " + IndexBuildingTable.getTable() + " SET "+ IndexBuildingTable.POSTCODE.name()+ " = ? WHERE "+ IndexBuildingTable.ID.name()+ " = ?");
     pStatements.put(pstat,0);
     for (    Relation r : postalCodeRelations) {
@@ -187,6 +187,14 @@
         pstat.setString(1,tag);
         pstat.setLong(2,l.getId());
         DataIndexWriter.addBatch(pStatements,pstat,BATCH_SIZE);
+      }
+    }
+  }
+  if (indexMap) {
+    for (    Long l : lowLevelWaysSt.keySet()) {
+      for (      Way w : lowLevelWaysSt.get(l)) {
+        int level=(int)(w.getId() & 3);
+        writeEntityToMapDatabase(w,w.getId() >> 2,false,level);
       }
     }
   }
