@@ -1,14 +1,11 @@
 {
   int zoom=rc.zoom;
-  int color=Color.BLACK;
   boolean showText=true;
+  int color=Color.BLACK;
   PathEffect pathEffect=null;
+  float strokeWidth=zoom >= 15 ? 1 : 0;
   int shadowLayer=0;
   int shadowColor=0;
-  float strokeWidth=zoom >= 15 ? 1 : 0;
-  float secondStrokeWidth=0;
-  int secondColor=0;
-  PathEffect secondEffect=null;
 switch (type) {
 case MapRenderingTypes.HIGHWAY:
 {
@@ -123,9 +120,9 @@ case MapRenderingTypes.HIGHWAY:
         if (hwType == MapRenderingTypes.PL_HW_CONSTRUCTION || hwType == MapRenderingTypes.PL_HW_PROPOSED) {
           strokeWidth=zoom >= 15 ? (zoom == 15 ? 6 : 8) : 0;
           color=0xff99cccc;
-          secondColor=Color.WHITE;
-          secondStrokeWidth=strokeWidth - 1;
-          secondEffect=o.getDashEffect("8_6");
+          rc.second.color=Color.WHITE;
+          rc.second.strokeWidth=strokeWidth - 1;
+          rc.second.pathEffect=o.getDashEffect("8_6");
         }
  else {
           if (hwType == MapRenderingTypes.PL_HW_TRACK) {
@@ -188,11 +185,24 @@ case MapRenderingTypes.HIGHWAY:
           }
         }
       }
-      if (bridge && zoom > 12) {
-        if (secondStrokeWidth == 0) {
-          shadowLayer=2;
-          shadowColor=Color.BLACK;
+      if (bridge && zoom > 14) {
+        if (rc.second.strokeWidth == 0) {
+          rc.second.color=color;
+          rc.second.strokeWidth=strokeWidth;
+          rc.second.pathEffect=pathEffect;
+          strokeWidth+=2;
+          color=Color.BLACK;
+          pathEffect=null;
+          if (rc.second.pathEffect == null) {
+            rc.second.cap=Cap.SQUARE;
+          }
+ else {
+            color=0x88ffffff;
+          }
         }
+      }
+      if (type == MapRenderingTypes.HIGHWAY && rc.zoom >= 16 && MapRenderingTypes.isOneWayWay(objType)) {
+        rc.adds=getOneWayProperties();
       }
       if (tunnel && zoom > 12 && carRoad) {
         pathEffect=o.getDashEffect("4_4");
@@ -224,28 +234,35 @@ case MapRenderingTypes.RAILWAY:
  else     if (zoom == 13) {
       color=0xff999999;
       strokeWidth=3;
-      secondColor=Color.WHITE;
-      secondStrokeWidth=1;
-      secondEffect=o.getDashEffect("8_12");
+      rc.second.color=Color.WHITE;
+      rc.second.strokeWidth=1;
+      rc.second.pathEffect=o.getDashEffect("8_12");
     }
  else {
       color=0xff999999;
       strokeWidth=3;
-      secondColor=Color.WHITE;
-      secondStrokeWidth=1;
+      rc.second.color=Color.WHITE;
+      rc.second.strokeWidth=1;
       if (tunnel) {
+        rc.second.strokeWidth=3;
+        rc.second.pathEffect=o.getDashEffect("4_4");
       }
  else       if (bridge) {
-        secondStrokeWidth=5;
-        strokeWidth=7;
+        rc.third.color=color;
+        rc.third.strokeWidth=1;
+        rc.third.pathEffect=o.getDashEffect("12_8_1_0");
+        rc.second.strokeWidth=4;
+        strokeWidth=5;
+        color=Color.BLACK;
       }
  else {
-        secondEffect=o.getDashEffect("0_11_8_1");
+        rc.second.strokeWidth=1;
+        rc.second.pathEffect=o.getDashEffect("0_11_8_1");
       }
     }
   }
  else   if (subtype == 2) {
-    color=0xff44444;
+    color=0xff444444;
     if (zoom < 13) {
       strokeWidth=0;
     }
@@ -282,9 +299,9 @@ case MapRenderingTypes.RAILWAY:
       if (bridge) {
         strokeWidth=4.5f;
         color=Color.BLACK;
-        secondStrokeWidth=2;
-        secondColor=Color.GRAY;
-        secondEffect=o.getDashEffect("4_2");
+        rc.second.strokeWidth=2;
+        rc.second.color=Color.GRAY;
+        rc.second.pathEffect=o.getDashEffect("4_2");
       }
  else {
         strokeWidth=2;
@@ -312,9 +329,9 @@ case MapRenderingTypes.RAILWAY:
  else {
       color=0xff999999;
       strokeWidth=3;
-      secondColor=Color.WHITE;
-      secondStrokeWidth=1;
-      secondEffect=o.getDashEffect("0_1_8_1");
+      rc.second.color=Color.WHITE;
+      rc.second.strokeWidth=1;
+      rc.second.pathEffect=o.getDashEffect("0_1_8_1");
     }
   }
  else   if (subtype == 8 || subtype == 11) {
@@ -327,8 +344,8 @@ case MapRenderingTypes.RAILWAY:
       if (tunnel) {
         strokeWidth=5;
         pathEffect=o.getDashEffect("5_3");
-        secondColor=0xffcccccc;
-        secondStrokeWidth=3;
+        rc.second.color=0xffcccccc;
+        rc.second.strokeWidth=3;
       }
     }
   }
@@ -438,8 +455,8 @@ break;
 }
 if (zoom > 12 && MapRenderingTypes.getWayLayer(objType) == 1) {
 pathEffect=o.getDashEffect("4_2");
-secondStrokeWidth=strokeWidth - 2;
-secondColor=Color.WHITE;
+rc.second.strokeWidth=strokeWidth - 2;
+rc.second.color=Color.WHITE;
 }
 }
 break;
@@ -528,9 +545,19 @@ strokeWidth=6;
 }
 }
 if (MapRenderingTypes.getWayLayer(objType) == 2 && zoom > 12) {
-if (secondStrokeWidth == 0) {
-shadowLayer=2;
-shadowColor=Color.BLACK;
+if (rc.second.strokeWidth == 0) {
+rc.second.color=color;
+rc.second.strokeWidth=strokeWidth;
+rc.second.pathEffect=pathEffect;
+strokeWidth+=2;
+color=Color.BLACK;
+pathEffect=null;
+if (rc.second.pathEffect == null) {
+rc.second.cap=Cap.SQUARE;
+}
+ else {
+color=Color.GRAY;
+}
 }
 }
 }
@@ -684,13 +711,10 @@ break;
 default :
 break;
 }
-rc.color=color;
-rc.pathEffect=pathEffect;
-rc.shadowColor=shadowColor;
-rc.shadowLayer=shadowLayer;
+rc.main.color=color;
+rc.main.pathEffect=pathEffect;
+rc.main.shadowColor=shadowColor;
+rc.main.shadowLayer=shadowLayer;
+rc.main.strokeWidth=strokeWidth;
 rc.showText=showText;
-rc.strokeWidth=strokeWidth;
-rc.secondColor=secondColor;
-rc.secondEffect=secondEffect;
-rc.secondStrokeWidth=secondStrokeWidth;
 }

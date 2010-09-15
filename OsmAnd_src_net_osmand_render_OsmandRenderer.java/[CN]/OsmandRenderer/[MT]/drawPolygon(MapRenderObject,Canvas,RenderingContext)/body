@@ -1,20 +1,17 @@
 {
-  Paint paint=paintFill;
   float xText=0;
   float yText=0;
   int zoom=rc.zoom;
   Path path=null;
   int type=MapRenderingTypes.getObjectType(obj.getType());
   int subtype=MapRenderingTypes.getPolygonSubType(obj.getType());
-  rc.color=Color.rgb(245,245,245);
-  rc.shader=null;
-  rc.colorAround=0;
-  rc.showPolygon=true;
+  rc.main.emptyArea();
+  rc.second.emptyLine();
+  rc.main.color=Color.rgb(245,245,245);
   PolygonRenderer.renderPolygon(rc,zoom,type,subtype,this);
-  if (!rc.showPolygon) {
+  if (!rc.main.fillArea) {
     return null;
   }
-  paint.setColor(rc.color);
   for (int i=0; i < obj.getPointsLength(); i++) {
     PointF p=calcPoint(obj,i,rc);
     xText+=p.x;
@@ -30,13 +27,11 @@
   if (path != null) {
     xText/=obj.getPointsLength();
     yText/=obj.getPointsLength();
-    paint.setShader(rc.shader);
+    rc.main.updatePaint(paint);
     canvas.drawPath(path,paint);
-    if (rc.colorAround != 0) {
-      paintStroke.setPathEffect(null);
-      paintStroke.setColor(rc.colorAround);
-      paintStroke.setStrokeWidth(1);
-      canvas.drawPath(path,paintStroke);
+    if (rc.second.strokeWidth != 0) {
+      rc.second.updatePaint(paint);
+      canvas.drawPath(path,paint);
     }
     String name=obj.getName();
     if (name != null) {

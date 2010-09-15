@@ -1,8 +1,12 @@
 {
   int type=MapRenderingTypes.getObjectType(obj.getType());
   int subtype=MapRenderingTypes.getPolylineSubType(obj.getType());
+  rc.main.emptyLine();
+  rc.second.emptyLine();
+  rc.third.emptyLine();
+  rc.adds=null;
   PolylineRenderer.renderPolyline(type,subtype,obj.getType(),rc,this);
-  if (rc.strokeWidth == 0) {
+  if (rc.main.strokeWidth == 0) {
     return;
   }
   int length=obj.getPointsLength();
@@ -49,32 +53,24 @@
     yPrev=p.y;
   }
   if (path != null) {
-    paintStroke.setPathEffect(rc.pathEffect);
-    if (paintStroke.getShader() != null) {
-      paintStroke.setShader(null);
-    }
-    paintStroke.setShadowLayer(rc.shadowLayer,0,0,rc.shadowColor);
-    paintStroke.setColor(rc.color);
-    paintStroke.setStrokeWidth(rc.strokeWidth);
-    canvas.drawPath(path,paintStroke);
-    if (rc.secondStrokeWidth > 0) {
-      paintStroke.setPathEffect(rc.secondEffect);
-      paintStroke.setShader(null);
-      if (rc.shadowLayer != 0) {
-        paintStroke.setShadowLayer(0,0,0,0);
+    rc.main.updatePaint(paint);
+    canvas.drawPath(path,paint);
+    if (rc.second.strokeWidth != 0) {
+      rc.second.updatePaint(paint);
+      canvas.drawPath(path,paint);
+      if (rc.third.strokeWidth != 0) {
+        rc.third.updatePaint(paint);
+        canvas.drawPath(path,paint);
       }
-      paintStroke.setColor(rc.secondColor);
-      paintStroke.setStrokeWidth(rc.secondStrokeWidth);
-      canvas.drawPath(path,paintStroke);
     }
-    if (type == MapRenderingTypes.HIGHWAY && rc.zoom >= 16 && MapRenderingTypes.isOneWayWay(obj.getType())) {
-      if (rc.shadowLayer != 0) {
-        paintStroke.setShadowLayer(0,0,0,0);
+    if (rc.adds != null) {
+      for (int i=0; i < rc.adds.length; i++) {
+        rc.adds[i].updatePaint(paint);
+        canvas.drawPath(path,paint);
       }
-      drawOneWayDirections(canvas,path);
     }
     if (obj.getName() != null && rc.showText) {
-      float w=rc.strokeWidth + 3;
+      float w=rc.main.strokeWidth + 3;
       if (w < 10) {
         w=10;
       }
@@ -102,7 +98,7 @@
         text.drawOnPath=path;
         text.textColor=Color.BLACK;
         text.textSize=w;
-        text.vOffset=rc.strokeWidth / 2 - 1;
+        text.vOffset=rc.main.strokeWidth / 2 - 1;
         rc.textToDraw.add(text);
       }
     }
