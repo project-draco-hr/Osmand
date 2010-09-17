@@ -8,7 +8,7 @@
       paintText.setColor(text.textColor);
       RectF bounds=new RectF();
       float mes=paintText.measureText(text.text);
-      if ((text.pathRotate > 45 && text.pathRotate < 135) || (text.pathRotate > 225 && text.pathRotate < 315)) {
+      if (text.drawOnPath == null || (text.pathRotate > 45 && text.pathRotate < 135) || (text.pathRotate > 225 && text.pathRotate < 315)) {
         bounds.set(text.centerX - mes / 2,text.centerY - 3 * text.textSize / 2,text.centerX + mes / 2,text.centerY + 3 * text.textSize / 2);
       }
  else {
@@ -25,8 +25,24 @@
         }
       }
       boundsIntersect.add(bounds);
+      paintText.setFakeBoldText(false);
       if (text.drawOnPath != null) {
         cv.drawTextOnPath(text.text,text.drawOnPath,0,text.vOffset,paintText);
+      }
+ else       if (text.shield) {
+        bounds.set(text.centerX - mes / 2 - 4,text.centerY - text.textSize,text.centerX + mes / 2 + 4,text.centerY + text.textSize / 2);
+        paintShield.setStyle(Style.STROKE);
+        paintShield.setColor(Color.WHITE);
+        paintShield.setStrokeWidth(3);
+        cv.drawOval(bounds,paintShield);
+        paintShield.setStyle(Style.FILL);
+        Color.colorToHSV(paintText.getColor(),hsv);
+        hsv[2]*=0.85;
+        paintShield.setColor(Color.HSVToColor(hsv));
+        cv.drawOval(bounds,paintShield);
+        paintText.setFakeBoldText(true);
+        paintText.setColor(Color.WHITE);
+        cv.drawText(text.text,text.centerX,text.centerY + 3,paintText);
       }
  else {
         cv.drawText(text.text,text.centerX,text.centerY,paintText);

@@ -2,23 +2,22 @@
   long now=System.currentTimeMillis();
   Collections.sort(objects,this);
   Bitmap bmp=null;
-  if (objects != null && !objects.isEmpty() && objectLoc.width() != 0f && objectLoc.height() != 0f) {
+  if (objects != null && !objects.isEmpty() && width > 0 && height > 0) {
     RenderingContext rc=new RenderingContext();
-    rc.leftX=(float)MapUtils.getTileNumberX(zoom,objectLoc.left);
-    rc.rightX=(float)MapUtils.getTileNumberX(zoom,objectLoc.right);
-    rc.topY=(float)MapUtils.getTileNumberY(zoom,objectLoc.top);
-    rc.bottomY=(float)MapUtils.getTileNumberY(zoom,objectLoc.bottom);
+    rc.leftX=leftTileX;
+    rc.topY=topTileY;
     rc.zoom=zoom;
     rc.rotate=rotate;
+    rc.width=width;
+    rc.height=height;
+    rc.tileDivisor=(int)(1 << (31 - zoom));
     rc.cosRotate=FloatMath.cos((float)Math.toRadians(rotate));
     rc.sinRotate=FloatMath.sin((float)Math.toRadians(rotate));
-    rc.tileDivisor=(int)(1 << (31 - zoom));
-    bmp=Bitmap.createBitmap((int)((rc.rightX - rc.leftX) * 256),(int)((rc.bottomY - rc.topY) * 256),Config.RGB_565);
+    bmp=Bitmap.createBitmap(width,height,Config.RGB_565);
     Canvas cv=new Canvas(bmp);
     cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillEmpty);
-    cv.rotate(-rotate);
-    for (    MapRenderObject w : objects) {
-      draw(w,cv,rc);
+    for (    MapRenderObject o : objects) {
+      draw(o,cv,rc);
     }
     for (    IconDrawInfo icon : rc.iconsToDraw) {
       if (icon.resId != 0) {

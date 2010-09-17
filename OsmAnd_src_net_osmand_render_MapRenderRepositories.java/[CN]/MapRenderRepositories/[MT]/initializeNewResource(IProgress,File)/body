@@ -1,13 +1,10 @@
 {
   long start=System.currentTimeMillis();
+  Connection conn=null;
+  if (files.containsKey(file.getAbsolutePath())) {
+    closeConnection(files.get(file.getAbsolutePath()),file.getAbsolutePath());
+  }
   try {
-    if (conn != null) {
-      conn.close();
-      conn=null;
-      pStatement=null;
-      pStatement2=null;
-      pStatement3=null;
-    }
     try {
       Class.forName("org.sqlite.JDBC");
     }
@@ -16,9 +13,9 @@
       return false;
     }
     conn=DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
-    pStatement=conn.prepareStatement(loadMapQuery);
-    pStatement2=conn.prepareStatement(loadMapQuery2);
-    pStatement3=conn.prepareStatement(loadMapQuery3);
+    PreparedStatement pStatement=conn.prepareStatement(loadMapQuery);
+    PreparedStatement pStatement2=conn.prepareStatement(loadMapQuery2);
+    PreparedStatement pStatement3=conn.prepareStatement(loadMapQuery3);
     Statement stat=conn.createStatement();
     ResultSet rs=stat.executeQuery("PRAGMA user_version");
     int v=rs.getInt(1);
@@ -26,7 +23,13 @@
     if (v != IndexConstants.MAP_TABLE_VERSION) {
       return false;
     }
+    RectF bounds=foundBounds(stat);
     stat.close();
+    connections.put(conn,bounds);
+    files.put(file.getAbsolutePath(),conn);
+    pZoom0.put(conn,pStatement);
+    pZoom1.put(conn,pStatement2);
+    pZoom2.put(conn,pStatement3);
   }
  catch (  Exception e) {
     log.error("No connection",e);

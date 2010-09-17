@@ -1,12 +1,12 @@
 {
-  boolean show=currentShowingAngle || currentMapRotation == OsmandSettings.ROTATE_MAP_COMPASS;
-  if (sensorRegistered && (location == null || !show)) {
+  boolean show=(currentShowingAngle && location != null) || currentMapRotation == OsmandSettings.ROTATE_MAP_COMPASS;
+  if (sensorRegistered && !show) {
     Log.d(LogUtil.TAG,"Disable sensor");
     ((SensorManager)getSystemService(SENSOR_SERVICE)).unregisterListener(this);
     sensorRegistered=false;
     locationLayer.setHeading(null);
   }
- else   if (!sensorRegistered && (location != null && show)) {
+ else   if (!sensorRegistered && show) {
     Log.d(LogUtil.TAG,"Enable sensor");
     SensorManager sensorMgr=(SensorManager)getSystemService(SENSOR_SERVICE);
     Sensor s=sensorMgr.getDefaultSensor(Sensor.TYPE_ORIENTATION);
