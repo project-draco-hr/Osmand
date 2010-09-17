@@ -5,6 +5,7 @@
   layersList.add(getString(R.string.layer_transport));
   layersList.add(getString(R.string.layer_osm_bugs));
   layersList.add(getString(R.string.layer_favorites));
+  layersList.add(getString(R.string.layer_gpx_layer));
   final int routeInfoInd=routeInfoLayer.couldBeVisible() ? layersList.size() : -1;
   if (routeInfoLayer.couldBeVisible()) {
     layersList.add(getString(R.string.layer_route));
@@ -21,6 +22,7 @@
   selected[2]=OsmandSettings.isShowingTransportOverMap(this);
   selected[3]=OsmandSettings.isShowingOsmBugs(this);
   selected[4]=OsmandSettings.isShowingFavorites(this);
+  selected[5]=gpxLayer.isVisible();
   selected[trafficInd]=trafficLayer.isVisible();
   if (routeInfoInd != -1) {
     selected[routeInfoInd]=routeInfoLayer.isUserDefinedVisible();
@@ -49,6 +51,15 @@
       }
  else       if (item == 4) {
         OsmandSettings.setShowingFavorites(MapActivity.this,isChecked);
+      }
+ else       if (item == 5) {
+        if (gpxLayer.isVisible()) {
+          gpxLayer.clearCurrentGPX();
+        }
+ else {
+          dialog.dismiss();
+          selectGPXFileLayer();
+        }
       }
  else       if (item == routeInfoInd) {
         routeInfoLayer.setVisible(isChecked);

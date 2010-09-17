@@ -1,0 +1,40 @@
+{
+  try {
+    XmlPullParser parser=Xml.newPullParser();
+    parser.setInput(new FileInputStream(f),"UTF-8");
+    ArrayList<Location> locations=new ArrayList<Location>();
+    int tok;
+    Location current=null;
+    while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
+      if (tok == XmlPullParser.START_TAG) {
+        if (parser.getName().equals("wpt") || parser.getName().equals("trkpt") || parser.getName().equals("rtept")) {
+          try {
+            current=new Location("gpx_file");
+            current.setLatitude(Double.parseDouble(parser.getAttributeValue("","lat")));
+            current.setLongitude(Double.parseDouble(parser.getAttributeValue("","lon")));
+          }
+ catch (          NumberFormatException e) {
+            current=null;
+          }
+        }
+      }
+ else       if (tok == XmlPullParser.END_TAG) {
+        if (parser.getName().equals("wpt") || parser.getName().equals("trkpt") || parser.getName().equals("rtept")) {
+          if (current != null) {
+            locations.add(current);
+          }
+        }
+      }
+    }
+    this.points=locations;
+  }
+ catch (  XmlPullParserException e) {
+    log.error("Error reading gpx",e);
+    return view.getContext().getString(R.string.error_reading_gpx);
+  }
+catch (  IOException e) {
+    log.error("Error reading gpx",e);
+    return view.getContext().getString(R.string.error_reading_gpx);
+  }
+  return null;
+}
