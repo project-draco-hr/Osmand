@@ -17,7 +17,7 @@
         pt.name=p.name;
         wpt.add(pt);
       }
-      if (SavingTrackHelper.saveToXMLFiles(f,wpt,this)) {
+      if (GPXUtilities.saveToXMLFiles(f,wpt,this)) {
         Toast.makeText(this,MessageFormat.format(getString(R.string.fav_saved_sucessfully),f.getAbsolutePath()),Toast.LENGTH_LONG).show();
       }
     }
@@ -35,9 +35,9 @@
           existedPoints.add(fp.name);
         }
       }
-      List<WptPt> points=new ArrayList<WptPt>();
-      if (SavingTrackHelper.readWptPtFromFile(f,points,this)) {
-        for (        WptPt p : points) {
+      GPXFileResult res=GPXUtilities.loadGPXFile(this,f);
+      if (res.error == null) {
+        for (        WptPt p : res.wayPoints) {
           if (!existedPoints.contains(p.name)) {
             FavouritePoint fp=new FavouritePoint();
             fp.name=p.name;

@@ -35,16 +35,38 @@
         final File f=new File(dir,list.get(which));
         new Thread(new Runnable(){
           @Override public void run(){
-            final String error=gpxLayer.showGPXFile(f);
-            if (error != null) {
+            Looper.prepare();
+            final GPXFileResult res=GPXUtilities.loadGPXFile(MapActivity.this,f);
+            if (res.error != null) {
               runOnUiThread(new Runnable(){
                 @Override public void run(){
-                  Toast.makeText(MapActivity.this,error,Toast.LENGTH_LONG).show();
+                  Toast.makeText(MapActivity.this,res.error,Toast.LENGTH_LONG).show();
                 }
               }
 );
             }
             dlg.dismiss();
+            if (useRouting) {
+              runOnUiThread(new Runnable(){
+                @Override public void run(){
+                  useGPXRouting(endForRouting,res);
+                }
+              }
+);
+            }
+ else {
+              OsmandSettings.setShowingFavorites(MapActivity.this,true);
+              List<FavouritePoint> pts=new ArrayList<FavouritePoint>();
+              for (              WptPt p : res.wayPoints) {
+                FavouritePoint pt=new FavouritePoint();
+                pt.setLatitude(p.lat);
+                pt.setLongitude(p.lon);
+                pt.setName(p.name);
+                pts.add(pt);
+              }
+              favoritesLayer.setAdditionalPoints(pts);
+              gpxLayer.setTracks(res.locations);
+            }
             mapView.refreshMap();
           }
         }

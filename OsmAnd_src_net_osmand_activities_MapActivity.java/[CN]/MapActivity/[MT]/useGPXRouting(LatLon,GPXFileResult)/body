@@ -1,0 +1,34 @@
+{
+  Builder builder=new AlertDialog.Builder(this);
+  builder.setItems(new String[]{getString(R.string.gpx_direct_route),getString(R.string.gpx_reverse_route)},new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      boolean reverse=which == 1;
+      ArrayList<List<Location>> locations=res.locations;
+      List<Location> l=new ArrayList<Location>();
+      for (      List<Location> s : locations) {
+        l.addAll(s);
+      }
+      if (reverse) {
+        Collections.reverse(l);
+      }
+      Location startForRouting=locationLayer.getLastKnownLocation();
+      if (startForRouting == null && !l.isEmpty()) {
+        startForRouting=l.get(0);
+      }
+      LatLon endPoint=endForRouting;
+      if (!l.isEmpty()) {
+        LatLon point=new LatLon(l.get(l.size() - 1).getLatitude(),l.get(l.size() - 1).getLongitude());
+        OsmandSettings.setPointToNavigate(MapActivity.this,point.getLatitude(),point.getLongitude());
+        endPoint=point;
+        navigationLayer.setPointToNavigate(point);
+      }
+      if (endForRouting != null) {
+        OsmandSettings.setFollowingByRoute(MapActivity.this,true);
+        routingHelper.setFollowingMode(true);
+        routingHelper.setFinalAndCurrentLocation(endPoint,startForRouting,l);
+      }
+    }
+  }
+);
+  builder.show();
+}

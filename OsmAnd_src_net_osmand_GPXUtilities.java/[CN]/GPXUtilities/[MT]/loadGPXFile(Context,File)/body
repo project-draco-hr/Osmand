@@ -1,0 +1,65 @@
+{
+  GPXFileResult res=new GPXFileResult();
+  try {
+    boolean cloudMade=false;
+    XmlPullParser parser=Xml.newPullParser();
+    parser.setInput(new FileInputStream(f),"UTF-8");
+    int tok;
+    Location current=null;
+    String currentName="";
+    while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
+      if (tok == XmlPullParser.START_TAG) {
+        if (parser.getName().equals("copyright")) {
+          cloudMade|="cloudmade".equalsIgnoreCase(parser.getAttributeValue("","author"));
+        }
+ else         if (parser.getName().equals("trkseg")) {
+          res.locations.add(new ArrayList<Location>());
+        }
+ else         if (parser.getName().equals("wpt") || parser.getName().equals("trkpt") || (!cloudMade && parser.getName().equals("rtept"))) {
+          try {
+            currentName="";
+            current=new Location("gpx_file");
+            current.setLatitude(Double.parseDouble(parser.getAttributeValue("","lat")));
+            current.setLongitude(Double.parseDouble(parser.getAttributeValue("","lon")));
+          }
+ catch (          NumberFormatException e) {
+            current=null;
+          }
+        }
+ else         if (current != null && parser.getName().equals("name")) {
+          if (parser.next() == XmlPullParser.TEXT) {
+            currentName=parser.getText();
+          }
+        }
+      }
+ else       if (tok == XmlPullParser.END_TAG) {
+        if (parser.getName().equals("wpt") || parser.getName().equals("trkpt") || (!cloudMade && parser.getName().equals("rtept"))) {
+          if (current != null) {
+            if (parser.getName().equals("wpt") && !cloudMade) {
+              WptPt pt=new WptPt();
+              pt.lat=current.getLatitude();
+              pt.lon=current.getLongitude();
+              pt.name=currentName;
+              res.wayPoints.add(pt);
+            }
+ else {
+              if (res.locations.isEmpty()) {
+                res.locations.add(new ArrayList<Location>());
+              }
+              res.locations.get(res.locations.size() - 1).add(current);
+            }
+          }
+        }
+      }
+    }
+  }
+ catch (  XmlPullParserException e) {
+    log.error("Error reading gpx",e);
+    res.error=ctx.getString(R.string.error_reading_gpx);
+  }
+catch (  IOException e) {
+    log.error("Error reading gpx",e);
+    res.error=ctx.getString(R.string.error_reading_gpx);
+  }
+  return res;
+}
