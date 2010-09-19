@@ -5,6 +5,8 @@
   rc.second.emptyLine();
   rc.third.emptyLine();
   rc.adds=null;
+  rc.showText=false;
+  rc.clearText();
   PolylineRenderer.renderPolyline(type,subtype,obj.getType(),rc,this);
   if (rc.main.strokeWidth == 0) {
     return;
@@ -70,12 +72,18 @@
       }
     }
     if (obj.getName() != null && rc.showText) {
-      float w=rc.main.strokeWidth + 3;
-      if (w < 10) {
-        w=10;
+      if (!rc.showTextOnPath) {
+        TextDrawInfo text=new TextDrawInfo();
+        text.text=obj.getName();
+        text.centerX=xMid / 2;
+        text.centerY=yMid / 2;
+        text.textColor=rc.textColor;
+        text.textSize=rc.textSize;
+        text.vOffset=rc.textDy;
+        text.textShadow=(int)rc.textHaloRadius;
+        rc.textToDraw.add(text);
       }
-      paintText.setTextSize(w);
-      if (paintText.measureText(obj.getName()) < Math.max(Math.abs(xLength),Math.abs(yLength))) {
+ else       if (paintText.measureText(obj.getName()) < Math.max(Math.abs(xLength),Math.abs(yLength))) {
         if (inverse) {
           path.rewind();
           boolean st=true;
@@ -96,8 +104,9 @@
         text.centerY=yMid / 2;
         text.pathRotate=pathRotate;
         text.drawOnPath=path;
-        text.textColor=Color.BLACK;
-        text.textSize=w;
+        text.textColor=rc.textColor;
+        text.textShadow=(int)rc.textHaloRadius;
+        text.textSize=rc.textSize;
         text.vOffset=rc.main.strokeWidth / 2 - 1;
         rc.textToDraw.add(text);
         if (text.text.startsWith(MapRenderingTypes.REF_CHAR)) {

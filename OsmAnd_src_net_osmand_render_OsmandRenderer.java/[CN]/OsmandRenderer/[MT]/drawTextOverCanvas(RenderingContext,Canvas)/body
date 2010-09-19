@@ -1,12 +1,13 @@
 {
-  List<RectF> boundsIntersect=new ArrayList<RectF>();
+  List<RectF> boundsNotPathIntersect=new ArrayList<RectF>();
+  List<RectF> boundsPathIntersect=new ArrayList<RectF>();
   int size=rc.textToDraw.size();
   next:   for (int i=0; i < size; i++) {
     TextDrawInfo text=rc.textToDraw.get(i);
     if (text.text != null) {
-      paintText.setTextSize(text.textSize);
-      paintText.setColor(text.textColor);
       RectF bounds=new RectF();
+      paintText.setTextSize(text.textSize);
+      paintText.setFakeBoldText(text.bold);
       float mes=paintText.measureText(text.text);
       if (text.drawOnPath == null || (text.pathRotate > 45 && text.pathRotate < 135) || (text.pathRotate > 225 && text.pathRotate < 315)) {
         bounds.set(text.centerX - mes / 2,text.centerY - 3 * text.textSize / 2,text.centerX + mes / 2,text.centerY + 3 * text.textSize / 2);
@@ -14,6 +15,7 @@
  else {
         bounds.set(text.centerX - 3 * text.textSize / 2,text.centerY - mes / 2,text.centerX + 3 * text.textSize / 2,text.centerY + mes / 2);
       }
+      List<RectF> boundsIntersect=text.drawOnPath == null ? boundsNotPathIntersect : boundsPathIntersect;
       final int diff=3;
       final int diff2=15;
       for (int j=0; j < boundsIntersect.size(); j++) {
@@ -25,7 +27,18 @@
         }
       }
       boundsIntersect.add(bounds);
-      paintText.setFakeBoldText(false);
+      if (text.textShadow > 0 && text.shield) {
+        paintText.setColor(Color.WHITE);
+        paintText.setTextSize(text.textSize + text.textShadow * 2);
+        if (text.drawOnPath != null) {
+          cv.drawTextOnPath(text.text,text.drawOnPath,0,text.vOffset,paintText);
+        }
+ else {
+          cv.drawText(text.text,text.centerX,text.centerY,paintText);
+        }
+        paintText.setTextSize(text.textSize);
+      }
+      paintText.setColor(text.textColor);
       if (text.drawOnPath != null) {
         cv.drawTextOnPath(text.text,text.drawOnPath,0,text.vOffset,paintText);
       }

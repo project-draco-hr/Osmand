@@ -11,96 +11,21 @@
     ico.resId=resId;
     rc.iconsToDraw.add(ico);
   }
-  int textSize=0;
-  int textColor=0;
-  @SuppressWarnings("unused") int textWrap=0;
-  @SuppressWarnings("unused") int shadowRadius=0;
-  @SuppressWarnings("unused") int shadowColor=Color.WHITE;
-  if (type == MapRenderingTypes.ADMINISTRATIVE) {
-    shadowRadius=4;
-    if (subType == 11) {
-      if (zoom >= 14 && zoom < 16) {
-        textColor=0xFF000000;
-        textSize=8;
-      }
- else       if (zoom >= 16) {
-        textColor=0xFF777777;
-        textSize=11;
-      }
+  String n=obj.getName();
+  if (n != null) {
+    rc.clearText();
+    n=renderPointText(n,subType,type,zoom,rc);
+    if (rc.textSize > 0 && n != null) {
+      TextDrawInfo info=new TextDrawInfo();
+      info.centerX=p.x;
+      info.centerY=p.y - rc.textSize;
+      info.textColor=rc.textColor;
+      info.textSize=rc.textSize;
+      info.text=n;
+      info.textShadow=(int)rc.textHaloRadius;
+      info.textWrap=rc.textWrapWidth;
+      info.bold=rc.textBold;
+      rc.textToDraw.add(info);
     }
- else     if (subType == 8 || subType == 9) {
-      if (zoom >= 12 && zoom < 15) {
-        textColor=0xFF000000;
-        textSize=9;
-      }
- else       if (zoom >= 15) {
-        textColor=0xFF777777;
-        textSize=12;
-      }
-    }
- else     if (subType == 10) {
-      if (zoom >= 12 && zoom < 14) {
-        textColor=0xFF000000;
-        textSize=10;
-      }
- else       if (zoom >= 14) {
-        textColor=0xFF777777;
-        textSize=13;
-      }
-    }
- else     if (subType == 7) {
-      textWrap=20;
-      if (zoom >= 9 && zoom < 11) {
-        textColor=0xFF000000;
-        textSize=8;
-      }
- else       if (zoom >= 13 && zoom < 14) {
-        textColor=0xFF000000;
-        textSize=10;
-      }
- else       if (zoom >= 14) {
-        textColor=0xFF777777;
-        textSize=13;
-      }
-    }
- else     if (subType == 6) {
-      textWrap=20;
-      textColor=0xFF000000;
-      if (zoom >= 6 && zoom < 9) {
-        textSize=8;
-      }
- else       if (zoom >= 9 && zoom < 11) {
-        textSize=11;
-      }
- else       if (zoom >= 11 && zoom <= 14) {
-        textSize=14;
-      }
-    }
- else     if (subType == 42) {
-      textWrap=20;
-      textColor=0xff9d6c9d;
-      if (zoom >= 2 && zoom < 4) {
-        textSize=8;
-      }
- else       if (zoom >= 4 && zoom < 7) {
-        textSize=10;
-      }
-    }
- else     if (subType == 43 || subType == 44) {
-      textWrap=20;
-      textColor=0xff9d6c9d;
-      if (zoom >= 4 && zoom < 8) {
-        textSize=9;
-      }
- else       if (zoom >= 7 && zoom < 9) {
-        textSize=11;
-      }
-    }
-    textSize+=4;
-  }
-  if (obj.getName() != null && textSize > 0) {
-    paintText.setTextSize(textSize);
-    paintText.setColor(textColor);
-    canvas.drawText(obj.getName(),p.x,p.y - textSize,paintText);
   }
 }
