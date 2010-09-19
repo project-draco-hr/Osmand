@@ -3,19 +3,14 @@
     final ProgressDialog dlg=new ProgressDialog(frame,"Loading osm file");
     dlg.setRunnable(new Runnable(){
       @Override public void run(){
-        Region res;
+        IndexCreator creator=new IndexCreator(DataExtractionSettings.getSettings().getDefaultWorkingDir());
         try {
-          DataExtraction dataExtraction=new DataExtraction(buildAddressIndex.isSelected(),buildPoiIndex.isSelected(),buildTransportIndex.isSelected(),normalizingStreets.isSelected(),loadingAllData.isSelected(),DataExtractionSettings.getSettings().getLoadEntityInfo(),DataExtractionSettings.getSettings().getDefaultWorkingDir());
-          if (!buildAddressIndex.isSelected()) {
-            buildAddressIndex.setEnabled(false);
-          }
-          if (!buildTransportIndex.isSelected()) {
-            buildTransportIndex.setEnabled(false);
-          }
-          if (!buildPoiIndex.isSelected()) {
-            buildPoiIndex.setEnabled(false);
-          }
-          res=dataExtraction.readCountry(f.getAbsolutePath(),dlg,filter);
+          creator.setIndexAddress(buildAddressIndex.isSelected());
+          creator.setIndexPOI(buildPoiIndex.isSelected());
+          creator.setNormalizeStreets(normalizingStreets.isSelected());
+          creator.setIndexTransport(buildTransportIndex.isSelected());
+          creator.setIndexMap(buildMapIndex.isSelected());
+          creator.generateIndexes(f,dlg,filter);
         }
  catch (        IOException e) {
           throw new IllegalArgumentException(e);
@@ -26,21 +21,42 @@ catch (        SAXException e) {
 catch (        SQLException e) {
           throw new IllegalStateException(e);
         }
-        dlg.setResult(res);
+        regionName=creator.getRegionName();
+        StringBuilder msg=new StringBuilder();
+        msg.append("Indexes for ").append(regionName).append(" : ");
+        boolean comma=false;
+        if (buildMapIndex.isSelected()) {
+          if (comma)           msg.append(", ");
+          comma=true;
+          msg.append("map");
+        }
+        if (buildPoiIndex.isSelected()) {
+          if (comma)           msg.append(", ");
+          comma=true;
+          msg.append("POI");
+        }
+        if (buildAddressIndex.isSelected()) {
+          if (comma)           msg.append(", ");
+          comma=true;
+          msg.append("address");
+        }
+        if (buildTransportIndex.isSelected()) {
+          if (comma)           msg.append(", ");
+          comma=true;
+          msg.append("transport");
+        }
+        msg.append(" - successfully created in working directory.");
+        JOptionPane pane=new JOptionPane(msg);
+        JDialog dialog=pane.createDialog(frame,"Generation data");
+        dialog.setVisible(true);
       }
     }
 );
-    Region region=(Region)dlg.run();
-    if (region != null) {
-      setRegion(region,region.getName());
-      frame.setTitle("OsmAnd Map Creator - " + f.getName());
-    }
- else {
-    }
+    dlg.run();
+    frame.setTitle("OsmAnd Map Creator - " + f.getName());
   }
  catch (  InterruptedException e1) {
     log.error("Interrupted",e1);
-    updateButtonsBar();
   }
 catch (  InvocationTargetException e1) {
     ExceptionHandler.handle("Exception during operation",e1.getCause());

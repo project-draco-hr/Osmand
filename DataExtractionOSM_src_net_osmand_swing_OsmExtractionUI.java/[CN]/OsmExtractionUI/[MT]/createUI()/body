@@ -16,22 +16,13 @@
   content.add(statusBarLabel,BorderLayout.SOUTH);
   File workingDir=DataExtractionSettings.getSettings().getDefaultWorkingDir();
   statusBarLabel.setText(workingDir == null ? "<working directory unspecified>" : "Working directory : " + workingDir.getAbsolutePath());
-  JSplitPane panelForTreeAndMap=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,new JScrollPane(createTree(content)),mapPanel);
+  treePlaces=new JTree();
+  treePlaces.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("Region"),false));
+  JSplitPane panelForTreeAndMap=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,new JScrollPane(treePlaces),mapPanel);
   panelForTreeAndMap.setResizeWeight(0.2);
+  content.add(panelForTreeAndMap,BorderLayout.CENTER);
   createButtonsBar(content);
-  if (searchList != null) {
-    JSplitPane pane=new JSplitPane(JSplitPane.VERTICAL_SPLIT,new JScrollPane(searchList),panelForTreeAndMap);
-    pane.setResizeWeight(0.2);
-    content.add(pane,BorderLayout.CENTER);
-  }
- else {
-    content.add(panelForTreeAndMap,BorderLayout.CENTER);
-  }
   JMenuBar bar=new JMenuBar();
   fillMenuWithActions(bar);
-  JPopupMenu popupMenu=new JPopupMenu();
-  fillPopupMenuWithActions(popupMenu);
-  treePlaces.add(popupMenu);
-  treePlaces.addMouseListener(new PopupTrigger(popupMenu));
   frame.setJMenuBar(bar);
 }

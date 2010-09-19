@@ -1,15 +1,10 @@
 {
   JMenu menu=new JMenu("File");
   bar.add(menu);
-  JMenuItem loadFile=new JMenuItem("Load osm file...");
+  JMenuItem loadFile=new JMenuItem("Select osm file...");
   menu.add(loadFile);
-  JMenuItem loadSpecifiedAreaFile=new JMenuItem("Load osm file for specifed area...");
+  JMenuItem loadSpecifiedAreaFile=new JMenuItem("Select osm file for specifed area...");
   menu.add(loadSpecifiedAreaFile);
-  JMenuItem closeCurrentFile=new JMenuItem("Close current file");
-  menu.add(closeCurrentFile);
-  menu.addSeparator();
-  JMenuItem saveOsmFile=new JMenuItem("Save data to osm file...");
-  menu.add(saveOsmFile);
   JMenuItem specifyWorkingDir=new JMenuItem("Specify working directory...");
   menu.add(specifyWorkingDir);
   menu.addSeparator();
@@ -51,7 +46,7 @@
 );
   sqliteDB.addActionListener(new ActionListener(){
     @Override public void actionPerformed(    ActionEvent e){
-      final String regionName=region == null ? "Region" : region.getName();
+      final String regionName=OsmExtractionUI.this.regionName == null ? "Region" : OsmExtractionUI.this.regionName;
       final ITileSource map=mapPanel.getMap();
       if (map != null) {
         try {
@@ -88,13 +83,6 @@ catch (        InvocationTargetException e1) {
     }
   }
 );
-  closeCurrentFile.addActionListener(new ActionListener(){
-    @Override public void actionPerformed(    ActionEvent e){
-      setRegion(null,"Region");
-      frame.setTitle("OsmAnd Map Creator");
-    }
-  }
-);
   settings.addActionListener(new ActionListener(){
     @Override public void actionPerformed(    ActionEvent e){
       OsmExtractionPreferencesDialog dlg=new OsmExtractionPreferencesDialog(frame);
@@ -119,7 +107,6 @@ catch (        InvocationTargetException e1) {
         tileSource.add(sqliteDB);
         bar.remove(1);
         bar.add(tileSource,1);
-        updateButtonsBar();
       }
     }
   }
@@ -167,19 +154,6 @@ catch (        InvocationTargetException e1) {
       int answer=fc.showOpenDialog(frame);
       if (answer == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null) {
         loadCountry(fc.getSelectedFile(),null);
-      }
-    }
-  }
-);
-  saveOsmFile.addActionListener(new ActionListener(){
-    @Override public void actionPerformed(    ActionEvent e){
-      if (region == null) {
-        return;
-      }
-      JFileChooser fc=getOsmFileChooser();
-      int answer=fc.showSaveDialog(frame);
-      if (answer == JFileChooser.APPROVE_OPTION && fc.getSelectedFile() != null) {
-        saveCountry(fc.getSelectedFile());
       }
     }
   }

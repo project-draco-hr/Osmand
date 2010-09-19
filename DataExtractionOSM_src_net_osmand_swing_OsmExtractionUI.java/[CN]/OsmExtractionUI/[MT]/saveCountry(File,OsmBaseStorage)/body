@@ -1,0 +1,38 @@
+{
+  final OsmStorageWriter writer=new OsmStorageWriter();
+  try {
+    final ProgressDialog dlg=new ProgressDialog(frame,"Saving osm file");
+    dlg.setRunnable(new Runnable(){
+      @Override public void run(){
+        try {
+          OutputStream output=new FileOutputStream(f);
+          try {
+            if (f.getName().endsWith(".bz2")) {
+              output.write('B');
+              output.write('Z');
+              output=new CBZip2OutputStream(output);
+            }
+            writer.saveStorage(output,storage,null,false);
+          }
+  finally {
+            output.close();
+          }
+        }
+ catch (        IOException e) {
+          throw new IllegalArgumentException(e);
+        }
+catch (        XMLStreamException e) {
+          throw new IllegalArgumentException(e);
+        }
+      }
+    }
+);
+    dlg.run();
+  }
+ catch (  InterruptedException e1) {
+    log.error("Interrupted",e1);
+  }
+catch (  InvocationTargetException e1) {
+    ExceptionHandler.handle("Log file is not found",e1.getCause());
+  }
+}
