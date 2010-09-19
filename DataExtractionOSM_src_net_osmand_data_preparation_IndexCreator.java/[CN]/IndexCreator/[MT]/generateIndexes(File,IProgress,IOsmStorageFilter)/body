@@ -67,7 +67,6 @@
       }
     }
   }
-  progress.setGeneralProgress("[90 of 100]");
   pselectNode=dbConn.prepareStatement("select * from node where id = ?");
   pselectWay=dbConn.prepareStatement("select * from ways where id = ? order by ord");
   pselectRelation=dbConn.prepareStatement("select * from relations where id = ? order by ord");
@@ -147,6 +146,8 @@
     normalizeSuffixes=DataExtractionSettings.getSettings().getSuffixesToNormalizeStreets();
   }
   if (indexAddress) {
+    progress.setGeneralProgress("[55 of 100]");
+    progress.startTask("Indexing cities...",-1);
     if (!loadFromPath) {
       allNodes=iterateOverEntities(progress,EntityType.NODE,allNodes,STEP_CITY_NODES);
     }
@@ -160,6 +161,8 @@
     }
   }
   if (indexAddress) {
+    progress.setGeneralProgress("[55 of 100]");
+    progress.startTask("Preindexing address...",-1);
     allRelations=iterateOverEntities(progress,EntityType.RELATION,allRelations,STEP_ADDRESS_RELATIONS);
     if (pStatements.get(addressBuildingStat) > 0) {
       addressBuildingStat.executeBatch();
@@ -173,6 +176,7 @@
   }
   iterateOverAllEntities(progress,allNodes,allWays,allRelations,STEP_MAIN);
   if (indexAddress && !postalCodeRelations.isEmpty()) {
+    progress.setGeneralProgress("[95 of 100]");
     progress.startTask("Registering postcodes...",-1);
     if (pStatements.get(addressBuildingStat) > 0) {
       addressBuildingStat.executeBatch();
@@ -190,6 +194,8 @@
       }
     }
   }
+  progress.setGeneralProgress("[95 of 100]");
+  progress.startTask("Indexing low levels for map ...",-1);
   if (indexMap) {
     for (    Long l : lowLevelWaysSt.keySet()) {
       for (      Way w : lowLevelWaysSt.get(l)) {
