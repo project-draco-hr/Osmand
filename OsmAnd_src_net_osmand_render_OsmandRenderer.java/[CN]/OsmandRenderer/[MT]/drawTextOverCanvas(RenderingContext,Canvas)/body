@@ -2,6 +2,12 @@
   List<RectF> boundsNotPathIntersect=new ArrayList<RectF>();
   List<RectF> boundsPathIntersect=new ArrayList<RectF>();
   int size=rc.textToDraw.size();
+  Comparator<RectF> c=new Comparator<RectF>(){
+    @Override public int compare(    RectF object1,    RectF object2){
+      return Float.compare(object1.left,object2.left);
+    }
+  }
+;
   next:   for (int i=0; i < size; i++) {
     TextDrawInfo text=rc.textToDraw.get(i);
     if (text.text != null) {
@@ -16,17 +22,47 @@
         bounds.set(text.centerX - 3 * text.textSize / 2,text.centerY - mes / 2,text.centerX + 3 * text.textSize / 2,text.centerY + mes / 2);
       }
       List<RectF> boundsIntersect=text.drawOnPath == null ? boundsNotPathIntersect : boundsPathIntersect;
-      final int diff=3;
-      final int diff2=15;
-      for (int j=0; j < boundsIntersect.size(); j++) {
-        RectF b=boundsIntersect.get(j);
-        float x=Math.min(bounds.right,b.right) - Math.max(b.left,bounds.left);
-        float y=Math.min(bounds.bottom,b.bottom) - Math.max(b.top,bounds.top);
-        if ((x > diff && y > diff2) || (x > diff2 && y > diff)) {
-          continue next;
-        }
+      if (boundsIntersect.isEmpty()) {
+        boundsIntersect.add(bounds);
       }
-      boundsIntersect.add(bounds);
+ else {
+        final int diff=3;
+        final int diff2=15;
+        int index=Collections.binarySearch(boundsIntersect,bounds,c);
+        if (index < 0) {
+          index=-(index + 1);
+        }
+        int e=index;
+        while (e < boundsIntersect.size()) {
+          if (boundsIntersect.get(e).left < bounds.right) {
+            e++;
+          }
+ else {
+            break;
+          }
+        }
+        int st=index - 1;
+        while (st >= 0) {
+          if (boundsIntersect.get(st).right > bounds.left) {
+            st--;
+          }
+ else {
+            break;
+          }
+        }
+        if (st < 0) {
+          st=0;
+        }
+        for (int j=st; j < e; j++) {
+          RectF b=boundsIntersect.get(j);
+          float x=Math.min(bounds.right,b.right) - Math.max(b.left,bounds.left);
+          float y=Math.min(bounds.bottom,b.bottom) - Math.max(b.top,bounds.top);
+          if ((x > diff && y > diff2) || (x > diff2 && y > diff)) {
+            continue next;
+          }
+        }
+        boundsIntersect.add(index,bounds);
+      }
       if (text.textShadow > 0 && text.shield) {
         paintText.setColor(Color.WHITE);
         paintText.setTextSize(text.textSize + text.textShadow * 2);
