@@ -58,7 +58,40 @@
         cv.drawText(text.text,text.centerX,text.centerY + 3,paintText);
       }
  else {
-        cv.drawText(text.text,text.centerX,text.centerY,paintText);
+        if (text.textWrap == 0) {
+          text.textWrap=40;
+        }
+        if (text.text.length() > text.textWrap) {
+          int start=0;
+          int end=text.text.length();
+          int lastSpace=-1;
+          int line=0;
+          int pos=0;
+          int limit=0;
+          while (pos < end) {
+            lastSpace=-1;
+            limit+=text.textWrap;
+            while (pos < limit && pos < end) {
+              if (!Character.isLetterOrDigit(text.text.charAt(pos))) {
+                lastSpace=pos;
+              }
+              pos++;
+            }
+            if (lastSpace == -1) {
+              cv.drawText(text.text.substring(start,pos),text.centerX,text.centerY + line * (text.textSize + 2),paintText);
+              start=pos;
+            }
+ else {
+              cv.drawText(text.text.substring(start,lastSpace),text.centerX,text.centerY + line * (text.textSize + 2),paintText);
+              start=lastSpace + 1;
+              limit+=(start - pos) - 1;
+            }
+            line++;
+          }
+        }
+ else {
+          cv.drawText(text.text,text.centerX,text.centerY,paintText);
+        }
       }
     }
   }

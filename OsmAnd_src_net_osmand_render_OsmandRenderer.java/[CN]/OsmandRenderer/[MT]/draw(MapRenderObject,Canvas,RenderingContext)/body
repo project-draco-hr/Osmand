@@ -10,6 +10,28 @@
     if (center != null) {
       int typeT=MapRenderingTypes.getPolygonPointType(obj.getType());
       int subT=MapRenderingTypes.getPolygonPointSubType(obj.getType());
+      String name=obj.getName();
+      if (name != null) {
+        rc.clearText();
+        name=renderObjectText(name,subT,typeT,rc.zoom,true,rc);
+        if (rc.textSize == 0) {
+          int type=MapRenderingTypes.getObjectType(obj.getType());
+          int subtype=MapRenderingTypes.getPolygonSubType(obj.getType());
+          name=renderObjectText(name,subtype,type,rc.zoom,false,rc);
+        }
+        if (rc.textSize > 0 && name != null) {
+          TextDrawInfo info=new TextDrawInfo();
+          info.centerX=center.x + rc.textDx;
+          info.centerY=center.y + rc.textDy;
+          info.textColor=rc.textColor;
+          info.textSize=rc.textSize;
+          info.text=name;
+          info.textShadow=(int)rc.textHaloRadius;
+          info.textWrap=rc.textWrapWidth;
+          info.bold=rc.textBold;
+          rc.textToDraw.add(info);
+        }
+      }
       if (typeT != 0 && subT != 0) {
         int resId=PointRenderer.getPointBitmap(rc.zoom,typeT,subT);
         if (resId != 0) {
