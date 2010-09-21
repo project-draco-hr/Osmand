@@ -83,22 +83,9 @@
     }
   }
  else   if (step == STEP_ADDRESS_RELATIONS_AND_MULTYPOLYGONS) {
-    if (e instanceof Relation && "address".equals(e.getTag(OSMTagKey.TYPE))) {
-      indexAddressRelation((Relation)e);
-    }
-    if (e instanceof Relation && "multipolygon".equals(e.getTag(OSMTagKey.TYPE))) {
-      loadEntityData(e,true);
-      Map<Entity,String> entities=((Relation)e).getMemberEntities();
-      for (      Entity es : entities.keySet()) {
-        if (es instanceof Way) {
-          boolean inner="inner".equals(entities.get(es));
-          boolean clockwise=true;
-          boolean inverse=!clockwise == inner;
-          writeEntityToMapDatabase(es,es.getId(),inverse,0);
-          indexLowLevelMap(es,1);
-          indexLowLevelMap(es,2);
-          multiPolygonsWays.add(es.getId());
-        }
+    if (indexAddress) {
+      if (e instanceof Relation && "address".equals(e.getTag(OSMTagKey.TYPE))) {
+        indexAddressRelation((Relation)e);
       }
     }
   }

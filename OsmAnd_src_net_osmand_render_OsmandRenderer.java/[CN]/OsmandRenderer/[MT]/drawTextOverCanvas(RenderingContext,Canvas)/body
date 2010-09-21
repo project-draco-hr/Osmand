@@ -21,13 +21,16 @@
  else {
         bounds.set(text.centerX - 3 * text.textSize / 2,text.centerY - mes / 2,text.centerX + 3 * text.textSize / 2,text.centerY + mes / 2);
       }
+      if (text.minDistance > 0) {
+        bounds.set(bounds.left - text.minDistance / 2,bounds.top - text.minDistance / 2,bounds.right + text.minDistance / 2,bounds.bottom + text.minDistance / 2);
+      }
       List<RectF> boundsIntersect=text.drawOnPath == null ? boundsNotPathIntersect : boundsPathIntersect;
       if (boundsIntersect.isEmpty()) {
         boundsIntersect.add(bounds);
       }
  else {
-        final int diff=3;
-        final int diff2=15;
+        final int diff=(int)3;
+        final int diff2=(int)15;
         int index=Collections.binarySearch(boundsIntersect,bounds,c);
         if (index < 0) {
           index=-(index + 1);
@@ -61,6 +64,9 @@
             continue next;
           }
         }
+        if (text.minDistance > 0) {
+          bounds.set(bounds.left + text.minDistance / 2,bounds.top + text.minDistance / 2,bounds.right - text.minDistance / 2,bounds.bottom - text.minDistance / 2);
+        }
         boundsIntersect.add(index,bounds);
       }
       paintText.setColor(text.textColor);
@@ -77,7 +83,7 @@
           }
           Bitmap ico=cachedIcons.get(text.shieldRes);
           if (ico != null) {
-            cv.drawBitmap(ico,text.centerX - ico.getWidth() / 2 - 1,text.centerY - text.textSize - 2,paintIcon);
+            cv.drawBitmap(ico,text.centerX - ico.getWidth() / 2 - 0.5f,text.centerY - text.textSize - 2,paintIcon);
           }
         }
         if (text.text.length() > text.textWrap) {

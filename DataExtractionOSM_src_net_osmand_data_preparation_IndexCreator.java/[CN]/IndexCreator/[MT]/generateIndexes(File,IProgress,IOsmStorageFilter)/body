@@ -164,15 +164,17 @@
     progress.setGeneralProgress("[55 of 100]");
     progress.startTask("Preindexing address...",-1);
     allRelations=iterateOverEntities(progress,EntityType.RELATION,allRelations,STEP_ADDRESS_RELATIONS_AND_MULTYPOLYGONS);
-    if (pStatements.get(addressBuildingStat) > 0) {
-      addressBuildingStat.executeBatch();
-      pStatements.put(addressBuildingStat,0);
+    if (indexAddress) {
+      if (pStatements.get(addressBuildingStat) > 0) {
+        addressBuildingStat.executeBatch();
+        pStatements.put(addressBuildingStat,0);
+      }
+      if (pStatements.get(addressStreetNodeStat) > 0) {
+        addressStreetNodeStat.executeBatch();
+        pStatements.put(addressStreetNodeStat,0);
+      }
+      addressConnection.commit();
     }
-    if (pStatements.get(addressStreetNodeStat) > 0) {
-      addressStreetNodeStat.executeBatch();
-      pStatements.put(addressStreetNodeStat,0);
-    }
-    addressConnection.commit();
   }
   iterateOverAllEntities(progress,allNodes,allWays,allRelations,STEP_MAIN);
   if (indexAddress && !postalCodeRelations.isEmpty()) {
