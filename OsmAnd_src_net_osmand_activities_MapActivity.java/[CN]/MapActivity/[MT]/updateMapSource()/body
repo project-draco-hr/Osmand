@@ -1,10 +1,17 @@
 {
   boolean vectorData=OsmandSettings.isUsingMapVectorData(this);
+  ResourceManager rm=((OsmandApplication)getApplication()).getResourceManager();
+  if (vectorData) {
+    if (rm.getRenderer().isEmpty()) {
+      Toast.makeText(MapActivity.this,getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
+      vectorData=false;
+    }
+  }
   ITileSource newSource=OsmandSettings.getMapTileSource(this);
   if (mapView.getMap() instanceof SQLiteTileSource) {
     ((SQLiteTileSource)mapView.getMap()).closeDB();
   }
-  ((OsmandApplication)getApplication()).getResourceManager().updateMapSource(vectorData,newSource);
+  rm.updateMapSource(vectorData,newSource);
   mapView.setMap(vectorData ? null : newSource);
   rendererLayer.setVisible(vectorData);
 }
