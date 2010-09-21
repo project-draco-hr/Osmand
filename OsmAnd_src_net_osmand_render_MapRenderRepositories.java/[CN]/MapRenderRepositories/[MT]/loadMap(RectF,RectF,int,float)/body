@@ -22,6 +22,7 @@
       cObjects=new ArrayList<MapRenderObject>();
       System.gc();
       Set<Long> ids=new LinkedHashSet<Long>();
+      Map<Integer,List<MapRenderObject>> multiPolygons=new LinkedHashMap<Integer,List<MapRenderObject>>();
       for (      Connection c : connections.keySet()) {
         RectF r=connections.get(c);
         boolean intersects=r.top >= cBottomLatitude && r.left <= cRightLongitude && r.right >= cLeftLongitude && r.bottom <= cTopLatitude;
@@ -52,18 +53,32 @@
               }
               ids.add(id);
             }
+            int type=result.getInt(4);
             MapRenderObject obj=new MapRenderObject(id);
             obj.setData(result.getBytes(2));
             obj.setName(result.getString(3));
-            obj.setType(result.getInt(4));
+            obj.setType(type);
             count++;
-            cObjects.add(obj);
+            if ((type & 0x3) == 0) {
+              if (!multiPolygons.containsKey(type)) {
+                multiPolygons.put(type,new ArrayList<MapRenderObject>());
+              }
+              multiPolygons.get(type).add(obj);
+            }
+ else {
+              cObjects.add(obj);
+            }
           }
         }
   finally {
           result.close();
         }
       }
+      int leftX=MapUtils.get31TileNumberX(cLeftLongitude);
+      int rightX=MapUtils.get31TileNumberX(cRightLongitude);
+      int bottomY=MapUtils.get31TileNumberY(cBottomLatitude);
+      int topY=MapUtils.get31TileNumberY(cTopLatitude);
+      proccessMultiPolygons(multiPolygons,leftX,rightX,bottomY,topY);
       log.info(String.format("Search has been done in %s ms. %s results were found.",System.currentTimeMillis() - now,count));
     }
  catch (    java.sql.SQLException e) {

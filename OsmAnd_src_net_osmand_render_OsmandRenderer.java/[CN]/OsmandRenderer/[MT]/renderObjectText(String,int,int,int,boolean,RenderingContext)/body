@@ -1,54 +1,224 @@
 {
+  if (name == null || name.length() == 0) {
+    return null;
+  }
   int textSize=0;
   int textColor=0;
   int wrapWidth=0;
   int shadowRadius=0;
+  int textMinDistance=0;
+  int textShield=0;
   int dy=0;
   boolean bold=false;
+  boolean showTextOnPath=false;
 switch (type) {
-case MapRenderingTypes.AEROWAY:
+case MapRenderingTypes.HIGHWAY:
 {
-      textColor=0xff6692da;
-      shadowRadius=1;
-      if (subType == 10) {
-        if (zoom >= 10 && zoom <= 12) {
-          textSize=9;
-          dy=-12;
-          bold=true;
+      if (name.charAt(0) == MapRenderingTypes.REF_CHAR) {
+        name=name.substring(1);
+        if (name.length() > 6) {
+          name=name.substring(0,6);
         }
-      }
- else       if (subType == 1) {
-        if (zoom >= 10 && zoom <= 12) {
-          textSize=8;
-          dy=-12;
+        int len=name.length();
+        if (len == 0) {
         }
-      }
- else       if (subType == 12) {
-        if (zoom >= 17) {
+ else {
           textSize=10;
-          textColor=0xffaa66cc;
-          shadowRadius=1;
-          wrapWidth=10;
+          textColor=Color.WHITE;
+          bold=true;
+          textMinDistance=50;
+          if (subType == MapRenderingTypes.PL_HW_TRUNK) {
+            textShield=trunkShields[len - 1];
+            if (zoom < 10) {
+              textSize=0;
+            }
+          }
+ else           if (subType == MapRenderingTypes.PL_HW_MOTORWAY) {
+            textShield=motorShields[len - 1];
+            if (zoom < 10) {
+              textSize=0;
+            }
+          }
+ else           if (subType == MapRenderingTypes.PL_HW_PRIMARY) {
+            textShield=primaryShields[len - 1];
+            if (zoom < 11) {
+              textSize=0;
+            }
+          }
+ else           if (subType == MapRenderingTypes.PL_HW_SECONDARY) {
+            if (zoom < 14) {
+              textSize=0;
+            }
+            textShield=secondaryShields[len - 1];
+          }
+ else           if (subType == MapRenderingTypes.PL_HW_TERTIARY) {
+            if (zoom < 15) {
+              textSize=0;
+            }
+            textShield=tertiaryShields[len - 1];
+          }
+ else {
+            if (zoom < 16) {
+              textSize=0;
+            }
+ else {
+              showTextOnPath=true;
+              textColor=Color.BLACK;
+              textSize=10;
+              textMinDistance=20;
+              shadowRadius=1;
+            }
+          }
+        }
+      }
+ else {
+        if (subType == MapRenderingTypes.PL_HW_TRUNK || subType == MapRenderingTypes.PL_HW_PRIMARY || subType == MapRenderingTypes.PL_HW_SECONDARY) {
+          textColor=Color.BLACK;
+          showTextOnPath=true;
+          if (zoom == 13 && type != MapRenderingTypes.PL_HW_SECONDARY) {
+            textSize=8;
+          }
+ else           if (zoom == 14) {
+            textSize=9;
+          }
+ else           if (zoom > 14 && zoom < 17) {
+            textSize=10;
+          }
+ else           if (zoom > 16) {
+            textSize=12;
+          }
+        }
+ else         if (subType == MapRenderingTypes.PL_HW_TERTIARY || subType == MapRenderingTypes.PL_HW_RESIDENTIAL || subType == MapRenderingTypes.PL_HW_UNCLASSIFIED || subType == MapRenderingTypes.PL_HW_SERVICE) {
+          textColor=Color.BLACK;
+          showTextOnPath=true;
+          if (zoom < 15) {
+            textSize=0;
+          }
+ else           if (zoom < 17) {
+            textSize=9;
+          }
+ else {
+            textSize=11;
+          }
+        }
+ else         if (subType < 32) {
+          if (zoom >= 16) {
+            textColor=Color.BLACK;
+            showTextOnPath=true;
+            textSize=9;
+          }
+        }
+ else         if (subType == 40) {
+          if (zoom >= 17) {
+            textColor=Color.BLACK;
+            textSize=9;
+            wrapWidth=25;
+            dy=11;
+          }
         }
       }
     }
   break;
-case MapRenderingTypes.AERIALWAY:
+case MapRenderingTypes.WATERWAY:
 {
-  if (subType == 7) {
-    if (zoom >= 14) {
-      textColor=0xff6666ff;
+  if (subType == 1) {
+    if (zoom >= 15) {
+      showTextOnPath=true;
+      textSize=8;
       shadowRadius=1;
-      if (zoom == 14) {
-        dy=-7;
-        textSize=8;
-      }
- else {
-        dy=-10;
-        textSize=10;
-      }
+      textColor=0xff6699cc;
     }
   }
+ else   if (subType == 2 || subType == 4) {
+    if (zoom > 13) {
+      textSize=9;
+      showTextOnPath=true;
+      shadowRadius=1;
+      textColor=0xff6699cc;
+      textMinDistance=200;
+    }
+  }
+ else   if (subType == 5 || subType == 6) {
+    if (zoom >= 15) {
+      textSize=8;
+      showTextOnPath=true;
+      shadowRadius=1;
+      textColor=0xff6699cc;
+    }
+  }
+ else   if (subType == 12) {
+    if (zoom >= 15) {
+      textColor=Color.BLACK;
+      textSize=8;
+      shadowRadius=1;
+    }
+  }
+ else   if (subType == 8) {
+    if (zoom >= 15) {
+      shadowRadius=1;
+      textSize=9;
+      textColor=0xff0066ff;
+      wrapWidth=70;
+      dy=10;
+    }
+  }
+}
+break;
+case MapRenderingTypes.AEROWAY:
+{
+textColor=0xff6692da;
+shadowRadius=1;
+if (name.charAt(0) == MapRenderingTypes.REF_CHAR) {
+name=name.substring(1);
+}
+if (subType == 7 || subType == 8) {
+if (zoom >= 15) {
+  showTextOnPath=true;
+  textSize=10;
+  textColor=0xff333333;
+  textMinDistance=20;
+  shadowRadius=1;
+}
+}
+ else if (subType == 10) {
+if (zoom >= 10 && zoom <= 12) {
+  textSize=9;
+  dy=-12;
+  bold=true;
+}
+}
+ else if (subType == 1) {
+if (zoom >= 10 && zoom <= 12) {
+  textSize=8;
+  dy=-12;
+}
+}
+ else if (subType == 12) {
+if (zoom >= 17) {
+  textSize=10;
+  textColor=0xffaa66cc;
+  shadowRadius=1;
+  wrapWidth=10;
+}
+}
+}
+break;
+case MapRenderingTypes.AERIALWAY:
+{
+if (subType == 7) {
+if (zoom >= 14) {
+textColor=0xff6666ff;
+shadowRadius=1;
+if (zoom == 14) {
+dy=-7;
+textSize=8;
+}
+ else {
+dy=-10;
+textSize=10;
+}
+}
+}
 }
 break;
 case MapRenderingTypes.RAILWAY:
@@ -57,25 +227,25 @@ if (zoom >= 14) {
 textColor=0xff6666ff;
 shadowRadius=1;
 if (subType == 13) {
-  bold=true;
-  if (zoom == 14) {
-    dy=-8;
-    textSize=9;
-  }
+bold=true;
+if (zoom == 14) {
+dy=-8;
+textSize=9;
+}
  else {
-    dy=-10;
-    textSize=11;
-  }
+dy=-10;
+textSize=11;
+}
 }
  else if (subType == 22 || subType == 23) {
-  if (zoom == 14) {
-    dy=-7;
-    textSize=8;
-  }
+if (zoom == 14) {
+dy=-7;
+textSize=8;
+}
  else {
-    dy=-10;
-    textSize=10;
-  }
+dy=-10;
+textSize=10;
+}
 }
 }
 }
@@ -160,19 +330,6 @@ textColor=0xff000000;
 shadowRadius=2;
 wrapWidth=10;
 textSize=9;
-}
-}
-}
-break;
-case MapRenderingTypes.WATERWAY:
-{
-if (subType == 8) {
-if (zoom >= 15) {
-shadowRadius=1;
-textSize=9;
-textColor=0xff0066ff;
-wrapWidth=70;
-dy=10;
 }
 }
 }
@@ -282,7 +439,7 @@ wrapWidth=34;
  else if (subType == 4 || subType == 18) {
 textColor=0xff0066ff;
 shadowRadius=1;
-dy=9;
+dy=13;
 textSize=9;
 }
 }
@@ -309,6 +466,9 @@ wrapWidth=16;
  else if (subType == 1 || subType == 2 || subType == 3) {
 if (zoom >= 16) {
 textColor=0xff000033;
+if (subType != 1) {
+dy=11;
+}
 textSize=9;
 wrapWidth=16;
 }
@@ -480,7 +640,7 @@ if (subType >= 1 && subType <= 4) {
 shadowRadius=1;
 textColor=0xff734a08;
 wrapWidth=34;
-dy=9;
+dy=11;
 textSize=10;
 }
  else if (subType >= 4 && subType <= 6) {
@@ -613,6 +773,9 @@ break;
 }
 rc.textColor=textColor;
 rc.textSize=textSize;
+rc.textMinDistance=textMinDistance;
+rc.showTextOnPath=showTextOnPath;
+rc.textShield=textShield;
 rc.textWrapWidth=wrapWidth;
 rc.textHaloRadius=shadowRadius;
 rc.textBold=bold;

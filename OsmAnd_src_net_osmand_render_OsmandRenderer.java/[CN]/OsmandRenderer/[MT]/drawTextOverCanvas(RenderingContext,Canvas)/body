@@ -63,39 +63,22 @@
         }
         boundsIntersect.add(index,bounds);
       }
-      if (text.textShadow > 0 && text.shield) {
-        paintText.setColor(Color.WHITE);
-        paintText.setTextSize(text.textSize + text.textShadow * 2);
-        if (text.drawOnPath != null) {
-          cv.drawTextOnPath(text.text,text.drawOnPath,0,text.vOffset,paintText);
-        }
- else {
-          cv.drawText(text.text,text.centerX,text.centerY,paintText);
-        }
-        paintText.setTextSize(text.textSize);
-      }
       paintText.setColor(text.textColor);
       if (text.drawOnPath != null) {
         cv.drawTextOnPath(text.text,text.drawOnPath,0,text.vOffset,paintText);
       }
- else       if (text.shield) {
-        bounds.set(text.centerX - mes / 2 - 4,text.centerY - text.textSize,text.centerX + mes / 2 + 4,text.centerY + text.textSize / 2);
-        paintShield.setStyle(Style.STROKE);
-        paintShield.setColor(Color.WHITE);
-        paintShield.setStrokeWidth(3);
-        cv.drawOval(bounds,paintShield);
-        paintShield.setStyle(Style.FILL);
-        Color.colorToHSV(paintText.getColor(),hsv);
-        hsv[2]*=0.85;
-        paintShield.setColor(Color.HSVToColor(hsv));
-        cv.drawOval(bounds,paintShield);
-        paintText.setFakeBoldText(true);
-        paintText.setColor(Color.WHITE);
-        cv.drawText(text.text,text.centerX,text.centerY + 3,paintText);
-      }
  else {
         if (text.textWrap == 0) {
           text.textWrap=40;
+        }
+        if (text.shieldRes != 0) {
+          if (cachedIcons.get(text.shieldRes) == null) {
+            cachedIcons.put(text.shieldRes,BitmapFactory.decodeResource(context.getResources(),text.shieldRes));
+          }
+          Bitmap ico=cachedIcons.get(text.shieldRes);
+          if (ico != null) {
+            cv.drawBitmap(ico,text.centerX - ico.getWidth() / 2 - 1,text.centerY - text.textSize - 2,paintIcon);
+          }
         }
         if (text.text.length() > text.textWrap) {
           int start=0;

@@ -5,8 +5,6 @@
   rc.second.emptyLine();
   rc.third.emptyLine();
   rc.adds=null;
-  rc.showText=false;
-  rc.clearText();
   PolylineRenderer.renderPolyline(type,subtype,obj.getType(),rc,this);
   if (rc.main.strokeWidth == 0) {
     return;
@@ -71,54 +69,52 @@
         canvas.drawPath(path,paint);
       }
     }
-    if (obj.getName() != null && rc.showText) {
-      if (!rc.showTextOnPath) {
-        TextDrawInfo text=new TextDrawInfo();
-        text.text=obj.getName();
-        text.centerX=xMid / 2;
-        text.centerY=yMid / 2;
-        text.textColor=rc.textColor;
-        text.textSize=rc.textSize;
-        text.vOffset=rc.textDy;
-        text.textShadow=(int)rc.textHaloRadius;
-        rc.textToDraw.add(text);
-      }
- else       if (paintText.measureText(obj.getName()) < Math.max(Math.abs(xLength),Math.abs(yLength))) {
-        if (inverse) {
-          path.rewind();
-          boolean st=true;
-          for (int i=obj.getPointsLength() - 1; i >= 0; i--) {
-            PointF p=calcPoint(obj,i,rc);
-            if (st) {
-              st=false;
-              path.moveTo(p.x,p.y);
-            }
- else {
-              path.lineTo(p.x,p.y);
-            }
-          }
+    if (obj.getName() != null) {
+      String name=obj.getName();
+      rc.clearText();
+      name=renderObjectText(name,subtype,type,rc.zoom,false,rc);
+      if (name != null && rc.textSize > 0) {
+        if (!rc.showTextOnPath) {
+          TextDrawInfo text=new TextDrawInfo();
+          text.text=name;
+          text.bold=rc.textBold;
+          text.centerX=xMid / 2;
+          text.centerY=yMid / 2;
+          text.shieldRes=rc.textShield;
+          text.textColor=rc.textColor;
+          text.textSize=rc.textSize;
+          text.vOffset=rc.textDy;
+          text.textShadow=(int)rc.textHaloRadius;
+          rc.textToDraw.add(text);
         }
-        TextDrawInfo text=new TextDrawInfo();
-        text.text=obj.getName();
-        text.centerX=xMid / 2;
-        text.centerY=yMid / 2;
-        text.pathRotate=pathRotate;
-        text.drawOnPath=path;
-        text.textColor=rc.textColor;
-        text.textShadow=(int)rc.textHaloRadius;
-        text.textSize=rc.textSize;
-        text.vOffset=rc.main.strokeWidth / 2 - 1;
-        rc.textToDraw.add(text);
-        if (text.text.startsWith(MapRenderingTypes.REF_CHAR)) {
-          if (text.text.length() > 5) {
-            text.text=text.text.substring(1,5);
-          }
  else {
-            text.text=text.text.substring(1);
+          if (inverse) {
+            path.rewind();
+            boolean st=true;
+            for (int i=obj.getPointsLength() - 1; i >= 0; i--) {
+              PointF p=calcPoint(obj,i,rc);
+              if (st) {
+                st=false;
+                path.moveTo(p.x,p.y);
+              }
+ else {
+                path.lineTo(p.x,p.y);
+              }
+            }
           }
-          text.textColor=rc.second.strokeWidth != 0 ? rc.second.color : rc.main.color;
-          text.shield=true;
-          text.drawOnPath=null;
+          TextDrawInfo text=new TextDrawInfo();
+          text.text=name;
+          text.shieldRes=rc.textShield;
+          text.centerX=xMid / 2;
+          text.centerY=yMid / 2;
+          text.pathRotate=pathRotate;
+          text.bold=rc.textBold;
+          text.drawOnPath=path;
+          text.textColor=rc.textColor;
+          text.textShadow=(int)rc.textHaloRadius;
+          text.textSize=rc.textSize;
+          text.vOffset=rc.main.strokeWidth / 2 - 1;
+          rc.textToDraw.add(text);
         }
       }
     }
