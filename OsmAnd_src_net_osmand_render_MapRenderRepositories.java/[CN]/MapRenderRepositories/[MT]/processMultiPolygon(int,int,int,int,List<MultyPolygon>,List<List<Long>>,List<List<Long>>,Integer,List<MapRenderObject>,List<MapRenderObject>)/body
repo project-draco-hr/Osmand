@@ -1,0 +1,82 @@
+{
+  MultyPolygon pl=new MultyPolygon();
+  pl.setType(type << 1);
+  for (int km=0; km < 2; km++) {
+    List<MapRenderObject> list=km == 0 ? directList : inverselist;
+    for (    MapRenderObject o : list) {
+      int len=o.getPointsLength();
+      if (len < 2) {
+        continue;
+      }
+      List<Long> coordinates=new ArrayList<Long>(len / 2);
+      if (o.getName() != null) {
+        pl.setName(o.getName());
+      }
+      int px=o.getPoint31XTile(km == 0 ? 0 : len - 1);
+      int py=o.getPoint31YTile(km == 0 ? 0 : len - 1);
+      int x=px;
+      int y=py;
+      boolean pinside=leftX <= x && x <= rightX && y >= topY && y <= bottomY;
+      if (pinside) {
+        coordinates.add((((long)x) << 32) | ((long)y));
+      }
+      for (int i=1; i < len; i++) {
+        x=o.getPoint31XTile(km == 0 ? i : len - i - 1);
+        y=o.getPoint31YTile(km == 0 ? i : len - i - 1);
+        boolean inside=leftX <= x && x <= rightX && y >= topY && y <= bottomY;
+        calculateLineCoordinates(inside,x,y,pinside,px,py,leftX,rightX,bottomY,topY,coordinates);
+        px=x;
+        py=y;
+        pinside=inside;
+      }
+      if (coordinates.size() > 0) {
+        if (coordinates.get(0).longValue() == coordinates.get(coordinates.size() - 1).longValue()) {
+          completedRings.add(coordinates);
+        }
+ else {
+          boolean add=true;
+          for (int k=0; k < incompletedRings.size(); ) {
+            boolean remove=false;
+            List<Long> i=incompletedRings.get(k);
+            if (coordinates.get(0).longValue() == i.get(i.size() - 1).longValue()) {
+              i.addAll(coordinates.subList(1,coordinates.size()));
+              remove=true;
+              coordinates=i;
+            }
+ else             if (coordinates.get(coordinates.size() - 1).longValue() == i.get(0).longValue()) {
+              coordinates.addAll(i.subList(1,i.size()));
+              remove=true;
+            }
+            if (remove) {
+              incompletedRings.remove(k);
+            }
+ else {
+              k++;
+            }
+            if (coordinates.get(0).longValue() == coordinates.get(coordinates.size() - 1).longValue()) {
+              completedRings.add(coordinates);
+              add=false;
+              break;
+            }
+          }
+          if (add) {
+            incompletedRings.add(coordinates);
+          }
+        }
+      }
+    }
+  }
+  if (incompletedRings.size() > 0) {
+    unifyIncompletedRings(incompletedRings,completedRings,leftX,rightX,bottomY,topY);
+  }
+  long[][] lns=new long[completedRings.size()][];
+  for (int i=0; i < completedRings.size(); i++) {
+    List<Long> ring=completedRings.get(i);
+    lns[i]=new long[ring.size()];
+    for (int j=0; j < lns[i].length; j++) {
+      lns[i][j]=ring.get(j);
+    }
+  }
+  pl.setLines(lns);
+  return pl;
+}

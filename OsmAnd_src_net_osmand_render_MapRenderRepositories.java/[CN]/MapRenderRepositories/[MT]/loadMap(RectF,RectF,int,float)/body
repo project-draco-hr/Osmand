@@ -55,19 +55,20 @@
             }
             int type=result.getInt(4);
             MapRenderObject obj=new MapRenderObject(id);
+            obj.setType(type);
             obj.setData(result.getBytes(2));
             obj.setName(result.getString(3));
-            obj.setType(type);
             count++;
-            if ((type & 0x3) == 0) {
-              if (!multiPolygons.containsKey(type)) {
-                multiPolygons.put(type,new ArrayList<MapRenderObject>());
-              }
-              multiPolygons.get(type).add(obj);
+            int mainType=obj.getMainType();
+            registerMultipolygon(multiPolygons,mainType,obj);
+            int sec=obj.getSecondType();
+            if (sec != 0) {
+              registerMultipolygon(multiPolygons,sec,obj);
             }
- else {
-              cObjects.add(obj);
+            for (int k=0; k < obj.getMultiTypes(); k++) {
+              registerMultipolygon(multiPolygons,obj.getAdditionalType(k),obj);
             }
+            cObjects.add(obj);
           }
         }
   finally {
@@ -78,7 +79,8 @@
       int rightX=MapUtils.get31TileNumberX(cRightLongitude);
       int bottomY=MapUtils.get31TileNumberY(cBottomLatitude);
       int topY=MapUtils.get31TileNumberY(cTopLatitude);
-      proccessMultiPolygons(multiPolygons,leftX,rightX,bottomY,topY);
+      List<MultyPolygon> pMulti=proccessMultiPolygons(multiPolygons,leftX,rightX,bottomY,topY);
+      cObjects.addAll(pMulti);
       log.info(String.format("Search has been done in %s ms. %s results were found.",System.currentTimeMillis() - now,count));
     }
  catch (    java.sql.SQLException e) {

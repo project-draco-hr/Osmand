@@ -1,0 +1,92 @@
+{
+  int mask=0xffffffff;
+  for (  List<Long> i : incompletedRings) {
+    int x=(int)(i.get(i.size() - 1) >> 32);
+    int y=(int)(i.get(i.size() - 1) & mask);
+    int sx=(int)(i.get(0) >> 32);
+    int sy=(int)(i.get(0) & mask);
+    long start=(((long)sx) << 32) | ((long)sy);
+    boolean st=false;
+    for (int h=0; h < 8; h++) {
+      if (h % 4 == 0) {
+        if (!st) {
+          if (y == topY) {
+            if (sy == topY && sx >= x) {
+              i.add(start);
+              break;
+            }
+ else {
+              i.add((((long)rightX) << 32) | ((long)topY));
+              st=true;
+            }
+          }
+        }
+ else         if (sy == topY) {
+          i.add(start);
+          break;
+        }
+      }
+ else       if (h % 4 == 1) {
+        if (!st) {
+          if (x == rightX) {
+            if (sx == rightX && sy >= y) {
+              i.add(start);
+              break;
+            }
+ else {
+              i.add((((long)rightX) << 32) | ((long)bottomY));
+              st=true;
+            }
+          }
+        }
+ else         if (sx == rightX) {
+          i.add(start);
+          break;
+        }
+      }
+ else       if (h % 4 == 2) {
+        if (!st) {
+          if (y == bottomY) {
+            if (sy == bottomY && sx <= x) {
+              i.add(start);
+              break;
+            }
+ else {
+              i.add((((long)leftX) << 32) | ((long)bottomY));
+              st=true;
+            }
+          }
+        }
+ else         if (sy == bottomY) {
+          i.add(start);
+          break;
+        }
+      }
+ else       if (h % 4 == 3) {
+        if (!st) {
+          if (x == leftX) {
+            if (sx == leftX && sy <= y) {
+              i.add(start);
+              break;
+            }
+ else {
+              i.add((((long)leftX) << 32) | ((long)topY));
+              st=true;
+            }
+          }
+        }
+ else         if (sx == leftX) {
+          i.add(start);
+          break;
+        }
+      }
+      if (h == 3 && !st) {
+        throw new IllegalArgumentException();
+      }
+      if (h == 7) {
+        throw new IllegalArgumentException();
+      }
+    }
+    completedRings.add(i);
+  }
+}

@@ -1,0 +1,60 @@
+{
+  float xText=0;
+  float yText=0;
+  int zoom=rc.zoom;
+  Path path=null;
+  rc.main.emptyArea();
+  rc.second.emptyLine();
+  rc.main.color=Color.rgb(245,245,245);
+  PolygonRenderer.renderPolygon(rc,zoom,type,subtype,this);
+  if (!rc.main.fillArea) {
+    return null;
+  }
+  int len=0;
+  if (!multipolygon) {
+    len=obj.getPointsLength();
+    for (int i=0; i < obj.getPointsLength(); i++) {
+      PointF p=calcPoint(obj,i,rc);
+      xText+=p.x;
+      yText+=p.y;
+      if (path == null) {
+        path=new Path();
+        path.moveTo(p.x,p.y);
+      }
+ else {
+        path.lineTo(p.x,p.y);
+      }
+    }
+  }
+ else {
+    len=0;
+    path=new Path();
+    for (int i=0; i < ((MultyPolygon)obj).getBoundsCount(); i++) {
+      int cnt=((MultyPolygon)obj).getBoundPointsCount(i);
+      len+=cnt;
+      for (int j=0; j < cnt; j++) {
+        PointF p=calcMultiPolygonPoint((MultyPolygon)obj,j,i,rc);
+        xText+=p.x;
+        yText+=p.y;
+        if (j == 0) {
+          path.moveTo(p.x,p.y);
+        }
+ else {
+          path.lineTo(p.x,p.y);
+        }
+      }
+    }
+  }
+  if (path != null && len > 0) {
+    xText/=len;
+    yText/=len;
+    rc.main.updatePaint(paint);
+    canvas.drawPath(path,paint);
+    if (rc.second.strokeWidth != 0) {
+      rc.second.updatePaint(paint);
+      canvas.drawPath(path,paint);
+    }
+    return new PointF(xText,yText);
+  }
+  return null;
+}

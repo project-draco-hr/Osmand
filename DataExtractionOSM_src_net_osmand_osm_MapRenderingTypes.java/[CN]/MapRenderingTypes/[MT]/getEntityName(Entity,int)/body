@@ -1,19 +1,26 @@
 {
-  if (e.getTag(OSMTagKey.REF) != null && getObjectType(wholeType) == HIGHWAY) {
+  mainType>>=1;
+  if (e.getTag(OSMTagKey.REF) != null && getMainObjectType(mainType) == HIGHWAY) {
     String ref=e.getTag(OSMTagKey.REF);
     if (ref.length() > 5 && ref.indexOf('_') != -1) {
       ref=ref.substring(0,ref.indexOf('_'));
     }
-    return REF_CHAR + ref;
+    String name=e.getTag(OSMTagKey.NAME);
+    if (name != null && !name.equals(ref)) {
+      return REF_CHAR + ref + REF_CHAR+ name;
+    }
+ else {
+      return REF_CHAR + ref;
+    }
   }
   String name=e.getTag(OSMTagKey.NAME);
   if (name == null) {
     name=e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER);
   }
-  if (name == null && getObjectType(wholeType) == NATURAL && getPointSubType(wholeType) == 13) {
+  if (name == null && getMainObjectType(mainType) == NATURAL && getObjectSubType(mainType) == 13) {
     name=e.getTag("ele");
   }
-  if (name == null && getObjectType(wholeType) == AEROWAY && getPointSubType(wholeType) == 17) {
+  if (name == null && getMainObjectType(mainType) == AEROWAY && getObjectSubType(mainType) == 17) {
     name=e.getTag(OSMTagKey.REF);
   }
   return name;

@@ -1,39 +1,18 @@
 {
-  if (obj.isPoint()) {
-    drawPoint(obj,canvas,rc);
-  }
- else   if (obj.isPolyLine()) {
-    drawPolyline(obj,canvas,rc);
-  }
- else {
-    PointF center=drawPolygon(obj,canvas,rc);
-    if (center != null) {
-      int typeT=MapRenderingTypes.getPolygonPointType(obj.getType());
-      int subT=MapRenderingTypes.getPolygonPointSubType(obj.getType());
-      String name=obj.getName();
-      if (name != null) {
-        rc.clearText();
-        name=renderObjectText(name,subT,typeT,rc.zoom,true,rc);
-        if (rc.textSize == 0) {
-          int type=MapRenderingTypes.getObjectType(obj.getType());
-          int subtype=MapRenderingTypes.getPolygonSubType(obj.getType());
-          name=renderObjectText(name,subtype,type,rc.zoom,false,rc);
-        }
-        if (rc.textSize > 0 && name != null) {
-          TextDrawInfo info=new TextDrawInfo(name);
-          info.fillProperties(rc,center.x,center.y);
-          rc.textToDraw.add(info);
-        }
-      }
-      if (typeT != 0 && subT != 0) {
-        int resId=PointRenderer.getPointBitmap(rc.zoom,typeT,subT);
-        if (resId != 0) {
-          IconDrawInfo ico=new IconDrawInfo();
-          ico.x=center.x;
-          ico.y=center.y;
-          ico.resId=resId;
-          rc.iconsToDraw.add(ico);
-        }
+  int mainType=obj.getMainType();
+  int t=mainType & 3;
+  int sz=rc.textToDraw.size();
+  PointF center=null;
+  center=drawObj(obj,canvas,rc,mainType,sz == rc.textToDraw.size(),center);
+  if (t != MapRenderingTypes.POINT_TYPE) {
+    int second=obj.getSecondType();
+    if (second != 0) {
+      center=drawObj(obj,canvas,rc,second,sz == rc.textToDraw.size(),center);
+    }
+    if (obj.isMultitype()) {
+      byte ts=obj.getMultiTypes();
+      for (int k=0; k < ts; k++) {
+        center=drawObj(obj,canvas,rc,obj.getAdditionalType(k),sz == rc.textToDraw.size(),center);
       }
     }
   }

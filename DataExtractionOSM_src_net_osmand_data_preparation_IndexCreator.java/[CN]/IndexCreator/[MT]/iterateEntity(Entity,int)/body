@@ -20,13 +20,11 @@
       }
     }
     if (indexMap && (e instanceof Way || e instanceof Node)) {
-      if (e instanceof Node || !multiPolygonsWays.contains(e.getId())) {
-        loadEntityData(e,true);
-        boolean inverse="-1".equals(e.getTag(OSMTagKey.ONEWAY));
-        writeEntityToMapDatabase(e,e.getId(),inverse,0);
-        indexLowLevelMap(e,1);
-        indexLowLevelMap(e,2);
-      }
+      loadEntityData(e,true);
+      boolean inverse="-1".equals(e.getTag(OSMTagKey.ONEWAY));
+      writeEntityToMapDatabase(e,e.getId(),inverse,0);
+      indexLowLevelMap(e,1);
+      indexLowLevelMap(e,2);
     }
     if (indexAddress) {
       if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && e.getTag(OSMTagKey.ADDR_STREET) != null) {
@@ -86,6 +84,57 @@
     if (indexAddress) {
       if (e instanceof Relation && "address".equals(e.getTag(OSMTagKey.TYPE))) {
         indexAddressRelation((Relation)e);
+      }
+    }
+    if (indexMap && e instanceof Relation && "multipolygon".equals(e.getTag(OSMTagKey.TYPE))) {
+      loadEntityData(e,true);
+      Map<Entity,String> entities=((Relation)e).getMemberEntities();
+      int mtType=0;
+      for (      Entity es : entities.keySet()) {
+        if (es instanceof Way) {
+          boolean inner="inner".equals(entities.get(es));
+          if (!inner) {
+            for (            String t : es.getTagKeySet()) {
+              e.putTag(t,es.getTag(t));
+            }
+            break;
+          }
+        }
+      }
+      int t=MapRenderingTypes.encodeEntityWithType(e,0,true,typeUse);
+      if (t != 0) {
+        if (((t >> 1) & 3) == MapRenderingTypes.MULTY_POLYGON_TYPE) {
+          mtType=(t >> 1) & 0xffff;
+        }
+ else         if (((t >> 16) & 3) == MapRenderingTypes.MULTY_POLYGON_TYPE && (t >> 16) != 0) {
+          mtType=t >> 16;
+        }
+ else {
+          for (          Integer i : typeUse) {
+            if ((i & 3) == MapRenderingTypes.MULTY_POLYGON_TYPE) {
+              mtType=i;
+              break;
+            }
+          }
+        }
+      }
+      if (mtType != 0) {
+        for (        Entity es : entities.keySet()) {
+          if (es instanceof Way) {
+            boolean inner="inner".equals(entities.get(es));
+            boolean clockwise=isClockwiseWay((Way)es);
+            boolean inverse=clockwise != !inner;
+            if (!multiPolygonsWays.containsKey(es.getId())) {
+              multiPolygonsWays.put(es.getId(),new LinkedHashSet<Integer>());
+            }
+            if (inverse) {
+              multiPolygonsWays.get(es.getId()).add(mtType | (1 << 15));
+            }
+ else {
+              multiPolygonsWays.get(es.getId()).add(mtType);
+            }
+          }
+        }
       }
     }
   }
