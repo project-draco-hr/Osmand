@@ -1,6 +1,22 @@
 {
   long now=System.currentTimeMillis();
-  Collections.sort(objects,this);
+  int sz=objects.size();
+  int init=sz / 4;
+  TreeMap<Float,List<Integer>> orderMap=new TreeMap<Float,List<Integer>>();
+  for (int i=0; i < sz; i++) {
+    MapRenderObject o=objects.get(i);
+    int mt=o.getMainType();
+    int sh=i << 8;
+    put(orderMap,MapRenderObject.getOrder(mt),sh + 1,init);
+    int s=o.getSecondType();
+    if (s != 0) {
+      put(orderMap,MapRenderObject.getOrder(s),sh + 2,init);
+    }
+    byte multiTypes=o.getMultiTypes();
+    for (int j=0; j < multiTypes; j++) {
+      put(orderMap,MapRenderObject.getOrder(o.getAdditionalType(j)),sh + (j + 3),init);
+    }
+  }
   Bitmap bmp=null;
   if (objects != null && !objects.isEmpty() && width > 0 && height > 0) {
     RenderingContext rc=new RenderingContext();
@@ -16,8 +32,21 @@
     bmp=Bitmap.createBitmap(width,height,Config.RGB_565);
     Canvas cv=new Canvas(bmp);
     cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillEmpty);
-    for (    MapRenderObject o : objects) {
-      draw(o,cv,rc);
+    for (    List<Integer> list : orderMap.values()) {
+      for (      Integer i : list) {
+        int ind=i >> 8;
+        int l=i & 0xff;
+        MapRenderObject obj=objects.get(ind);
+        if (l == 1) {
+          drawObj(obj,cv,rc,obj.getMainType(),true);
+        }
+ else         if (l == 2) {
+          drawObj(obj,cv,rc,obj.getSecondType(),false);
+        }
+ else {
+          drawObj(obj,cv,rc,obj.getAdditionalType(l - 3),false);
+        }
+      }
     }
     for (    IconDrawInfo icon : rc.iconsToDraw) {
       if (icon.resId != 0) {

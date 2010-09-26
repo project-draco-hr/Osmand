@@ -1,13 +1,21 @@
 {
-  if (p == null) {
-    p=calcPoint(obj,0,rc);
+  int len=obj.getPointsLength();
+  PointF ps=new PointF(0,0);
+  for (int i=0; i < len; i++) {
+    PointF p=calcPoint(obj,i,rc);
+    ps.x+=p.x;
+    ps.y+=p.y;
+  }
+  if (len > 1) {
+    ps.x/=len;
+    ps.y/=len;
   }
   int zoom=rc.zoom;
   int resId=PointRenderer.getPointBitmap(zoom,type,subtype);
   if (resId != 0) {
     IconDrawInfo ico=new IconDrawInfo();
-    ico.x=p.x;
-    ico.y=p.y;
+    ico.x=ps.x;
+    ico.y=ps.y;
     ico.resId=resId;
     rc.iconsToDraw.add(ico);
   }
@@ -18,7 +26,7 @@
       n=renderObjectText(n,subtype,type,zoom,true,rc);
       if (rc.textSize > 0 && n != null) {
         TextDrawInfo info=new TextDrawInfo(n);
-        info.fillProperties(rc,p.x,p.y);
+        info.fillProperties(rc,ps.x,ps.y);
         rc.textToDraw.add(info);
       }
     }
