@@ -1,90 +1,121 @@
 {
   int mask=0xffffffff;
-  for (  List<Long> i : incompletedRings) {
+  Set<Integer> nonvisitedRings=new LinkedHashSet<Integer>();
+  for (int j=0; j < incompletedRings.size(); j++) {
+    List<Long> i=incompletedRings.get(j);
     int x=(int)(i.get(i.size() - 1) >> 32);
     int y=(int)(i.get(i.size() - 1) & mask);
     int sx=(int)(i.get(0) >> 32);
     int sy=(int)(i.get(0) & mask);
-    long start=(((long)sx) << 32) | ((long)sy);
-    boolean st=false;
-    for (int h=0; h < 8; h++) {
-      if (h % 4 == 0) {
-        if (!st) {
-          if (y == topY) {
-            if (sy == topY && sx >= x) {
-              i.add(start);
-              break;
+    boolean st=y == topY || x == rightX || y == bottomY || x == leftX;
+    boolean end=sy == topY || sx == rightX || sy == bottomY || sx == leftX;
+    if (!end) {
+      System.err.println(MessageFormat.format("Start point (to close) not found : end_x = {0}, end_y = {1}, start_x = {2}, start_y = {3} : bounds {4} {5} - {6} {7}",x + "",y + "",sx + "",sy + "",leftX + "",topY + "",rightX + "",bottomY + ""));
+    }
+    if (!st) {
+      System.err.println(MessageFormat.format("End not found : end_x = {0}, end_y = {1}, start_x = {2}, start_y = {3} : bounds {4} {5} - {6} {7}",x + "",y + "",sx + "",sy + "",leftX + "",topY + "",rightX + "",bottomY + ""));
+      continue;
+    }
+    if (st && end) {
+      nonvisitedRings.add(j);
+    }
+  }
+  for (int j=0; j < incompletedRings.size(); j++) {
+    List<Long> i=incompletedRings.get(j);
+    if (!nonvisitedRings.contains(j)) {
+      continue;
+    }
+    int x=(int)(i.get(i.size() - 1) >> 32);
+    int y=(int)(i.get(i.size() - 1) & mask);
+    while (true) {
+      int st=0;
+      if (y == topY) {
+        st=0;
+      }
+ else       if (x == rightX) {
+        st=1;
+      }
+ else       if (y == bottomY) {
+        st=2;
+      }
+ else       if (x == leftX) {
+        st=3;
+      }
+      int nextRingIndex=-1;
+      for (int h=st; h < st + 4; h++) {
+        int mindiff=-1;
+        for (        Integer ni : nonvisitedRings) {
+          List<Long> cni=incompletedRings.get(ni);
+          int csx=(int)(cni.get(0) >> 32);
+          int csy=(int)(cni.get(0) & mask);
+          if (h % 4 == 0) {
+            if (csy == topY && csx >= x) {
+              if (mindiff == -1 || (csx - x) <= mindiff) {
+                mindiff=(csx - x);
+                nextRingIndex=ni;
+              }
             }
- else {
-              i.add((((long)rightX) << 32) | ((long)topY));
-              st=true;
+          }
+ else           if (h % 4 == 1) {
+            if (csx == rightX && csy >= y) {
+              if (mindiff == -1 || (csy - y) <= mindiff) {
+                mindiff=(csy - y);
+                nextRingIndex=ni;
+              }
+            }
+          }
+ else           if (h % 4 == 2) {
+            if (csy == bottomY && csx <= x) {
+              if (mindiff == -1 || (x - csx) <= mindiff) {
+                mindiff=(x - csx);
+                nextRingIndex=ni;
+              }
+            }
+          }
+ else           if (h % 4 == 3) {
+            if (csx == leftX && csy <= y) {
+              if (mindiff == -1 || (y - csy) <= mindiff) {
+                mindiff=(y - csy);
+                nextRingIndex=ni;
+              }
             }
           }
         }
- else         if (sy == topY) {
-          i.add(start);
+        if (mindiff != -1) {
           break;
         }
-      }
- else       if (h % 4 == 1) {
-        if (!st) {
-          if (x == rightX) {
-            if (sx == rightX && sy >= y) {
-              i.add(start);
-              break;
-            }
  else {
-              i.add((((long)rightX) << 32) | ((long)bottomY));
-              st=true;
-            }
+          if (h % 4 == 0) {
+            y=topY;
+            x=rightX;
           }
-        }
- else         if (sx == rightX) {
-          i.add(start);
-          break;
+ else           if (h % 4 == 1) {
+            y=bottomY;
+            x=rightX;
+          }
+ else           if (h % 4 == 2) {
+            y=bottomY;
+            x=leftX;
+          }
+ else           if (h % 4 == 3) {
+            y=topY;
+            x=leftX;
+          }
+          i.add((((long)x) << 32) | ((long)y));
         }
       }
- else       if (h % 4 == 2) {
-        if (!st) {
-          if (y == bottomY) {
-            if (sy == bottomY && sx <= x) {
-              i.add(start);
-              break;
-            }
+      if (nextRingIndex == -1) {
+      }
+ else       if (nextRingIndex == j) {
+        i.add(i.get(0));
+        nonvisitedRings.remove(j);
+        break;
+      }
  else {
-              i.add((((long)leftX) << 32) | ((long)bottomY));
-              st=true;
-            }
-          }
-        }
- else         if (sy == bottomY) {
-          i.add(start);
-          break;
-        }
-      }
- else       if (h % 4 == 3) {
-        if (!st) {
-          if (x == leftX) {
-            if (sx == leftX && sy <= y) {
-              i.add(start);
-              break;
-            }
- else {
-              i.add((((long)leftX) << 32) | ((long)topY));
-              st=true;
-            }
-          }
-        }
- else         if (sx == leftX) {
-          i.add(start);
-          break;
-        }
-      }
-      if (h == 3 && !st) {
-        throw new IllegalArgumentException();
-      }
-      if (h == 7) {
-        throw new IllegalArgumentException();
+        i.addAll(incompletedRings.get(nextRingIndex));
+        nonvisitedRings.remove(nextRingIndex);
+        x=(int)(i.get(i.size() - 1) >> 32);
+        y=(int)(i.get(i.size() - 1) & mask);
       }
     }
     completedRings.add(i);

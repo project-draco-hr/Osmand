@@ -3,14 +3,25 @@
   List<List<Long>> completedRings=new ArrayList<List<Long>>();
   List<List<Long>> incompletedRings=new ArrayList<List<Long>>();
   for (  Integer type : multyPolygons.keySet()) {
+    List<MapRenderObject> directList;
+    List<MapRenderObject> inverselist;
     if (((type >> 15) & 1) == 1) {
-      continue;
+      int directType=(type & ((1 << 15) - 1));
+      if (!multyPolygons.containsKey(directType)) {
+        inverselist=multyPolygons.get(type);
+        directList=Collections.emptyList();
+      }
+ else {
+        continue;
+      }
     }
-    int inverseType=(type | (1 << 15));
-    List<MapRenderObject> directList=multyPolygons.get(type);
-    List<MapRenderObject> inverselist=Collections.emptyList();
-    if (multyPolygons.containsKey(inverseType)) {
-      inverselist=multyPolygons.get(inverseType);
+ else {
+      int inverseType=(type | (1 << 15));
+      directList=multyPolygons.get(type);
+      inverselist=Collections.emptyList();
+      if (multyPolygons.containsKey(inverseType)) {
+        inverselist=multyPolygons.get(inverseType);
+      }
     }
     completedRings.clear();
     incompletedRings.clear();
