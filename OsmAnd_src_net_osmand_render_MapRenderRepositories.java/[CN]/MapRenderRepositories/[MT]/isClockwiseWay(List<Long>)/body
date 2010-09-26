@@ -1,0 +1,31 @@
+{
+  double angle=0;
+  double prevAng=0;
+  int px=0;
+  int py=0;
+  int mask=0xffffffff;
+  for (int i=0; i < c.size(); i++) {
+    int x=(int)(c.get(i) >> 32);
+    int y=(int)(c.get(i) & mask);
+    if (i >= 1) {
+      double ang=Math.atan2(py - y,x - px);
+      if (i > 1) {
+        double delta=(ang - prevAng);
+        if (delta < -Math.PI) {
+          delta+=2 * Math.PI;
+        }
+ else         if (delta > Math.PI) {
+          delta-=2 * Math.PI;
+        }
+        angle+=delta;
+        prevAng=ang;
+      }
+ else {
+        prevAng=ang;
+      }
+    }
+    px=x;
+    py=y;
+  }
+  return angle < 0;
+}

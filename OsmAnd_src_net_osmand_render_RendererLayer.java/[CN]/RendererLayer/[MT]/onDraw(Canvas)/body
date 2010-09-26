@@ -13,7 +13,8 @@
       resourceManager.updateRendererMap(verticesRect,tileRect,view.getZoom(),view.getRotate());
     }
     MapRenderRepositories renderer=resourceManager.getRenderer();
-    if (renderer != null && renderer.getBitmap() != null) {
+    Bitmap bmp=renderer.getBitmap();
+    if (renderer != null && bmp != null) {
       RectF newLoc=renderer.getCachedWaysLoc();
       float rot=renderer.getCachedRotate();
       float leftX1=(float)MapUtils.getTileNumberX(view.getFloatZoom(),newLoc.left);
@@ -26,7 +27,9 @@
       float y2=calcDiffPixelY(rot,rightX1 - view.getXTile(),bottomY1 - view.getYTile()) + view.getCenterPointY();
       canvas.rotate(-rot,view.getCenterPointX(),view.getCenterPointY());
       destImage.set(x1,y1,x2,y2);
-      canvas.drawBitmap(renderer.getBitmap(),null,destImage,paintImg);
+      if (!bmp.isRecycled()) {
+        canvas.drawBitmap(bmp,null,destImage,paintImg);
+      }
     }
   }
 }

@@ -36,8 +36,28 @@
       processMultipolygonLine(completedRings,incompletedRings,coordinates);
     }
   }
+  if (completedRings.size() == 0 && incompletedRings.size() == 0) {
+    return null;
+  }
   if (incompletedRings.size() > 0) {
     unifyIncompletedRings(incompletedRings,completedRings,leftX,rightX,bottomY,topY);
+  }
+ else {
+    boolean clockwiseFound=false;
+    for (    List<Long> c : completedRings) {
+      if (isClockwiseWay(c)) {
+        clockwiseFound=true;
+        break;
+      }
+    }
+    if (!clockwiseFound) {
+      List<Long> whole=new ArrayList<Long>(4);
+      whole.add((((long)leftX) << 32) | ((long)topY));
+      whole.add((((long)rightX) << 32) | ((long)topY));
+      whole.add((((long)rightX) << 32) | ((long)bottomY));
+      whole.add((((long)leftX) << 32) | ((long)bottomY));
+      completedRings.add(whole);
+    }
   }
   long[][] lns=new long[completedRings.size()][];
   for (int i=0; i < completedRings.size(); i++) {
