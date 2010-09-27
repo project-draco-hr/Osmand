@@ -1,7 +1,25 @@
 {
   try {
     log.debug("Start loading list of index files");
-    Map<String,String> indexFiles=DownloaderIndexFromGoogleCode.getIndexFiles(new String[]{IndexConstants.ADDRESS_INDEX_EXT,IndexConstants.POI_INDEX_EXT,IndexConstants.TRANSPORT_INDEX_EXT,IndexConstants.ADDRESS_INDEX_EXT_ZIP,IndexConstants.POI_INDEX_EXT_ZIP,IndexConstants.TRANSPORT_INDEX_EXT_ZIP},new String[]{IndexConstants.ADDRESS_TABLE_VERSION + "",IndexConstants.POI_TABLE_VERSION + "",IndexConstants.TRANSPORT_TABLE_VERSION + "",IndexConstants.ADDRESS_TABLE_VERSION + "",IndexConstants.POI_TABLE_VERSION + "",IndexConstants.TRANSPORT_TABLE_VERSION + ""});
+    TreeMap<String,String> indexFiles=new TreeMap<String,String>(new Comparator<String>(){
+      private static final long serialVersionUID=1L;
+      @Override public int compare(      String object1,      String object2){
+        if (object1.endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
+          if (object2.endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
+            return object1.compareTo(object2);
+          }
+ else {
+            return -1;
+          }
+        }
+ else         if (object2.endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
+          return 1;
+        }
+        return object1.compareTo(object2);
+      }
+    }
+);
+    DownloaderIndexFromGoogleCode.getIndexFiles(new String[]{IndexConstants.ADDRESS_INDEX_EXT,IndexConstants.POI_INDEX_EXT,IndexConstants.TRANSPORT_INDEX_EXT,IndexConstants.ADDRESS_INDEX_EXT_ZIP,IndexConstants.POI_INDEX_EXT_ZIP,IndexConstants.TRANSPORT_INDEX_EXT_ZIP,IndexConstants.VOICE_INDEX_EXT_ZIP},new String[]{IndexConstants.ADDRESS_TABLE_VERSION + "",IndexConstants.POI_TABLE_VERSION + "",IndexConstants.TRANSPORT_TABLE_VERSION + "",IndexConstants.ADDRESS_TABLE_VERSION + "",IndexConstants.POI_TABLE_VERSION + "",IndexConstants.TRANSPORT_TABLE_VERSION + "",IndexConstants.VOICE_VERSION + ""},indexFiles);
     if (indexFiles != null && !indexFiles.isEmpty()) {
       return indexFiles;
     }

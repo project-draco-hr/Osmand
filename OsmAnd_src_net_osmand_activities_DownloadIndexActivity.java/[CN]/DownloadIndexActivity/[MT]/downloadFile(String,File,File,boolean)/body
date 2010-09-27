@@ -5,7 +5,7 @@
   impl.setRunnable("DownloadIndex",new Runnable(){
     @Override public void run(){
       try {
-        FileOutputStream out=new FileOutputStream(file);
+        FileOutputStream out=new FileOutputStream(fileToDownload);
         URL url=DownloaderIndexFromGoogleCode.getInputStreamToLoadIndex(key);
         URLConnection conn=url.openConnection();
         conn.setReadTimeout(30000);
@@ -24,29 +24,39 @@
           throw new IOException("File was not fully read");
         }
         out.close();
-        File toIndex=file;
-        if (file.getName().endsWith(".zip")) {
+        File toIndex=fileToDownload;
+        if (fileToDownload.getName().endsWith(".zip")) {
           impl.startTask(getString(R.string.unzipping_file),-1);
-          toIndex=new File(file.getParentFile(),file.getName().substring(0,file.getName().length() - 3) + "odb");
-          ZipInputStream zipIn=new ZipInputStream(new FileInputStream(file));
-          ZipEntry entry=null;
-          boolean found=false;
-          while (!found) {
-            if (entry != null) {
-              zipIn.closeEntry();
-            }
-            entry=zipIn.getNextEntry();
-            found=entry == null || entry.getName().endsWith(".odb");
+          if (!unzipToDir) {
+            toIndex=fileToUnZip;
           }
-          if (entry != null) {
-            out=new FileOutputStream(toIndex);
+ else {
+            fileToUnZip.mkdirs();
+          }
+          ZipInputStream zipIn=new ZipInputStream(new FileInputStream(fileToDownload));
+          ZipEntry entry=null;
+          while ((entry=zipIn.getNextEntry()) != null) {
+            if (!unzipToDir) {
+              String name=entry.getName();
+              int ind=name.lastIndexOf('_');
+              if (ind > 0) {
+                int i=name.indexOf('.',ind);
+                if (i > 0) {
+                  name=name.substring(0,ind) + name.substring(i,name.length());
+                }
+              }
+              out=new FileOutputStream(new File(fileToUnZip.getParent(),name));
+            }
+ else {
+              out=new FileOutputStream(new File(fileToUnZip,entry.getName()));
+            }
             while ((read=zipIn.read(buffer)) != -1) {
               out.write(buffer,0,read);
             }
             out.close();
           }
           zipIn.close();
-          file.delete();
+          fileToDownload.delete();
         }
         ArrayList<String> warnings=new ArrayList<String>();
         ResourceManager manager=((OsmandApplication)getApplication()).getResourceManager();
@@ -59,6 +69,8 @@
  else         if (toIndex.getName().endsWith(IndexConstants.TRANSPORT_INDEX_EXT)) {
           manager.indexingTransport(impl,warnings,toIndex);
         }
+ else         if (toIndex.getName().endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
+        }
         if (warnings.isEmpty()) {
           showWarning(getString(R.string.download_index_success));
         }
@@ -69,7 +81,7 @@
  catch (      IOException e) {
         log.error("Exception ocurred",e);
         showWarning(getString(R.string.error_io_error));
-        file.delete();
+        fileToDownload.delete();
       }
  finally {
         if (progressDlg != null) {

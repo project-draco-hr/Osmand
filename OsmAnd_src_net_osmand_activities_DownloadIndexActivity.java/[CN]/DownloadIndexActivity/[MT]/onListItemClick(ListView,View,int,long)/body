@@ -2,22 +2,76 @@
   super.onListItemClick(l,v,position,id);
   final Entry<String,String> e=((DownloadIndexAdapter)getListAdapter()).getItem(position);
   int ls=e.getKey().lastIndexOf('_');
-  final String regionName=e.getKey().substring(0,ls);
-  final File fileToSave=resolveFileName(e.getKey(),regionName);
-  if (fileToSave != null) {
+  final String baseName=e.getKey().substring(0,ls);
+  String key=e.getKey();
+  File parent=null;
+  String toSavePostfix=null;
+  String toCheckPostfix=null;
+  boolean unzipDir=false;
+  if (key.endsWith(IndexConstants.ADDRESS_INDEX_EXT)) {
+    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.ADDRESS_PATH);
+    toSavePostfix=IndexConstants.ADDRESS_INDEX_EXT;
+    toCheckPostfix=IndexConstants.ADDRESS_INDEX_EXT;
+  }
+ else   if (key.endsWith(IndexConstants.ADDRESS_INDEX_EXT_ZIP)) {
+    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.ADDRESS_PATH);
+    toSavePostfix=IndexConstants.ADDRESS_INDEX_EXT_ZIP;
+    toCheckPostfix=IndexConstants.ADDRESS_INDEX_EXT;
+  }
+ else   if (key.endsWith(IndexConstants.POI_INDEX_EXT)) {
+    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.POI_PATH);
+    toSavePostfix=IndexConstants.POI_INDEX_EXT;
+    toCheckPostfix=IndexConstants.POI_INDEX_EXT;
+  }
+ else   if (key.endsWith(IndexConstants.POI_INDEX_EXT_ZIP)) {
+    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.POI_PATH);
+    toSavePostfix=IndexConstants.POI_INDEX_EXT_ZIP;
+    toCheckPostfix=IndexConstants.POI_INDEX_EXT;
+  }
+ else   if (key.endsWith(IndexConstants.TRANSPORT_INDEX_EXT)) {
+    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.TRANSPORT_PATH);
+    toSavePostfix=IndexConstants.TRANSPORT_INDEX_EXT;
+    toCheckPostfix=IndexConstants.TRANSPORT_INDEX_EXT;
+  }
+ else   if (key.endsWith(IndexConstants.TRANSPORT_INDEX_EXT_ZIP)) {
+    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.TRANSPORT_PATH);
+    toSavePostfix=IndexConstants.TRANSPORT_INDEX_EXT_ZIP;
+    toCheckPostfix=IndexConstants.TRANSPORT_INDEX_EXT;
+  }
+ else   if (key.endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
+    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.VOICE_PATH);
+    toSavePostfix=IndexConstants.VOICE_INDEX_EXT_ZIP;
+    toCheckPostfix="";
+    unzipDir=true;
+  }
+  if (parent != null) {
+    parent.mkdirs();
+  }
+  if (parent == null || !parent.exists()) {
+    Toast.makeText(DownloadIndexActivity.this,getString(R.string.sd_dir_not_accessible),Toast.LENGTH_LONG).show();
+  }
+ else {
+    final File fileToSave=new File(parent,baseName + toSavePostfix);
+    final File fileToUnzip=new File(parent,baseName + toCheckPostfix);
     Builder builder=new AlertDialog.Builder(this);
-    File toCheck=new File(fileToSave.getParent(),fileToSave.getName().substring(0,fileToSave.getName().length() - 4) + ".odb");
-    if (!toCheck.exists()) {
-      builder.setMessage(MessageFormat.format(getString(R.string.download_question),regionName,e.getValue()));
+    if (!fileToUnzip.exists()) {
+      builder.setMessage(MessageFormat.format(getString(R.string.download_question),baseName,e.getValue()));
     }
  else {
-      MessageFormat format=new MessageFormat("{0,date,dd.MM.yyyy} : {1, number,##.#} MB",Locale.US);
-      String description=format.format(new Object[]{new Date(toCheck.lastModified()),((float)toCheck.length() / MB)});
-      builder.setMessage(MessageFormat.format(getString(R.string.download_question_exist),regionName,description,e.getValue()));
+      MessageFormat format;
+      if (fileToUnzip.isDirectory()) {
+        format=new MessageFormat("{0,date,dd.MM.yyyy}",Locale.US);
+      }
+ else {
+        format=new MessageFormat("{0,date,dd.MM.yyyy} : {1, number,##.#} MB",Locale.US);
+      }
+      String description=format.format(new Object[]{new Date(fileToUnzip.lastModified()),((float)fileToUnzip.length() / MB)});
+      builder.setMessage(MessageFormat.format(getString(R.string.download_question_exist),baseName,description,e.getValue()));
     }
+    final boolean toUnzip=unzipDir;
     builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
       @Override public void onClick(      DialogInterface dialog,      int which){
-        downloadFile(e.getKey(),fileToSave);
+        downloadFile(e.getKey(),fileToSave,fileToUnzip,toUnzip);
       }
     }
 );
