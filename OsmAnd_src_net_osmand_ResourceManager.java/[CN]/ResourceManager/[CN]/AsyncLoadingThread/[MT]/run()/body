@@ -5,6 +5,22 @@
       boolean amenityLoaded=false;
       boolean transportLoaded=false;
       boolean mapLoaded=false;
+      int progress=0;
+      if (downloader.isSomethingBeingDownloaded()) {
+        progress=BusyIndicator.STATUS_GREEN;
+      }
+synchronized (ResourceManager.this) {
+        if (busyIndicator != null) {
+          if (context.getRoutingHelper().isRouteBeingCalculated()) {
+            progress=BusyIndicator.STATUS_BLUE;
+          }
+ else           if (!requests.isEmpty()) {
+            progress=BusyIndicator.STATUS_BLACK;
+            ;
+          }
+          busyIndicator.updateStatus(progress);
+        }
+      }
       while (!requests.isEmpty()) {
         Object req=requests.pop();
         if (req instanceof TileLoadDownloadRequest) {
@@ -38,6 +54,23 @@
       if (update || amenityLoaded || transportLoaded|| mapLoaded) {
         for (        IMapDownloaderCallback c : downloader.getDownloaderCallbacks()) {
           c.tileDownloaded(null);
+        }
+      }
+      boolean routeBeingCalculated=context.getRoutingHelper().isRouteBeingCalculated();
+      if (progress != 0 || routeBeingCalculated || downloader.isSomethingBeingDownloaded()) {
+synchronized (ResourceManager.this) {
+          if (busyIndicator != null) {
+            if (routeBeingCalculated) {
+              progress=BusyIndicator.STATUS_BLUE;
+            }
+ else             if (downloader.isSomethingBeingDownloaded()) {
+              progress=BusyIndicator.STATUS_GREEN;
+            }
+ else {
+              progress=0;
+            }
+            busyIndicator.updateStatus(progress);
+          }
         }
       }
       sleep(750);

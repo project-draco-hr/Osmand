@@ -1,0 +1,43 @@
+{
+  if (this.status != status) {
+    this.status=status;
+    final Drawable drawable;
+    if (this.status == STATUS_BLACK) {
+      drawable=ctx.getResources().getDrawable(R.drawable.spinner_black_76);
+    }
+ else     if (this.status == STATUS_BLUE) {
+      drawable=ctx.getResources().getDrawable(R.drawable.spinner_blue_76);
+    }
+ else     if (this.status == STATUS_GREEN) {
+      drawable=ctx.getResources().getDrawable(R.drawable.spinner_green_76);
+    }
+ else {
+      drawable=null;
+    }
+    final RotateAnimation animation;
+    if (drawable != null) {
+      animation=new RotateAnimation(0,360,RotateAnimation.RELATIVE_TO_SELF,0.5f,RotateAnimation.RELATIVE_TO_SELF,0.5f);
+      animation.setRepeatCount(Animation.INFINITE);
+      animation.setInterpolator(new LinearInterpolator());
+      animation.setDuration(850);
+      animation.setStartTime(RotateAnimation.START_ON_FIRST_FRAME);
+      animation.setStartOffset(0);
+    }
+ else {
+      animation=null;
+    }
+    uiHandler.post(new Runnable(){
+      @Override public void run(){
+        bar.setVisibility(drawable != null ? View.VISIBLE : View.INVISIBLE);
+        if (bar.getAnimation() != null) {
+          bar.clearAnimation();
+        }
+        if (drawable != null) {
+          bar.setBackgroundDrawable(drawable);
+          bar.startAnimation(animation);
+        }
+      }
+    }
+);
+  }
+}
