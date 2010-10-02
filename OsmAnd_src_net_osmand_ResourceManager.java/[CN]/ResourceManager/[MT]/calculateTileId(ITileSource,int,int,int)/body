@@ -1,18 +1,38 @@
 {
-  builder.setLength(0);
-  if (map == null) {
-    builder.append(TEMP_SOURCE_TO_LOAD);
+  if (false) {
+    int ind=0;
+    String mapName=map == null ? TEMP_SOURCE_TO_LOAD : map.getName();
+    ind=insertString(tileId,ind,mapName);
+    if (map instanceof SQLiteTileSource) {
+      tileId[ind++]='@';
+    }
+ else {
+      tileId[ind++]='/';
+    }
+    ind=insertString(tileId,ind,Integer.toString(zoom));
+    tileId[ind++]='/';
+    ind=insertString(tileId,ind,Integer.toString(x));
+    tileId[ind++]='/';
+    ind=insertString(tileId,ind,Integer.toString(y));
+    ind=insertString(tileId,ind,map == null ? ".jpg" : map.getTileFormat());
+    ind=insertString(tileId,ind,".tile");
+    return new String(tileId,0,ind);
   }
  else {
-    builder.append(map.getName());
-  }
-  if (map instanceof SQLiteTileSource) {
-    builder.append('@');
-  }
+    builder.setLength(0);
+    if (map == null) {
+      builder.append(TEMP_SOURCE_TO_LOAD);
+    }
  else {
-    builder.append('/');
+      builder.append(map.getName());
+    }
+    if (map instanceof SQLiteTileSource) {
+      builder.append('@');
+    }
+ else {
+      builder.append('/');
+    }
+    builder.append(zoom).append('/').append(x).append('/').append(y).append(map == null ? ".jpg" : map.getTileFormat()).append(".tile");
+    return builder.toString();
   }
-  builder.append(zoom).append('/').append(x).append('/').append(y).append(map == null ? ".jpg" : map.getTileFormat()).append(".tile");
-  String file=builder.toString();
-  return file;
 }

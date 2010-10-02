@@ -1,4 +1,5 @@
 {
+  interrupted=false;
   boolean inside=insideBox(boundsTileRect.top,boundsTileRect.left,boundsTileRect.bottom,boundsTileRect.right,zoom);
   cRotate=rotate < 0 ? rotate + 360 : rotate;
   if (!inside) {
@@ -71,6 +72,9 @@
             for (int k=0; k < obj.getMultiTypes(); k++) {
               registerMultipolygon(multiPolygons,obj.getAdditionalType(k),obj);
             }
+            if (checkWhetherInterrupted()) {
+              return;
+            }
             cObjects.add(obj);
           }
         }
@@ -83,6 +87,9 @@
       int bottomY=MapUtils.get31TileNumberY(cBottomLatitude);
       int topY=MapUtils.get31TileNumberY(cTopLatitude);
       List<MultyPolygon> pMulti=proccessMultiPolygons(multiPolygons,leftX,rightX,bottomY,topY);
+      if (checkWhetherInterrupted()) {
+        return;
+      }
       cObjects.addAll(pMulti);
       log.info(String.format("Search has been done in %s ms. %s results were found.",System.currentTimeMillis() - now,count));
     }
@@ -93,7 +100,18 @@
   RectF newLoc=new RectF((float)MapUtils.getLongitudeFromTile(zoom,tileRect.left),(float)MapUtils.getLatitudeFromTile(zoom,tileRect.top),(float)MapUtils.getLongitudeFromTile(zoom,tileRect.right),(float)MapUtils.getLatitudeFromTile(zoom,tileRect.bottom));
   int width=(int)calcDiffPixelX(cRotate,tileRect.right - tileRect.left,tileRect.bottom - tileRect.top);
   int height=(int)calcDiffPixelY(cRotate,tileRect.right - tileRect.left,tileRect.bottom - tileRect.top);
-  Bitmap bmp=renderer.generateNewBitmap(width,height,tileRect.left,tileRect.top,cObjects,cZoom,cRotate,OsmandSettings.usingEnglishNames(context));
+  currentRenderingContext=new OsmandRenderer.RenderingContext();
+  currentRenderingContext.leftX=tileRect.left;
+  currentRenderingContext.topY=tileRect.top;
+  currentRenderingContext.zoom=cZoom;
+  currentRenderingContext.rotate=cRotate;
+  currentRenderingContext.width=width;
+  currentRenderingContext.height=height;
+  Bitmap bmp=renderer.generateNewBitmap(currentRenderingContext,cObjects,OsmandSettings.usingEnglishNames(context));
+  if (currentRenderingContext.interrupted) {
+    cZoom=1;
+    return;
+  }
   Bitmap oldBmp=this.bmp;
   this.bmp=bmp;
   cachedWaysLoc=newLoc;

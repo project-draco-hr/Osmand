@@ -16,20 +16,16 @@
     for (int j=0; j < multiTypes; j++) {
       put(orderMap,MapRenderObject.getOrder(o.getAdditionalType(j)),sh + (j + 3),init);
     }
+    if (rc.interrupted) {
+      return null;
+    }
   }
   Bitmap bmp=null;
-  if (objects != null && !objects.isEmpty() && width > 0 && height > 0) {
-    RenderingContext rc=new RenderingContext();
-    rc.leftX=leftTileX;
-    rc.topY=topTileY;
-    rc.zoom=zoom;
-    rc.rotate=rotate;
-    rc.width=width;
-    rc.height=height;
-    rc.tileDivisor=(int)(1 << (31 - zoom));
-    rc.cosRotateTileSize=FloatMath.cos((float)Math.toRadians(rotate)) * TILE_SIZE;
-    rc.sinRotateTileSize=FloatMath.sin((float)Math.toRadians(rotate)) * TILE_SIZE;
-    bmp=Bitmap.createBitmap(width,height,Config.RGB_565);
+  if (objects != null && !objects.isEmpty() && rc.width > 0 && rc.height > 0) {
+    rc.tileDivisor=(int)(1 << (31 - rc.zoom));
+    rc.cosRotateTileSize=FloatMath.cos((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
+    rc.sinRotateTileSize=FloatMath.sin((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
+    bmp=Bitmap.createBitmap(rc.width,rc.height,Config.RGB_565);
     Canvas cv=new Canvas(bmp);
     cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillEmpty);
     for (    List<Integer> list : orderMap.values()) {
@@ -47,6 +43,9 @@
           drawObj(obj,cv,rc,obj.getAdditionalType(l - 3),false);
         }
       }
+      if (rc.interrupted) {
+        return null;
+      }
     }
     for (    IconDrawInfo icon : rc.iconsToDraw) {
       if (icon.resId != 0) {
@@ -57,6 +56,9 @@
         if (ico != null) {
           cv.drawBitmap(ico,icon.x - ico.getWidth() / 2,icon.y - ico.getHeight() / 2,paintIcon);
         }
+      }
+      if (rc.interrupted) {
+        return null;
       }
     }
     drawTextOverCanvas(rc,cv,useEnglishNames);
