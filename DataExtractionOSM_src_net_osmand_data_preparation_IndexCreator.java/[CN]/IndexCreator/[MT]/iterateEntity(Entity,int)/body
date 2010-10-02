@@ -86,6 +86,47 @@
         indexAddressRelation((Relation)e);
       }
     }
+    if (indexMap && e instanceof Relation && "restriction".equals(e.getTag(OSMTagKey.TYPE))) {
+      String val=e.getTag("restriction");
+      if (val != null) {
+        byte type=-1;
+        if ("no_right_turn".equalsIgnoreCase(val)) {
+          type=MapRenderingTypes.RESTRICTION_NO_RIGHT_TURN;
+        }
+ else         if ("no_left_turn".equalsIgnoreCase(val)) {
+          type=MapRenderingTypes.RESTRICTION_NO_LEFT_TURN;
+        }
+ else         if ("no_u_turn".equalsIgnoreCase(val)) {
+          type=MapRenderingTypes.RESTRICTION_NO_U_TURN;
+        }
+ else         if ("no_straight_on".equalsIgnoreCase(val)) {
+          type=MapRenderingTypes.RESTRICTION_NO_STRAIGHT_ON;
+        }
+ else         if ("only_right_turn".equalsIgnoreCase(val)) {
+          type=MapRenderingTypes.RESTRICTION_ONLY_RIGHT_TURN;
+        }
+ else         if ("only_left_turn".equalsIgnoreCase(val)) {
+          type=MapRenderingTypes.RESTRICTION_ONLY_LEFT_TURN;
+        }
+ else         if ("only_straight_on".equalsIgnoreCase(val)) {
+          type=MapRenderingTypes.RESTRICTION_ONLY_STRAIGHT_ON;
+        }
+        if (type != -1) {
+          Collection<EntityId> fromL=((Relation)e).getMemberIds("from");
+          Collection<EntityId> toL=((Relation)e).getMemberIds("to");
+          if (!fromL.isEmpty() && !toL.isEmpty()) {
+            EntityId from=fromL.iterator().next();
+            EntityId to=toL.iterator().next();
+            if (from.getType() == EntityType.WAY) {
+              if (!highwayRestrictions.containsKey(from.getId())) {
+                highwayRestrictions.put(from.getId(),new ArrayList<Long>(4));
+              }
+              highwayRestrictions.get(from.getId()).add((to.getId() << 3) | (long)type);
+            }
+          }
+        }
+      }
+    }
     if (indexMap && e instanceof Relation && "multipolygon".equals(e.getTag(OSMTagKey.TYPE))) {
       loadEntityData(e,true);
       Map<Entity,String> entities=((Relation)e).getMemberEntities();
@@ -104,7 +145,7 @@
       int t=MapRenderingTypes.encodeEntityWithType(e,0,true,typeUse);
       if (t != 0) {
         if (((t >> 1) & 3) == MapRenderingTypes.MULTY_POLYGON_TYPE) {
-          mtType=(t >> 1) & 0xffff;
+          mtType=(t >> 1) & 0x7fff;
         }
  else         if (((t >> 16) & 3) == MapRenderingTypes.MULTY_POLYGON_TYPE && (t >> 16) != 0) {
           mtType=t >> 16;

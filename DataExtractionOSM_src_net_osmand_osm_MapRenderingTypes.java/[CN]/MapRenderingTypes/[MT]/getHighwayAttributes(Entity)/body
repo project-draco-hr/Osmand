@@ -1,5 +1,67 @@
 {
   int attr=0;
+  attr<<=1;
+  String c=e.getTag("cycleway");
+  if (c != null && ("opposite_lane".equals(c) || "opposite_track".equals(c) || "opposite".equals(c))) {
+    attr|=1;
+  }
+  attr<<=1;
+  String park=e.getTag("service");
+  if ("parking_aisle".equals(park)) {
+    attr|=1;
+  }
+  attr<<=3;
+  boolean hgv="yes".equals(e.getTag("hgv"));
+  if (hgv) {
+    attr|=3;
+  }
+ else {
+    boolean goods="yes".equals(e.getTag("goods"));
+    if (goods) {
+      attr|=2;
+    }
+ else {
+      attr|=1;
+    }
+  }
+  attr<<=1;
+  attr<<=3;
+  String maxspeed=e.getTag("maxspeed");
+  if (maxspeed != null) {
+    int kmh=0;
+    try {
+      kmh=Integer.parseInt(maxspeed);
+    }
+ catch (    NumberFormatException es) {
+    }
+    if (kmh <= 0) {
+      attr|=2;
+    }
+ else     if (kmh <= 30) {
+      attr|=0;
+    }
+ else     if (kmh <= 50) {
+      attr|=1;
+    }
+ else     if (kmh <= 70) {
+      attr|=2;
+    }
+ else     if (kmh <= 90) {
+      attr|=3;
+    }
+ else     if (kmh <= 110) {
+      attr|=4;
+    }
+ else     if (kmh <= 130) {
+      attr|=5;
+    }
+ else {
+      attr|=6;
+    }
+  }
+ else {
+    attr|=2;
+  }
   attr<<=2;
   String jun=e.getTag(OSMTagKey.JUNCTION);
   if (jun != null) {
