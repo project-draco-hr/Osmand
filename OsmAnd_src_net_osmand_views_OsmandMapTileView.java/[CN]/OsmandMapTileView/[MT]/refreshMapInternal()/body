@@ -2,7 +2,8 @@
   if (handler.hasMessages(1)) {
     return;
   }
-  if (OsmandSettings.isUsingInternetToDownloadTiles(getContext())) {
+  boolean useInternet=OsmandSettings.isUsingInternetToDownloadTiles(getContext());
+  if (useInternet) {
     MapTileDownloader.getInstance().refuseAllPreviousRequests();
   }
   float ftileSize=getTileSize();
@@ -22,7 +23,7 @@ synchronized (holder) {
       try {
         if (map != null) {
           ResourceManager mgr=getApplication().getResourceManager();
-          boolean useInternet=OsmandSettings.isUsingInternetToDownloadTiles(getContext()) && map.couldBeDownloadedFromInternet();
+          useInternet=useInternet && OsmandSettings.isInternetConnectionAvailable(getContext()) && map.couldBeDownloadedFromInternet();
           int maxLevel=Math.min(OsmandSettings.getMaximumLevelToDownloadTile(getContext()),map.getMaximumZoomSupported());
           calculateTileRectangle(boundsRect,w,h,tileX,tileY,tilesRect);
           int left=(int)FloatMath.floor(tilesRect.left);
