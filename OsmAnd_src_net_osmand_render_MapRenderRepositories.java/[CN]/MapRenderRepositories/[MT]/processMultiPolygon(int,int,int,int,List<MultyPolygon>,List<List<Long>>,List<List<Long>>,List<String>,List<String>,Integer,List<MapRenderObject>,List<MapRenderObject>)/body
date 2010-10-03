@@ -9,9 +9,6 @@
         continue;
       }
       List<Long> coordinates=new ArrayList<Long>();
-      if (o.getName() != null) {
-        pl.setName(o.getName());
-      }
       int px=o.getPoint31XTile(km == 0 ? 0 : len - 1);
       int py=o.getPoint31YTile(km == 0 ? 0 : len - 1);
       int x=px;
@@ -26,21 +23,21 @@
         boolean inside=leftX <= x && x <= rightX && y >= topY && y <= bottomY;
         calculateLineCoordinates(inside,x,y,pinside,px,py,leftX,rightX,bottomY,topY,coordinates);
         if (pinside && !inside) {
-          processMultipolygonLine(completedRings,incompletedRings,coordinates);
+          processMultipolygonLine(completedRings,incompletedRings,completedRingNames,incompletedRingNames,coordinates,o.getName());
           coordinates=new ArrayList<Long>();
         }
         px=x;
         py=y;
         pinside=inside;
       }
-      processMultipolygonLine(completedRings,incompletedRings,coordinates);
+      processMultipolygonLine(completedRings,incompletedRings,completedRingNames,incompletedRingNames,coordinates,o.getName());
     }
   }
   if (completedRings.size() == 0 && incompletedRings.size() == 0) {
     return null;
   }
   if (incompletedRings.size() > 0) {
-    unifyIncompletedRings(incompletedRings,completedRings,leftX,rightX,bottomY,topY);
+    unifyIncompletedRings(incompletedRings,completedRings,completedRingNames,incompletedRingNames,leftX,rightX,bottomY,topY);
   }
  else {
     boolean clockwiseFound=false;
@@ -67,6 +64,7 @@
       lns[i][j]=ring.get(j);
     }
   }
+  pl.setNames(completedRingNames.toArray(new String[completedRings.size()]));
   pl.setLines(lns);
   return pl;
 }

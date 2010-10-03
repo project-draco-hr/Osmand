@@ -1,5 +1,18 @@
 {
   int type=MapRenderingTypes.encodeEntityWithType(e,level,false,typeUse);
+  Map<Long,Set<Integer>> multiPolygonsWays;
+  if (level == 0) {
+    multiPolygonsWays=multiPolygonsWays0;
+  }
+ else   if (level == 1) {
+    multiPolygonsWays=multiPolygonsWays1;
+  }
+ else   if (level == 2) {
+    multiPolygonsWays=multiPolygonsWays2;
+  }
+ else {
+    multiPolygonsWays=Collections.emptyMap();
+  }
   boolean hasMulti=e instanceof Way && multiPolygonsWays.containsKey(e.getId());
   if (type == 0) {
     if (hasMulti) {
@@ -96,6 +109,10 @@
     }
   }
   if (!skip) {
-    DataIndexWriter.insertMapRenderObjectIndex(pStatements,mapObjStat,mapLocations,e,MapRenderingTypes.getEntityName(e,type),id,type,typeUse,restrictionsUse,useRestrictions,inverse,point,BATCH_SIZE);
+    String eName=MapRenderingTypes.getEntityName(e,type);
+    if (eName == null) {
+      eName=multiPolygonsNames.get(baseId);
+    }
+    DataIndexWriter.insertMapRenderObjectIndex(pStatements,mapObjStat,mapLocations,e,eName,id,type,typeUse,restrictionsUse,useRestrictions,inverse,point,BATCH_SIZE);
   }
 }
