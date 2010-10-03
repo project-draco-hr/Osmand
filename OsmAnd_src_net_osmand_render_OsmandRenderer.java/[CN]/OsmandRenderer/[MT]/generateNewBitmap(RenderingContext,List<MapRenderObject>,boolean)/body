@@ -2,7 +2,7 @@
   long now=System.currentTimeMillis();
   int sz=objects.size();
   int init=sz / 4;
-  TreeMap<Float,List<Integer>> orderMap=new TreeMap<Float,List<Integer>>();
+  TFloatObjectHashMap<TIntArrayList> orderMap=new TFloatObjectHashMap<TIntArrayList>();
   for (int i=0; i < sz; i++) {
     MapRenderObject o=objects.get(i);
     int mt=o.getMainType();
@@ -28,8 +28,12 @@
     bmp=Bitmap.createBitmap(rc.width,rc.height,Config.RGB_565);
     Canvas cv=new Canvas(bmp);
     cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillEmpty);
-    for (    List<Integer> list : orderMap.values()) {
-      for (      Integer i : list) {
+    float[] keys=orderMap.keys();
+    Arrays.sort(keys);
+    for (int k=0; k < keys.length; k++) {
+      TIntArrayList list=orderMap.get(keys[k]);
+      for (int j=0; j < list.size(); j++) {
+        int i=list.get(j);
         int ind=i >> 8;
         int l=i & 0xff;
         MapRenderObject obj=objects.get(ind);
@@ -62,7 +66,7 @@
       }
     }
     drawTextOverCanvas(rc,cv,useEnglishNames);
-    log.info(String.format("Rendering has been done in %s ms. (%s points, %s points inside)",System.currentTimeMillis() - now,rc.pointCount,rc.pointInsideCount));
+    log.info(String.format("Rendering has been done in %s ms. (%s points, %s points inside, %s visile from %s)",System.currentTimeMillis() - now,rc.pointCount,rc.pointInsideCount,rc.visible,rc.allObjects));
   }
   return bmp;
 }
