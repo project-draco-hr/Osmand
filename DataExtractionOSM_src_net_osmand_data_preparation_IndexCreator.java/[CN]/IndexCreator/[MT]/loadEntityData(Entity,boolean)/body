@@ -3,7 +3,7 @@
     return;
   }
   Map<EntityId,Entity> map=new LinkedHashMap<EntityId,Entity>();
-  if (e instanceof Relation) {
+  if (e instanceof Relation && ((Relation)e).getMemberIds().isEmpty()) {
     pselectRelation.setLong(1,e.getId());
     if (pselectRelation.execute()) {
       ResultSet rs=pselectRelation.getResultSet();
@@ -13,7 +13,7 @@
       rs.close();
     }
   }
- else   if (e instanceof Way) {
+ else   if (e instanceof Way && ((Way)e).getEntityIds().isEmpty()) {
     pselectWay.setLong(1,e.getId());
     if (pselectWay.execute()) {
       ResultSet rs=pselectWay.getResultSet();
@@ -61,7 +61,7 @@
       }
     }
   }
-  if (loadTags) {
+  if (loadTags && e.getTagKeySet().isEmpty()) {
     for (    Map.Entry<EntityId,Entity> es : map.entrySet()) {
       loadEntityTags(es.getKey().getType(),es.getValue());
     }

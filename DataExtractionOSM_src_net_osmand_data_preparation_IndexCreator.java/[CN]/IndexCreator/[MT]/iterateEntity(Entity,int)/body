@@ -146,11 +146,27 @@
         int mtType1=findMultiPolygonType(e,1);
         int mtType2=findMultiPolygonType(e,2);
         String name=MapRenderingTypes.getEntityName(e,mtType);
+        List<List<Way>> completedRings=new ArrayList<List<Way>>();
+        List<List<Way>> incompletedRings=new ArrayList<List<Way>>();
         for (        Entity es : entities.keySet()) {
           if (es instanceof Way) {
+            if (!((Way)es).getNodeIds().isEmpty()) {
+              combineMultiPolygons((Way)es,completedRings,incompletedRings);
+            }
+          }
+        }
+        if (!incompletedRings.isEmpty()) {
+          return;
+        }
+        for (        List<Way> l : completedRings) {
+          boolean innerType="inner".equals(entities.get(l.get(0)));
+          boolean clockwise=isClockwiseWay(l);
+          boolean inverse=clockwise != !innerType;
+          for (          Way es : l) {
             boolean inner="inner".equals(entities.get(es));
-            boolean clockwise=isClockwiseWay((Way)es);
-            boolean inverse=clockwise != !inner;
+            if (innerType != inner) {
+              throw new IllegalStateException();
+            }
             if (!inner && name != null) {
               multiPolygonsNames.put(es.getId(),name);
             }
