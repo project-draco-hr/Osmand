@@ -8,17 +8,25 @@
     lastKnownMapLocation=OsmandSettings.getLastKnownMapLocation(this);
   }
   setContentView(R.layout.search_transport);
-  searchTransportLevel=(Button)findViewById(R.id.SearchPOILevelButton);
-  searchArea=(TextView)findViewById(R.id.SearchAreaText);
+  searchTransportLevel=(Button)findViewById(R.id.SearchTransportLevelButton);
+  searchTransportLevel.setText(R.string.search_POI_level_btn);
   searchTransportLevel.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      if (isSearchFurtherAvailable()) {
-        zoom--;
+      if (!isRouteCalculated()) {
+        if (isSearchFurtherAvailable()) {
+          zoom--;
+          searchTransport();
+        }
+      }
+ else {
+        intermediateListAdapater.clear();
+        intermediateListAdapater.add(null);
         searchTransport();
       }
     }
   }
 );
+  searchArea=(TextView)findViewById(R.id.SearchAreaText);
   progress=(ProgressBar)findViewById(R.id.ProgressBar);
   progress.setVisibility(View.INVISIBLE);
   stopsAdapter=new TransportStopAdapter(new ArrayList<RouteInfoLocation>());
