@@ -1,0 +1,46 @@
+{
+  interrupted=false;
+  if (currentRenderingContext != null) {
+    currentRenderingContext=null;
+  }
+  requestedBox=new RotatedTileBox(tileRect);
+  RectF dataBox=requestedBox.calculateLatLonBox(new RectF());
+  if (cObjectsBox.left > dataBox.left || cObjectsBox.top > dataBox.top || cObjectsBox.right < dataBox.right || cObjectsBox.bottom < dataBox.bottom) {
+    if ((dataBox.right - dataBox.left) > (dataBox.top - dataBox.bottom)) {
+      double wi=(dataBox.right - dataBox.left) * .2;
+      dataBox.left-=wi;
+      dataBox.right+=wi;
+    }
+ else {
+      double hi=(dataBox.bottom - dataBox.top) * .2;
+      dataBox.top-=hi;
+      dataBox.bottom+=hi;
+    }
+    boolean loaded=loadVectorData(dataBox,requestedBox.getZoom());
+    if (!loaded || checkWhetherInterrupted()) {
+      return;
+    }
+  }
+  currentRenderingContext=new OsmandRenderer.RenderingContext();
+  currentRenderingContext.leftX=(float)requestedBox.getLeftTileX();
+  currentRenderingContext.topY=(float)requestedBox.getTopTileY();
+  currentRenderingContext.zoom=requestedBox.getZoom();
+  currentRenderingContext.rotate=requestedBox.getRotate();
+  currentRenderingContext.width=(int)(requestedBox.getTileWidth() * OsmandRenderer.TILE_SIZE);
+  currentRenderingContext.height=(int)(requestedBox.getTileHeight() * OsmandRenderer.TILE_SIZE);
+  if (checkWhetherInterrupted()) {
+    return;
+  }
+  Bitmap bmp=renderer.generateNewBitmap(currentRenderingContext,cObjects,OsmandSettings.usingEnglishNames(context));
+  if (checkWhetherInterrupted()) {
+    currentRenderingContext=null;
+    return;
+  }
+  currentRenderingContext=null;
+  Bitmap oldBmp=this.bmp;
+  this.bmp=bmp;
+  this.bmpLocation=tileRect;
+  if (oldBmp != null) {
+    oldBmp.recycle();
+  }
+}

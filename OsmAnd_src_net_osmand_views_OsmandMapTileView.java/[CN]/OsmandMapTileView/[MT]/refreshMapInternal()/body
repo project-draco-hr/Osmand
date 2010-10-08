@@ -7,29 +7,33 @@
     MapTileDownloader.getInstance().refuseAllPreviousRequests();
   }
   float ftileSize=getTileSize();
-  int tileSize=map == null ? 256 : map.getTileSize();
-  float tileX=getXTile();
-  float tileY=getYTile();
-  float w=getCenterPointX();
-  float h=getCenterPointY();
+  int tileSize=getSourceTileSize();
   SurfaceHolder holder=getHolder();
 synchronized (holder) {
-    int nzoom=(int)zoom;
+    int nzoom=getZoom();
+    float tileX=(float)MapUtils.getTileNumberX(nzoom,longitude);
+    float tileY=(float)MapUtils.getTileNumberY(nzoom,latitude);
+    float w=getCenterPointX();
+    float h=getCenterPointY();
     Canvas canvas=holder.lockCanvas();
     if (canvas != null) {
       canvas.save();
       boundsRect.set(0,0,getWidth(),getHeight());
       canvas.rotate(rotate,w,h);
       try {
+        calculateTileRectangle(boundsRect,w,h,tileX,tileY,tilesRect);
+        int left=(int)FloatMath.floor(tilesRect.left);
+        int top=(int)FloatMath.floor(tilesRect.top);
+        int width=(int)FloatMath.ceil(tilesRect.right - left);
+        int height=(int)FloatMath.ceil(tilesRect.bottom - top);
+        latlonRect.top=(float)MapUtils.getLatitudeFromTile(nzoom,tilesRect.top);
+        latlonRect.left=(float)MapUtils.getLongitudeFromTile(nzoom,tilesRect.left);
+        latlonRect.bottom=(float)MapUtils.getLatitudeFromTile(nzoom,tilesRect.bottom);
+        latlonRect.right=(float)MapUtils.getLongitudeFromTile(nzoom,tilesRect.right);
         if (map != null) {
           ResourceManager mgr=getApplication().getResourceManager();
           useInternet=useInternet && OsmandSettings.isInternetConnectionAvailable(getContext()) && map.couldBeDownloadedFromInternet();
           int maxLevel=Math.min(OsmandSettings.getMaximumLevelToDownloadTile(getContext()),map.getMaximumZoomSupported());
-          calculateTileRectangle(boundsRect,w,h,tileX,tileY,tilesRect);
-          int left=(int)FloatMath.floor(tilesRect.left);
-          int top=(int)FloatMath.floor(tilesRect.top);
-          int width=(int)(FloatMath.ceil(tilesRect.right) - left);
-          int height=(int)(FloatMath.ceil(tilesRect.bottom) - top);
           for (int i=0; i < width; i++) {
             for (int j=0; j < height; j++) {
               float x1=(i + left - tileX) * ftileSize + w;
@@ -83,11 +87,6 @@ synchronized (holder) {
           }
         }
  else {
-          calculateTileRectangle(boundsRect,w,h,tileX,tileY,tilesRect);
-          int left=(int)FloatMath.floor(tilesRect.left);
-          int top=(int)FloatMath.floor(tilesRect.top);
-          int width=(int)(FloatMath.ceil(tilesRect.right) - left);
-          int height=(int)(FloatMath.ceil(tilesRect.bottom) - top);
           for (int i=0; i < width; i++) {
             for (int j=0; j < height; j++) {
               float x1=(i + left - tileX) * ftileSize + w;
@@ -96,7 +95,7 @@ synchronized (holder) {
             }
           }
         }
-        drawOverMap(canvas);
+        drawOverMap(canvas,latlonRect);
       }
   finally {
         holder.unlockCanvasAndPost(canvas);
