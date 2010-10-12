@@ -1,0 +1,50 @@
+{
+  Builder builder=new AlertDialog.Builder(this);
+  builder.setMessage(MessageFormat.format(getString(R.string.download_files_question),entriesToDownload.size()));
+  builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      progressDlg=ProgressDialog.show(DownloadIndexActivity.this,getString(R.string.downloading),getString(R.string.downloading_file),true,true);
+      interruptDownloading=false;
+      progressDlg.show();
+      final ProgressDialogImplementation impl=new ProgressDialogImplementation(progressDlg,true);
+      progressDlg.setOnCancelListener(new DialogInterface.OnCancelListener(){
+        @Override public void onCancel(        DialogInterface dialog){
+          interruptDownloading=true;
+        }
+      }
+);
+      impl.setRunnable("DownloadIndex",new Runnable(){
+        @Override public void run(){
+          try {
+            for (            String s : new ArrayList<String>(entriesToDownload.keySet())) {
+              DownloadEntry entry=entriesToDownload.get(s);
+              if (downloadFile(s,entry.fileToSave,entry.fileToUnzip,entry.unzip,impl)) {
+                entriesToDownload.remove(s);
+                runOnUiThread(new Runnable(){
+                  @Override public void run(){
+                    ((DownloadIndexAdapter)getListAdapter()).notifyDataSetChanged();
+                  }
+                }
+);
+              }
+            }
+          }
+ catch (          InterruptedException e) {
+            progressDlg=null;
+          }
+ finally {
+            if (progressDlg != null) {
+              progressDlg.dismiss();
+              progressDlg=null;
+            }
+          }
+        }
+      }
+);
+      impl.run();
+    }
+  }
+);
+  builder.setNegativeButton(R.string.default_buttons_no,null);
+  builder.show();
+}

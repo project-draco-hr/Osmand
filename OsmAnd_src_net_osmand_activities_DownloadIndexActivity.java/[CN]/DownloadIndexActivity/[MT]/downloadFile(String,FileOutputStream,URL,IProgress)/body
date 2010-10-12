@@ -1,0 +1,57 @@
+{
+  InputStream is=null;
+  byte[] buffer=new byte[BUFFER_SIZE];
+  int read=0;
+  int length=0;
+  int fileread=0;
+  int triesDownload=TRIES_TO_DOWNLOAD;
+  boolean first=true;
+  try {
+    while (triesDownload > 0) {
+      try {
+        if (!first) {
+          log.info("Reconnecting");
+          try {
+            Thread.sleep(TIMEOUT_BETWEEN_DOWNLOADS);
+          }
+ catch (          InterruptedException e) {
+          }
+        }
+        URLConnection conn=url.openConnection();
+        conn.setReadTimeout(30000);
+        conn.setConnectTimeout(30000);
+        is=conn.getInputStream();
+        long skipped=0;
+        while (skipped < fileread) {
+          skipped+=is.skip(fileread - skipped);
+        }
+        if (first) {
+          length=conn.getContentLength();
+          progress.startTask(getString(R.string.downloading_file) + " " + fileName,length);
+        }
+        first=false;
+        while ((read=is.read(buffer)) != -1) {
+          if (interruptDownloading) {
+            throw new InterruptedException();
+          }
+          out.write(buffer,0,read);
+          progress.progress(read);
+          fileread+=read;
+        }
+        triesDownload=0;
+      }
+ catch (      IOException e) {
+        log.error("IOException",e);
+        triesDownload--;
+      }
+    }
+  }
+  finally {
+    if (is != null) {
+      is.close();
+    }
+  }
+  if (length != fileread) {
+    throw new IOException("File was not fully read");
+  }
+}

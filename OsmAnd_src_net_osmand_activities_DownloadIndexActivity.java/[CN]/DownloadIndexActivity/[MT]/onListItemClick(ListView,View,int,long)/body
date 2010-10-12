@@ -1,9 +1,21 @@
 {
   super.onListItemClick(l,v,position,id);
   final Entry<String,String> e=((DownloadIndexAdapter)getListAdapter()).getItem(position);
+  String key=e.getKey();
+  final CheckBox ch=(CheckBox)v.findViewById(R.id.check_download_item);
+  if (ch.isChecked()) {
+    ch.setChecked(!ch.isChecked());
+    entriesToDownload.remove(key);
+    if (entriesToDownload.isEmpty()) {
+      int x=getListView().getScrollX();
+      int y=getListView().getScrollY();
+      findViewById(R.id.DownloadButton).setVisibility(View.GONE);
+      getListView().scrollTo(x,y);
+    }
+    return;
+  }
   int ls=e.getKey().lastIndexOf('_');
   final String baseName=e.getKey().substring(0,ls);
-  String key=e.getKey();
   File parent=null;
   String toSavePostfix=null;
   String toCheckPostfix=null;
@@ -61,31 +73,42 @@
     Toast.makeText(DownloadIndexActivity.this,getString(R.string.sd_dir_not_accessible),Toast.LENGTH_LONG).show();
   }
  else {
-    final File fileToSave=new File(parent,baseName + toSavePostfix);
-    final File fileToUnzip=new File(parent,baseName + toCheckPostfix);
-    Builder builder=new AlertDialog.Builder(this);
-    if (!fileToUnzip.exists()) {
-      builder.setMessage(MessageFormat.format(getString(R.string.download_question),baseName,e.getValue()));
-    }
- else {
+    final DownloadEntry entry=new DownloadEntry();
+    entry.fileToSave=new File(parent,baseName + toSavePostfix);
+    entry.unzip=unzipDir;
+    entry.fileToUnzip=new File(parent,baseName + toCheckPostfix);
+    if (entry.fileToUnzip.exists()) {
+      Builder builder=new AlertDialog.Builder(this);
       MessageFormat format;
-      if (fileToUnzip.isDirectory()) {
+      if (entry.fileToUnzip.isDirectory()) {
         format=new MessageFormat("{0,date,dd.MM.yyyy}",Locale.US);
       }
  else {
         format=new MessageFormat("{0,date,dd.MM.yyyy} : {1, number,##.#} MB",Locale.US);
       }
-      String description=format.format(new Object[]{new Date(fileToUnzip.lastModified()),((float)fileToUnzip.length() / MB)});
+      String description=format.format(new Object[]{new Date(entry.fileToUnzip.lastModified()),((float)entry.fileToUnzip.length() / MB)});
       builder.setMessage(MessageFormat.format(getString(R.string.download_question_exist),baseName,description,e.getValue()));
-    }
-    final boolean toUnzip=unzipDir;
-    builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
-      @Override public void onClick(      DialogInterface dialog,      int which){
-        downloadFile(e.getKey(),fileToSave,fileToUnzip,toUnzip);
+      builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          entriesToDownload.put(e.getKey(),entry);
+          int x=getListView().getScrollX();
+          int y=getListView().getScrollY();
+          findViewById(R.id.DownloadButton).setVisibility(View.VISIBLE);
+          getListView().scrollTo(x,y);
+          ch.setChecked(!ch.isChecked());
+        }
       }
-    }
 );
-    builder.setNegativeButton(R.string.default_buttons_no,null);
-    builder.show();
+      builder.setNegativeButton(R.string.default_buttons_no,null);
+      builder.show();
+    }
+ else {
+      entriesToDownload.put(e.getKey(),entry);
+      int x=getListView().getScrollX();
+      int y=getListView().getScrollY();
+      findViewById(R.id.DownloadButton).setVisibility(View.VISIBLE);
+      getListView().scrollTo(x,y);
+      ch.setChecked(!ch.isChecked());
+    }
   }
 }
