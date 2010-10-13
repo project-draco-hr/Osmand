@@ -1,12 +1,13 @@
 {
   super.onResume();
+  SharedPreferences prefs=OsmandSettings.getPrefs(this);
   region=null;
-  String lastSearchedRegion=OsmandSettings.getLastSearchedRegion(SearchAddressActivity.this);
+  String lastSearchedRegion=OsmandSettings.getLastSearchedRegion(prefs);
   region=((OsmandApplication)getApplication()).getResourceManager().getRegionRepository(lastSearchedRegion);
   String progressMsg=null;
   if (region != null) {
-    Long cityId=OsmandSettings.getLastSearchedCity(this);
-    String postcode=OsmandSettings.getLastSearchedPostcode(this);
+    Long cityId=OsmandSettings.getLastSearchedCity(prefs);
+    String postcode=OsmandSettings.getLastSearchedPostcode(prefs);
     if (!region.areCitiesPreloaded()) {
       progressMsg=getString(R.string.loading_cities);
     }
@@ -19,7 +20,7 @@
  else     if (postcode != null && region.getPostcode(postcode) != null && region.getPostcode(postcode).isEmptyWithStreets()) {
       progressMsg=getString(R.string.loading_streets_buildings);
     }
- else     if (OsmandSettings.usingEnglishNames(this) != region.useEnglishNames()) {
+ else     if (OsmandSettings.usingEnglishNames(prefs) != region.useEnglishNames()) {
       progressMsg=getString(R.string.converting_names);
     }
   }

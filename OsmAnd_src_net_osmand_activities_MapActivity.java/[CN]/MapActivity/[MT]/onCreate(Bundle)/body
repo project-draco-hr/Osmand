@@ -1,5 +1,6 @@
 {
   super.onCreate(savedInstanceState);
+  settings=OsmandSettings.getPrefs(this);
   setVolumeControlStream(AudioManager.STREAM_MUSIC);
   requestWindowFeature(Window.FEATURE_NO_TITLE);
   setContentView(R.layout.main);
@@ -49,12 +50,12 @@
   routeInfoLayer=new RouteInfoLayer(routingHelper,(LinearLayout)findViewById(R.id.RouteLayout));
   mapView.addLayer(routeInfoLayer,10);
   savingTrackHelper=new SavingTrackHelper(this);
-  LatLon pointToNavigate=OsmandSettings.getPointToNavigate(this);
+  LatLon pointToNavigate=OsmandSettings.getPointToNavigate(settings);
   if (!Algoritms.objectEquals(routingHelper.getFinalLocation(),pointToNavigate)) {
     routingHelper.setFollowingMode(false);
     routingHelper.setFinalAndCurrentLocation(pointToNavigate,null);
   }
-  if (OsmandSettings.isFollowingByRoute(this)) {
+  if (OsmandSettings.isFollowingByRoute(settings)) {
     if (pointToNavigate == null) {
       OsmandSettings.setFollowingByRoute(this,false);
     }
@@ -99,7 +100,7 @@
       mapView.getAnimatedDraggingThread().stopAnimatingSync();
       mapView.getAnimatedDraggingThread().startZooming(mapView.getZoom(),mapView.getZoom() + 1);
       showAndHideMapPosition();
-      if (OsmandSettings.isAutoZoomEnabled(MapActivity.this)) {
+      if (OsmandSettings.isAutoZoomEnabled(settings)) {
         locationChanged(mapView.getLatitude(),mapView.getLongitude(),null);
       }
     }
@@ -112,7 +113,7 @@
       mapView.getAnimatedDraggingThread().stopAnimatingSync();
       mapView.getAnimatedDraggingThread().startZooming(mapView.getZoom(),mapView.getZoom() - 1);
       showAndHideMapPosition();
-      if (OsmandSettings.isAutoZoomEnabled(MapActivity.this)) {
+      if (OsmandSettings.isAutoZoomEnabled(settings)) {
         locationChanged(mapView.getLatitude(),mapView.getLongitude(),null);
       }
     }

@@ -1,15 +1,15 @@
 {
   super.onResume();
-  if (OsmandSettings.getMapOrientation(this) != getRequestedOrientation()) {
-    setRequestedOrientation(OsmandSettings.getMapOrientation(this));
-    LatLon l=OsmandSettings.getLastKnownMapLocation(this);
+  if (OsmandSettings.getMapOrientation(settings) != getRequestedOrientation()) {
+    setRequestedOrientation(OsmandSettings.getMapOrientation(settings));
+    LatLon l=OsmandSettings.getLastKnownMapLocation(settings);
     mapView.setLatLon(l.getLatitude(),l.getLongitude());
-    mapView.setZoom(OsmandSettings.getLastKnownMapZoom(this));
+    mapView.setZoom(OsmandSettings.getLastKnownMapZoom(settings));
     return;
   }
   currentScreenOrientation=getWindow().getWindowManager().getDefaultDisplay().getOrientation();
-  boolean showTiles=!OsmandSettings.isUsingMapVectorData(this);
-  ITileSource source=showTiles ? OsmandSettings.getMapTileSource(this) : null;
+  boolean showTiles=!OsmandSettings.isUsingMapVectorData(settings);
+  ITileSource source=showTiles ? OsmandSettings.getMapTileSource(settings) : null;
   if (showTiles != !rendererLayer.isVisible() || !Algoritms.objectEquals(mapView.getMap(),source)) {
     updateMapSource();
   }
@@ -35,13 +35,13 @@
   }
   SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);
   if (prefs != null && prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
-    LatLon l=OsmandSettings.getLastKnownMapLocation(this);
+    LatLon l=OsmandSettings.getLastKnownMapLocation(settings);
     mapView.setLatLon(l.getLatitude(),l.getLongitude());
-    mapView.setZoom(OsmandSettings.getLastKnownMapZoom(this));
-    LatLon latLon=OsmandSettings.getAndClearMapLocationToShow(this);
+    mapView.setZoom(OsmandSettings.getLastKnownMapZoom(settings));
+    LatLon latLon=OsmandSettings.getAndClearMapLocationToShow(settings);
     LatLon cur=new LatLon(mapView.getLatitude(),mapView.getLongitude());
     if (latLon != null && !latLon.equals(cur)) {
-      mapView.getAnimatedDraggingThread().startMoving(cur.getLatitude(),cur.getLongitude(),latLon.getLatitude(),latLon.getLongitude(),mapView.getZoom(),OsmandSettings.getMapZoomToShow(this),mapView.getSourceTileSize(),mapView.getRotate(),true);
+      mapView.getAnimatedDraggingThread().startMoving(cur.getLatitude(),cur.getLongitude(),latLon.getLatitude(),latLon.getLongitude(),mapView.getZoom(),OsmandSettings.getMapZoomToShow(settings),mapView.getSourceTileSize(),mapView.getRotate(),true);
     }
   }
   OsmandSettings.setMapActivityEnabled(this,true);
