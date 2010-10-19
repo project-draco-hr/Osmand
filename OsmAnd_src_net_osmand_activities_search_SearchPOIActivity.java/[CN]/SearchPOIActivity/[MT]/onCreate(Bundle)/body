@@ -98,12 +98,33 @@
   ListView lv=getListView();
   lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
     @Override public boolean onItemLongClick(    AdapterView<?> av,    View v,    int pos,    long id){
-      Amenity amenity=((AmenityAdapter)getListAdapter()).getItem(pos);
+      final Amenity amenity=((AmenityAdapter)getListAdapter()).getItem(pos);
       String format=amenity.getSimpleFormat(OsmandSettings.usingEnglishNames(settings));
       if (amenity.getOpeningHours() != null) {
-        format+="\n" + getString(R.string.opening_hours) + " : "+ amenity.getOpeningHours();
+        format+="  " + getString(R.string.opening_hours) + " : "+ amenity.getOpeningHours();
       }
-      Toast.makeText(v.getContext(),format,Toast.LENGTH_LONG).show();
+      AlertDialog.Builder builder=new AlertDialog.Builder(SearchPOIActivity.this);
+      builder.setTitle(format);
+      builder.setItems(new String[]{getString(R.string.show_poi_on_map),getString(R.string.navigate_to)},new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          if (which == 0) {
+            int z=OsmandSettings.getLastKnownMapZoom(settings);
+            OsmandSettings.setMapLocationToShow(SearchPOIActivity.this,amenity.getLocation().getLatitude(),amenity.getLocation().getLongitude(),Math.max(16,z),getString(R.string.poi) + " : " + amenity.getSimpleFormat(OsmandSettings.usingEnglishNames(settings)));
+          }
+ else           if (which == 1) {
+            LatLon l=amenity.getLocation();
+            OsmandSettings.setPointToNavigate(SearchPOIActivity.this,l.getLatitude(),l.getLongitude());
+          }
+          if (filter != null) {
+            OsmandSettings.setPoiFilterForMap(SearchPOIActivity.this,filter.getFilterId());
+            OsmandSettings.setShowPoiOverMap(SearchPOIActivity.this,true);
+          }
+          Intent newIntent=new Intent(SearchPOIActivity.this,MapActivity.class);
+          startActivity(newIntent);
+        }
+      }
+);
+      builder.show();
       return true;
     }
   }

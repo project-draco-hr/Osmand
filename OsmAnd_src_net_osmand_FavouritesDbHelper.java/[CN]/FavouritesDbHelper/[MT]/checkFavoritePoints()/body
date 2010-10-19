@@ -1,0 +1,22 @@
+{
+  if (favoritePoints == null) {
+    favoritePoints=new LinkedHashMap<String,FavouritePoint>();
+    SQLiteDatabase db=getReadableDatabase();
+    if (db != null) {
+      Cursor query=db.rawQuery("SELECT " + FAVOURITE_COL_NAME + ", "+ FAVOURITE_COL_LAT+ ","+ FAVOURITE_COL_LON+ " FROM "+ FAVOURITE_TABLE_NAME,null);
+      favoritePoints.clear();
+      if (query.moveToFirst()) {
+        do {
+          FavouritePoint p=new FavouritePoint();
+          p.setName(query.getString(0));
+          p.setStored(true);
+          p.setLatitude(query.getDouble(1));
+          p.setLongitude(query.getDouble(2));
+          favoritePoints.put(p.getName(),p);
+        }
+ while (query.moveToNext());
+      }
+      query.close();
+    }
+  }
+}

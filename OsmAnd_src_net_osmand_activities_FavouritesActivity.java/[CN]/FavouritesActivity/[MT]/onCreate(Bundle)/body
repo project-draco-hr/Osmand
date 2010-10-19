@@ -3,16 +3,15 @@
   ListView lv=new ListView(this);
   lv.setId(android.R.id.list);
   setContentView(lv);
-  helper=new FavouritesDbHelper(this);
-  favouritesList=helper.getFavouritePoints();
-  favouritesAdapter=new FavouritesAdapter(favouritesList);
-  lv.setAdapter(favouritesAdapter);
   lv.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener(){
     @Override public void onCreateContextMenu(    ContextMenu menu,    View v,    ContextMenuInfo menuInfo){
       menu.setHeaderTitle(R.string.favourites_context_menu_title);
       menu.add(0,NAVIGATE_TO,0,R.string.favourites_context_menu_navigate);
-      menu.add(0,EDIT_ITEM,1,R.string.favourites_context_menu_edit);
-      menu.add(0,DELETE_ITEM,2,R.string.favourites_context_menu_delete);
+      final FavouritePoint point=(FavouritePoint)favouritesAdapter.getItem(((AdapterContextMenuInfo)menuInfo).position);
+      if (point.isStored()) {
+        menu.add(0,EDIT_ITEM,1,R.string.favourites_context_menu_edit);
+        menu.add(0,DELETE_ITEM,2,R.string.favourites_context_menu_delete);
+      }
     }
   }
 );

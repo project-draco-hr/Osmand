@@ -1,9 +1,6 @@
 {
   final Resources resources=this.getResources();
-  final FavouritePoint p=new FavouritesActivity.FavouritePoint();
-  p.setLatitude(latitude);
-  p.setLongitude(longitude);
-  p.setName(resources.getString(R.string.add_favorite_dialog_default_favourite_name));
+  final FavouritePoint p=new FavouritePoint(latitude,longitude,resources.getString(R.string.add_favorite_dialog_default_favourite_name));
   Builder builder=new AlertDialog.Builder(this);
   builder.setTitle(R.string.add_favorite_dialog_top_text);
   final EditText editText=new EditText(this);
@@ -12,19 +9,20 @@
   builder.setNeutralButton(R.string.update_existing,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       Builder b=new AlertDialog.Builder(MapActivity.this);
-      final FavouritesDbHelper helper=new FavouritesActivity.FavouritesDbHelper(MapActivity.this);
-      final List<FavouritePoint> points=helper.getFavouritePoints();
+      final FavouritesDbHelper helper=((OsmandApplication)getApplication()).getFavorites();
+      final Collection<FavouritePoint> points=helper.getFavouritePoints();
       final String[] ar=new String[points.size()];
-      for (int i=0; i < ar.length; i++) {
-        ar[i]=points.get(i).getName();
+      Iterator<FavouritePoint> it=points.iterator();
+      int i=0;
+      while (it.hasNext()) {
+        ar[i++]=it.next().getName();
       }
       b.setItems(ar,new DialogInterface.OnClickListener(){
         @Override public void onClick(        DialogInterface dialog,        int which){
-          if (helper.editFavourite(points.get(which),latitude,longitude)) {
+          FavouritePoint fv=helper.getFavoritePointByName(ar[which]);
+          if (helper.editFavourite(fv,latitude,longitude)) {
             Toast.makeText(MapActivity.this,getString(R.string.fav_points_edited),Toast.LENGTH_SHORT).show();
           }
-          helper.close();
-          favoritesLayer.reloadFavorites(MapActivity.this);
           mapView.refreshMap();
         }
       }
@@ -41,14 +39,12 @@
 );
   builder.setPositiveButton(R.string.default_buttons_add,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      FavouritesDbHelper helper=new FavouritesActivity.FavouritesDbHelper(MapActivity.this);
+      final FavouritesDbHelper helper=((OsmandApplication)getApplication()).getFavorites();
       p.setName(editText.getText().toString());
       boolean added=helper.addFavourite(p);
       if (added) {
         Toast.makeText(MapActivity.this,MessageFormat.format(getString(R.string.add_favorite_dialog_favourite_added_template),p.getName()),Toast.LENGTH_SHORT).show();
       }
-      helper.close();
-      favoritesLayer.reloadFavorites(MapActivity.this);
       mapView.refreshMap();
     }
   }
