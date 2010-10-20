@@ -56,9 +56,14 @@
   }
   try {
     DownloaderIndexFromGoogleCode.deleteFileFromGoogleDownloads(f.getName(),token,pagegen,cookieHSID,cookieSID);
+    try {
+      Thread.sleep(4000);
+    }
+ catch (    InterruptedException e) {
+    }
   }
  catch (  IOException e) {
-    log.warn("Deleting file from downloads" + f.getName(),e);
+    log.warn("Deleting file from downloads" + f.getName() + " "+ e.getMessage());
   }
   mbLengh=(double)f.length() / MB;
   if (mbLengh > 100) {
@@ -67,7 +72,6 @@
   }
   String descriptionFile="{" + format.format(new Object[]{new Date(f.lastModified()),mbLengh}) + "}";
   summary+=regionName + " " + descriptionFile;
-  alreadyUploadedFiles.add(f.getName());
   GoogleCodeUploadIndex uploader=new GoogleCodeUploadIndex();
   uploader.setFileName(f.getAbsolutePath());
   uploader.setTargetFileName(f.getName());
@@ -78,6 +82,7 @@
   uploader.setSummary(summary.replace('_',' '));
   try {
     uploader.upload();
+    alreadyUploadedFiles.add(f.getName());
   }
  catch (  IOException e) {
     log.error("Input/output exception uploading " + f.getName(),e);
