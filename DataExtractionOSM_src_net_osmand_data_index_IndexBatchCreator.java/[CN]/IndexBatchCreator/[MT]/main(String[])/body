@@ -1,29 +1,40 @@
 {
   IndexBatchCreator creator=new IndexBatchCreator();
-  if (args.length < 1 || !new File(args[0]).exists()) {
-    throw new IllegalArgumentException("Please specify directory with .osm or .osm.bz2 files as first arg");
+  if (args == null || args.length == 0) {
+    System.out.println("Please specify -local parameter or path to batch.xml configuration file as 1 argument.");
+    throw new IllegalArgumentException("Please specify -local parameter or path to batch.xml configuration file as 1 argument.");
   }
-  creator.osmDirFiles=new File(args[0]);
-  if (args.length < 2 || !new File(args[1]).exists()) {
-    throw new IllegalArgumentException("Please specify directory with generated index files as second arg");
+  String name=args[0];
+  InputStream stream;
+  if (name.equals("-local")) {
+    stream=IndexBatchCreator.class.getResourceAsStream("batch.xml");
   }
-  creator.indexDirFiles=new File(args[1]);
-  for (int i=2; i < args.length; i++) {
-    if ("-downloadOsm".equals(args[i])) {
-      creator.downloadFiles=true;
+ else {
+    try {
+      stream=new FileInputStream(name);
     }
- else     if ("-genIndexes".equals(args[i])) {
-      creator.generateIndexes=true;
-    }
- else     if ("-upload".equals(args[i])) {
-      creator.uploadIndexes=true;
-    }
- else     if (args[i].startsWith("-guser=")) {
-      creator.user=args[i].substring("-guser=".length());
-    }
- else     if (args[i].startsWith("-gpassword=")) {
-      creator.password=args[i].substring("-gpassword=".length());
+ catch (    FileNotFoundException e) {
+      System.out.println("XML configuration file not found : " + name);
+      return;
     }
   }
-  creator.runBatch();
+  try {
+    Document doc=DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
+    creator.runBatch(doc);
+  }
+ catch (  SAXException e) {
+    System.out.println("XML configuration file could not be read from " + name);
+    e.printStackTrace();
+    log.error("XML configuration file could not be read from " + name,e);
+  }
+catch (  IOException e) {
+    System.out.println("XML configuration file could not be read from " + name);
+    e.printStackTrace();
+    log.error("XML configuration file could not be read from " + name,e);
+  }
+catch (  ParserConfigurationException e) {
+    System.out.println("XML configuration file could not be read from " + name);
+    e.printStackTrace();
+    log.error("XML configuration file could not be read from " + name,e);
+  }
 }

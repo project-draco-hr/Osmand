@@ -1,0 +1,64 @@
+{
+  NodeList list=doc.getElementsByTagName("process");
+  if (list.getLength() != 1) {
+    throw new IllegalArgumentException("You should specify exactly 1 process element!");
+  }
+  Element process=(Element)list.item(0);
+  downloadFiles=Boolean.parseBoolean(process.getAttribute("downloadOsmFiles"));
+  generateIndexes=Boolean.parseBoolean(process.getAttribute("generateIndexes"));
+  uploadIndexes=Boolean.parseBoolean(process.getAttribute("uploadIndexes"));
+  deleteFilesAfterUploading=Boolean.parseBoolean(process.getAttribute("deleteFilesAfterUploading"));
+  indexPOI=Boolean.parseBoolean(process.getAttribute("indexPOI"));
+  indexMap=Boolean.parseBoolean(process.getAttribute("indexMap"));
+  indexTransport=Boolean.parseBoolean(process.getAttribute("indexTransport"));
+  indexAddress=Boolean.parseBoolean(process.getAttribute("indexAddress"));
+  String dir=process.getAttribute("directory_for_osm_files");
+  if (dir == null || !new File(dir).exists()) {
+    throw new IllegalArgumentException("Please specify directory with .osm or .osm.bz2 files as directory_for_osm_files (attribute)");
+  }
+  osmDirFiles=new File(dir);
+  dir=process.getAttribute("directory_for_index_files");
+  if (dir == null || !new File(dir).exists()) {
+    throw new IllegalArgumentException("Please specify directory with generated index files  as directory_for_index_files (attribute)");
+  }
+  indexDirFiles=new File(dir);
+  if (uploadIndexes) {
+    list=doc.getElementsByTagName("authorization_info");
+    if (list.getLength() != 1) {
+      throw new IllegalArgumentException("You should specify exactly 1 authorization_info element to upload indexes!");
+    }
+    Element authorization=(Element)list.item(0);
+    cookieHSID=authorization.getAttribute("cookieHSID");
+    cookieSID=authorization.getAttribute("cookieSID");
+    pagegen=authorization.getAttribute("pagegen");
+    token=authorization.getAttribute("token");
+    user=authorization.getAttribute("google_code_user");
+    password=authorization.getAttribute("google_code_password");
+  }
+  List<RegionCountries> countriesToDownload=new ArrayList<RegionCountries>();
+  NodeList regions=doc.getElementsByTagName("regions");
+  for (int i=0; i < regions.getLength(); i++) {
+    Element el=(Element)regions.item(i);
+    if (!Boolean.parseBoolean(el.getAttribute("skip"))) {
+      RegionCountries countries=new RegionCountries();
+      countries.siteToDownload=el.getAttribute("siteToDownload");
+      if (countries.siteToDownload == null) {
+        continue;
+      }
+      countries.namePrefix=el.getAttribute("region_prefix");
+      if (countries.namePrefix == null) {
+        countries.namePrefix="";
+      }
+      NodeList ncountries=el.getElementsByTagName("region");
+      for (int j=0; j < ncountries.getLength(); j++) {
+        Element ncountry=(Element)ncountries.item(j);
+        String name=ncountry.getAttribute("name");
+        if (name != null && !Boolean.parseBoolean(ncountry.getAttribute("skip"))) {
+          countries.regionNames.add(name);
+        }
+      }
+      countriesToDownload.add(countries);
+    }
+  }
+  runBatch(countriesToDownload);
+}
