@@ -83,11 +83,12 @@
     pselectTags=dbConn.prepareStatement("select key, value from tags where id = ? and type = ?");
     if (indexMap) {
       mapFile=new File(workingDir,getMapFileName());
-      if (mapFile.exists()) {
-        mapFile.delete();
-      }
       mapFile.getParentFile().mkdirs();
-      mapConnection=DriverManager.getConnection("jdbc:sqlite:" + mapFile.getAbsolutePath());
+      File tempDBMapFile=new File(workingDir,getTempMapDBFileName());
+      if (tempDBMapFile.exists()) {
+        tempDBMapFile.delete();
+      }
+      mapConnection=DriverManager.getConnection("jdbc:sqlite:" + tempDBMapFile.getAbsolutePath());
       DataIndexWriter.createMapIndexStructure(mapConnection);
       mapBinaryStat=DataIndexWriter.createStatementMapBinaryInsert(mapConnection);
       try {
@@ -237,7 +238,11 @@
       mapBinaryStat.executeBatch();
       pStatements.remove(mapBinaryStat);
       mapConnection.commit();
-      writeBinaryData();
+      if (mapFile.exists()) {
+        mapFile.delete();
+      }
+      mapRAFile=new RandomAccessFile(mapFile,"rw");
+      writeBinaryMapIndex();
     }
   }
   finally {
@@ -276,12 +281,19 @@
           transportIndexFile.setLastModified(lastModifiedDate);
         }
       }
+      if (mapRAFile != null) {
+        mapRAFile.close();
+      }
       if (mapConnection != null) {
         mapConnection.commit();
         mapConnection.close();
         mapConnection=null;
-        if (lastModifiedDate != null) {
+        if (lastModifiedDate != null && mapFile.exists()) {
           mapFile.setLastModified(lastModifiedDate);
+        }
+        File tempDBFile=new File(getTempMapDBFileName());
+        if (tempDBFile.exists()) {
+          tempDBFile.delete();
         }
       }
       if (addressConnection != null) {
