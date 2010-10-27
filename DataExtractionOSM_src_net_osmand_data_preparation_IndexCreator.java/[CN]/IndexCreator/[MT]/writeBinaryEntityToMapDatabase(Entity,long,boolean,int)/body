@@ -43,32 +43,18 @@
   if (type == 0) {
     return;
   }
-  boolean useRestrictions=false;
   restrictionsUse.clear();
-  if (MapRenderingTypes.isHighwayType(type >> 1)) {
-    useRestrictions=true;
+  if (MapRenderingTypes.isHighwayType(type)) {
     if (level == 0 && highwayRestrictions.containsKey(baseId)) {
       restrictionsUse.addAll(highwayRestrictions.get(baseId));
     }
   }
-  boolean point=((type >> 1) & 3) == MapRenderingTypes.POINT_TYPE;
-  PreparedStatement mapLocations;
+  boolean point=(type & 3) == MapRenderingTypes.POINT_TYPE;
+  RTree rtree=null;
   int zoom;
-  long id=baseId << 3;
-  if (level == 1) {
-    id|=2;
-    mapLocations=mapLocsStatLevel1;
-    zoom=12;
-  }
- else   if (level == 2) {
-    id|=4;
-    zoom=7;
-    mapLocations=mapLocsStatLevel2;
-  }
- else {
-    zoom=18;
-    mapLocations=mapLocsStatLevel0;
-  }
+  long id=(baseId << 3) | ((level & 3) << 1);
+  rtree=mapTree[level];
+  zoom=MAP_ZOOMS[MAP_ZOOMS.length - level - 1] - 2;
   boolean skip=false;
   if (e instanceof Way) {
     id|=1;
@@ -104,10 +90,14 @@
     }
   }
   if (!skip) {
+    int highwayAttributes=0;
+    if (MapRenderingTypes.isHighwayType(type)) {
+      highwayAttributes=MapRenderingTypes.getHighwayAttributes(e);
+    }
     String eName=MapRenderingTypes.getEntityName(e,type);
     if (eName == null) {
       eName=multiPolygonsNames.get(baseId);
     }
-    DataIndexWriter.insertMapRenderObjectIndex(pStatements,mapObjStat,mapLocations,mapTree,e,eName,id,type,typeUse,restrictionsUse,useRestrictions,inverse,point,BATCH_SIZE);
+    DataIndexWriter.insertBinaryMapRenderObjectIndex(pStatements,mapBinaryStat,rtree,e,eName,id,type,typeUse,highwayAttributes,restrictionsUse,inverse,point,BATCH_SIZE);
   }
 }

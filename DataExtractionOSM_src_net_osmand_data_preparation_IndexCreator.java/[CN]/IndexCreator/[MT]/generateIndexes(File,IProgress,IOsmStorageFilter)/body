@@ -89,24 +89,21 @@
       mapFile.getParentFile().mkdirs();
       mapConnection=DriverManager.getConnection("jdbc:sqlite:" + mapFile.getAbsolutePath());
       DataIndexWriter.createMapIndexStructure(mapConnection);
-      mapObjStat=DataIndexWriter.createStatementMapWaysInsert(mapConnection);
-      mapLocsStatLevel0=DataIndexWriter.createStatementMapWaysLocationsInsert(mapConnection);
-      mapLocsStatLevel1=DataIndexWriter.createStatementMapWaysLocationsInsertLevel2(mapConnection);
-      mapLocsStatLevel2=DataIndexWriter.createStatementMapWaysLocationsInsertLevel3(mapConnection);
+      mapBinaryStat=DataIndexWriter.createStatementMapBinaryInsert(mapConnection);
       try {
-        File file=new File(getRTreeMapIndexNonPackFileName());
-        if (file.exists()) {
-          file.delete();
+        mapTree=new RTree[MAP_ZOOMS.length - 1];
+        for (int i=0; i < MAP_ZOOMS.length - 1; i++) {
+          File file=new File(getRTreeMapIndexNonPackFileName() + i);
+          if (file.exists()) {
+            file.delete();
+          }
+          mapTree[i]=new RTree(getRTreeMapIndexNonPackFileName() + i);
         }
-        mapTree=new RTree(getRTreeMapIndexNonPackFileName());
       }
  catch (      RTreeException e) {
         throw new IOException(e);
       }
-      pStatements.put(mapObjStat,0);
-      pStatements.put(mapLocsStatLevel0,0);
-      pStatements.put(mapLocsStatLevel1,0);
-      pStatements.put(mapLocsStatLevel2,0);
+      pStatements.put(mapBinaryStat,0);
       mapConnection.setAutoCommit(false);
     }
     if (indexPOI) {
@@ -220,24 +217,30 @@
       progress.setGeneralProgress("[95 of 100]");
       progress.startTask("Serializing map data...",-1);
       try {
-        mapTree.flush();
+        for (int i=0; i < MAP_ZOOMS.length - 1; i++) {
+          mapTree[i].flush();
+          File file=new File(getRTreeMapIndexPackFileName() + i);
+          if (file.exists()) {
+            file.delete();
+          }
+          new Pack().packTree(mapTree[i],getRTreeMapIndexPackFileName() + i);
+          mapTree[i].getFileHdr().getFile().close();
+          file=new File(getRTreeMapIndexNonPackFileName() + i);
+          file.delete();
+          mapTree[i]=new RTree(getRTreeMapIndexPackFileName() + i);
+        }
       }
  catch (      RTreeException e) {
         log.error("Error flushing",e);
+        throw new IOException(e);
       }
-      File file=new File(getRTreeMapIndexPackFileName());
-      if (file.exists()) {
-        file.delete();
-      }
-      new Pack().packTree(mapTree,getRTreeMapIndexPackFileName());
-      mapTree=null;
-      writeBinaryData(new RTree(getRTreeMapIndexPackFileName()));
+      mapBinaryStat.executeBatch();
+      pStatements.remove(mapBinaryStat);
+      mapConnection.commit();
+      writeBinaryData();
     }
   }
- catch (  RTreeException e) {
-    throw new IOException(e);
-  }
- finally {
+  finally {
     try {
       if (pselectNode != null) {
         pselectNode.close();
@@ -281,20 +284,28 @@
           mapFile.setLastModified(lastModifiedDate);
         }
       }
-      if (mapTree != null) {
-        try {
-          mapTree.flush();
-        }
- catch (        RTreeException e) {
-          log.error("Error flushing",e);
-        }
-      }
       if (addressConnection != null) {
         addressConnection.commit();
         addressConnection.close();
         addressConnection=null;
         if (lastModifiedDate != null) {
           addressIndexFile.setLastModified(lastModifiedDate);
+        }
+      }
+      for (int i=0; i < mapTree.length; i++) {
+        if (mapTree[i] != null) {
+          RandomAccessFile file=mapTree[i].getFileHdr().getFile();
+          file.close();
+        }
+      }
+      for (int i=0; i < mapTree.length; i++) {
+        File f=new File(getRTreeMapIndexNonPackFileName() + i);
+        if (f.exists()) {
+          f.delete();
+        }
+        f=new File(getRTreeMapIndexPackFileName() + i);
+        if (f.exists()) {
+          f.delete();
         }
       }
       dbConn.close();
