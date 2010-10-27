@@ -1,0 +1,43 @@
+{
+  try {
+    if (key != recent) {
+      NodeValue node, nextNode, prevNode, rcntNode, lastNode;
+      node=(NodeValue)(cache.remove(new Integer(key)));
+      if (node == null) {
+        System.out.println("CachedNodes.update: unlikely flow");
+        return;
+      }
+      if (key == last) {
+        last=node.next;
+        cache.put(new Integer(key),new NodeValue(node.node,node.next,node.prev));
+      }
+ else {
+        nextNode=(NodeValue)(cache.remove(new Integer(node.next)));
+        if (recent != node.next) {
+          rcntNode=(NodeValue)(cache.remove(new Integer(recent)));
+          rcntNode.next=key;
+          cache.put(new Integer(recent),new NodeValue(rcntNode.node,rcntNode.next,rcntNode.prev));
+        }
+ else {
+          nextNode.next=key;
+        }
+        cache.put(new Integer(node.next),new NodeValue(nextNode.node,nextNode.next,node.prev));
+        prevNode=(NodeValue)(cache.remove(new Integer(node.prev)));
+        if (last != node.prev) {
+          lastNode=(NodeValue)(cache.remove(new Integer(last)));
+          lastNode.prev=key;
+          cache.put(new Integer(last),new NodeValue(lastNode.node,lastNode.next,lastNode.prev));
+        }
+ else {
+          prevNode.prev=key;
+        }
+        cache.put(new Integer(node.prev),new NodeValue(prevNode.node,node.next,prevNode.prev));
+        cache.put(new Integer(key),new NodeValue(node.node,last,recent));
+      }
+    }
+    recent=key;
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+  }
+}

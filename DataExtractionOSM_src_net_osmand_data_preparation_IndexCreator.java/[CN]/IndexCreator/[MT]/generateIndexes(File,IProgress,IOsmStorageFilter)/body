@@ -93,6 +93,16 @@
       mapLocsStatLevel0=DataIndexWriter.createStatementMapWaysLocationsInsert(mapConnection);
       mapLocsStatLevel1=DataIndexWriter.createStatementMapWaysLocationsInsertLevel2(mapConnection);
       mapLocsStatLevel2=DataIndexWriter.createStatementMapWaysLocationsInsertLevel3(mapConnection);
+      try {
+        File file=new File(getRTreeMapIndexNonPackFileName());
+        if (file.exists()) {
+          file.delete();
+        }
+        mapTree=new RTree(getRTreeMapIndexNonPackFileName());
+      }
+ catch (      RTreeException e) {
+        throw new IOException(e);
+      }
       pStatements.put(mapObjStat,0);
       pStatements.put(mapLocsStatLevel0,0);
       pStatements.put(mapLocsStatLevel1,0);
@@ -206,18 +216,28 @@
         }
       }
     }
-    progress.setGeneralProgress("[95 of 100]");
-    progress.startTask("Indexing low levels for map ...",-1);
     if (indexMap) {
-      for (      Long l : lowLevelWaysSt.keySet()) {
-        for (        Way w : lowLevelWaysSt.get(l)) {
-          int level=(int)(w.getId() & 3);
-          writeEntityToMapDatabase(w,w.getId() >> 2,false,level);
-        }
+      progress.setGeneralProgress("[95 of 100]");
+      progress.startTask("Serializing map data...",-1);
+      try {
+        mapTree.flush();
       }
+ catch (      RTreeException e) {
+        log.error("Error flushing",e);
+      }
+      File file=new File(getRTreeMapIndexPackFileName());
+      if (file.exists()) {
+        file.delete();
+      }
+      new Pack().packTree(mapTree,getRTreeMapIndexPackFileName());
+      mapTree=null;
+      writeBinaryData(new RTree(getRTreeMapIndexPackFileName()));
     }
   }
-  finally {
+ catch (  RTreeException e) {
+    throw new IOException(e);
+  }
+ finally {
     try {
       if (pselectNode != null) {
         pselectNode.close();
@@ -259,6 +279,14 @@
         mapConnection=null;
         if (lastModifiedDate != null) {
           mapFile.setLastModified(lastModifiedDate);
+        }
+      }
+      if (mapTree != null) {
+        try {
+          mapTree.flush();
+        }
+ catch (        RTreeException e) {
+          log.error("Error flushing",e);
         }
       }
       if (addressConnection != null) {

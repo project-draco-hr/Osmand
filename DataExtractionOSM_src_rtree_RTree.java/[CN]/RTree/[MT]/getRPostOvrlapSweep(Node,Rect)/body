@@ -1,0 +1,17 @@
+{
+  if ((node == null) || (rect == null))   throw new IllegalValueException("RTree.getRPostOvrlap: Node is null");
+  List list=new ArrayList();
+  Element[] elmts=node.getAllElements();
+  SweepLine spLine=new SweepLine(new IntersectPred());
+  List pairs=spLine.intersects(rect,elmts);
+  for (int i=0; i < pairs.size(); i++) {
+    Element intElmt=((PairElmt)pairs.get(i)).getRtElmt();
+    if (intElmt.getElementType() == Node.NONLEAF_NODE) {
+      list.addAll(getRPostOvrlapSweep(chdNodes.getReadNode(fileHdr.getFile(),fileName,intElmt.getPtr(),fileHdr),rect));
+    }
+ else {
+      list.add(intElmt);
+    }
+  }
+  return list;
+}

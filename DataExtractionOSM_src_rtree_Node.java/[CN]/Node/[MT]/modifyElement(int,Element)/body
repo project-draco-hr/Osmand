@@ -1,0 +1,24 @@
+{
+  if ((index > totalElements) || (index < 0) || (elmt == null))   throw new IllegalValueException("Node.modifyElmtMBR : index out of bound or MBR is null");
+  if (elmt.getElementType() != elementType)   throw new IllegalValueException("Node.modifyElmtMBR : Element of wrong type");
+  if (fileHdr.isWriteThr())   RTree.chdNodes.remove(fileName,nodeIndex);
+  if (fileHdr.isWriteThr()) {
+    ByteArrayOutputStream bs=new ByteArrayOutputStream(elementSize);
+    DataOutputStream ds=new DataOutputStream(bs);
+    ds.writeInt(elmt.getRect().getMinX());
+    ds.writeInt(elmt.getRect().getMinY());
+    ds.writeInt(elmt.getRect().getMaxX());
+    ds.writeInt(elmt.getRect().getMaxY());
+    ds.writeLong(elmt.getPtr());
+    bs.flush();
+    ds.flush();
+    seekElement(index);
+    file.write(bs.toByteArray());
+    setDirty(false);
+  }
+ else   setDirty(true);
+  elements[index].setRect(elmt.getRect());
+  elements[index].setPtr(elmt.getPtr());
+  if (elmt.getRect().contains(elements[index].getRect()))   nodeMBR.expandToInclude(elmt.getRect());
+ else   refreshNodeMBR();
+}

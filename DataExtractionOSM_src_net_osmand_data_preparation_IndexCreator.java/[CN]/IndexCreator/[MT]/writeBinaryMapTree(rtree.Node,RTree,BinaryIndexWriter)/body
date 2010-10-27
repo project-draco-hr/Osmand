@@ -1,0 +1,17 @@
+{
+  Element[] e=parent.getAllElements();
+  for (int i=0; i < parent.getTotalElements(); i++) {
+    Rect re=e[i].getRect();
+    if (e[i].getElementType() == rtree.Node.LEAF_NODE) {
+      long ptr=((LeafElement)e[i]).getPtr();
+      writer.writeMapData(ptr);
+    }
+ else {
+      long ptr=((NonLeafElement)e[i]).getPtr();
+      writer.startMapTreeElement(re.getMinX(),re.getMaxX(),re.getMinY(),re.getMaxY());
+      rtree.Node ns=r.getReadNode(ptr);
+      writeBinaryMapTree(ns,r,writer);
+      writer.endWriteMapTreeElement();
+    }
+  }
+}

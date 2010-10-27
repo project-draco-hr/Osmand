@@ -1,0 +1,24 @@
+{
+  if (sdingNode.getElementType() == Node.LEAF_NODE)   throw new IllegalArgumentException("SdTree.seedRec : Cannot seed a leaf node");
+  Node[] chNodes=null;
+  if (level != slotLvl)   chNodes=new Node[sdingNode.getTotalElements()];
+  Element[] elmts=sdingNode.getAllElements();
+  Element[] newElmts=null;
+  if (level != slotLvl)   newElmts=new Element[sdingNode.getTotalElements()];
+ else {
+    newElmts=new Element[1];
+    newElmts[0]=new NonLeafElement(new Rect(),Node.NOT_DEFINED);
+  }
+  for (int i=0; i < sdingNode.getTotalElements(); i++) {
+    if (level != slotLvl) {
+      newElmts[i]=(NonLeafElement)((NonLeafElement)elmts[i]).clone();
+      chNodes[i]=chdNodes.getNode(fileHdr.getFile(),fileName,sdNode.getNodeIndex(),sdingNode.getElementType(),fileHdr);
+      newElmts[i].setPtr(chNodes[i].getNodeIndex());
+      seedRec(sdingTree.getReadNode(elmts[i].getPtr()),chNodes[i],level + 1);
+    }
+ else {
+      newElmts[0].getRect().expandToInclude(elmts[i].getRect());
+    }
+  }
+  sdNode.insertElement(newElmts,false);
+}

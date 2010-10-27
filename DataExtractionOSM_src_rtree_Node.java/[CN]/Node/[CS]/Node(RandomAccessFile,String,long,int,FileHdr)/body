@@ -1,0 +1,32 @@
+{
+  this.file=file;
+  fileHdr=flHdr;
+  this.fileName=fileName;
+  elements=new Element[MAX];
+  nodeMBR=new Rect();
+  int size;
+  if (elmtType == NONLEAF_NODE)   size=NonLeafElement.sizeInBytes();
+ else   size=LeafElement.sizeInBytes();
+  try {
+    if (fileHdr.getRootIndex() == NOT_DEFINED) {
+      fileHdr.writeFileHeader(1,0);
+      nodeIndex=0;
+      writeNodeHeader(fileHdr.rootIndex,0,NOT_DEFINED,size,elmtType);
+    }
+ else {
+      try {
+        nodeIndex=fileHdr.pop();
+      }
+ catch (      StackUnderflowException e) {
+        nodeIndex=fileHdr.totalNodes++;
+      }
+      if (prnt == NOT_DEFINED)       fileHdr.writeFileHeader(fileHdr.totalNodes,nodeIndex);
+ else       fileHdr.writeFileHeader(fileHdr.totalNodes,fileHdr.rootIndex);
+      writeNodeHeader(nodeIndex,0,prnt,size,elmtType);
+    }
+    return;
+  }
+ catch (  IOException e) {
+    throw new IOException("Node.Node(new) : " + e.getMessage());
+  }
+}

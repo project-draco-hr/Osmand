@@ -1,0 +1,26 @@
+{
+  try {
+    long root=fileHdr.getRootIndex();
+    int level=0;
+    Node sltNode=chdNodes.getNode(fileHdr.getFile(),fileName,root,fileHdr);
+    while (sltNode.getElementType() != Node.LEAF_NODE) {
+      Element nextElmt=sltNode.getLeastEnlargement(elmt);
+      if (level == slotLvl) {
+        slotIndex.val=sltNode.getNodeIndex();
+        if (nextElmt.getPtr() == Node.NOT_DEFINED) {
+          Node rtNode=chdNodes.getNode(fileHdr.getFile(),fileName,sltNode.getNodeIndex(),Node.LEAF_NODE,fileHdr);
+          sltNode.modifyElement(0,rtNode.getNodeIndex());
+          nextElmt.setPtr(rtNode.getNodeIndex());
+          return rtNode;
+        }
+      }
+      sltNode=chdNodes.getNode(fileHdr.getFile(),fileName,nextElmt.getPtr(),fileHdr);
+      level++;
+    }
+    return sltNode;
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    throw new RTreeException(e.getMessage());
+  }
+}

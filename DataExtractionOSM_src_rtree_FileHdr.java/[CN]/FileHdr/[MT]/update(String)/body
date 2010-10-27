@@ -1,0 +1,32 @@
+{
+  try {
+    file.close();
+    this.file=new RandomAccessFile(fileName,"rw");
+    S=new int[this.stkLimit];
+    topIdx=-1;
+    int frNode;
+    dirty=false;
+    if (file.length() <= (Node.INTEGER_SIZE)) {
+      file.seek(0);
+      file.writeInt(0);
+      file.writeLong(Node.NOT_DEFINED);
+      file.writeInt(Node.NOT_DEFINED);
+      totalNodes=0;
+      rootIndex=Node.NOT_DEFINED;
+    }
+ else {
+      file.seek(0);
+      byte[] data=new byte[Node.FILE_HDR_SIZE];
+      file.read(data);
+      DataInputStream ds=new DataInputStream(new ByteArrayInputStream(data));
+      totalNodes=ds.readInt();
+      rootIndex=ds.readLong();
+      while ((topIdx < stkLimit) && ((frNode=ds.readInt()) != Node.NOT_DEFINED))       S[++topIdx]=frNode;
+      ds.close();
+    }
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    throw new RTreeException("FileHdr.FileHdr: " + e.getMessage());
+  }
+}

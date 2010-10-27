@@ -1,0 +1,137 @@
+{
+  if ((totalElements < MAX) || (elmtM1.getElementType() != elementType))   throw new RTreeException("Node.splitNode: Node is not full or new element is of wrong type");
+  if (fileHdr.isWriteThr())   RTree.chdNodes.remove(fileName,nodeIndex);
+  try {
+    int rem=totalElements + 1;
+    Element[] elmtPlusOne=new Element[rem];
+    for (int i=0; i < rem - 1; i++)     elmtPlusOne[i]=elements[i];
+    elmtPlusOne[totalElements]=elmtM1;
+    int[] elmtsGone=new int[rem];
+    for (int i=0; i < elmtsGone.length; ++i)     elmtsGone[i]=1;
+    int elmtsInA=0;
+    int elmtsInB=0;
+    Rect mbrA;
+    Rect mbrB;
+    int[] seeds=quadPickSeeds(elmtPlusOne);
+    int elmtType=elmtPlusOne[0].getElementType();
+    Node nodeA, nodeB;
+    if (fileHdr.isWriteThr()) {
+      nodeA=new Node(file,fileName,parent,elmtType,fileHdr);
+      nodeB=new Node(file,fileName,parent,elmtType,fileHdr);
+    }
+ else {
+      nodeA=RTree.chdNodes.getNode(file,fileName,parent,elmtType,fileHdr);
+      nodeB=RTree.chdNodes.getNode(file,fileName,parent,elmtType,fileHdr);
+    }
+    nodeA.insertElement(elmtPlusOne[seeds[0]]);
+    nodeB.insertElement(elmtPlusOne[seeds[1]]);
+    mbrA=elmtPlusOne[seeds[0]].getRect();
+    mbrB=elmtPlusOne[seeds[1]].getRect();
+    elmtsInA++;
+    elmtsGone[seeds[0]]=0;
+    elmtsInB++;
+    elmtsGone[seeds[1]]=0;
+    rem-=2;
+    while (rem > 0) {
+      if ((Node.MIN - elmtsInA) == rem) {
+        for (int i=0; i < elmtsGone.length; i++) {
+          if (elmtsGone[i] == 1) {
+            nodeA.insertElement(elmtPlusOne[i]);
+            elmtsGone[i]=0;
+            elmtsInA++;
+            rem--;
+          }
+        }
+      }
+ else       if ((Node.MIN - elmtsInB) == rem) {
+        for (int i=0; i < elmtsGone.length; i++) {
+          if (elmtsGone[i] == 1) {
+            nodeB.insertElement(elmtPlusOne[i]);
+            elmtsGone[i]=0;
+            elmtsInB++;
+            rem--;
+          }
+        }
+      }
+ else {
+        int i=-1;
+        try {
+          while ((++i < elmtsGone.length) && (elmtsGone[i] == 0))           ;
+        }
+ catch (        Exception e) {
+          System.out.println("Node.splitNode: trouble in paradise");
+        }
+        Rect newMBRA=elmtPlusOne[i].getRect().getResultingMBR(mbrA);
+        Rect newMBRB=elmtPlusOne[i].getRect().getResultingMBR(mbrB);
+        int newAreaA=newMBRA.getArea() - mbrA.getArea();
+        int newAreaB=newMBRB.getArea() - mbrB.getArea();
+        if (newAreaA < newAreaB) {
+          nodeA.insertElement(elmtPlusOne[i]);
+          elmtsGone[i]=0;
+          elmtsInA++;
+          rem--;
+          mbrA=newMBRA;
+        }
+ else         if (newAreaA > newAreaB) {
+          nodeB.insertElement(elmtPlusOne[i]);
+          elmtsGone[i]=0;
+          elmtsInB++;
+          rem--;
+          mbrB=newMBRB;
+        }
+ else         if (mbrA.getArea() < mbrB.getArea()) {
+          nodeA.insertElement(elmtPlusOne[i]);
+          elmtsGone[i]=0;
+          elmtsInA++;
+          rem--;
+          mbrA=newMBRA;
+        }
+ else         if (mbrA.getArea() > mbrB.getArea()) {
+          nodeB.insertElement(elmtPlusOne[i]);
+          elmtsGone[i]=0;
+          elmtsInB++;
+          rem--;
+          mbrB=newMBRB;
+        }
+ else         if (elmtsInA < elmtsInB) {
+          nodeA.insertElement(elmtPlusOne[i]);
+          elmtsGone[i]=0;
+          elmtsInA++;
+          rem--;
+          mbrA=newMBRA;
+        }
+ else         if (elmtsInA > elmtsInB) {
+          nodeB.insertElement(elmtPlusOne[i]);
+          elmtsGone[i]=0;
+          elmtsInB++;
+          rem--;
+          mbrB=newMBRB;
+        }
+ else {
+          nodeA.insertElement(elmtPlusOne[i]);
+          elmtsGone[i]=0;
+          elmtsInA++;
+          rem--;
+          mbrA=newMBRA;
+        }
+      }
+    }
+    if (parent != slotIndex) {
+      Node parentN=null;
+      if (fileHdr.isWriteThr())       parentN=new Node(file,fileName,parent,fileHdr);
+ else       parentN=RTree.chdNodes.getNode(file,fileName,parent,fileHdr);
+      if (fileHdr.isWriteThr())       RTree.chdNodes.remove(fileName,parent);
+      int parentElmtIndex=parentN.getElementIndex(nodeIndex);
+      parentN.modifyElement(parentElmtIndex,nodeA.getNodeIndex());
+    }
+    Node[] ret=new Node[2];
+    ret[0]=nodeA;
+    ret[1]=nodeB;
+    deleteNode();
+    return (ret);
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    throw new RTreeException("Node.nodeSplit : " + e.getMessage());
+  }
+}

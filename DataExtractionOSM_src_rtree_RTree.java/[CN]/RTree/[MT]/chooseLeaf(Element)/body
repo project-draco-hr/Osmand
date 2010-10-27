@@ -1,0 +1,30 @@
+{
+  try {
+    long root=fileHdr.getRootIndex();
+    Node node=null;
+    if (fileHdr.isWriteThr())     node=new Node(fileHdr.getFile(),fileName,root,fileHdr);
+ else     node=chdNodes.getNode(fileHdr.getFile(),fileName,root,fileHdr);
+switch (node.getElementType()) {
+case Node.LEAF_NODE:
+      break;
+case Node.NONLEAF_NODE:
+    while (true) {
+      Element nextElmt=node.getLeastEnlargement(elmt);
+      if (nextElmt.getElementType() == Node.LEAF_NODE)       break;
+      if (fileHdr.isWriteThr())       node=new Node(fileHdr.getFile(),fileName,nextElmt.getPtr(),fileHdr);
+ else       node=chdNodes.getNode(fileHdr.getFile(),fileName,nextElmt.getPtr(),fileHdr);
+    }
+  break;
+default :
+throw new IllegalValueException("RTree.chooseLeaf: Node corrupt, Illegal element type in " + "node");
+}
+return node;
+}
+ catch (IllegalValueException e) {
+throw new IllegalValueException("RTree.chooseLeaf: " + e.getMessage());
+}
+catch (Exception e) {
+e.printStackTrace();
+throw new RTreeException("RTree.chooseLeaf: " + e.getMessage());
+}
+}

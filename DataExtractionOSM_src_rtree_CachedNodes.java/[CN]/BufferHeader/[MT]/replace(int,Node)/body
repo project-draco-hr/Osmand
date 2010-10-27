@@ -1,0 +1,24 @@
+{
+  try {
+    if (cache.containsKey(new Integer(key))) {
+      update(key);
+      return;
+    }
+    if (cache.size() < size) {
+      put(key,node);
+      return;
+    }
+    NodeValue lastNode=(NodeValue)(cache.remove(new Integer(last)));
+    lastNode.node.flush();
+    NodeValue pNode=(NodeValue)(cache.remove(new Integer(lastNode.prev)));
+    NodeValue nNode=(NodeValue)(cache.remove(new Integer(lastNode.next)));
+    cache.put(new Integer(key),new NodeValue(node,lastNode.next,lastNode.prev));
+    cache.put(new Integer(lastNode.prev),new NodeValue(pNode.node,key,pNode.prev));
+    cache.put(new Integer(lastNode.next),new NodeValue(nNode.node,nNode.next,key));
+    recent=key;
+    last=lastNode.next;
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+  }
+}

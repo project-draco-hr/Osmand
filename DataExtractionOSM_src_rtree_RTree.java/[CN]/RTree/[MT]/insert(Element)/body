@@ -1,0 +1,23 @@
+{
+  fileHdr.lockWrite();
+  Node node=null;
+  try {
+    node=chooseLeaf(elmt);
+    Node[] newNodes=new Node[2];
+    try {
+      node.insertElement(elmt);
+      newNodes[0]=node;
+      newNodes[1]=null;
+    }
+ catch (    NodeFullException e) {
+      newNodes=node.splitNode(elmt,Node.NOT_DEFINED);
+    }
+    adjustTree(newNodes,Node.NOT_DEFINED);
+  }
+ catch (  Exception e) {
+    throw new RTreeInsertException("RTree.insert: " + e.getMessage() + " for "+ Thread.currentThread());
+  }
+ finally {
+    fileHdr.unlock();
+  }
+}

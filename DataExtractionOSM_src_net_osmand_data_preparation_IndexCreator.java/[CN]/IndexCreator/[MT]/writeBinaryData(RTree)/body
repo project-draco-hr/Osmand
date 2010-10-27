@@ -1,0 +1,19 @@
+{
+  try {
+    long rootIndex=rtree.getFileHdr().getRootIndex();
+    binaryMapFile=new File(workingDir,getBinaryMapFileName());
+    FileOutputStream fout=new FileOutputStream(binaryMapFile);
+    BinaryIndexWriter writer=new BinaryIndexWriter(fout);
+    writer.startWriteMapIndex();
+    rtree.Node root=rtree.getReadNode(rootIndex);
+    Rect rootBounds=calcBounds(root);
+    writer.startWriteMapLevelIndex(6,17,rootBounds.getMinX(),rootBounds.getMaxX(),rootBounds.getMinY(),rootBounds.getMaxY());
+    writeBinaryMapTree(root,rtree,writer);
+    writer.endWriteMapLevelIndex();
+    writer.endWriteMapIndex();
+    writer.close();
+  }
+ catch (  RTreeException e) {
+    throw new IllegalStateException(e);
+  }
+}

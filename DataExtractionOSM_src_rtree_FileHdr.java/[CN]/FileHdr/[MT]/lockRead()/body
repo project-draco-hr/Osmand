@@ -1,0 +1,20 @@
+{
+  ThreadInfo threadinfo;
+  Thread me=Thread.currentThread();
+  int index=getIndex(me);
+  if (index == -1) {
+    threadinfo=new ThreadInfo(me,Node.READ);
+    waiters.addElement(threadinfo);
+  }
+ else {
+    threadinfo=(ThreadInfo)waiters.elementAt(index);
+  }
+  while (getIndex(me) >= firstWriter()) {
+    try {
+      wait();
+    }
+ catch (    Exception e) {
+    }
+  }
+  threadinfo.nAcquired++;
+}

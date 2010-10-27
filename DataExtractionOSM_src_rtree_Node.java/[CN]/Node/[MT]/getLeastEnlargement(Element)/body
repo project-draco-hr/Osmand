@@ -1,0 +1,30 @@
+{
+  if (elmt == null)   throw new IllegalValueException("Node.getBestFitElement : Element is null");
+  if (totalElements <= 0) {
+    throw new NodeEmptyException("Node.getBestFitElement : Node does not have any elements");
+  }
+  if (fileHdr.isWriteThr())   RTree.chdNodes.remove(fileName,nodeIndex);
+  Element retElmt;
+  int area;
+  int leastArea=(elements[0].getRect().getResultingMBR(elmt.getRect())).getArea();
+  leastArea-=elements[0].getRect().getArea();
+  if (elementType == Node.LEAF_NODE)   retElmt=new LeafElement(elements[0].getRect(),elements[0].getPtr());
+ else   retElmt=new NonLeafElement(elements[0].getRect(),elements[0].getPtr());
+  for (int i=1; i < totalElements; ++i) {
+    area=(elements[i].getRect().getResultingMBR(elmt.getRect())).getArea();
+    area-=elements[i].getRect().getArea();
+    if (leastArea > area) {
+      leastArea=area;
+      if (elementType == Node.LEAF_NODE)       retElmt=new LeafElement(elements[i].getRect(),elements[i].getPtr());
+ else       retElmt=new NonLeafElement(elements[i].getRect(),elements[i].getPtr());
+    }
+ else     if (leastArea == area) {
+      if (retElmt.getRect().getArea() >= elements[i].getRect().getArea()) {
+        leastArea=area;
+        if (elementType == Node.LEAF_NODE)         retElmt=new LeafElement(elements[i].getRect(),elements[i].getPtr());
+ else         retElmt=new NonLeafElement(elements[i].getRect(),elements[i].getPtr());
+      }
+    }
+  }
+  return (retElmt);
+}

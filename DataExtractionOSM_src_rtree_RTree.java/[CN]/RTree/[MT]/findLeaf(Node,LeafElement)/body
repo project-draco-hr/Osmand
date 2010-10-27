@@ -1,0 +1,19 @@
+{
+  if ((node == null) || (elmt == null))   throw new IllegalValueException("RTree.findLeaf: Node is null");
+  Node nd=null;
+  Element[] allElmt=node.getAllElements();
+  int totElements=node.getTotalElements();
+  for (int i=0; i < totElements; i++) {
+    if (!allElmt[i].getRect().disjoint(elmt.getRect())) {
+      if (allElmt[i].getElementType() == Node.NONLEAF_NODE) {
+        if (fileHdr.isWriteThr())         nd=findLeaf(new Node(fileHdr.getFile(),fileName,allElmt[i].getPtr(),fileHdr),elmt);
+ else         nd=findLeaf(chdNodes.getNode(fileHdr.getFile(),fileName,allElmt[i].getPtr(),fileHdr),elmt);
+        if (nd != null)         return nd;
+      }
+ else {
+        if (allElmt[i].getRect().equals(elmt.getRect()) && (allElmt[i].getPtr() == elmt.getPtr()))         return node;
+      }
+    }
+  }
+  return null;
+}

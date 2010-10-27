@@ -1,0 +1,41 @@
+{
+  if (slotLvl == Node.NOT_DEFINED) {
+    try {
+      insert(elmt);
+    }
+ catch (    Exception e) {
+      throw new RTreeException(e.getMessage());
+    }
+  }
+ else {
+    fileHdr.lockWrite();
+    try {
+      long root=fileHdr.getRootIndex();
+      LongWraper slotIndex=new LongWraper();
+      Node node=this.chooseLeaf(elmt,slotIndex);
+      if (slotIndex == null)       throw new NullPointerException();
+      long nodeParent=node.getParent();
+      Node[] newNodes=new Node[2];
+      try {
+        node.insertElement(elmt);
+        newNodes[0]=node;
+        newNodes[1]=null;
+      }
+ catch (      NodeFullException e) {
+        newNodes=node.splitNode(elmt,slotIndex.val);
+      }
+      Node newRoot=adjustTree(newNodes,slotIndex.val);
+      if (newRoot != null) {
+        Node slot=chdNodes.getNode(fileHdr.getFile(),fileName,newRoot.getParent(),fileHdr);
+        slot.modifyElement(0,newRoot.getNodeIndex());
+      }
+    }
+ catch (    Exception e) {
+      e.printStackTrace();
+      throw new RTreeException(e.getMessage());
+    }
+ finally {
+      fileHdr.unlock();
+    }
+  }
+}

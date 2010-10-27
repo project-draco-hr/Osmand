@@ -1,0 +1,20 @@
+{
+  fileHdr.lockRead();
+  if ((pt == null) || (range < 0) || (n <= 0))   throw new IllegalValueException("RTree.nearestSearch: Illegal arguments");
+  try {
+    long root=fileHdr.getRootIndex();
+    ABL[] elmts=new ABL[n];
+    Nearest nrstDist=new Nearest();
+    nrstDist.value=range;
+    return INNSearch(chdNodes.getReadNode(fileHdr.getFile(),fileName,root,fileHdr),pt,elmts,nrstDist);
+  }
+ catch (  IllegalValueException e) {
+    throw new IllegalValueException(e.getMessage());
+  }
+catch (  Exception e) {
+    throw new RTreeException("RTree.nearestSearch: " + e.getMessage());
+  }
+ finally {
+    fileHdr.unlock();
+  }
+}

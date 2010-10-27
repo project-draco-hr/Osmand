@@ -1,0 +1,69 @@
+{
+  if (elmts.length <= 1)   throw new IllegalValueException("Node.lnrPickSeed : PickSeed not possible as there are no elements");
+  Rect mbr=elmts[0].getRect();
+  for (int i=1; i < elmts.length; ++i)   mbr=elmts[i].getRect().getResultingMBR(mbr);
+  int hlsX=Integer.MIN_VALUE;
+  int hlsY=Integer.MIN_VALUE;
+  int lhsX=Integer.MAX_VALUE;
+  int lhsY=Integer.MAX_VALUE;
+  int hlsIdxX=Integer.MAX_VALUE;
+  int hlsIdxY=Integer.MAX_VALUE;
+  int lhsIdxX=Integer.MAX_VALUE;
+  int lhsIdxY=Integer.MAX_VALUE;
+  for (int i=0; i < elmts.length; ++i) {
+    if (elmts[i].getRect().getMinX() >= hlsX) {
+      hlsX=elmts[i].getRect().getMinX();
+      hlsIdxX=i;
+    }
+    if (elmts[i].getRect().getMinY() >= hlsY) {
+      hlsY=elmts[i].getRect().getMinY();
+      hlsIdxY=i;
+    }
+    if (elmts[i].getRect().getMaxX() <= lhsX) {
+      lhsX=elmts[i].getRect().getMaxX();
+      lhsIdxX=i;
+    }
+    if (elmts[i].getRect().getMaxY() <= lhsY) {
+      lhsY=elmts[i].getRect().getMaxY();
+      lhsIdxY=i;
+    }
+  }
+  int[] retIdx=new int[2];
+  int Xpair=(Math.abs(lhsX - hlsX)) / mbr.getWidth();
+  int Ypair=(Math.abs(lhsY - hlsY)) / mbr.getHeight();
+  if (Xpair > Ypair) {
+    if (hlsIdxX == lhsIdxX) {
+      if (hlsIdxX != 0)       hlsIdxX=0;
+ else       hlsIdxX=1;
+    }
+    retIdx[0]=hlsIdxX;
+    retIdx[1]=lhsIdxX;
+  }
+ else   if (Xpair < Ypair) {
+    if (hlsIdxY == lhsIdxY) {
+      if (hlsIdxY != 0)       hlsIdxY=0;
+ else       hlsIdxY=1;
+    }
+    retIdx[0]=hlsIdxY;
+    retIdx[1]=lhsIdxY;
+  }
+ else {
+    if ((Math.abs(lhsX - hlsX)) >= (Math.abs(lhsY - hlsY))) {
+      if (hlsIdxX == lhsIdxX) {
+        if (hlsIdxX != 0)         hlsIdxX=0;
+ else         hlsIdxX=1;
+      }
+      retIdx[0]=hlsIdxX;
+      retIdx[1]=lhsIdxX;
+    }
+ else {
+      if (hlsIdxY == lhsIdxY) {
+        if (hlsIdxY != 0)         hlsIdxY=0;
+ else         hlsIdxY=1;
+      }
+      retIdx[0]=hlsIdxY;
+      retIdx[1]=lhsIdxY;
+    }
+  }
+  return (retIdx);
+}

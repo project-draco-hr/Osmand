@@ -1,0 +1,28 @@
+{
+  if ((totalElements == MAX))   throw new NodeFullException("Node.insertElement: Node full");
+  if (totalElements > 0) {
+    if (elmt.getElementType() != elementType)     throw new NodeWriteException("Node.insertElement: Wrong element type");
+    if (((totalElements + 1) * elementSize) > NODE_BODY_SIZE)     throw new NodeWriteException("Node.insertElement: Node size is becoming more than allowed");
+    if (fileHdr.isWriteThr())     RTree.chdNodes.remove(fileName,nodeIndex);
+    writeLastElement(elmt);
+  }
+ else {
+    writeLastElement(elmt);
+  }
+  if (elmt.getElementType() == Node.NONLEAF_NODE) {
+    try {
+      Node child=null;
+      if (fileHdr.isWriteThr()) {
+        child=new Node(file,fileName,elmt.getPtr(),fileHdr);
+        RTree.chdNodes.remove(fileName,child.getNodeIndex());
+      }
+ else {
+        child=RTree.chdNodes.getNode(file,fileName,elmt.getPtr(),fileHdr);
+      }
+      child.setParent(nodeIndex);
+    }
+ catch (    Exception e) {
+      throw new NodeWriteException("Node.insertElement: " + e.getMessage());
+    }
+  }
+}

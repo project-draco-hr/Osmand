@@ -1,0 +1,66 @@
+{
+  if ((index > (totalElements - 1)))   throw new IllegalValueException("Node.deleteElement: index out of bound");
+  if (fileHdr.isWriteThr())   RTree.chdNodes.remove(fileName,nodeIndex);
+  int j=-1;
+  try {
+    nodeMBR=new Rect();
+    ByteArrayOutputStream bs=null;
+    DataOutputStream ds=null;
+    if (fileHdr.isWriteThr() || force) {
+      bs=new ByteArrayOutputStream(NODE_SIZE);
+      ds=new DataOutputStream(bs);
+      if (index < 0)       ds.writeInt(totalElements);
+ else       ds.writeInt(totalElements - 1);
+      ds.writeLong(parent);
+      ds.writeInt(elementSize);
+      ds.writeInt(elementType);
+    }
+    for (int i=0; i < totalElements; i++) {
+      if (i != index) {
+        nodeMBR.expandToInclude(elements[i].getRect());
+        if (fileHdr.isWriteThr() || force) {
+          ds.writeInt(elements[i].getRect().getMinX());
+          ds.writeInt(elements[i].getRect().getMinY());
+          ds.writeInt(elements[i].getRect().getMaxX());
+          ds.writeInt(elements[i].getRect().getMaxY());
+          ds.writeLong(elements[i].getPtr());
+        }
+      }
+ else       j=i;
+    }
+    if (fileHdr.isWriteThr() || force) {
+      bs.flush();
+      ds.flush();
+      seekCurrNode();
+      file.write(bs.toByteArray());
+      setDirty(false);
+    }
+ else {
+      setDirty(true);
+      for (int i=0; i < totalElements; i++)       if (i != index)       nodeMBR.expandToInclude(elements[i].getRect());
+ else       j=i;
+    }
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    throw new NodeWriteException("Node.deleteElement Can't delete element. Rtree may be corrupted.");
+  }
+  try {
+    if (j != -1) {
+      totalElements--;
+      if (totalElements > 0)       System.arraycopy(elements,j + 1,elements,j,(totalElements - j));
+    }
+  }
+ catch (  Exception e) {
+    System.out.println("Node.deleteElement : Error while updating " + "local variable...reading back from file..");
+    try {
+      refreshNode();
+      System.out.println("...successful");
+    }
+ catch (    IOException ex) {
+      setDirty(true);
+      System.out.println("..node corrupted, rebuild tree  ...quitting");
+      throw new NodeWriteException("Node.deleteElement : Can't delete element");
+    }
+  }
+}

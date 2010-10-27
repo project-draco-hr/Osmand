@@ -1,0 +1,36 @@
+{
+  try {
+    byte[] data=new byte[NODE_SIZE];
+    seekCurrNode();
+    file.read(data);
+    DataInputStream ds=new DataInputStream(new ByteArrayInputStream(data));
+    totalElements=ds.readInt();
+    parent=ds.readLong();
+    elementSize=ds.readInt();
+    elementType=ds.readInt();
+    if (totalElements <= 0)     return;
+    if (totalElements < 1)     return;
+    nodeMBR=new Rect();
+    int minX, minY, maxX, maxY;
+    for (int i=0; i < totalElements; i++) {
+      minX=ds.readInt();
+      minY=ds.readInt();
+      maxX=ds.readInt();
+      maxY=ds.readInt();
+      Rect rectangle=new Rect(minX,minY,maxX,maxY);
+      nodeMBR.expandToInclude(rectangle);
+      if (elementType == LEAF_NODE) {
+        long ptr=ds.readLong();
+        elements[i]=new LeafElement(rectangle,ptr);
+      }
+ else       if (elementType == NONLEAF_NODE) {
+        long nodePtr=ds.readLong();
+        elements[i]=new NonLeafElement(rectangle,nodePtr);
+      }
+    }
+    ds.close();
+  }
+ catch (  Exception e) {
+    throw new IOException("Node.refreshNode : Can't read from node header " + e.getMessage());
+  }
+}

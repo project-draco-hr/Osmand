@@ -1,0 +1,62 @@
+{
+  try {
+    ByteArrayOutputStream bout=new ByteArrayOutputStream();
+    ObjectOutputStream out=new ObjectOutputStream(bout);
+    OutputStream fout=socket.getOutputStream();
+    out.writeObject(command);
+    if (param != null) {
+      out.writeObject(new Integer(param.length));
+      for (int i=0; i < param.length; i++) {
+        out.writeObject(param[i]);
+      }
+    }
+ else {
+      out.writeObject(new Integer(0));
+    }
+    out.close();
+    fout.write(bout.toByteArray());
+    fout.flush();
+    InputStream in=socket.getInputStream();
+    byte bbf[]=new byte[100];
+    int i=0;
+    int total=-1;
+    while (true) {
+      int val=in.read(bbf,i,1);
+      if (val == -1)       break;
+      i++;
+      if (i == 10) {
+        byte ln[]=new byte[10];
+        System.arraycopy(bbf,0,ln,0,10);
+        ByteArrayInputStream lin=new ByteArrayInputStream(ln);
+        ObjectInputStream loin=new ObjectInputStream(lin);
+        total=loin.readInt();
+        byte temp[]=new byte[total];
+        System.arraycopy(bbf,0,temp,0,bbf.length);
+        bbf=temp;
+      }
+      if (i >= total && total != -1) {
+        break;
+      }
+    }
+    byte tby[]=new byte[bbf.length - 10];
+    System.arraycopy(bbf,10,tby,0,tby.length);
+    ByteArrayInputStream bin=new ByteArrayInputStream(tby);
+    ObjectInputStream oIn=new ObjectInputStream(bin);
+    Boolean bool=(Boolean)oIn.readObject();
+    Integer count=(Integer)oIn.readObject();
+    if (bool.booleanValue()) {
+      Object[] obj=new Object[count.intValue()];
+      for (int j=0; j < count.intValue(); j++) {
+        obj[j]=oIn.readObject();
+      }
+      return obj;
+    }
+ else {
+      throw (Exception)oIn.readObject();
+    }
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    throw new RTreeException(e.getMessage());
+  }
+}

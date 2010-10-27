@@ -1,0 +1,14 @@
+{
+  ThreadInfo threadinfo;
+  Thread me=Thread.currentThread();
+  int index=getIndex(me);
+  if (index > firstWriter())   throw new IllegalArgumentException("FileHdr.unlock: Lock not Held for the thread");
+  threadinfo=(ThreadInfo)waiters.elementAt(index);
+  threadinfo.nAcquired--;
+  if (threadinfo.nAcquired == 0) {
+    waiters.removeElementAt(index);
+    if (waiters.size() > 0) {
+      notifyAll();
+    }
+  }
+}

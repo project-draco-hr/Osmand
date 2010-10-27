@@ -1,0 +1,23 @@
+{
+  if ((index > totalElements) || (index < 0)) {
+    try {
+      throw new IllegalValueException("Node.modifyElmtMBR : index out of bound for node " + nodeIndex);
+    }
+ catch (    Exception e) {
+      e.printStackTrace();
+    }
+  }
+  if (fileHdr.isWriteThr())   RTree.chdNodes.remove(fileName,nodeIndex);
+  if (fileHdr.isWriteThr()) {
+    ByteArrayOutputStream bs=new ByteArrayOutputStream(LONG_SIZE);
+    DataOutputStream ds=new DataOutputStream(bs);
+    ds.writeLong(pointer);
+    bs.flush();
+    ds.flush();
+    seekElementPtr(index);
+    file.write(bs.toByteArray());
+    setDirty(false);
+  }
+ else   setDirty(true);
+  elements[index].setPtr(pointer);
+}

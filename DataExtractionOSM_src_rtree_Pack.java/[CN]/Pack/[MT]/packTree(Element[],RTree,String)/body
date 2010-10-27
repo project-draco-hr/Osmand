@@ -1,0 +1,47 @@
+{
+  try {
+    File tmpPckFile=File.createTempFile("pack",null);
+    RandomAccessFile rFile=new RandomAccessFile(tmpPckFile.getAbsolutePath(),"rw");
+    if (newFile.equalsIgnoreCase(rtree.getFileName())) {
+      rtree.getFileHdr().lockWrite();
+    }
+    RTree.chdNodes.removeAll();
+    if (elmts.length <= Node.MAX)     return (1);
+    System.out.println("Pack.packTree : Size of elmts: " + elmts.length);
+    packRec(rFile,tmpPckFile,elmts,elmts.length);
+    File fo=new File(newFile);
+    if (fo.exists()) {
+      fo.delete();
+      fo.createNewFile();
+    }
+    FileInputStream fis=new FileInputStream(tmpPckFile);
+    FileOutputStream fos=new FileOutputStream(fo);
+    int i=fis.available();
+    byte b[]=new byte[i];
+    while ((i=fis.read(b)) != -1)     fos.write(b);
+    fos.close();
+    fis.close();
+    rFile.close();
+    tmpPckFile.deleteOnExit();
+    return (0);
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    System.out.println("rtree.RTree.pack: Could not pack rtree, the destination file may be corrupted.");
+    return (2);
+  }
+ finally {
+synchronized (rtree) {
+      try {
+        rtree.updateHdr();
+        if (newFile.equalsIgnoreCase(rtree.getFileName())) {
+          rtree.getFileHdr().unlock();
+        }
+      }
+ catch (      Exception e) {
+        System.out.println("Pack.packTree : The pack tree is made but some other error hs occured. " + "It is recomended to restart the application");
+        if (newFile.equalsIgnoreCase(rtree.getFileName()))         rtree.getFileHdr().unlock();
+      }
+    }
+  }
+}

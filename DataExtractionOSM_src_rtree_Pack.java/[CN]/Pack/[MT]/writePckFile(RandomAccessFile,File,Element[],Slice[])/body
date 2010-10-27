@@ -1,0 +1,25 @@
+{
+  FileHdr hdr=new FileHdr(Node.FREE_LIST_LIMIT,tmpPckFile.getAbsolutePath());
+  hdr.setBufferPolicy(true);
+  int length;
+  Double totNodes;
+  int netNodes=0;
+  int l=0;
+  for (int i=0; i < sls.length; i++) {
+    length=sls[i].end - sls[i].start + 1;
+    totNodes=new Double(length);
+    totNodes=new Double(Math.ceil(totNodes.doubleValue() / Node.MAX));
+    netNodes+=totNodes.intValue();
+    for (int j=0; j < totNodes.intValue(); j++) {
+      Node node=new Node(rFile,tmpPckFile.getAbsolutePath(),Node.NOT_DEFINED,elmts[sls[i].start].getElementType(),hdr);
+      ArrayList list=new ArrayList(Node.MAX);
+      for (int k=0; (k < Node.MAX) && (sls[i].start <= sls[i].end); k++) {
+        list.add(elmts[sls[i].start++]);
+      }
+      node.insertElement((Element[])list.toArray(new Element[list.size()]),true);
+      NonLeafElement nlf=new NonLeafElement(node.getNodeMBR(),node.getNodeIndex());
+      elmts[l++]=(NonLeafElement)nlf.clone();
+    }
+  }
+  return netNodes;
+}

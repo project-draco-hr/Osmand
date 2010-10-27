@@ -1,0 +1,46 @@
+{
+  fileHdr.lockWrite();
+  long root;
+  if (elmt == null)   throw new RTreeException("RTree.delete: Rect is null");
+  try {
+    if (fileHdr.isWriteThr())     chdNodes.removeAll();
+    root=fileHdr.getRootIndex();
+    Node delNode;
+    if (fileHdr.isWriteThr())     delNode=findLeaf(new Node(fileHdr.getFile(),fileName,root,fileHdr),elmt);
+ else     delNode=findLeaf(chdNodes.getNode(fileHdr.getFile(),fileName,root,fileHdr),elmt);
+    if (delNode != null) {
+      Element[] elmts=delNode.getAllElements();
+      int totElmts=delNode.getTotalElements();
+      int childIndex=Node.NOT_DEFINED;
+      for (int i=0; i < totElmts; i++) {
+        if (elmts[i].getRect().encloses(elmt.getRect()) && (elmts[i].getPtr() == elmt.getPtr())) {
+          childIndex=i;
+          break;
+        }
+      }
+      if (childIndex == Node.NOT_DEFINED)       throw new ElementNotFoundException("RTree.delete: Element not in tree");
+      delNode.deleteElement(childIndex,false);
+      Stack stack=new Stack();
+      condenseTree(delNode,stack);
+      Node rootNode;
+      if (fileHdr.isWriteThr())       rootNode=new Node(fileHdr.getFile(),fileName,fileHdr.getRootIndex(),fileHdr);
+ else       rootNode=chdNodes.getNode(fileHdr.getFile(),fileName,fileHdr.getRootIndex(),fileHdr);
+      if ((rootNode.getTotalElements() == 1) && (rootNode.getElementType() == Node.NONLEAF_NODE)) {
+        long childPtr=rootNode.getElement(0).getPtr();
+        Node child;
+        if (fileHdr.isWriteThr())         child=new Node(fileHdr.getFile(),fileName,childPtr,fileHdr);
+ else         child=chdNodes.getNode(fileHdr.getFile(),fileName,childPtr,fileHdr);
+        child.setParent(Node.NOT_DEFINED);
+        rootNode.deleteNode();
+      }
+    }
+ else     throw new ElementNotFoundException("RTree.delete: Element not in tree");
+  }
+ catch (  Exception e) {
+    if (e instanceof ElementNotFoundException)     throw (ElementNotFoundException)e;
+    throw new RTreeException("RTree.delete: " + e.getMessage());
+  }
+ finally {
+    fileHdr.unlock();
+  }
+}

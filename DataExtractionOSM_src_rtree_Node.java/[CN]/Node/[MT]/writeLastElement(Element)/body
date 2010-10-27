@@ -1,0 +1,40 @@
+{
+  int oldElementSize=elementSize;
+  int oldElementType=elementType;
+  int oldTotalElements=totalElements;
+  if (fileHdr.isWriteThr())   RTree.chdNodes.remove(fileName,nodeIndex);
+  try {
+    if (elmt instanceof LeafElement) {
+      elementSize=LeafElement.sizeInBytes();
+      elementType=LEAF_NODE;
+    }
+ else {
+      elementSize=NonLeafElement.sizeInBytes();
+      elementType=NONLEAF_NODE;
+    }
+    if (fileHdr.isWriteThr()) {
+      ByteArrayOutputStream bs=new ByteArrayOutputStream(elementSize);
+      DataOutputStream ds=new DataOutputStream(bs);
+      ds.writeInt(elmt.getRect().getMinX());
+      ds.writeInt(elmt.getRect().getMinY());
+      ds.writeInt(elmt.getRect().getMaxX());
+      ds.writeInt(elmt.getRect().getMaxY());
+      ds.writeLong(elmt.getPtr());
+      bs.flush();
+      ds.flush();
+      seekLastElement();
+      file.write(bs.toByteArray());
+      setDirty(false);
+    }
+ else     setDirty(true);
+    writeNodeHeader(nodeIndex,totalElements + 1,parent,elementSize,elementType);
+    elements[totalElements - 1]=elmt;
+    nodeMBR.expandToInclude(elmt.getRect());
+  }
+ catch (  Exception e) {
+    elementSize=oldElementSize;
+    elementType=oldElementType;
+    totalElements=oldTotalElements;
+    throw new NodeWriteException("Node.writeLastElement: Can't write element to file");
+  }
+}

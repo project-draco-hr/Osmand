@@ -1,0 +1,22 @@
+{
+  try {
+    ltTree.getFileHdr().lockRead();
+    rtTree.getFileHdr().lockRead();
+    List vct=new ArrayList();
+    long ltRoot=ltTree.getFileHdr().getRootIndex();
+    long rtRoot=rtTree.getFileHdr().getRootIndex();
+    if (ltRoot == Node.NOT_DEFINED || rtRoot == Node.NOT_DEFINED)     return vct;
+    Node ltRootNd=ltTree.getReadNode(ltRoot);
+    Node rtRootNd=rtTree.getReadNode(rtRoot);
+    relateRec(ltRootNd,rtRootNd,ltRootNd.getNodeMBR().intersection(rtRootNd.getNodeMBR()),vct);
+    return vct;
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    throw new JoinException("Join.intersectsInt : " + e.getMessage());
+  }
+ finally {
+    ltTree.getFileHdr().lockRead();
+    rtTree.getFileHdr().lockRead();
+  }
+}

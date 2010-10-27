@@ -1,0 +1,28 @@
+{
+  int ndIndex=(int)lndIndex;
+  int key=calKey(fileName,ndIndex);
+  NodeValue node=(NodeValue)(cache.get(new Integer(key)));
+  Node nNode;
+  if (node == null) {
+    if (type == NODE) {
+      nNode=new Node(file,fileName,ndIndex,flHdr);
+    }
+ else {
+      nNode=new SdNode(file,fileName,ndIndex,flHdr);
+    }
+    key=calKey(fileName,(int)nNode.getNodeIndex());
+    nNode.sweepSort();
+    if (cache.size() < Node.CACHE_SIZE) {
+      buffHeader.put(key,nNode);
+    }
+ else     if (cache.size() == Node.CACHE_SIZE) {
+      buffHeader.replace(key,nNode);
+    }
+    return nNode;
+  }
+ else {
+    buffHeader.update(key);
+    node.node.sweepSort();
+    return (node.node);
+  }
+}

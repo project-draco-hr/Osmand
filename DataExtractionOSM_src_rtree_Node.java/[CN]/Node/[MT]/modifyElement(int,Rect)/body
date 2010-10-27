@@ -1,0 +1,21 @@
+{
+  if ((index > totalElements) || (index < 0))   throw new IllegalValueException("Node.modifyElmtMBR : index out of bound or MBR is null");
+  if (fileHdr.isWriteThr())   RTree.chdNodes.remove(fileName,nodeIndex);
+  if (fileHdr.isWriteThr()) {
+    ByteArrayOutputStream bs=new ByteArrayOutputStream(Rect.sizeInBytes());
+    DataOutputStream ds=new DataOutputStream(bs);
+    ds.writeInt(rect.getMinX());
+    ds.writeInt(rect.getMinY());
+    ds.writeInt(rect.getMaxX());
+    ds.writeInt(rect.getMaxY());
+    bs.flush();
+    ds.flush();
+    seekElement(index);
+    file.write(bs.toByteArray());
+    setDirty(false);
+  }
+ else   setDirty(true);
+  elements[index].setRect(rect);
+  if (rect.contains(elements[index].getRect()))   nodeMBR.expandToInclude(rect);
+ else   refreshNodeMBR();
+}

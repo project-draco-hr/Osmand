@@ -1,0 +1,29 @@
+{
+  if ((node == null))   throw new IllegalValueException("RTree.INNSearch: Node is null");
+  Element[] elmts=node.getAllElements();
+  int totElements=node.getTotalElements();
+  if (totElements == 0)   return null;
+  if (node.getElementType() == Node.LEAF_NODE) {
+    for (int i=0; i < totElements; i++) {
+      long lfDist=Rect.minDist(pt,elmts[i].getRect());
+      if (lfDist <= nrstDist.value) {
+        ABL newElmt=new ABL(new LeafElement(elmts[i].getRect(),elmts[i].getPtr()),lfDist);
+        insertArray(nrstElements,newElmt,nrstDist);
+      }
+    }
+    return nrstElements;
+  }
+ else {
+    ABL[] abl=new ABL[totElements];
+    for (int i=0; i < abl.length; i++) {
+      abl[i]=new ABL(new NonLeafElement(elmts[i].getRect(),elmts[i].getPtr()),Rect.minDist(pt,elmts[i].getRect()));
+    }
+    abl[0].mergeSort(abl);
+    for (int i=0; i < abl.length; i++) {
+      if (abl[i].minDist <= nrstDist.value) {
+        nrstElements=INNSearch(chdNodes.getReadNode(fileHdr.getFile(),fileName,elmts[i].getPtr(),fileHdr),pt,nrstElements,nrstDist);
+      }
+    }
+    return nrstElements;
+  }
+}

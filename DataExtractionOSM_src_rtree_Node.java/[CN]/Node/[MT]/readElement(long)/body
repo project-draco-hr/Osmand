@@ -1,0 +1,26 @@
+{
+  if ((index < 0) || (index > (MAX - 1)) || (totalElements > index + 1))   throw new NodeReadException("Node.readElement: Index value not correct");
+  try {
+    int minX, minY, maxX, maxY;
+    byte[] data=new byte[NODE_SIZE];
+    seekCurrNode();
+    file.read(data);
+    DataInputStream ds=new DataInputStream(new ByteArrayInputStream(data));
+    int skipValue=NODE_HDR_SIZE + (elementSize * (int)index);
+    if (ds.skipBytes(skipValue) != skipValue)     throw new NodeReadException("Can't read buffer: Header or index wrong");
+    minX=ds.readInt();
+    minY=ds.readInt();
+    maxX=ds.readInt();
+    maxY=ds.readInt();
+    Rect Rectangle=new Rect(minX,minY,maxX,maxY);
+    if (elementType == LEAF_NODE) {
+      long ptr=ds.readLong();
+      return (new LeafElement(Rectangle,ptr));
+    }
+    long nodePtr=ds.readLong();
+    return (new NonLeafElement(Rectangle,nodePtr));
+  }
+ catch (  Exception e) {
+    throw new NodeReadException("Node.readElement: " + e.getMessage());
+  }
+}

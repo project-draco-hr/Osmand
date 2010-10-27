@@ -1,0 +1,65 @@
+{
+  int oldElementSize=elementSize;
+  int oldElementType=elementType;
+  int oldTotalElements=totalElements;
+  if (fileHdr.isWriteThr())   RTree.chdNodes.remove(fileName,nodeIndex);
+  try {
+    if (elmts[0] instanceof LeafElement) {
+      elementSize=LeafElement.sizeInBytes();
+      elementType=LEAF_NODE;
+    }
+ else {
+      elementSize=NonLeafElement.sizeInBytes();
+      elementType=NONLEAF_NODE;
+    }
+    ByteArrayOutputStream bs=null;
+    DataOutputStream ds=null;
+    if (fileHdr.isWriteThr()) {
+      setDirty(false);
+      bs=new ByteArrayOutputStream(Node.NODE_SIZE);
+      ds=new DataOutputStream(bs);
+      writeNodeHeader(nodeIndex,totalElements + elmts.length,parent,elementSize,elementType,ds);
+      for (int i=0; i < oldTotalElements; i++) {
+        ds.writeInt(elements[i].getRect().getMinX());
+        ds.writeInt(elements[i].getRect().getMinY());
+        ds.writeInt(elements[i].getRect().getMaxX());
+        ds.writeInt(elements[i].getRect().getMaxY());
+        ds.writeLong(elements[i].getPtr());
+      }
+    }
+ else {
+      writeNodeHeader(nodeIndex,totalElements + elmts.length,parent,elementSize,elementType,ds);
+      setDirty(true);
+    }
+    for (int i=0; i < elmts.length; i++) {
+      nodeMBR.expandToInclude(elmts[i].getRect());
+      elements[oldTotalElements + i]=elmts[i];
+      if (fileHdr.isWriteThr()) {
+        ds.writeInt(elmts[i].getRect().getMinX());
+        ds.writeInt(elmts[i].getRect().getMinY());
+        ds.writeInt(elmts[i].getRect().getMaxX());
+        ds.writeInt(elmts[i].getRect().getMaxY());
+        ds.writeLong(elmts[i].getPtr());
+      }
+    }
+    if (fileHdr.isWriteThr()) {
+      bs.flush();
+      ds.flush();
+      seekNode(nodeIndex);
+      file.write(bs.toByteArray());
+    }
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    elementSize=oldElementSize;
+    elementType=oldElementType;
+    totalElements=oldTotalElements;
+    try {
+      writeNodeHeader(nodeIndex,totalElements + elmts.length,parent,elementSize,elementType);
+    }
+ catch (    Exception ex) {
+      throw new NodeWriteException(ex.getMessage());
+    }
+    throw new NodeWriteException("Node.writeLastElement: Can't write element to file");
+  }
+}

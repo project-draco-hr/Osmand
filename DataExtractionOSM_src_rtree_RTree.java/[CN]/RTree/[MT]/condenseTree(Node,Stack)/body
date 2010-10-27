@@ -1,0 +1,22 @@
+{
+  if (node.getParent() == Node.NOT_DEFINED) {
+    while (!stack.empty()) {
+      Node nd=(Node)stack.pop();
+      List v=trvsRPost(nd,true);
+      for (int i=0; i < v.size(); i++)       insert((LeafElement)v.get(i));
+    }
+    return;
+  }
+  Node parentN;
+  if (fileHdr.isWriteThr())   parentN=new Node(fileHdr.getFile(),fileName,node.getParent(),fileHdr);
+ else   parentN=chdNodes.getNode(fileHdr.getFile(),fileName,node.getParent(),fileHdr);
+  int parentElmtIdx=parentN.getElementIndex(node.getNodeIndex());
+  if (node.getTotalElements() < Node.MIN) {
+    parentN.deleteElement(parentElmtIdx,false);
+    stack.push(node);
+  }
+ else {
+    parentN.modifyElement(parentElmtIdx,node.getNodeMBR());
+  }
+  condenseTree(parentN,stack);
+}

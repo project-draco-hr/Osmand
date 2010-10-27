@@ -1,0 +1,20 @@
+{
+  Double temp=new Double(Node.MAX);
+  temp=new Double(Math.ceil(length / temp.doubleValue()));
+  temp=new Double(Math.ceil(Math.sqrt(temp.doubleValue())));
+  int S=temp.intValue();
+  Slice sls[]=new Slice[S];
+  NonLeafElement.twoWayMerge(elmts,0,length - 1,0);
+  int start=0;
+  int end;
+  for (int i=0; i < S; i++) {
+    if ((start + (S * Node.MAX)) <= length)     end=start + ((S * Node.MAX) - 1);
+ else     end=length - 1;
+    sls[i]=new Slice(start,end);
+    start=end + 1;
+  }
+  for (int i=0; i < S; i++)   NonLeafElement.twoWayMerge(elmts,sls[i].start,sls[i].end,1);
+  int newLength=writePckFile(rFile,tmpPckFile,elmts,sls);
+  if (newLength == 1)   return;
+  packRec(rFile,tmpPckFile,elmts,newLength);
+}

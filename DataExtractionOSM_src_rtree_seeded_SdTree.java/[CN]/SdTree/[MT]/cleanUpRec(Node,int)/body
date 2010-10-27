@@ -1,0 +1,36 @@
+{
+  Element[] elmts=node.getAllElements();
+  if (level == slotLvl) {
+    if (elmts[0].getPtr() == Node.NOT_DEFINED) {
+      node.deleteNode();
+      return new Rect();
+    }
+ else {
+      Node parentNode=chdNodes.getNode(fileHdr.getFile(),fileName,node.getParent(),fileHdr);
+      int index=parentNode.getElementIndex(node.getNodeIndex());
+      parentNode.modifyElement(index,elmts[0].getPtr());
+      Node subRoot=chdNodes.getNode(fileHdr.getFile(),fileName,elmts[0].getPtr(),fileHdr);
+      subRoot.setParent(node.getParent());
+      node.deleteNode();
+      return (subRoot.getNodeMBR());
+    }
+  }
+ else {
+    Rect rect=new Rect();
+    for (int i=node.getTotalElements() - 1; i > -1; i--) {
+      Node chNode=chdNodes.getNode(fileHdr.getFile(),fileName,elmts[i].getPtr(),fileHdr);
+      Rect chRect=cleanUpRec(chNode,level + 1);
+      rect.expandToInclude(chRect);
+      if (chRect.isNull()) {
+        node.deleteElement(i,false);
+      }
+ else {
+        node.modifyElement(i,chRect);
+      }
+    }
+    if (rect.isNull()) {
+      node.deleteNode();
+    }
+    return rect;
+  }
+}

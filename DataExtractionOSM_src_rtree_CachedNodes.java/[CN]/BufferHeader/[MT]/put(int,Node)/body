@@ -1,0 +1,33 @@
+{
+  try {
+    if (cache.containsKey(new Integer(key))) {
+      update(key);
+      return;
+    }
+    if (cache.size() == size) {
+      replace(key,node);
+      return;
+    }
+    if (cache.size() == 0) {
+      last=key;
+      cache.put(new Integer(key),new NodeValue(node,key,key));
+    }
+ else {
+      NodeValue tmpPrev=(NodeValue)(cache.remove(new Integer(recent)));
+      if (last == recent) {
+        cache.put(new Integer(key),new NodeValue(node,tmpPrev.next,tmpPrev.next));
+        cache.put(new Integer(recent),new NodeValue(tmpPrev.node,key,key));
+      }
+ else {
+        NodeValue tmpPNext=(NodeValue)(cache.remove(new Integer(tmpPrev.next)));
+        cache.put(new Integer(key),new NodeValue(node,tmpPrev.next,recent));
+        cache.put(new Integer(tmpPrev.next),new NodeValue(tmpPNext.node,tmpPNext.next,key));
+        cache.put(new Integer(recent),new NodeValue(tmpPrev.node,key,tmpPrev.prev));
+      }
+    }
+    recent=key;
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+  }
+}

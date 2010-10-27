@@ -1,0 +1,27 @@
+{
+  if (ltNode == null || rtNode == null)   throw new IllegalValueException("Join.intersectRec : Argument(s) null");
+  Element[] ltElmts=ltNode.getAllElements();
+  Element[] rtElmts=rtNode.getAllElements();
+  if (ltNode.getElementType() == Node.NONLEAF_NODE && rtNode.getElementType() == Node.LEAF_NODE) {
+    ret.addAll(joinMismatch(ltElmts,rtElmts,Join.LEFT));
+  }
+ else   if (ltNode.getElementType() == Node.LEAF_NODE && rtNode.getElementType() == Node.NONLEAF_NODE) {
+    ret.addAll(joinMismatch(rtElmts,ltElmts,Join.RIGHT));
+  }
+ else {
+    ltElmts=filterRect(ltElmts,intsect);
+    rtElmts=filterRect(rtElmts,intsect);
+    List pairs=spLine.sortedIntersectionTest(ltElmts,rtElmts);
+    for (int i=0; i < pairs.size(); i++) {
+      PairElmt intPair=(PairElmt)pairs.get(i);
+      if (intPair.getLtElmt() instanceof NonLeafElement && intPair.getRtElmt() instanceof NonLeafElement) {
+        Node newLtNode=ltTree.getReadNode(intPair.getLtPtr());
+        Node newRtNode=rtTree.getReadNode(intPair.getRtPtr());
+        relateRec(newLtNode,newRtNode,newLtNode.getNodeMBR().intersection(newRtNode.getNodeMBR()),ret);
+      }
+ else       if (intPair.getLtElmt() instanceof LeafElement && intPair.getRtElmt() instanceof LeafElement) {
+        ret.add(p.paired(intPair.getLtElmt(),intPair.getRtElmt()));
+      }
+    }
+  }
+}

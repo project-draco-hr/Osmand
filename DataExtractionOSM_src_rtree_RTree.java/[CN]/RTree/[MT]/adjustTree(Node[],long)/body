@@ -1,0 +1,43 @@
+{
+  try {
+    if (nodes[0].getParent() == slotIndex) {
+      if (nodes[1] != null) {
+        Node newRoot;
+        if (fileHdr.isWriteThr())         newRoot=new Node(fileHdr.getFile(),fileName,slotIndex,Node.NONLEAF_NODE,((Header)fileList.get(fileName)).flHdr);
+ else         newRoot=chdNodes.getNode(fileHdr.getFile(),fileName,slotIndex,Node.NONLEAF_NODE,((Header)fileList.get(fileName)).flHdr,nodes[0]);
+        NonLeafElement branchA=new NonLeafElement(nodes[0].getNodeMBR(),nodes[0].getNodeIndex());
+        NonLeafElement branchB=new NonLeafElement(nodes[1].getNodeMBR(),nodes[1].getNodeIndex());
+        newRoot.insertElement(branchB);
+        newRoot.insertElement(branchA);
+        return newRoot;
+      }
+      return null;
+    }
+ else {
+      Node[] insertedNode=new Node[2];
+      Node parentN;
+      if (fileHdr.isWriteThr())       parentN=new Node(fileHdr.getFile(),fileName,nodes[0].getParent(),fileHdr);
+ else       parentN=chdNodes.getNode(fileHdr.getFile(),fileName,nodes[0].getParent(),fileHdr);
+      int parentElmtIndex=parentN.getElementIndex(nodes[0].getNodeIndex());
+      parentN.modifyElement(parentElmtIndex,nodes[0].getNodeMBR());
+      insertedNode[0]=parentN;
+      insertedNode[1]=null;
+      if (nodes[1] != null) {
+        NonLeafElement elmtNN=new NonLeafElement(nodes[1].getNodeMBR(),nodes[1].getNodeIndex());
+        try {
+          parentN.insertElement(elmtNN);
+          insertedNode[0]=parentN;
+          insertedNode[1]=null;
+        }
+ catch (        NodeFullException e) {
+          insertedNode=parentN.splitNode(elmtNN,Node.NOT_DEFINED);
+        }
+      }
+      return adjustTree(insertedNode,slotIndex);
+    }
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    throw new RTreeException("RTree.adjustTree: " + e.getMessage());
+  }
+}
