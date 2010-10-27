@@ -1,0 +1,24 @@
+{
+  BlockHeader.Builder builder=Fileformat.BlockHeader.newBuilder();
+  if (indexdata != null)   builder.setIndexdata(indexdata);
+  builder.setType(type);
+  Fileformat.Blob.Builder blobbuilder=Fileformat.Blob.newBuilder();
+  if (flags == CompressFlags.NONE) {
+    blobbuilder.setRaw(data);
+  }
+ else {
+    blobbuilder.setRawSize(data.size());
+    if (flags == CompressFlags.DEFLATE)     deflateInto(blobbuilder);
+ else     throw new Error("Compression flag not understood");
+  }
+  Fileformat.Blob blob=blobbuilder.build();
+  builder.setDatasize(blob.getSerializedSize());
+  Fileformat.BlockHeader message=builder.build();
+  int size=message.getSerializedSize();
+  (new DataOutputStream(outwrite)).writeInt(size);
+  message.writeTo(outwrite);
+  long offset=-1;
+  if (outwrite instanceof FileOutputStream)   offset=((FileOutputStream)outwrite).getChannel().position();
+  blob.writeTo(outwrite);
+  return FileBlockPosition.newInstance(this,offset,size);
+}

@@ -1,0 +1,20 @@
+{
+  int size=data.size();
+  Deflater deflater=new Deflater();
+  deflater.setInput(data.toByteArray());
+  deflater.finish();
+  byte out[]=new byte[size];
+  deflater.deflate(out);
+  if (!deflater.finished()) {
+    ++warncount;
+    if (warncount > 10 && warncount % 100 == 0)     System.out.println("Compressed buffers are too short, causing extra copy");
+    out=Arrays.copyOf(out,size + size / 64 + 16);
+    deflater.deflate(out,deflater.getTotalOut(),out.length - deflater.getTotalOut());
+    if (!deflater.finished()) {
+      throw new Error("Internal error in compressor");
+    }
+  }
+  ByteString compressed=ByteString.copyFrom(out,0,deflater.getTotalOut());
+  blobbuilder.setZlibData(compressed);
+  deflater.end();
+}
