@@ -1,11 +1,13 @@
 {
   int init=0;
-  List<BinaryMapDataObject> results=null;
+  int lastIndexResult=-1;
+  ;
   while (true) {
-    int tag=WireFormat.getTagFieldNumber(codedIS.readTag());
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
     if (init == 0xf) {
       init=0;
-      if (tree.right < sleft || tree.left > sright || tree.top > sbottom || tree.bottom < stop) {
+      if (tree.right < req.left || tree.left > req.right || tree.top > req.bottom || tree.bottom < req.top) {
         return;
       }
     }
@@ -31,13 +33,12 @@ break;
 case OsmandOdb.MapTree.LEAFS_FIELD_NUMBER:
 int length=codedIS.readRawVarint32();
 int oldLimit=codedIS.pushLimit(length);
-BinaryMapDataObject mapObject=readMapDataObject(tree.left,tree.right,tree.top,tree.bottom,sleft,sright,stop,sbottom);
-if (mapObject != null) {
-if (results == null) {
-results=new ArrayList<BinaryMapDataObject>();
+if (lastIndexResult == -1) {
+lastIndexResult=req.searchResults.size();
 }
-results.add(mapObject);
-searchResults.add(mapObject);
+BinaryMapDataObject mapObject=readMapDataObject(tree.left,tree.right,tree.top,tree.bottom,req);
+if (mapObject != null) {
+req.searchResults.add(mapObject);
 }
 codedIS.popLimit(oldLimit);
 break;
@@ -46,18 +47,22 @@ MapTree r=new MapTree();
 r.length=readInt();
 r.filePointer=codedIS.getTotalBytesRead();
 oldLimit=codedIS.pushLimit(r.length);
-searchMapTreeBounds(r,tree.left,tree.right,tree.top,tree.bottom,sleft,sright,stop,sbottom,searchResults,indent + "  ");
+searchMapTreeBounds(r,tree.left,tree.right,tree.top,tree.bottom,req);
 codedIS.popLimit(oldLimit);
 codedIS.seek(r.filePointer + r.length);
+if (lastIndexResult >= 0) {
+throw new IllegalStateException();
+}
 break;
 case OsmandOdb.MapTree.BASEID_FIELD_NUMBER:
 tree.baseId=codedIS.readUInt64();
-if (results != null) {
-for (BinaryMapDataObject rs : results) {
+if (lastIndexResult != -1) {
+for (int i=lastIndexResult; i < req.searchResults.size(); i++) {
+BinaryMapDataObject rs=req.searchResults.get(i);
 rs.id+=tree.baseId;
 if (rs.restrictions != null) {
-for (int i=0; i < rs.restrictions.length; i++) {
-rs.restrictions[i]+=tree.baseId;
+for (int j=0; j < rs.restrictions.length; j++) {
+rs.restrictions[j]+=tree.baseId;
 }
 }
 }
@@ -68,8 +73,9 @@ length=codedIS.readRawVarint32();
 oldLimit=codedIS.pushLimit(length);
 tree.stringTable=readStringTable();
 codedIS.popLimit(oldLimit);
-if (results != null) {
-for (BinaryMapDataObject rs : results) {
+if (lastIndexResult != -1) {
+for (int i=lastIndexResult; i < req.searchResults.size(); i++) {
+BinaryMapDataObject rs=req.searchResults.get(i);
 if (rs.stringId != -1) {
 rs.name=tree.stringTable.get(rs.stringId);
 }
@@ -77,7 +83,8 @@ rs.name=tree.stringTable.get(rs.stringId);
 }
 break;
 default :
-return;
+skipUnknownField(t);
+break;
 }
 }
 }
