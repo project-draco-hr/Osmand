@@ -1,0 +1,38 @@
+{
+  List<MultyPolygon> listPolygons=new ArrayList<MultyPolygon>(multyPolygons.size());
+  List<List<Long>> completedRings=new ArrayList<List<Long>>();
+  List<List<Long>> incompletedRings=new ArrayList<List<Long>>();
+  List<String> completedRingNames=new ArrayList<String>();
+  List<String> incompletedRingNames=new ArrayList<String>();
+  for (  Integer type : multyPolygons.keySet()) {
+    List<BinaryMapDataObject> directList;
+    List<BinaryMapDataObject> inverselist;
+    if (((type >> 15) & 1) == 1) {
+      int directType=(type & ((1 << 15) - 1));
+      if (!multyPolygons.containsKey(directType)) {
+        inverselist=multyPolygons.get(type);
+        directList=Collections.emptyList();
+      }
+ else {
+        continue;
+      }
+    }
+ else {
+      int inverseType=(type | (1 << 15));
+      directList=multyPolygons.get(type);
+      inverselist=Collections.emptyList();
+      if (multyPolygons.containsKey(inverseType)) {
+        inverselist=multyPolygons.get(inverseType);
+      }
+    }
+    completedRings.clear();
+    incompletedRings.clear();
+    completedRingNames.clear();
+    incompletedRingNames.clear();
+    MultyPolygon pl=processMultiPolygon(leftX,rightX,bottomY,topY,listPolygons,completedRings,incompletedRings,completedRingNames,incompletedRingNames,type,directList,inverselist);
+    if (pl != null) {
+      listPolygons.add(pl);
+    }
+  }
+  return listPolygons;
+}

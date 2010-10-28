@@ -1,45 +1,25 @@
 {
   long start=System.currentTimeMillis();
-  Connection conn=null;
   if (files.containsKey(file.getAbsolutePath())) {
     closeConnection(files.get(file.getAbsolutePath()),file.getAbsolutePath());
   }
+  RandomAccessFile raf=null;
   try {
-    try {
-      Class.forName("org.sqlite.JDBC");
-    }
- catch (    Exception e) {
-      log.error("Could not load driver",e);
+    raf=new RandomAccessFile(file,"r");
+    BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
+    if (reader.getVersion() != IndexConstants.BINARY_MAP_VERSION) {
       return false;
     }
-    conn=DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
-    PreparedStatement pStatement=conn.prepareStatement(loadMapQuery);
-    PreparedStatement pStatement2=conn.prepareStatement(loadMapQuery2);
-    PreparedStatement pStatement3=conn.prepareStatement(loadMapQuery3);
-    Statement stat=conn.createStatement();
-    ResultSet rs=stat.executeQuery("PRAGMA user_version");
-    int v=rs.getInt(1);
-    rs.close();
-    if (v != IndexConstants.MAP_TABLE_VERSION) {
-      return false;
-    }
-    RectF bounds=foundBounds(stat);
-    stat.close();
-    connections.put(conn,bounds);
-    files.put(file.getAbsolutePath(),conn);
-    pZoom0.put(conn,pStatement);
-    pZoom1.put(conn,pStatement2);
-    pZoom2.put(conn,pStatement3);
+    files.put(file.getAbsolutePath(),reader);
   }
- catch (  Exception e) {
+ catch (  IOException e) {
     log.error("No connection",e);
-    if (conn != null) {
+    if (raf != null) {
       try {
-        conn.close();
+        raf.close();
       }
- catch (      java.sql.SQLException e1) {
+ catch (      IOException e1) {
       }
-      conn=null;
     }
     return false;
   }

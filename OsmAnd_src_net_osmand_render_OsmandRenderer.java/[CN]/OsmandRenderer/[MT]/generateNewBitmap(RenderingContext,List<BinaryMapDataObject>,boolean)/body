@@ -1,0 +1,57 @@
+{
+  long now=System.currentTimeMillis();
+  int sz=objects.size();
+  int init=sz / 4;
+  TFloatObjectHashMap<TIntArrayList> orderMap=new TFloatObjectHashMap<TIntArrayList>();
+  for (int i=0; i < sz; i++) {
+    BinaryMapDataObject o=objects.get(i);
+    int sh=i << 8;
+    for (int j=0; j < o.getTypes().length; j++) {
+      put(orderMap,BinaryMapDataObject.getOrder(o.getTypes()[j]),sh + j,init);
+    }
+    if (rc.interrupted) {
+      return null;
+    }
+  }
+  Bitmap bmp=null;
+  if (objects != null && !objects.isEmpty() && rc.width > 0 && rc.height > 0) {
+    rc.tileDivisor=(int)(1 << (31 - rc.zoom));
+    rc.cosRotateTileSize=FloatMath.cos((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
+    rc.sinRotateTileSize=FloatMath.sin((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
+    bmp=Bitmap.createBitmap(rc.width,rc.height,Config.RGB_565);
+    Canvas cv=new Canvas(bmp);
+    cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillEmpty);
+    float[] keys=orderMap.keys();
+    Arrays.sort(keys);
+    for (int k=0; k < keys.length; k++) {
+      TIntArrayList list=orderMap.get(keys[k]);
+      for (int j=0; j < list.size(); j++) {
+        int i=list.get(j);
+        int ind=i >> 8;
+        int l=i & 0xff;
+        BinaryMapDataObject obj=objects.get(ind);
+        drawObj(obj,cv,rc,obj.getTypes()[l],l == 0);
+      }
+      if (rc.interrupted) {
+        return null;
+      }
+    }
+    for (    IconDrawInfo icon : rc.iconsToDraw) {
+      if (icon.resId != 0) {
+        if (cachedIcons.get(icon.resId) == null) {
+          cachedIcons.put(icon.resId,BitmapFactory.decodeResource(context.getResources(),icon.resId));
+        }
+        Bitmap ico=cachedIcons.get(icon.resId);
+        if (ico != null) {
+          cv.drawBitmap(ico,icon.x - ico.getWidth() / 2,icon.y - ico.getHeight() / 2,paintIcon);
+        }
+      }
+      if (rc.interrupted) {
+        return null;
+      }
+    }
+    drawTextOverCanvas(rc,cv,useEnglishNames);
+    log.info(String.format("Rendering has been done in %s ms. (%s points, %s points inside, %s visile from %s)",System.currentTimeMillis() - now,rc.pointCount,rc.pointInsideCount,rc.visible,rc.allObjects));
+  }
+  return bmp;
+}

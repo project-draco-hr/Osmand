@@ -35,11 +35,22 @@ case 0:
       return dataObject;
 case OsmandOdb.MapData.TYPES_FIELD_NUMBER:
     int sizeL=codedIS.readRawVarint32();
-  codedIS.skipRawBytes(sizeL);
+  byte[] types=codedIS.readRawBytes(sizeL);
+int[] newTypes=new int[types.length / 2];
+for (int i=0; i < newTypes.length; i++) {
+newTypes[i]=Algoritms.parseSmallIntFromBytes(types,i * 2);
+}
+dataObject.types=newTypes;
 break;
 case OsmandOdb.MapData.RESTRICTIONS_FIELD_NUMBER:
 sizeL=codedIS.readRawVarint32();
-codedIS.skipRawBytes(sizeL);
+TLongArrayList list=new TLongArrayList();
+old=codedIS.pushLimit(sizeL);
+while (codedIS.getBytesUntilLimit() > 0) {
+list.add(codedIS.readSInt64());
+}
+codedIS.popLimit(old);
+dataObject.restrictions=list.toArray();
 break;
 case OsmandOdb.MapData.HIGHWAYMETA_FIELD_NUMBER:
 dataObject.highwayAttributes=codedIS.readInt32();
