@@ -9,6 +9,10 @@
   int px=left;
   int py=top;
   boolean contains=false;
+  int minX=Integer.MAX_VALUE;
+  int maxX=0;
+  int minY=Integer.MAX_VALUE;
+  int maxY=0;
   while (codedIS.getBytesUntilLimit() > 0) {
     int x=codedIS.readSInt32() + px;
     int y=codedIS.readSInt32() + py;
@@ -17,6 +21,17 @@
     px=x;
     py=y;
     if (!contains && req.left <= x && req.right >= x && req.top <= y && req.bottom >= y) {
+      contains=true;
+    }
+    if (!contains) {
+      minX=Math.min(minX,x);
+      maxX=Math.max(maxX,x);
+      minY=Math.min(minY,y);
+      maxY=Math.max(maxY,y);
+    }
+  }
+  if (!contains) {
+    if (maxX >= req.left && minX <= req.right && minY <= req.bottom && maxY >= req.top) {
       contains=true;
     }
   }
