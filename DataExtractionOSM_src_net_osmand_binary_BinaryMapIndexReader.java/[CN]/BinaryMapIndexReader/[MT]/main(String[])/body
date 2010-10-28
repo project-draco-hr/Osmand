@@ -2,7 +2,17 @@
   RandomAccessFile raf=new RandomAccessFile(new File("e:\\Information\\OSM maps\\osmand\\Minsk.map.pbf"),"r");
   BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
   System.out.println(reader.getVersion());
+  int sleft=MapUtils.get31TileNumberX(27.578);
+  int sright=MapUtils.get31TileNumberX(27.583);
+  int stop=MapUtils.get31TileNumberY(53.916);
+  int sbottom=MapUtils.get31TileNumberY(53.9138);
+  System.out.println("SEARCH " + sleft + " "+ sright+ " "+ stop+ " "+ sbottom);
   for (  MapRoot b : reader.getMapIndexes()) {
     System.out.println(b.minZoom + " " + b.maxZoom+ " "+ b.trees.size()+ " "+ b.left+ " "+ b.right+ " "+ b.top+ " "+ b.bottom);
+    for (    MapDataObject obj : reader.searchMapIndex(b,sleft,sright,stop,sbottom,new ArrayList<MapDataObject>())) {
+      if (obj.name != null) {
+        System.out.println(" " + obj.name);
+      }
+    }
   }
 }

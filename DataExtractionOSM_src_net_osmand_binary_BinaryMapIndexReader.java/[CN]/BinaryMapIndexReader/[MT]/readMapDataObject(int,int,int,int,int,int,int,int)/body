@@ -1,0 +1,59 @@
+{
+  int tag=WireFormat.getTagFieldNumber(codedIS.readTag());
+  if (OsmandOdb.MapData.COORDINATES_FIELD_NUMBER != tag) {
+    throw new IllegalArgumentException();
+  }
+  CACHE.clear();
+  int size=codedIS.readRawVarint32();
+  int old=codedIS.pushLimit(size);
+  int px=left;
+  int py=top;
+  boolean contains=false;
+  while (codedIS.getBytesUntilLimit() > 0) {
+    int x=codedIS.readSInt32() + px;
+    int y=codedIS.readSInt32() + py;
+    CACHE.add(x);
+    CACHE.add(y);
+    px=x;
+    py=y;
+    if (!contains && sleft <= x && sright >= x && stop <= y && sbottom >= y) {
+      contains=true;
+    }
+  }
+  codedIS.popLimit(old);
+  if (!contains) {
+    codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+    return null;
+  }
+  MapDataObject dataObject=new MapDataObject();
+  dataObject.coordinates=new int[CACHE.size()];
+  for (int i=0; i < CACHE.size(); i++) {
+    dataObject.coordinates[i]=CACHE.get(i);
+  }
+  while (true) {
+    tag=WireFormat.getTagFieldNumber(codedIS.readTag());
+switch (tag) {
+case 0:
+      return dataObject;
+case OsmandOdb.MapData.TYPES_FIELD_NUMBER:
+    int sizeL=codedIS.readRawVarint32();
+  codedIS.skipRawBytes(sizeL);
+break;
+case OsmandOdb.MapData.RESTRICTIONS_FIELD_NUMBER:
+sizeL=codedIS.readRawVarint32();
+codedIS.skipRawBytes(sizeL);
+break;
+case OsmandOdb.MapData.HIGHWAYMETA_FIELD_NUMBER:
+dataObject.highwayAttributes=codedIS.readInt32();
+break;
+case OsmandOdb.MapData.ID_FIELD_NUMBER:
+dataObject.id=codedIS.readSInt64();
+break;
+case OsmandOdb.MapData.STRINGID_FIELD_NUMBER:
+dataObject.stringId=codedIS.readUInt32();
+break;
+default :
+return dataObject;
+}
+}
+}
