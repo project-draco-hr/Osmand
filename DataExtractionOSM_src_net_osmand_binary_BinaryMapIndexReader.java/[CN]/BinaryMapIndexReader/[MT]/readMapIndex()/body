@@ -1,0 +1,20 @@
+{
+  while (true) {
+    int tag=WireFormat.getTagFieldNumber(codedIS.readTag());
+switch (tag) {
+case 0:
+      return;
+case OsmandOdb.OsmAndMapIndex.LEVELS_FIELD_NUMBER:
+    int length=readInt();
+  int filePointer=codedIS.getTotalBytesRead();
+int oldLimit=codedIS.pushLimit(length);
+MapRoot mapRoot=readMapLevel();
+mapIndexes.add(mapRoot);
+codedIS.popLimit(oldLimit);
+codedIS.seek(filePointer + length);
+break;
+default :
+return;
+}
+}
+}
