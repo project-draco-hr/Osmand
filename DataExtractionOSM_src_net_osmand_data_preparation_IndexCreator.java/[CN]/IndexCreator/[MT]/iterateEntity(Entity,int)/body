@@ -144,8 +144,6 @@
       }
       int mtType=findMultiPolygonType(e,0);
       if (mtType != 0) {
-        int mtType1=findMultiPolygonType(e,1);
-        int mtType2=findMultiPolygonType(e,2);
         String name=MapRenderingTypes.getEntityName(e,mtType);
         List<List<Way>> completedRings=new ArrayList<List<Way>>();
         List<List<Way>> incompletedRings=new ArrayList<List<Way>>();
@@ -171,9 +169,13 @@
             if (!inner && name != null) {
               multiPolygonsNames.put(es.getId(),name);
             }
-            putMultipolygonType(multiPolygonsWays0,es.getId(),mtType,inverse);
-            putMultipolygonType(multiPolygonsWays1,es.getId(),mtType1,inverse);
-            putMultipolygonType(multiPolygonsWays2,es.getId(),mtType2,inverse);
+            putMultipolygonType(multiPolygonsWays[0],es.getId(),mtType,inverse);
+            for (int i=1; i < multiPolygonsWays.length; i++) {
+              int type=findMultiPolygonType(e,i);
+              if (type != 0) {
+                putMultipolygonType(multiPolygonsWays[i],es.getId(),type,inverse);
+              }
+            }
           }
         }
       }
