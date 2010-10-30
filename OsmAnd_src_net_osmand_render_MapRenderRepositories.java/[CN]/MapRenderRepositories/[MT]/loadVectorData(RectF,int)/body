@@ -20,9 +20,12 @@
     int rightX=MapUtils.get31TileNumberX(cRightLongitude);
     int bottomY=MapUtils.get31TileNumberY(cBottomLatitude);
     int topY=MapUtils.get31TileNumberY(cTopLatitude);
-    SearchRequest searchRequest=BinaryMapIndexReader.buildSearchRequest(leftX,rightX,topY,bottomY,zoom);
+    searchRequest=BinaryMapIndexReader.buildSearchRequest(leftX,rightX,topY,bottomY,zoom);
     for (    BinaryMapIndexReader c : files.values()) {
       List<BinaryMapDataObject> res=c.searchMapIndex(searchRequest);
+      if (checkWhetherInterrupted()) {
+        return false;
+      }
       for (      BinaryMapDataObject r : res) {
         if (PerformanceFlags.checkForDuplicateObjectIds) {
           if (ids.contains(r.getId())) {

@@ -1,6 +1,7 @@
 {
   MultyPolygon pl=new MultyPolygon();
   pl.setType(type & 0x7fff);
+  long dbId=0;
   for (int km=0; km < 2; km++) {
     List<BinaryMapDataObject> list=km == 0 ? directList : inverselist;
     for (    BinaryMapDataObject o : list) {
@@ -8,6 +9,7 @@
       if (len < 2) {
         continue;
       }
+      dbId=o.getId() >> 3;
       List<Long> coordinates=new ArrayList<Long>();
       int px=o.getPoint31XTile(km == 0 ? 0 : len - 1);
       int py=o.getPoint31YTile(km == 0 ? 0 : len - 1);
@@ -37,7 +39,7 @@
     return null;
   }
   if (incompletedRings.size() > 0) {
-    unifyIncompletedRings(incompletedRings,completedRings,completedRingNames,incompletedRingNames,leftX,rightX,bottomY,topY);
+    unifyIncompletedRings(incompletedRings,completedRings,completedRingNames,incompletedRingNames,leftX,rightX,bottomY,topY,dbId);
   }
  else {
     boolean clockwiseFound=false;
