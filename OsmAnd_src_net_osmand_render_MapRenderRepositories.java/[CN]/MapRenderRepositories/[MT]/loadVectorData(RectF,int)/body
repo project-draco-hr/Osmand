@@ -21,6 +21,28 @@
     int bottomY=MapUtils.get31TileNumberY(cBottomLatitude);
     int topY=MapUtils.get31TileNumberY(cTopLatitude);
     searchRequest=BinaryMapIndexReader.buildSearchRequest(leftX,rightX,topY,bottomY,zoom);
+    if (zoom < 15) {
+      searchRequest.setSearchFilter(new BinaryMapIndexReader.SearchFilter(){
+        TIntByteMap map=MapRenderingTypes.getObjectTypeMinZoom();
+        @Override public boolean accept(        TIntArrayList types){
+          for (int j=0; j < types.size(); j++) {
+            int type=types.get(j);
+            if ((type & 3) == MapRenderingTypes.POINT_TYPE) {
+              type&=0x7ffc;
+            }
+ else {
+              type&=0xffc;
+            }
+            byte b=map.get(type);
+            if (b != 0 && b <= zoom) {
+              return true;
+            }
+          }
+          return false;
+        }
+      }
+);
+    }
     for (    BinaryMapIndexReader c : files.values()) {
       List<BinaryMapDataObject> res=c.searchMapIndex(searchRequest);
       if (checkWhetherInterrupted()) {
@@ -43,7 +65,7 @@
         tempList.add(r);
       }
     }
-    List<MultyPolygon> pMulti=proccessMultiPolygons(multiPolygons,leftX,rightX,bottomY,topY);
+    List<MultyPolygon> pMulti=proccessMultiPolygons(multiPolygons,leftX,rightX,bottomY,topY,zoom);
     tempList.addAll(pMulti);
     log.info(String.format("Search has been done in %s ms. %s results were found.",System.currentTimeMillis() - now,count));
     cObjects=tempList;

@@ -36,6 +36,8 @@
     }
     int x=(int)(i.get(i.size() - 1) >> 32);
     int y=(int)(i.get(i.size() - 1) & mask);
+    int EVAL_DELTA=6 << (23 - zoom);
+    int UNDEFINED_MIN_DIFF=-1 - EVAL_DELTA;
     while (true) {
       int st=0;
       if (y == topY) {
@@ -52,45 +54,45 @@
       }
       int nextRingIndex=-1;
       for (int h=st; h < st + 4; h++) {
-        int mindiff=-1;
+        int mindiff=UNDEFINED_MIN_DIFF;
         for (        Integer ni : nonvisitedRings) {
           List<Long> cni=incompletedRings.get(ni);
           int csx=(int)(cni.get(0) >> 32);
           int csy=(int)(cni.get(0) & mask);
           if (h % 4 == 0) {
-            if (csy == topY && csx >= x) {
-              if (mindiff == -1 || (csx - x) <= mindiff) {
+            if (csy == topY && csx >= x - EVAL_DELTA) {
+              if (mindiff == UNDEFINED_MIN_DIFF || (csx - x) <= mindiff) {
                 mindiff=(csx - x);
                 nextRingIndex=ni;
               }
             }
           }
  else           if (h % 4 == 1) {
-            if (csx == rightX && csy >= y) {
-              if (mindiff == -1 || (csy - y) <= mindiff) {
+            if (csx == rightX && csy >= y - EVAL_DELTA) {
+              if (mindiff == UNDEFINED_MIN_DIFF || (csy - y) <= mindiff) {
                 mindiff=(csy - y);
                 nextRingIndex=ni;
               }
             }
           }
  else           if (h % 4 == 2) {
-            if (csy == bottomY && csx <= x) {
-              if (mindiff == -1 || (x - csx) <= mindiff) {
+            if (csy == bottomY && csx <= x + EVAL_DELTA) {
+              if (mindiff == UNDEFINED_MIN_DIFF || (x - csx) <= mindiff) {
                 mindiff=(x - csx);
                 nextRingIndex=ni;
               }
             }
           }
  else           if (h % 4 == 3) {
-            if (csx == leftX && csy <= y) {
-              if (mindiff == -1 || (y - csy) <= mindiff) {
+            if (csx == leftX && csy <= y + EVAL_DELTA) {
+              if (mindiff == UNDEFINED_MIN_DIFF || (y - csy) <= mindiff) {
                 mindiff=(y - csy);
                 nextRingIndex=ni;
               }
             }
           }
         }
-        if (mindiff != -1) {
+        if (mindiff != UNDEFINED_MIN_DIFF) {
           break;
         }
  else {

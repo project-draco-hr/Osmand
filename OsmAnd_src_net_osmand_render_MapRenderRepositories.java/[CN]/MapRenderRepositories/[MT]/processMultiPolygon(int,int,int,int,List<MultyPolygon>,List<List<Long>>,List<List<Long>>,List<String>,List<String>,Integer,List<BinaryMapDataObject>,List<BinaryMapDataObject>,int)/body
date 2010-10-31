@@ -10,7 +10,7 @@
         continue;
       }
       dbId=o.getId() >> 3;
-      List<Long> coordinates=new ArrayList<Long>();
+      List<Long> coordinates=new ArrayList<Long>(o.getPointsLength() / 2);
       int px=o.getPoint31XTile(km == 0 ? 0 : len - 1);
       int py=o.getPoint31YTile(km == 0 ? 0 : len - 1);
       int x=px;
@@ -39,23 +39,26 @@
     return null;
   }
   if (incompletedRings.size() > 0) {
-    unifyIncompletedRings(incompletedRings,completedRings,completedRingNames,incompletedRingNames,leftX,rightX,bottomY,topY,dbId);
+    unifyIncompletedRings(incompletedRings,completedRings,completedRingNames,incompletedRingNames,leftX,rightX,bottomY,topY,dbId,zoom);
   }
  else {
-    boolean clockwiseFound=false;
-    for (    List<Long> c : completedRings) {
-      if (isClockwiseWay(c)) {
-        clockwiseFound=true;
-        break;
+    if (zoom >= 13 || (MapRenderingTypes.getMainObjectType(pl.getTypes()[0]) == MapRenderingTypes.NATURAL && MapRenderingTypes.getObjectSubType(pl.getTypes()[0]) == 5)) {
+      boolean clockwiseFound=false;
+      for (      List<Long> c : completedRings) {
+        if (isClockwiseWay(c)) {
+          clockwiseFound=true;
+          break;
+        }
       }
-    }
-    if (!clockwiseFound) {
-      List<Long> whole=new ArrayList<Long>(4);
-      whole.add((((long)leftX) << 32) | ((long)topY));
-      whole.add((((long)rightX) << 32) | ((long)topY));
-      whole.add((((long)rightX) << 32) | ((long)bottomY));
-      whole.add((((long)leftX) << 32) | ((long)bottomY));
-      completedRings.add(whole);
+      if (!clockwiseFound) {
+        List<Long> whole=new ArrayList<Long>(4);
+        whole.add((((long)leftX) << 32) | ((long)topY));
+        whole.add((((long)rightX) << 32) | ((long)topY));
+        whole.add((((long)rightX) << 32) | ((long)bottomY));
+        whole.add((((long)leftX) << 32) | ((long)bottomY));
+        completedRings.add(whole);
+        log.info("!!! Isolated island !!!");
+      }
     }
   }
   long[][] lns=new long[completedRings.size()][];
