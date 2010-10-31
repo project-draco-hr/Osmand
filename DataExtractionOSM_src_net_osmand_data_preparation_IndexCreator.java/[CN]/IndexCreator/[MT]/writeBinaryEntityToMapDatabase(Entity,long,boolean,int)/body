@@ -54,10 +54,14 @@
       }
       int prevX=0;
       int prevY=0;
-      int len=0;
-      boolean addLast=hasMulti || nodes.get(0).getId() == nodes.get(nodes.size() - 1).getId();
+      boolean cycle=nodes.get(0).getId() == nodes.get(nodes.size() - 1).getId();
+      boolean addLast=hasMulti || cycle;
+      int minX=Integer.MAX_VALUE;
+      int maxX=Integer.MIN_VALUE;
+      int minY=Integer.MAX_VALUE;
+      int maxY=Integer.MIN_VALUE;
       for (int i=0; i < nodes.size(); i++) {
-        int r=i == nodes.size() - 1 ? 0 : 4;
+        int r=1;
         if (nodes.get(i) != null) {
           int x=(int)(MapUtils.getTileNumberX(zoom,nodes.get(i).getLongitude()) * 256d);
           int y=(int)(MapUtils.getTileNumberY(zoom,nodes.get(i).getLatitude()) * 256d);
@@ -65,16 +69,22 @@
           int dx=Math.abs(x - prevX);
           if (dx > r || dy > r || (addLast && i == nodes.size() - 1)) {
             way.addNode(nodes.get(i));
-            len+=(dx + dy);
             prevX=x;
             prevY=y;
           }
+          minX=Math.min(minX,x);
+          maxX=Math.max(maxX,x);
+          minY=Math.min(minY,y);
+          maxY=Math.max(maxY,y);
         }
       }
       e=way;
       skip=way.getNodes().size() < 2;
-      if (len < 8) {
+      if ((maxX - minX) <= 4 && (maxY - minY) <= 4) {
         skip=true;
+      }
+      if (!cycle && hasMulti) {
+        skip=false;
       }
     }
   }

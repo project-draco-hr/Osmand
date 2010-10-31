@@ -1,14 +1,6 @@
 {
   if (st == INIT_RULE_TYPES) {
-    int level=0;
-    if (minZoom < 15) {
-      for (int i=1; i < MAP_ZOOMS.length; i++) {
-        if (minZoom <= MAP_ZOOMS[i]) {
-          level=MAP_ZOOMS.length - 1 - i;
-          break;
-        }
-      }
-    }
+    int level=defineLevel(minZoom);
     int polygonRule=0;
     int polylineRule=0;
     int pointRule=0;
@@ -27,6 +19,11 @@
  else   if (st == INIT_AMENITY_MAP) {
     if (renderType == POINT_TYPE || renderType == POLYGON_TYPE) {
       registerAmenity(tag,val,type,subtype);
+    }
+  }
+ else   if (st == INIT_TYPE_ZOOM) {
+    if (minZoom < 15) {
+      objectsToMinZoom.put((((subtype) << 5) << type) << 2,(byte)minZoom);
     }
   }
 }
