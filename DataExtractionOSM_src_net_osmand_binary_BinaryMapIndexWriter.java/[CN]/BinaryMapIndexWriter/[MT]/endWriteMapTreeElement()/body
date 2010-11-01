@@ -1,2 +1,29 @@
 {
+  popState(MAP_TREE);
+  stackBounds.pop();
+  Long l=stackBaseIds.pop();
+  if (l != -1) {
+    codedOutStream.writeTag(OsmandOdb.MapTree.BASEID_FIELD_NUMBER,WireFormat.FieldType.UINT64.getWireType());
+    codedOutStream.writeUInt64NoTag(l);
+  }
+  Map<String,Integer> map=stackStringTable.peek();
+  if (map != null) {
+    int i=0;
+    int size=0;
+    for (    String s : map.keySet()) {
+      Integer integer=map.get(s);
+      if (integer != i) {
+        throw new IllegalStateException();
+      }
+      i++;
+      size+=CodedOutputStream.computeStringSize(OsmandOdb.StringTable.S_FIELD_NUMBER,s);
+    }
+    codedOutStream.writeTag(OsmandOdb.MapTree.STRINGTABLE_FIELD_NUMBER,WireFormat.FieldType.MESSAGE.getWireType());
+    STRING_TABLE_SIZE+=CodedOutputStream.computeTagSize(OsmandOdb.MapTree.STRINGTABLE_FIELD_NUMBER) + CodedOutputStream.computeRawVarint32Size(size) + size;
+    codedOutStream.writeRawVarint32(size);
+    for (    String s : map.keySet()) {
+      codedOutStream.writeString(OsmandOdb.StringTable.S_FIELD_NUMBER,s);
+    }
+  }
+  writeInt32Size();
 }
