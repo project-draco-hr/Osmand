@@ -1,13 +1,17 @@
 {
+  boolean initCorrectly=false;
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
 switch (tag) {
 case 0:
-      return;
+      if (!initCorrectly) {
+        throw new IOException("Corrupted file. It should be ended as it starts with version");
+      }
+    return;
 case OsmandOdb.OsmAndStructure.VERSION_FIELD_NUMBER:
-    version=codedIS.readUInt32();
-  break;
+  version=codedIS.readUInt32();
+break;
 case OsmandOdb.OsmAndStructure.MAPINDEX_FIELD_NUMBER:
 int length=readInt();
 int filePointer=codedIS.getTotalBytesRead();
@@ -17,12 +21,17 @@ codedIS.popLimit(oldLimit);
 codedIS.seek(filePointer + length);
 break;
 case OsmandOdb.OsmAndStructure.ADDRESSINDEX_FIELD_NUMBER:
-length=readInt();
-filePointer=codedIS.getTotalBytesRead();
-oldLimit=codedIS.pushLimit(length);
-readAddressIndex();
+AddressRegion region=new AddressRegion();
+region.length=readInt();
+region.fileOffset=codedIS.getTotalBytesRead();
+oldLimit=codedIS.pushLimit(region.length);
+readAddressIndex(region);
 codedIS.popLimit(oldLimit);
-codedIS.seek(filePointer + length);
+codedIS.seek(region.fileOffset + region.length);
+break;
+case OsmandOdb.OsmAndStructure.VERSIONCONFIRM_FIELD_NUMBER:
+int cversion=codedIS.readUInt32();
+initCorrectly=cversion == version;
 break;
 default :
 skipUnknownField(t);

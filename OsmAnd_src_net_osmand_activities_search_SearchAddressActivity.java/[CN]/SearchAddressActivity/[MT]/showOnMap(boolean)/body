@@ -4,23 +4,8 @@
   int zoom=12;
   boolean en=OsmandSettings.usingEnglishNames(OsmandSettings.getPrefs(this));
   if (street2 != null && street != null) {
-    region.preloadWayNodes(street2);
-    region.preloadWayNodes(street);
-    Node inters=null;
-    for (    Way w : street2.getWayNodes()) {
-      for (      Way w2 : street.getWayNodes()) {
-        for (        Node n : w.getNodes()) {
-          for (          Node n2 : w2.getNodes()) {
-            if (n.getId() == n2.getId()) {
-              inters=n;
-              break;
-            }
-          }
-        }
-      }
-    }
-    if (inters != null) {
-      l=inters.getLatLon();
+    l=region.findStreetIntersection(street,street2);
+    if (l != null) {
       String cityName=postcode != null ? postcode.getName() : city.getName(en);
       historyName=MessageFormat.format(getString(R.string.search_history_int_streets),street.getName(en),street2.getName(en),cityName);
       zoom=16;

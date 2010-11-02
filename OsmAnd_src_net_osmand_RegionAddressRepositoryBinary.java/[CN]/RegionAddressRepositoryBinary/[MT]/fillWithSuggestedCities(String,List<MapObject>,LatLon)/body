@@ -1,0 +1,63 @@
+{
+  preloadCities();
+  try {
+    int ind=0;
+    if (name.length() >= 2 && Character.isDigit(name.charAt(0)) && Character.isDigit(name.charAt(1))) {
+      String uName=name.toUpperCase();
+      for (      PostCode code : file.getPostcodes(region)) {
+        if (code.getName().startsWith(uName)) {
+          citiesToFill.add(ind++,code);
+        }
+ else         if (code.getName().contains(uName)) {
+          citiesToFill.add(code);
+        }
+      }
+    }
+    if (name.length() < 3) {
+      if (name.length() == 0) {
+        citiesToFill.addAll(cities.values());
+      }
+ else {
+        name=name.toLowerCase();
+        for (        City c : cities.values()) {
+          String cName=useEnglishNames ? c.getEnName() : c.getName();
+          String lowerCase=cName.toLowerCase();
+          if (lowerCase.startsWith(name)) {
+            citiesToFill.add(c);
+          }
+        }
+      }
+    }
+ else {
+      name=name.toLowerCase();
+      Collection<City> src=cities.values();
+      for (      City c : src) {
+        String cName=useEnglishNames ? c.getEnName() : c.getName();
+        String lowerCase=cName.toLowerCase();
+        if (lowerCase.startsWith(name)) {
+          citiesToFill.add(ind,c);
+          ind++;
+        }
+ else         if (lowerCase.contains(name)) {
+          citiesToFill.add(c);
+        }
+      }
+      int initialsize=citiesToFill.size();
+      for (      City c : file.getVillages(name)) {
+        String cName=useEnglishNames ? c.getEnName() : c.getName();
+        String lowerCase=cName.toLowerCase();
+        if (lowerCase.startsWith(name)) {
+          citiesToFill.add(ind,c);
+          ind++;
+        }
+ else         if (lowerCase.contains(name)) {
+          citiesToFill.add(c);
+        }
+      }
+      log.debug("Loaded citites " + (citiesToFill.size() - initialsize));
+    }
+  }
+ catch (  IOException e) {
+    log.error("Disk operation failed",e);
+  }
+}

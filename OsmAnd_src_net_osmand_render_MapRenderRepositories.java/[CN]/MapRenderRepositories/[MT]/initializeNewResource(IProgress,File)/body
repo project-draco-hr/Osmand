@@ -4,16 +4,17 @@
     closeConnection(files.get(file.getAbsolutePath()),file.getAbsolutePath());
   }
   RandomAccessFile raf=null;
+  BinaryMapIndexReader reader=null;
   try {
     raf=new RandomAccessFile(file,"r");
-    BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
+    reader=new BinaryMapIndexReader(raf);
     if (reader.getVersion() != IndexConstants.BINARY_MAP_VERSION) {
-      return false;
+      return null;
     }
     files.put(file.getAbsolutePath(),reader);
   }
  catch (  IOException e) {
-    log.error("No connection",e);
+    log.error("No connection or unsupported version",e);
     if (raf != null) {
       try {
         raf.close();
@@ -21,10 +22,10 @@
  catch (      IOException e1) {
       }
     }
-    return false;
+    return null;
   }
   if (log.isDebugEnabled()) {
     log.debug("Initializing db " + file.getAbsolutePath() + " "+ (System.currentTimeMillis() - start)+ "ms");
   }
-  return true;
+  return reader;
 }

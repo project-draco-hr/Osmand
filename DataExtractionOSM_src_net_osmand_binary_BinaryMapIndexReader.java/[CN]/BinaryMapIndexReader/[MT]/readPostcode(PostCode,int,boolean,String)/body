@@ -1,0 +1,49 @@
+{
+  int x=0;
+  int y=0;
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      p.setLocation(MapUtils.get31LatitudeY(y),MapUtils.get31LongitudeX(x));
+    p.setFileOffset(fileOffset);
+  return p;
+case OsmandOdb.PostcodeIndex.POSTCODE_FIELD_NUMBER:
+String name=codedIS.readString();
+if (postcodeFilter != null && postcodeFilter.equalsIgnoreCase(name)) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return null;
+}
+if (p == null) {
+p=new PostCode(name);
+}
+p.setName(name);
+break;
+case OsmandOdb.PostcodeIndex.X_FIELD_NUMBER:
+x=codedIS.readFixed32();
+break;
+case OsmandOdb.PostcodeIndex.Y_FIELD_NUMBER:
+y=codedIS.readFixed32();
+break;
+case OsmandOdb.PostcodeIndex.STREETS_FIELD_NUMBER:
+int offset=codedIS.getTotalBytesRead();
+int length=codedIS.readRawVarint32();
+if (loadStreets) {
+Street s=new Street(null);
+int oldLimit=codedIS.pushLimit(length);
+s.setFileOffset(offset);
+readStreet(s,true,x >> 7,y >> 7,p.getName());
+p.registerStreet(s,false);
+codedIS.popLimit(oldLimit);
+}
+ else {
+codedIS.skipRawBytes(length);
+}
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}
