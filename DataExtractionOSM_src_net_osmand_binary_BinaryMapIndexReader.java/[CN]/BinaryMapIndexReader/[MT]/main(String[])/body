@@ -1,24 +1,13 @@
 {
-  RandomAccessFile raf=new RandomAccessFile(new File("e:\\Information\\OSM maps\\osmand\\Minsk.map.pbf"),"r");
+  RandomAccessFile raf=new RandomAccessFile(new File("e:\\Information\\OSM maps\\osmand\\Belarus.map.pbf"),"r");
   BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
   System.out.println("VERSION " + reader.getVersion());
   String reg=reader.getRegionNames().get(0);
   long time=System.currentTimeMillis();
   List<City> cs=reader.getCities(reg);
-  for (  City c : cs) {
-    reader.preloadStreets(c);
-    int buildings=0;
-    for (    Street s : c.getStreets()) {
-      reader.preloadBuildings(s);
-      buildings+=s.getBuildings().size();
-    }
-    System.out.println(c.getName() + " " + c.getLocation()+ " "+ c.getStreets().size()+ " "+ buildings);
-  }
-  List<City> villages=reader.getVillages(reg);
-  List<PostCode> postcodes=reader.getPostcodes(reg);
-  for (  PostCode c : postcodes) {
-    reader.preloadStreets(c);
-  }
+  System.out.println(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+  List<City> villages=reader.getVillages(reg,"????????",false);
   System.out.println("Villages " + villages.size());
+  System.out.println(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
   System.out.println("Time " + (System.currentTimeMillis() - time));
 }
