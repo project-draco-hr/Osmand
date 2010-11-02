@@ -1,6 +1,9 @@
 {
   if (pointer - totalBytesRetired >= 0 && pointer - totalBytesRetired < bufferSize) {
-    skipRawBytes((int)(pointer - getTotalBytesRead()));
+    if (pointer > currentLimit) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    bufferPos=(int)(pointer - totalBytesRetired);
   }
  else {
     totalBytesRetired=(int)pointer;

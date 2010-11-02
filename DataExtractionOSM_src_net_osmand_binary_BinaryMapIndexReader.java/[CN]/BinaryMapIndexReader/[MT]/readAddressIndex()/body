@@ -1,0 +1,38 @@
+{
+  AddressRegion region=new AddressRegion();
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      if (region.name != null) {
+        addressIndexes.add(region);
+      }
+    return;
+case OsmandOdb.OsmAndAddressIndex.NAME_FIELD_NUMBER:
+  region.name=codedIS.readString();
+break;
+case OsmandOdb.OsmAndAddressIndex.NAME_EN_FIELD_NUMBER:
+region.enName=codedIS.readString();
+break;
+case OsmandOdb.OsmAndAddressIndex.CITIES_FIELD_NUMBER:
+region.citiesOffset=codedIS.getTotalBytesRead();
+int length=readInt();
+codedIS.seek(region.citiesOffset + length + 4);
+break;
+case OsmandOdb.OsmAndAddressIndex.VILLAGES_FIELD_NUMBER:
+region.villagesOffset=codedIS.getTotalBytesRead();
+length=readInt();
+codedIS.seek(region.villagesOffset + length + 4);
+break;
+case OsmandOdb.OsmAndAddressIndex.POSTCODES_FIELD_NUMBER:
+region.postcodesOffset=codedIS.getTotalBytesRead();
+length=readInt();
+codedIS.seek(region.postcodesOffset + length + 4);
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}
