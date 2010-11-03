@@ -1,25 +1,22 @@
 {
   Statement statement=dbConn.createStatement();
   String select;
-  String info;
   int count=0;
   if (type == EntityType.NODE) {
     select="select * from node";
-    info="nodes";
   }
  else   if (type == EntityType.WAY) {
     select="select distinct id from ways";
-    info="ways";
   }
  else {
     select="select distinct id from relations";
-    info="relations";
   }
-  progress.startTask("Indexing " + info + "...",allCount);
   ResultSet rs=statement.executeQuery(select);
   while (rs.next()) {
     count++;
-    progress.progress(1);
+    if (progress != null) {
+      progress.progress(1);
+    }
     Entity e;
     if (type == EntityType.NODE) {
       e=new Node(rs.getDouble(2),rs.getDouble(3),rs.getLong(1));

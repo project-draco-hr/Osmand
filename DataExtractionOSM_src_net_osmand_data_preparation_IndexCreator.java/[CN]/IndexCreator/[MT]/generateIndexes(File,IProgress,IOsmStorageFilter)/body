@@ -1,2 +1,202 @@
 {
+  if (readFile != null && regionName == null) {
+    int i=readFile.getName().indexOf('.');
+    if (i > -1) {
+      regionName=Algoritms.capitalizeFirstLetterAndLowercase(readFile.getName().substring(0,i));
+    }
+  }
+  try {
+    Class.forName("org.sqlite.JDBC");
+  }
+ catch (  ClassNotFoundException e) {
+    log.error("Illegal configuration",e);
+    throw new IllegalStateException(e);
+  }
+  cities.clear();
+  cityManager.clear();
+  postalCodeRelations.clear();
+  if (normalizeStreets) {
+    normalizeDefaultSuffixes=DataExtractionSettings.getSettings().getDefaultSuffixesToNormalizeStreets();
+    normalizeSuffixes=DataExtractionSettings.getSettings().getSuffixesToNormalizeStreets();
+  }
+  try {
+    boolean loadFromPath=dbFile == null || !dbFile.exists();
+    if (dbFile == null) {
+      dbFile=new File(workingDir,TEMP_NODES_DB);
+      if (dbFile.exists()) {
+        dbFile.delete();
+      }
+    }
+    dbConn=DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
+    int allRelations=100000;
+    int allWays=1000000;
+    int allNodes=10000000;
+    if (loadFromPath) {
+      progress.setGeneralProgress("[35 of 100]");
+      progress.startTask("Loading file " + readFile.getAbsolutePath(),-1);
+      NewDataExtractionOsmFilter filter=extractOsmToNodesDB(readFile,progress,addFilter);
+      if (filter != null) {
+        allNodes=filter.getAllNodes();
+        allWays=filter.getAllWays();
+        allRelations=filter.getAllRelations();
+      }
+    }
+    pselectNode=dbConn.prepareStatement("select * from node where id = ?");
+    pselectWay=dbConn.prepareStatement("select * from ways where id = ? order by ord");
+    pselectRelation=dbConn.prepareStatement("select * from relations where id = ? order by ord");
+    pselectTags=dbConn.prepareStatement("select key, value from tags where id = ? and type = ?");
+    createDatabaseIndexesStructure();
+    if (indexAddress) {
+      progress.setGeneralProgress("[40 of 100]");
+      progress.startTask("Indexing cities...",allNodes);
+      if (!loadFromPath) {
+        allNodes=iterateOverEntities(progress,EntityType.NODE,allNodes,STEP_CITY_NODES);
+      }
+      for (      City c : cities.values()) {
+        DataIndexWriter.writeCity(addressCityStat,pStatements,c,BATCH_SIZE);
+      }
+      if (pStatements.get(addressCityStat) > 0) {
+        addressCityStat.executeBatch();
+        pStatements.put(addressCityStat,0);
+        mapConnection.commit();
+      }
+    }
+    if (indexAddress || indexMap) {
+      progress.setGeneralProgress("[40 of 100]");
+      progress.startTask("Preindexing address and map ways...",allRelations);
+      allRelations=iterateOverEntities(progress,EntityType.RELATION,allRelations,STEP_ADDRESS_RELATIONS_AND_MULTYPOLYGONS);
+      if (indexAddress) {
+        if (pStatements.get(addressBuildingStat) > 0) {
+          addressBuildingStat.executeBatch();
+          pStatements.put(addressBuildingStat,0);
+        }
+        if (pStatements.get(addressStreetNodeStat) > 0) {
+          addressStreetNodeStat.executeBatch();
+          pStatements.put(addressStreetNodeStat,0);
+        }
+        mapConnection.commit();
+      }
+    }
+    progress.setGeneralProgress("[50 of 100]");
+    progress.startTask("Processing osm nodes...",allNodes);
+    iterateOverEntities(progress,EntityType.NODE,allNodes,STEP_MAIN);
+    progress.setGeneralProgress("[70 of 100]");
+    progress.startTask("Processing osm nodes...",allWays);
+    iterateOverEntities(progress,EntityType.WAY,allWays,STEP_MAIN);
+    progress.setGeneralProgress("[85 of 100]");
+    progress.startTask("Processing osm nodes...",allRelations);
+    iterateOverEntities(progress,EntityType.RELATION,allRelations,STEP_MAIN);
+    if (indexAddress && !postalCodeRelations.isEmpty()) {
+      progress.setGeneralProgress("[90 of 100]");
+      progress.startTask("Registering postcodes...",-1);
+      if (pStatements.get(addressBuildingStat) > 0) {
+        addressBuildingStat.executeBatch();
+        pStatements.put(addressBuildingStat,0);
+        mapConnection.commit();
+      }
+      processingPostcodes();
+    }
+    if (indexMap) {
+      progress.setGeneralProgress("[90 of 100]");
+      progress.startTask("Serializing map data...",-1);
+      packingRtreeMapIndexes();
+      log.info("Finish packing RTree files");
+    }
+    if (indexMap || indexAddress) {
+      if (mapFile.exists()) {
+        mapFile.delete();
+      }
+      mapRAFile=new RandomAccessFile(mapFile,"rw");
+      BinaryMapIndexWriter writer=new BinaryMapIndexWriter(mapRAFile);
+      if (indexMap) {
+        progress.setGeneralProgress("[95 of 100]");
+        progress.startTask("Writing map index to binary file...",-1);
+        closePreparedStatements(mapBinaryStat);
+        mapConnection.commit();
+        writeBinaryMapIndex(writer);
+      }
+      if (indexAddress) {
+        progress.setGeneralProgress("[95 of 100]");
+        progress.startTask("Writing address index to binary file...",-1);
+        closePreparedStatements(addressCityStat,addressStreetStat,addressStreetNodeStat,addressBuildingStat);
+        mapConnection.commit();
+        writeBinaryAddressIndex(writer,progress);
+      }
+      progress.finishTask();
+      writer.close();
+      log.info("Finish writing binary file");
+    }
+  }
+  finally {
+    try {
+      if (pselectNode != null) {
+        pselectNode.close();
+      }
+      if (pselectWay != null) {
+        pselectWay.close();
+      }
+      if (pselectRelation != null) {
+        pselectRelation.close();
+      }
+      if (pselectTags != null) {
+        pselectTags.close();
+      }
+      for (      PreparedStatement p : pStatements.keySet()) {
+        if (pStatements.get(p) > 0) {
+          p.executeBatch();
+        }
+        p.close();
+      }
+      if (poiConnection != null) {
+        poiConnection.commit();
+        poiConnection.close();
+        poiConnection=null;
+        if (lastModifiedDate != null) {
+          poiIndexFile.setLastModified(lastModifiedDate);
+        }
+      }
+      if (transportConnection != null) {
+        transportConnection.commit();
+        transportConnection.close();
+        transportConnection=null;
+        if (lastModifiedDate != null) {
+          transportIndexFile.setLastModified(lastModifiedDate);
+        }
+      }
+      if (mapRAFile != null) {
+        mapRAFile.close();
+        if (lastModifiedDate != null && mapFile.exists()) {
+          mapFile.setLastModified(lastModifiedDate);
+        }
+      }
+      if (mapConnection != null) {
+        mapConnection.commit();
+        mapConnection.close();
+        mapConnection=null;
+        File tempDBFile=new File(workingDir,getTempMapDBFileName());
+        if (tempDBFile.exists()) {
+        }
+      }
+      for (int i=0; i < mapTree.length; i++) {
+        if (mapTree[i] != null) {
+          RandomAccessFile file=mapTree[i].getFileHdr().getFile();
+          file.close();
+        }
+      }
+      for (int i=0; i < mapTree.length; i++) {
+        File f=new File(getRTreeMapIndexNonPackFileName() + i);
+        if (f.exists()) {
+          f.delete();
+        }
+        f=new File(getRTreeMapIndexPackFileName() + i);
+        if (f.exists()) {
+          f.delete();
+        }
+      }
+      dbConn.close();
+    }
+ catch (    SQLException e) {
+      e.printStackTrace();
+    }
+  }
 }

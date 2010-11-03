@@ -1,0 +1,44 @@
+{
+  boolean pbfFile=false;
+  InputStream stream=new FileInputStream(readFile);
+  InputStream streamFile=stream;
+  long st=System.currentTimeMillis();
+  if (readFile.getName().endsWith(".bz2")) {
+    if (stream.read() != 'B' || stream.read() != 'Z') {
+      throw new RuntimeException("The source stream must start with the characters BZ if it is to be read as a BZip2 stream.");
+    }
+ else {
+      stream=new CBZip2InputStream(stream);
+    }
+  }
+ else   if (readFile.getName().endsWith(".pbf")) {
+    pbfFile=true;
+  }
+  OsmBaseStorage storage=new OsmBaseStorage();
+  storage.setSupressWarnings(DataExtractionSettings.getSettings().isSupressWarningsForDuplicatedId());
+  if (addFilter != null) {
+    storage.getFilters().add(addFilter);
+  }
+  NewDataExtractionOsmFilter filter=new NewDataExtractionOsmFilter();
+  try {
+    filter.initDatabase();
+    storage.getFilters().add(filter);
+    if (pbfFile) {
+      storage.parseOSMPbf(stream,progress,false);
+    }
+ else {
+      storage.parseOSM(stream,progress,streamFile,false);
+    }
+    filter.finishLoading();
+    if (log.isInfoEnabled()) {
+      log.info("File parsed : " + (System.currentTimeMillis() - st));
+    }
+    progress.finishTask();
+    return filter;
+  }
+  finally {
+    if (log.isInfoEnabled()) {
+      log.info("File indexed : " + (System.currentTimeMillis() - st));
+    }
+  }
+}

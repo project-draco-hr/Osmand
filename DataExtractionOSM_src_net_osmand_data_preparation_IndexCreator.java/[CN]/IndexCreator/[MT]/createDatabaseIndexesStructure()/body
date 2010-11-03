@@ -1,0 +1,75 @@
+{
+  if (indexMap || indexTransport) {
+    mapFile=new File(workingDir,getMapFileName());
+    mapFile.getParentFile().mkdirs();
+    File tempDBMapFile=new File(workingDir,getTempMapDBFileName());
+    if (tempDBMapFile.exists()) {
+      tempDBMapFile.delete();
+    }
+    mapConnection=DriverManager.getConnection("jdbc:sqlite:" + tempDBMapFile.getAbsolutePath());
+    mapConnection.setAutoCommit(false);
+  }
+  if (indexMap) {
+    DataIndexWriter.createMapIndexStructure(mapConnection);
+    mapBinaryStat=DataIndexWriter.createStatementMapBinaryInsert(mapConnection);
+    try {
+      mapTree=new RTree[MAP_ZOOMS.length - 1];
+      for (int i=0; i < MAP_ZOOMS.length - 1; i++) {
+        File file=new File(getRTreeMapIndexNonPackFileName() + i);
+        if (file.exists()) {
+          file.delete();
+        }
+        mapTree[i]=new RTree(getRTreeMapIndexNonPackFileName() + i);
+      }
+    }
+ catch (    RTreeException e) {
+      throw new IOException(e);
+    }
+    pStatements.put(mapBinaryStat,0);
+  }
+  if (indexAddress) {
+    DataIndexWriter.createAddressIndexStructure(mapConnection);
+    addressCityStat=mapConnection.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexCityTable.getTable(),IndexCityTable.values().length));
+    addressStreetStat=mapConnection.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexStreetTable.getTable(),IndexStreetTable.values().length));
+    addressSearchStreetStat=mapConnection.prepareStatement("SELECT " + IndexStreetTable.ID.name() + " FROM "+ IndexStreetTable.getTable()+ " WHERE ? = "+ IndexStreetTable.CITY.name()+ " AND ? ="+ IndexStreetTable.NAME.name());
+    addressSearchBuildingStat=mapConnection.prepareStatement("SELECT " + IndexBuildingTable.ID.name() + " FROM "+ IndexBuildingTable.getTable()+ " WHERE ? = "+ IndexBuildingTable.ID.name());
+    addressSearchStreetNodeStat=mapConnection.prepareStatement("SELECT " + IndexStreetNodeTable.WAY.name() + " FROM "+ IndexStreetNodeTable.getTable()+ " WHERE ? = "+ IndexStreetNodeTable.WAY.name());
+    addressBuildingStat=mapConnection.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexBuildingTable.getTable(),IndexBuildingTable.values().length));
+    addressStreetNodeStat=mapConnection.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexStreetNodeTable.getTable(),IndexStreetNodeTable.values().length));
+    pStatements.put(addressCityStat,0);
+    pStatements.put(addressStreetStat,0);
+    pStatements.put(addressStreetNodeStat,0);
+    pStatements.put(addressBuildingStat,0);
+    pStatements.put(addressSearchBuildingStat,0);
+    pStatements.put(addressSearchStreetNodeStat,0);
+    pStatements.put(addressSearchStreetStat,0);
+  }
+  if (indexPOI) {
+    poiIndexFile=new File(workingDir,getPoiFileName());
+    if (poiIndexFile.exists()) {
+      poiIndexFile.delete();
+    }
+    poiIndexFile.getParentFile().mkdirs();
+    poiConnection=DriverManager.getConnection("jdbc:sqlite:" + poiIndexFile.getAbsolutePath());
+    DataIndexWriter.createPoiIndexStructure(poiConnection);
+    poiPreparedStatement=DataIndexWriter.createStatementAmenityInsert(poiConnection);
+    pStatements.put(poiPreparedStatement,0);
+    poiConnection.setAutoCommit(false);
+  }
+  if (indexTransport) {
+    transportIndexFile=new File(workingDir,getTransportFileName());
+    if (transportIndexFile.exists()) {
+      transportIndexFile.delete();
+    }
+    transportIndexFile.getParentFile().mkdirs();
+    transportConnection=DriverManager.getConnection("jdbc:sqlite:" + transportIndexFile.getAbsolutePath());
+    DataIndexWriter.createTransportIndexStructure(transportConnection);
+    transRouteStat=transportConnection.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexTransportRoute.getTable(),IndexTransportRoute.values().length));
+    transRouteStopsStat=transportConnection.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexTransportRouteStop.getTable(),IndexTransportRouteStop.values().length));
+    transStopsStat=transportConnection.prepareStatement(IndexConstants.generatePrepareStatementToInsert(IndexTransportStop.getTable(),IndexTransportStop.values().length));
+    pStatements.put(transRouteStat,0);
+    pStatements.put(transRouteStopsStat,0);
+    pStatements.put(transStopsStat,0);
+    transportConnection.setAutoCommit(false);
+  }
+}

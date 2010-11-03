@@ -2,7 +2,7 @@
   boolean readWayNodes=saveAddressWays;
   writer.startWriteAddressIndex(getRegionName());
   DataIndexReader reader=new DataIndexReader();
-  List<City> cities=reader.readCities(addressConnection);
+  List<City> cities=reader.readCities(mapConnection);
   List<Street> streets=new ArrayList<Street>();
   Collections.sort(cities,new Comparator<City>(){
     @Override public int compare(    City o1,    City o2){
@@ -13,10 +13,10 @@
     }
   }
 );
-  PreparedStatement streetstat=reader.getStreetsBuildingPreparedStatement(addressConnection);
+  PreparedStatement streetstat=reader.getStreetsBuildingPreparedStatement(mapConnection);
   PreparedStatement waynodesStat=null;
   if (readWayNodes) {
-    waynodesStat=reader.getStreetsWayNodesPreparedStatement(addressConnection);
+    waynodesStat=reader.getStreetsWayNodesPreparedStatement(mapConnection);
   }
   int j=0;
   for (; j < cities.size(); j++) {
@@ -25,7 +25,7 @@
       break;
     }
   }
-  progress.startTask("Searilizing city addresses...",j + ((cities.size() - j) / 100 + 1));
+  progress.startTask("Searalizing city addresses...",j + ((cities.size() - j) / 100 + 1));
   Map<String,Set<Street>> postcodes=new TreeMap<String,Set<Street>>();
   boolean writeCities=true;
   writer.startCityIndexes(false);
