@@ -1,6 +1,7 @@
 {
   int x=0;
   int y=0;
+  int streetInd=0;
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
@@ -33,6 +34,9 @@ break;
 case OsmandOdb.CityIndex.Y_FIELD_NUMBER:
 y=codedIS.readFixed32();
 break;
+case OsmandOdb.CityIndex.INTERSECTIONS_FIELD_NUMBER:
+codedIS.skipRawBytes(codedIS.readRawVarint32());
+break;
 case OsmandOdb.CityIndex.STREETS_FIELD_NUMBER:
 int offset=codedIS.getTotalBytesRead();
 int length=codedIS.readRawVarint32();
@@ -40,6 +44,7 @@ if (loadStreets) {
 Street s=new Street(c);
 int oldLimit=codedIS.pushLimit(length);
 s.setFileOffset(offset);
+s.setIndexInCity(streetInd++);
 readStreet(s,false,x >> 7,y >> 7,null);
 c.registerStreet(s);
 codedIS.popLimit(oldLimit);

@@ -7,10 +7,12 @@
   LatLon loc=streets.iterator().next().getLocation();
   PostcodeIndex.Builder post=OsmandOdb.PostcodeIndex.newBuilder();
   post.setPostcode(postcode);
-  post.setX(MapUtils.get31TileNumberX(loc.getLongitude()));
-  post.setY(MapUtils.get31TileNumberY(loc.getLatitude()));
+  int cx=MapUtils.get31TileNumberX(loc.getLongitude());
+  int cy=MapUtils.get31TileNumberY(loc.getLatitude());
+  post.setX(cx);
+  post.setY(cy);
   for (  Street s : streets) {
-    StreetIndex streetInd=createStreetAndBuildings(s,loc,postcode);
+    StreetIndex streetInd=createStreetAndBuildings(s,cx,cy,postcode);
     post.addStreets(streetInd);
   }
   codedOutStream.writeMessage(OsmandOdb.PostcodesIndex.POSTCODES_FIELD_NUMBER,post.build());

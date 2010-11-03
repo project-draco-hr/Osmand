@@ -1,4 +1,5 @@
 {
+  boolean readWayNodes=saveAddressWays;
   writer.startWriteAddressIndex(getRegionName());
   DataIndexReader reader=new DataIndexReader();
   List<City> cities=reader.readCities(addressConnection);
@@ -13,6 +14,10 @@
   }
 );
   PreparedStatement streetstat=reader.getStreetsBuildingPreparedStatement(addressConnection);
+  PreparedStatement waynodesStat=null;
+  if (readWayNodes) {
+    waynodesStat=reader.getStreetsWayNodesPreparedStatement(addressConnection);
+  }
   int j=0;
   for (; j < cities.size(); j++) {
     City c=cities.get(j);
@@ -38,8 +43,12 @@
       writeCities=false;
     }
     streets.clear();
-    reader.readStreetsBuildings(streetstat,c,streets);
-    writer.writeCityIndex(c,streets);
+    Map<Street,List<Node>> streetNodes=null;
+    if (readWayNodes) {
+      streetNodes=new LinkedHashMap<Street,List<Node>>();
+    }
+    reader.readStreetsBuildings(streetstat,c,streets,waynodesStat,streetNodes);
+    writer.writeCityIndex(c,streets,streetNodes);
     for (    Street s : streets) {
       for (      Building b : s.getBuildings()) {
         if (b.getPostcode() != null) {

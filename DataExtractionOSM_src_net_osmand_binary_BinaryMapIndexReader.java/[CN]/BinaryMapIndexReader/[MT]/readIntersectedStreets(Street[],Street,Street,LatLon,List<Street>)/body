@@ -1,0 +1,67 @@
+{
+  int size=codedIS.readRawVarint32();
+  int old=codedIS.pushLimit(size);
+  boolean e=false;
+  while (!e) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      e=true;
+    break;
+case OsmandOdb.InteresectedStreets.INTERSECTIONS_FIELD_NUMBER:
+  int nsize=codedIS.readRawVarint32();
+int nold=codedIS.pushLimit(nsize);
+int st1=-1;
+int st2=-1;
+int cx=0;
+int cy=0;
+boolean end=false;
+while (!end) {
+int nt=codedIS.readTag();
+int ntag=WireFormat.getTagFieldNumber(nt);
+switch (ntag) {
+case 0:
+end=true;
+break;
+case OsmandOdb.StreetIntersection.INTERSECTEDSTREET1_FIELD_NUMBER:
+st1=codedIS.readUInt32();
+break;
+case OsmandOdb.StreetIntersection.INTERSECTEDSTREET2_FIELD_NUMBER:
+st2=codedIS.readUInt32();
+break;
+case OsmandOdb.StreetIntersection.INTERSECTEDX_FIELD_NUMBER:
+cx=codedIS.readSInt32();
+break;
+case OsmandOdb.StreetIntersection.INTERSECTEDY_FIELD_NUMBER:
+cy=codedIS.readSInt32();
+break;
+default :
+skipUnknownField(nt);
+}
+}
+codedIS.popLimit(nold);
+if (s2 == null) {
+if (st1 == s.getIndexInCity() && st2 != -1 && st2 < cityStreets.length && cityStreets[st2] != null) {
+streets.add(cityStreets[st2]);
+}
+ else if (st2 == s.getIndexInCity() && st1 != -1 && st1 < cityStreets.length && cityStreets[st1] != null) {
+streets.add(cityStreets[st1]);
+}
+}
+ else {
+if ((st1 == s.getIndexInCity() && st2 == s2.getIndexInCity()) || (st2 == s.getIndexInCity() && st1 == s2.getIndexInCity())) {
+int x=(int)(MapUtils.getTileNumberX(24,parent.getLongitude()) + cx);
+int y=(int)(MapUtils.getTileNumberY(24,parent.getLatitude()) + cy);
+codedIS.popLimit(old);
+return new LatLon(MapUtils.getLatitudeFromTile(24,y),MapUtils.getLongitudeFromTile(24,x));
+}
+}
+break;
+default :
+skipUnknownField(t);
+}
+}
+codedIS.popLimit(old);
+return null;
+}

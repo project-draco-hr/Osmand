@@ -1,0 +1,55 @@
+{
+  if (city.getType() == City.CityType.CITY || city.getType() == City.CityType.TOWN) {
+    checkPeekState(CITY_INDEX_INIT);
+  }
+ else {
+    checkPeekState(VILLAGES_INDEX_INIT);
+  }
+  CityIndex.Builder cityInd=OsmandOdb.CityIndex.newBuilder();
+  cityInd.setCityType(city.getType().ordinal());
+  cityInd.setId(city.getId());
+  cityInd.setName(city.getName());
+  if (checkEnNameToWrite(city)) {
+    cityInd.setNameEn(city.getEnName());
+  }
+  int cx=MapUtils.get31TileNumberX(city.getLocation().getLongitude());
+  int cy=MapUtils.get31TileNumberY(city.getLocation().getLatitude());
+  cityInd.setX(cx);
+  cityInd.setY(cy);
+  if (wayNodes != null) {
+    InteresectedStreets.Builder sbuilders=OsmandOdb.InteresectedStreets.newBuilder();
+    for (int i=0; i < streets.size(); i++) {
+      for (int j=i + 1; j < streets.size(); j++) {
+        Node intersection=null;
+        List<Node> l1=wayNodes.get(streets.get(i));
+        List<Node> l2=wayNodes.get(streets.get(j));
+        if (l1 != null && l2 != null) {
+          loop:           for (          Node n : l1) {
+            for (            Node n2 : l2) {
+              if (n.getId() == n2.getId()) {
+                intersection=n;
+                break loop;
+              }
+            }
+          }
+        }
+        if (intersection != null) {
+          StreetIntersection.Builder builder=OsmandOdb.StreetIntersection.newBuilder();
+          builder.setIntersectedStreet1(i);
+          builder.setIntersectedStreet2(j);
+          int sx=MapUtils.get31TileNumberX(intersection.getLongitude());
+          int sy=MapUtils.get31TileNumberY(intersection.getLatitude());
+          builder.setIntersectedX((sx - cx) >> 7);
+          builder.setIntersectedY((sy - cy) >> 7);
+          sbuilders.addIntersections(builder.build());
+        }
+      }
+    }
+    cityInd.setIntersections(sbuilders.build());
+  }
+  for (  Street s : streets) {
+    StreetIndex streetInd=createStreetAndBuildings(s,cx,cy,null);
+    cityInd.addStreets(streetInd);
+  }
+  codedOutStream.writeMessage(OsmandOdb.CitiesIndex.CITIES_FIELD_NUMBER,cityInd.build());
+}
