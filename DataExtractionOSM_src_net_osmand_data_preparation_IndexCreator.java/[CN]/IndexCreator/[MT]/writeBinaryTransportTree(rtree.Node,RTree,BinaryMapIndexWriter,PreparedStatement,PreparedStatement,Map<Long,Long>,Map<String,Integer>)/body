@@ -1,0 +1,50 @@
+{
+  Element[] e=parent.getAllElements();
+  List<Long> routes=null;
+  for (int i=0; i < parent.getTotalElements(); i++) {
+    Rect re=e[i].getRect();
+    if (e[i].getElementType() == rtree.Node.LEAF_NODE) {
+      long id=((LeafElement)e[i]).getPtr();
+      selectTransportStop.setLong(1,id);
+      selectTransportRouteStop.setLong(1,id);
+      ResultSet rs=selectTransportStop.executeQuery();
+      if (rs.next()) {
+        int x24=(int)MapUtils.getLongitudeFromTile(24,rs.getDouble(2));
+        int y24=(int)MapUtils.getLongitudeFromTile(24,rs.getDouble(3));
+        String name=rs.getString(4);
+        String nameEn=rs.getString(5);
+        if (nameEn != null && nameEn.equals(Junidecode.unidecode(name))) {
+          nameEn=null;
+        }
+        ResultSet rset=selectTransportRouteStop.executeQuery();
+        if (routes == null) {
+          routes=new ArrayList<Long>();
+        }
+ else {
+          routes.clear();
+        }
+        while (rset.next()) {
+          Long route=transportRoutes.get(rset.getLong(1));
+          if (route == null) {
+            log.error("Something goes wrong with route id = " + rset.getLong(1));
+          }
+ else {
+            routes.add(route);
+          }
+        }
+        rset.close();
+        writer.writeTransportStop(id,x24,y24,name,nameEn,stringTable,routes);
+      }
+ else {
+        log.error("Something goes wrong with id = " + id);
+      }
+    }
+ else {
+      long ptr=((NonLeafElement)e[i]).getPtr();
+      rtree.Node ns=r.getReadNode(ptr);
+      writer.startTransportTreeElement(re.getMinX(),re.getMaxX(),re.getMinY(),re.getMaxY());
+      writeBinaryTransportTree(ns,r,writer,selectTransportStop,selectTransportRouteStop,transportRoutes,stringTable);
+      writer.endWriteTransportTreeElement();
+    }
+  }
+}

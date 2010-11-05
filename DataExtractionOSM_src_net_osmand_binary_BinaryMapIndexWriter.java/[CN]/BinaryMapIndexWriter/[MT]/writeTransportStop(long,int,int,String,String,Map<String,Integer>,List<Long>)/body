@@ -1,0 +1,22 @@
+{
+  checkPeekState(TRANSPORT_STOPS_TREE);
+  Bounds bounds=stackBounds.peek();
+  if (stackBaseIds.peek() == -1) {
+    stackBaseIds.pop();
+    stackBaseIds.push(id);
+  }
+  codedOutStream.flush();
+  long fp=raf.getFilePointer();
+  OsmandOdb.TransportStop.Builder ts=OsmandOdb.TransportStop.newBuilder();
+  ts.setName(registerString(stringTable,name));
+  if (nameEn != null) {
+    ts.setNameEn(registerString(stringTable,nameEn));
+  }
+  ts.setDx(x24 - bounds.leftX);
+  ts.setDy(y24 - bounds.topY);
+  ts.setId(id - stackBaseIds.peek());
+  for (  Long i : routes) {
+    ts.addRoutes((int)(fp - i));
+  }
+  codedOutStream.writeMessage(OsmandOdb.TransportStopsTree.LEAFS_FIELD_NUMBER,ts.build());
+}

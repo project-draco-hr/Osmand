@@ -2,9 +2,10 @@
   try {
     visitedStops=null;
     PreparedStatement selectTransportRouteData=mapConnection.prepareStatement("SELECT * FROM " + IndexTransportRoute.getTable());
-    PreparedStatement selectTransportData=mapConnection.prepareStatement("SELECT S.stop, S.direction," + "  A.latitude,  A.longitude, A.name, A.name_en " + "FROM transport_route_stop S INNER JOIN transport_stop A ON A.id = S.stop ORDER BY S.ord ASC WHERE S.route = ?");
+    PreparedStatement selectTransportData=mapConnection.prepareStatement("SELECT S.stop, S.direction," + "  A.latitude,  A.longitude, A.name, A.name_en " + "FROM transport_route_stop S INNER JOIN transport_stop A ON A.id = S.stop WHERE S.route = ? ORDER BY S.ord asc");
     writer.startWriteTransportIndex();
     Map<String,Integer> stringTable=createStringTableForTransport();
+    Map<Long,Long> transportRoutes=new LinkedHashMap<Long,Long>();
     ResultSet rs=selectTransportRouteData.executeQuery();
     List<TransportStop> directStops=new ArrayList<TransportStop>();
     List<TransportStop> reverseStops=new ArrayList<TransportStop>();
@@ -21,6 +22,8 @@
       String type=rs.getString(IndexTransportRoute.TYPE.ordinal() + 1);
       selectTransportData.setLong(1,idRoute);
       ResultSet rset=selectTransportData.executeQuery();
+      reverseStops.clear();
+      directStops.clear();
       while (rset.next()) {
         boolean dir=rset.getInt(2) != 0;
         long idStop=rset.getInt(1);
@@ -43,18 +46,18 @@
           reverseStops.add(st);
         }
       }
-      writer.writeTransportRoute(idRoute,routeName,routeEnName,ref,operator,type,dist,directStops,reverseStops,stringTable);
+      writer.writeTransportRoute(idRoute,routeName,routeEnName,ref,operator,type,dist,directStops,reverseStops,stringTable,transportRoutes);
     }
     rs.close();
     selectTransportRouteData.close();
     PreparedStatement selectTransportStop=mapConnection.prepareStatement("SELECT A.id,  A.latitude,  A.longitude, A.name, A.name_en FROM transport_stop A where A.id = ?");
-    PreparedStatement selectTransportRouteStop=mapConnection.prepareStatement("SELECT S.route FROM transport_route_stop S WHERE S.stop = ? ");
+    PreparedStatement selectTransportRouteStop=mapConnection.prepareStatement("SELECT DISTINCT S.route FROM transport_route_stop S WHERE S.stop = ? ");
     long rootIndex=transportStopsTree.getFileHdr().getRootIndex();
     rtree.Node root=transportStopsTree.getReadNode(rootIndex);
     Rect rootBounds=calcBounds(root);
     if (rootBounds != null) {
       writer.startTransportTreeElement(rootBounds.getMinX(),rootBounds.getMaxX(),rootBounds.getMinY(),rootBounds.getMaxY());
-      writeBinaryTransportTree(root,transportStopsTree,writer,selectTransportStop,selectTransportRouteStop);
+      writeBinaryTransportTree(root,transportStopsTree,writer,selectTransportStop,selectTransportRouteStop,transportRoutes,stringTable);
       writer.endWriteTransportTreeElement();
     }
     writer.writeTransportStringTable(stringTable);

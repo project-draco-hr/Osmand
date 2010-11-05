@@ -51,10 +51,15 @@
       File tempDBMapFile=new File(workingDir,getTempMapDBFileName());
       mapConnection=DriverManager.getConnection("jdbc:sqlite:" + tempDBMapFile.getAbsolutePath());
       mapConnection.setAutoCommit(false);
-      mapTree=new RTree[MAP_ZOOMS.length - 1];
       try {
-        for (int i=0; i < MAP_ZOOMS.length - 1; i++) {
-          mapTree[i]=new RTree(getRTreeMapIndexPackFileName() + i);
+        if (indexMap) {
+          mapTree=new RTree[MAP_ZOOMS.length - 1];
+          for (int i=0; i < MAP_ZOOMS.length - 1; i++) {
+            mapTree[i]=new RTree(getRTreeMapIndexPackFileName() + i);
+          }
+        }
+        if (indexTransport) {
+          transportStopsTree=new RTree(getRTreeTransportStopsPackFileName());
         }
       }
  catch (      RTreeException e) {
@@ -117,8 +122,15 @@
       if (indexMap) {
         progress.setGeneralProgress("[90 of 100]");
         progress.startTask("Serializing map data...",-1);
-        packingRtreeMapIndexes();
+        for (int i=0; i < MAP_ZOOMS.length - 1; i++) {
+          mapTree[i]=packRtreeFile(mapTree[i],getRTreeMapIndexNonPackFileName() + i,getRTreeMapIndexPackFileName() + i);
+        }
         log.info("Finish packing RTree files");
+      }
+      if (indexTransport) {
+        progress.setGeneralProgress("[90 of 100]");
+        progress.startTask("Serializing transport data...",-1);
+        transportStopsTree=packRtreeFile(transportStopsTree,getRTreeTransportStopsFileName(),getRTreeTransportStopsPackFileName());
       }
     }
     if (indexMap || indexAddress || indexTransport) {
@@ -146,6 +158,7 @@
         progress.startTask("Writing transport index to binary file...",-1);
         closePreparedStatements(transRouteStat,transRouteStopsStat,transStopsStat);
         mapConnection.commit();
+        writeBinaryTransportIndex(writer);
       }
       progress.finishTask();
       writer.close();
@@ -186,24 +199,45 @@
         mapConnection.close();
         mapConnection=null;
         File tempDBFile=new File(workingDir,getTempMapDBFileName());
-        if (tempDBFile.exists()) {
+        if (tempDBFile.exists() && deleteDatabaseIndexes) {
+          tempDBFile.delete();
         }
       }
-      for (int i=0; i < mapTree.length; i++) {
-        if (mapTree[i] != null) {
-          RandomAccessFile file=mapTree[i].getFileHdr().getFile();
-          file.close();
+      if (mapTree != null) {
+        for (int i=0; i < mapTree.length; i++) {
+          if (mapTree[i] != null) {
+            RandomAccessFile file=mapTree[i].getFileHdr().getFile();
+            file.close();
+          }
+        }
+        for (int i=0; i < mapTree.length; i++) {
+          File f=new File(getRTreeMapIndexNonPackFileName() + i);
+          if (f.exists() && deleteDatabaseIndexes) {
+            f.delete();
+          }
+          f=new File(getRTreeMapIndexPackFileName() + i);
+          if (f.exists() && deleteDatabaseIndexes) {
+            f.delete();
+          }
         }
       }
-      for (int i=0; i < mapTree.length; i++) {
-        File f=new File(getRTreeMapIndexNonPackFileName() + i);
-        if (f.exists() && success) {
+      if (transportStopsTree != null) {
+        transportStopsTree.getFileHdr().getFile().close();
+      }
+{
+        File f=new File(getRTreeTransportStopsFileName());
+        if (f.exists() && deleteDatabaseIndexes) {
+          f.delete();
         }
-        f=new File(getRTreeMapIndexPackFileName() + i);
-        if (f.exists() && success) {
+        f=new File(getRTreeTransportStopsPackFileName());
+        if (f.exists() && deleteDatabaseIndexes) {
+          f.delete();
         }
       }
       dbConn.close();
+      if (deleteOsmDB) {
+        dbFile.delete();
+      }
     }
  catch (    SQLException e) {
       e.printStackTrace();
