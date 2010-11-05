@@ -18,22 +18,26 @@
   cityInd.setY(cy);
   if (wayNodes != null) {
     InteresectedStreets.Builder sbuilders=OsmandOdb.InteresectedStreets.newBuilder();
+    Map<Long,Set<Integer>> reverseMap=new LinkedHashMap<Long,Set<Integer>>();
     for (int i=0; i < streets.size(); i++) {
-      for (int j=i + 1; j < streets.size(); j++) {
-        Node intersection=null;
-        List<Node> l1=wayNodes.get(streets.get(i));
-        List<Node> l2=wayNodes.get(streets.get(j));
-        if (l1 != null && l2 != null) {
-          loop:           for (          Node n : l1) {
-            for (            Node n2 : l2) {
-              if (n.getId() == n2.getId()) {
-                intersection=n;
-                break loop;
-              }
-            }
-          }
+      streets.get(i).setIndexInCity(i);
+      for (      Node n : wayNodes.get(streets.get(i))) {
+        if (!reverseMap.containsKey(n.getId())) {
+          reverseMap.put(n.getId(),new LinkedHashSet<Integer>(3));
         }
-        if (intersection != null) {
+        reverseMap.get(n.getId()).add(i);
+      }
+    }
+    Set<Integer> checkedStreets=new LinkedHashSet<Integer>();
+    for (int i=0; i < streets.size(); i++) {
+      Street s1=streets.get(i);
+      checkedStreets.clear();
+      for (      Node intersection : wayNodes.get(s1)) {
+        for (        Integer j : reverseMap.get(intersection.getId())) {
+          if (i >= j || checkedStreets.contains(j)) {
+            continue;
+          }
+          checkedStreets.add(j);
           StreetIntersection.Builder builder=OsmandOdb.StreetIntersection.newBuilder();
           builder.setIntersectedStreet1(i);
           builder.setIntersectedStreet2(j);

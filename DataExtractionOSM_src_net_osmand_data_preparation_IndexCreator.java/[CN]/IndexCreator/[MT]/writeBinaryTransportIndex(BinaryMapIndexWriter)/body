@@ -1,0 +1,66 @@
+{
+  try {
+    visitedStops=null;
+    PreparedStatement selectTransportRouteData=mapConnection.prepareStatement("SELECT * FROM " + IndexTransportRoute.getTable());
+    PreparedStatement selectTransportData=mapConnection.prepareStatement("SELECT S.stop, S.direction," + "  A.latitude,  A.longitude, A.name, A.name_en " + "FROM transport_route_stop S INNER JOIN transport_stop A ON A.id = S.stop ORDER BY S.ord ASC WHERE S.route = ?");
+    writer.startWriteTransportIndex();
+    Map<String,Integer> stringTable=createStringTableForTransport();
+    ResultSet rs=selectTransportRouteData.executeQuery();
+    List<TransportStop> directStops=new ArrayList<TransportStop>();
+    List<TransportStop> reverseStops=new ArrayList<TransportStop>();
+    while (rs.next()) {
+      long idRoute=rs.getLong(IndexTransportRoute.ID.ordinal() + 1);
+      int dist=rs.getInt(IndexTransportRoute.DIST.ordinal() + 1);
+      String routeName=rs.getString(IndexTransportRoute.NAME.ordinal() + 1);
+      String routeEnName=rs.getString(IndexTransportRoute.NAME_EN.ordinal() + 1);
+      if (routeEnName != null && routeEnName.equals(Junidecode.unidecode(routeName))) {
+        routeEnName=null;
+      }
+      String ref=rs.getString(IndexTransportRoute.REF.ordinal() + 1);
+      String operator=rs.getString(IndexTransportRoute.OPERATOR.ordinal() + 1);
+      String type=rs.getString(IndexTransportRoute.TYPE.ordinal() + 1);
+      selectTransportData.setLong(1,idRoute);
+      ResultSet rset=selectTransportData.executeQuery();
+      while (rset.next()) {
+        boolean dir=rset.getInt(2) != 0;
+        long idStop=rset.getInt(1);
+        String stopName=rset.getString(5);
+        String stopEnName=rset.getString(6);
+        if (stopEnName != null && stopEnName.equals(Junidecode.unidecode(stopName))) {
+          stopEnName=null;
+        }
+        TransportStop st=new TransportStop();
+        st.setId(idStop);
+        st.setName(stopName);
+        st.setLocation(rset.getDouble(3),rset.getDouble(4));
+        if (stopEnName != null) {
+          st.setEnName(stopEnName);
+        }
+        if (dir) {
+          directStops.add(st);
+        }
+ else {
+          reverseStops.add(st);
+        }
+      }
+      writer.writeTransportRoute(idRoute,routeName,routeEnName,ref,operator,type,dist,directStops,reverseStops,stringTable);
+    }
+    rs.close();
+    selectTransportRouteData.close();
+    PreparedStatement selectTransportStop=mapConnection.prepareStatement("SELECT A.id,  A.latitude,  A.longitude, A.name, A.name_en FROM transport_stop A where A.id = ?");
+    PreparedStatement selectTransportRouteStop=mapConnection.prepareStatement("SELECT S.route FROM transport_route_stop S WHERE S.stop = ? ");
+    long rootIndex=transportStopsTree.getFileHdr().getRootIndex();
+    rtree.Node root=transportStopsTree.getReadNode(rootIndex);
+    Rect rootBounds=calcBounds(root);
+    if (rootBounds != null) {
+      writer.startTransportTreeElement(rootBounds.getMinX(),rootBounds.getMaxX(),rootBounds.getMinY(),rootBounds.getMaxY());
+      writeBinaryTransportTree(root,transportStopsTree,writer,selectTransportStop,selectTransportRouteStop);
+      writer.endWriteTransportTreeElement();
+    }
+    writer.writeTransportStringTable(stringTable);
+    writer.endWriteTransportIndex();
+  }
+ catch (  RTreeException e) {
+    throw new IllegalStateException(e);
+  }
+}

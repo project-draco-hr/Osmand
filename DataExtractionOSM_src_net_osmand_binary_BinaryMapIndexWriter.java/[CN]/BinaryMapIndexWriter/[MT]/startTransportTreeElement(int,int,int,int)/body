@@ -1,0 +1,18 @@
+{
+  checkPeekState(TRANSPORT_STOPS_TREE,TRANSPORT_INDEX_INIT);
+  if (state.peek() == TRANSPORT_STOPS_TREE) {
+    codedOutStream.writeTag(OsmandOdb.TransportStopsTree.SUBTREES_FIELD_NUMBER,WireFormat.WIRETYPE_FIXED32_LENGTH_DELIMITED);
+  }
+ else {
+    codedOutStream.writeTag(OsmandOdb.OsmAndTransportIndex.STOPS_FIELD_NUMBER,WireFormat.WIRETYPE_FIXED32_LENGTH_DELIMITED);
+  }
+  state.push(TRANSPORT_STOPS_TREE);
+  preserveInt32Size();
+  Bounds bounds=stackBounds.peek();
+  codedOutStream.writeSInt32(OsmandOdb.TransportStopsTree.LEFT_FIELD_NUMBER,leftX - bounds.leftX);
+  codedOutStream.writeSInt32(OsmandOdb.TransportStopsTree.RIGHT_FIELD_NUMBER,rightX - bounds.rightX);
+  codedOutStream.writeSInt32(OsmandOdb.TransportStopsTree.TOP_FIELD_NUMBER,topY - bounds.topY);
+  codedOutStream.writeSInt32(OsmandOdb.TransportStopsTree.BOTTOM_FIELD_NUMBER,bottomY - bounds.bottomY);
+  stackBounds.push(new Bounds(leftX,rightX,topY,bottomY));
+  stackBaseIds.push(-1L);
+}

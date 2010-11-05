@@ -1,0 +1,41 @@
+{
+  checkPeekState(TRANSPORT_INDEX_INIT);
+  TransportRoute.Builder tRoute=OsmandOdb.TransportRoute.newBuilder();
+  tRoute.setRef(ref);
+  tRoute.setOperator(registerString(stringTable,operator));
+  tRoute.setType(registerString(stringTable,type));
+  tRoute.setId(idRoute);
+  tRoute.setName(registerString(stringTable,routeName));
+  tRoute.setDistance(dist);
+  if (routeEnName != null) {
+    tRoute.setNameEn(registerString(stringTable,routeEnName));
+  }
+  for (int i=0; i < 2; i++) {
+    List<TransportStop> stops=i == 0 ? directStops : reverseStops;
+    long id=0;
+    int x24=0;
+    int y24=0;
+    for (    TransportStop st : stops) {
+      TransportRouteStop.Builder tStop=OsmandOdb.TransportRouteStop.newBuilder();
+      tStop.setId(st.getId() - id);
+      id=st.getId();
+      int x=(int)MapUtils.getTileNumberX(24,st.getLocation().getLongitude());
+      int y=(int)MapUtils.getTileNumberY(24,st.getLocation().getLatitude());
+      tStop.setDx(x - x24);
+      tStop.setDy(y - y24);
+      x24=x;
+      y24=y;
+      tStop.setName(registerString(stringTable,st.getName()));
+      if (st.getEnName() != null) {
+        tStop.setNameEn(registerString(stringTable,st.getEnName()));
+      }
+      if (i == 0) {
+        tRoute.addDirectStops(tStop.build());
+      }
+ else {
+        tRoute.addReverseStops(tStop.build());
+      }
+    }
+  }
+  codedOutStream.writeMessage(OsmandOdb.OsmAndTransportIndex.ROUTES_FIELD_NUMBER,tRoute.build());
+}
