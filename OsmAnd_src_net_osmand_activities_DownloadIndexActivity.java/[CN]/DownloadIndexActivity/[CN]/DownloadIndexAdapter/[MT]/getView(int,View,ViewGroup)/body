@@ -1,9 +1,10 @@
 {
-  View row=convertView;
-  if (row == null) {
+  View v=convertView;
+  if (v == null) {
     LayoutInflater inflater=getLayoutInflater();
-    row=inflater.inflate(net.osmand.R.layout.download_index_list_item,parent,false);
+    v=inflater.inflate(net.osmand.R.layout.download_index_list_item,parent,false);
   }
+  final View row=v;
   TextView item=(TextView)row.findViewById(R.id.download_item);
   TextView description=(TextView)row.findViewById(R.id.download_descr);
   Entry<String,String> e=getItem(position);
@@ -30,6 +31,14 @@
   }
   CheckBox ch=(CheckBox)row.findViewById(R.id.check_download_item);
   ch.setChecked(entriesToDownload.containsKey(e.getKey()));
+  ch.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      final CheckBox ch=(CheckBox)v.findViewById(R.id.check_download_item);
+      ch.setChecked(!ch.isChecked());
+      DownloadIndexActivity.this.onListItemClick(getListView(),row,position,getItemId(position));
+    }
+  }
+);
   item.setText(s.trim() + "\n " + name);
   description.setText(e.getValue().replace(':','\n').trim());
   return row;
