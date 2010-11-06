@@ -1,0 +1,34 @@
+{
+  TransportStop dataObject=new TransportStop();
+  boolean end=false;
+  while (!end) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      end=true;
+    break;
+case OsmandOdb.TransportRouteStop.NAME_EN_FIELD_NUMBER:
+  dataObject.setEnName("" + ((char)codedIS.readUInt32()));
+break;
+case OsmandOdb.TransportRouteStop.NAME_FIELD_NUMBER:
+dataObject.setName("" + ((char)codedIS.readUInt32()));
+break;
+case OsmandOdb.TransportRouteStop.ID_FIELD_NUMBER:
+did+=codedIS.readSInt64();
+break;
+case OsmandOdb.TransportRouteStop.DX_FIELD_NUMBER:
+dx+=codedIS.readSInt32();
+break;
+case OsmandOdb.TransportRouteStop.DY_FIELD_NUMBER:
+dy+=codedIS.readSInt32();
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+dataObject.setId(did);
+dataObject.setLocation(MapUtils.getLatitudeFromTile(TRANSPORT_STOP_ZOOM,dy),MapUtils.getLongitudeFromTile(TRANSPORT_STOP_ZOOM,dx));
+return dataObject;
+}

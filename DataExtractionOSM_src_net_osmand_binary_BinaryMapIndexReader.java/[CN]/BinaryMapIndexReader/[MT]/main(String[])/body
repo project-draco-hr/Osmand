@@ -6,9 +6,19 @@
   for (  TransportIndex i : reader.transportIndexes) {
     System.out.println(i.left + " " + i.right+ " "+ i.top+ " "+ i.bottom);
     System.out.println(i.stringTable.cacheOfStrings);
-    System.out.println(reader.getStringFromStringTable(i.stringTable,58));
     System.out.println(i.stringTable.offsets);
     System.out.println(i.stringTable.window);
+  }
+  int sleft=MapUtils.get31TileNumberX(27.573);
+  int sright=MapUtils.get31TileNumberX(27.581);
+  int stop=MapUtils.get31TileNumberY(53.912);
+  int sbottom=MapUtils.get31TileNumberY(53.908);
+  for (  TransportStop s : reader.searchTransportIndex(buildSearchTransportRequest(sleft,sright,stop,sbottom,15))) {
+    System.out.println(s.getName());
+    for (    int i : s.getReferencesToRoutes()) {
+      TransportRoute route=reader.getTransportRoute(i);
+      System.out.println(" " + route.getRef() + " "+ route.getName()+ " "+ route.getDistance()+ " "+ route.getAvgBothDistance());
+    }
   }
   System.out.println("MEMORY " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
   System.out.println("Time " + (System.currentTimeMillis() - time));

@@ -1,5 +1,4 @@
 {
-  int shift=codedIS.getTotalBytesRead();
   int tag=WireFormat.getTagFieldNumber(codedIS.readTag());
   if (OsmandOdb.TransportStop.DX_FIELD_NUMBER != tag) {
     throw new IllegalArgumentException();
@@ -10,7 +9,7 @@
     throw new IllegalArgumentException();
   }
   int y=codedIS.readSInt32() + ctop;
-  if (cright < x || cleft > x || ctop > y || cbottom < y) {
+  if (req.right < x || req.left > x || req.top > y || req.bottom < y) {
     codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
     return null;
   }
@@ -32,7 +31,8 @@ case OsmandOdb.TransportStop.NAME_EN_FIELD_NUMBER:
 dataObject.setName("" + ((char)codedIS.readUInt32()));
 break;
 case OsmandOdb.TransportStop.NAME_FIELD_NUMBER:
-dataObject.setName("" + ((char)codedIS.readUInt32()));
+int i=codedIS.readUInt32();
+dataObject.setName("" + ((char)i));
 break;
 case OsmandOdb.TransportStop.ID_FIELD_NUMBER:
 dataObject.setId(codedIS.readSInt64());
