@@ -1,11 +1,5 @@
 {
-  TransportIndex ind=null;
-  for (  TransportIndex i : transportIndexes) {
-    if (i.fileOffset <= filePointer && (filePointer - i.fileOffset) < i.length) {
-      ind=i;
-      break;
-    }
-  }
+  TransportIndex ind=getTransportIndex(filePointer);
   if (ind == null) {
     return null;
   }
@@ -17,6 +11,7 @@
   int name=-1;
   int nameEn=-1;
   int operator=-1;
+  int type=-1;
   long rid=0;
   int rx=0;
   int ry=0;
@@ -38,6 +33,9 @@ dataObject.setId(codedIS.readUInt64());
 break;
 case OsmandOdb.TransportRoute.REF_FIELD_NUMBER:
 dataObject.setRef(codedIS.readString());
+break;
+case OsmandOdb.TransportRoute.TYPE_FIELD_NUMBER:
+type=codedIS.readUInt32();
 break;
 case OsmandOdb.TransportRoute.NAME_EN_FIELD_NUMBER:
 nameEn=codedIS.readUInt32();
@@ -85,6 +83,9 @@ dataObject.setEnName(Junidecode.unidecode(dataObject.getName()));
 }
 if (operator != -1) {
 dataObject.setOperator(getStringFromStringTable(ind.stringTable,operator));
+}
+if (type != -1) {
+dataObject.setType(getStringFromStringTable(ind.stringTable,type));
 }
 for (int i=0; i < 2; i++) {
 List<TransportStop> stops=i == 0 ? dataObject.getForwardStops() : dataObject.getBackwardStops();
