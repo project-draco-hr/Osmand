@@ -1,0 +1,41 @@
+{
+  BufferedReader reader=null;
+  int num=400;
+  int start=0;
+  int size=-1;
+  while (size != files.size()) {
+    size=files.size();
+    try {
+      URL url=new URL("http://code.google.com/p/osmand/downloads/list?num=" + num + "&start="+ start);
+      reader=new BufferedReader(new InputStreamReader(url.openStream()));
+      String s=null;
+      String prevFile=null;
+      while ((s=reader.readLine()) != null) {
+        if (s.indexOf("files") != -1 || s.indexOf("{") != -1) {
+          for (          String extension : ext) {
+            prevFile=getIndexFiles(files,s,prevFile,extension);
+          }
+        }
+      }
+      start+=num + 1;
+    }
+ catch (    MalformedURLException e) {
+      log.error("Unexpected exception",e);
+    }
+catch (    IOException e) {
+      log.error("Input/Output exception",e);
+    }
+ finally {
+      if (reader != null) {
+        try {
+          reader.close();
+        }
+ catch (        IOException e) {
+          log.error("Error closing stream to url.",e);
+        }
+      }
+    }
+  }
+  log.info("Loaded indexes:" + files.size());
+  return files;
+}
