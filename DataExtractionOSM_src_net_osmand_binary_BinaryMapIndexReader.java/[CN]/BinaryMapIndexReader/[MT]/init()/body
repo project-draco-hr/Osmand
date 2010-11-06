@@ -29,6 +29,16 @@ readAddressIndex(region);
 codedIS.popLimit(oldLimit);
 codedIS.seek(region.fileOffset + region.length);
 break;
+case OsmandOdb.OsmAndStructure.TRANSPORTINDEX_FIELD_NUMBER:
+TransportIndex ind=new TransportIndex();
+ind.length=readInt();
+ind.fileOffset=codedIS.getTotalBytesRead();
+oldLimit=codedIS.pushLimit(ind.length);
+readTransportIndex(ind);
+codedIS.popLimit(oldLimit);
+codedIS.seek(ind.fileOffset + ind.length);
+transportIndexes.add(ind);
+break;
 case OsmandOdb.OsmAndStructure.VERSIONCONFIRM_FIELD_NUMBER:
 int cversion=codedIS.readUInt32();
 initCorrectly=cversion == version;

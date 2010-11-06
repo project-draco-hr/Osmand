@@ -1,0 +1,36 @@
+{
+  if (index > IndexStringTable.SIZE_OFFSET_ARRAY * (st.offsets.size() + 1)) {
+    int shift=0;
+    if (!st.offsets.isEmpty()) {
+      shift=st.offsets.get(st.offsets.size() - 1);
+    }
+    codedIS.seek(st.fileOffset + shift);
+    int old=codedIS.pushLimit(st.length - shift);
+    while (index > IndexStringTable.SIZE_OFFSET_ARRAY * (st.offsets.size() + 1)) {
+      int ind=0;
+      while (ind < IndexStringTable.SIZE_OFFSET_ARRAY && ind != -1) {
+        int t=codedIS.readTag();
+        int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+          ind=-1;
+        break;
+case OsmandOdb.StringTable.S_FIELD_NUMBER:
+      skipUnknownField(t);
+    ind++;
+  break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+if (ind == IndexStringTable.SIZE_OFFSET_ARRAY) {
+st.offsets.add(codedIS.getTotalBytesRead() - st.fileOffset);
+}
+ else {
+break;
+}
+}
+codedIS.popLimit(old);
+}
+}

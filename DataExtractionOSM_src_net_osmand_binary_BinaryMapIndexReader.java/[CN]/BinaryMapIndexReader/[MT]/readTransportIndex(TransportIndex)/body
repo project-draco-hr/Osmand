@@ -1,0 +1,31 @@
+{
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      return;
+case OsmandOdb.OsmAndTransportIndex.ROUTES_FIELD_NUMBER:
+    skipUnknownField(t);
+  break;
+case OsmandOdb.OsmAndTransportIndex.STOPS_FIELD_NUMBER:
+ind.stopsFileLength=readInt();
+ind.stopsFileOffset=codedIS.getTotalBytesRead();
+int old=codedIS.pushLimit(ind.stopsFileLength);
+readTransportBounds(ind);
+codedIS.popLimit(old);
+break;
+case OsmandOdb.OsmAndTransportIndex.STRINGTABLE_FIELD_NUMBER:
+IndexStringTable st=new IndexStringTable();
+st.length=codedIS.readRawVarint32();
+st.fileOffset=codedIS.getTotalBytesRead();
+readStringTable(st,0,30,true);
+ind.stringTable=st;
+codedIS.seek(st.length + st.fileOffset);
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

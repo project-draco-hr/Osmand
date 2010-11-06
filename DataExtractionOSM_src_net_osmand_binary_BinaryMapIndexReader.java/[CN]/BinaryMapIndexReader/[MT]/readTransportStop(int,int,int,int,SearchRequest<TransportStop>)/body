@@ -1,0 +1,45 @@
+{
+  int shift=codedIS.getTotalBytesRead();
+  int tag=WireFormat.getTagFieldNumber(codedIS.readTag());
+  if (OsmandOdb.TransportStop.DX_FIELD_NUMBER != tag) {
+    throw new IllegalArgumentException();
+  }
+  int x=codedIS.readSInt32() + cleft;
+  tag=WireFormat.getTagFieldNumber(codedIS.readTag());
+  if (OsmandOdb.TransportStop.DY_FIELD_NUMBER != tag) {
+    throw new IllegalArgumentException();
+  }
+  int y=codedIS.readSInt32() + ctop;
+  if (cright < x || cleft > x || ctop > y || cbottom < y) {
+    codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+    return null;
+  }
+  req.numberOfAcceptedObjects++;
+  req.cacheTypes.clear();
+  TransportStop dataObject=new TransportStop();
+  dataObject.setLocation(MapUtils.getLatitudeFromTile(TRANSPORT_STOP_ZOOM,y),MapUtils.getLongitudeFromTile(TRANSPORT_STOP_ZOOM,x));
+  while (true) {
+    int t=codedIS.readTag();
+    tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      dataObject.setReferencesToRoutes(req.cacheTypes.toArray());
+    return dataObject;
+case OsmandOdb.TransportStop.ROUTES_FIELD_NUMBER:
+  req.cacheTypes.add(shift - codedIS.readUInt32());
+break;
+case OsmandOdb.TransportStop.NAME_EN_FIELD_NUMBER:
+dataObject.setName("" + ((char)codedIS.readUInt32()));
+break;
+case OsmandOdb.TransportStop.NAME_FIELD_NUMBER:
+dataObject.setName("" + ((char)codedIS.readUInt32()));
+break;
+case OsmandOdb.TransportStop.ID_FIELD_NUMBER:
+dataObject.setId(codedIS.readSInt64());
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

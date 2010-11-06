@@ -1,0 +1,39 @@
+{
+  int old=codedIS.pushAbsoluteLimit(st.fileOffset + st.length);
+  int toSkip=seekUsingOffsets(st,startOffset);
+  if (!cache) {
+    st.window.clear();
+    st.windowOffset=startOffset;
+  }
+  while (length > 0) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      length=0;
+    break;
+case OsmandOdb.StringTable.S_FIELD_NUMBER:
+  if (toSkip > 0) {
+    toSkip--;
+    skipUnknownField(t);
+  }
+ else {
+    String string=codedIS.readString();
+    if (cache) {
+      st.cacheOfStrings.put(startOffset,string);
+    }
+ else {
+      st.window.add(string);
+    }
+    startOffset++;
+    length--;
+  }
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+codedIS.popLimit(old);
+return startOffset;
+}
