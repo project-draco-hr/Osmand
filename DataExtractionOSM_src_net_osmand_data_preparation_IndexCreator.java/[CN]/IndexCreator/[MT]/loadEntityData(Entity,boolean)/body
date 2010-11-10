@@ -1,5 +1,5 @@
 {
-  if (e instanceof Node) {
+  if (e instanceof Node || (e instanceof Way && !((Way)e).getNodes().isEmpty())) {
     return;
   }
   Map<EntityId,Entity> map=new LinkedHashMap<EntityId,Entity>();
@@ -8,7 +8,7 @@
     if (pselectRelation.execute()) {
       ResultSet rs=pselectRelation.getResultSet();
       while (rs.next()) {
-        ((Relation)e).addMember(rs.getLong(2),EntityType.values()[rs.getByte(3)],rs.getString(4));
+        ((Relation)e).addMember(rs.getLong(2),EntityType.values()[rs.getInt(3)],rs.getString(4));
       }
       rs.close();
     }
@@ -51,11 +51,11 @@
  else     if (i.getType() == EntityType.RELATION) {
       pselectRelation.setLong(1,i.getId());
       if (pselectRelation.execute()) {
-        ResultSet rs=pselectNode.getResultSet();
+        ResultSet rs=pselectRelation.getResultSet();
         Relation rel=new Relation(i.getId());
         map.put(i,rel);
         while (rs.next()) {
-          rel.addMember(rs.getLong(1),EntityType.values()[rs.getByte(2)],rs.getString(3));
+          rel.addMember(rs.getLong(2),EntityType.values()[rs.getInt(3)],rs.getString(4));
         }
         rs.close();
       }

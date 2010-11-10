@@ -5,13 +5,6 @@
       regionName=Algoritms.capitalizeFirstLetterAndLowercase(readFile.getName().substring(0,i));
     }
   }
-  try {
-    Class.forName("org.sqlite.JDBC");
-  }
- catch (  ClassNotFoundException e) {
-    log.error("Illegal configuration",e);
-    throw new IllegalStateException(e);
-  }
   cities.clear();
   cityManager.clear();
   postalCodeRelations.clear();
@@ -20,14 +13,14 @@
     normalizeSuffixes=DataExtractionSettings.getSettings().getSuffixesToNormalizeStreets();
   }
   try {
-    boolean loadFromPath=dbFile == null || !dbFile.exists();
+    boolean loadFromPath=dbFile == null || !databaseFileExists(dbFile);
     if (dbFile == null) {
       dbFile=new File(workingDir,TEMP_NODES_DB);
-      if (dbFile.exists()) {
-        dbFile.delete();
+      if (databaseFileExists(dbFile)) {
+        removeDatabase(dbFile);
       }
     }
-    dbConn=DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
+    dbConn=getDatabaseConnection(dbFile.getAbsolutePath());
     int allRelations=100000;
     int allWays=1000000;
     int allNodes=10000000;
@@ -44,11 +37,11 @@
     pselectNode=dbConn.prepareStatement("select * from node where id = ?");
     pselectWay=dbConn.prepareStatement("select * from ways where id = ? order by ord");
     pselectRelation=dbConn.prepareStatement("select * from relations where id = ? order by ord");
-    pselectTags=dbConn.prepareStatement("select key, value from tags where id = ? and type = ?");
+    pselectTags=dbConn.prepareStatement("select skeys, value from tags where id = ? and type = ?");
     if (recreateOnlyBinaryFile) {
       mapFile=new File(workingDir,getMapFileName());
       File tempDBMapFile=new File(workingDir,getTempMapDBFileName());
-      mapConnection=DriverManager.getConnection("jdbc:sqlite:" + tempDBMapFile.getAbsolutePath());
+      mapConnection=getDatabaseConnection(tempDBMapFile.getAbsolutePath());
       mapConnection.setAutoCommit(false);
       try {
         if (indexMap) {
@@ -199,8 +192,8 @@
         mapConnection.close();
         mapConnection=null;
         File tempDBFile=new File(workingDir,getTempMapDBFileName());
-        if (tempDBFile.exists() && deleteDatabaseIndexes) {
-          tempDBFile.delete();
+        if (databaseFileExists(tempDBFile) && deleteDatabaseIndexes) {
+          removeDatabase(tempDBFile);
         }
       }
       if (mapTree != null) {
@@ -223,8 +216,6 @@
       }
       if (transportStopsTree != null) {
         transportStopsTree.getFileHdr().getFile().close();
-      }
-{
         File f=new File(getRTreeTransportStopsFileName());
         if (f.exists() && deleteDatabaseIndexes) {
           f.delete();
@@ -234,9 +225,21 @@
           f.delete();
         }
       }
-      dbConn.close();
+      if (dbConn != null) {
+        if (usingH2()) {
+          dbConn.createStatement().execute("SHUTDOWN COMPACT");
+        }
+        dbConn.close();
+      }
       if (deleteOsmDB) {
-        dbFile.delete();
+        if (usingDerby()) {
+          try {
+            DriverManager.getConnection("jdbc:derby:;shutdown=true");
+          }
+ catch (          SQLException e) {
+          }
+        }
+        removeDatabase(dbFile);
       }
     }
  catch (    SQLException e) {

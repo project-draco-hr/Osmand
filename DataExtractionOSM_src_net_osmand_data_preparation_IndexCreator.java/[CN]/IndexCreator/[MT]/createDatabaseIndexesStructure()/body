@@ -3,10 +3,8 @@
     mapFile=new File(workingDir,getMapFileName());
     mapFile.getParentFile().mkdirs();
     File tempDBMapFile=new File(workingDir,getTempMapDBFileName());
-    if (tempDBMapFile.exists()) {
-      tempDBMapFile.delete();
-    }
-    mapConnection=DriverManager.getConnection("jdbc:sqlite:" + tempDBMapFile.getAbsolutePath());
+    removeDatabase(tempDBMapFile);
+    mapConnection=getDatabaseConnection(tempDBMapFile.getAbsolutePath());
     mapConnection.setAutoCommit(false);
   }
   if (indexMap) {
@@ -47,10 +45,10 @@
   if (indexPOI) {
     poiIndexFile=new File(workingDir,getPoiFileName());
     if (poiIndexFile.exists()) {
-      poiIndexFile.delete();
+      Algoritms.removeAllFiles(poiIndexFile);
     }
     poiIndexFile.getParentFile().mkdirs();
-    poiConnection=DriverManager.getConnection("jdbc:sqlite:" + poiIndexFile.getAbsolutePath());
+    poiConnection=getDatabaseConnection(poiIndexFile.getAbsolutePath(),true);
     DataIndexWriter.createPoiIndexStructure(poiConnection);
     poiPreparedStatement=DataIndexWriter.createStatementAmenityInsert(poiConnection);
     pStatements.put(poiPreparedStatement,0);

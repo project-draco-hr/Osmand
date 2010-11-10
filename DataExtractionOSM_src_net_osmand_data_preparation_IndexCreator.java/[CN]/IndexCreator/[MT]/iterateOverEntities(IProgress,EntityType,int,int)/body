@@ -3,32 +3,60 @@
   String select;
   int count=0;
   if (type == EntityType.NODE) {
-    select="select * from node";
+    select="select n.id, n.latitude, n.longitude, t.skeys, t.value from node n inner join tags t on n.id = t.id and t.type = 0 order by n.id";
   }
  else   if (type == EntityType.WAY) {
-    select="select distinct id from ways";
+    select="select w.id, w.node, w.ord, t.skeys, t.value, n.latitude, n.longitude " + "from ways w left join tags t on w.id = t.id and t.type = 1 and w.ord = 0 inner join node n on w.node = n.id " + "order by w.id, w.ord";
   }
  else {
-    select="select distinct id from relations";
+    select="select r.id, t.skeys, t.value  from relations r inner join tags t on t.id = r.id and t.type = 2 and r.ord = 0";
   }
   ResultSet rs=statement.executeQuery(select);
+  Entity prevEntity=null;
+  long prevId=-1;
   while (rs.next()) {
-    count++;
-    if (progress != null) {
-      progress.progress(1);
-    }
-    Entity e;
+    long curId=rs.getLong(1);
+    boolean newEntity=curId != prevId;
+    Entity e=prevEntity;
     if (type == EntityType.NODE) {
-      e=new Node(rs.getDouble(2),rs.getDouble(3),rs.getLong(1));
+      if (newEntity) {
+        e=new Node(rs.getDouble(2),rs.getDouble(3),curId);
+      }
+      e.putTag(rs.getString(4),rs.getString(5));
     }
  else     if (type == EntityType.WAY) {
-      e=new Way(rs.getLong(1));
+      if (newEntity) {
+        e=new Way(curId);
+      }
+      int ord=rs.getInt(3);
+      if (ord == 0 && rs.getObject(4) != null) {
+        e.putTag(rs.getString(4),rs.getString(5));
+      }
+      if (newEntity || ord > 0) {
+        ((Way)e).addNode(new Node(rs.getDouble(6),rs.getDouble(7),rs.getLong(2)));
+      }
     }
  else {
-      e=new Relation(rs.getLong(1));
+      if (newEntity) {
+        e=new Relation(curId);
+      }
+      e.putTag(rs.getString(2),rs.getString(3));
     }
-    loadEntityTags(type,e);
-    iterateEntity(e,step);
+    if (newEntity) {
+      count++;
+      if (progress != null) {
+        progress.progress(1);
+      }
+      if (prevEntity != null) {
+        iterateEntity(prevEntity,step);
+      }
+      prevEntity=e;
+    }
+    prevId=curId;
+  }
+  if (prevEntity != null) {
+    count++;
+    iterateEntity(prevEntity,step);
   }
   rs.close();
   return count;

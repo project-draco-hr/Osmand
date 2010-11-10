@@ -1,0 +1,37 @@
+{
+  if (usingSQLite() || forceSqLite) {
+    try {
+      Class.forName("org.sqlite.JDBC");
+    }
+ catch (    ClassNotFoundException e) {
+      log.error("Illegal configuration",e);
+      throw new IllegalStateException(e);
+    }
+    return DriverManager.getConnection("jdbc:sqlite:" + fileName);
+  }
+ else   if (usingDerby()) {
+    try {
+      Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+    }
+ catch (    ClassNotFoundException e) {
+      log.error("Illegal configuration",e);
+      throw new IllegalStateException(e);
+    }
+    Connection conn=DriverManager.getConnection("jdbc:derby:" + fileName + ";create=true");
+    conn.setAutoCommit(false);
+    return conn;
+  }
+ else   if (usingH2()) {
+    try {
+      Class.forName("org.h2.Driver");
+    }
+ catch (    ClassNotFoundException e) {
+      log.error("Illegal configuration",e);
+      throw new IllegalStateException(e);
+    }
+    return DriverManager.getConnection("jdbc:h2:file:" + fileName);
+  }
+ else {
+    throw new UnsupportedOperationException();
+  }
+}

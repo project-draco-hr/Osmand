@@ -8,8 +8,9 @@
       prepNode.setDouble(2,((Node)e).getLatitude());
       prepNode.setDouble(3,((Node)e).getLongitude());
       prepNode.addBatch();
-      if (currentCountNode >= BATCH_SIZE) {
+      if (currentCountNode >= BATCH_SIZE_OSM) {
         prepNode.executeBatch();
+        dbConn.commit();
         currentCountNode=0;
       }
     }
@@ -23,8 +24,9 @@
         prepWays.setLong(3,ord++);
         prepWays.addBatch();
       }
-      if (currentWaysCount >= BATCH_SIZE) {
+      if (currentWaysCount >= BATCH_SIZE_OSM) {
         prepWays.executeBatch();
+        dbConn.commit();
         currentWaysCount=0;
       }
     }
@@ -37,11 +39,12 @@
         prepRelations.setLong(2,i.getKey().getId());
         prepRelations.setLong(3,i.getKey().getType().ordinal());
         prepRelations.setString(4,i.getValue());
-        prepWays.setLong(5,ord++);
+        prepRelations.setLong(5,ord++);
         prepRelations.addBatch();
       }
-      if (currentRelationsCount >= BATCH_SIZE) {
+      if (currentRelationsCount >= BATCH_SIZE_OSM) {
         prepRelations.executeBatch();
+        dbConn.commit();
         currentRelationsCount=0;
       }
     }
@@ -53,8 +56,9 @@
       prepTags.setString(4,i.getValue());
       prepTags.addBatch();
     }
-    if (currentTagsCount >= BATCH_SIZE) {
+    if (currentTagsCount >= BATCH_SIZE_OSM) {
       prepTags.executeBatch();
+      dbConn.commit();
       currentTagsCount=0;
     }
   }
