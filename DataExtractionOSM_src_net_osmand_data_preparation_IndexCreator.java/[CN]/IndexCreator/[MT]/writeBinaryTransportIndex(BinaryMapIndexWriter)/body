@@ -1,7 +1,7 @@
 {
   try {
     visitedStops=null;
-    PreparedStatement selectTransportRouteData=mapConnection.prepareStatement("SELECT * FROM " + IndexTransportRoute.getTable());
+    PreparedStatement selectTransportRouteData=mapConnection.prepareStatement("SELECT id, dist, name, name_en, ref, operator, type FROM transport_route");
     PreparedStatement selectTransportData=mapConnection.prepareStatement("SELECT S.stop, S.direction," + "  A.latitude,  A.longitude, A.name, A.name_en " + "FROM transport_route_stop S INNER JOIN transport_stop A ON A.id = S.stop WHERE S.route = ? ORDER BY S.ord asc");
     writer.startWriteTransportIndex(regionName);
     writer.startWriteTransportRoutes();
@@ -11,16 +11,16 @@
     List<TransportStop> directStops=new ArrayList<TransportStop>();
     List<TransportStop> reverseStops=new ArrayList<TransportStop>();
     while (rs.next()) {
-      long idRoute=rs.getLong(IndexTransportRoute.ID.ordinal() + 1);
-      int dist=rs.getInt(IndexTransportRoute.DIST.ordinal() + 1);
-      String routeName=rs.getString(IndexTransportRoute.NAME.ordinal() + 1);
-      String routeEnName=rs.getString(IndexTransportRoute.NAME_EN.ordinal() + 1);
+      long idRoute=rs.getLong(1);
+      int dist=rs.getInt(2);
+      String routeName=rs.getString(3);
+      String routeEnName=rs.getString(4);
       if (routeEnName != null && routeEnName.equals(Junidecode.unidecode(routeName))) {
         routeEnName=null;
       }
-      String ref=rs.getString(IndexTransportRoute.REF.ordinal() + 1);
-      String operator=rs.getString(IndexTransportRoute.OPERATOR.ordinal() + 1);
-      String type=rs.getString(IndexTransportRoute.TYPE.ordinal() + 1);
+      String ref=rs.getString(5);
+      String operator=rs.getString(6);
+      String type=rs.getString(7);
       selectTransportData.setLong(1,idRoute);
       ResultSet rset=selectTransportData.executeQuery();
       reverseStops.clear();

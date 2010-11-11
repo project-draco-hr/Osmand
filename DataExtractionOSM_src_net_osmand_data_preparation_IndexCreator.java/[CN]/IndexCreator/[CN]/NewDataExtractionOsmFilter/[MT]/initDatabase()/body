@@ -10,9 +10,8 @@
  else {
     stat.executeUpdate("drop table if exists node");
   }
-  String longType=usingSQLite() ? "long" : "bigint";
-  stat.executeUpdate("create table node (id " + longType + ", latitude double, longitude double)");
-  stat.executeUpdate("create index IdIndex ON node (id, latitude, longitude)");
+  stat.executeUpdate("create table node (id bigint primary key, latitude double, longitude double)");
+  stat.executeUpdate("create index IdIndex ON node (id)");
   if (usingDerby()) {
     try {
       stat.executeUpdate("drop table ways");
@@ -23,8 +22,8 @@
  else {
     stat.executeUpdate("drop table if exists ways");
   }
-  stat.executeUpdate("create table ways (id " + longType + ", node "+ longType+ ", ord smallint)");
-  stat.executeUpdate("create index IdWIndex ON ways (id, node)");
+  stat.executeUpdate("create table ways (id bigint, node bigint, ord smallint, primary key (id, ord))");
+  stat.executeUpdate("create index IdWIndex ON ways (id)");
   if (usingDerby()) {
     try {
       stat.executeUpdate("drop table relations");
@@ -35,8 +34,8 @@
  else {
     stat.executeUpdate("drop table if exists relations");
   }
-  stat.executeUpdate("create table relations (id " + longType + ", member "+ longType+ ", type smallint, role varchar(255), ord smallint)");
-  stat.executeUpdate("create index IdRIndex ON relations (id, member, type)");
+  stat.executeUpdate("create table relations (id bigint, member bigint, type smallint, role varchar(255), ord smallint, primary key (id, ord))");
+  stat.executeUpdate("create index IdRIndex ON relations (id)");
   if (usingDerby()) {
     try {
       stat.executeUpdate("drop table tags");
@@ -45,9 +44,9 @@
     }
   }
  else {
-    stat.executeUpdate("drop table if exists ????????");
+    stat.executeUpdate("drop table if exists tags");
   }
-  stat.executeUpdate("create table tags (id " + longType + ", type smallint, skeys varchar(255), value varchar(255))");
+  stat.executeUpdate("create table tags (id bigint, type smallint, skeys varchar(255), value varchar(255), primary key (id, type, skeys))");
   stat.executeUpdate("create index IdTIndex ON tags (id, type)");
   stat.close();
   prepNode=dbConn.prepareStatement("insert into node values (?, ?, ?)");

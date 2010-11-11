@@ -4,20 +4,11 @@
   }
   long now=System.currentTimeMillis();
   StringBuilder sql=new StringBuilder(200);
-  sql.append("SELECT ");
-  String[] cols=IndexConstants.generateColumnNames(IndexTransportStop.values());
-  for (int i=0; i < cols.length; i++) {
-    if (i > 0) {
-      sql.append(", ");
-    }
-    sql.append(IndexTransportStop.getTable()).append(".").append(cols[i]);
-  }
-  sql.append(", ").append(IndexTransportRouteStop.getTable()).append(".").append(IndexTransportRouteStop.ROUTE);
-  sql.append(", ").append(IndexTransportRouteStop.getTable()).append(".").append(IndexTransportRouteStop.DIRECTION);
-  sql.append(" FROM ").append(IndexTransportStop.getTable());
-  sql.append(" JOIN ").append(IndexTransportRouteStop.getTable());
-  sql.append(" ON ").append(IndexTransportStop.getTable()).append(".").append(IndexTransportStop.ID);
-  sql.append(" = ").append(IndexTransportRouteStop.getTable()).append(".").append(IndexTransportRouteStop.STOP);
+  sql.append("SELECT T.id, T.latitude, T.longitude, T.name, T.name_en, ");
+  sql.append(" TR.route, TR.direction ");
+  sql.append(" FROM ").append(TRANSPORT_STOP_TABLE).append(" T ");
+  sql.append(" JOIN ").append(TRANSPORT_ROUTE_STOP_TABLE).append(" TR ");
+  sql.append(" ON T.id = TR.stop ");
   sql.append(" WHERE ");
   boolean f=true;
   for (  RouteInfoLocation il : registeredRoutes.values()) {
@@ -27,33 +18,31 @@
  else {
       sql.append(" OR ");
     }
-    sql.append("(");
-    sql.append(IndexTransportRouteStop.getTable()).append(".").append(IndexTransportRouteStop.ROUTE);
+    sql.append("(TR.route");
     sql.append(" = ").append(il.getRoute().getId());
-    sql.append(" AND ").append(IndexTransportRouteStop.getTable()).append(".").append(IndexTransportRouteStop.DIRECTION);
+    sql.append(" AND TR.direction");
     sql.append(" = ").append(il.getDirection() ? 1 : 0);
     sql.append(")");
   }
-  sql.append(" ORDER BY ").append(IndexTransportRouteStop.getTable()).append(".").append(IndexTransportRouteStop.ORD).append(" ASC");
-  int qShift=IndexTransportStop.values().length;
+  sql.append(" ORDER BY TR.ord asc");
   Map<Long,TransportStop> distanceToLoc=new LinkedHashMap<Long,TransportStop>();
   Cursor query=db.rawQuery(sql.toString(),new String[]{});
   if (query.moveToFirst()) {
     do {
       TransportStop st=null;
-      long routeId=query.getLong(qShift);
-      int direction=query.getInt(qShift + 1);
+      long routeId=query.getLong(5);
+      int direction=query.getInt(6);
       long id=routeId << 1 + direction;
       boolean found=distanceToLoc.containsKey(id);
       RouteInfoLocation i=registeredRoutes.get(id);
       if (found) {
         st=new TransportStop();
-        st.setId(query.getLong(IndexTransportStop.ID.ordinal()));
-        st.setLocation(query.getDouble(IndexTransportStop.LATITUDE.ordinal()),query.getDouble(IndexTransportStop.LONGITUDE.ordinal()));
-        st.setName(query.getString(IndexTransportStop.NAME.ordinal()));
-        st.setEnName(query.getString(IndexTransportStop.NAME_EN.ordinal()));
+        st.setId(query.getLong(0));
+        st.setLocation(query.getDouble(1),query.getDouble(2));
+        st.setName(query.getString(3));
+        st.setEnName(query.getString(4));
       }
- else       if (query.getLong(IndexTransportStop.ID.ordinal()) == i.getStart().getId()) {
+ else       if (query.getLong(0) == i.getStart().getId()) {
         st=i.getStart();
         found=true;
         distanceToLoc.put(id,st);

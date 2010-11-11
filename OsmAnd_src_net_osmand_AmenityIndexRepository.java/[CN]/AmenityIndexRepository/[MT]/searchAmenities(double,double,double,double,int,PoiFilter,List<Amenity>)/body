@@ -10,17 +10,20 @@
   if (limit != -1) {
     squery+=" ORDER BY RANDOM() LIMIT " + limit;
   }
-  Cursor query=db.query(IndexPoiTable.getTable(),columns,squery,new String[]{Double.toString(bottomLatitude),Double.toString(topLatitude),Double.toString(leftLongitude),Double.toString(rightLongitude)},null,null,null);
+  Cursor query=db.query(IndexConstants.POI_TABLE,columns,squery,new String[]{Double.toString(bottomLatitude),Double.toString(topLatitude),Double.toString(leftLongitude),Double.toString(rightLongitude)},null,null,null);
   if (query.moveToFirst()) {
     do {
       Amenity am=new Amenity();
-      am.setId(query.getLong(IndexPoiTable.ID.ordinal()));
-      am.setLocation(query.getDouble(IndexPoiTable.LATITUDE.ordinal()),query.getDouble(IndexPoiTable.LONGITUDE.ordinal()));
-      am.setName(query.getString(IndexPoiTable.NAME.ordinal()));
-      am.setEnName(query.getString(IndexPoiTable.NAME_EN.ordinal()));
-      am.setType(AmenityType.fromString(query.getString(IndexPoiTable.TYPE.ordinal())));
-      am.setSubType(query.getString(IndexPoiTable.SUBTYPE.ordinal()));
-      am.setOpeningHours(query.getString(IndexPoiTable.OPENING_HOURS.ordinal()));
+      am.setId(query.getLong(0));
+      am.setLocation(query.getDouble(1),query.getDouble(2));
+      am.setName(query.getString(3));
+      am.setEnName(query.getString(4));
+      if (am.getEnName().length() == 0) {
+        am.setEnName(Junidecode.unidecode(am.getName()));
+      }
+      am.setType(AmenityType.fromString(query.getString(5)));
+      am.setSubType(query.getString(6));
+      am.setOpeningHours(query.getString(7));
       amenities.add(am);
       if (limit != -1 && amenities.size() >= limit) {
         break;

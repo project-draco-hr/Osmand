@@ -1,2 +1,61 @@
 {
+  long now=System.currentTimeMillis();
+  LatLon loc=new LatLon(latitude,longitude);
+  double tileNumberX=MapUtils.getTileNumberX(zoom,longitude);
+  double tileNumberY=MapUtils.getTileNumberY(zoom,latitude);
+  double topLatitude=MapUtils.getLatitudeFromTile(zoom,tileNumberY - 0.5);
+  double bottomLatitude=MapUtils.getLatitudeFromTile(zoom,tileNumberY + 0.5);
+  double leftLongitude=MapUtils.getLongitudeFromTile(zoom,tileNumberX - 0.5);
+  double rightLongitude=MapUtils.getLongitudeFromTile(zoom,tileNumberX + 0.5);
+  if (cacheSQLRoutes == null) {
+    StringBuilder sql=new StringBuilder(200);
+    sql.append("SELECT R.id, R.dist, R.name, R.name_en, R.ref, R.operator, R.type, ");
+    sql.append("T.id, T.name, T.name_en, T.latitude, T.longitude, TR.direction ");
+    sql.append(" FROM ").append(TRANSPORT_STOP_TABLE).append(" T ");
+    sql.append(" JOIN ").append(TRANSPORT_ROUTE_STOP_TABLE).append(" TR ");
+    sql.append(" ON T.id = TR.stop ");
+    sql.append(" JOIN ").append(TRANSPORT_ROUTE_TABLE).append(" R ");
+    sql.append(" ON R.id = TR.route ");
+    sql.append(" WHERE ").append("? < latitude AND latitude < ? AND ? < longitude AND longitude < ?");
+    cacheSQLRoutes=sql.toString();
+  }
+  Cursor query=db.rawQuery(cacheSQLRoutes,new String[]{bottomLatitude + "",topLatitude + "",leftLongitude + "",rightLongitude + ""});
+  Map<Long,RouteInfoLocation> registeredRoutes=new LinkedHashMap<Long,RouteInfoLocation>();
+  if (query.moveToFirst()) {
+    do {
+      TransportRoute route=new TransportRoute();
+      route.setId(query.getLong(0));
+      route.setDistance(query.getInt(1));
+      route.setName(query.getString(2));
+      route.setEnName(query.getString(3));
+      route.setRef(query.getString(4));
+      route.setOperator(query.getString(5));
+      route.setType(query.getString(6));
+      TransportStop s=new TransportStop();
+      s.setId(query.getLong(7));
+      s.setName(query.getString(8));
+      s.setEnName(query.getString(9));
+      s.setLocation(query.getDouble(10),query.getDouble(11));
+      boolean direction=query.getInt(12) > 0;
+      long idToPut=route.getId() << 1 + (direction ? 1 : 0);
+      if (registeredRoutes.containsKey(idToPut)) {
+        TransportStop st=registeredRoutes.get(idToPut).getStart();
+        if (MapUtils.getDistance(loc,st.getLocation()) < MapUtils.getDistance(loc,s.getLocation())) {
+          continue;
+        }
+      }
+      RouteInfoLocation r=new RouteInfoLocation();
+      r.setRoute(route);
+      r.setStart(s);
+      r.setDirection(direction);
+      registeredRoutes.put(idToPut,r);
+    }
+ while (query.moveToNext());
+  }
+  query.close();
+  if (log.isDebugEnabled()) {
+    log.debug(String.format("Search for routes done in %s ms found %s.",System.currentTimeMillis() - now,registeredRoutes.size()));
+  }
+  List<RouteInfoLocation> list=preloadRouteStopsAndCalculateDistance(loc,locationToGo,registeredRoutes);
+  return list;
 }
