@@ -25,7 +25,7 @@
       break;
     }
   }
-  progress.startTask("Searalizing city addresses...",j + ((cities.size() - j) / 100 + 1));
+  progress.startTask("Serializing city addresses...",j + ((cities.size() - j) / 100 + 1));
   Map<String,Set<Street>> postcodes=new TreeMap<String,Set<Street>>();
   boolean writeCities=true;
   writer.startCityIndexes(false);
@@ -47,10 +47,15 @@
     if (readWayNodes) {
       streetNodes=new LinkedHashMap<Street,List<Node>>();
     }
+    long time=System.currentTimeMillis();
     reader.readStreetsBuildings(streetstat,c,streets,waynodesStat,streetNodes);
+    long f=System.currentTimeMillis() - time;
     writer.writeCityIndex(c,streets,streetNodes);
+    int bCount=0;
     for (    Street s : streets) {
+      bCount++;
       for (      Building b : s.getBuildings()) {
+        bCount++;
         if (b.getPostcode() != null) {
           if (!postcodes.containsKey(b.getPostcode())) {
             postcodes.put(b.getPostcode(),new LinkedHashSet<Street>(3));
@@ -59,6 +64,7 @@
         }
       }
     }
+    System.out.println("! " + c.getName() + " ! "+ f+ " "+ bCount+ " streets "+ streets.size());
   }
   writer.endCityIndexes(!writeCities);
   writer.startPostcodes();

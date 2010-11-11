@@ -57,8 +57,8 @@
       name=name.replace("'","''");
     }
     StringBuilder where=new StringBuilder(80);
-    where.append(IndexCityTable.CITY_TYPE.toString()).append(" not in (").append('\'').append(CityType.valueToString(CityType.CITY)).append('\'').append(", ").append('\'').append(CityType.valueToString(CityType.TOWN)).append('\'').append(") and ").append(useEnglishNames ? IndexCityTable.NAME_EN.toString() : IndexCityTable.NAME.toString()).append(" LIKE '" + name + "%'");
-    Cursor query=db.query(IndexCityTable.getTable(),IndexConstants.generateColumnNames(IndexCityTable.values()),where.toString(),null,null,null,null);
+    where.append("city_type not in (").append('\'').append(CityType.valueToString(CityType.CITY)).append('\'').append(", ").append('\'').append(CityType.valueToString(CityType.TOWN)).append('\'').append(") and ").append(useEnglishNames ? "name_en" : "name").append(" LIKE '" + name + "%'");
+    Cursor query=db.query("city",new String[]{"id","latitude","longitude","name","name_en","city_type"},where.toString(),null,null,null,null);
     if (query.moveToFirst()) {
       List<City> hamlets=new ArrayList<City>();
       do {

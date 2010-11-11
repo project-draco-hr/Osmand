@@ -1,15 +1,15 @@
 {
   if (street.getBuildings().isEmpty()) {
-    Cursor query=db.query(IndexBuildingTable.getTable(),IndexConstants.generateColumnNames(IndexBuildingTable.values()),"? = street",new String[]{street.getId() + ""},null,null,null);
+    Cursor query=db.query("building",new String[]{"id","latitude","longitude","name","name_en","street","postcode"},"? = street",new String[]{street.getId() + ""},null,null,null);
     log.debug("Start loading buildings for " + street.getName());
     if (query.moveToFirst()) {
       do {
         Building building=new Building();
-        building.setId(query.getLong(IndexBuildingTable.ID.ordinal()));
-        building.setLocation(query.getDouble(IndexBuildingTable.LATITUDE.ordinal()),query.getDouble(IndexBuildingTable.LONGITUDE.ordinal()));
-        building.setName(query.getString(IndexBuildingTable.NAME.ordinal()));
-        building.setEnName(query.getString(IndexBuildingTable.NAME_EN.ordinal()));
-        building.setPostcode(query.getString(IndexBuildingTable.POSTCODE.ordinal()));
+        building.setId(query.getLong(0));
+        building.setLocation(query.getDouble(1),query.getDouble(2));
+        building.setName(query.getString(3));
+        building.setEnName(query.getString(4));
+        building.setPostcode(query.getString(6));
         street.registerBuilding(building);
       }
  while (query.moveToNext());

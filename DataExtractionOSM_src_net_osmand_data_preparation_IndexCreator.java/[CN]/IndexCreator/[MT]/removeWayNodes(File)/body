@@ -2,11 +2,13 @@
   Connection dbConn=DriverManager.getConnection("jdbc:sqlite:" + sqlitedb.getAbsolutePath());
   dbConn.setAutoCommit(false);
   Statement st=dbConn.createStatement();
-  st.execute("DELETE FROM " + IndexStreetNodeTable.getTable() + " WHERE 1=1");
+  st.execute("DELETE FROM street_node WHERE 1=1");
   st.close();
   dbConn.commit();
   st=dbConn.createStatement();
-  st.execute("VACUUM");
+  if (usingSQLite()) {
+    st.execute("VACUUM");
+  }
   st.close();
   dbConn.close();
 }

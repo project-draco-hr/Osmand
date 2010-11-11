@@ -1,13 +1,17 @@
 {
   Statement stat=conn.createStatement();
-  stat.executeUpdate(IndexConstants.generateCreateSQL(IndexCityTable.values()));
-  stat.executeUpdate(IndexConstants.generateCreateIndexSQL(IndexCityTable.values()));
-  stat.executeUpdate(IndexConstants.generateCreateSQL(IndexBuildingTable.values()));
-  stat.executeUpdate(IndexConstants.generateCreateIndexSQL(IndexBuildingTable.values()));
-  stat.executeUpdate(IndexConstants.generateCreateSQL(IndexStreetNodeTable.values()));
-  stat.executeUpdate(IndexConstants.generateCreateIndexSQL(IndexStreetNodeTable.values()));
-  stat.executeUpdate(IndexConstants.generateCreateSQL(IndexStreetTable.values()));
-  stat.executeUpdate(IndexConstants.generateCreateIndexSQL(IndexStreetTable.values()));
+  stat.executeUpdate("create table city (id bigint primary key, latitude double, longitude double, " + "name varchar(255), name_en varchar(255), city_type varchar(32))");
+  stat.executeUpdate("create index city_ind on city (id, city_type)");
+  stat.executeUpdate("create table street (id bigint primary key, latitude double, longitude double, " + "name varchar(255), name_en varchar(255), city bigint)");
+  stat.executeUpdate("create index street_city on street (city)");
+  stat.executeUpdate("create index street_id on street (id)");
+  stat.executeUpdate("create table building (id bigint, latitude double, longitude double, " + "name varchar(255), name_en varchar(255), street bigint, postcode varchar(255), primary key(street, id))");
+  stat.executeUpdate("create index building_postcode on building (postcode)");
+  stat.executeUpdate("create index building_street on building (street)");
+  stat.executeUpdate("create index building_id on building (id)");
+  stat.executeUpdate("create table street_node (id bigint, latitude double, longitude double, " + "street bigint, way bigint)");
+  stat.executeUpdate("create index street_node_street on street_node (street)");
+  stat.executeUpdate("create index street_node_way on street_node (way)");
   if (IndexCreator.usingSQLite()) {
     stat.execute("PRAGMA user_version = " + IndexConstants.ADDRESS_TABLE_VERSION);
   }

@@ -1,12 +1,12 @@
 {
   if (street.getWayNodes().isEmpty()) {
-    Cursor query=db.query(IndexStreetNodeTable.getTable(),IndexConstants.generateColumnNames(IndexStreetNodeTable.values()),"? = street",new String[]{street.getId() + ""},null,null,null);
+    Cursor query=db.query("street_node",new String[]{"id","latitude","longitude","street","way"},"? = street",new String[]{street.getId() + ""},null,null,null);
     log.debug("Start loading waynodes for " + street.getName());
     Map<Long,Way> ways=new LinkedHashMap<Long,Way>();
     if (query.moveToFirst()) {
       do {
-        Node n=new Node(query.getDouble(IndexStreetNodeTable.LATITUDE.ordinal()),query.getDouble(IndexBuildingTable.LONGITUDE.ordinal()),query.getLong(IndexStreetNodeTable.ID.ordinal()));
-        long way=query.getLong(IndexStreetNodeTable.WAY.ordinal());
+        Node n=new Node(query.getDouble(1),query.getDouble(2),query.getLong(0));
+        long way=query.getLong(4);
         if (!ways.containsKey(way)) {
           ways.put(way,new Way(way));
         }
