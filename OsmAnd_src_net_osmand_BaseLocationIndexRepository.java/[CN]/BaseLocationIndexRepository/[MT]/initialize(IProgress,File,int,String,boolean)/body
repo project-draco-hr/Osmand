@@ -39,14 +39,26 @@
     }
   }
   if (!found) {
-    Cursor query=db.query(tableLocation,new String[]{"MAX(latitude)","MAX(longitude)","MIN(latitude)","MIN(longitude)"},null,null,null,null,null);
-    if (query.moveToFirst()) {
-      dataTopLatitude=query.getDouble(0) + 1;
-      dataRightLongitude=query.getDouble(1) + 1.5;
-      dataBottomLatitude=query.getDouble(2) - 1;
-      dataLeftLongitude=query.getDouble(3) - 1.5;
+    if (searchX31) {
+      Cursor query=db.query(tableLocation,new String[]{"MIN(y)","MAX(x)","MAX(y)","MIN(x)"},null,null,null,null,null);
+      if (query.moveToFirst()) {
+        dataTopLatitude=MapUtils.get31LatitudeY(query.getInt(0)) + 1;
+        dataRightLongitude=MapUtils.get31LongitudeX(query.getInt(1)) + 1.5;
+        dataBottomLatitude=MapUtils.get31LatitudeY(query.getInt(2)) - 1;
+        dataLeftLongitude=MapUtils.get31LongitudeX(query.getInt(3)) - 1.5;
+      }
+      query.close();
     }
-    query.close();
+ else {
+      Cursor query=db.query(tableLocation,new String[]{"MAX(latitude)","MAX(longitude)","MIN(latitude)","MIN(longitude)"},null,null,null,null,null);
+      if (query.moveToFirst()) {
+        dataTopLatitude=query.getDouble(0) + 1;
+        dataRightLongitude=query.getDouble(1) + 1.5;
+        dataBottomLatitude=query.getDouble(2) - 1;
+        dataLeftLongitude=query.getDouble(3) - 1.5;
+      }
+      query.close();
+    }
     if (write) {
       db.execSQL("INSERT INTO " + metaTable + " VALUES (?, ?, ? ,?)",new Double[]{dataTopLatitude,dataRightLongitude,dataBottomLatitude,dataLeftLongitude});
     }
