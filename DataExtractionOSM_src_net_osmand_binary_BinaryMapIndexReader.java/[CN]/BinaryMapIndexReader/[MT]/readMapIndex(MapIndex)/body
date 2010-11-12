@@ -5,12 +5,17 @@
 switch (tag) {
 case 0:
       return;
+case OsmandOdb.OsmAndMapIndex.NAME_FIELD_NUMBER:
+    index.setName(codedIS.readString());
+  break;
 case OsmandOdb.OsmAndMapIndex.LEVELS_FIELD_NUMBER:
-    int length=readInt();
-  int filePointer=codedIS.getTotalBytesRead();
+int length=readInt();
+int filePointer=codedIS.getTotalBytesRead();
 int oldLimit=codedIS.pushLimit(length);
 MapRoot mapRoot=readMapLevel();
-mapIndexes.add(mapRoot);
+mapRoot.length=length;
+mapRoot.filePointer=filePointer;
+index.getRoots().add(mapRoot);
 codedIS.popLimit(oldLimit);
 codedIS.seek(filePointer + length);
 break;

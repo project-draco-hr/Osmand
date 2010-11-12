@@ -1,0 +1,37 @@
+{
+  RandomAccessFile r=new RandomAccessFile(file.getAbsolutePath(),"r");
+  try {
+    BinaryMapIndexReader index=new BinaryMapIndexReader(r);
+    int i=1;
+    System.out.println("Binary index " + file.getName() + " version = "+ index.getVersion());
+    for (    BinaryIndexPart p : index.getIndexes()) {
+      String partname="";
+      if (p instanceof MapIndex) {
+        partname="Map";
+      }
+ else       if (p instanceof TransportIndex) {
+        partname="Transport";
+      }
+ else       if (p instanceof AddressRegion) {
+        partname="Address";
+      }
+      String name=p.getName() == null ? "" : p.getName();
+      System.out.println(MessageFormat.format("{0}. {1} data {3} - {2} bytes",i,partname,p.getLength(),name));
+      if (p instanceof TransportIndex) {
+        TransportIndex ti=((TransportIndex)p);
+        System.out.println("\t Bounds " + formatBounds(ti.getLeft(),ti.getRight(),ti.getTop(),ti.getBottom()));
+      }
+ else       if (p instanceof MapIndex) {
+        MapIndex m=((MapIndex)p);
+        for (        MapRoot mi : m.getRoots()) {
+          System.out.println(MessageFormat.format("\tMap level minZoom = {0}, maxZoom = {1}, size = {2} bytes \n\t\tBounds {3}",mi.getMinZoom(),mi.getMaxZoom(),mi.getLength(),formatBounds(mi.getLeft(),mi.getRight(),mi.getTop(),mi.getBottom())));
+        }
+      }
+      i++;
+    }
+  }
+ catch (  IOException e) {
+    System.err.println("File is not valid index : " + file.getAbsolutePath());
+    throw e;
+  }
+}

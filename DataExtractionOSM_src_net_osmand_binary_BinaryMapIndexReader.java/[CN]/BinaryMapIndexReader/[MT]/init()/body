@@ -13,31 +13,39 @@ case OsmandOdb.OsmAndStructure.VERSION_FIELD_NUMBER:
   version=codedIS.readUInt32();
 break;
 case OsmandOdb.OsmAndStructure.MAPINDEX_FIELD_NUMBER:
-int length=readInt();
-int filePointer=codedIS.getTotalBytesRead();
-int oldLimit=codedIS.pushLimit(length);
-readMapIndex();
+MapIndex mapIndex=new MapIndex();
+mapIndex.length=readInt();
+mapIndex.filePointer=codedIS.getTotalBytesRead();
+int oldLimit=codedIS.pushLimit(mapIndex.length);
+readMapIndex(mapIndex);
 codedIS.popLimit(oldLimit);
-codedIS.seek(filePointer + length);
+codedIS.seek(mapIndex.filePointer + mapIndex.length);
+mapIndexes.add(mapIndex);
+indexes.add(mapIndex);
 break;
 case OsmandOdb.OsmAndStructure.ADDRESSINDEX_FIELD_NUMBER:
 AddressRegion region=new AddressRegion();
 region.length=readInt();
-region.fileOffset=codedIS.getTotalBytesRead();
+region.filePointer=codedIS.getTotalBytesRead();
 oldLimit=codedIS.pushLimit(region.length);
 readAddressIndex(region);
 codedIS.popLimit(oldLimit);
-codedIS.seek(region.fileOffset + region.length);
+codedIS.seek(region.filePointer + region.length);
+if (region.name != null) {
+addressIndexes.add(region);
+indexes.add(region);
+}
 break;
 case OsmandOdb.OsmAndStructure.TRANSPORTINDEX_FIELD_NUMBER:
 TransportIndex ind=new TransportIndex();
 ind.length=readInt();
-ind.fileOffset=codedIS.getTotalBytesRead();
+ind.filePointer=codedIS.getTotalBytesRead();
 oldLimit=codedIS.pushLimit(ind.length);
 readTransportIndex(ind);
 codedIS.popLimit(oldLimit);
-codedIS.seek(ind.fileOffset + ind.length);
+codedIS.seek(ind.filePointer + ind.length);
 transportIndexes.add(ind);
+indexes.add(ind);
 break;
 case OsmandOdb.OsmAndStructure.VERSIONCONFIRM_FIELD_NUMBER:
 int cversion=codedIS.readUInt32();

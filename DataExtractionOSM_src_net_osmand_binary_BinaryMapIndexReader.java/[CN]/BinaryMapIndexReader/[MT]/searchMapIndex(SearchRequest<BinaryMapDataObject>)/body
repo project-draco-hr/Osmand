@@ -3,19 +3,21 @@
   req.numberOfAcceptedObjects=0;
   req.numberOfAcceptedSubtrees=0;
   req.numberOfReadSubtrees=0;
-  for (  MapRoot index : mapIndexes) {
-    if (index.minZoom <= req.zoom && index.maxZoom >= req.zoom) {
-      if (index.right < req.left || index.left > req.right || index.top > req.bottom || index.bottom < req.top) {
-        continue;
-      }
-      for (      MapTree tree : index.trees) {
-        if (tree.right < req.left || tree.left > req.right || tree.top > req.bottom || tree.bottom < req.top) {
+  for (  MapIndex mapIndex : mapIndexes) {
+    for (    MapRoot index : mapIndex.getRoots()) {
+      if (index.minZoom <= req.zoom && index.maxZoom >= req.zoom) {
+        if (index.right < req.left || index.left > req.right || index.top > req.bottom || index.bottom < req.top) {
           continue;
         }
-        codedIS.seek(tree.filePointer);
-        int oldLimit=codedIS.pushLimit(tree.length);
-        searchMapTreeBounds(index.left,index.right,index.top,index.bottom,req);
-        codedIS.popLimit(oldLimit);
+        for (        MapTree tree : index.trees) {
+          if (tree.right < req.left || tree.left > req.right || tree.top > req.bottom || tree.bottom < req.top) {
+            continue;
+          }
+          codedIS.seek(tree.filePointer);
+          int oldLimit=codedIS.pushLimit(tree.length);
+          searchMapTreeBounds(index.left,index.right,index.top,index.bottom,req);
+          codedIS.popLimit(oldLimit);
+        }
       }
     }
   }
