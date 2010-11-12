@@ -5,11 +5,16 @@
     log.info("Start loading poi : " + u);
     InputStream is=url.openStream();
     OsmBaseStorage st=new OsmBaseStorage();
-    final List<Entity> amen=new ArrayList<Entity>();
+    final Map<Amenity,Entity> amen=new LinkedHashMap<Amenity,Entity>();
+    final List<Amenity> tempList=new ArrayList<Amenity>();
     st.getFilters().add(new IOsmStorageFilter(){
       @Override public boolean acceptEntityToLoad(      OsmBaseStorage storage,      Entity.EntityId id,      Entity entity){
-        if (Amenity.isAmenity(entity)) {
-          amen.add(entity);
+        Amenity.parseAmenities(entity,tempList);
+        if (!tempList.isEmpty()) {
+          for (          Amenity a : tempList) {
+            amen.put(a,entity);
+          }
+          tempList.clear();
           return true;
         }
         return entity instanceof Node;
@@ -17,8 +22,8 @@
     }
 );
     st.parseOSM(is,null,null,false);
-    for (    Entity e : amen) {
-      Amenity am=new Amenity(e);
+    for (    Amenity am : amen.keySet()) {
+      am.setEntity(amen.get(am));
       if (am.getEnName().length() == 0) {
         am.setEnName(Junidecode.unidecode(am.getName()));
       }

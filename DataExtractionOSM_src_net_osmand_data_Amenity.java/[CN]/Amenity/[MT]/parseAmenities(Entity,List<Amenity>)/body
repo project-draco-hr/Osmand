@@ -1,0 +1,25 @@
+{
+  if (entity instanceof Relation) {
+    return amenitiesList;
+  }
+  Collection<String> keySet=entity.getTagKeySet();
+  if (!keySet.isEmpty()) {
+    int shift=0;
+    for (    String t : keySet) {
+      AmenityType type=MapRenderingTypes.getAmenityType(t,entity.getTag(t));
+      if (type != null) {
+        String subtype=MapRenderingTypes.getAmenitySubtype(t,entity.getTag(t));
+        amenitiesList.add(shift,new Amenity(entity,type,subtype));
+        shift++;
+      }
+ else {
+        type=MapRenderingTypes.getAmenityType(t,null);
+        if (type != null) {
+          String subtype=MapRenderingTypes.getAmenitySubtype(t,entity.getTag(t));
+          amenitiesList.add(new Amenity(entity,type,subtype));
+        }
+      }
+    }
+  }
+  return amenitiesList;
+}
