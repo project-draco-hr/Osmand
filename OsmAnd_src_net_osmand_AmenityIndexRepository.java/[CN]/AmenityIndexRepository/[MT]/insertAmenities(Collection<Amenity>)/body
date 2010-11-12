@@ -1,5 +1,11 @@
 {
-  SQLiteStatement stat=db.compileStatement("INSERT INTO " + IndexConstants.POI_TABLE + "(id, x, y, name_en, name, type, subtype, opening_hours, site, phone) values(?,?,?,?,?,?,?,?,?,?)");
+  SQLiteStatement stat=db.compileStatement("DELETE FROM " + IndexConstants.POI_TABLE + " WHERE id = ?");
+  for (  Amenity a : amenities) {
+    stat.bindLong(1,a.getId());
+    stat.execute();
+  }
+  stat.close();
+  stat=db.compileStatement("INSERT INTO " + IndexConstants.POI_TABLE + "(id, x, y, name_en, name, type, subtype, opening_hours, site, phone) values(?,?,?,?,?,?,?,?,?,?)");
   for (  Amenity a : amenities) {
     stat.bindLong(1,a.getId());
     stat.bindDouble(2,MapUtils.get31TileNumberX(a.getLocation().getLongitude()));
