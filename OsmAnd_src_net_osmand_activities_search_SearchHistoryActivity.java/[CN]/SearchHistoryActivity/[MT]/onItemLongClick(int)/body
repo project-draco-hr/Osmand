@@ -1,0 +1,20 @@
+{
+  final HistoryEntry entry=((HistoryAdapter)getListAdapter()).getItem(pos);
+  AlertDialog.Builder builder=new AlertDialog.Builder(SearchHistoryActivity.this);
+  builder.setTitle(entry.getName());
+  builder.setItems(new String[]{getString(R.string.show_poi_on_map),getString(R.string.navigate_to)},new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (which == 0) {
+        OsmandSettings.setMapLocationToShow(SearchHistoryActivity.this,entry.getLat(),entry.getLon());
+      }
+ else       if (which == 1) {
+        OsmandSettings.setPointToNavigate(SearchHistoryActivity.this,entry.getLat(),entry.getLon());
+      }
+      Intent newIntent=new Intent(SearchHistoryActivity.this,MapActivity.class);
+      startActivity(newIntent);
+    }
+  }
+);
+  builder.show();
+  return true;
+}
