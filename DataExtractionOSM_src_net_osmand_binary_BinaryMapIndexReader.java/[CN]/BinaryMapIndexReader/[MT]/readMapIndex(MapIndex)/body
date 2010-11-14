@@ -8,10 +8,16 @@ case 0:
 case OsmandOdb.OsmAndMapIndex.NAME_FIELD_NUMBER:
     index.setName(codedIS.readString());
   break;
+case OsmandOdb.OsmAndMapIndex.RULES_FIELD_NUMBER:
+int len=codedIS.readInt32();
+int oldLimit=codedIS.pushLimit(len);
+readMapEncodingRule(index);
+codedIS.popLimit(oldLimit);
+break;
 case OsmandOdb.OsmAndMapIndex.LEVELS_FIELD_NUMBER:
 int length=readInt();
 int filePointer=codedIS.getTotalBytesRead();
-int oldLimit=codedIS.pushLimit(length);
+oldLimit=codedIS.pushLimit(length);
 MapRoot mapRoot=readMapLevel();
 mapRoot.length=length;
 mapRoot.filePointer=filePointer;

@@ -1,0 +1,25 @@
+{
+  checkPeekState(MAP_INDEX_INIT);
+  codedOutStream.flush();
+  long fp=raf.getFilePointer();
+  MapEncodingRule.Builder builder=OsmandOdb.MapEncodingRule.newBuilder();
+  for (  String tag : types.keySet()) {
+    MapRulType rule=types.get(tag);
+    int type=rule.getType(null);
+    int subType=rule.getSubType(null);
+    if (type != 0 && subType != 0) {
+      builder.setTag(tag).setType(type).setSubtype(subType).setMinZoom(rule.getMinZoom(null));
+      builder=OsmandOdb.MapEncodingRule.newBuilder();
+    }
+    for (    String val : types.get(tag).getValuesSet()) {
+      type=rule.getType(val);
+      subType=rule.getSubType(val);
+      builder.setTag(tag).setValue(val).setType(type).setSubtype(subType).setMinZoom(rule.getMinZoom(null));
+      codedOutStream.writeMessage(OsmandOdb.OsmAndMapIndex.RULES_FIELD_NUMBER,builder.build());
+      builder=OsmandOdb.MapEncodingRule.newBuilder();
+    }
+  }
+  codedOutStream.flush();
+  long newfp=raf.getFilePointer();
+  System.out.println("RENDERING SCHEMA takes " + (newfp - fp));
+}
