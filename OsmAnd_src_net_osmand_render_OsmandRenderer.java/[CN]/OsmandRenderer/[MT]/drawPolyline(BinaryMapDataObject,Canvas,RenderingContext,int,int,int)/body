@@ -3,9 +3,16 @@
   rc.second.emptyLine();
   rc.third.emptyLine();
   rc.adds=null;
-  PolylineRenderer.renderPolyline(type,subtype,wholeType,obj.getHighwayAttributes(),rc,this);
+  TagValuePair pair=obj.getMapIndex().decodeType(type,subtype);
+  if (render == null || pair == null) {
+    return;
+  }
+  render.renderPolyline(pair.tag,pair.value,rc.zoom,rc,this);
   if (rc.main.strokeWidth == 0) {
     return;
+  }
+  if ("highway".equals(pair.tag) && rc.zoom >= 16 && MapRenderingTypes.isOneWayWay(obj.getHighwayAttributes())) {
+    rc.adds=PolylineRenderer.getOneWayProperties();
   }
   int length=obj.getPointsLength();
   if (length < 2) {
@@ -73,9 +80,9 @@
     if (obj.getName() != null) {
       String name=obj.getName();
       rc.clearText();
-      name=renderObjectText(name,subtype,type,rc.zoom,false,rc);
+      name=TextRenderer.renderObjectText(name,subtype,type,rc.zoom,false,rc);
       if (rc.textSize == 0 && rc.showAnotherText != null) {
-        name=renderObjectText(rc.showAnotherText,subtype,type,rc.zoom,false,rc);
+        name=TextRenderer.renderObjectText(rc.showAnotherText,subtype,type,rc.zoom,false,rc);
       }
       if (name != null && rc.textSize > 0) {
         if (!rc.showTextOnPath) {
@@ -84,7 +91,7 @@
           rc.textToDraw.add(text);
         }
         if (rc.showAnotherText != null) {
-          name=renderObjectText(rc.showAnotherText,subtype,type,rc.zoom,false,rc);
+          name=TextRenderer.renderObjectText(rc.showAnotherText,subtype,type,rc.zoom,false,rc);
         }
         if (rc.showTextOnPath && paintText.measureText(obj.getName()) < Math.max(Math.abs(xLength),Math.abs(yLength))) {
           if (inverse) {

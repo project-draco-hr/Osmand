@@ -1,0 +1,28 @@
+{
+  OsmandRenderingRulesParser parser=new OsmandRenderingRulesParser();
+  parser.parseRenderingRules(OsmandRenderingRulesParser.class.getResourceAsStream("default.render.xml"),new RenderingRuleVisitor(){
+    @Override public void rendering(    String name,    String depends){
+      System.out.println("Renderer " + name);
+    }
+    @Override public void visitRule(    int state,    FilterState filter){
+      String gen=generateAttributes(state,filter);
+      if (gen != null) {
+        String res="";
+        if (filter.maxzoom != -1) {
+          res+=" zoom : " + filter.minzoom + "-"+ filter.maxzoom;
+        }
+ else {
+          res+=" zoom : " + filter.minzoom;
+        }
+        res+=" tag=" + filter.tag;
+        res+=" val=" + filter.val;
+        if (filter.layer != 0) {
+          res+=" layer=" + filter.layer;
+        }
+        res+=gen;
+        System.out.println(res);
+      }
+    }
+  }
+);
+}

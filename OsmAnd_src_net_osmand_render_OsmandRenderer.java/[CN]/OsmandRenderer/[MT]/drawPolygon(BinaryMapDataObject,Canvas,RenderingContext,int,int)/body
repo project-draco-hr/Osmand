@@ -1,4 +1,8 @@
 {
+  TagValuePair pair=obj.getMapIndex().decodeType(type,subtype);
+  if (render == null || pair == null) {
+    return;
+  }
   float xText=0;
   float yText=0;
   int zoom=rc.zoom;
@@ -6,8 +10,8 @@
   rc.main.emptyArea();
   rc.second.emptyLine();
   rc.main.color=Color.rgb(245,245,245);
-  PolygonRenderer.renderPolygon(rc,zoom,type,subtype,this);
-  if (!rc.main.fillArea) {
+  boolean rendered=render.renderPolygon(pair.tag,pair.value,zoom,rc,this);
+  if (!rendered) {
     return;
   }
   rc.visible++;
@@ -36,7 +40,7 @@
     String name=obj.getName();
     if (name != null) {
       rc.clearText();
-      name=renderObjectText(name,subtype,type,rc.zoom,true,rc);
+      name=render.renderObjectText(name,pair.tag,pair.value,rc);
       if (rc.textSize > 0 && name != null) {
         TextDrawInfo info=new TextDrawInfo(name);
         info.fillProperties(rc,xText,yText);

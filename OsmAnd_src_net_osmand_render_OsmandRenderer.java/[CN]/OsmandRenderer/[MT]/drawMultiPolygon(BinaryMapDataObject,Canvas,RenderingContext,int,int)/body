@@ -1,14 +1,18 @@
 {
-  Path path=null;
+  String tag=((MultyPolygon)obj).getTag();
+  String value=((MultyPolygon)obj).getValue();
+  if (render == null || tag == null) {
+    return;
+  }
   rc.main.emptyArea();
   rc.second.emptyLine();
   rc.main.color=Color.rgb(245,245,245);
-  PolygonRenderer.renderPolygon(rc,rc.zoom,type,subtype,this);
-  if (!rc.main.fillArea) {
+  boolean rendered=render.renderPolygon(tag,value,rc.zoom,rc,this);
+  if (!rendered) {
     return;
   }
   rc.visible++;
-  path=new Path();
+  Path path=new Path();
   for (int i=0; i < ((MultyPolygon)obj).getBoundsCount(); i++) {
     int cnt=((MultyPolygon)obj).getBoundPointsCount(i);
     float xText=0;
@@ -28,7 +32,7 @@
       String name=((MultyPolygon)obj).getName(i);
       if (name != null) {
         rc.clearText();
-        name=renderObjectText(name,subtype,type,rc.zoom,true,rc);
+        name=render.renderObjectText(name,tag,value,rc);
         if (rc.textSize > 0 && name != null) {
           TextDrawInfo info=new TextDrawInfo(name);
           info.fillProperties(rc,xText / cnt,yText / cnt);

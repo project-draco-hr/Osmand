@@ -1,0 +1,33 @@
+{
+  name=parser.isNamespaceAware() ? localName : name;
+  if ("filter".equals(name)) {
+    FilterState st=parseFilterAttributes(attributes);
+    stack.push(st);
+  }
+ else   if ("text".equals(name)) {
+    state=TEXT_STATE;
+  }
+ else   if ("point".equals(name)) {
+    state=POINT_STATE;
+  }
+ else   if ("line".equals(name)) {
+    state=LINE_STATE;
+  }
+ else   if ("polygon".equals(name)) {
+    state=POLYGON_STATE;
+  }
+ else   if ("switch".equals(name)) {
+    SwitchState st=new SwitchState();
+    stack.push(st);
+  }
+ else   if ("case".equals(name)) {
+    FilterState st=parseFilterAttributes(attributes);
+    ((SwitchState)stack.peek()).filters.add(st);
+  }
+ else   if ("renderer".equals(name)) {
+    visitor.rendering(attributes.getValue("name"),attributes.getValue("depends"));
+  }
+ else {
+    log.warn("Unknown tag" + name);
+  }
+}

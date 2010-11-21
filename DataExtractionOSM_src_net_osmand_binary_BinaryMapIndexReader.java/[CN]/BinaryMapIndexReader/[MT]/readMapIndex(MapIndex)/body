@@ -4,10 +4,22 @@
     int tag=WireFormat.getTagFieldNumber(t);
 switch (tag) {
 case 0:
-      return;
+      if (index.encodingRules.isEmpty()) {
+        Map<String,MapRulType> map=MapRenderingTypes.getEncodingRuleTypes();
+        for (        String tags : map.keySet()) {
+          MapRulType rt=map.get(tags);
+          if (rt.getType(null) != 0) {
+            initMapEncodingRule(index,rt.getType(null),rt.getSubType(null),tags,null);
+          }
+          for (          String value : rt.getValuesSet()) {
+            initMapEncodingRule(index,rt.getType(value),rt.getSubType(value),tags,value);
+          }
+        }
+      }
+    return;
 case OsmandOdb.OsmAndMapIndex.NAME_FIELD_NUMBER:
-    index.setName(codedIS.readString());
-  break;
+  index.setName(codedIS.readString());
+break;
 case OsmandOdb.OsmAndMapIndex.RULES_FIELD_NUMBER:
 int len=codedIS.readInt32();
 int oldLimit=codedIS.pushLimit(len);

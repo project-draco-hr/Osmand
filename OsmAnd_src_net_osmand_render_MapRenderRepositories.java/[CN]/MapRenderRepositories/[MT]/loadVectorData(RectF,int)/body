@@ -15,7 +15,7 @@
     ArrayList<BinaryMapDataObject> tempList=new ArrayList<BinaryMapDataObject>();
     System.gc();
     TLongSet ids=new TLongHashSet();
-    Map<Integer,List<BinaryMapDataObject>> multiPolygons=new LinkedHashMap<Integer,List<BinaryMapDataObject>>();
+    Map<TagValuePair,List<BinaryMapDataObject>> multiPolygons=new LinkedHashMap<TagValuePair,List<BinaryMapDataObject>>();
     int leftX=MapUtils.get31TileNumberX(cLeftLongitude);
     int rightX=MapUtils.get31TileNumberX(cRightLongitude);
     int bottomY=MapUtils.get31TileNumberY(cBottomLatitude);
@@ -57,7 +57,18 @@
         }
         count++;
         for (int i=0; i < r.getTypes().length; i++) {
-          registerMultipolygon(multiPolygons,r.getTypes()[i],r);
+          if ((r.getTypes()[i] & 0x3) == MapRenderingTypes.MULTY_POLYGON_TYPE) {
+            int type=MapRenderingTypes.getMainObjectType(r.getTypes()[i]);
+            int subtype=MapRenderingTypes.getObjectSubType(r.getTypes()[i]);
+            TagValuePair pair=r.getMapIndex().decodeType(type,subtype);
+            if (pair != null) {
+              pair=new TagValuePair(pair.tag,pair.value,r.getTypes()[i]);
+              if (!multiPolygons.containsKey(pair)) {
+                multiPolygons.put(pair,new ArrayList<BinaryMapDataObject>());
+              }
+              multiPolygons.get(pair).add(r);
+            }
+          }
         }
         if (checkWhetherInterrupted()) {
           return false;

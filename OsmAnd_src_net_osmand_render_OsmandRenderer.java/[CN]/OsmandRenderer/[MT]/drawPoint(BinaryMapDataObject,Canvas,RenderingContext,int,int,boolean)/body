@@ -1,14 +1,18 @@
 {
-  int resId=PointRenderer.getPointBitmap(rc.zoom,type,subtype);
+  TagValuePair pair=obj.getMapIndex().decodeType(type,subtype);
+  if (render == null || pair == null) {
+    return;
+  }
+  Integer resId=render.getPointIcon(pair.tag,pair.value,rc.zoom);
   String name=null;
   if (renderText) {
     name=obj.getName();
     if (name != null) {
       rc.clearText();
-      name=renderObjectText(name,subtype,type,rc.zoom,true,rc);
+      name=render.renderObjectText(name,pair.tag,pair.value,rc);
     }
   }
-  if (resId == 0 && name == null) {
+  if (resId == null && name == null) {
     return;
   }
   int len=obj.getPointsLength();
@@ -23,7 +27,7 @@
     ps.x/=len;
     ps.y/=len;
   }
-  if (resId != 0) {
+  if (resId != null) {
     IconDrawInfo ico=new IconDrawInfo();
     ico.x=ps.x;
     ico.y=ps.y;

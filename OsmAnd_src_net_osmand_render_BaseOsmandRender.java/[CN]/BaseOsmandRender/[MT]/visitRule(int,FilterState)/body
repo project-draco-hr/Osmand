@@ -1,0 +1,18 @@
+{
+  boolean accept=filter.minzoom != -1;
+  if (state == OsmandRenderingRulesParser.POINT_STATE) {
+    accept&=RenderingIcons.getIcons().containsKey(filter.icon);
+  }
+  if (accept) {
+    if (rules[state] == null) {
+      rules[state]=new LinkedHashMap<String,Map<String,List<FilterState>>>();
+    }
+    if (rules[state].get(filter.tag) == null) {
+      rules[state].put(filter.tag,new LinkedHashMap<String,List<FilterState>>());
+    }
+    if (rules[state].get(filter.tag).get(filter.val) == null) {
+      rules[state].get(filter.tag).put(filter.val,new ArrayList<FilterState>(3));
+    }
+    rules[state].get(filter.tag).get(filter.val).add(filter);
+  }
+}
