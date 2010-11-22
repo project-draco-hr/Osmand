@@ -1,0 +1,20 @@
+{
+  File file=new File(Environment.getExternalStorageDirectory(),APP_DIR + IndexConstants.RENDERERS_DIR);
+  Map<String,File> externalRenderers=new LinkedHashMap<String,File>();
+  if (file.exists() && file.canRead()) {
+    for (    File f : file.listFiles()) {
+      if (f.getName().endsWith(IndexConstants.RENDERER_INDEX_EXT)) {
+        String name=f.getName().substring(0,f.getName().length() - IndexConstants.RENDERER_INDEX_EXT.length());
+        externalRenderers.put(name,f);
+      }
+    }
+  }
+  RendererRegistry.getRegistry().setExternalRenderers(externalRenderers);
+  String r=OsmandSettings.getVectorRenderer(OsmandSettings.getPrefs(context));
+  if (r != null) {
+    BaseOsmandRender obj=RendererRegistry.getRegistry().getRenderer(r);
+    if (obj != null) {
+      RendererRegistry.getRegistry().setCurrentSelectedRender(obj);
+    }
+  }
+}

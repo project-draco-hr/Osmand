@@ -92,6 +92,19 @@
     }
     edit.commit();
   }
+ else   if (preference == rendererPreference) {
+    BaseOsmandRender loaded=RendererRegistry.getRegistry().getRenderer((String)newValue);
+    if (loaded == null) {
+      Toast.makeText(this,R.string.renderer_load_exception,Toast.LENGTH_SHORT).show();
+    }
+ else {
+      RendererRegistry.getRegistry().setCurrentSelectedRender(loaded);
+      edit.putString(OsmandSettings.RENDERER,(String)newValue);
+      Toast.makeText(this,R.string.renderer_load_sucess,Toast.LENGTH_SHORT).show();
+      ((OsmandApplication)getApplication()).getResourceManager().getRenderer().clearCache();
+    }
+    edit.commit();
+  }
  else   if (preference == voicePreference) {
     int i=voicePreference.findIndexOfValue((String)newValue);
     if (i == 0) {
