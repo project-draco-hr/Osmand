@@ -59,14 +59,32 @@
         return null;
       }
     }
+    int skewConstant=16;
+    int iconsW=rc.width / skewConstant;
+    int iconsH=rc.height / skewConstant;
+    int[] alreadyDrawnIcons=new int[iconsW * iconsH / 32];
     for (    IconDrawInfo icon : rc.iconsToDraw) {
       if (icon.resId != 0) {
         if (cachedIcons.get(icon.resId) == null) {
+          Options options=new BitmapFactory.Options();
+          options.inScaled=false;
           cachedIcons.put(icon.resId,BitmapFactory.decodeResource(context.getResources(),icon.resId));
         }
         Bitmap ico=cachedIcons.get(icon.resId);
         if (ico != null) {
-          cv.drawBitmap(ico,icon.x - ico.getWidth() / 2,icon.y - ico.getHeight() / 2,paintIcon);
+          if (icon.y >= 0 && icon.y < rc.height && icon.x >= 0 && icon.x < rc.width) {
+            int z=(((int)icon.x / skewConstant) + ((int)icon.y / skewConstant) * iconsW);
+            int i=z / 32;
+            if (i >= alreadyDrawnIcons.length) {
+              continue;
+            }
+            int ind=alreadyDrawnIcons[i];
+            int b=z % 32;
+            if (((ind >> b) & 1) == 0) {
+              alreadyDrawnIcons[i]=ind | (1 << b);
+              cv.drawBitmap(ico,icon.x - ico.getWidth() / 2,icon.y - ico.getHeight() / 2,paintIcon);
+            }
+          }
         }
       }
       if (rc.interrupted) {
