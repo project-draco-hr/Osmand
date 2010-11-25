@@ -3,44 +3,79 @@
   if (currentRenderingContext != null) {
     currentRenderingContext=null;
   }
-  requestedBox=new RotatedTileBox(tileRect);
-  RectF dataBox=requestedBox.calculateLatLonBox(new RectF());
-  if (cObjectsBox.left > dataBox.left || cObjectsBox.top > dataBox.top || cObjectsBox.right < dataBox.right || cObjectsBox.bottom < dataBox.bottom) {
-    if ((dataBox.right - dataBox.left) > (dataBox.top - dataBox.bottom)) {
-      double wi=(dataBox.right - dataBox.left) * .2;
-      dataBox.left-=wi;
-      dataBox.right+=wi;
-    }
+  try {
+    requestedBox=new RotatedTileBox(tileRect);
+    RectF dataBox=requestedBox.calculateLatLonBox(new RectF());
+    long now=System.currentTimeMillis();
+    if (cObjectsBox.left > dataBox.left || cObjectsBox.top > dataBox.top || cObjectsBox.right < dataBox.right || cObjectsBox.bottom < dataBox.bottom) {
+      if ((dataBox.right - dataBox.left) > (dataBox.top - dataBox.bottom)) {
+        double wi=(dataBox.right - dataBox.left) * .2;
+        dataBox.left-=wi;
+        dataBox.right+=wi;
+      }
  else {
-      double hi=(dataBox.bottom - dataBox.top) * .2;
-      dataBox.top-=hi;
-      dataBox.bottom+=hi;
+        double hi=(dataBox.bottom - dataBox.top) * .2;
+        dataBox.top-=hi;
+        dataBox.bottom+=hi;
+      }
+      boolean loaded=loadVectorData(dataBox,requestedBox.getZoom());
+      if (!loaded || checkWhetherInterrupted()) {
+        return;
+      }
     }
-    boolean loaded=loadVectorData(dataBox,requestedBox.getZoom());
-    if (!loaded || checkWhetherInterrupted()) {
+    final long searchTime=System.currentTimeMillis() - now;
+    currentRenderingContext=new OsmandRenderer.RenderingContext();
+    currentRenderingContext.leftX=(float)requestedBox.getLeftTileX();
+    currentRenderingContext.topY=(float)requestedBox.getTopTileY();
+    currentRenderingContext.zoom=requestedBox.getZoom();
+    currentRenderingContext.rotate=requestedBox.getRotate();
+    currentRenderingContext.width=(int)(requestedBox.getTileWidth() * OsmandRenderer.TILE_SIZE);
+    currentRenderingContext.height=(int)(requestedBox.getTileHeight() * OsmandRenderer.TILE_SIZE);
+    if (checkWhetherInterrupted()) {
       return;
     }
-  }
-  currentRenderingContext=new OsmandRenderer.RenderingContext();
-  currentRenderingContext.leftX=(float)requestedBox.getLeftTileX();
-  currentRenderingContext.topY=(float)requestedBox.getTopTileY();
-  currentRenderingContext.zoom=requestedBox.getZoom();
-  currentRenderingContext.rotate=requestedBox.getRotate();
-  currentRenderingContext.width=(int)(requestedBox.getTileWidth() * OsmandRenderer.TILE_SIZE);
-  currentRenderingContext.height=(int)(requestedBox.getTileHeight() * OsmandRenderer.TILE_SIZE);
-  if (checkWhetherInterrupted()) {
-    return;
-  }
-  Bitmap bmp=renderer.generateNewBitmap(currentRenderingContext,cObjects,OsmandSettings.usingEnglishNames(OsmandSettings.getPrefs(context)));
-  if (checkWhetherInterrupted()) {
+    now=System.currentTimeMillis();
+    Bitmap bmp=renderer.generateNewBitmap(currentRenderingContext,cObjects,OsmandSettings.usingEnglishNames(OsmandSettings.getPrefs(context)));
+    if (checkWhetherInterrupted()) {
+      currentRenderingContext=null;
+      return;
+    }
+    final long renderingTime=System.currentTimeMillis() - now;
     currentRenderingContext=null;
-    return;
+    Bitmap oldBmp=this.bmp;
+    this.bmp=bmp;
+    this.bmpLocation=tileRect;
+    if (oldBmp != null) {
+      oldBmp.recycle();
+    }
+    if (OsmandSettings.isDebugRendering(context)) {
+      final String msg="Search done in " + searchTime + " ms\nRendering done in "+ renderingTime+ " ms";
+      handler.post(new Runnable(){
+        @Override public void run(){
+          Toast.makeText(context,msg,Toast.LENGTH_SHORT).show();
+        }
+      }
+);
+    }
   }
-  currentRenderingContext=null;
-  Bitmap oldBmp=this.bmp;
-  this.bmp=bmp;
-  this.bmpLocation=tileRect;
-  if (oldBmp != null) {
-    oldBmp.recycle();
+ catch (  RuntimeException e) {
+    log.error("Runtime memory exception",e);
+    handler.post(new Runnable(){
+      @Override public void run(){
+        Toast.makeText(context,R.string.rendering_exception,Toast.LENGTH_SHORT).show();
+      }
+    }
+);
+  }
+catch (  OutOfMemoryError e) {
+    log.error("Out of memory error",e);
+    cObjects=new ArrayList<BinaryMapDataObject>();
+    cObjectsBox=new RectF();
+    handler.post(new Runnable(){
+      @Override public void run(){
+        Toast.makeText(context,R.string.rendering_out_of_memory,Toast.LENGTH_SHORT).show();
+      }
+    }
+);
   }
 }
