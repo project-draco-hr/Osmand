@@ -32,4 +32,20 @@
     edit.putBoolean(OsmandSettings.SAVE_TRACK_TO_GPX,false);
     edit.putInt(OsmandSettings.POSITION_ON_MAP,OsmandSettings.CENTER_CONSTANT);
   }
+  BaseOsmandRender current=RendererRegistry.getRegistry().getCurrentSelectedRenderer();
+  BaseOsmandRender defaultRender=RendererRegistry.getRegistry().defaultRender();
+  boolean change=current == defaultRender || (old == ApplicationMode.CAR && current == RendererRegistry.getRegistry().carRender());
+  if (change) {
+    BaseOsmandRender newRenderer;
+    if (preset == ApplicationMode.CAR) {
+      newRenderer=RendererRegistry.getRegistry().carRender();
+    }
+ else {
+      newRenderer=defaultRender;
+    }
+    if (newRenderer != current) {
+      RendererRegistry.getRegistry().setCurrentSelectedRender(newRenderer);
+      application.getResourceManager().getRenderer().clearCache();
+    }
+  }
 }
