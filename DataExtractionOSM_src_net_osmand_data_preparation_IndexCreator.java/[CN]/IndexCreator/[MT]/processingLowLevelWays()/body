@@ -1,0 +1,62 @@
+{
+  for (int level=1; level < MAP_ZOOMS.length - 1; level++) {
+    Set<Long> visitedWays=new LinkedHashSet<Long>();
+    int zoom=MAP_ZOOMS[MAP_ZOOMS.length - level - 1];
+    for (    Long stId : lowLevelSt[level].keySet()) {
+      for (      Way w : lowLevelSt[level].get(stId)) {
+        if (visitedWays.contains(w.getId())) {
+          continue;
+        }
+        visitedWays.add(w.getId());
+        boolean combined=true;
+        while (combined) {
+          combined=false;
+          List<Way> list=lowLevelEnd[level].get(w.getNodeIds().get(0));
+          if (list != null) {
+            for (            Way ws : list) {
+              if (!visitedWays.contains(ws.getId()) && Algoritms.objectEquals(ws.getTag(OSMTagKey.NAME),w.getTag(OSMTagKey.NAME)) && Algoritms.objectEquals(ws.getTag("long_type"),w.getTag("long_type"))) {
+                visitedWays.add(ws.getId());
+                for (int i=1; i < w.getNodes().size(); i++) {
+                  ws.addNode(w.getNodes().get(i));
+                }
+                w=ws;
+                combined=true;
+                break;
+              }
+            }
+          }
+        }
+        combined=true;
+        while (combined) {
+          combined=false;
+          List<Way> list=lowLevelSt[level].get(w.getNodeIds().get(w.getNodeIds().size() - 1));
+          if (list != null) {
+            for (            Way ws : list) {
+              if (!visitedWays.contains(ws.getId()) && Algoritms.objectEquals(ws.getTag(OSMTagKey.NAME),w.getTag(OSMTagKey.NAME)) && Algoritms.objectEquals(ws.getTag("long_type"),w.getTag("long_type"))) {
+                visitedWays.add(ws.getId());
+                for (int i=1; i < ws.getNodes().size(); i++) {
+                  w.addNode(ws.getNodes().get(i));
+                }
+                combined=true;
+                break;
+              }
+            }
+          }
+        }
+        boolean skip=false;
+        boolean cycle=w.getNodes().get(0).getId() == w.getNodes().get(w.getNodes().size() - 1).getId();
+        boolean hasMulti=multiPolygonsWays[level].containsKey(w.getId() >> 3);
+        if (cycle || !hasMulti) {
+          skip=checkForSmallAreas(w.getNodes(),zoom - 1,4);
+        }
+        if (!skip) {
+          Way newWs=new Way(w.getId());
+          simplifyDouglasPeucker(w.getNodes(),zoom - 1 + 8,3,newWs);
+          Long l=Long.parseLong(w.getTag("long_type"));
+          int type=decodeTypesFromOneLong(l);
+          DataIndexWriter.insertBinaryMapRenderObjectIndex(pStatements,mapBinaryStat,mapTree[level],newWs,w.getTag(OSMTagKey.NAME),w.getId(),type,typeUse,0,restrictionsUse,false,false,BATCH_SIZE);
+        }
+      }
+    }
+  }
+}
