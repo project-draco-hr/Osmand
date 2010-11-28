@@ -51,6 +51,7 @@
     }
     rs.close();
     selectTransportRouteData.close();
+    selectTransportData.close();
     writer.endWriteTransportRoutes();
     PreparedStatement selectTransportStop=mapConnection.prepareStatement("SELECT A.id,  A.latitude,  A.longitude, A.name, A.name_en FROM transport_stop A where A.id = ?");
     PreparedStatement selectTransportRouteStop=mapConnection.prepareStatement("SELECT DISTINCT S.route FROM transport_route_stop S WHERE S.stop = ? ");
@@ -62,6 +63,8 @@
       writeBinaryTransportTree(root,transportStopsTree,writer,selectTransportStop,selectTransportRouteStop,transportRoutes,stringTable);
       writer.endWriteTransportTreeElement();
     }
+    selectTransportStop.close();
+    selectTransportRouteStop.close();
     writer.writeTransportStringTable(stringTable);
     writer.endWriteTransportIndex();
     writer.flush();
