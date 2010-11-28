@@ -7,7 +7,11 @@
       log.error("Illegal configuration",e);
       throw new IllegalStateException(e);
     }
-    return DriverManager.getConnection("jdbc:sqlite:" + fileName);
+    Connection connection=DriverManager.getConnection("jdbc:sqlite:" + fileName);
+    Statement statement=connection.createStatement();
+    statement.executeUpdate("PRAGMA synchronous = 0");
+    statement.close();
+    return connection;
   }
  else   if (usingDerby()) {
     try {

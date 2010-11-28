@@ -7,6 +7,7 @@
   }
   cities.clear();
   cityManager.clear();
+  lowLevelWays=-1;
   postalCodeRelations.clear();
   if (normalizeStreets) {
     normalizeDefaultSuffixes=DataExtractionSettings.getSettings().getDefaultSuffixesToNormalizeStreets();
@@ -105,8 +106,8 @@
       iterateOverEntities(progress,EntityType.RELATION,allRelations,STEP_MAIN);
       if (indexMap) {
         progress.setGeneralProgress("[90 of 100]");
-        progress.startTask("Indexing low level ways...",-1);
-        processingLowLevelWays();
+        progress.startTask("Indexing low level ways...",lowLevelWays);
+        processingLowLevelWays(progress);
       }
       if (indexAddress && !postalCodeRelations.isEmpty()) {
         progress.setGeneralProgress("[90 of 100]");
@@ -140,7 +141,7 @@
       if (indexMap) {
         progress.setGeneralProgress("[95 of 100]");
         progress.startTask("Writing map index to binary file...",-1);
-        closePreparedStatements(mapBinaryStat);
+        closePreparedStatements(mapBinaryStat,mapLowLevelBinaryStat);
         mapConnection.commit();
         writeBinaryMapIndex(writer);
       }

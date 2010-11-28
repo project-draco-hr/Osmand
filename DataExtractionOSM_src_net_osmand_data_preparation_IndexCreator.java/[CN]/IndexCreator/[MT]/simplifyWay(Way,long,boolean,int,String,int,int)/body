@@ -6,8 +6,8 @@
   }
   boolean cycle=originalE.getNodeIds().get(0).longValue() == originalE.getNodeIds().get(nodes.size() - 1).longValue();
   long longType=encodeTypesToOneLong(type);
-  boolean skip=checkForSmallAreas(nodes,zoom,3);
-  if (skip && (cycle || !hasMulti)) {
+  boolean skip=checkForSmallAreas(nodes,zoom,3,3);
+  if (skip && cycle) {
     return null;
   }
   simplifyDouglasPeucker(nodes,zoom + 8,3,way);
@@ -18,18 +18,8 @@
     return way;
   }
  else {
-    way.putTag(OSMTagKey.NAME.getValue(),name);
-    way.putTag("long_type",longType + "");
-    long stId=way.getNodes().get(0).getId();
-    long endId=way.getNodes().get(way.getNodes().size() - 1).getId();
-    if (!lowLevelSt[level].containsKey(stId)) {
-      lowLevelSt[level].put(stId,new ArrayList<Way>(2));
-    }
-    lowLevelSt[level].get(stId).add(way);
-    if (!lowLevelEnd[level].containsKey(endId)) {
-      lowLevelEnd[level].put(endId,new ArrayList<Way>(2));
-    }
-    lowLevelEnd[level].get(endId).add(way);
+    lowLevelWays++;
+    DataIndexWriter.insertLowLevelMapBinaryObject(pStatements,mapLowLevelBinaryStat,level,longType,id,way.getNodes(),name);
     return null;
   }
 }
