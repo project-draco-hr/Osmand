@@ -1,6 +1,12 @@
 {
-  InputStream is=MapRenderingTypes.class.getResourceAsStream("rendering_types.xml");
+  InputStream is;
   try {
+    if (resourceName == null) {
+      is=MapRenderingTypes.class.getResourceAsStream("rendering_types.xml");
+    }
+ else {
+      is=new FileInputStream(resourceName);
+    }
     long time=System.currentTimeMillis();
     final SAXParser parser=SAXParserFactory.newInstance().newSAXParser();
     parser.parse(is,new DefaultHandler(){
@@ -63,6 +69,7 @@
     }
 );
     log.info("Time to init " + (System.currentTimeMillis() - time));
+    is.close();
   }
  catch (  IOException e) {
     log.error("Unexpected error",e);

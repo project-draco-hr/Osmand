@@ -1,7 +1,7 @@
 {
   BinaryMapIndexReader[] indexes=new BinaryMapIndexReader[partsToExtractFrom.size()];
   RandomAccessFile[] rafs=new RandomAccessFile[partsToExtractFrom.size()];
-  LinkedHashSet<Integer>[] partsSet=new LinkedHashSet[partsToExtractFrom.size()];
+  LinkedHashSet<Float>[] partsSet=new LinkedHashSet[partsToExtractFrom.size()];
   int c=0;
   Set<String> addressNames=new LinkedHashSet<String>();
   int version=-1;
@@ -12,7 +12,7 @@
     }
     rafs[c]=new RandomAccessFile(f,"r");
     indexes[c]=new BinaryMapIndexReader(rafs[c]);
-    partsSet[c]=new LinkedHashSet<Integer>();
+    partsSet[c]=new LinkedHashSet<Float>();
     if (version == -1) {
       version=indexes[c].getVersion();
     }
@@ -22,18 +22,18 @@
         return null;
       }
     }
-    LinkedHashSet<Integer> temp=new LinkedHashSet<Integer>();
+    LinkedHashSet<Float> temp=new LinkedHashSet<Float>();
     String pattern=partsToExtractFrom.get(f);
     boolean minus=true;
     if (pattern != null) {
       minus=pattern.startsWith("-");
       String[] split=pattern.substring(1).split(",");
       for (      String s : split) {
-        temp.add(Integer.parseInt(s));
+        temp.add(Float.parseFloat(s));
       }
     }
     for (int i=0; i < indexes[c].getIndexes().size(); i++) {
-      partsSet[c].add(i + 1);
+      partsSet[c].add(i + 1f);
     }
     if (minus) {
       partsSet[c].removeAll(temp);
@@ -45,25 +45,25 @@
   }
   FileOutputStream fout=new FileOutputStream(fileToExtract);
   CodedOutputStream ous=CodedOutputStream.newInstance(fout,BUFFER_SIZE);
-  List<Integer> list=new ArrayList<Integer>();
+  List<Float> list=new ArrayList<Float>();
   byte[] BUFFER_TO_READ=new byte[BUFFER_SIZE];
   ous.writeInt32(OsmandOdb.OsmAndStructure.VERSION_FIELD_NUMBER,version);
   for (int k=0; k < indexes.length; k++) {
-    LinkedHashSet<Integer> partSet=partsSet[k];
+    LinkedHashSet<Float> partSet=partsSet[k];
     BinaryMapIndexReader index=indexes[k];
     RandomAccessFile raf=rafs[k];
     for (int i=0; i < index.getIndexes().size(); i++) {
-      if (!partSet.contains(i + 1)) {
+      if (!partSet.contains(i + 1f)) {
         continue;
       }
-      list.add(i + 1);
+      list.add(i + 1f);
       BinaryIndexPart part=index.getIndexes().get(i);
       String map;
       if (part instanceof AddressRegion) {
         ous.writeTag(OsmandOdb.OsmAndStructure.ADDRESSINDEX_FIELD_NUMBER,WireFormat.WIRETYPE_FIXED32_LENGTH_DELIMITED);
         map="Address";
         if (addressNames.contains(part.getName())) {
-          System.err.println("Error : going to merge 2 same addresses skip " + part.getName());
+          System.err.println("Error : going to merge 2 addresses with same names. Skip " + part.getName());
           continue;
         }
         addressNames.add(part.getName());
