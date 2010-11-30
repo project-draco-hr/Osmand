@@ -28,9 +28,24 @@
   progress.startTask(Messages.getString("IndexCreator.SERIALIZING_ADRESS"),j + ((cities.size() - j) / 100 + 1));
   Map<String,Set<Street>> postcodes=new TreeMap<String,Set<Street>>();
   boolean writeCities=true;
+  List<City> suburbs=new ArrayList<City>();
+  for (  City s : cities) {
+    if (s.getType() == CityType.SUBURB && s.getIsInValue() != null) {
+      suburbs.add(s);
+    }
+  }
   writer.startCityIndexes(false);
   for (int i=0; i < cities.size(); i++) {
     City c=cities.get(i);
+    List<City> listSuburbs=null;
+    for (    City suburb : suburbs) {
+      if (suburb.getIsInValue().contains(c.getName().toLowerCase())) {
+        if (listSuburbs == null) {
+          listSuburbs=new ArrayList<City>();
+        }
+        listSuburbs.add(suburb);
+      }
+    }
     if (writeCities) {
       progress.progress(1);
     }
@@ -48,7 +63,7 @@
       streetNodes=new LinkedHashMap<Street,List<Node>>();
     }
     long time=System.currentTimeMillis();
-    reader.readStreetsBuildings(streetstat,c,streets,waynodesStat,streetNodes);
+    reader.readStreetsBuildings(streetstat,c,streets,waynodesStat,streetNodes,listSuburbs);
     long f=System.currentTimeMillis() - time;
     writer.writeCityIndex(c,streets,streetNodes);
     int bCount=0;
