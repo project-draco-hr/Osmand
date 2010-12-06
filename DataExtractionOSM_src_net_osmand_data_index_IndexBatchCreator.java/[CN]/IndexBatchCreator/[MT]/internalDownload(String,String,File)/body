@@ -1,0 +1,31 @@
+{
+  int count=0;
+  int downloaded=0;
+  int mbDownloaded=0;
+  byte[] buffer=new byte[BUFFER_SIZE];
+  OutputStream ostream=null;
+  InputStream stream=null;
+  try {
+    ostream=new FileOutputStream(toSave);
+    stream=new URL(url).openStream();
+    log.info("Downloading country " + country + " from "+ url);
+    while ((count=stream.read(buffer)) != -1) {
+      ostream.write(buffer,0,count);
+      downloaded+=count;
+      if (downloaded > DOWNLOAD_DEBUG) {
+        downloaded-=DOWNLOAD_DEBUG;
+        mbDownloaded+=(DOWNLOAD_DEBUG >> 20);
+        log.info(mbDownloaded + " megabytes downloaded of " + toSave.getName());
+      }
+    }
+    return toSave;
+  }
+ catch (  IOException e) {
+    log.error("Input/output exception " + toSave.getName() + " downloading from "+ url,e);
+  }
+ finally {
+    safeClose(ostream,"Input/output exception " + toSave.getName() + " to close stream ");
+    safeClose(stream,"Input/output exception " + url + " to close stream ");
+  }
+  return null;
+}

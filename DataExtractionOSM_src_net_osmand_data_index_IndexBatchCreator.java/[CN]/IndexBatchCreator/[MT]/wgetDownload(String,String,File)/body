@@ -1,0 +1,38 @@
+{
+  BufferedReader wgetOutput=null;
+  OutputStream wgetInput=null;
+  Process wgetProc=null;
+  try {
+    log.info("Executing " + wget + " "+ url+ " -O "+ toSave.getCanonicalPath());
+    ProcessBuilder exec=new ProcessBuilder(wget,"--read-timeout=5","--progress=dot:binary",url,"-O",toSave.getCanonicalPath());
+    exec.redirectErrorStream(true);
+    wgetProc=exec.start();
+    wgetOutput=new BufferedReader(new InputStreamReader(wgetProc.getInputStream()));
+    String line;
+    while ((line=wgetOutput.readLine()) != null) {
+      log.info("wget output:" + line);
+    }
+    int exitValue=wgetProc.waitFor();
+    wgetProc=null;
+    if (exitValue != 0) {
+      log.error("Wget exited with error code: " + exitValue);
+    }
+ else {
+      return toSave;
+    }
+  }
+ catch (  IOException e) {
+    log.error("Input/output exception " + toSave.getName() + " downloading from "+ url+ "using wget: "+ wget,e);
+  }
+catch (  InterruptedException e) {
+    log.error("Interrupted exception " + toSave.getName() + " downloading from "+ url+ "using wget: "+ wget,e);
+  }
+ finally {
+    safeClose(wgetOutput,"");
+    safeClose(wgetInput,"");
+    if (wgetProc != null) {
+      wgetProc.destroy();
+    }
+  }
+  return null;
+}

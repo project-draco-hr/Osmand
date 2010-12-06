@@ -1,8 +1,4 @@
 {
-  byte[] buffer=new byte[BUFFER_SIZE];
-  int count=0;
-  int downloaded=0;
-  int mbDownloaded=0;
   String ext=".osm";
   if (url.endsWith(".osm.bz2")) {
     ext=".osm.bz2";
@@ -10,25 +6,13 @@
  else   if (url.endsWith(".osm.pbf")) {
     ext=".osm.pbf";
   }
-  File toSave=new File(osmDirFiles,country + suffix + ext);
-  try {
-    log.info("Downloading country " + country + " from "+ url);
-    FileOutputStream ostream=new FileOutputStream(toSave);
-    InputStream stream=new URL(url).openStream();
-    while ((count=stream.read(buffer)) != -1) {
-      ostream.write(buffer,0,count);
-      downloaded+=count;
-      if (downloaded > DOWNLOAD_DEBUG) {
-        downloaded-=DOWNLOAD_DEBUG;
-        mbDownloaded+=(DOWNLOAD_DEBUG >> 20);
-        log.info(mbDownloaded + " megabytes downloaded of " + toSave.getName());
-      }
-    }
-    ostream.close();
-    stream.close();
-    generateIndex(toSave,country,alreadyGeneratedFiles,alreadyUploadedFiles);
+  File toIndex=null;
+  File saveTo=new File(osmDirFiles,country + suffix + ext);
+  if (wget == null || wget.trim().length() == 0) {
+    toIndex=internalDownload(url,country,saveTo);
   }
- catch (  IOException e) {
-    log.error("Input/output exception " + toSave.getName() + " downloading from "+ url,e);
+ else {
+    toIndex=wgetDownload(url,country,saveTo);
   }
+  return toIndex;
 }
