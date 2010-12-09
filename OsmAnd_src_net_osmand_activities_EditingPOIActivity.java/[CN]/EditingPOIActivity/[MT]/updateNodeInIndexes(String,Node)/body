@@ -2,16 +2,20 @@
   List<AmenityIndexRepository> repos=app.getResourceManager().searchAmenityRepositories(n.getLatitude(),n.getLongitude());
   if (DELETE_ACTION.equals(action) || MODIFY_ACTION.equals(action)) {
     for (    AmenityIndexRepository r : repos) {
-      r.deleteAmenities(n.getId() << 1);
-      r.clearCache();
+      if (r instanceof AmenityIndexRepositoryOdb) {
+        ((AmenityIndexRepositoryOdb)r).deleteAmenities(n.getId() << 1);
+        ((AmenityIndexRepositoryOdb)r).clearCache();
+      }
     }
   }
   if (!DELETE_ACTION.equals(action)) {
     List<Amenity> ams=Amenity.parseAmenities(n,new ArrayList<Amenity>());
     for (    Amenity a : ams) {
       for (      AmenityIndexRepository r : repos) {
-        r.addAmenity(a);
-        r.clearCache();
+        if (r instanceof AmenityIndexRepositoryOdb) {
+          ((AmenityIndexRepositoryOdb)r).addAmenity(a);
+          ((AmenityIndexRepositoryOdb)r).clearCache();
+        }
       }
     }
   }

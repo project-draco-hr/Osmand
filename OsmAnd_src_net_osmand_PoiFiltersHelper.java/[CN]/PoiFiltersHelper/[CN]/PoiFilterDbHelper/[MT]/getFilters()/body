@@ -3,14 +3,14 @@
   ArrayList<PoiFilter> list=new ArrayList<PoiFilter>();
   if (db != null) {
     Cursor query=db.rawQuery("SELECT " + CATEGORIES_FILTER_ID + ", "+ CATEGORIES_COL_CATEGORY+ ","+ CATEGORIES_COL_SUBCATEGORY+ " FROM "+ CATEGORIES_NAME,null);
-    Map<String,Map<AmenityType,List<String>>> map=new LinkedHashMap<String,Map<AmenityType,List<String>>>();
+    Map<String,Map<AmenityType,LinkedHashSet<String>>> map=new LinkedHashMap<String,Map<AmenityType,LinkedHashSet<String>>>();
     if (query.moveToFirst()) {
       do {
         String filterId=query.getString(0);
         if (!map.containsKey(filterId)) {
-          map.put(filterId,new LinkedHashMap<AmenityType,List<String>>());
+          map.put(filterId,new LinkedHashMap<AmenityType,LinkedHashSet<String>>());
         }
-        Map<AmenityType,List<String>> m=map.get(filterId);
+        Map<AmenityType,LinkedHashSet<String>> m=map.get(filterId);
         AmenityType a=AmenityType.fromString(query.getString(1));
         String subCategory=query.getString(2);
         if (subCategory == null) {
@@ -18,7 +18,7 @@
         }
  else {
           if (m.get(a) == null) {
-            m.put(a,new ArrayList<String>());
+            m.put(a,new LinkedHashSet<String>());
           }
           m.get(a).add(subCategory);
         }

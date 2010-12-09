@@ -1,0 +1,22 @@
+{
+  int leftX=MapUtils.get31TileNumberX(leftLongitude);
+  int rightX=MapUtils.get31TileNumberX(rightLongitude);
+  int bottomY=MapUtils.get31TileNumberY(bottomLatitude);
+  int topY=MapUtils.get31TileNumberY(topLatitude);
+  for (  BinaryIndexPart i : index.getIndexes()) {
+    if (i instanceof MapIndex) {
+      List<MapRoot> rs=((MapIndex)i).getRoots();
+      if (!rs.isEmpty()) {
+        MapRoot rt=rs.get(0);
+        if (rightX < rt.getLeft() || leftX > rt.getRight()) {
+          continue;
+        }
+        if (topY > rt.getBottom() || bottomY < rt.getTop()) {
+          continue;
+        }
+        return true;
+      }
+    }
+  }
+  return false;
+}
