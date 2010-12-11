@@ -94,9 +94,20 @@
   SharedPreferences prefs=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_READABLE);
   if (prefs == null || !prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
     LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
-    Location location=service.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    Location location=null;
+    try {
+      location=service.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    }
+ catch (    IllegalArgumentException e) {
+      Log.d(LogUtil.TAG,"GPS location provider not available");
+    }
     if (location == null) {
-      location=service.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+      try {
+        location=service.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+      }
+ catch (      IllegalArgumentException e) {
+        Log.d(LogUtil.TAG,"Network location provider not available");
+      }
     }
     if (location != null) {
       mapView.setLatLon(location.getLatitude(),location.getLongitude());
