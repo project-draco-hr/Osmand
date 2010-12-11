@@ -1,0 +1,20 @@
+{
+  String name=e.getTag(OSMTagKey.NAME);
+  if (name == null) {
+    String msg="";
+    Collection<String> keys=e.getTagKeySet();
+    int cnt=0;
+    for (Iterator iter=keys.iterator(); iter.hasNext(); ) {
+      String key=(String)iter.next();
+      if (key.startsWith("name:") && key.length() <= 8) {
+        if (cnt == 0)         msg+="Entity misses default name tag, but it has localized name tag(s):\n";
+        msg+=key + "=" + e.getTag(key)+ "\n";
+        cnt++;
+      }
+    }
+    if (cnt > 0) {
+      msg+="Consider adding the name tag at " + e.getOsmUrl();
+      log.warn(msg);
+    }
+  }
+}
