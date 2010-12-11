@@ -3,7 +3,8 @@
     final ProgressDialog dlg=new ProgressDialog(frame,Messages.getString("OsmExtractionUI.LOADING_OSM_FILE"));
     dlg.setRunnable(new Runnable(){
       @Override public void run(){
-        IndexCreator creator=new IndexCreator(DataExtractionSettings.getSettings().getDefaultWorkingDir());
+        File dir=DataExtractionSettings.getSettings().getDefaultWorkingDir();
+        IndexCreator creator=new IndexCreator(dir);
         try {
           creator.setIndexAddress(buildAddressIndex.isSelected());
           creator.setIndexPOI(buildPoiIndex.isSelected());
@@ -54,7 +55,7 @@ catch (        SQLException e) {
           comma=true;
           msg.append(Messages.getString("OsmExtractionUI.TRANSPORT"));
         }
-        msg.append(Messages.getString("OsmExtractionUI.SUCCESFULLY_CREATED"));
+        msg.append(MessageFormat.format(Messages.getString("OsmExtractionUI.WERE_SUCCESFULLY_CREATED"),dir.getAbsolutePath()));
         JOptionPane pane=new JOptionPane(msg);
         JDialog dialog=pane.createDialog(frame,Messages.getString("OsmExtractionUI.GENERATION_DATA"));
         dialog.setVisible(true);
