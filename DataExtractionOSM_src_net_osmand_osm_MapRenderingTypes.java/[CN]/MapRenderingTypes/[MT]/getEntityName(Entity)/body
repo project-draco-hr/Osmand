@@ -16,11 +16,22 @@
   if (name == null) {
     name=e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER);
   }
-  if (name == null && "peak".equals(e.getTag(OSMTagKey.HIGHWAY))) {
-    name=e.getTag("ele");
-  }
-  if (name == null && "gate".equals(e.getTag("aeroway"))) {
-    name=e.getTag(OSMTagKey.REF);
+  if (name == null) {
+    Collection<String> tagKeySet=e.getTagKeySet();
+    Map<String,MapRulType> types=getEncodingRuleTypes();
+    for (int i=0; i < 2 && name == null; i++) {
+      for (      String tag : tagKeySet) {
+        if (types.containsKey(tag)) {
+          MapRulType rType=types.get(tag);
+          if (rType.getNameNullTag() != null) {
+            name=e.getTag(rType.getNameNullTag());
+            if (name != null) {
+              break;
+            }
+          }
+        }
+      }
+    }
   }
   return name;
 }
