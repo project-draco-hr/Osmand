@@ -16,17 +16,19 @@
     for (int i=0; i < sz; i++) {
       BinaryMapDataObject o=objects.get(i);
       int sh=i << 8;
-      for (int j=0; j < o.getTypes().length; j++) {
-        int wholeType=o.getTypes()[j];
-        int mask=wholeType & 3;
-        int layer=0;
-        if (mask != 1) {
-          layer=MapRenderingTypes.getNegativeWayLayer(wholeType);
-        }
-        if (o instanceof MultyPolygon) {
-          put(orderMap,render.getObjectOrder(((MultyPolygon)o).getTag(),((MultyPolygon)o).getValue(),mask,layer),sh + j,init);
-        }
+      if (o instanceof MultyPolygon) {
+        int mask=MapRenderingTypes.MULTY_POLYGON_TYPE;
+        int layer=((MultyPolygon)o).getLayer();
+        put(orderMap,render.getObjectOrder(((MultyPolygon)o).getTag(),((MultyPolygon)o).getValue(),mask,layer),sh,init);
+      }
  else {
+        for (int j=0; j < o.getTypes().length; j++) {
+          int wholeType=o.getTypes()[j];
+          int mask=wholeType & 3;
+          int layer=0;
+          if (mask != 1) {
+            layer=MapRenderingTypes.getNegativeWayLayer(wholeType);
+          }
           TagValuePair pair=o.getMapIndex().decodeType(MapRenderingTypes.getMainObjectType(wholeType),MapRenderingTypes.getObjectSubType(wholeType));
           if (pair != null) {
             put(orderMap,render.getObjectOrder(pair.tag,pair.value,mask,layer),sh + j,init);
@@ -52,7 +54,7 @@
         int ind=i >> 8;
         int l=i & 0xff;
         BinaryMapDataObject obj=objects.get(ind);
-        drawObj(obj,cv,rc,obj.getTypes()[l],l == 0);
+        drawObj(obj,cv,rc,l,l == 0);
         objCount++;
       }
       if (objCount > 25) {
