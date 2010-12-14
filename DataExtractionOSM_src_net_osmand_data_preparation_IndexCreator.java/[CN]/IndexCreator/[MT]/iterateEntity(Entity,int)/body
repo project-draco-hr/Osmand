@@ -136,16 +136,22 @@
     if (indexMap && e instanceof Relation && "multipolygon".equals(e.getTag(OSMTagKey.TYPE))) {
       loadEntityData(e,true);
       Map<Entity,String> entities=((Relation)e).getMemberEntities();
+      boolean outerFound=false;
       for (      Entity es : entities.keySet()) {
         if (es instanceof Way) {
           boolean inner="inner".equals(entities.get(es));
           if (!inner) {
+            outerFound=true;
             for (            String t : es.getTagKeySet()) {
               e.putTag(t,es.getTag(t));
             }
             break;
           }
         }
+      }
+      if (!outerFound) {
+        log.warn("Probably map bug: Multipoligon id=" + e.getId() + " contains only inner ways : ");
+        return;
       }
       int mtType=findMultiPolygonType(e,0);
       if (mtType != 0) {
