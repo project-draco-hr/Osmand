@@ -1,0 +1,16 @@
+{
+  log.info("Uploading file " + f.getName() + " "+ size+ " MB "+ date+ " of "+ description);
+  FTPFileUpload upload=new FTPFileUpload();
+  upload.upload("download.osmand.net",user,password,"indexes/" + f.getName(),f,1 << 15);
+  String url="http://download.osmand.net/xml_update.php?";
+  url+="index=" + URLEncoder.encode(f.getName());
+  url+="&description=" + URLEncoder.encode(description);
+  url+="&date=" + URLEncoder.encode(date);
+  url+="&size=" + URLEncoder.encode(size);
+  url+="&action=update";
+  log.info("Updating index " + url);
+  URL ourl=new URL(url);
+  InputStream is=ourl.openStream();
+  safeClose(is,"close file");
+  log.info("Finish updating index");
+}
