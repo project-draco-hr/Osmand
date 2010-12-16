@@ -22,6 +22,7 @@
       ZipInputStream zipIn=new ZipInputStream(new FileInputStream(fileToDownload));
       ZipEntry entry=null;
       while ((entry=zipIn.getNextEntry()) != null) {
+        File fs;
         if (!unzipToDir) {
           String name=entry.getName();
           int ind=name.lastIndexOf('_');
@@ -31,11 +32,12 @@
               name=name.substring(0,ind) + name.substring(i,name.length());
             }
           }
-          out=new FileOutputStream(new File(fileToUnZip.getParent(),name));
+          fs=new File(fileToUnZip.getParent(),name);
         }
  else {
-          out=new FileOutputStream(new File(fileToUnZip,entry.getName()));
+          fs=new File(fileToUnZip,entry.getName());
         }
+        out=new FileOutputStream(fs);
         int read;
         byte[] buffer=new byte[BUFFER_SIZE];
         while ((read=zipIn.read(buffer)) != -1) {
@@ -48,6 +50,9 @@
     }
     ArrayList<String> warnings=new ArrayList<String>();
     ResourceManager manager=((OsmandApplication)getApplication()).getResourceManager();
+    if (dateModified != null) {
+      toIndex.setLastModified(dateModified);
+    }
     if (toIndex.getName().endsWith(IndexConstants.ADDRESS_INDEX_EXT)) {
       manager.indexingAddress(progress,warnings,toIndex);
     }
@@ -61,6 +66,9 @@
       manager.indexingMaps(progress);
     }
  else     if (toIndex.getName().endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
+    }
+    if (dateModified != null) {
+      toIndex.setLastModified(dateModified);
     }
     if (warnings.isEmpty()) {
       showWarning(getString(R.string.download_index_success));

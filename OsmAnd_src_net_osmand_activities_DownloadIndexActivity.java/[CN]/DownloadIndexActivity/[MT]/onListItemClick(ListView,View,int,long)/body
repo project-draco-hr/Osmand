@@ -14,69 +14,8 @@
     }
     return;
   }
-  int ls=e.getKey().lastIndexOf('_');
-  final String baseName=e.getKey().substring(0,ls);
-  File parent=null;
-  String toSavePostfix=null;
-  String toCheckPostfix=null;
-  boolean unzipDir=false;
-  if (key.endsWith(IndexConstants.ADDRESS_INDEX_EXT)) {
-    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.ADDRESS_PATH);
-    toSavePostfix=IndexConstants.ADDRESS_INDEX_EXT;
-    toCheckPostfix=IndexConstants.ADDRESS_INDEX_EXT;
-  }
- else   if (key.endsWith(IndexConstants.ADDRESS_INDEX_EXT_ZIP)) {
-    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.ADDRESS_PATH);
-    toSavePostfix=IndexConstants.ADDRESS_INDEX_EXT_ZIP;
-    toCheckPostfix=IndexConstants.ADDRESS_INDEX_EXT;
-  }
- else   if (key.endsWith(IndexConstants.POI_INDEX_EXT)) {
-    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.POI_PATH);
-    toSavePostfix=IndexConstants.POI_INDEX_EXT;
-    toCheckPostfix=IndexConstants.POI_INDEX_EXT;
-  }
- else   if (key.endsWith(IndexConstants.POI_INDEX_EXT_ZIP)) {
-    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.POI_PATH);
-    toSavePostfix=IndexConstants.POI_INDEX_EXT_ZIP;
-    toCheckPostfix=IndexConstants.POI_INDEX_EXT;
-  }
- else   if (key.endsWith(IndexConstants.TRANSPORT_INDEX_EXT)) {
-    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.TRANSPORT_PATH);
-    toSavePostfix=IndexConstants.TRANSPORT_INDEX_EXT;
-    toCheckPostfix=IndexConstants.TRANSPORT_INDEX_EXT;
-  }
- else   if (key.endsWith(IndexConstants.TRANSPORT_INDEX_EXT_ZIP)) {
-    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.TRANSPORT_PATH);
-    toSavePostfix=IndexConstants.TRANSPORT_INDEX_EXT_ZIP;
-    toCheckPostfix=IndexConstants.TRANSPORT_INDEX_EXT;
-  }
- else   if (key.endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
-    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.APP_DIR);
-    toSavePostfix=IndexConstants.BINARY_MAP_INDEX_EXT;
-    toCheckPostfix=IndexConstants.BINARY_MAP_INDEX_EXT;
-  }
- else   if (key.endsWith(IndexConstants.BINARY_MAP_INDEX_EXT_ZIP)) {
-    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.APP_DIR);
-    toSavePostfix=IndexConstants.BINARY_MAP_INDEX_EXT_ZIP;
-    toCheckPostfix=IndexConstants.BINARY_MAP_INDEX_EXT;
-  }
- else   if (key.endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
-    parent=new File(Environment.getExternalStorageDirectory(),ResourceManager.VOICE_PATH);
-    toSavePostfix=IndexConstants.VOICE_INDEX_EXT_ZIP;
-    toCheckPostfix="";
-    unzipDir=true;
-  }
-  if (parent != null) {
-    parent.mkdirs();
-  }
-  if (parent == null || !parent.exists()) {
-    Toast.makeText(DownloadIndexActivity.this,getString(R.string.sd_dir_not_accessible),Toast.LENGTH_LONG).show();
-  }
- else {
-    final DownloadEntry entry=new DownloadEntry();
-    entry.fileToSave=new File(parent,baseName + toSavePostfix);
-    entry.unzip=unzipDir;
-    entry.fileToUnzip=new File(parent,baseName + toCheckPostfix);
+  final DownloadEntry entry=createDownloadEntry(e);
+  if (entry != null) {
     if (entry.fileToUnzip.exists()) {
       Builder builder=new AlertDialog.Builder(this);
       MessageFormat format;
@@ -87,7 +26,7 @@
         format=new MessageFormat("{0,date,dd.MM.yyyy} : {1, number,##.#} MB",Locale.US);
       }
       String description=format.format(new Object[]{new Date(entry.fileToUnzip.lastModified()),((float)entry.fileToUnzip.length() / MB)});
-      builder.setMessage(MessageFormat.format(getString(R.string.download_question_exist),baseName,description,extractDateAndSize(e.getValue())));
+      builder.setMessage(MessageFormat.format(getString(R.string.download_question_exist),entry.baseName,description,extractDateAndSize(e.getValue())));
       builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
         @Override public void onClick(        DialogInterface dialog,        int which){
           entriesToDownload.put(e.getKey(),entry);
