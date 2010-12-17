@@ -9,8 +9,14 @@
   url+="&size=" + URLEncoder.encode(size);
   url+="&action=update";
   log.info("Updating index " + url);
-  URL ourl=new URL(url);
-  InputStream is=ourl.openStream();
-  safeClose(is,"close file");
+  HttpURLConnection connection=(HttpURLConnection)new URL(url).openConnection();
+  connection.setRequestMethod("POST");
+  connection.connect();
+  if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+    log.error("Error updating indexes " + connection.getResponseMessage());
+  }
+  InputStream is=connection.getInputStream();
+  while (is.read() != -1)   ;
+  connection.disconnect();
   log.info("Finish updating index");
 }
