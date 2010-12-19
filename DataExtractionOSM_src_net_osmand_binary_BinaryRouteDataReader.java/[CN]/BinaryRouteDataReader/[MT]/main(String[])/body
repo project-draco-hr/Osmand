@@ -1,0 +1,21 @@
+{
+  RandomAccessFile raf=new RandomAccessFile(new File("d:\\android\\data\\Minsk.obf"),"r");
+  BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
+  BinaryRouteDataReader route=new BinaryRouteDataReader(reader);
+  double tileX=MapUtils.getTileNumberX(15,27.596);
+  double tileY=MapUtils.getTileNumberY(15,53.919);
+  RoutingContext ctx=new RoutingContext();
+  long ms=System.currentTimeMillis();
+  route.searchRoutes(ctx,(int)tileX,(int)tileY);
+  Collection<BinaryMapDataObject> res=ctx.values();
+  System.out.println(res.size() + " objects for " + (System.currentTimeMillis() - ms)+ " ms");
+  for (  BinaryMapDataObject r : res) {
+    TagValuePair pair=r.mapIndex.decodeType(r.getTypes()[0]);
+    if (r.name != null) {
+      System.out.println(pair.tag + " " + pair.value+ " "+ r.name);
+    }
+ else {
+      System.out.println(pair.tag + " " + pair.value);
+    }
+  }
+}

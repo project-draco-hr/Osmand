@@ -1,0 +1,41 @@
+{
+  int tileC=tileX << ZOOM_LOAD_TILES + tileY;
+  if (ctx.loadedTiles.contains(tileC)) {
+    return;
+  }
+  SearchRequest<BinaryMapDataObject> request=new SearchRequest<BinaryMapDataObject>();
+  request.left=tileX << (31 - ZOOM_LOAD_TILES);
+  request.right=(tileX + 1) << (31 - ZOOM_LOAD_TILES);
+  request.top=tileY << (31 - ZOOM_LOAD_TILES);
+  request.bottom=(tileY + 1) << (31 - ZOOM_LOAD_TILES);
+  request.zoom=15;
+  final CarRouter router=new CarRouter();
+  request.setSearchFilter(new BinaryMapIndexReader.SearchFilter(){
+    @Override public boolean accept(    TIntArrayList types,    MapIndex index){
+      for (int j=0; j < types.size(); j++) {
+        int wholeType=types.get(j);
+        TagValuePair pair=index.decodeType(wholeType);
+        if (pair != null) {
+          int t=wholeType & 3;
+          if (t == MapRenderingTypes.POINT_TYPE) {
+            if (router.acceptPoint(pair)) {
+              return true;
+            }
+          }
+ else           if (t == MapRenderingTypes.POLYLINE_TYPE) {
+            if (router.acceptLine(pair)) {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+  }
+);
+  map.searchMapIndex(request);
+  for (  BinaryMapDataObject o : request.searchResults) {
+    ctx.map.put(o.getId(),o);
+  }
+  ctx.loadedTiles.add(tileC);
+}
