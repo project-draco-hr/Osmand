@@ -17,14 +17,15 @@
  catch (          InterruptedException e) {
           }
         }
-        URLConnection conn=url.openConnection();
+        HttpURLConnection conn=(HttpURLConnection)url.openConnection();
         conn.setReadTimeout(30000);
-        conn.setConnectTimeout(30000);
-        is=conn.getInputStream();
-        long skipped=0;
-        while (skipped < fileread) {
-          skipped+=is.skip(fileread - skipped);
+        if (fileread > 0) {
+          String range="bytes=" + fileread + "-"+ (length - 1);
+          conn.setRequestProperty("Range",range);
         }
+        conn.setConnectTimeout(30000);
+        log.info(conn.getResponseMessage() + " " + conn.getResponseCode());
+        is=conn.getInputStream();
         if (first) {
           length=conn.getContentLength();
           progress.startTask(getString(R.string.downloading_file) + " " + fileName,length);
@@ -38,7 +39,9 @@
           progress.progress(read);
           fileread+=read;
         }
-        triesDownload=0;
+        if (length <= fileread) {
+          triesDownload=0;
+        }
       }
  catch (      IOException e) {
         log.error("IOException",e);
