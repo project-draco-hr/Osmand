@@ -1,21 +1,26 @@
 {
-  RandomAccessFile raf=new RandomAccessFile(new File("d:\\android\\data\\Minsk.obf"),"r");
+  RandomAccessFile raf=new RandomAccessFile(new File("d:\\android\\data\\Belarus.obf"),"r");
   BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
-  BinaryRouteDataReader route=new BinaryRouteDataReader(reader);
-  double tileX=MapUtils.getTileNumberX(15,27.596);
-  double tileY=MapUtils.getTileNumberY(15,53.919);
+  BinaryRouteDataReader router=new BinaryRouteDataReader(reader);
+  double lon=27.5976;
+  double lat=53.9199;
   RoutingContext ctx=new RoutingContext();
   long ms=System.currentTimeMillis();
-  route.searchRoutes(ctx,(int)tileX,(int)tileY);
+  RouteSegment routeSegment=router.findRouteSegment(lat,lon,ctx);
+  if (routeSegment != null) {
+    BinaryMapDataObject road=routeSegment.road;
+    TagValuePair pair=road.mapIndex.decodeType(road.getTypes()[0]);
+    System.out.println("ROAD TO START " + pair.tag + " "+ pair.value+ " "+ road.name+ " "+ routeSegment.segment+ " "+ (road.id >> 3));
+  }
+  double tileX=Math.round(MapUtils.getTileNumberX(ZOOM_LOAD_TILES,lon));
+  double tileY=Math.round(MapUtils.getTileNumberY(ZOOM_LOAD_TILES,lat));
+  router.searchRoutes(ctx,(int)tileX,(int)tileY);
+  router.searchRoutes(ctx,(int)tileX - 1,(int)tileY);
+  router.searchRoutes(ctx,(int)tileX,(int)tileY - 1);
+  router.searchRoutes(ctx,(int)tileX - 1,(int)tileY - 1);
   Collection<BinaryMapDataObject> res=ctx.values();
   System.out.println(res.size() + " objects for " + (System.currentTimeMillis() - ms)+ " ms");
   for (  BinaryMapDataObject r : res) {
     TagValuePair pair=r.mapIndex.decodeType(r.getTypes()[0]);
-    if (r.name != null) {
-      System.out.println(pair.tag + " " + pair.value+ " "+ r.name);
-    }
- else {
-      System.out.println(pair.tag + " " + pair.value);
-    }
   }
 }
