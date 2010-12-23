@@ -1,0 +1,54 @@
+{
+  List<RouteSegmentResult> result=new ArrayList<RouteSegmentResult>();
+  List<RouteSegment> searchList=new ArrayList<RouteSegment>();
+  TLongHashSet visitedPoints=new TLongHashSet();
+  searchList.add(start);
+  int stIndex=0;
+  int endIndex=-1;
+  while (stIndex < searchList.size() && endIndex == -1) {
+    RouteSegment segment=searchList.get(stIndex);
+    BinaryMapDataObject road=segment.road;
+    for (int j=0; j < road.getPointsLength() && endIndex == -1; j++) {
+      long l=(((long)road.getPoint31XTile(j)) << 31) + (long)road.getPoint31YTile(j);
+      if (visitedPoints.contains(l)) {
+        continue;
+      }
+      loadRoutes(ctx,(road.getPoint31XTile(j) >> (31 - ZOOM_LOAD_TILES)),(road.getPoint31YTile(j) >> (31 - ZOOM_LOAD_TILES)));
+      RouteSegment next=ctx.routes.get(l);
+      if (next != null) {
+        visitedPoints.add(l);
+      }
+      while (next != null) {
+        if (next.road.id != road.id) {
+          next.parentRoute=stIndex;
+          next.parentSegmentEnd=j;
+          searchList.add(next);
+          if (end.road.id == next.road.id) {
+            endIndex=searchList.size() - 1;
+            break;
+          }
+        }
+        next=next.next;
+      }
+    }
+    stIndex++;
+  }
+  stIndex=endIndex;
+  start.parentRoute=-1;
+  int parentSegmentEnd=end.segmentEnd;
+  while (stIndex != -1) {
+    RouteSegment segment=searchList.get(stIndex);
+    RouteSegmentResult res=new RouteSegmentResult();
+    res.object=segment.road;
+    res.endPointIndex=parentSegmentEnd;
+    res.startPointIndex=segment.segmentStart;
+    res.startPoint=convertPoint(res.object,res.startPointIndex);
+    res.endPoint=convertPoint(res.object,res.endPointIndex);
+    if (res.startPointIndex != res.endPointIndex) {
+      result.add(0,res);
+    }
+    parentSegmentEnd=segment.parentSegmentEnd;
+    stIndex=segment.parentRoute;
+  }
+  return result;
+}

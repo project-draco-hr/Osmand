@@ -1,0 +1,49 @@
+{
+  List<Way> res=new ArrayList<Way>();
+  long time=System.currentTimeMillis();
+  System.out.println("Self made route from " + start + " to "+ end);
+  if (start != null && end != null) {
+    try {
+      RandomAccessFile raf=new RandomAccessFile(new File("d:\\android\\data\\Belarus.obf"),"r");
+      BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
+      BinaryRouteDataReader router=new BinaryRouteDataReader(reader);
+      RoutingContext ctx=new RoutingContext();
+      RouteSegment st=router.findRouteSegment(start.getLatitude(),start.getLongitude(),ctx);
+      if (st != null) {
+        BinaryMapDataObject road=st.getRoad();
+        TagValuePair pair=road.getTagValue(0);
+        System.out.println("ROAD TO START " + pair.tag + " "+ pair.value+ " "+ road.getName()+ " "+ (road.getId() >> 3));
+      }
+      RouteSegment e=router.findRouteSegment(end.getLatitude(),end.getLongitude(),ctx);
+      if (e != null) {
+        BinaryMapDataObject road=e.getRoad();
+        TagValuePair pair=road.getTagValue(0);
+        System.out.println("ROAD TO END " + pair.tag + " "+ pair.value+ " "+ road.getName()+ " "+ +(road.getId() >> 3));
+      }
+      for (      RouteSegmentResult s : router.searchRoute(ctx,st,e)) {
+        Way way=new Way(-1);
+        boolean plus=s.startPointIndex < s.endPointIndex;
+        int i=s.startPointIndex;
+        while (true) {
+          net.osmand.osm.Node n=new net.osmand.osm.Node(MapUtils.get31LatitudeY(s.object.getPoint31YTile(i)),MapUtils.get31LongitudeX(s.object.getPoint31XTile(i)),-1);
+          way.addNode(n);
+          if (i == s.endPointIndex) {
+            break;
+          }
+          if (plus) {
+            i++;
+          }
+ else {
+            i--;
+          }
+        }
+        res.add(way);
+      }
+    }
+ catch (    IOException e) {
+      ExceptionHandler.handle(e);
+    }
+    System.out.println("Finding self routes " + res.size() + " "+ (System.currentTimeMillis() - time)+ " ms");
+  }
+  return res;
+}
