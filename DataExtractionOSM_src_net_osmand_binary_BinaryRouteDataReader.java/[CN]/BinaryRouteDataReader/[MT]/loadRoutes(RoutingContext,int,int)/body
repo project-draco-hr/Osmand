@@ -3,7 +3,7 @@
   if (ctx.loadedTiles.contains(tileC)) {
     return;
   }
-  long now=System.currentTimeMillis();
+  long now=System.nanoTime();
   SearchRequest<BinaryMapDataObject> request=new SearchRequest<BinaryMapDataObject>();
   request.left=tileX << (31 - ZOOM_LOAD_TILES);
   request.right=(tileX + 1) << (31 - ZOOM_LOAD_TILES);
@@ -33,23 +33,25 @@
     }
   }
 );
-  map.searchMapIndex(request);
-  for (  BinaryMapDataObject o : request.searchResults) {
-    if (ctx.idObjects.containsKey(o.getId())) {
-      continue;
-    }
-    ctx.idObjects.put(o.getId(),o);
-    for (int j=0; j < o.getPointsLength(); j++) {
-      long l=(((long)o.getPoint31XTile(j)) << 31) + (long)o.getPoint31YTile(j);
-      RouteSegment segment=new RouteSegment();
-      segment.road=o;
-      segment.segmentEnd=segment.segmentStart=j;
-      if (ctx.routes.get(l) != null) {
-        segment.next=ctx.routes.get(l);
+  for (  BinaryMapIndexReader r : map) {
+    r.searchMapIndex(request);
+    for (    BinaryMapDataObject o : request.searchResults) {
+      if (ctx.idObjects.containsKey(o.getId())) {
+        continue;
       }
-      ctx.routes.put(l,segment);
+      ctx.idObjects.put(o.getId(),o);
+      for (int j=0; j < o.getPointsLength(); j++) {
+        long l=(((long)o.getPoint31XTile(j)) << 31) + (long)o.getPoint31YTile(j);
+        RouteSegment segment=new RouteSegment();
+        segment.road=o;
+        segment.segmentEnd=segment.segmentStart=j;
+        if (ctx.routes.get(l) != null) {
+          segment.next=ctx.routes.get(l);
+        }
+        ctx.routes.put(l,segment);
+      }
     }
+    ctx.loadedTiles.add(tileC);
+    ctx.timeToLoad+=(System.nanoTime() - now);
   }
-  ctx.loadedTiles.add(tileC);
-  ctx.timeToLoad+=(System.currentTimeMillis() - now);
 }

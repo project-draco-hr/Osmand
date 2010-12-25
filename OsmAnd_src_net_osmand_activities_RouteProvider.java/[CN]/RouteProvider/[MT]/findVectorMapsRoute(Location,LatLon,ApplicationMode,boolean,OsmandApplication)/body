@@ -1,0 +1,36 @@
+{
+  MapRenderRepositories repositories=app.getResourceManager().getRenderer();
+  Collection<BinaryMapIndexReader> data=repositories.getVectorData();
+  BinaryRouteDataReader router=new BinaryRouteDataReader(data.toArray(new BinaryMapIndexReader[data.size()]));
+  RoutingContext ctx=new BinaryRouteDataReader.RoutingContext();
+  RouteSegment st=router.findRouteSegment(start.getLatitude(),start.getLongitude(),ctx);
+  if (st == null) {
+    return new RouteCalculationResult("Start point is far from allowed road.");
+  }
+  RouteSegment en=router.findRouteSegment(end.getLatitude(),end.getLongitude(),ctx);
+  if (en == null) {
+    return new RouteCalculationResult("End point is far from allowed road.");
+  }
+  List<Location> res=new ArrayList<Location>();
+  List<RouteSegmentResult> result=router.searchRoute(ctx,st,en);
+  for (  RouteSegmentResult s : result) {
+    boolean plus=s.startPointIndex < s.endPointIndex;
+    int i=s.startPointIndex;
+    while (true) {
+      Location n=new Location("");
+      n.setLatitude(MapUtils.get31LatitudeY(s.object.getPoint31YTile(i)));
+      n.setLongitude(MapUtils.get31LongitudeX(s.object.getPoint31XTile(i)));
+      res.add(n);
+      if (i == s.endPointIndex) {
+        break;
+      }
+      if (plus) {
+        i++;
+      }
+ else {
+        i--;
+      }
+    }
+  }
+  return new RouteCalculationResult(res,null,start,end,null);
+}

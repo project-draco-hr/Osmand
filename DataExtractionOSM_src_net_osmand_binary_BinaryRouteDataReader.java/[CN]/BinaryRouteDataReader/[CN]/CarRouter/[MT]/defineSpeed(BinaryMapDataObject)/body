@@ -1,11 +1,10 @@
 {
-  double speed=MapRenderingTypes.getMaxSpeedIfDefined(road.getHighwayAttributes()) / 3.6d;
-  if (speed != 0) {
-    return speed;
-  }
   TagValuePair pair=road.getTagValue(0);
-  if ("highway".equals(pair.tag) && autoValues.containsKey(pair.value)) {
-    return autoValues.get(pair.value) / 3.6d;
+  double speed=MapRenderingTypes.getMaxSpeedIfDefined(road.getHighwayAttributes()) / 3.6d;
+  boolean highway="highway".equals(pair.tag);
+  double priority=highway && autoPriorityValues.containsKey(pair.value) ? autoPriorityValues.get(pair.value) : 1d;
+  if (speed == 0 && highway) {
+    speed=autoNotDefinedValues.get(pair.value) / 3.6d;
   }
-  return 9;
+  return speed * priority;
 }
