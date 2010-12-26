@@ -21,8 +21,7 @@
         name=name.toLowerCase();
         for (        City c : cities.values()) {
           String cName=useEnglishNames ? c.getEnName() : c.getName();
-          String lowerCase=cName.toLowerCase();
-          if (cstartsWith(lowerCase,name)) {
+          if (cstartsWith(collator,cName,name)) {
             citiesToFill.add(c);
           }
         }
@@ -33,23 +32,22 @@
       Collection<City> src=cities.values();
       for (      City c : src) {
         String cName=useEnglishNames ? c.getEnName() : c.getName();
-        String lowerCase=cName.toLowerCase();
-        if (cstartsWith(lowerCase,name)) {
+        if (cstartsWith(collator,cName,name)) {
           citiesToFill.add(ind,c);
           ind++;
         }
- else         if (ccontains(name,lowerCase)) {
+ else         if (ccontains(collator,name,cName)) {
           citiesToFill.add(c);
         }
       }
       int initialsize=citiesToFill.size();
-      for (      City c : file.getVillages(region,name,useEnglishNames)) {
-        String cName=c.getName(useEnglishNames).toLowerCase();
-        if (cName.startsWith(name)) {
+      for (      City c : file.getVillages(region,new ContainsStringMatcher(name,collator),useEnglishNames)) {
+        String cName=c.getName(useEnglishNames);
+        if (cstartsWith(collator,cName,name)) {
           citiesToFill.add(ind,c);
           ind++;
         }
- else         if (ccontains(name,cName)) {
+ else         if (ccontains(collator,name,cName)) {
           citiesToFill.add(c);
         }
       }
