@@ -1,17 +1,20 @@
 {
   List<Way> res=new ArrayList<Way>();
   long time=System.currentTimeMillis();
-  File file=DataExtractionSettings.getSettings().getDefaultRoutingFile();
-  if (file == null) {
+  File[] files=DataExtractionSettings.getSettings().getDefaultRoutingFile();
+  if (files == null) {
     JOptionPane.showMessageDialog(OsmExtractionUI.MAIN_APP.getFrame(),"Please specify obf file in settings","Obf file not found",JOptionPane.ERROR_MESSAGE);
     return null;
   }
   System.out.println("Self made route from " + start + " to "+ end);
   if (start != null && end != null) {
     try {
-      RandomAccessFile raf=new RandomAccessFile(file,"r");
-      BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
-      BinaryRouteDataReader router=new BinaryRouteDataReader(reader);
+      BinaryMapIndexReader[] rs=new BinaryMapIndexReader[files.length];
+      for (int i=0; i < files.length; i++) {
+        RandomAccessFile raf=new RandomAccessFile(files[i],"r");
+        rs[i]=new BinaryMapIndexReader(raf);
+      }
+      BinaryRouteDataReader router=new BinaryRouteDataReader(rs);
       RoutingContext ctx=new RoutingContext();
       RouteSegment st=router.findRouteSegment(start.getLatitude(),start.getLongitude(),ctx);
       if (st != null) {

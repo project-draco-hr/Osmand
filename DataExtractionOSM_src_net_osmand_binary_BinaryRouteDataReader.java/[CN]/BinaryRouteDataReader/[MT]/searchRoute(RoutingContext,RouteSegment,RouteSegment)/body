@@ -18,6 +18,7 @@
   start.distanceToEnd=squareRootDist(startX,startY,endX,endY) / ctx.router.getMaxDefaultSpeed();
   graphSegments.add(start);
   long ls=(((long)startX) << 31) + (long)startY;
+  loadRoutes(ctx,(startX >> (31 - ZOOM_LOAD_TILES)),(startY >> (31 - ZOOM_LOAD_TILES)));
   RouteSegment startNbs=ctx.routes.get(ls);
   while (startNbs != null) {
     if (startNbs.road.id != start.road.id) {
@@ -72,6 +73,8 @@
       }
       long l=(((long)road.getPoint31XTile(j)) << 31) + (long)road.getPoint31YTile(j);
       loadRoutes(ctx,(road.getPoint31XTile(j) >> (31 - ZOOM_LOAD_TILES)),(road.getPoint31YTile(j) >> (31 - ZOOM_LOAD_TILES)));
+      long nt=(road.id << 8l) + segment.segmentStart;
+      visitedSegments.add(nt);
       RouteSegment next=ctx.routes.get(l);
       if (next != null) {
         segmentsToVisitPrescricted.clear();
@@ -85,8 +88,8 @@
           }
         }
         while (next != null) {
-          long nt=(next.road.id << 8l) + next.segmentStart;
-          if (next.road.id != road.id && !visitedSegments.contains(nt)) {
+          long nts=(next.road.id << 8l) + next.segmentStart;
+          if (next.road.id != road.id && !visitedSegments.contains(nts)) {
             int type=-1;
             for (int i=0; i < road.getRestrictionCount(); i++) {
               if (road.getRestriction(i) == next.road.id) {
@@ -99,38 +102,41 @@
  else             if (type == MapRenderingTypes.RESTRICTION_NO_LEFT_TURN || type == MapRenderingTypes.RESTRICTION_NO_RIGHT_TURN || type == MapRenderingTypes.RESTRICTION_NO_STRAIGHT_ON || type == MapRenderingTypes.RESTRICTION_NO_U_TURN) {
             }
  else {
-              next.parentRoute=segment;
-              next.parentSegmentEnd=j;
               int x=road.getPoint31XTile(j);
               int y=road.getPoint31YTile(j);
               double speed=ctx.router.defineSpeed(road);
               if (speed == 0) {
                 speed=ctx.router.getMinDefaultSpeed();
               }
-              next.distanceFromStart=segment.distanceFromStart + squareRootDist(x,y,middlex,middley) / speed;
-              next.distanceFromStart+=ctx.router.calculateTurnTime(middley,middlex,x,y,segment,next,j);
-              next.distanceFromStart+=obstaclesTime;
-              next.distanceToEnd=squareRootDist(x,y,endX,endY) / ctx.router.getMaxDefaultSpeed();
-              if (type == -1) {
-                segmentsToVisitNotForbidden.add(next);
-              }
+              double distanceFromStart=segment.distanceFromStart + squareRootDist(x,y,middlex,middley) / speed;
+              distanceFromStart+=ctx.router.calculateTurnTime(middley,middlex,x,y,segment,next,j);
+              distanceFromStart+=obstaclesTime;
+              double distanceToEnd=squareRootDist(x,y,endX,endY) / ctx.router.getMaxDefaultSpeed();
+              if (next.parentRoute == null || next.distanceFromStart + next.distanceToEnd > distanceFromStart + distanceToEnd) {
+                next.distanceFromStart=distanceFromStart;
+                next.distanceToEnd=distanceToEnd;
+                if (next.parentRoute != null) {
+                  graphSegments.remove(next);
+                }
+                next.parentRoute=segment;
+                next.parentSegmentEnd=j;
+                if (type == -1) {
+                  segmentsToVisitNotForbidden.add(next);
+                }
  else {
-                exclusiveRestriction=true;
-                segmentsToVisitNotForbidden.clear();
-                segmentsToVisitPrescricted.add(next);
+                  exclusiveRestriction=true;
+                  segmentsToVisitNotForbidden.clear();
+                  segmentsToVisitPrescricted.add(next);
+                }
               }
             }
           }
           next=next.next;
         }
         for (        RouteSegment s : segmentsToVisitNotForbidden) {
-          long nt=(s.road.id << 8l) + s.segmentStart;
-          visitedSegments.add(nt);
           graphSegments.add(s);
         }
         for (        RouteSegment s : segmentsToVisitPrescricted) {
-          long nt=(s.road.id << 8l) + s.segmentStart;
-          visitedSegments.add(nt);
           graphSegments.add(s);
         }
       }
@@ -138,6 +144,9 @@
   }
   int parentSegmentEnd=finalRoute != null && finalRoute.segmentStart <= end.segmentStart ? end.segmentEnd : end.segmentStart;
   RouteSegment segment=finalRoute;
+  System.out.println("ROUTE : ");
+  System.out.println("Start lat=" + MapUtils.get31LatitudeY(start.road.getPoint31YTile(start.segmentEnd)) + " lon="+ MapUtils.get31LongitudeX(start.road.getPoint31XTile(start.segmentEnd)));
+  System.out.println("END lat=" + MapUtils.get31LatitudeY(end.road.getPoint31YTile(end.segmentStart)) + " lon="+ MapUtils.get31LongitudeX(end.road.getPoint31XTile(end.segmentStart)));
   while (segment != null) {
     RouteSegmentResult res=new RouteSegmentResult();
     res.object=segment.road;
@@ -149,6 +158,7 @@
       res.startPointIndex=start.segmentEnd;
     }
     if (res.startPointIndex != res.endPointIndex) {
+      System.out.println("id=" + (res.object.id >> 3) + " start="+ res.startPointIndex+ " end="+ res.endPointIndex);
       result.add(0,res);
     }
     res.startPoint=convertPoint(res.object,res.startPointIndex);
