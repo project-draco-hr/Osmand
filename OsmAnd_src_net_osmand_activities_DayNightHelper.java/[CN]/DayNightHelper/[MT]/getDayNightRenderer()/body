@@ -1,45 +1,38 @@
 {
-  RendererRegistry registry=RendererRegistry.getRegistry();
-  String name=registry.getCurrentSelectedRenderer().name;
-  boolean day=true;
-  if (!currentRenderName.equals(name)) {
-    currentRenderName=name;
-    if (registry.hasDayNightRenderer(name)) {
-      if (dayNightMode.isDay()) {
-        day=true;
-      }
- else       if (dayNightMode.isNight()) {
-        day=false;
-      }
- else       if (dayNightMode.isAuto()) {
-        daynightcheck=true;
-      }
- else       if (dayNightMode.isSensor()) {
-        sensorcheck=true;
-        registerServiceListener();
-      }
-    }
+  if (dayNightMode.isDay()) {
+    return Boolean.TRUE;
   }
-  if (daynightcheck) {
-    LocationManager locationProvider=(LocationManager)osmandApplication.getSystemService(Context.LOCATION_SERVICE);
+ else   if (dayNightMode.isNight()) {
+    return Boolean.FALSE;
+  }
+ else   if (dayNightMode.isAuto()) {
     try {
+      LocationManager locationProvider=(LocationManager)osmandApplication.getSystemService(Context.LOCATION_SERVICE);
       Location lastKnownLocation=locationProvider.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-      SunriseSunset daynightSwitch=new SunriseSunset(lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude(),new Date(),TimeZone.getDefault().getRawOffset() / 3600000);
-      day=daynightSwitch.isDaytime();
-      log.debug("Sunrise/sunset setting to day: " + day);
+      if (lastKnownLocation == null) {
+        return null;
+      }
+      SunriseSunset daynightSwitch=new SunriseSunset(lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude(),new Date(),TimeZone.getDefault().getRawOffset());
+      boolean daytime=daynightSwitch.isDaytime();
+      log.debug("Sunrise/sunset setting to day: " + daytime);
+      if (daytime) {
+        return Boolean.TRUE;
+      }
+ else {
+        return Boolean.FALSE;
+      }
     }
  catch (    IllegalArgumentException e) {
       log.warn("Network location provider not available");
-      daynightcheck=false;
     }
 catch (    SecurityException e) {
       log.warn("Missing permitions to get actual location!");
-      daynightcheck=false;
     }
+    return null;
   }
-  if (sensorcheck) {
-    day=lux > SensorManager.LIGHT_CLOUDY;
-    log.debug("lux value:" + lux + " setting to day: "+ day);
+ else   if (dayNightMode.isSensor()) {
+    log.debug("lux value:" + lux + " setting to day: "+ (lux > SensorManager.LIGHT_CLOUDY));
+    return lux > SensorManager.LIGHT_CLOUDY ? Boolean.TRUE : Boolean.FALSE;
   }
-  return day;
+  return null;
 }
