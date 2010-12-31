@@ -8,12 +8,15 @@
 switch (tag) {
 case 0:
       c.setLocation(MapUtils.get31LatitudeY(y),MapUtils.get31LongitudeX(x));
-    return c;
+    if (c.getEnName().length() == 0) {
+      c.setEnName(Junidecode.unidecode(c.getName()));
+    }
+  return c;
 case OsmandOdb.CityIndex.CITY_TYPE_FIELD_NUMBER:
-  int type=codedIS.readUInt32();
+int type=codedIS.readUInt32();
 if (c == null) {
-  c=new City(CityType.values()[type]);
-  c.setFileOffset(fileOffset);
+c=new City(CityType.values()[type]);
+c.setFileOffset(fileOffset);
 }
 break;
 case OsmandOdb.CityIndex.ID_FIELD_NUMBER:
@@ -24,9 +27,6 @@ c.setEnName(codedIS.readString());
 break;
 case OsmandOdb.CityIndex.NAME_FIELD_NUMBER:
 c.setName(codedIS.readString());
-if (c.getEnName().length() == 0) {
-c.setEnName(Junidecode.unidecode(c.getName()));
-}
 break;
 case OsmandOdb.CityIndex.X_FIELD_NUMBER:
 x=codedIS.readFixed32();
