@@ -23,6 +23,13 @@ synchronized (holder) {
     }
     Canvas canvas=holder.lockCanvas(boundsRect);
     if (canvas != null) {
+      boolean nightMode=false;
+      if (application != null) {
+        Boolean dayNightRenderer=application.getDaynightHelper().getDayNightRenderer();
+        if (dayNightRenderer != null) {
+          nightMode=!dayNightRenderer.booleanValue();
+        }
+      }
       canvas.save();
       canvas.rotate(rotate,w,h);
       try {
@@ -35,14 +42,14 @@ synchronized (holder) {
         float y=(request.yTile - tileY) * getTileSize() + h;
         float tileSize=getTileSize();
         if (bmp == null) {
-          drawEmptyTile(canvas,x,y,tileSize);
+          drawEmptyTile(canvas,x,y,tileSize,nightMode);
         }
  else {
           bitmapToZoom.set(0,0,getSourceTileSize(),getSourceTileSize());
           bitmapToDraw.set(x,y,x + tileSize,y + tileSize);
           canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
         }
-        drawOverMap(canvas,latlonRect);
+        drawOverMap(canvas,latlonRect,nightMode);
       }
   finally {
         holder.unlockCanvasAndPost(canvas);

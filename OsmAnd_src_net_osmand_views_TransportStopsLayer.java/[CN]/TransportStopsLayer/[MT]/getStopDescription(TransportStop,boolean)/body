@@ -3,26 +3,23 @@
   text.append(view.getContext().getString(R.string.transport_Stop)).append(" : ").append(n.getName(OsmandSettings.usingEnglishNames(view.getSettings())));
   text.append("\n").append(view.getContext().getString(R.string.transport_Routes)).append(" : ");
   List<TransportIndexRepository> reps=view.getApplication().getResourceManager().searchTransportRepositories(n.getLocation().getLatitude(),n.getLocation().getLongitude());
-  TransportIndexRepository tir=null;
   for (  TransportIndexRepository t : reps) {
     if (t.acceptTransportStop(n)) {
-      tir=t;
-      break;
-    }
-  }
-  if (tir != null) {
-    List<String> l;
-    if (!useName) {
-      l=reps.get(0).getRouteDescriptionsForStop(n,"{1} {0}");
-    }
- else     if (OsmandSettings.usingEnglishNames(view.getSettings())) {
-      l=reps.get(0).getRouteDescriptionsForStop(n,"{1} {0} - {3}");
-    }
+      List<String> l;
+      if (!useName) {
+        l=reps.get(0).getRouteDescriptionsForStop(n,"{1} {0}");
+      }
+ else       if (OsmandSettings.usingEnglishNames(view.getSettings())) {
+        l=reps.get(0).getRouteDescriptionsForStop(n,"{1} {0} - {3}");
+      }
  else {
-      l=reps.get(0).getRouteDescriptionsForStop(n,"{1} {0} - {2}");
-    }
-    for (    String s : l) {
-      text.append("\n").append(s);
+        l=reps.get(0).getRouteDescriptionsForStop(n,"{1} {0} - {2}");
+      }
+      if (l != null) {
+        for (        String s : l) {
+          text.append("\n").append(s);
+        }
+      }
     }
   }
   return text.toString();
