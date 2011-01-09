@@ -1,61 +1,32 @@
 {
+  boolean lineEnded=false;
   if (pinside) {
     if (!inside) {
-      int by=-1;
-      int bx=-1;
-      if (by == -1 && y < topY && py >= topY) {
-        int tx=(int)(px + ((double)(x - px) * (topY - py)) / (y - py));
-        if (leftX <= tx && tx <= rightX) {
-          bx=tx;
-          by=topY;
-        }
+      long is=calculateIntersection(x,y,pinside,px,py,leftX,rightX,bottomY,topY);
+      if (is == -1) {
+        is=(((long)px) << 32) | ((long)py);
       }
-      if (by == -1 && y > bottomY && py <= bottomY) {
-        int tx=(int)(px + ((double)(x - px) * (py - bottomY)) / (py - y));
-        if (leftX <= tx && tx <= rightX) {
-          bx=tx;
-          by=bottomY;
-        }
-      }
-      if (by == -1 && x < leftX && px >= leftX) {
-        by=(int)(py + ((double)(y - py) * (leftX - px)) / (x - px));
-        bx=leftX;
-      }
-      if (by == -1 && x > rightX && px <= rightX) {
-        by=(int)(py + ((double)(y - py) * (px - rightX)) / (px - x));
-        bx=rightX;
-      }
-      coordinates.add((((long)bx) << 32) | ((long)by));
+      coordinates.add(is);
+      lineEnded=true;
+    }
+ else {
+      coordinates.add((((long)x) << 32) | ((long)y));
     }
   }
- else   if (inside) {
-    int by=-1;
-    int bx=-1;
-    if (by == -1 && py < topY && y >= topY) {
-      int tx=(int)(px + ((double)(x - px) * (topY - py)) / (y - py));
-      if (leftX <= tx && tx <= rightX) {
-        bx=tx;
-        by=topY;
-      }
+ else {
+    long is=calculateIntersection(x,y,pinside,px,py,leftX,rightX,bottomY,topY);
+    if (inside) {
+      coordinates.add(is);
+      coordinates.add((((long)x) << 32) | ((long)y));
     }
-    if (by == -1 && py > bottomY && y <= bottomY) {
-      int tx=(int)(px + ((double)(x - px) * (py - bottomY)) / (py - y));
-      if (leftX <= tx && tx <= rightX) {
-        bx=tx;
-        by=bottomY;
-      }
+ else     if (is != -1) {
+      int bx=(int)(is >> 32);
+      int by=(int)(is & 0xffffffff);
+      coordinates.add(is);
+      is=calculateIntersection(x,y,pinside,bx,by,leftX,rightX,bottomY,topY);
+      coordinates.add(is);
+      lineEnded=true;
     }
-    if (by == -1 && px < leftX && x >= leftX) {
-      by=(int)(py + ((double)(y - py) * (leftX - px)) / (x - px));
-      bx=leftX;
-    }
-    if (by == -1 && px > rightX && x <= rightX) {
-      by=(int)(py + ((double)(y - py) * (px - rightX)) / (px - x));
-      bx=rightX;
-    }
-    coordinates.add((((long)bx) << 32) | ((long)by));
   }
-  if (inside) {
-    coordinates.add((((long)x) << 32) | ((long)y));
-  }
+  return lineEnded;
 }
