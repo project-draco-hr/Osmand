@@ -1,7 +1,7 @@
 {
   String adminLevel=e.getTag("admin_level");
   Boundary boundary=null;
-  if ("8".equals(adminLevel)) {
+  if (cityAdminLevel.equals(adminLevel)) {
     if (e instanceof Relation) {
       Relation i=(Relation)e;
       loadEntityData(i,true);
@@ -63,7 +63,14 @@
       City nCity=new City(CityType.SUBURB);
       nCity.setLocation(point.getLatitude(),point.getLongitude());
       nCity.setId(-boundary.getBoundaryId());
+      nCity.setName(boundary.getName());
+      citiBoundaries.put(nCity,boundary);
       cityVillageManager.registerObject(point.getLatitude(),point.getLongitude(),nCity);
+      DataIndexWriter.writeCity(addressCityStat,pStatements,nCity,BATCH_SIZE);
+      if (pStatements.get(addressCityStat) > 0) {
+        addressCityStat.executeBatch();
+        pStatements.put(addressCityStat,0);
+      }
     }
   }
 }
