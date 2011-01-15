@@ -25,6 +25,11 @@
         }
         conn.setConnectTimeout(30000);
         log.info(conn.getResponseMessage() + " " + conn.getResponseCode());
+        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+          conn.disconnect();
+          triesDownload--;
+          continue;
+        }
         is=conn.getInputStream();
         if (first) {
           length=conn.getContentLength();

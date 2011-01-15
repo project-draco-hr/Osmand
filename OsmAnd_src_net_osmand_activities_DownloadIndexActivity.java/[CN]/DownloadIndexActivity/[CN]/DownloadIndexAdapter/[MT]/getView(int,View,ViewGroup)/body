@@ -7,58 +7,11 @@
   final View row=v;
   TextView item=(TextView)row.findViewById(R.id.download_item);
   TextView description=(TextView)row.findViewById(R.id.download_descr);
-  Entry<String,String> e=getItem(position);
-  int l=e.getKey().lastIndexOf('_');
-  String s="";
-  if (e.getKey().endsWith(IndexConstants.POI_INDEX_EXT) || e.getKey().endsWith(IndexConstants.POI_INDEX_EXT_ZIP)) {
-    s=getString(R.string.poi);
-  }
- else   if (e.getKey().endsWith(IndexConstants.ADDRESS_INDEX_EXT) || e.getKey().endsWith(IndexConstants.ADDRESS_INDEX_EXT_ZIP)) {
-    s=getString(R.string.address);
-  }
- else   if (e.getKey().endsWith(IndexConstants.TRANSPORT_INDEX_EXT) || e.getKey().endsWith(IndexConstants.TRANSPORT_INDEX_EXT_ZIP)) {
-    s=getString(R.string.transport);
-  }
- else   if (e.getKey().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT) || e.getKey().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT_ZIP)) {
-    boolean f=true;
-    String lowerCase=e.getValue().toLowerCase();
-    if (lowerCase.contains("map")) {
-      if (!f) {
-        s+=", ";
-      }
- else {
-        f=false;
-      }
-      s+=getString(R.string.map_index);
-    }
-    if (lowerCase.contains("transport")) {
-      if (!f) {
-        s+=", ";
-      }
- else {
-        f=false;
-      }
-      s+=getString(R.string.transport);
-    }
-    if (lowerCase.contains("address")) {
-      if (!f) {
-        s+=", ";
-      }
- else {
-        f=false;
-      }
-      s+=getString(R.string.address);
-    }
-  }
- else   if (e.getKey().endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
-    s=getString(R.string.voice);
-  }
-  String name=e.getKey().substring(0,l).replace('_',' ');
-  if (e.getKey().endsWith(".zip")) {
-    name+=" (zip)";
-  }
+  IndexItem e=getItem(position);
+  item.setText(e.getName());
+  description.setText(e.getDescription());
   CheckBox ch=(CheckBox)row.findViewById(R.id.check_download_item);
-  ch.setChecked(entriesToDownload.containsKey(e.getKey()));
+  ch.setChecked(entriesToDownload.containsKey(e.getFileName()));
   ch.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       final CheckBox ch=(CheckBox)v.findViewById(R.id.check_download_item);
@@ -67,16 +20,14 @@
     }
   }
 );
-  item.setText(s.trim() + "\n" + name);
-  String dateAndSize=extractDateAndSize(e.getValue());
   if (indexFileNames != null) {
-    String sfName=convertServerFileNameToLocal(e.getKey());
+    String sfName=convertServerFileNameToLocal(e.getFileName());
     if (!indexFileNames.containsKey(sfName)) {
       item.setTextColor(Color.WHITE);
     }
  else {
-      if (dateAndSize.length() > 10) {
-        if (dateAndSize.substring(1,11).equals(indexFileNames.get(sfName))) {
+      if (e.getDate() != null) {
+        if (e.getDate().equals(indexFileNames.get(sfName))) {
           item.setTextColor(Color.GREEN);
         }
  else {
@@ -88,6 +39,5 @@
       }
     }
   }
-  description.setText(dateAndSize.replace(':','\n').trim());
   return row;
 }

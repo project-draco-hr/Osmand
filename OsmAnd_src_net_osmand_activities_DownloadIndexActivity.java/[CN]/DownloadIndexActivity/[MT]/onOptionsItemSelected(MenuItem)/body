@@ -3,40 +3,45 @@
     downloadListIndexThread=new DownloadIndexListThread();
     downloadIndexList();
   }
- else   if (item.getItemId() == SELECT_ALL_ID) {
-    List<Entry<String,String>> origReference=((DownloadIndexAdapter)getListAdapter()).getOrigReference();
-    int selected=0;
-    for (    Entry<String,String> es : origReference) {
-      if (!entriesToDownload.containsKey(es.getKey())) {
-        selected++;
-        entriesToDownload.put(es.getKey(),createDownloadEntry(es));
-      }
-    }
-    Toast.makeText(this,MessageFormat.format(getString(R.string.items_were_selected),selected),Toast.LENGTH_SHORT).show();
-    ((DownloadIndexAdapter)getListAdapter()).notifyDataSetInvalidated();
-    if (selected > 0) {
-      findViewById(R.id.DownloadButton).setVisibility(View.VISIBLE);
-    }
-  }
- else   if (item.getItemId() == FILTER_EXISTING_REGIONS) {
-    List<Entry<String,String>> origArray=((DownloadIndexAdapter)getListAdapter()).getOrigArray();
-    List<Entry<String,String>> ref=((DownloadIndexAdapter)getListAdapter()).getOrigReference();
-    ref.clear();
-    for (    Entry<String,String> es : origArray) {
-      DownloadEntry em=createDownloadEntry(es);
-      if (em != null && em.fileToUnzip.exists()) {
-        ref.add(es);
-      }
-    }
-    ((DownloadIndexAdapter)getListAdapter()).notifyDataSetChanged();
-  }
- else   if (item.getItemId() == DESELECT_ALL_ID) {
-    entriesToDownload.clear();
-    ((DownloadIndexAdapter)getListAdapter()).notifyDataSetInvalidated();
-    findViewById(R.id.DownloadButton).setVisibility(View.GONE);
-  }
  else {
-    return false;
+    final DownloadIndexAdapter listAdapter=(DownloadIndexAdapter)getListAdapter();
+    if (item.getItemId() == SELECT_ALL_ID) {
+      int selected=0;
+      for (int i=0; i < listAdapter.getCount(); i++) {
+        IndexItem es=listAdapter.getItem(i);
+        if (!entriesToDownload.containsKey(es.getFileName())) {
+          selected++;
+          entriesToDownload.put(es.getFileName(),createDownloadEntry(es.getFileEntry()));
+        }
+      }
+      Toast.makeText(this,MessageFormat.format(getString(R.string.items_were_selected),selected),Toast.LENGTH_SHORT).show();
+      listAdapter.notifyDataSetInvalidated();
+      if (selected > 0) {
+        findViewById(R.id.DownloadButton).setVisibility(View.VISIBLE);
+      }
+    }
+ else     if (item.getItemId() == FILTER_EXISTING_REGIONS) {
+      final List<String> listAlreadyDownloaded=listAlreadyDownloadedWithAlternatives();
+      final List<IndexItem> filtered=new ArrayList<DownloadIndexActivity.IndexItem>();
+      for (      String file : listAlreadyDownloaded) {
+        IndexItem fileItem=listAdapter.getIndexFiles().get(file);
+        if (fileItem != null) {
+          filtered.add(fileItem);
+        }
+      }
+      listAdapter.clear();
+      for (      IndexItem fileItem : filtered) {
+        listAdapter.add(fileItem);
+      }
+    }
+ else     if (item.getItemId() == DESELECT_ALL_ID) {
+      entriesToDownload.clear();
+      listAdapter.notifyDataSetInvalidated();
+      findViewById(R.id.DownloadButton).setVisibility(View.GONE);
+    }
+ else {
+      return false;
+    }
   }
   return true;
 }
