@@ -1,0 +1,50 @@
+{
+  if (elements.isEmpty()) {
+    return Collections.emptyList();
+  }
+  ResourceManager resourceManager=resourceManager();
+  List<RegionAddressRepository> foundCountries=new ArrayList<RegionAddressRepository>();
+  RegionAddressRepository country;
+  for (  String maybeCountry : elements) {
+    country=resourceManager.getRegionRepository(maybeCountry);
+    if (country != null) {
+      foundCountries.add(country);
+    }
+  }
+  Collection<RegionAddressRepository> countriesToSearch=foundCountries;
+  if (foundCountries.isEmpty()) {
+    countriesToSearch=resourceManager.getAddressRepositories();
+  }
+  Map<RegionAddressRepository,List<MapObject>> citiesForRegion=new HashMap<RegionAddressRepository,List<MapObject>>();
+  for (  RegionAddressRepository rar : countriesToSearch) {
+    List<MapObject> citiesFound=new ArrayList<MapObject>();
+    for (    String maybeCity : elements) {
+      rar.fillWithSuggestedCities(maybeCity,citiesFound,null);
+    }
+    if (!citiesFound.isEmpty()) {
+      citiesForRegion.put(rar,citiesFound);
+    }
+  }
+  Map<MapObject,List<Street>> streetsForCity=new HashMap<MapObject,List<Street>>();
+  if (citiesForRegion.isEmpty()) {
+    for (    RegionAddressRepository rar : countriesToSearch) {
+      ArrayList<MapObject> allcities=new ArrayList<MapObject>();
+      rar.fillWithSuggestedCities("",allcities,location);
+      findStreetsForCities(streetsForCity,rar,allcities);
+    }
+  }
+ else {
+    for (    RegionAddressRepository rar : citiesForRegion.keySet()) {
+      findStreetsForCities(streetsForCity,rar,citiesForRegion.get(rar));
+    }
+  }
+  Set<MapObject> results=new HashSet<MapObject>();
+  for (  List<Street> streets : streetsForCity.values()) {
+    results.addAll(streets);
+  }
+  for (  List<MapObject> cities : citiesForRegion.values()) {
+    cities.removeAll(streetsForCity.keySet());
+    results.addAll(cities);
+  }
+  return results;
+}
