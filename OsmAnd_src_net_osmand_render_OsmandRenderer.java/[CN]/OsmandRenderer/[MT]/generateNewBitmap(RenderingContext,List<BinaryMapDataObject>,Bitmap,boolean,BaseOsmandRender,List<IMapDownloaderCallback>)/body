@@ -1,13 +1,8 @@
 {
   long now=System.currentTimeMillis();
-  Boolean renderDay=((OsmandApplication)context.getApplicationContext()).getDaynightHelper().getDayNightRenderer();
-  render=RendererRegistry.getRegistry().getCurrentSelectedRenderer();
-  if (renderDay != null && renderDay.booleanValue() != render.isDayRender()) {
-    render=RendererRegistry.getRegistry().getOppositeRendererForDayNight(render);
-  }
   Canvas cv=new Canvas(bmp);
-  if (render != null) {
-    int dc=render.getDefaultColor();
+  if (renderer != null) {
+    int dc=renderer.getDefaultColor();
     if (dc != 0) {
       paintFillEmpty.setColor(dc);
     }
@@ -16,14 +11,14 @@
   int sz=objects.size();
   int init=sz / 4;
   TFloatObjectHashMap<TIntArrayList> orderMap=new TFloatObjectHashMap<TIntArrayList>();
-  if (render != null) {
+  if (renderer != null) {
     for (int i=0; i < sz; i++) {
       BinaryMapDataObject o=objects.get(i);
       int sh=i << 8;
       if (o instanceof MultyPolygon) {
         int mask=MapRenderingTypes.MULTY_POLYGON_TYPE;
         int layer=((MultyPolygon)o).getLayer();
-        put(orderMap,render.getObjectOrder(((MultyPolygon)o).getTag(),((MultyPolygon)o).getValue(),mask,layer),sh,init);
+        put(orderMap,renderer.getObjectOrder(((MultyPolygon)o).getTag(),((MultyPolygon)o).getValue(),mask,layer),sh,init);
       }
  else {
         for (int j=0; j < o.getTypes().length; j++) {
@@ -35,7 +30,7 @@
           }
           TagValuePair pair=o.getMapIndex().decodeType(MapRenderingTypes.getMainObjectType(wholeType),MapRenderingTypes.getObjectSubType(wholeType));
           if (pair != null) {
-            put(orderMap,render.getObjectOrder(pair.tag,pair.value,mask,layer),sh + j,init);
+            put(orderMap,renderer.getObjectOrder(pair.tag,pair.value,mask,layer),sh + j,init);
           }
         }
       }
@@ -58,7 +53,7 @@
         int ind=i >> 8;
         int l=i & 0xff;
         BinaryMapDataObject obj=objects.get(ind);
-        drawObj(obj,cv,rc,l,l == 0);
+        drawObj(obj,renderer,cv,rc,l,l == 0);
         objCount++;
       }
       if (objCount > 25) {

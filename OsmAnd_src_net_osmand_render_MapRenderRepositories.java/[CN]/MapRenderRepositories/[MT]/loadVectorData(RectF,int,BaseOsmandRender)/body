@@ -23,18 +23,12 @@
     searchRequest=BinaryMapIndexReader.buildSearchRequest(leftX,rightX,topY,bottomY,zoom);
     if (zoom < 15) {
       searchRequest.setSearchFilter(new BinaryMapIndexReader.SearchFilter(){
-        TIntByteMap map=MapRenderingTypes.getDefault().getObjectTypeMinZoom();
         @Override public boolean accept(        TIntArrayList types,        BinaryMapIndexReader.MapIndex root){
           for (int j=0; j < types.size(); j++) {
             int type=types.get(j);
-            if ((type & 3) == MapRenderingTypes.POINT_TYPE) {
-              type&=0x7ffc;
-            }
- else {
-              type&=0xffc;
-            }
-            byte b=map.get(type);
-            if (b != 0 && b <= zoom) {
+            int mask=type & 3;
+            TagValuePair pair=root.decodeType(type);
+            if (renderingType.isObjectVisible(pair.tag,pair.value,zoom,mask)) {
               return true;
             }
           }

@@ -4,6 +4,11 @@
     currentRenderingContext=null;
   }
   try {
+    Boolean renderDay=((OsmandApplication)context.getApplicationContext()).getDaynightHelper().getDayNightRenderer();
+    BaseOsmandRender renderingType=RendererRegistry.getRegistry().getCurrentSelectedRenderer();
+    if (renderDay != null && renderingType != null && renderDay.booleanValue() != renderingType.isDayRender()) {
+      renderingType=RendererRegistry.getRegistry().getOppositeRendererForDayNight(renderingType);
+    }
     requestedBox=new RotatedTileBox(tileRect);
     RectF dataBox=requestedBox.calculateLatLonBox(new RectF());
     long now=System.currentTimeMillis();
@@ -18,7 +23,7 @@
         dataBox.top-=hi;
         dataBox.bottom+=hi;
       }
-      boolean loaded=loadVectorData(dataBox,requestedBox.getZoom());
+      boolean loaded=loadVectorData(dataBox,requestedBox.getZoom(),MapRenderingTypes.getDefault());
       if (!loaded || checkWhetherInterrupted()) {
         return;
       }
@@ -41,7 +46,7 @@
       this.bmp=bmp;
       this.bmpLocation=tileRect;
     }
-    renderer.generateNewBitmap(currentRenderingContext,cObjects,bmp,OsmandSettings.usingEnglishNames(prefs),stepByStep ? notifyList : null);
+    renderer.generateNewBitmap(currentRenderingContext,cObjects,bmp,OsmandSettings.usingEnglishNames(prefs),renderingType,stepByStep ? notifyList : null);
     if (checkWhetherInterrupted()) {
       currentRenderingContext=null;
       return;
