@@ -2,8 +2,13 @@
   this.context=context;
   this.renderer=new MapRenderRepositories(context);
   asyncLoadingTiles.start();
-  dirWithTiles=new File(Environment.getExternalStorageDirectory(),TILES_PATH);
-  if (Environment.getExternalStorageDirectory().canRead()) {
-    dirWithTiles.mkdirs();
+  OsmandSettings.getSharedPreferences(context).registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener(){
+    @Override public void onSharedPreferenceChanged(    SharedPreferences sharedPreferences,    String key){
+      if (key == OsmandSettings.EXTERNAL_STORAGE_DIR) {
+        resetStoreDirectory();
+      }
+    }
   }
+);
+  resetStoreDirectory();
 }
