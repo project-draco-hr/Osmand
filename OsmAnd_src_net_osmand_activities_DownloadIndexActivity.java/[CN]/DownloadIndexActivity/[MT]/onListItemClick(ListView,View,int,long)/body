@@ -14,7 +14,7 @@
     }
     return;
   }
-  final DownloadEntry entry=createDownloadEntry(e.getFileEntry());
+  final DownloadEntry entry=createDownloadEntry(e);
   if (entry != null) {
     if (entry.fileToUnzip.exists()) {
       Builder builder=new AlertDialog.Builder(this);
@@ -26,7 +26,8 @@
         format=new MessageFormat("{0,date,dd.MM.yyyy} : {1, number,##.#} MB",Locale.US);
       }
       String description=format.format(new Object[]{new Date(entry.fileToUnzip.lastModified()),((float)entry.fileToUnzip.length() / MB)});
-      builder.setMessage(MessageFormat.format(getString(R.string.download_question_exist),entry.baseName,description,extractDateAndSize(e.getFileEntry().getValue())));
+      String descriptionEx=e.getDate() + " : " + e.getSize();
+      builder.setMessage(MessageFormat.format(getString(R.string.download_question_exist),entry.baseName,description,descriptionEx));
       builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
         @Override public void onClick(        DialogInterface dialog,        int which){
           entriesToDownload.put(e.getFileName(),entry);
