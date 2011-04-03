@@ -5,40 +5,38 @@
   String summary;
   double mbLengh=(double)f.length() / MB;
   boolean zip=true;
-  String regionName;
+  String regionName=f.getName().substring(0,f.getName().lastIndexOf('_',f.getName().indexOf('.')));
   if (f.getName().endsWith(IndexConstants.POI_INDEX_EXT) || f.getName().endsWith(IndexConstants.POI_INDEX_EXT_ZIP)) {
-    regionName=f.getName().substring(0,f.getName().length() - IndexConstants.POI_INDEX_EXT.length() - 2);
     summary="POI index for ";
   }
  else   if (f.getName().endsWith(IndexConstants.ADDRESS_INDEX_EXT) || f.getName().endsWith(IndexConstants.ADDRESS_INDEX_EXT_ZIP)) {
-    regionName=f.getName().substring(0,f.getName().length() - IndexConstants.ADDRESS_INDEX_EXT.length() - 2);
     summary="Address index for ";
   }
  else   if (f.getName().endsWith(IndexConstants.TRANSPORT_INDEX_EXT) || f.getName().endsWith(IndexConstants.TRANSPORT_INDEX_EXT_ZIP)) {
-    regionName=f.getName().substring(0,f.getName().length() - IndexConstants.TRANSPORT_INDEX_EXT.length() - 2);
     summary="Transport index for ";
   }
  else   if (f.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT) || f.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT_ZIP)) {
-    regionName=f.getName().substring(0,f.getName().length() - IndexConstants.BINARY_MAP_INDEX_EXT.length() - 2);
     boolean addr=indexAddress;
     boolean trans=indexTransport;
     boolean map=indexMap;
     RandomAccessFile raf=null;
-    try {
-      raf=new RandomAccessFile(f,"r");
-      BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
-      trans=reader.hasTransportData();
-      map=reader.containsMapData();
-      addr=reader.containsAddressData();
-      reader.close();
-    }
- catch (    Exception e) {
-      log.info("Exception",e);
-      if (raf != null) {
-        try {
-          raf.close();
-        }
- catch (        IOException e1) {
+    if (f.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
+      try {
+        raf=new RandomAccessFile(f,"r");
+        BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
+        trans=reader.hasTransportData();
+        map=reader.containsMapData();
+        addr=reader.containsAddressData();
+        reader.close();
+      }
+ catch (      Exception e) {
+        log.info("Exception",e);
+        if (raf != null) {
+          try {
+            raf.close();
+          }
+ catch (          IOException e1) {
+          }
         }
       }
     }
@@ -60,10 +58,10 @@
  else {
     return;
   }
-  if (mbLengh < 0.015) {
+  if (mbLengh < MIN_SIZE_TO_UPLOAD) {
     return;
   }
-  if (mbLengh > 2 && (f.getName().endsWith(".odb") || f.getName().endsWith(".obf")) && zip) {
+  if (mbLengh > MIN_SIZE_TO_NOT_ZIP && (f.getName().endsWith(".odb") || f.getName().endsWith(".obf")) && zip) {
     String n=f.getName();
     if (f.getName().endsWith(".odb")) {
       n=f.getName().substring(0,f.getName().length() - 4);
@@ -92,49 +90,16 @@
     }
     f=zFile;
   }
-  if (!uploadToOsmandDownloads) {
-    try {
-      DownloaderIndexFromGoogleCode.deleteFileFromGoogleDownloads(f.getName(),token,pagegen,cookieHSID,cookieSID);
-      try {
-        Thread.sleep(4000);
-      }
- catch (      InterruptedException e) {
-      }
-    }
- catch (    IOException e) {
-      log.warn("Deleting file from downloads" + f.getName() + " "+ e.getMessage());
-    }
-  }
-  mbLengh=(double)f.length() / MB;
-  if (mbLengh > 100 && !uploadToOsmandDownloads) {
-    System.err.println("ERROR : file " + f.getName() + " exceeded 100 mb!!! Could not be uploaded.");
-    return;
-  }
   summary+=regionName;
   summary=summary.replace('_',' ');
+  mbLengh=(double)f.length() / MB;
   try {
-    MessageFormat dateFormat=new MessageFormat("{0,date,dd.MM.yyyy}",Locale.US);
-    MessageFormat numberFormat=new MessageFormat("{0,number,##.#}",Locale.US);
-    String size=numberFormat.format(new Object[]{mbLengh});
-    String date=dateFormat.format(new Object[]{new Date(f.lastModified())});
-    if (uploadToOsmandDownloads) {
-      uploadToDownloadOsmandNet(f,summary,size,date);
-    }
- else {
-      String descriptionFile="{" + date + " : "+ size+ "}";
-      summary+=" " + descriptionFile;
-      GoogleCodeUploadIndex uploader=new GoogleCodeUploadIndex();
-      uploader.setFileName(f.getAbsolutePath());
-      uploader.setTargetFileName(f.getName());
-      uploader.setProjectName("osmand");
-      uploader.setUserName(user);
-      uploader.setPassword(password);
-      uploader.setLabels("Type-Archive, Testdata");
-      uploader.setSummary(summary);
-      uploader.upload();
-    }
-    if (deleteFilesAfterUploading) {
-      f.delete();
+    List<File> splittedFiles=splitFiles(f,mbLengh);
+    for (    File fs : splittedFiles) {
+      uploadFileToServer(fs,summary,mbLengh);
+      if (deleteFilesAfterUploading && f.exists()) {
+        f.delete();
+      }
     }
     alreadyUploadedFiles.add(f.getName());
   }
