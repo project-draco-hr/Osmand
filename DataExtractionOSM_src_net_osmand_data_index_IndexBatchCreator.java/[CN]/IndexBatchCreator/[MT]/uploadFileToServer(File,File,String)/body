@@ -1,4 +1,9 @@
 {
+  if (f.length() / MB > MAX_UPLOAD_SIZE && !uploadToOsmandDownloads) {
+    System.err.println("ERROR : file " + f.getName() + " exceeded 200 mb!!! Could not be uploaded.");
+    return false;
+  }
+  double originalLength=original.length() / MB;
   if (!uploadToOsmandDownloads) {
     try {
       DownloaderIndexFromGoogleCode.deleteFileFromGoogleDownloads(f.getName(),token,pagegen,cookieHSID,cookieSID);
@@ -12,14 +17,10 @@
       log.warn("Deleting file from downloads" + f.getName() + " "+ e.getMessage());
     }
   }
-  if (mbLengh > MAX_UPLOAD_SIZE && !uploadToOsmandDownloads) {
-    System.err.println("ERROR : file " + f.getName() + " exceeded 200 mb!!! Could not be uploaded.");
-    return;
-  }
   MessageFormat dateFormat=new MessageFormat("{0,date,dd.MM.yyyy}",Locale.US);
   MessageFormat numberFormat=new MessageFormat("{0,number,##.#}",Locale.US);
-  String size=numberFormat.format(new Object[]{mbLengh});
-  String date=dateFormat.format(new Object[]{new Date(f.lastModified())});
+  String size=numberFormat.format(new Object[]{originalLength});
+  String date=dateFormat.format(new Object[]{new Date(original.lastModified())});
   if (uploadToOsmandDownloads) {
     uploadToDownloadOsmandNet(f,summary,size,date);
   }
@@ -37,7 +38,5 @@
     uploader.setDescription(summary);
     uploader.upload();
   }
-  if (deleteFilesAfterUploading) {
-    f.delete();
-  }
+  return true;
 }

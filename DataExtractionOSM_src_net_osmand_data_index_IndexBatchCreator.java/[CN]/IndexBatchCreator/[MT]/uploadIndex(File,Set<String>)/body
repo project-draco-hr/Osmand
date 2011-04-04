@@ -92,18 +92,26 @@
   }
   summary+=regionName;
   summary=summary.replace('_',' ');
-  mbLengh=(double)f.length() / MB;
+  List<File> splittedFiles=Collections.emptyList();
   try {
-    List<File> splittedFiles=splitFiles(f,mbLengh);
+    splittedFiles=splitFiles(f);
+    boolean uploaded=true;
     for (    File fs : splittedFiles) {
-      uploadFileToServer(fs,summary,mbLengh);
-      if (deleteFilesAfterUploading && f.exists()) {
-        f.delete();
-      }
+      uploaded&=uploadFileToServer(fs,f,summary);
+    }
+    if (uploaded && deleteFilesAfterUploading && f.exists()) {
+      f.delete();
     }
     alreadyUploadedFiles.add(f.getName());
   }
  catch (  IOException e) {
     log.error("Input/output exception uploading " + f.getName(),e);
+  }
+ finally {
+    for (    File fs : splittedFiles) {
+      if (!fs.equals(f)) {
+        fs.delete();
+      }
+    }
   }
 }
