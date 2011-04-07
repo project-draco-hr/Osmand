@@ -1,0 +1,16 @@
+{
+  Location lastKnownLocation=null;
+  LocationManager locationProvider=(LocationManager)osmandApplication.getSystemService(Context.LOCATION_SERVICE);
+  List<String> providers=new ArrayList<String>(locationProvider.getProviders(true));
+  int passiveFirst=providers.indexOf(LocationManager.PASSIVE_PROVIDER);
+  if (passiveFirst > -1) {
+    providers.add(0,providers.remove(passiveFirst));
+  }
+  for (  String provider : providers) {
+    lastKnownLocation=locationProvider.getLastKnownLocation(provider);
+    if (lastKnownLocation == null) {
+      break;
+    }
+  }
+  return lastKnownLocation;
+}
