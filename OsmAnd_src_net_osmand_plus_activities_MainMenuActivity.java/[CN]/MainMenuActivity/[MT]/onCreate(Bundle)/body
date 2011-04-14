@@ -12,8 +12,24 @@
   rightview.startAnimation(getAnimation(1,0));
   rightview=(View)findViewById(R.id.SearchButton);
   rightview.startAnimation(getAnimation(1,0));
-  final TextView textView=(TextView)findViewById(R.id.TextVersion);
-  textView.setText(Version.APP_VERSION + " " + Version.APP_DESCRIPTION);
+  String textVersion=Version.APP_VERSION + " " + Version.APP_DESCRIPTION;
+  final TextView textVersionView=(TextView)findViewById(R.id.TextVersion);
+  textVersionView.setText(textVersion);
+  SharedPreferences prefs=OsmandSettings.getPrefs(this);
+  if (prefs.contains(CONTRIBUTION_VERSION_FLAG)) {
+    final TextView appName=(TextView)findViewById(R.id.AppName);
+    appName.setText("OsmAnd!+");
+    SpannableString content=new SpannableString(textVersion);
+    content.setSpan(new ClickableSpan(){
+      @Override public void onClick(      View widget){
+        final Intent mapIndent=new Intent(MainMenuActivity.this,ContributionVersionActivity.class);
+        startActivityForResult(mapIndent,0);
+      }
+    }
+,0,content.length(),0);
+    textVersionView.setText(content);
+    textVersionView.setMovementMethod(LinkMovementMethod.getInstance());
+  }
   showMap=findViewById(R.id.MapButton);
   showMap.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){

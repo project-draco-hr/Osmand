@@ -1,0 +1,28 @@
+{
+  if (operationId == DOWNLOAD_BUILDS_LIST) {
+    URLConnection connection=new URL(URL_TO_RETRIEVE_BUILDS).openConnection();
+    XmlPullParser parser=XmlPullParserFactory.newInstance().newPullParser();
+    parser.setInput(connection.getInputStream(),"UTF-8");
+    int next;
+    while ((next=parser.next()) != XmlPullParser.END_DOCUMENT) {
+      if (next == XmlPullParser.START_TAG && parser.getName().equals("build")) {
+        if ("osmand".equalsIgnoreCase(parser.getAttributeValue(null,"type"))) {
+          String path=parser.getAttributeValue(null,"path");
+          String size=parser.getAttributeValue(null,"size");
+          String date=parser.getAttributeValue(null,"date");
+          String tag=parser.getAttributeValue(null,"tag");
+          Date d=null;
+          if (date != null) {
+            try {
+              d=dateFormat.parse(date);
+            }
+ catch (            ParseException e) {
+            }
+          }
+          OsmAndBuild build=new OsmAndBuild(path,size,d,tag);
+          downloadedBuilds.add(build);
+        }
+      }
+    }
+  }
+}
