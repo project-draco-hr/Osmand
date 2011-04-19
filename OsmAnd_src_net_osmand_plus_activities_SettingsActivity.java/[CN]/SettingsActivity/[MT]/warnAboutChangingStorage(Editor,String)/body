@@ -1,5 +1,6 @@
 {
-  File path=new File(newValue);
+  final String newDir=newValue != null ? newValue.trim() : newValue;
+  File path=new File(newDir);
   path.mkdirs();
   if (!path.canRead() || !path.exists()) {
     Toast.makeText(this,R.string.specified_dir_doesnt_exist,Toast.LENGTH_LONG).show();
@@ -9,9 +10,9 @@
   builder.setMessage(getString(R.string.application_dir_change_warning));
   builder.setPositiveButton(R.string.default_buttons_yes,new OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      edit.putString(OsmandSettings.EXTERNAL_STORAGE_DIR,newValue);
+      edit.putString(OsmandSettings.EXTERNAL_STORAGE_DIR,newDir);
       edit.commit();
-      ((OsmandApplication)getApplication()).getResourceManager().resetStoreDirectory();
+      getMyApplication().getResourceManager().resetStoreDirectory();
       reloadIndexes();
       updateApplicationDirSummary();
     }
