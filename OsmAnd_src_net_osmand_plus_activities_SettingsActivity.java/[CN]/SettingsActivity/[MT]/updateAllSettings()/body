@@ -5,6 +5,7 @@
   }
   userName.setText(OsmandSettings.getUserName(prefs));
   userPassword.setText(OsmandSettings.getUserPassword(prefs));
+  applicationDir.setText(OsmandSettings.getExternalStorageDirectory(prefs).getAbsolutePath());
   useInternetToDownload.setChecked(OsmandSettings.isUsingInternetToDownloadTiles(prefs));
   Resources resources=this.getResources();
   String[] e=new String[]{resources.getString(R.string.position_on_map_center),resources.getString(R.string.position_on_map_bottom)};
@@ -50,7 +51,7 @@
     entries[i]=RouteService.values()[i].getName();
   }
   fill(routerPreference,entries,entries,entry);
-  File extStorage=new File(Environment.getExternalStorageDirectory(),ResourceManager.VOICE_PATH);
+  File extStorage=OsmandSettings.extendOsmandPath(getApplicationContext(),ResourceManager.VOICE_PATH);
   Set<String> setFiles=new LinkedHashSet<String>();
   if (extStorage.exists()) {
     for (    File f : extStorage.listFiles()) {
@@ -111,4 +112,5 @@
     summary=summary.substring(0,summary.lastIndexOf(':') + 1);
   }
   tileSourcePreference.setSummary(summary + mapName);
+  updateApplicationDirSummary();
 }

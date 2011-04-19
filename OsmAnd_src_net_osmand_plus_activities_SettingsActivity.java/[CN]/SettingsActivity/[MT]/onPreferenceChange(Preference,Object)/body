@@ -18,13 +18,13 @@
  else   if (preference == applicationMode) {
     ApplicationMode old=OsmandSettings.getApplicationMode(prefs);
     edit.putString(OsmandSettings.APPLICATION_MODE,(String)newValue);
-    setAppMode(ApplicationMode.valueOf(newValue.toString()),edit,(OsmandApplication)getApplication(),old);
+    setAppMode(ApplicationMode.valueOf(newValue.toString()),edit,getMyApplication(),old);
     edit.commit();
     updateAllSettings();
   }
  else   if (preference == daynightMode) {
     edit.putString(OsmandSettings.DAYNIGHT_MODE,(String)newValue);
-    ((OsmandApplication)getApplication()).getDaynightHelper().setDayNightMode(DayNightMode.valueOf(newValue.toString()));
+    getMyApplication().getDaynightHelper().setDayNightMode(DayNightMode.valueOf(newValue.toString()));
     edit.commit();
   }
  else   if (preference == mapScreenOrientation) {
@@ -46,6 +46,10 @@
  else   if (preference == userName) {
     edit.putString(OsmandSettings.USER_NAME,(String)newValue);
     edit.commit();
+  }
+ else   if (preference == applicationDir) {
+    warnAboutChangingStorage(edit,(String)newValue);
+    return false;
   }
  else   if (preference == positionOnMap) {
     edit.putInt(OsmandSettings.POSITION_ON_MAP,positionOnMap.findIndexOfValue((String)newValue));
@@ -107,7 +111,7 @@
       RendererRegistry.getRegistry().setCurrentSelectedRender(loaded);
       edit.putString(OsmandSettings.RENDERER,(String)newValue);
       Toast.makeText(this,R.string.renderer_load_sucess,Toast.LENGTH_SHORT).show();
-      ((OsmandApplication)getApplication()).getResourceManager().getRenderer().clearCache();
+      getMyApplication().getResourceManager().getRenderer().clearCache();
     }
     edit.commit();
   }
@@ -120,7 +124,7 @@
       edit.putString(OsmandSettings.VOICE_PROVIDER,(String)newValue);
     }
     edit.commit();
-    ((OsmandApplication)getApplication()).initCommandPlayer();
+    getMyApplication().initCommandPlayer();
   }
  else   if (preference == tileSourcePreference) {
     if (VECTOR_MAP.equals((String)newValue)) {

@@ -1,0 +1,23 @@
+{
+  final String newDir=newValue != null ? newValue.trim() : newValue;
+  File path=new File(newDir);
+  path.mkdirs();
+  if (!path.canRead() || !path.exists()) {
+    Toast.makeText(this,R.string.specified_dir_doesnt_exist,Toast.LENGTH_LONG).show();
+    return;
+  }
+  Builder builder=new AlertDialog.Builder(this);
+  builder.setMessage(getString(R.string.application_dir_change_warning));
+  builder.setPositiveButton(R.string.default_buttons_yes,new OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      edit.putString(OsmandSettings.EXTERNAL_STORAGE_DIR,newDir);
+      edit.commit();
+      getMyApplication().getResourceManager().resetStoreDirectory();
+      reloadIndexes();
+      updateApplicationDirSummary();
+    }
+  }
+);
+  builder.setNegativeButton(R.string.default_buttons_cancel,null);
+  builder.show();
+}
