@@ -5,6 +5,7 @@
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
+    boolean englishNameMatched=false;
 switch (tag) {
 case 0:
       c.setLocation(MapUtils.get31LatitudeY(y),MapUtils.get31LongitudeX(x));
@@ -21,12 +22,40 @@ c.setFileOffset(fileOffset);
 break;
 case OsmandOdb.CityIndex.ID_FIELD_NUMBER:
 c.setId(codedIS.readUInt64());
+if (nameMatcher != null && useEn && !englishNameMatched) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return null;
+}
 break;
 case OsmandOdb.CityIndex.NAME_EN_FIELD_NUMBER:
-c.setEnName(codedIS.readString());
+String enName=codedIS.readString();
+if (nameMatcher != null && enName.length() > 0) {
+if (!nameMatcher.matches(enName)) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return null;
+}
+ else {
+englishNameMatched=true;
+}
+}
+c.setEnName(enName);
 break;
 case OsmandOdb.CityIndex.NAME_FIELD_NUMBER:
-c.setName(codedIS.readString());
+String name=codedIS.readString();
+c.setName(name);
+if (nameMatcher != null) {
+if (!useEn) {
+if (!nameMatcher.matches(name)) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return null;
+}
+}
+ else {
+if (nameMatcher.matches(Junidecode.unidecode(name))) {
+englishNameMatched=true;
+}
+}
+}
 break;
 case OsmandOdb.CityIndex.X_FIELD_NUMBER:
 x=codedIS.readFixed32();

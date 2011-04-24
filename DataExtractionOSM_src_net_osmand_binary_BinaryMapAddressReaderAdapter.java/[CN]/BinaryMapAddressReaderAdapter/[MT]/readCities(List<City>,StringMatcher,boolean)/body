@@ -9,37 +9,7 @@ case OsmandOdb.CitiesIndex.CITIES_FIELD_NUMBER:
     int offset=codedIS.getTotalBytesRead();
   int length=codedIS.readRawVarint32();
 int oldLimit=codedIS.pushLimit(length);
-if (matcher != null) {
-String name=null;
-int read=0;
-int toRead=useEn ? 3 : 2;
-int seek=codedIS.getTotalBytesRead();
-while (read++ < toRead) {
-  int ts=codedIS.readTag();
-  int tags=WireFormat.getTagFieldNumber(ts);
-switch (tags) {
-case OsmandOdb.CityIndex.NAME_EN_FIELD_NUMBER:
-    name=codedIS.readString();
-  break;
-case OsmandOdb.CityIndex.NAME_FIELD_NUMBER:
-name=codedIS.readString();
-if (useEn) {
-name=Junidecode.unidecode(name);
-}
-break;
-case OsmandOdb.CityIndex.CITY_TYPE_FIELD_NUMBER:
-codedIS.readUInt32();
-break;
-}
-}
-if (name == null || !matcher.matches(name)) {
-codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
-codedIS.popLimit(oldLimit);
-break;
-}
-codedIS.seek(seek);
-}
-City c=readCity(null,offset,false);
+City c=readCity(null,offset,false,matcher,useEn);
 if (c != null) {
 cities.add(c);
 }
