@@ -1,17 +1,23 @@
 {
   handler.postDelayed(new Runnable(){
     @Override public void run(){
+      if (!serviceActive) {
+        return;
+      }
       LocationManager locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
       if (register) {
-        boolean continuous=serviceOffInterval == 0;
-        locationManager.requestLocationUpdates(serviceOffProvider,continuous ? 1000 : serviceOffInterval,0,NavigationService.this);
-        if (!continuous) {
+        registered=true;
+        locationManager.requestLocationUpdates(serviceOffProvider,1000,0,NavigationService.this);
+        if (!isContinuous() || serviceOffInterval > serviceError) {
           delayedAction(false,serviceError);
         }
       }
  else {
-        locationManager.removeUpdates(NavigationService.this);
-        delayedAction(true,serviceOffInterval);
+        if (registered) {
+          registered=false;
+          locationManager.removeUpdates(NavigationService.this);
+          delayedAction(true,serviceOffInterval);
+        }
       }
     }
   }
