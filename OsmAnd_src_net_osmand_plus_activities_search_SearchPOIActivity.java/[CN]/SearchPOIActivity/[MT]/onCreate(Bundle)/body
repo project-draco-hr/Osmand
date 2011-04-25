@@ -99,7 +99,7 @@
   lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
     @Override public boolean onItemLongClick(    AdapterView<?> av,    View v,    int pos,    long id){
       final Amenity amenity=((AmenityAdapter)getListAdapter()).getItem(pos);
-      String format=amenity.getSimpleFormat(OsmandSettings.usingEnglishNames(settings));
+      String format=OsmAndFormatter.getPoiSimpleFormat(amenity,SearchPOIActivity.this,OsmandSettings.usingEnglishNames(settings));
       if (amenity.getOpeningHours() != null) {
         format+="  " + getString(R.string.opening_hours) + " : "+ amenity.getOpeningHours();
       }
@@ -109,7 +109,8 @@
         @Override public void onClick(        DialogInterface dialog,        int which){
           if (which == 0) {
             int z=OsmandSettings.getLastKnownMapZoom(settings);
-            OsmandSettings.setMapLocationToShow(SearchPOIActivity.this,amenity.getLocation().getLatitude(),amenity.getLocation().getLongitude(),Math.max(16,z),getString(R.string.poi) + " : " + amenity.getSimpleFormat(OsmandSettings.usingEnglishNames(settings)));
+            String poiSimpleFormat=OsmAndFormatter.getPoiSimpleFormat(amenity,SearchPOIActivity.this,OsmandSettings.usingEnglishNames(settings));
+            OsmandSettings.setMapLocationToShow(SearchPOIActivity.this,amenity.getLocation().getLatitude(),amenity.getLocation().getLongitude(),Math.max(16,z),getString(R.string.poi) + " : " + poiSimpleFormat);
           }
  else           if (which == 1) {
             LatLon l=amenity.getLocation();
