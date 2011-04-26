@@ -1,7 +1,6 @@
 {
   super.onCreate();
   setForeground(true);
-  serviceActive=true;
   handler=new Handler();
   settings=OsmandSettings.getSharedPreferences(this);
   serviceOffInterval=OsmandSettings.getServiceOffInterval(settings);
@@ -9,16 +8,24 @@
   serviceError=OsmandSettings.getServiceOffWaitInterval(settings);
   savingTrackHelper=new SavingTrackHelper(this);
   routingHelper=((OsmandApplication)getApplication()).getRoutingHelper();
-  OsmandSettings.setServiceOffEnabled(this,true);
+  ((OsmandApplication)getApplication()).setNavigationService(this);
+  if (isContinuous()) {
+    LocationManager locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
+    locationManager.requestLocationUpdates(serviceOffProvider,1000,0,NavigationService.this);
+  }
+ else {
+    AlarmManager alarmManager=(AlarmManager)getSystemService(ALARM_SERVICE);
+    pendingIntent=PendingIntent.getBroadcast(this,0,new Intent(this,OnNavigationServiceAlarmReceiver.class),PendingIntent.FLAG_UPDATE_CURRENT);
+    alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,SystemClock.elapsedRealtime() + 500,serviceOffInterval,pendingIntent);
+  }
   registerReceiver(new BroadcastReceiver(){
     @Override public void onReceive(    Context context,    Intent intent){
       NavigationService.this.stopSelf();
     }
   }
 ,new IntentFilter(OSMAND_STOP_SERVICE_ACTION));
-  delayedAction(true,500);
   Intent notificationIntent=new Intent(OSMAND_STOP_SERVICE_ACTION);
-  notification=new Notification(R.drawable.icon,"",System.currentTimeMillis());
+  Notification notification=new Notification(R.drawable.icon,"",System.currentTimeMillis());
   notification.flags=Notification.FLAG_NO_CLEAR;
   notification.setLatestEventInfo(this,Version.APP_NAME,getString(R.string.service_stop_background_service),PendingIntent.getBroadcast(this,0,notificationIntent,PendingIntent.FLAG_UPDATE_CURRENT));
   NotificationManager mNotificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);

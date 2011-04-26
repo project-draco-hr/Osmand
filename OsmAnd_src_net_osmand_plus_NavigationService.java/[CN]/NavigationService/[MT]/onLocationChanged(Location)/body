@@ -1,7 +1,9 @@
 {
   if (location != null && !OsmandSettings.getMapActivityEnabled(settings)) {
     if (!isContinuous()) {
-      delayedAction(false,500);
+      LocationManager locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
+      locationManager.removeUpdates(this);
+      getLock(this).release();
     }
     savingTrackHelper.insertData(location.getLatitude(),location.getLongitude(),location.getAltitude(),location.getSpeed(),location.getTime(),settings);
     if (routingHelper.isFollowingMode()) {
