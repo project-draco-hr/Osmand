@@ -1,0 +1,25 @@
+{
+  Cursor query=db.rawQuery("SELECT " + POINT_COL_LAT + ","+ POINT_COL_LON+ ","+ POINT_COL_DATE+ ","+ POINT_COL_DESCRIPTION+ " FROM "+ POINT_NAME+ " ORDER BY "+ TRACK_COL_DATE+ " ASC",null);
+  if (query.moveToFirst()) {
+    do {
+      WptPt pt=new WptPt();
+      pt.lat=query.getDouble(0);
+      pt.lon=query.getDouble(1);
+      long time=query.getLong(2);
+      pt.time=time;
+      pt.name=query.getString(3);
+      String date=DateFormat.format("yyyy-MM-dd",time).toString();
+      GPXFile gpx;
+      if (dataTracks.containsKey(date)) {
+        gpx=dataTracks.get(date);
+      }
+ else {
+        gpx=new GPXFile();
+        dataTracks.put(date,gpx);
+      }
+      gpx.points.add(pt);
+    }
+ while (query.moveToNext());
+  }
+  query.close();
+}

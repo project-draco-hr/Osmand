@@ -1,64 +1,30 @@
 {
   SQLiteDatabase db=getReadableDatabase();
   List<String> warnings=new ArrayList<String>();
-  File file=OsmandSettings.getExternalStorageDirectory(ctx);
-  if (db != null && file.canWrite()) {
-    file=new File(file,ResourceManager.APP_DIR + TRACKS_PATH);
-    file.mkdirs();
-    if (file.exists()) {
-      Cursor query=db.rawQuery("SELECT " + TRACK_COL_LAT + ","+ TRACK_COL_LON+ ","+ TRACK_COL_ALTITUDE+ ","+ TRACK_COL_SPEED+ ","+ TRACK_COL_DATE+ " FROM "+ TRACK_NAME+ " ORDER BY "+ TRACK_COL_DATE+ " ASC",null);
-      long previousTime=0;
-      Map<String,List<List<TrkPt>>> data=new LinkedHashMap<String,List<List<TrkPt>>>();
-      List<TrkPt> segment=new ArrayList<TrkPt>();
-      List<List<TrkPt>> track=new ArrayList<List<TrkPt>>();
-      track.add(segment);
-      if (query.moveToFirst()) {
-        do {
-          TrkPt pt=new TrkPt();
-          pt.lat=query.getDouble(0);
-          pt.lon=query.getDouble(1);
-          pt.ele=query.getDouble(2);
-          pt.speed=query.getDouble(3);
-          long time=query.getLong(4);
-          pt.time=time;
-          if (previousTime == 0) {
-            data.put(DateFormat.format("yyyy-MM-dd",time).toString(),track);
-            segment.add(pt);
-          }
- else           if (Math.abs(time - previousTime) < 60000) {
-            segment.add(pt);
-          }
- else           if (Math.abs(time - previousTime) < 3600000) {
-            segment=new ArrayList<TrkPt>();
-            segment.add(pt);
-            track.add(segment);
-          }
- else {
-            String date=DateFormat.format("yyyy-MM-dd",time).toString();
-            if (data.containsKey(date)) {
-              track=data.get(date);
-            }
- else {
-              track=new ArrayList<List<TrkPt>>();
-              data.put(date,track);
-            }
-            segment=new ArrayList<TrkPt>();
-            segment.add(pt);
-            track.add(segment);
-          }
-          previousTime=time;
+  File dir=OsmandSettings.getExternalStorageDirectory(ctx);
+  if (db != null && dir.canWrite()) {
+    dir=new File(dir,ResourceManager.APP_DIR + TRACKS_PATH);
+    dir.mkdirs();
+    if (dir.exists()) {
+      Map<String,GPXFile> data=new LinkedHashMap<String,GPXFile>();
+      collectDBPoints(db,data);
+      collectDBTracks(db,data);
+      for (      String f : data.keySet()) {
+        File fout=new File(dir,f + ".gpx");
+        int ind=1;
+        while (fout.exists()) {
+          fout=new File(dir,f + "_" + (++ind)+ ".gpx");
         }
- while (query.moveToNext());
-      }
-      query.close();
-      String w=GPXUtilities.saveToXMLFiles(file,data,ctx);
-      if (w != null) {
-        warnings.add(w);
+        String warn=GPXUtilities.writeGpxFile(fout,data.get(f),ctx);
+        if (warn != null) {
+          warnings.add(warn);
+          return warnings;
+        }
       }
     }
   }
   db=getWritableDatabase();
-  if (db != null) {
+  if (db != null && warnings.isEmpty()) {
     db.execSQL("DELETE FROM " + TRACK_NAME + " WHERE "+ TRACK_COL_DATE+ " <= ?",new Object[]{System.currentTimeMillis()});
   }
   return warnings;
