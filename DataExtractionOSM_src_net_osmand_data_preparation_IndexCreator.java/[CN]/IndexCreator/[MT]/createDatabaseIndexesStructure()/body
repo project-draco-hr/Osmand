@@ -3,7 +3,7 @@
     mapFile=new File(workingDir,getMapFileName());
     mapFile.getParentFile().mkdirs();
     File tempDBMapFile=new File(workingDir,getTempMapDBFileName());
-    removeDatabase(tempDBMapFile);
+    dialect.removeDatabase(tempDBMapFile);
     mapConnection=getDatabaseConnection(tempDBMapFile.getAbsolutePath());
     mapConnection.setAutoCommit(false);
   }
@@ -28,7 +28,7 @@
     pStatements.put(mapLowLevelBinaryStat,0);
   }
   if (indexAddress) {
-    DataIndexWriter.createAddressIndexStructure(mapConnection);
+    DataIndexWriter.createAddressIndexStructure(mapConnection,dialect);
     addressCityStat=DataIndexWriter.getCityInsertPreparedStatement(mapConnection);
     addressStreetStat=DataIndexWriter.getStreetInsertPreparedStatement(mapConnection);
     addressBuildingStat=DataIndexWriter.getBuildingInsertPreparedStatement(mapConnection);
@@ -51,29 +51,12 @@
     }
     poiIndexFile.getParentFile().mkdirs();
     poiConnection=getDatabaseConnection(poiIndexFile.getAbsolutePath(),true);
-    DataIndexWriter.createPoiIndexStructure(poiConnection);
+    DataIndexWriter.createPoiIndexStructure(poiConnection,dialect);
     poiPreparedStatement=DataIndexWriter.createStatementAmenityInsert(poiConnection);
     pStatements.put(poiPreparedStatement,0);
     poiConnection.setAutoCommit(false);
   }
   if (indexTransport) {
-    DataIndexWriter.createTransportIndexStructure(mapConnection);
-    try {
-      File file=new File(getRTreeTransportStopsFileName());
-      if (file.exists()) {
-        file.delete();
-      }
-      transportStopsTree=new RTree(file.getAbsolutePath());
-    }
- catch (    RTreeException e) {
-      throw new IOException(e);
-    }
-    transRouteStat=DataIndexWriter.createStatementTransportRouteInsert(mapConnection);
-    transRouteStopsStat=DataIndexWriter.createStatementTransportRouteStopInsert(mapConnection);
-    transStopsStat=DataIndexWriter.createStatementTransportStopInsert(mapConnection);
-    pStatements.put(transRouteStat,0);
-    pStatements.put(transRouteStopsStat,0);
-    pStatements.put(transStopsStat,0);
-    mapConnection.setAutoCommit(false);
+    indexTransportCreator.createTransportIndexStructure(mapConnection,dialect,getRTreeTransportStopsFileName(),pStatements);
   }
 }

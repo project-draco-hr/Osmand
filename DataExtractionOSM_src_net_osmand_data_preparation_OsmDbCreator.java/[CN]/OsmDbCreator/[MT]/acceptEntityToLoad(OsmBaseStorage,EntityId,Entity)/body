@@ -1,0 +1,71 @@
+{
+  indexCreator.registerCityIfNeeded(e);
+  try {
+    if (e instanceof Node) {
+      currentCountNode++;
+      if (!e.getTags().isEmpty()) {
+        allNodes++;
+      }
+      prepNode.setLong(1,e.getId());
+      prepNode.setDouble(2,((Node)e).getLatitude());
+      prepNode.setDouble(3,((Node)e).getLongitude());
+      prepNode.addBatch();
+      if (currentCountNode >= BATCH_SIZE_OSM) {
+        prepNode.executeBatch();
+        dbConn.commit();
+        currentCountNode=0;
+      }
+    }
+ else     if (e instanceof Way) {
+      allWays++;
+      short ord=0;
+      for (      Long i : ((Way)e).getNodeIds()) {
+        currentWaysCount++;
+        prepWays.setLong(1,e.getId());
+        prepWays.setLong(2,i);
+        prepWays.setLong(3,ord++);
+        prepWays.addBatch();
+      }
+      if (currentWaysCount >= BATCH_SIZE_OSM) {
+        prepWays.executeBatch();
+        dbConn.commit();
+        currentWaysCount=0;
+      }
+    }
+ else {
+      allRelations++;
+      short ord=0;
+      for (      Entry<EntityId,String> i : ((Relation)e).getMembersMap().entrySet()) {
+        currentRelationsCount++;
+        prepRelations.setLong(1,e.getId());
+        prepRelations.setLong(2,i.getKey().getId());
+        prepRelations.setLong(3,i.getKey().getType().ordinal());
+        prepRelations.setString(4,i.getValue());
+        prepRelations.setLong(5,ord++);
+        prepRelations.addBatch();
+      }
+      if (currentRelationsCount >= BATCH_SIZE_OSM) {
+        prepRelations.executeBatch();
+        dbConn.commit();
+        currentRelationsCount=0;
+      }
+    }
+    for (    Entry<String,String> i : e.getTags().entrySet()) {
+      currentTagsCount++;
+      prepTags.setLong(1,e.getId());
+      prepTags.setLong(2,EntityType.valueOf(e).ordinal());
+      prepTags.setString(3,i.getKey());
+      prepTags.setString(4,i.getValue());
+      prepTags.addBatch();
+    }
+    if (currentTagsCount >= BATCH_SIZE_OSM) {
+      prepTags.executeBatch();
+      dbConn.commit();
+      currentTagsCount=0;
+    }
+  }
+ catch (  SQLException ex) {
+    log.error("Could not save in db",ex);
+  }
+  return false;
+}

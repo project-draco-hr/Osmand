@@ -27,11 +27,11 @@
     normalizeSuffixes=DataExtractionSettings.getSettings().getSuffixesToNormalizeStreets();
   }
   try {
-    boolean loadFromPath=dbFile == null || !databaseFileExists(dbFile);
+    boolean loadFromPath=dbFile == null || !dialect.databaseFileExists(dbFile);
     if (dbFile == null) {
       dbFile=new File(workingDir,TEMP_NODES_DB);
-      if (databaseFileExists(dbFile)) {
-        removeDatabase(dbFile);
+      if (dialect.databaseFileExists(dbFile)) {
+        dialect.removeDatabase(dbFile);
       }
     }
     dbConn=getDatabaseConnection(dbFile.getAbsolutePath());
@@ -41,7 +41,7 @@
     if (loadFromPath) {
       progress.setGeneralProgress("[35 / 100]");
       progress.startTask(Messages.getString("IndexCreator.LOADING_FILE") + readFile.getAbsolutePath(),-1);
-      NewDataExtractionOsmFilter filter=extractOsmToNodesDB(readFile,progress,addFilter);
+      OsmDbCreator filter=extractOsmToNodesDB(readFile,progress,addFilter);
       if (filter != null) {
         allNodes=filter.getAllNodes();
         allWays=filter.getAllWays();
@@ -65,7 +65,7 @@
           }
         }
         if (indexTransport) {
-          transportStopsTree=new RTree(getRTreeTransportStopsPackFileName());
+          indexTransportCreator.createRTreeFile(getRTreeTransportStopsPackFileName());
         }
       }
  catch (      RTreeException e) {
@@ -147,7 +147,7 @@
       if (indexTransport) {
         progress.setGeneralProgress("[90 / 100]");
         progress.startTask(Messages.getString("IndexCreator.PACK_RTREE_TRANSP"),-1);
-        transportStopsTree=packRtreeFile(transportStopsTree,getRTreeTransportStopsFileName(),getRTreeTransportStopsPackFileName());
+        indexTransportCreator.transportStopsTree=packRtreeFile(indexTransportCreator.transportStopsTree,getRTreeTransportStopsFileName(),getRTreeTransportStopsPackFileName());
       }
     }
     if (indexMap || indexAddress || indexTransport) {
@@ -173,9 +173,7 @@
       if (indexTransport) {
         progress.setGeneralProgress("[95 of 100]");
         progress.startTask("Writing transport index to binary file...",-1);
-        closePreparedStatements(transRouteStat,transRouteStopsStat,transStopsStat);
-        mapConnection.commit();
-        writeBinaryTransportIndex(writer);
+        indexTransportCreator.writeBinaryTransportIndex(writer,regionName,mapConnection);
       }
       progress.finishTask();
       writer.close();
@@ -232,8 +230,8 @@ catch (  SAXException e) {
         mapConnection.close();
         mapConnection=null;
         File tempDBFile=new File(workingDir,getTempMapDBFileName());
-        if (databaseFileExists(tempDBFile) && deleteDatabaseIndexes) {
-          removeDatabase(tempDBFile);
+        if (dialect.databaseFileExists(tempDBFile) && deleteDatabaseIndexes) {
+          dialect.removeDatabase(tempDBFile);
         }
       }
       if (mapTree != null) {
@@ -254,8 +252,8 @@ catch (  SAXException e) {
           }
         }
       }
-      if (transportStopsTree != null) {
-        transportStopsTree.getFileHdr().getFile().close();
+      if (indexTransportCreator.transportStopsTree != null) {
+        indexTransportCreator.transportStopsTree.getFileHdr().getFile().close();
         File f=new File(getRTreeTransportStopsFileName());
         if (f.exists() && deleteDatabaseIndexes) {
           f.delete();
@@ -266,20 +264,20 @@ catch (  SAXException e) {
         }
       }
       if (dbConn != null) {
-        if (usingH2()) {
+        if (DBDialect.H2 == dialect) {
           dbConn.createStatement().execute("SHUTDOWN COMPACT");
         }
         dbConn.close();
       }
       if (deleteOsmDB) {
-        if (usingDerby()) {
+        if (DBDialect.DERBY == dialect) {
           try {
             DriverManager.getConnection("jdbc:derby:;shutdown=true");
           }
  catch (          SQLException e) {
           }
         }
-        removeDatabase(dbFile);
+        dialect.removeDatabase(dbFile);
       }
     }
  catch (    SQLException e) {
