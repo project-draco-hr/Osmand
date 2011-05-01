@@ -1,6 +1,7 @@
 {
   Cursor query=db.rawQuery("SELECT " + TRACK_COL_LAT + ","+ TRACK_COL_LON+ ","+ TRACK_COL_ALTITUDE+ ","+ TRACK_COL_SPEED+ ","+ TRACK_COL_DATE+ " FROM "+ TRACK_NAME+ " ORDER BY "+ TRACK_COL_DATE+ " ASC",null);
   long previousTime=0;
+  long previousInterval=0;
   TrkSegment segment=null;
   Track track=null;
   if (query.moveToFirst()) {
@@ -12,10 +13,11 @@
       pt.speed=query.getDouble(3);
       long time=query.getLong(4);
       pt.time=time;
-      if (track != null && Math.abs(time - previousTime) < 60000) {
+      long currentInterval=Math.abs(time - previousTime);
+      if (track != null && (currentInterval < 6 * 60 * 1000 || currentInterval < 10 * previousInterval)) {
         segment.points.add(pt);
       }
- else       if (track != null && Math.abs(time - previousTime) < 2 * 60000) {
+ else       if (track != null && currentInterval < 2 * 60 * 60* 1000) {
         segment=new TrkSegment();
         segment.points.add(pt);
         track.segments.add(segment);
@@ -36,6 +38,7 @@
           dataTracks.put(date,file);
         }
       }
+      previousInterval=currentInterval;
       previousTime=time;
     }
  while (query.moveToNext());
