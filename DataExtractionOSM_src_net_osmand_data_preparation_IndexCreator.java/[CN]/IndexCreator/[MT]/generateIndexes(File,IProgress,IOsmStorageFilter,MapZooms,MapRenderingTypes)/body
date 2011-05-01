@@ -48,10 +48,7 @@
         allRelations=filter.getAllRelations();
       }
     }
-    pselectNode=dbConn.prepareStatement("select n.latitude, n.longitude, t.skeys, t.value from node n left join tags t on n.id = t.id and t.type = 0 where n.id = ?");
-    pselectWay=dbConn.prepareStatement("select w.node, w.ord, t.skeys, t.value, n.latitude, n.longitude " + "from ways w left join tags t on w.id = t.id and t.type = 1 and w.ord = 0 inner join node n on w.node = n.id " + "where w.id = ? order by w.ord");
-    pselectRelation=dbConn.prepareStatement("select r.member, r.type, r.role, r.ord, t.skeys, t.value " + "from relations r left join tags t on r.id = t.id and t.type = 2 and r.ord = 0 " + "where r.id = ? order by r.ord");
-    pselectTags=dbConn.prepareStatement("select skeys, value from tags where id = ? and type = ?");
+    accessor.initDatabase(dbConn);
     if (recreateOnlyBinaryFile) {
       mapFile=new File(workingDir,getMapFileName());
       File tempDBMapFile=new File(workingDir,getTempMapDBFileName());
@@ -79,7 +76,12 @@
         progress.setGeneralProgress("[40 / 100]");
         progress.startTask(Messages.getString("IndexCreator.INDEX_CITIES"),allNodes);
         if (!loadFromPath) {
-          allNodes=iterateOverEntities(progress,EntityType.NODE,allNodes,STEP_CITY_NODES);
+          allNodes=accessor.iterateOverEntities(progress,EntityType.NODE,allNodes,new OsmDbVisitor(){
+            @Override public void iterateEntity(            Entity e,            OsmDbAccessorContext ctx){
+              registerCityIfNeeded(e);
+            }
+          }
+);
         }
         for (        City c : cities.values()) {
           DataIndexWriter.writeCity(addressCityStat,pStatements,c,BATCH_SIZE);
@@ -93,11 +95,23 @@
       if (indexAddress || indexMap) {
         progress.setGeneralProgress("[30 / 100]");
         progress.startTask(Messages.getString("IndexCreator.PREINDEX_ADRESS_MAP"),allRelations);
-        allRelations=iterateOverEntities(progress,EntityType.RELATION,allRelations,STEP_ADDRESS_RELATIONS_AND_MULTYPOLYGONS);
+        allRelations=accessor.iterateOverEntities(progress,EntityType.RELATION,allRelations,new OsmDbVisitor(){
+          @Override public void iterateEntity(          Entity e,          OsmDbAccessorContext ctx) throws SQLException {
+            indexAddressRelationsAndMultiPolygons(e,ctx);
+          }
+        }
+);
         if (indexAddress) {
           progress.setGeneralProgress("[40 / 100]");
           progress.startTask(Messages.getString("IndexCreator.PREINDEX_ADRESS_MAP"),allWays);
-          allWays=iterateOverEntities(progress,EntityType.WAY,allWays,STEP_BORDER_CITY_WAYS);
+          allWays=accessor.iterateOverEntities(progress,EntityType.WAY,allWays,new OsmDbVisitor(){
+            @Override public void iterateEntity(            Entity e,            OsmDbAccessorContext ctx) throws SQLException {
+              if (e instanceof Way && "administrative".equals(e.getTag(OSMTagKey.BOUNDARY))) {
+                indexBoundariesRelation(e,ctx);
+              }
+            }
+          }
+);
         }
         if (indexAddress) {
           if (pStatements.get(addressBuildingStat) > 0) {
@@ -114,14 +128,29 @@
       if (indexPOI || indexAddress || indexMap) {
         progress.setGeneralProgress("[50 / 100]");
         progress.startTask(Messages.getString("IndexCreator.PROCESS_OSM_NODES"),allNodes);
-        iterateOverEntities(progress,EntityType.NODE,allNodes,STEP_MAIN);
+        accessor.iterateOverEntities(progress,EntityType.NODE,allNodes,new OsmDbVisitor(){
+          @Override public void iterateEntity(          Entity e,          OsmDbAccessorContext ctx) throws SQLException {
+            iterateMainEntity(e,ctx);
+          }
+        }
+);
         progress.setGeneralProgress("[70 / 100]");
         progress.startTask(Messages.getString("IndexCreator.PROCESS_OSM_WAYS"),allWays);
-        iterateOverEntities(progress,EntityType.WAY,allWays,STEP_MAIN);
+        accessor.iterateOverEntities(progress,EntityType.WAY,allWays,new OsmDbVisitor(){
+          @Override public void iterateEntity(          Entity e,          OsmDbAccessorContext ctx) throws SQLException {
+            iterateMainEntity(e,ctx);
+          }
+        }
+);
       }
       progress.setGeneralProgress("[85 / 100]");
       progress.startTask(Messages.getString("IndexCreator.PROCESS_OSM_REL"),allRelations);
-      iterateOverEntities(progress,EntityType.RELATION,allRelations,STEP_MAIN);
+      accessor.iterateOverEntities(progress,EntityType.RELATION,allRelations,new OsmDbVisitor(){
+        @Override public void iterateEntity(        Entity e,        OsmDbAccessorContext ctx) throws SQLException {
+          iterateMainEntity(e,ctx);
+        }
+      }
+);
       if (indexMap) {
         progress.setGeneralProgress("[90 / 100]");
         progress.startTask(Messages.getString("IndexCreator.INDEX_LO_LEVEL_WAYS"),lowLevelWays);
@@ -199,32 +228,14 @@ catch (  SAXException e) {
   }
  finally {
     try {
-      if (pselectNode != null) {
-        pselectNode.close();
-      }
-      if (pselectWay != null) {
-        pselectWay.close();
-      }
-      if (pselectRelation != null) {
-        pselectRelation.close();
-      }
-      if (pselectTags != null) {
-        pselectTags.close();
-      }
+      accessor.closeReadingConnection();
       for (      PreparedStatement p : pStatements.keySet()) {
         if (pStatements.get(p) > 0) {
           p.executeBatch();
         }
         p.close();
       }
-      if (poiConnection != null) {
-        poiConnection.commit();
-        poiConnection.close();
-        poiConnection=null;
-        if (lastModifiedDate != null) {
-          poiIndexFile.setLastModified(lastModifiedDate);
-        }
-      }
+      indexPoiCreator.commitAndClosePoiFile(lastModifiedDate);
       if (mapConnection != null) {
         mapConnection.commit();
         mapConnection.close();
@@ -250,17 +261,6 @@ catch (  SAXException e) {
           if (f.exists() && deleteDatabaseIndexes) {
             f.delete();
           }
-        }
-      }
-      if (indexTransportCreator.transportStopsTree != null) {
-        indexTransportCreator.transportStopsTree.getFileHdr().getFile().close();
-        File f=new File(getRTreeTransportStopsFileName());
-        if (f.exists() && deleteDatabaseIndexes) {
-          f.delete();
-        }
-        f=new File(getRTreeTransportStopsPackFileName());
-        if (f.exists() && deleteDatabaseIndexes) {
-          f.delete();
         }
       }
       if (dbConn != null) {

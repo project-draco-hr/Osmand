@@ -1,0 +1,117 @@
+{
+  if (indexAddress) {
+    if (e instanceof Relation && "address".equals(e.getTag(OSMTagKey.TYPE))) {
+      indexAddressRelation((Relation)e,ctx);
+    }
+    if (e instanceof Relation && "administrative".equals(e.getTag(OSMTagKey.BOUNDARY))) {
+      indexBoundariesRelation((Relation)e,ctx);
+    }
+  }
+  if (indexMap && e instanceof Relation && "restriction".equals(e.getTag(OSMTagKey.TYPE))) {
+    String val=e.getTag("restriction");
+    if (val != null) {
+      byte type=-1;
+      if ("no_right_turn".equalsIgnoreCase(val)) {
+        type=MapRenderingTypes.RESTRICTION_NO_RIGHT_TURN;
+      }
+ else       if ("no_left_turn".equalsIgnoreCase(val)) {
+        type=MapRenderingTypes.RESTRICTION_NO_LEFT_TURN;
+      }
+ else       if ("no_u_turn".equalsIgnoreCase(val)) {
+        type=MapRenderingTypes.RESTRICTION_NO_U_TURN;
+      }
+ else       if ("no_straight_on".equalsIgnoreCase(val)) {
+        type=MapRenderingTypes.RESTRICTION_NO_STRAIGHT_ON;
+      }
+ else       if ("only_right_turn".equalsIgnoreCase(val)) {
+        type=MapRenderingTypes.RESTRICTION_ONLY_RIGHT_TURN;
+      }
+ else       if ("only_left_turn".equalsIgnoreCase(val)) {
+        type=MapRenderingTypes.RESTRICTION_ONLY_LEFT_TURN;
+      }
+ else       if ("only_straight_on".equalsIgnoreCase(val)) {
+        type=MapRenderingTypes.RESTRICTION_ONLY_STRAIGHT_ON;
+      }
+      if (type != -1) {
+        ctx.loadEntityData(e,true);
+        Collection<EntityId> fromL=((Relation)e).getMemberIds("from");
+        Collection<EntityId> toL=((Relation)e).getMemberIds("to");
+        if (!fromL.isEmpty() && !toL.isEmpty()) {
+          EntityId from=fromL.iterator().next();
+          EntityId to=toL.iterator().next();
+          if (from.getType() == EntityType.WAY) {
+            if (!highwayRestrictions.containsKey(from.getId())) {
+              highwayRestrictions.put(from.getId(),new ArrayList<Long>(4));
+            }
+            highwayRestrictions.get(from.getId()).add((to.getId() << 3) | (long)type);
+          }
+        }
+      }
+    }
+  }
+  if (indexMap && e instanceof Relation && "multipolygon".equals(e.getTag(OSMTagKey.TYPE))) {
+    ctx.loadEntityData(e,true);
+    Map<Entity,String> entities=((Relation)e).getMemberEntities();
+    boolean outerFound=false;
+    for (    Entity es : entities.keySet()) {
+      if (es instanceof Way) {
+        boolean inner="inner".equals(entities.get(es));
+        if (!inner) {
+          outerFound=true;
+          for (          String t : es.getTagKeySet()) {
+            e.putTag(t,es.getTag(t));
+          }
+          break;
+        }
+      }
+    }
+    if (!outerFound) {
+      log.warn("Probably map bug: Multipoligon id=" + e.getId() + " contains only inner ways : ");
+      return;
+    }
+    int mtType=findMultiPolygonType(e,0);
+    if (mtType != 0) {
+      String name=renderingTypes.getEntityName(e);
+      List<List<Way>> completedRings=new ArrayList<List<Way>>();
+      List<List<Way>> incompletedRings=new ArrayList<List<Way>>();
+      for (      Entity es : entities.keySet()) {
+        if (es instanceof Way) {
+          if (!((Way)es).getNodeIds().isEmpty()) {
+            combineMultiPolygons((Way)es,completedRings,incompletedRings);
+          }
+        }
+      }
+      if (!incompletedRings.isEmpty()) {
+        return;
+      }
+      for (      List<Way> l : completedRings) {
+        boolean innerType="inner".equals(entities.get(l.get(0)));
+        for (        Way way : l) {
+          boolean inner="inner".equals(entities.get(way));
+          if (innerType != inner) {
+            log.warn("Probably map bug: Multipoligon contains outer and inner ways.\n" + "Way:" + way.getId() + " is strange part of completed ring. InnerType:"+ innerType+ " way inner: "+ inner+ " way inner string:"+ entities.get(way));
+            return;
+          }
+        }
+      }
+      for (      List<Way> l : completedRings) {
+        boolean innerType="inner".equals(entities.get(l.get(0)));
+        boolean clockwise=isClockwiseWay(l);
+        boolean inverse=clockwise != !innerType;
+        for (        Way way : l) {
+          boolean inner="inner".equals(entities.get(way));
+          if (!inner && name != null) {
+            multiPolygonsNames.put(way.getId(),name);
+          }
+          putMultipolygonType(multiPolygonsWays[0],way.getId(),mtType,inverse);
+          for (int i=1; i < multiPolygonsWays.length; i++) {
+            int type=findMultiPolygonType(e,i);
+            if (type != 0) {
+              putMultipolygonType(multiPolygonsWays[i],way.getId(),type,inverse);
+            }
+          }
+        }
+      }
+    }
+  }
+}

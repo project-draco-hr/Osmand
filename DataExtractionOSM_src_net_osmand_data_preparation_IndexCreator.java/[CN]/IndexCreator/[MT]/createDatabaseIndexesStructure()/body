@@ -45,16 +45,7 @@
     pStatements.put(addressSearchStreetStat,0);
   }
   if (indexPOI) {
-    poiIndexFile=new File(workingDir,getPoiFileName());
-    if (poiIndexFile.exists()) {
-      Algoritms.removeAllFiles(poiIndexFile);
-    }
-    poiIndexFile.getParentFile().mkdirs();
-    poiConnection=getDatabaseConnection(poiIndexFile.getAbsolutePath(),true);
-    DataIndexWriter.createPoiIndexStructure(poiConnection,dialect);
-    poiPreparedStatement=DataIndexWriter.createStatementAmenityInsert(poiConnection);
-    pStatements.put(poiPreparedStatement,0);
-    poiConnection.setAutoCommit(false);
+    indexPoiCreator.createDatabaseStructure(new File(workingDir,getPoiFileName()),pStatements);
   }
   if (indexTransport) {
     indexTransportCreator.createTransportIndexStructure(mapConnection,dialect,getRTreeTransportStopsFileName(),pStatements);
