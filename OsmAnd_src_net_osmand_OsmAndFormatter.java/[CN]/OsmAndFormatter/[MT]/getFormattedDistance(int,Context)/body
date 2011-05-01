@@ -1,17 +1,36 @@
 {
-  if (meters >= 100000) {
-    return meters / 1000 + " " + ctx.getString(R.string.km);
-  }
- else   if (meters >= 10000) {
-    return MessageFormat.format("{0,number,#.#} " + ctx.getString(R.string.km),((float)meters) / 1000);
-  }
- else   if (meters > 1500) {
-    return MessageFormat.format("{0,number,#.#} " + ctx.getString(R.string.km),((float)meters) / 1000);
-  }
- else   if (meters > 900) {
-    return MessageFormat.format("{0,number,#.##} " + ctx.getString(R.string.km),((float)meters) / 1000);
+  MetricsConstants mc=OsmandSettings.getDefaultMetricConstants(ctx);
+  int mainUnitStr;
+  float mainUnitInMeters;
+  if (mc == MetricsConstants.KILOMETERS_AND_METERS) {
+    mainUnitStr=R.string.km;
+    mainUnitInMeters=METERS_IN_KILOMETER;
   }
  else {
+    mainUnitStr=R.string.mile;
+    mainUnitInMeters=METERS_IN_MILE;
+  }
+  if (meters >= 100 * mainUnitInMeters) {
+    return meters / mainUnitInMeters + " " + ctx.getString(mainUnitStr);
+  }
+ else   if (meters > 1.5f * mainUnitInMeters) {
+    return MessageFormat.format("{0,number,#.#} " + ctx.getString(mainUnitStr),((float)meters) / mainUnitInMeters);
+  }
+ else   if (meters > 0.9f * mainUnitInMeters) {
+    return MessageFormat.format("{0,number,#.##} " + ctx.getString(mainUnitStr),((float)meters) / mainUnitInMeters);
+  }
+ else {
+    if (mc == MetricsConstants.KILOMETERS_AND_METERS) {
+      return meters + " " + ctx.getString(R.string.m);
+    }
+ else     if (mc == MetricsConstants.MILES_AND_YARDS) {
+      int yards=(int)(meters * YARDS_IN_METER);
+      return yards + " " + ctx.getString(R.string.yard);
+    }
+ else     if (mc == MetricsConstants.MILES_AND_FOOTS) {
+      int foots=(int)(meters * FOOTS_IN_METER);
+      return foots + " " + ctx.getString(R.string.foot);
+    }
     return meters + " " + ctx.getString(R.string.m);
   }
 }
