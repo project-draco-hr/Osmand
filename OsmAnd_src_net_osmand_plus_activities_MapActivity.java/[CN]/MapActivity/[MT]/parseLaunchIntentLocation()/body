@@ -1,0 +1,27 @@
+{
+  Intent intent=getIntent();
+  if (intent != null && intent.getData() != null) {
+    Uri data=intent.getData();
+    if ("http".equalsIgnoreCase(data.getScheme()) && "download.osmand.net".equals(data.getHost()) && "/go".equals(data.getPath())) {
+      String lat=data.getQueryParameter("lat");
+      String lon=data.getQueryParameter("lon");
+      if (lat != null && lon != null) {
+        try {
+          double lt=Double.parseDouble(lat);
+          double ln=Double.parseDouble(lon);
+          SharedPreferences prefs=OsmandSettings.getSharedPreferences(this);
+          Editor edit=prefs.edit();
+          edit.putFloat(OsmandSettings.LAST_KNOWN_MAP_LAT,(float)lt);
+          edit.putFloat(OsmandSettings.LAST_KNOWN_MAP_LON,(float)ln);
+          String zoom=data.getQueryParameter("z");
+          if (zoom != null) {
+            edit.putInt(OsmandSettings.LAST_KNOWN_MAP_ZOOM,Integer.parseInt(zoom));
+          }
+          edit.commit();
+        }
+ catch (        NumberFormatException e) {
+        }
+      }
+    }
+  }
+}
