@@ -1,0 +1,30 @@
+{
+  int i=0;
+  for (  TransportStop s : stops) {
+    if (!visitedStops.contains(s.getId())) {
+      transStopsStat.setLong(1,s.getId());
+      transStopsStat.setDouble(2,s.getLocation().getLatitude());
+      transStopsStat.setDouble(3,s.getLocation().getLongitude());
+      transStopsStat.setString(4,s.getName());
+      transStopsStat.setString(5,s.getEnName());
+      int x=(int)MapUtils.getTileNumberX(24,s.getLocation().getLongitude());
+      int y=(int)MapUtils.getTileNumberY(24,s.getLocation().getLatitude());
+      addBatch(transStopsStat);
+      try {
+        transportStopsTree.insert(new LeafElement(new Rect(x,y,x,y),s.getId()));
+      }
+ catch (      RTreeInsertException e) {
+        throw new IllegalArgumentException(e);
+      }
+catch (      IllegalValueException e) {
+        throw new IllegalArgumentException(e);
+      }
+      visitedStops.add(s.getId());
+    }
+    transRouteStopsStat.setLong(1,r.getId());
+    transRouteStopsStat.setLong(2,s.getId());
+    transRouteStopsStat.setInt(3,direction ? 1 : 0);
+    transRouteStopsStat.setInt(4,i++);
+    addBatch(transRouteStopsStat);
+  }
+}

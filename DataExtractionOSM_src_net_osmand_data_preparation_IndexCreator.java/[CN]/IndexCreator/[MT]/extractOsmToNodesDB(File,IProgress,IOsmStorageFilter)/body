@@ -1,7 +1,6 @@
 {
   boolean pbfFile=false;
   InputStream stream=new BufferedInputStream(new FileInputStream(readFile),8192 * 4);
-  ;
   InputStream streamFile=stream;
   long st=System.currentTimeMillis();
   if (readFile.getName().endsWith(".bz2")) {
@@ -20,23 +19,32 @@
   if (addFilter != null) {
     storage.getFilters().add(addFilter);
   }
-  OsmDbCreator filter=new OsmDbCreator(this);
+  storage.getFilters().add(new IOsmStorageFilter(){
+    @Override public boolean acceptEntityToLoad(    OsmBaseStorage storage,    EntityId entityId,    Entity entity){
+      indexAddressCreator.registerCityIfNeeded(entity);
+      return true;
+    }
+  }
+);
+  OsmDbCreator dbCreator=new OsmDbCreator(this);
   try {
-    filter.initDatabase(dialect,dbConn);
-    storage.getFilters().add(filter);
+    progress.setGeneralProgress("[35 / 100]");
+    progress.startTask(Messages.getString("IndexCreator.LOADING_FILE") + readFile.getAbsolutePath(),-1);
+    dbCreator.initDatabase(dialect,dbConn);
+    storage.getFilters().add(dbCreator);
     if (pbfFile) {
       storage.parseOSMPbf(stream,progress,false);
     }
  else {
       storage.parseOSM(stream,progress,streamFile,false);
     }
-    filter.finishLoading();
+    dbCreator.finishLoading();
     dbConn.commit();
     if (log.isInfoEnabled()) {
       log.info("File parsed : " + (System.currentTimeMillis() - st));
     }
     progress.finishTask();
-    return filter;
+    return dbCreator;
   }
   finally {
     if (log.isInfoEnabled()) {

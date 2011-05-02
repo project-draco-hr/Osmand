@@ -1,0 +1,33 @@
+{
+  boolean first=true;
+  long firstId=-1;
+  long lastId=-1;
+  ByteArrayOutputStream bnodes=new ByteArrayOutputStream();
+  try {
+    for (    Node n : nodes) {
+      if (n != null) {
+        if (first) {
+          firstId=n.getId();
+          first=false;
+        }
+        lastId=n.getId();
+        Algoritms.writeInt(bnodes,Float.floatToRawIntBits((float)n.getLatitude()));
+        Algoritms.writeInt(bnodes,Float.floatToRawIntBits((float)n.getLongitude()));
+      }
+    }
+  }
+ catch (  IOException e) {
+    throw new IllegalStateException(e);
+  }
+  if (firstId == -1) {
+    return;
+  }
+  mapLowLevelBinaryStat.setLong(1,id);
+  mapLowLevelBinaryStat.setLong(2,firstId);
+  mapLowLevelBinaryStat.setLong(3,lastId);
+  mapLowLevelBinaryStat.setString(4,name);
+  mapLowLevelBinaryStat.setBytes(5,bnodes.toByteArray());
+  mapLowLevelBinaryStat.setLong(6,types);
+  mapLowLevelBinaryStat.setShort(7,(short)level);
+  addBatch(mapLowLevelBinaryStat);
+}

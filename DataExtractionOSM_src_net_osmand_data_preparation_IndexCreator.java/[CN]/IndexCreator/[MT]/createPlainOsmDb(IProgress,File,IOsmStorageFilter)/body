@@ -1,0 +1,23 @@
+{
+  boolean loadFromExistingFile=dbFile != null && dialect.databaseFileExists(dbFile);
+  if (dbFile == null) {
+    dbFile=new File(workingDir,TEMP_NODES_DB);
+    if (dialect.databaseFileExists(dbFile)) {
+      dialect.removeDatabase(dbFile);
+    }
+  }
+  dbConn=getDatabaseConnection(dbFile.getAbsolutePath());
+  int allRelations=100000;
+  int allWays=1000000;
+  int allNodes=10000000;
+  if (!loadFromExistingFile) {
+    OsmDbCreator dbCreator=extractOsmToNodesDB(readFile,progress,addFilter);
+    if (dbCreator != null) {
+      allNodes=dbCreator.getAllNodes();
+      allWays=dbCreator.getAllWays();
+      allRelations=dbCreator.getAllRelations();
+    }
+  }
+  accessor.initDatabase(dbConn,allNodes,allWays,allRelations);
+  return loadFromExistingFile;
+}

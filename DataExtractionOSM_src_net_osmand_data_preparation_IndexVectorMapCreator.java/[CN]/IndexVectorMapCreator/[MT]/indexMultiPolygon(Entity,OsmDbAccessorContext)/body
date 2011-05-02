@@ -1,0 +1,67 @@
+{
+  if (e instanceof Relation && "multipolygon".equals(e.getTag(OSMTagKey.TYPE))) {
+    ctx.loadEntityData(e,true);
+    Map<Entity,String> entities=((Relation)e).getMemberEntities();
+    boolean outerFound=false;
+    for (    Entity es : entities.keySet()) {
+      if (es instanceof Way) {
+        boolean inner="inner".equals(entities.get(es));
+        if (!inner) {
+          outerFound=true;
+          for (          String t : es.getTagKeySet()) {
+            e.putTag(t,es.getTag(t));
+          }
+          break;
+        }
+      }
+    }
+    if (!outerFound) {
+      log.warn("Probably map bug: Multipoligon id=" + e.getId() + " contains only inner ways : ");
+      return;
+    }
+    int mtType=findMultiPolygonType(e,0);
+    if (mtType != 0) {
+      String name=renderingTypes.getEntityName(e);
+      List<List<Way>> completedRings=new ArrayList<List<Way>>();
+      List<List<Way>> incompletedRings=new ArrayList<List<Way>>();
+      for (      Entity es : entities.keySet()) {
+        if (es instanceof Way) {
+          if (!((Way)es).getNodeIds().isEmpty()) {
+            combineMultiPolygons((Way)es,completedRings,incompletedRings);
+          }
+        }
+      }
+      if (!incompletedRings.isEmpty()) {
+        return;
+      }
+      for (      List<Way> l : completedRings) {
+        boolean innerType="inner".equals(entities.get(l.get(0)));
+        for (        Way way : l) {
+          boolean inner="inner".equals(entities.get(way));
+          if (innerType != inner) {
+            log.warn("Probably map bug: Multipoligon contains outer and inner ways.\n" + "Way:" + way.getId() + " is strange part of completed ring. InnerType:"+ innerType+ " way inner: "+ inner+ " way inner string:"+ entities.get(way));
+            return;
+          }
+        }
+      }
+      for (      List<Way> l : completedRings) {
+        boolean innerType="inner".equals(entities.get(l.get(0)));
+        boolean clockwise=MapSwingAlgorithms.isClockwiseWay(l);
+        boolean inverse=clockwise != !innerType;
+        for (        Way way : l) {
+          boolean inner="inner".equals(entities.get(way));
+          if (!inner && name != null) {
+            multiPolygonsNames.put(way.getId(),name);
+          }
+          putMultipolygonType(multiPolygonsWays[0],way.getId(),mtType,inverse);
+          for (int i=1; i < multiPolygonsWays.length; i++) {
+            int type=findMultiPolygonType(e,i);
+            if (type != 0) {
+              putMultipolygonType(multiPolygonsWays[i],way.getId(),type,inverse);
+            }
+          }
+        }
+      }
+    }
+  }
+}
