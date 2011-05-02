@@ -1,0 +1,21 @@
+{
+  List<Way> innerWays=new ArrayList<Way>();
+  Boundary outerBoundary=new Boundary();
+  for (  List<Way> ring : completedRings) {
+    boolean innerType="inner".equals(entities.get(ring.get(0)));
+    if (!innerType) {
+      outerBoundary.getOuterWays().addAll(ring);
+    }
+ else {
+      innerWays.addAll(ring);
+    }
+  }
+  for (  Way innerWay : innerWays) {
+    for (    Node node : innerWay.getNodes()) {
+      if (!outerBoundary.containsPoint(node.getLatitude(),node.getLongitude())) {
+        return node;
+      }
+    }
+  }
+  return null;
+}
