@@ -1,0 +1,94 @@
+{
+  restrictionsUse.clear();
+  mapLowLevelBinaryStat.executeBatch();
+  mapLowLevelBinaryStat.close();
+  pStatements.remove(mapLowLevelBinaryStat);
+  mapLowLevelBinaryStat=null;
+  mapConnection.commit();
+  PreparedStatement startStat=mapConnection.prepareStatement("SELECT id, start_node, end_node, nodes FROM low_level_map_objects" + " WHERE start_node = ? AND type=? AND level = ? AND name=?");
+  PreparedStatement endStat=mapConnection.prepareStatement("SELECT id, start_node, end_node, nodes FROM low_level_map_objects" + " WHERE end_node = ? AND type=? AND level = ? AND name=?");
+  Statement selectStatement=mapConnection.createStatement();
+  ResultSet rs=selectStatement.executeQuery("SELECT id, start_node, end_node, name, nodes, type, level FROM low_level_map_objects");
+  Set<Long> visitedWays=new LinkedHashSet<Long>();
+  ArrayList<Float> list=new ArrayList<Float>(100);
+  while (rs.next()) {
+    if (lowLevelWays != -1) {
+      progress.progress(1);
+    }
+    long id=rs.getLong(1);
+    if (visitedWays.contains(id)) {
+      continue;
+    }
+    visitedWays.add(id);
+    int level=rs.getInt(7);
+    int zoom=mapZooms.getLevel(level).getMaxZoom();
+    long startNode=rs.getLong(2);
+    long endNode=rs.getLong(3);
+    String name=rs.getString(4);
+    long ltype=rs.getLong(6);
+    loadNodes(rs.getBytes(5),list);
+    ArrayList<Float> wayNodes=new ArrayList<Float>(list);
+    boolean combined=true;
+    while (combined) {
+      combined=false;
+      endStat.setLong(1,startNode);
+      endStat.setLong(2,ltype);
+      endStat.setShort(3,(short)level);
+      endStat.setString(4,name);
+      ResultSet fs=endStat.executeQuery();
+      while (fs.next()) {
+        if (!visitedWays.contains(fs.getLong(1))) {
+          combined=true;
+          long lid=fs.getLong(1);
+          startNode=fs.getLong(2);
+          visitedWays.add(lid);
+          loadNodes(fs.getBytes(4),list);
+          ArrayList li=new ArrayList<Float>(list);
+          wayNodes.remove(0);
+          wayNodes.remove(0);
+          li.addAll(wayNodes);
+          wayNodes=li;
+        }
+      }
+      fs.close();
+    }
+    combined=true;
+    while (combined) {
+      combined=false;
+      startStat.setLong(1,endNode);
+      startStat.setLong(2,ltype);
+      startStat.setShort(3,(short)level);
+      startStat.setString(4,name);
+      ResultSet fs=startStat.executeQuery();
+      while (fs.next()) {
+        if (!visitedWays.contains(fs.getLong(1))) {
+          combined=true;
+          long lid=fs.getLong(1);
+          endNode=fs.getLong(3);
+          visitedWays.add(lid);
+          loadNodes(fs.getBytes(4),list);
+          for (int i=2; i < list.size(); i++) {
+            wayNodes.add(list.get(i));
+          }
+        }
+      }
+      fs.close();
+    }
+    List<Node> wNodes=new ArrayList<Node>();
+    for (int i=0; i < wayNodes.size(); i+=2) {
+      wNodes.add(new Node(wayNodes.get(i),wayNodes.get(i + 1),i == 0 ? startNode : endNode));
+    }
+    boolean skip=false;
+    boolean cycle=startNode == endNode;
+    boolean hasMulti=multiPolygonsWays[level].containsKey(id >> 3);
+    if (cycle || !hasMulti) {
+      skip=checkForSmallAreas(wNodes,zoom - 1,1,4);
+    }
+    if (!skip) {
+      Way newWs=new Way(id);
+      MapAlgorithms.simplifyDouglasPeucker(wNodes,zoom - 1 + 8,3,newWs);
+      int type=decodeTypesFromOneLong(ltype);
+      insertBinaryMapRenderObjectIndex(pStatements,mapBinaryStat,mapTree[level],newWs,name,id,type,typeUse,0,restrictionsUse,false,false,false);
+    }
+  }
+}

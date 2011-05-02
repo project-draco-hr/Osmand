@@ -1,0 +1,33 @@
+{
+  closePreparedStatements(mapBinaryStat,mapLowLevelBinaryStat);
+  mapConnection.commit();
+  try {
+    PreparedStatement selectData=mapConnection.prepareStatement("SELECT nodes, types, name, highway, restrictions FROM binary_map_objects WHERE id = ?");
+    writer.startWriteMapIndex(regionName);
+    for (int i=0; i < mapZooms.size(); i++) {
+      RTree rtree=mapTree[i];
+      long rootIndex=rtree.getFileHdr().getRootIndex();
+      rtree.Node root=rtree.getReadNode(rootIndex);
+      Rect rootBounds=calcBounds(root);
+      if (rootBounds != null) {
+        boolean last=nodeIsLastSubTree(rtree,rootIndex);
+        writer.startWriteMapLevelIndex(mapZooms.getLevel(i).getMinZoom(),mapZooms.getLevel(i).getMaxZoom(),rootBounds.getMinX(),rootBounds.getMaxX(),rootBounds.getMinY(),rootBounds.getMaxY());
+        if (last) {
+          writer.startMapTreeElement(rootBounds.getMinX(),rootBounds.getMaxX(),rootBounds.getMinY(),rootBounds.getMaxY());
+        }
+        writeBinaryMapTree(root,rtree,writer,selectData);
+        if (last) {
+          writer.endWriteMapTreeElement();
+        }
+        writer.endWriteMapLevelIndex();
+      }
+    }
+    selectData.close();
+    writer.writeMapEncodingRules(renderingTypes.getEncodingRuleTypes());
+    writer.endWriteMapIndex();
+    writer.flush();
+  }
+ catch (  RTreeException e) {
+    throw new IllegalStateException(e);
+  }
+}

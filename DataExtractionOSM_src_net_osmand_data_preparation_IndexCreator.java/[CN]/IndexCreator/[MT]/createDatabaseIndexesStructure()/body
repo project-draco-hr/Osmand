@@ -8,46 +8,15 @@
     mapConnection.setAutoCommit(false);
   }
   if (indexMap) {
-    DataIndexWriter.createMapIndexStructure(mapConnection);
-    mapBinaryStat=DataIndexWriter.createStatementMapBinaryInsert(mapConnection);
-    mapLowLevelBinaryStat=DataIndexWriter.createStatementLowLevelMapBinaryInsert(mapConnection);
-    try {
-      mapTree=new RTree[mapZooms.size()];
-      for (int i=0; i < mapZooms.size(); i++) {
-        File file=new File(getRTreeMapIndexNonPackFileName() + i);
-        if (file.exists()) {
-          file.delete();
-        }
-        mapTree[i]=new RTree(getRTreeMapIndexNonPackFileName() + i);
-      }
-    }
- catch (    RTreeException e) {
-      throw new IOException(e);
-    }
-    pStatements.put(mapBinaryStat,0);
-    pStatements.put(mapLowLevelBinaryStat,0);
+    indexMapCreator.createDatabaseStructure(mapConnection,dialect,getRTreeMapIndexNonPackFileName());
   }
   if (indexAddress) {
-    DataIndexWriter.createAddressIndexStructure(mapConnection,dialect);
-    addressCityStat=DataIndexWriter.getCityInsertPreparedStatement(mapConnection);
-    addressStreetStat=DataIndexWriter.getStreetInsertPreparedStatement(mapConnection);
-    addressBuildingStat=DataIndexWriter.getBuildingInsertPreparedStatement(mapConnection);
-    addressStreetNodeStat=DataIndexWriter.getStreetNodeInsertPreparedStatement(mapConnection);
-    addressSearchStreetStat=DataIndexWriter.getSearchStreetPreparedStatement(mapConnection);
-    addressSearchBuildingStat=DataIndexWriter.getSearchBuildingPreparedStatement(mapConnection);
-    addressSearchStreetNodeStat=DataIndexWriter.getStreeNodeSearchPreparedStatement(mapConnection);
-    pStatements.put(addressCityStat,0);
-    pStatements.put(addressStreetStat,0);
-    pStatements.put(addressStreetNodeStat,0);
-    pStatements.put(addressBuildingStat,0);
-    pStatements.put(addressSearchBuildingStat,0);
-    pStatements.put(addressSearchStreetNodeStat,0);
-    pStatements.put(addressSearchStreetStat,0);
+    indexAddressCreator.createDatabaseStructure(mapConnection,dialect);
   }
   if (indexPOI) {
-    indexPoiCreator.createDatabaseStructure(new File(workingDir,getPoiFileName()),pStatements);
+    indexPoiCreator.createDatabaseStructure(new File(workingDir,getPoiFileName()));
   }
   if (indexTransport) {
-    indexTransportCreator.createTransportIndexStructure(mapConnection,dialect,getRTreeTransportStopsFileName(),pStatements);
+    indexTransportCreator.createTransportIndexStructure(mapConnection,dialect,getRTreeTransportStopsFileName());
   }
 }

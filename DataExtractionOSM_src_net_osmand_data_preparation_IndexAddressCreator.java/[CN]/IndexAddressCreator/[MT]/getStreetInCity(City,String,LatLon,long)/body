@@ -1,0 +1,32 @@
+{
+  if (name == null || city == null) {
+    return null;
+  }
+  Long foundId=null;
+  name=normalizeStreetName(name);
+  if (loadInMemory) {
+    foundId=addressStreetLocalMap.get(name + "_" + city.getId());
+  }
+ else {
+    addressSearchStreetStat.setLong(1,city.getId());
+    addressSearchStreetStat.setString(2,name);
+    ResultSet rs=addressSearchStreetStat.executeQuery();
+    if (rs.next()) {
+      foundId=rs.getLong(1);
+    }
+    rs.close();
+  }
+  if (foundId == null) {
+    insertStreetData(addressStreetStat,initId,name,Junidecode.unidecode(name),location.getLatitude(),location.getLongitude(),city.getId());
+    if (loadInMemory) {
+      addBatch(pStatements,addressStreetStat,BATCH_SIZE);
+      addressStreetLocalMap.put(name + "_" + city.getId(),initId);
+    }
+ else {
+      addressStreetStat.execute();
+      mapConnection.commit();
+    }
+    foundId=initId;
+  }
+  return foundId;
+}

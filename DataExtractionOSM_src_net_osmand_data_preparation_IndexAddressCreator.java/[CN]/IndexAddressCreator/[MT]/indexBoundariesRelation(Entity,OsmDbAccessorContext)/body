@@ -1,0 +1,80 @@
+{
+  if ("administrative".equals(e.getTag(OSMTagKey.BOUNDARY)) && (e instanceof Relation || e instanceof Way)) {
+    String adminLevel=e.getTag("admin_level");
+    Boundary boundary=null;
+    if (cityAdminLevel.equals(adminLevel)) {
+      if (e instanceof Relation) {
+        Relation i=(Relation)e;
+        ctx.loadEntityData(i,true);
+        boundary=new Boundary();
+        if (i.getTag(OSMTagKey.NAME) != null) {
+          boundary.setName(i.getTag(OSMTagKey.NAME));
+        }
+        boundary.setBoundaryId(i.getId());
+        Map<Entity,String> entities=i.getMemberEntities();
+        for (        Entity es : entities.keySet()) {
+          if (es instanceof Way) {
+            boolean inner="inner".equals(entities.get(es));
+            if (inner) {
+              boundary.getInnerWays().add((Way)es);
+            }
+ else {
+              String wName=es.getTag(OSMTagKey.NAME);
+              if (Algoritms.objectEquals(wName,boundary.getName()) || wName == null) {
+                visitedBoundaryWays.add(es.getId());
+              }
+              boundary.getOuterWays().add((Way)es);
+            }
+          }
+        }
+      }
+ else       if (e instanceof Way) {
+        if (!visitedBoundaryWays.contains(e.getId())) {
+          boundary=new Boundary();
+          if (e.getTag(OSMTagKey.NAME) != null) {
+            boundary.setName(e.getTag(OSMTagKey.NAME));
+          }
+          boundary.setBoundaryId(e.getId());
+          boundary.getOuterWays().add((Way)e);
+        }
+      }
+    }
+    if (boundary != null && boundary.getCenterPoint() != null) {
+      LatLon point=boundary.getCenterPoint();
+      boolean cityFound=false;
+      boolean containsCityInside=false;
+      for (      City c : cityManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3)) {
+        if (boundary.containsPoint(c.getLocation())) {
+          if (boundary.getName() == null || boundary.getName().equalsIgnoreCase(c.getName())) {
+            citiBoundaries.put(c,boundary);
+            cityFound=true;
+            containsCityInside=true;
+          }
+        }
+      }
+      if (!cityFound) {
+        for (        City c : cityVillageManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3)) {
+          if (boundary.containsPoint(c.getLocation())) {
+            if (boundary.getName() == null || boundary.getName().equalsIgnoreCase(c.getName())) {
+              citiBoundaries.put(c,boundary);
+              cityFound=true;
+            }
+          }
+        }
+      }
+      if (!cityFound && boundary.getName() != null) {
+        City nCity=new City(containsCityInside ? CityType.CITY : CityType.SUBURB);
+        nCity.setLocation(point.getLatitude(),point.getLongitude());
+        nCity.setId(-boundary.getBoundaryId());
+        nCity.setName(boundary.getName());
+        citiBoundaries.put(nCity,boundary);
+        cityVillageManager.registerObject(point.getLatitude(),point.getLongitude(),nCity);
+        writeCity(addressCityStat,pStatements,nCity);
+        if (pStatements.get(addressCityStat) > 0) {
+          addressCityStat.executeBatch();
+          pStatements.put(addressCityStat,0);
+        }
+      }
+    }
+  }
+}

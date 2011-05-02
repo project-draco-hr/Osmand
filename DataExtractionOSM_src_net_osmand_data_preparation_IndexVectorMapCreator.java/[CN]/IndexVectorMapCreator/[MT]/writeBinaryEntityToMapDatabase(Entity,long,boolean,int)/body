@@ -1,0 +1,63 @@
+{
+  int type=renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(level).getMaxZoom(),false,typeUse);
+  Map<Long,Set<Integer>> multiPolygonsWays=this.multiPolygonsWays[level];
+  boolean hasMulti=e instanceof Way && multiPolygonsWays.containsKey(e.getId());
+  if (hasMulti) {
+    Set<Integer> set=multiPolygonsWays.get(e.getId());
+    boolean first=true;
+    for (    Integer i : set) {
+      if (first && type == 0) {
+        type=i;
+        first=false;
+      }
+ else {
+        int k=i & 0x7fff;
+        int ks=k | MapRenderingTypes.POLYGON_TYPE;
+        if (ks == type) {
+          type=i;
+        }
+ else {
+          int ind=typeUse.indexOf(ks);
+          if (ind == -1) {
+            typeUse.add(i);
+          }
+ else {
+            typeUse.set(ind,i);
+          }
+        }
+      }
+    }
+  }
+  if (type == 0) {
+    return;
+  }
+  restrictionsUse.clear();
+  if (level == 0 && highwayRestrictions.containsKey(baseId)) {
+    restrictionsUse.addAll(highwayRestrictions.get(baseId));
+  }
+  boolean point=(type & 3) == MapRenderingTypes.POINT_TYPE;
+  RTree rtree=null;
+  int zoom;
+  long id=(baseId << 3) | ((level & 3) << 1);
+  rtree=mapTree[level];
+  zoom=mapZooms.getLevel(level).getMaxZoom() - 1;
+  boolean skip=false;
+  String eName=renderingTypes.getEntityName(e);
+  if (eName == null) {
+    eName=multiPolygonsNames.get(baseId);
+  }
+  int highwayAttributes=0;
+  if (e.getTag(OSMTagKey.HIGHWAY) != null) {
+    highwayAttributes=MapRenderingTypes.getHighwayAttributes(e);
+  }
+  if (e instanceof Way) {
+    id|=1;
+    if (level > 0) {
+      e=simplifyWay((Way)e,id,hasMulti,zoom,eName,type,level);
+      skip=e == null;
+    }
+  }
+  if (!skip) {
+    insertBinaryMapRenderObjectIndex(pStatements,mapBinaryStat,rtree,e,eName,id,type,typeUse,highwayAttributes,restrictionsUse,inverse,point,true);
+  }
+}
