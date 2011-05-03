@@ -1,13 +1,14 @@
 {
   if (zoom < 15) {
-    Toast.makeText(this,getString(R.string.update_poi_is_not_available_for_zoom),Toast.LENGTH_SHORT).show();
+    Toast.makeText(mapActivity,getString(R.string.update_poi_is_not_available_for_zoom),Toast.LENGTH_SHORT).show();
     return;
   }
-  final List<AmenityIndexRepository> repos=((OsmandApplication)getApplication()).getResourceManager().searchAmenityRepositories(latitude,longitude);
+  final List<AmenityIndexRepository> repos=((OsmandApplication)mapActivity.getApplication()).getResourceManager().searchAmenityRepositories(latitude,longitude);
   if (repos.isEmpty()) {
-    Toast.makeText(this,getString(R.string.update_poi_no_offline_poi_index),Toast.LENGTH_SHORT).show();
+    Toast.makeText(mapActivity,getString(R.string.update_poi_no_offline_poi_index),Toast.LENGTH_SHORT).show();
     return;
   }
+  final OsmandMapTileView mapView=mapActivity.getMapView();
   Rect pixRect=new Rect(-mapView.getWidth() / 2,-mapView.getHeight() / 2,3 * mapView.getWidth() / 2,3 * mapView.getHeight() / 2);
   RectF tileRect=new RectF();
   mapView.calculateTileRectangle(pixRect,mapView.getCenterPointX(),mapView.getCenterPointY(),mapView.getXTile(),mapView.getYTile(),tileRect);
@@ -15,7 +16,8 @@
   final double topLat=MapUtils.getLatitudeFromTile(zoom,tileRect.top);
   final double rightLon=MapUtils.getLongitudeFromTile(zoom,tileRect.right);
   final double bottomLat=MapUtils.getLatitudeFromTile(zoom,tileRect.bottom);
-  progressDlg=ProgressDialog.show(this,getString(R.string.loading),getString(R.string.loading_data));
+  ProgressDialog progressDlg=ProgressDialog.show(mapActivity,getString(R.string.loading),getString(R.string.loading_data));
+  mapActivity.setProgressDlg(progressDlg);
   new Thread(new Runnable(){
     @Override public void run(){
       try {
@@ -39,9 +41,10 @@
         showToast(getString(R.string.update_poi_error_local));
       }
  finally {
-        if (progressDlg != null) {
-          progressDlg.dismiss();
-          progressDlg=null;
+        Dialog prog=mapActivity.getProgressDlg();
+        if (prog != null) {
+          prog.dismiss();
+          mapActivity.setProgressDlg(prog);
         }
       }
     }

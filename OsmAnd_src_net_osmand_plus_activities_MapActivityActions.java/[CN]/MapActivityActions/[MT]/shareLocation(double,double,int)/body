@@ -1,7 +1,7 @@
 {
   final String shortOsmUrl=MapUtils.buildShortOsmUrl(latitude,longitude,zoom);
   final String appLink="http://download.osmand.net/go?lat=" + ((float)latitude) + "&lon="+ ((float)longitude)+ "&z="+ zoom;
-  AlertDialog.Builder builder=new Builder(this);
+  AlertDialog.Builder builder=new Builder(mapActivity);
   builder.setTitle(R.string.send_location_way_choose_title);
   builder.setItems(new String[]{"Email","SMS","Clipboard"},new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
@@ -13,16 +13,16 @@
         intent.putExtra(Intent.EXTRA_SUBJECT,"Mine location");
         intent.putExtra(Intent.EXTRA_TEXT,Html.fromHtml(email));
         intent.setType("text/html");
-        startActivity(Intent.createChooser(intent,getString(R.string.send_location)));
+        mapActivity.startActivity(Intent.createChooser(intent,getString(R.string.send_location)));
       }
  else       if (which == 1) {
         Intent sendIntent=new Intent(Intent.ACTION_VIEW);
         sendIntent.putExtra("sms_body",sms);
         sendIntent.setType("vnd.android-dir/mms-sms");
-        startActivity(sendIntent);
+        mapActivity.startActivity(sendIntent);
       }
  else       if (which == 2) {
-        ClipboardManager clipboard=(ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+        ClipboardManager clipboard=(ClipboardManager)mapActivity.getSystemService(Activity.CLIPBOARD_SERVICE);
         clipboard.setText(sms);
       }
     }
