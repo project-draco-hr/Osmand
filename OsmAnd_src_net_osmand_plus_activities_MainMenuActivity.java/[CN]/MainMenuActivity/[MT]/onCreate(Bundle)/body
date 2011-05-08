@@ -16,8 +16,8 @@
   final TextView textVersionView=(TextView)findViewById(R.id.TextVersion);
   textVersionView.setText(textVersion);
   SharedPreferences prefs=OsmandSettings.getPrefs(this);
+  final TextView appName=(TextView)findViewById(R.id.AppName);
   if (prefs.contains(CONTRIBUTION_VERSION_FLAG)) {
-    final TextView appName=(TextView)findViewById(R.id.AppName);
     appName.setText("OsmAnd!");
     SpannableString content=new SpannableString(textVersion);
     content.setSpan(new ClickableSpan(){
@@ -30,6 +30,17 @@
     textVersionView.setText(content);
     textVersionView.setMovementMethod(LinkMovementMethod.getInstance());
   }
+  SpannableString appLink=new SpannableString(appName.getText());
+  appLink.setSpan(new ClickableSpan(){
+    @Override public void onClick(    View widget){
+      TipsAndTricksActivity activity=new TipsAndTricksActivity(MainMenuActivity.this);
+      Dialog dlg=activity.getDialogToShowTips(false);
+      dlg.show();
+    }
+  }
+,appLink.length() - 1,appLink.length(),0);
+  appName.setText(appLink);
+  appName.setMovementMethod(LinkMovementMethod.getInstance());
   showMap=findViewById(R.id.MapButton);
   showMap.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
@@ -101,6 +112,17 @@
 );
       builder.setNegativeButton(R.string.first_time_continue,null);
       builder.show();
+    }
+  }
+ else {
+    int i=pref.getInt(TIPS_SHOW,0);
+    if (i < 7) {
+      pref.edit().putInt(TIPS_SHOW,++i).commit();
+      if (i == 1 || i == 5) {
+        TipsAndTricksActivity activity=new TipsAndTricksActivity(this);
+        Dialog dlg=activity.getDialogToShowTips(true);
+        dlg.show();
+      }
     }
   }
   checkPreviousRunsForExceptions(firstTime);

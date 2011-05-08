@@ -1,0 +1,61 @@
+{
+  final Dialog dlg=new Dialog(ctx);
+  dlg.setContentView(R.layout.tips_and_tricks);
+  final TextView tipDescription=(TextView)dlg.findViewById(R.id.TipDescription);
+  tipDescription.setMovementMethod(ScrollingMovementMethod.getInstance());
+  int nextInd=0;
+  final TIntArrayList toShow=new TIntArrayList();
+  final int[] historyInd=new int[1];
+  if (showFirst) {
+    dlg.setTitle(R.string.tip_initial);
+    tipDescription.setText(R.string.tip_initial_t);
+    historyInd[0]=-1;
+  }
+ else {
+    nextInd=getNextRandomTipToShow();
+    dlg.setTitle(getTipName(nextInd));
+    tipDescription.setText(getTipDescription(nextInd));
+    toShow.add(nextInd);
+    historyInd[0]=0;
+  }
+  final Button nextButton=((Button)dlg.findViewById(R.id.NextButton));
+  final Button prevButton=(Button)dlg.findViewById(R.id.PreviousButton);
+  prevButton.setEnabled(historyInd[0] > 0);
+  nextButton.setEnabled(historyInd[0] < getNumberOfTips() - 1);
+  nextButton.setOnClickListener(new View.OnClickListener(){
+    public void onClick(    View view){
+      if (historyInd[0] == toShow.size() - 1) {
+        int suggest=0;
+        if (historyInd[0] >= 0) {
+          suggest=toShow.get(historyInd[0]) + 1;
+        }
+        toShow.add(getNextTipToShow(suggest));
+      }
+      historyInd[0]++;
+      dlg.setTitle(getTipName(toShow.get(historyInd[0])));
+      tipDescription.setText(getTipDescription(toShow.get(historyInd[0])));
+      prevButton.setEnabled(historyInd[0] > 0);
+      nextButton.setEnabled(historyInd[0] < getNumberOfTips() - 1);
+    }
+  }
+);
+  prevButton.setOnClickListener(new View.OnClickListener(){
+    public void onClick(    View view){
+      if (historyInd[0] > 0) {
+        historyInd[0]--;
+        dlg.setTitle(getTipName(toShow.get(historyInd[0])));
+        tipDescription.setText(getTipDescription(toShow.get(historyInd[0])));
+      }
+      prevButton.setEnabled(historyInd[0] > 0);
+      nextButton.setEnabled(historyInd[0] < getNumberOfTips() - 1);
+    }
+  }
+);
+  ((Button)dlg.findViewById(R.id.CloseButton)).setOnClickListener(new View.OnClickListener(){
+    public void onClick(    View view){
+      dlg.dismiss();
+    }
+  }
+);
+  return dlg;
+}
