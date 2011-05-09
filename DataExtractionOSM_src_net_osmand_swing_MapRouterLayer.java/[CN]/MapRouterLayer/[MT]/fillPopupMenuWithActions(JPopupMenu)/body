@@ -30,14 +30,19 @@
   Action route=new AbstractAction("Calculate YOURS route"){
     private static final long serialVersionUID=507156107455281238L;
     public void actionPerformed(    ActionEvent e){
-      List<Way> ways=route(startRoute,endRoute);
-      DataTileManager<Way> points=new DataTileManager<Way>();
-      points.setZoom(11);
-      for (      Way w : ways) {
-        LatLon n=w.getLatLon();
-        points.registerObject(n.getLatitude(),n.getLongitude(),w);
+      new Thread(){
+        @Override public void run(){
+          List<Way> ways=route(startRoute,endRoute);
+          DataTileManager<Way> points=new DataTileManager<Way>();
+          points.setZoom(11);
+          for (          Way w : ways) {
+            LatLon n=w.getLatLon();
+            points.registerObject(n.getLatitude(),n.getLongitude(),w);
+          }
+          map.setPoints(points);
+        }
       }
-      map.setPoints(points);
+.start();
     }
   }
 ;
@@ -45,14 +50,19 @@
   Action altroute=new AbstractAction("Calculate CloudMade route"){
     private static final long serialVersionUID=507156107455281238L;
     public void actionPerformed(    ActionEvent e){
-      List<Way> ways=alternateRoute(startRoute,endRoute);
-      DataTileManager<Way> points=new DataTileManager<Way>();
-      points.setZoom(11);
-      for (      Way w : ways) {
-        LatLon n=w.getLatLon();
-        points.registerObject(n.getLatitude(),n.getLongitude(),w);
+      new Thread(){
+        @Override public void run(){
+          List<Way> ways=alternateRoute(startRoute,endRoute);
+          DataTileManager<Way> points=new DataTileManager<Way>();
+          points.setZoom(11);
+          for (          Way w : ways) {
+            LatLon n=w.getLatLon();
+            points.registerObject(n.getLatitude(),n.getLongitude(),w);
+          }
+          map.setPoints(points);
+        }
       }
-      map.setPoints(points);
+.start();
     }
   }
 ;
@@ -60,16 +70,21 @@
   Action selfRoute=new AbstractAction("Calculate OsmAnd route"){
     private static final long serialVersionUID=507156107455281238L;
     public void actionPerformed(    ActionEvent e){
-      List<Way> ways=selfRoute(startRoute,endRoute);
-      if (ways != null) {
-        DataTileManager<Way> points=new DataTileManager<Way>();
-        points.setZoom(11);
-        for (        Way w : ways) {
-          LatLon n=w.getLatLon();
-          points.registerObject(n.getLatitude(),n.getLongitude(),w);
+      new Thread(){
+        @Override public void run(){
+          List<Way> ways=selfRoute(startRoute,endRoute);
+          if (ways != null) {
+            DataTileManager<Way> points=new DataTileManager<Way>();
+            points.setZoom(11);
+            for (            Way w : ways) {
+              LatLon n=w.getLatLon();
+              points.registerObject(n.getLatitude(),n.getLongitude(),w);
+            }
+            map.setPoints(points);
+          }
         }
-        map.setPoints(points);
       }
+.start();
     }
   }
 ;
