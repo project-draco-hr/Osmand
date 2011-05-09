@@ -61,12 +61,8 @@
   DialogInterface.OnClickListener followCall=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       ApplicationMode mode=getAppMode(buttons);
-      ApplicationMode old=OsmandSettings.getApplicationMode(settings);
-      if (old != mode) {
-        Editor edit=OsmandSettings.getWriteableEditor(MapActivity.this);
-        edit.putString(OsmandSettings.APPLICATION_MODE,mode.name());
-        SettingsActivity.setAppMode(mode,edit,(OsmandApplication)getApplication(),old);
-        edit.commit();
+      boolean changed=ApplicationMode.setAppMode(mode,(OsmandApplication)getApplication());
+      if (changed) {
         updateApplicationModeSettings();
         mapView.refreshMap();
       }
