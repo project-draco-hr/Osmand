@@ -9,7 +9,7 @@
   buttons[ApplicationMode.CAR.ordinal()]=(ToggleButton)view.findViewById(R.id.CarButton);
   buttons[ApplicationMode.BICYCLE.ordinal()]=(ToggleButton)view.findViewById(R.id.BicycleButton);
   buttons[ApplicationMode.PEDESTRIAN.ordinal()]=(ToggleButton)view.findViewById(R.id.PedestrianButton);
-  ApplicationMode appMode=OsmandSettings.getApplicationMode(settings);
+  ApplicationMode appMode=settings.getApplicationMode();
   for (int i=0; i < buttons.length; i++) {
     if (buttons[i] != null) {
       final int ind=i;
@@ -52,7 +52,7 @@
       map.setLatitude(lat);
       map.setLongitude(lon);
       routingHelper.setAppMode(mode);
-      OsmandSettings.setFollowingByRoute(MapActivity.this,false);
+      settings.FOLLOW_TO_THE_ROUTE.set(false);
       routingHelper.setFollowingMode(false);
       routingHelper.setFinalAndCurrentLocation(navigationLayer.getPointToNavigate(),map);
     }
@@ -61,12 +61,8 @@
   DialogInterface.OnClickListener followCall=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       ApplicationMode mode=getAppMode(buttons);
-      ApplicationMode old=OsmandSettings.getApplicationMode(settings);
-      if (old != mode) {
-        Editor edit=getSharedPreferences(OsmandSettings.SHARED_PREFERENCES_NAME,MODE_WORLD_WRITEABLE).edit();
-        edit.putString(OsmandSettings.APPLICATION_MODE,mode.name());
-        SettingsActivity.setAppMode(mode,edit,(OsmandApplication)getApplication(),old);
-        edit.commit();
+      boolean changed=settings.APPLICATION_MODE.set(mode);
+      if (changed) {
         updateApplicationModeSettings();
         mapView.refreshMap();
       }
@@ -77,7 +73,7 @@
         location.setLongitude(lon);
       }
       routingHelper.setAppMode(mode);
-      OsmandSettings.setFollowingByRoute(MapActivity.this,true);
+      settings.FOLLOW_TO_THE_ROUTE.set(true);
       routingHelper.setFollowingMode(true);
       routingHelper.setFinalAndCurrentLocation(navigationLayer.getPointToNavigate(),location);
       ((OsmandApplication)getApplication()).showDialogInitializingCommandPlayer(MapActivity.this);

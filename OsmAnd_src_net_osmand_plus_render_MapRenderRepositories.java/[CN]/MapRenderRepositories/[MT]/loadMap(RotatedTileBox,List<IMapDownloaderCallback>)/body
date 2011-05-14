@@ -4,10 +4,11 @@
     currentRenderingContext=null;
   }
   try {
-    Boolean renderDay=((OsmandApplication)context.getApplicationContext()).getDaynightHelper().getDayNightRenderer();
-    BaseOsmandRender renderingType=RendererRegistry.getRegistry().getCurrentSelectedRenderer();
+    OsmandApplication app=((OsmandApplication)context.getApplicationContext());
+    Boolean renderDay=app.getDaynightHelper().getDayNightRenderer();
+    BaseOsmandRender renderingType=app.getRendererRegistry().getCurrentSelectedRenderer();
     if (renderDay != null && renderingType != null && renderDay.booleanValue() != renderingType.isDayRender()) {
-      renderingType=RendererRegistry.getRegistry().getOppositeRendererForDayNight(renderingType);
+      renderingType=app.getRendererRegistry().getOppositeRendererForDayNight(renderingType);
     }
     requestedBox=new RotatedTileBox(tileRect);
     RectF dataBox=requestedBox.calculateLatLonBox(new RectF());
@@ -41,12 +42,12 @@
     }
     now=System.currentTimeMillis();
     Bitmap bmp=Bitmap.createBitmap(currentRenderingContext.width,currentRenderingContext.height,Config.RGB_565);
-    boolean stepByStep=OsmandSettings.isUsingStepByStepRendering(prefs);
+    boolean stepByStep=prefs.USE_STEP_BY_STEP_RENDERING.get();
     if (stepByStep) {
       this.bmp=bmp;
       this.bmpLocation=tileRect;
     }
-    renderer.generateNewBitmap(currentRenderingContext,cObjects,bmp,OsmandSettings.usingEnglishNames(prefs),renderingType,stepByStep ? notifyList : null);
+    renderer.generateNewBitmap(currentRenderingContext,cObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingType,stepByStep ? notifyList : null);
     if (checkWhetherInterrupted()) {
       currentRenderingContext=null;
       return;
@@ -57,7 +58,7 @@
       this.bmp=bmp;
       this.bmpLocation=tileRect;
     }
-    if (OsmandSettings.isDebugRendering(context)) {
+    if (prefs.DEBUG_RENDERING_INFO.get()) {
       final String msg="Search done in " + searchTime + " ms\nRendering done in "+ renderingTime+ " ms";
       handler.post(new Runnable(){
         @Override public void run(){

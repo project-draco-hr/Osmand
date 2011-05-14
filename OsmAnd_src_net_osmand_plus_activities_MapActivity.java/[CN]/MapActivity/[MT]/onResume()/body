@@ -1,16 +1,16 @@
 {
   super.onResume();
-  if (OsmandSettings.getMapOrientation(settings) != getRequestedOrientation()) {
-    setRequestedOrientation(OsmandSettings.getMapOrientation(settings));
+  if (settings.MAP_SCREEN_ORIENTATION.get() != getRequestedOrientation()) {
+    setRequestedOrientation(settings.MAP_SCREEN_ORIENTATION.get());
   }
   currentScreenOrientation=getWindow().getWindowManager().getDefaultDisplay().getOrientation();
-  boolean showTiles=!OsmandSettings.isUsingMapVectorData(settings);
-  ITileSource source=showTiles ? OsmandSettings.getMapTileSource(settings) : null;
+  boolean showTiles=!settings.isUsingMapVectorData();
+  ITileSource source=showTiles ? settings.getMapTileSource() : null;
   if (showTiles != !rendererLayer.isVisible() || !Algoritms.objectEquals(mapView.getMap(),source)) {
     updateMapSource();
   }
   updateApplicationModeSettings();
-  poiMapLayer.setFilter(OsmandSettings.getPoiFilterForMap(this,(OsmandApplication)getApplication()));
+  poiMapLayer.setFilter(settings.getPoiFilterForMap((OsmandApplication)getApplication()));
   backToLocation.setVisibility(View.INVISIBLE);
   routingHelper.setUiActivity(this);
   LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
@@ -33,23 +33,23 @@
   LocationProvider prov=service.getProvider(currentLocationProvider);
   providerSupportsBearing=prov == null ? false : prov.supportsBearing() && !isRunningOnEmulator();
   providerSupportsSpeed=prov == null ? false : prov.supportsSpeed() && !isRunningOnEmulator();
-  if (settings != null && settings.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
-    LatLon l=OsmandSettings.getLastKnownMapLocation(settings);
+  if (settings != null && settings.isLastKnownMapLocation()) {
+    LatLon l=settings.getLastKnownMapLocation();
     mapView.setLatLon(l.getLatitude(),l.getLongitude());
-    mapView.setZoom(OsmandSettings.getLastKnownMapZoom(settings));
+    mapView.setZoom(settings.getLastKnownMapZoom());
   }
   if (wakeLock == null) {
     PowerManager powerManager=(PowerManager)getSystemService(POWER_SERVICE);
     wakeLock=powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,"net.osmand.map");
     wakeLock.acquire();
   }
-  OsmandSettings.setMapActivityEnabled(this,true);
+  settings.MAP_ACTIVITY_ENABLED.set(true);
   checkExternalStorage();
   showAndHideMapPosition();
-  LatLon latLon=OsmandSettings.getAndClearMapLocationToShow(settings);
   LatLon cur=new LatLon(mapView.getLatitude(),mapView.getLongitude());
+  LatLon latLon=settings.getAndClearMapLocationToShow();
   if (latLon != null && !latLon.equals(cur)) {
-    mapView.getAnimatedDraggingThread().startMoving(cur.getLatitude(),cur.getLongitude(),latLon.getLatitude(),latLon.getLongitude(),mapView.getZoom(),OsmandSettings.getMapZoomToShow(settings),mapView.getSourceTileSize(),mapView.getRotate(),true);
+    mapView.getAnimatedDraggingThread().startMoving(cur.getLatitude(),cur.getLongitude(),latLon.getLatitude(),latLon.getLongitude(),mapView.getZoom(),settings.getMapZoomToShow(),mapView.getSourceTileSize(),mapView.getRotate(),true);
   }
   View progress=findViewById(R.id.ProgressBar);
   if (progress != null) {
