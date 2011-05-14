@@ -1,6 +1,6 @@
 {
   super.onCreate(savedInstanceState);
-  settings=OsmandSettings.getPrefs(this);
+  settings=OsmandSettings.getOsmandSettings(this);
   setVolumeControlStream(AudioManager.STREAM_MUSIC);
   requestWindowFeature(Window.FEATURE_NO_TITLE);
   setContentView(R.layout.main);
@@ -9,7 +9,7 @@
     dlg.setOnDismissListener(new DialogInterface.OnDismissListener(){
       @Override public void onDismiss(      DialogInterface dialog){
         OsmandApplication app=((OsmandApplication)getApplication());
-        if (OsmandSettings.isUsingMapVectorData(settings) && app.getResourceManager().getRenderer().isEmpty()) {
+        if (settings.isUsingMapVectorData() && app.getResourceManager().getRenderer().isEmpty()) {
           Toast.makeText(MapActivity.this,getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
         }
       }
@@ -62,14 +62,14 @@
   routeInfoLayer=new RouteInfoLayer(routingHelper,(LinearLayout)findViewById(R.id.RouteLayout));
   mapView.addLayer(routeInfoLayer,10);
   savingTrackHelper=new SavingTrackHelper(this);
-  LatLon pointToNavigate=OsmandSettings.getPointToNavigate(settings);
+  LatLon pointToNavigate=settings.getPointToNavigate();
   if (!Algoritms.objectEquals(routingHelper.getFinalLocation(),pointToNavigate)) {
     routingHelper.setFollowingMode(false);
     routingHelper.setFinalAndCurrentLocation(pointToNavigate,null);
   }
-  if (OsmandSettings.isFollowingByRoute(settings)) {
+  if (settings.FOLLOW_TO_THE_ROUTE.get()) {
     if (pointToNavigate == null) {
-      OsmandSettings.setFollowingByRoute(this,false);
+      settings.FOLLOW_TO_THE_ROUTE.set(false);
     }
  else     if (!routingHelper.isRouteCalculated()) {
       Builder builder=new AlertDialog.Builder(this);
@@ -83,7 +83,7 @@
 );
       builder.setNegativeButton(R.string.default_buttons_no,new DialogInterface.OnClickListener(){
         @Override public void onClick(        DialogInterface dialog,        int which){
-          OsmandSettings.setFollowingByRoute(MapActivity.this,false);
+          settings.FOLLOW_TO_THE_ROUTE.set(false);
           routingHelper.setFinalLocation(null);
           mapView.refreshMap();
         }
@@ -93,8 +93,7 @@
     }
   }
   navigationLayer.setPointToNavigate(pointToNavigate);
-  SharedPreferences prefs=OsmandSettings.getPrefs(this);
-  if (prefs == null || !prefs.contains(OsmandSettings.LAST_KNOWN_MAP_LAT)) {
+  if (!settings.isLastKnownMapLocation()) {
     LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
     Location location=null;
     try {
@@ -124,7 +123,7 @@
       mapView.getAnimatedDraggingThread().stopAnimatingSync();
       mapView.getAnimatedDraggingThread().startZooming(mapView.getZoom(),mapView.getZoom() + 1);
       showAndHideMapPosition();
-      if (OsmandSettings.isAutoZoomEnabled(settings)) {
+      if (settings.AUTO_ZOOM_MAP.get()) {
         locationChanged(mapView.getLatitude(),mapView.getLongitude(),null);
       }
     }
@@ -136,7 +135,7 @@
       mapView.getAnimatedDraggingThread().stopAnimatingSync();
       mapView.getAnimatedDraggingThread().startZooming(mapView.getZoom(),mapView.getZoom() - 1);
       showAndHideMapPosition();
-      if (OsmandSettings.isAutoZoomEnabled(settings)) {
+      if (settings.AUTO_ZOOM_MAP.get()) {
         locationChanged(mapView.getLatitude(),mapView.getLongitude(),null);
       }
     }

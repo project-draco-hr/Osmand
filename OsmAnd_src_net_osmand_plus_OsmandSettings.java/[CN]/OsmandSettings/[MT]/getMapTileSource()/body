@@ -1,0 +1,37 @@
+{
+  String tileName=globalPreferences.getString(MAP_TILE_SOURCES,null);
+  if (tileName != null) {
+    List<TileSourceTemplate> list=TileSourceManager.getKnownSourceTemplates();
+    for (    TileSourceTemplate l : list) {
+      if (l.getName().equals(tileName)) {
+        return l;
+      }
+    }
+    File tPath=extendOsmandPath(ResourceManager.TILES_PATH);
+    File dir=new File(tPath,tileName);
+    if (dir.exists()) {
+      if (tileName.endsWith(SQLiteTileSource.EXT)) {
+        return new SQLiteTileSource(dir);
+      }
+ else       if (dir.isDirectory()) {
+        String url=null;
+        File readUrl=new File(dir,"url");
+        try {
+          if (readUrl.exists()) {
+            BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream(readUrl),"UTF-8"));
+            url=reader.readLine();
+            url=url.replaceAll(Pattern.quote("{$z}"),"{0}");
+            url=url.replaceAll(Pattern.quote("{$x}"),"{1}");
+            url=url.replaceAll(Pattern.quote("{$y}"),"{2}");
+            reader.close();
+          }
+        }
+ catch (        IOException e) {
+          Log.d(LogUtil.TAG,"Error reading url " + dir.getName(),e);
+        }
+        return new TileSourceManager.TileSourceTemplate(dir,dir.getName(),url);
+      }
+    }
+  }
+  return TileSourceManager.getMapnikSource();
+}

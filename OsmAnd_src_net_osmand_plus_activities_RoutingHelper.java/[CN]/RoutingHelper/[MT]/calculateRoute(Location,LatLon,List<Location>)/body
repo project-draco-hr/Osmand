@@ -2,8 +2,8 @@
   if (start == null || end == null) {
     return;
   }
-  RouteService serviceToUse=OsmandSettings.getRouterService(OsmandSettings.getPrefs(context));
-  if (serviceToUse == RouteService.OSMAND && !OsmandSettings.isOsmandRoutingServiceUsed(context)) {
+  RouteService serviceToUse=settings.ROUTER_SERVICE.get();
+  if (serviceToUse == RouteService.OSMAND && !settings.USE_OSMAND_ROUTING_SERVICE_ALWAYS.get()) {
     double distance=MapUtils.getDistance(end,start.getLatitude(),start.getLongitude());
     if (distance > DISTANCE_TO_USE_OSMAND_ROUTER) {
       showMessage(context.getString(R.string.osmand_routing_experimental));
@@ -13,7 +13,7 @@
   final RouteService service=serviceToUse;
   if (currentRunningJob == null) {
     if (System.currentTimeMillis() - lastTimeEvaluatedRoute > evalWaitInterval) {
-      final boolean fastRouteMode=OsmandSettings.isFastRouteMode(context);
+      final boolean fastRouteMode=settings.FAST_ROUTE_MODE.get();
 synchronized (this) {
         currentRunningJob=new Thread(new Runnable(){
           @Override public void run(){
