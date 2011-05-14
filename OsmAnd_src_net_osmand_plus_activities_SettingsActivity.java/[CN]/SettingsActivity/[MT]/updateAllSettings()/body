@@ -22,30 +22,10 @@
     EditTextPreference pref=(EditTextPreference)screenPreferences.get(s.getId());
     pref.setText(s.get());
   }
-  applicationDir.setText(osmandSettings.getExternalStorageDirectory().getAbsolutePath());
   routeServiceEnabled.setChecked(getMyApplication().getNavigationService() != null);
-  ApplicationMode[] presets=ApplicationMode.values();
-  String[] names=new String[presets.length];
-  String[] values=new String[presets.length];
-  for (int i=0; i < presets.length; i++) {
-    names[i]=ApplicationMode.toHumanString(presets[i],this);
-    values[i]=presets[i].name();
-  }
-  fill(applicationMode,names,values,osmandSettings.getApplicationMode().name());
-  String vectorRenderer=osmandSettings.RENDERER.get();
-  Collection<String> rendererNames=RendererRegistry.getRegistry().getRendererNames();
-  String[] entries=(String[])rendererNames.toArray(new String[rendererNames.size()]);
-  rendererPreference.setEntries(entries);
-  rendererPreference.setEntryValues(entries);
-  if (rendererNames.contains(vectorRenderer)) {
-    rendererPreference.setValue(vectorRenderer);
-  }
- else {
-    rendererPreference.setValueIndex(0);
-  }
   Map<String,String> entriesMap=osmandSettings.getTileSourceEntries();
-  entries=new String[entriesMap.size() + 1];
-  values=new String[entriesMap.size() + 1];
+  String[] entries=new String[entriesMap.size() + 1];
+  String[] values=new String[entriesMap.size() + 1];
   values[0]=VECTOR_MAP;
   entries[0]=getString(R.string.vector_data);
   int ki=1;
@@ -56,11 +36,6 @@
   }
   String value=osmandSettings.isUsingMapVectorData() ? VECTOR_MAP : osmandSettings.getMapTileSourceName();
   fill(tileSourcePreference,entries,values,value);
-  String mapName=" " + (osmandSettings.isUsingMapVectorData() ? getString(R.string.vector_data) : osmandSettings.getMapTileSourceName());
-  String summary=tileSourcePreference.getSummary().toString();
-  if (summary.lastIndexOf(':') != -1) {
-    summary=summary.substring(0,summary.lastIndexOf(':') + 1);
-  }
-  tileSourcePreference.setSummary(summary + mapName);
-  updateApplicationDirSummary();
+  updateTileSourceSummary();
+  updateApplicationDirTextAndSummary();
 }

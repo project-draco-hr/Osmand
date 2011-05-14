@@ -16,18 +16,8 @@
   registerBooleanPreference(osmandSettings.FAST_ROUTE_MODE,screen);
   registerBooleanPreference(osmandSettings.USE_OSMAND_ROUTING_SERVICE_ALWAYS,screen);
   registerBooleanPreference(osmandSettings.USE_INTERNET_TO_DOWNLOAD_TILES,screen);
-  reloadIndexes=(Preference)screen.findPreference(OsmandSettings.RELOAD_INDEXES);
-  reloadIndexes.setOnPreferenceClickListener(this);
-  downloadIndexes=(Preference)screen.findPreference(OsmandSettings.DOWNLOAD_INDEXES);
-  downloadIndexes.setOnPreferenceClickListener(this);
-  saveCurrentTrack=(Preference)screen.findPreference(OsmandSettings.SAVE_CURRENT_TRACK);
-  saveCurrentTrack.setOnPreferenceClickListener(this);
-  routeServiceEnabled=(CheckBoxPreference)screen.findPreference(OsmandSettings.SERVICE_OFF_ENABLED);
-  routeServiceEnabled.setOnPreferenceChangeListener(this);
   registerEditTextPreference(osmandSettings.USER_NAME,screen);
   registerEditTextPreference(osmandSettings.USER_PASSWORD,screen);
-  applicationDir=(EditTextPreference)screen.findPreference(OsmandSettings.EXTERNAL_STORAGE_DIR);
-  applicationDir.setOnPreferenceChangeListener(this);
   registerListPreference(osmandSettings.ROTATE_MAP,screen,new String[]{getString(R.string.rotate_map_none_opt),getString(R.string.rotate_map_bearing_opt),getString(R.string.rotate_map_compass_opt)},new Integer[]{OsmandSettings.ROTATE_MAP_NONE,OsmandSettings.ROTATE_MAP_BEARING,OsmandSettings.ROTATE_MAP_COMPASS});
   registerListPreference(osmandSettings.MAP_SCREEN_ORIENTATION,screen,new String[]{getString(R.string.map_orientation_portrait),getString(R.string.map_orientation_landscape),getString(R.string.map_orientation_default)},new Integer[]{ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE,ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED});
   registerListPreference(osmandSettings.POSITION_ON_MAP,screen,new String[]{getString(R.string.position_on_map_center),getString(R.string.position_on_map_bottom)},new Integer[]{OsmandSettings.CENTER_CONSTANT,OsmandSettings.BOTTOM_CONSTANT});
@@ -41,13 +31,13 @@
     entries[i]=MetricsConstants.values()[i].toHumanString(this);
   }
   registerListPreference(osmandSettings.METRIC_SYSTEM,screen,entries,MetricsConstants.values());
-  entries=new String[]{"","en","cs","de","es","fr","hu","it","pt","ru","sk"};
-  entrieValues=new String[entries.length];
-  entrieValues[0]=getString(R.string.system_locale);
+  entrieValues=new String[]{"","en","cs","de","es","fr","hu","it","pt","ru","sk"};
+  entries=new String[entrieValues.length];
+  entries[0]=getString(R.string.system_locale);
   for (int i=1; i < entries.length; i++) {
-    entrieValues[i]=entries[i];
+    entries[i]=entrieValues[i];
   }
-  registerListPreference(osmandSettings.PREFERRED_LOCALE,screen,entries,entries);
+  registerListPreference(osmandSettings.PREFERRED_LOCALE,screen,entries,entrieValues);
   Set<String> voiceFiles=getVoiceFiles();
   entries=new String[voiceFiles.size() + 1];
   entrieValues=new String[voiceFiles.size() + 1];
@@ -58,7 +48,7 @@
     entrieValues[k]=s;
     k++;
   }
-  registerListPreference(osmandSettings.VOICE_PROVIDER,screen,entries,entries);
+  registerListPreference(osmandSettings.VOICE_PROVIDER,screen,entries,entrieValues);
   int startZoom=12;
   int endZoom=19;
   entries=new String[endZoom - startZoom + 1];
@@ -75,16 +65,30 @@
   registerListPreference(osmandSettings.ROUTER_SERVICE,screen,entries,RouteService.values());
   entries=new String[]{getString(R.string.gps_provider),getString(R.string.network_provider)};
   entrieValues=new String[]{LocationManager.GPS_PROVIDER,LocationManager.NETWORK_PROVIDER};
-  registerListPreference(osmandSettings.SERVICE_OFF_PROVIDER,screen,entries,entries);
+  registerListPreference(osmandSettings.SERVICE_OFF_PROVIDER,screen,entries,entrieValues);
   registerTimeListPreference(osmandSettings.SAVE_TRACK_INTERVAL,screen,new int[]{1,2,3,5,15,20,30},new int[]{1,2,3,5},1);
   registerTimeListPreference(osmandSettings.SERVICE_OFF_INTERVAL,screen,new int[]{0,30,45,60},new int[]{2,3,5,8,10,15,20,30,40,50,70,90},1000);
   registerTimeListPreference(osmandSettings.SERVICE_OFF_WAIT_INTERVAL,screen,new int[]{15,30,45,60,90},new int[]{2,3,5,10},1000);
-  applicationMode=(ListPreference)screen.findPreference(OsmandSettings.APPLICATION_MODE);
-  applicationMode.setOnPreferenceChangeListener(this);
+  entries=new String[ApplicationMode.values().length];
+  for (int i=0; i < entries.length; i++) {
+    entries[i]=ApplicationMode.toHumanString(ApplicationMode.values()[i],this);
+  }
+  registerListPreference(osmandSettings.APPLICATION_MODE,screen,entries,ApplicationMode.values());
+  Collection<String> rendererNames=getMyApplication().getRendererRegistry().getRendererNames();
+  entries=(String[])rendererNames.toArray(new String[rendererNames.size()]);
+  registerListPreference(osmandSettings.RENDERER,screen,entries,entries);
   tileSourcePreference=(ListPreference)screen.findPreference(OsmandSettings.MAP_TILE_SOURCES);
   tileSourcePreference.setOnPreferenceChangeListener(this);
-  rendererPreference=(ListPreference)screen.findPreference(osmandSettings.RENDERER.getId());
-  rendererPreference.setOnPreferenceChangeListener(this);
+  reloadIndexes=(Preference)screen.findPreference(OsmandSettings.RELOAD_INDEXES);
+  reloadIndexes.setOnPreferenceClickListener(this);
+  downloadIndexes=(Preference)screen.findPreference(OsmandSettings.DOWNLOAD_INDEXES);
+  downloadIndexes.setOnPreferenceClickListener(this);
+  saveCurrentTrack=(Preference)screen.findPreference(OsmandSettings.SAVE_CURRENT_TRACK);
+  saveCurrentTrack.setOnPreferenceClickListener(this);
+  routeServiceEnabled=(CheckBoxPreference)screen.findPreference(OsmandSettings.SERVICE_OFF_ENABLED);
+  routeServiceEnabled.setOnPreferenceChangeListener(this);
+  applicationDir=(EditTextPreference)screen.findPreference(OsmandSettings.EXTERNAL_STORAGE_DIR);
+  applicationDir.setOnPreferenceChangeListener(this);
   broadcastReceiver=new BroadcastReceiver(){
     @Override public void onReceive(    Context context,    Intent intent){
       routeServiceEnabled.setChecked(false);

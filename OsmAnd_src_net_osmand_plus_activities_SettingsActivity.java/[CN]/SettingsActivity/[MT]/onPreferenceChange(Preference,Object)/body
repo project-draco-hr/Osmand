@@ -9,27 +9,32 @@
     editPref.set((String)newValue);
   }
  else   if (listPref != null) {
-    CharSequence entry=((ListPreference)preference).getEntry();
+    int ind=((ListPreference)preference).findIndexOfValue((String)newValue);
+    CharSequence entry=((ListPreference)preference).getEntries()[ind];
     Map<String,?> map=listPrefValues.get(preference.getKey());
     Object obj=map.get(entry);
-    listPref.set(obj);
-    if (listPref.getId().equals(osmandSettings.DAYNIGHT_MODE.getId())) {
-      getMyApplication().getDaynightHelper().setDayNightMode(osmandSettings.DAYNIGHT_MODE.get());
-    }
- else     if (listPref.getId().equals(osmandSettings.VOICE_PROVIDER.getId())) {
-      getMyApplication().initCommandPlayer();
-    }
- else     if (listPref.getId().equals(osmandSettings.PREFERRED_LOCALE.getId())) {
-      getMyApplication().checkPrefferedLocale();
-      Intent intent=getIntent();
-      finish();
-      startActivity(intent);
-    }
-  }
- else   if (preference == applicationMode) {
-    boolean changed=osmandSettings.setApplicationMode(ApplicationMode.valueOf(newValue.toString()),getMyApplication());
+    boolean changed=listPref.set(obj);
     if (changed) {
-      updateAllSettings();
+      if (listPref.getId().equals(osmandSettings.VOICE_PROVIDER.getId())) {
+        getMyApplication().initCommandPlayer();
+      }
+ else       if (listPref.getId().equals(osmandSettings.APPLICATION_MODE.getId())) {
+        updateAllSettings();
+      }
+ else       if (listPref.getId().equals(osmandSettings.PREFERRED_LOCALE.getId())) {
+        getMyApplication().checkPrefferedLocale();
+        Intent intent=getIntent();
+        finish();
+        startActivity(intent);
+      }
+    }
+    if (listPref.getId().equals(osmandSettings.RENDERER.getId())) {
+      if (changed) {
+        Toast.makeText(this,R.string.renderer_load_sucess,Toast.LENGTH_SHORT).show();
+      }
+ else {
+        Toast.makeText(this,R.string.renderer_load_exception,Toast.LENGTH_SHORT).show();
+      }
     }
   }
  else   if (preference == applicationDir) {
@@ -50,18 +55,6 @@
       }
     }
   }
- else   if (preference == rendererPreference) {
-    BaseOsmandRender loaded=RendererRegistry.getRegistry().getRenderer((String)newValue);
-    if (loaded == null) {
-      Toast.makeText(this,R.string.renderer_load_exception,Toast.LENGTH_SHORT).show();
-    }
- else {
-      RendererRegistry.getRegistry().setCurrentSelectedRender(loaded);
-      osmandSettings.RENDERER.set((String)newValue);
-      Toast.makeText(this,R.string.renderer_load_sucess,Toast.LENGTH_SHORT).show();
-      getMyApplication().getResourceManager().getRenderer().clearCache();
-    }
-  }
  else   if (preference == tileSourcePreference) {
     if (VECTOR_MAP.equals((String)newValue)) {
       osmandSettings.setUsingMapVectorData(true);
@@ -70,12 +63,7 @@
       osmandSettings.setUsingMapVectorData(true);
       osmandSettings.setMapTileSource((String)newValue);
     }
-    String summary=tileSourcePreference.getSummary().toString();
-    if (summary.lastIndexOf(':') != -1) {
-      summary=summary.substring(0,summary.lastIndexOf(':') + 1);
-    }
-    summary+=" " + (osmandSettings.isUsingMapVectorData() ? getString(R.string.vector_data) : osmandSettings.getMapTileSourceName());
-    tileSourcePreference.setSummary(summary);
+    updateTileSourceSummary();
   }
   return true;
 }
