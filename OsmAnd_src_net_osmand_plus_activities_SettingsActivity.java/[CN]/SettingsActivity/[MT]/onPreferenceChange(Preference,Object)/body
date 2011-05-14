@@ -1,8 +1,12 @@
 {
   OsmandPreference<Boolean> boolPref=booleanPreferences.get(preference.getKey());
   OsmandPreference<Object> listPref=(OsmandPreference<Object>)listPreferences.get(preference.getKey());
+  OsmandPreference<String> editPref=editTextPreferences.get(preference.getKey());
   if (boolPref != null) {
     boolPref.set((Boolean)newValue);
+  }
+ else   if (editPref != null) {
+    editPref.set((String)newValue);
   }
  else   if (listPref != null) {
     CharSequence entry=((ListPreference)preference).getEntry();
@@ -23,25 +27,10 @@
     }
   }
  else   if (preference == applicationMode) {
-    boolean changed=ApplicationMode.setAppMode(ApplicationMode.valueOf(newValue.toString()),getMyApplication());
+    boolean changed=osmandSettings.setApplicationMode(ApplicationMode.valueOf(newValue.toString()),getMyApplication());
     if (changed) {
       updateAllSettings();
     }
-  }
- else   if (preference == saveTrackInterval) {
-    editInt(OsmandSettings.SAVE_TRACK_INTERVAL,Integer.parseInt(newValue.toString()));
-  }
- else   if (preference == routeServiceInterval) {
-    editInt(OsmandSettings.SERVICE_OFF_INTERVAL,Integer.parseInt((String)newValue) * 1000);
-  }
- else   if (preference == routeServiceWaitInterval) {
-    editInt(OsmandSettings.SERVICE_OFF_WAIT_INTERVAL,Integer.parseInt((String)newValue) * 1000);
-  }
- else   if (preference == userPassword) {
-    editString(OsmandSettings.USER_PASSWORD,(String)newValue);
-  }
- else   if (preference == userName) {
-    editString(OsmandSettings.USER_NAME,(String)newValue);
   }
  else   if (preference == applicationDir) {
     warnAboutChangingStorage((String)newValue);
@@ -68,25 +57,24 @@
     }
  else {
       RendererRegistry.getRegistry().setCurrentSelectedRender(loaded);
-      editString(OsmandSettings.RENDERER,(String)newValue);
+      osmandSettings.RENDERER.set((String)newValue);
       Toast.makeText(this,R.string.renderer_load_sucess,Toast.LENGTH_SHORT).show();
       getMyApplication().getResourceManager().getRenderer().clearCache();
     }
   }
  else   if (preference == tileSourcePreference) {
     if (VECTOR_MAP.equals((String)newValue)) {
-      editBoolean(OsmandSettings.MAP_VECTOR_DATA,true);
+      osmandSettings.setUsingMapVectorData(true);
     }
  else {
-      editString(OsmandSettings.MAP_TILE_SOURCES,(String)newValue);
-      editBoolean(OsmandSettings.MAP_VECTOR_DATA,false);
+      osmandSettings.setUsingMapVectorData(true);
+      osmandSettings.setMapTileSource((String)newValue);
     }
     String summary=tileSourcePreference.getSummary().toString();
     if (summary.lastIndexOf(':') != -1) {
       summary=summary.substring(0,summary.lastIndexOf(':') + 1);
     }
-    SharedPreferences prefs=OsmandSettings.getPrefs(this);
-    summary+=" " + (OsmandSettings.isUsingMapVectorData(prefs) ? getString(R.string.vector_data) : OsmandSettings.getMapTileSourceName(prefs));
+    summary+=" " + (osmandSettings.isUsingMapVectorData() ? getString(R.string.vector_data) : osmandSettings.getMapTileSourceName());
     tileSourcePreference.setSummary(summary);
   }
   return true;

@@ -18,13 +18,11 @@
     listPref.setEntryValues(entryValues);
     listPref.setValue(p.get() + "");
   }
-  userName.setText(OsmandSettings.getUserName(prefs));
-  userPassword.setText(OsmandSettings.getUserPassword(prefs));
-  applicationDir.setText(OsmandSettings.getExternalStorageDirectory(prefs).getAbsolutePath());
-  Resources resources=this.getResources();
-  fillTime(saveTrackInterval,new int[]{1,2,3,5,15,20,30},new int[]{1,2,3,5},OsmandSettings.getSavingTrackInterval(prefs));
-  fillTime(routeServiceInterval,new int[]{0,30,45,60},new int[]{2,3,5,8,10,15,20,30,40,50,70,90},OsmandSettings.getServiceOffInterval(prefs) / 1000);
-  fillTime(routeServiceWaitInterval,new int[]{15,30,45,60,90},new int[]{2,3,5,10},OsmandSettings.getServiceOffWaitInterval(prefs) / 1000);
+  for (  OsmandPreference<String> s : editTextPreferences.values()) {
+    EditTextPreference pref=(EditTextPreference)screenPreferences.get(s.getId());
+    pref.setText(s.get());
+  }
+  applicationDir.setText(osmandSettings.getExternalStorageDirectory().getAbsolutePath());
   routeServiceEnabled.setChecked(getMyApplication().getNavigationService() != null);
   ApplicationMode[] presets=ApplicationMode.values();
   String[] names=new String[presets.length];
@@ -33,10 +31,10 @@
     names[i]=ApplicationMode.toHumanString(presets[i],this);
     values[i]=presets[i].name();
   }
-  fill(applicationMode,names,values,OsmandSettings.getApplicationMode(prefs).name());
-  String vectorRenderer=OsmandSettings.getVectorRenderer(prefs);
+  fill(applicationMode,names,values,osmandSettings.getApplicationMode().name());
+  String vectorRenderer=osmandSettings.RENDERER.get();
   Collection<String> rendererNames=RendererRegistry.getRegistry().getRendererNames();
-  entries=(String[])rendererNames.toArray(new String[rendererNames.size()]);
+  String[] entries=(String[])rendererNames.toArray(new String[rendererNames.size()]);
   rendererPreference.setEntries(entries);
   rendererPreference.setEntryValues(entries);
   if (rendererNames.contains(vectorRenderer)) {
@@ -45,7 +43,7 @@
  else {
     rendererPreference.setValueIndex(0);
   }
-  Map<String,String> entriesMap=getTileSourceEntries(this);
+  Map<String,String> entriesMap=osmandSettings.getTileSourceEntries();
   entries=new String[entriesMap.size() + 1];
   values=new String[entriesMap.size() + 1];
   values[0]=VECTOR_MAP;
@@ -56,9 +54,9 @@
     values[ki]=es.getKey();
     ki++;
   }
-  String value=OsmandSettings.isUsingMapVectorData(prefs) ? VECTOR_MAP : OsmandSettings.getMapTileSourceName(prefs);
+  String value=osmandSettings.isUsingMapVectorData() ? VECTOR_MAP : osmandSettings.getMapTileSourceName();
   fill(tileSourcePreference,entries,values,value);
-  String mapName=" " + (OsmandSettings.isUsingMapVectorData(prefs) ? getString(R.string.vector_data) : OsmandSettings.getMapTileSourceName(prefs));
+  String mapName=" " + (osmandSettings.isUsingMapVectorData() ? getString(R.string.vector_data) : osmandSettings.getMapTileSourceName());
   String summary=tileSourcePreference.getSummary().toString();
   if (summary.lastIndexOf(':') != -1) {
     summary=summary.substring(0,summary.lastIndexOf(':') + 1);
