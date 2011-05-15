@@ -22,18 +22,24 @@
   double relDist=Double.POSITIVE_INFINITY;
   for (  City c : cityManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3)) {
     double rel=MapUtils.getDistance(c.getLocation(),point) / c.getType().getRadius();
+    if (isInNames.contains(c.getName())) {
+      return c;
+    }
     if (rel < relDist) {
       closest=c;
       relDist=rel;
-      if (relDist < 0.2d) {
+      if (relDist < 0.2d && isInNames.isEmpty()) {
         break;
       }
     }
   }
-  if (relDist < 0.2d) {
+  if (relDist < 0.2d && isInNames.isEmpty()) {
     return closest;
   }
   for (  City c : cityVillageManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3)) {
+    if (isInNames.contains(c.getName())) {
+      return c;
+    }
     double rel=MapUtils.getDistance(c.getLocation(),point) / c.getType().getRadius();
     if (rel < relDist) {
       closest=c;
