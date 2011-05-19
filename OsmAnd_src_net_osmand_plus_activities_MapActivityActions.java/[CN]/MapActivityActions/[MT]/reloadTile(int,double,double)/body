@@ -5,6 +5,11 @@
   final OsmandMapTileView mapView=mapActivity.getMapView();
   builder.setPositiveButton(R.string.context_menu_item_update_map,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
+      final ITileSource mapSource=mapView.getMap();
+      if (mapSource == null || mapView.isVectorDataVisible() || !mapSource.couldBeDownloadedFromInternet()) {
+        Toast.makeText(mapActivity,R.string.maps_could_not_be_downloaded,Toast.LENGTH_SHORT).show();
+        return;
+      }
       Rect pixRect=new Rect(0,0,mapView.getWidth(),mapView.getHeight());
       RectF tilesRect=new RectF();
       mapView.calculateTileRectangle(pixRect,mapView.getCenterPointX(),mapView.getCenterPointY(),mapView.getXTile(),mapView.getYTile(),tilesRect);
