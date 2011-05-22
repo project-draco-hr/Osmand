@@ -7,7 +7,6 @@
     MapTileDownloader.getInstance().refuseAllPreviousRequests();
   }
   float ftileSize=getTileSize();
-  int tileSize=getSourceTileSize();
   SurfaceHolder holder=getHolder();
 synchronized (holder) {
     int nzoom=getZoom();
@@ -25,9 +24,8 @@ synchronized (holder) {
           nightMode=!dayNightRenderer.booleanValue();
         }
       }
-      boundsRect.set(0,0,getWidth(),getHeight());
-      canvas.rotate(rotate,w,h);
       try {
+        boundsRect.set(0,0,getWidth(),getHeight());
         calculateTileRectangle(boundsRect,w,h,tileX,tileY,tilesRect);
         int left=(int)FloatMath.floor(tilesRect.left);
         int top=(int)FloatMath.floor(tilesRect.top);
@@ -37,74 +35,14 @@ synchronized (holder) {
         latlonRect.left=(float)MapUtils.getLongitudeFromTile(nzoom,tilesRect.left);
         latlonRect.bottom=(float)MapUtils.getLatitudeFromTile(nzoom,tilesRect.bottom);
         latlonRect.right=(float)MapUtils.getLongitudeFromTile(nzoom,tilesRect.right);
-        if (map != null && !isVectorDataVisible()) {
-          ResourceManager mgr=getApplication().getResourceManager();
-          useInternet=useInternet && settings.isInternetConnectionAvailable() && map.couldBeDownloadedFromInternet();
-          int maxLevel=Math.min(getSettings().MAX_LEVEL_TO_DOWNLOAD_TILE.get(),map.getMaximumZoomSupported());
-          for (int i=0; i < width; i++) {
-            for (int j=0; j < height; j++) {
-              int leftPlusI=(int)FloatMath.floor((float)MapUtils.getTileNumberX(nzoom,MapUtils.getLongitudeFromTile(nzoom,left + i)));
-              int topPlusJ=(int)FloatMath.floor((float)MapUtils.getTileNumberY(nzoom,MapUtils.getLatitudeFromTile(nzoom,top + j)));
-              float x1=(left + i - tileX) * ftileSize + w;
-              float y1=(top + j - tileY) * ftileSize + h;
-              String ordImgTile=mgr.calculateTileId(map,leftPlusI,topPlusJ,nzoom);
-              boolean imgExist=mgr.tileExistOnFileSystem(ordImgTile,map,leftPlusI,topPlusJ,nzoom);
-              Bitmap bmp=null;
-              boolean originalBeLoaded=useInternet && nzoom <= maxLevel;
-              if (imgExist || originalBeLoaded) {
-                bmp=mgr.getTileImageForMapAsync(ordImgTile,map,leftPlusI,topPlusJ,nzoom,useInternet);
-              }
-              if (bmp == null) {
-                int div=2;
-                String imgTile2=mgr.calculateTileId(map,leftPlusI / 2,topPlusJ / 2,nzoom - 1);
-                String imgTile4=mgr.calculateTileId(map,leftPlusI / 4,topPlusJ / 4,nzoom - 2);
-                if (originalBeLoaded || imgExist) {
-                  bmp=mgr.getTileImageFromCache(imgTile2);
-                  div=2;
-                  if (bmp == null) {
-                    bmp=mgr.getTileImageFromCache(imgTile4);
-                    div=4;
-                  }
-                }
-                if (!originalBeLoaded && !imgExist) {
-                  if (mgr.tileExistOnFileSystem(imgTile2,map,leftPlusI / 2,topPlusJ / 2,nzoom - 1) || (useInternet && nzoom - 1 <= maxLevel)) {
-                    bmp=mgr.getTileImageForMapAsync(imgTile2,map,leftPlusI / 2,topPlusJ / 2,nzoom - 1,useInternet);
-                    div=2;
-                  }
- else                   if (mgr.tileExistOnFileSystem(imgTile4,map,leftPlusI / 4,topPlusJ / 4,nzoom - 2) || (useInternet && nzoom - 2 <= maxLevel)) {
-                    bmp=mgr.getTileImageForMapAsync(imgTile4,map,leftPlusI / 4,topPlusJ / 4,nzoom - 2,useInternet);
-                    div=4;
-                  }
-                }
-                if (bmp == null) {
-                  drawEmptyTile(canvas,x1,y1,ftileSize,nightMode);
-                }
- else {
-                  int xZoom=((left + i) % div) * tileSize / div;
-                  int yZoom=((top + j) % div) * tileSize / div;
-                  bitmapToZoom.set(xZoom,yZoom,xZoom + tileSize / div,yZoom + tileSize / div);
-                  bitmapToDraw.set(x1,y1,x1 + ftileSize,y1 + ftileSize);
-                  canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
-                }
-              }
- else {
-                bitmapToZoom.set(0,0,map.getTileSize(),map.getTileSize());
-                bitmapToDraw.set(x1,y1,x1 + ftileSize,y1 + ftileSize);
-                canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
-              }
-            }
+        for (int i=0; i < width; i++) {
+          for (int j=0; j < height; j++) {
+            float x1=(i + left - tileX) * ftileSize + w;
+            float y1=(j + top - tileY) * ftileSize + h;
+            drawEmptyTile(canvas,x1,y1,ftileSize,nightMode);
           }
         }
- else {
-          for (int i=0; i < width; i++) {
-            for (int j=0; j < height; j++) {
-              float x1=(i + left - tileX) * ftileSize + w;
-              float y1=(j + top - tileY) * ftileSize + h;
-              drawEmptyTile(canvas,x1,y1,ftileSize,nightMode);
-            }
-          }
-        }
-        drawOverMap(canvas,latlonRect,nightMode);
+        drawOverMap(canvas,latlonRect,tilesRect,nightMode);
       }
   finally {
         holder.unlockCanvasAndPost(canvas);
