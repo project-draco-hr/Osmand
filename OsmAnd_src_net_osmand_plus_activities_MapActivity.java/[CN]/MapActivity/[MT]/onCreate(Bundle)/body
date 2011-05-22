@@ -61,6 +61,8 @@
   mapView.addLayer(contextMenuLayer,9);
   routeInfoLayer=new RouteInfoLayer(routingHelper,(LinearLayout)findViewById(R.id.RouteLayout));
   mapView.addLayer(routeInfoLayer,10);
+  MapControlsLayer mapControlsLayer=new MapControlsLayer(this);
+  mapView.addLayer(mapControlsLayer,11);
   savingTrackHelper=new SavingTrackHelper(this);
   LatLon pointToNavigate=settings.getPointToNavigate();
   if (!Algoritms.objectEquals(routingHelper.getFinalLocation(),pointToNavigate)) {
@@ -117,45 +119,10 @@
       mapView.setZoom(14);
     }
   }
-  final ZoomControls zoomControls=(ZoomControls)findViewById(R.id.ZoomControls);
-  updateZoomControls(zoomControls,mapView.getZoom());
-  zoomControls.setOnZoomInClickListener(new OnClickListener(){
-    @Override public void onClick(    View v){
-      updateZoomControls(zoomControls,mapView.getZoom() + 1);
-      mapView.getAnimatedDraggingThread().stopAnimatingSync();
-      mapView.getAnimatedDraggingThread().startZooming(mapView.getZoom(),mapView.getZoom() + 1);
-      showAndHideMapPosition();
-      if (settings.AUTO_ZOOM_MAP.get()) {
-        locationChanged(mapView.getLatitude(),mapView.getLongitude(),null);
-      }
-    }
-  }
-);
-  zoomControls.setOnZoomOutClickListener(new OnClickListener(){
-    @Override public void onClick(    View v){
-      updateZoomControls(zoomControls,mapView.getZoom() - 1);
-      mapView.getAnimatedDraggingThread().stopAnimatingSync();
-      mapView.getAnimatedDraggingThread().startZooming(mapView.getZoom(),mapView.getZoom() - 1);
-      showAndHideMapPosition();
-      if (settings.AUTO_ZOOM_MAP.get()) {
-        locationChanged(mapView.getLatitude(),mapView.getLongitude(),null);
-      }
-    }
-  }
-);
   backToLocation=(ImageButton)findViewById(R.id.BackToLocation);
   backToLocation.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       backToLocationImpl();
-    }
-  }
-);
-  backToMenu=(ImageButton)findViewById(R.id.BackToMenu);
-  backToMenu.setOnClickListener(new OnClickListener(){
-    @Override public void onClick(    View v){
-      Intent newIntent=new Intent(MapActivity.this,MainMenuActivity.class);
-      newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-      startActivity(newIntent);
     }
   }
 );
