@@ -9,10 +9,18 @@
     }
   }
   ITileSource newSource=settings.getMapTileSource();
-  if (mapView.getMap() instanceof SQLiteTileSource) {
-    ((SQLiteTileSource)mapView.getMap()).closeDB();
+  ITileSource oldMap=mapTileLayer.getMap();
+  if (oldMap instanceof SQLiteTileSource) {
+    ((SQLiteTileSource)oldMap).closeDB();
   }
   rm.updateMapSource(vectorData,newSource);
-  mapView.setMap(newSource);
-  mapView.setVectorData(vectorData);
+  mapTileLayer.setMap(newSource);
+  mapTileLayer.setVisible(!vectorData);
+  mapVectorLayer.setVisible(vectorData);
+  if (vectorData) {
+    mapView.setMainLayer(mapVectorLayer);
+  }
+ else {
+    mapView.setMainLayer(mapTileLayer);
+  }
 }

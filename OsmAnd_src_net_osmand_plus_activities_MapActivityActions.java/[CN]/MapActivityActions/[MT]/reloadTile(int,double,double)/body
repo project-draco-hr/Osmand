@@ -5,8 +5,12 @@
   final OsmandMapTileView mapView=mapActivity.getMapView();
   builder.setPositiveButton(R.string.context_menu_item_update_map,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      final ITileSource mapSource=mapView.getMap();
-      if (mapSource == null || mapView.isVectorDataVisible() || !mapSource.couldBeDownloadedFromInternet()) {
+      BaseMapLayer mainLayer=mapView.getMainLayer();
+      if (!(mainLayer instanceof MapTileLayer) || ((MapTileLayer)mainLayer).isVisible()) {
+        Toast.makeText(mapActivity,R.string.maps_could_not_be_downloaded,Toast.LENGTH_SHORT).show();
+      }
+      final ITileSource mapSource=((MapTileLayer)mainLayer).getMap();
+      if (mapSource == null || !mapSource.couldBeDownloadedFromInternet()) {
         Toast.makeText(mapActivity,R.string.maps_could_not_be_downloaded,Toast.LENGTH_SHORT).show();
         return;
       }
@@ -19,7 +23,7 @@
       int height=(int)(FloatMath.ceil(tilesRect.bottom) - top);
       for (int i=0; i < width; i++) {
         for (int j=0; j < height; j++) {
-          ((OsmandApplication)mapActivity.getApplication()).getResourceManager().clearTileImageForMap(null,mapView.getMap(),i + left,j + top,zoom);
+          ((OsmandApplication)mapActivity.getApplication()).getResourceManager().clearTileImageForMap(null,mapSource,i + left,j + top,zoom);
         }
       }
       mapView.refreshMap();
