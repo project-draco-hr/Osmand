@@ -1,12 +1,10 @@
 {
-  if (handler.hasMessages(1)) {
-    return;
-  }
+  handler.removeMessages(1);
+  long time=System.currentTimeMillis();
   boolean useInternet=getSettings().USE_INTERNET_TO_DOWNLOAD_TILES.get();
   if (useInternet) {
     MapTileDownloader.getInstance().refuseAllPreviousRequests();
   }
-  float ftileSize=getTileSize();
   SurfaceHolder holder=getHolder();
 synchronized (holder) {
     int nzoom=getZoom();
@@ -16,8 +14,8 @@ synchronized (holder) {
     float h=getCenterPointY();
     Canvas canvas=holder.lockCanvas();
     if (canvas != null) {
-      canvas.save();
       boolean nightMode=false;
+      log.info("Canvas " + (System.currentTimeMillis() - time));
       if (application != null) {
         Boolean dayNightRenderer=application.getDaynightHelper().getDayNightRenderer();
         if (dayNightRenderer != null) {
@@ -29,20 +27,20 @@ synchronized (holder) {
         calculateTileRectangle(boundsRect,w,h,tileX,tileY,tilesRect);
         int left=(int)FloatMath.floor(tilesRect.left);
         int top=(int)FloatMath.floor(tilesRect.top);
-        int width=(int)FloatMath.ceil(tilesRect.right - left);
-        int height=(int)FloatMath.ceil(tilesRect.bottom - top);
         latlonRect.top=(float)MapUtils.getLatitudeFromTile(nzoom,tilesRect.top);
         latlonRect.left=(float)MapUtils.getLongitudeFromTile(nzoom,tilesRect.left);
         latlonRect.bottom=(float)MapUtils.getLatitudeFromTile(nzoom,tilesRect.bottom);
         latlonRect.right=(float)MapUtils.getLongitudeFromTile(nzoom,tilesRect.right);
-        for (int i=0; i < width; i++) {
-          for (int j=0; j < height; j++) {
-            float x1=(i + left - tileX) * ftileSize + w;
-            float y1=(j + top - tileY) * ftileSize + h;
-            drawEmptyTile(canvas,x1,y1,ftileSize,nightMode);
-          }
+        log.info("Calc" + (System.currentTimeMillis() - time));
+        if (nightMode) {
+          canvas.drawARGB(255,220,220,220);
         }
+ else {
+          canvas.drawARGB(255,240,240,240);
+        }
+        log.info("Draw before layers" + (System.currentTimeMillis() - time));
         drawOverMap(canvas,latlonRect,tilesRect,nightMode);
+        log.info("Draw with layers " + (System.currentTimeMillis() - time));
       }
   finally {
         holder.unlockCanvasAndPost(canvas);
