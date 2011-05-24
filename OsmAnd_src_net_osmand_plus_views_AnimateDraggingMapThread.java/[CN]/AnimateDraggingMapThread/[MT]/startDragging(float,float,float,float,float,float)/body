@@ -2,10 +2,10 @@
   stopAnimatingSync();
   this.notifyListener=true;
   stopped=false;
-  final float animationTime=1900f;
-  System.out.println("Velocity x " + velocityX + " velocity Y "+ velocityY);
+  final float animationTime=DRAGGING_ANIMATION_TIME;
   Thread thread=new Thread(new Runnable(){
     @Override public void run(){
+      currentThread=Thread.currentThread();
       float curX=endX;
       float curY=endY;
       DecelerateInterpolator interpolator=new DecelerateInterpolator(1);
@@ -25,14 +25,18 @@
         curY=newY;
         prevNormalizedTime=normalizedTime;
         try {
-          Thread.sleep(50);
+          Thread.sleep(DEFAULT_SLEEP_TO_REDRAW);
         }
  catch (        InterruptedException e) {
           stopped=true;
         }
       }
-      if (!stopped) {
+      try {
+        pendingRotateAnimation();
       }
+ catch (      InterruptedException e) {
+      }
+      currentThread=null;
     }
   }
 ,"Animatable dragging");

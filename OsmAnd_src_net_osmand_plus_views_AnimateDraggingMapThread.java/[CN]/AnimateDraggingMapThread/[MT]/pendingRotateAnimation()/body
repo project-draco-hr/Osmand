@@ -1,0 +1,24 @@
+{
+  boolean conditionToCountinue=true;
+  while (conditionToCountinue && callback != null) {
+    conditionToCountinue=false;
+    float rotationDiff=targetRotate - callback.getRotate();
+    if (Math.abs((rotationDiff + 360) % 360) < Math.abs((rotationDiff - 360) % 360)) {
+      rotationDiff=(rotationDiff + 360) % 360;
+    }
+ else {
+      rotationDiff=(rotationDiff - 360) % 360;
+    }
+    float absDiff=Math.abs(rotationDiff);
+    if (absDiff > 0) {
+      Thread.sleep(DEFAULT_SLEEP_TO_REDRAW);
+      if (absDiff < 1) {
+        callback.rotateTo(targetRotate);
+      }
+ else {
+        conditionToCountinue=true;
+        callback.rotateTo(((absDiff / 10) * Math.signum(rotationDiff) + callback.getRotate()) % 360);
+      }
+    }
+  }
+}
