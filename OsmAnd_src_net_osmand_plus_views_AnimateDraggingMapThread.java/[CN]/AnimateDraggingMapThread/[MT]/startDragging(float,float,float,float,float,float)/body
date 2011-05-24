@@ -1,16 +1,40 @@
 {
   stopAnimatingSync();
-  targetZoom=0;
   this.notifyListener=true;
-  vx=velocityX;
-  vy=velocityY;
-  dirX=(byte)(endX > startX ? 1 : -1);
-  dirY=(byte)(endY > startY ? 1 : -1);
-  animateDrag=true;
-  ax=vx * a;
-  ay=vy * a;
-  time=System.currentTimeMillis();
   stopped=false;
-  Thread thread=new Thread(this,"Animatable dragging");
+  final float animationTime=1900f;
+  System.out.println("Velocity x " + velocityX + " velocity Y "+ velocityY);
+  Thread thread=new Thread(new Runnable(){
+    @Override public void run(){
+      float curX=endX;
+      float curY=endY;
+      DecelerateInterpolator interpolator=new DecelerateInterpolator(1);
+      long timeMillis=SystemClock.uptimeMillis();
+      float normalizedTime=0f;
+      float prevNormalizedTime=0f;
+      while (!stopped) {
+        normalizedTime=(SystemClock.uptimeMillis() - timeMillis) / animationTime;
+        if (normalizedTime >= 1f) {
+          break;
+        }
+        float interpolation=interpolator.getInterpolation(normalizedTime);
+        float newX=velocityX * (1 - interpolation) * (normalizedTime - prevNormalizedTime) + curX;
+        float newY=velocityY * (1 - interpolation) * (normalizedTime - prevNormalizedTime) + curY;
+        callback.dragTo(curX,curY,newX,newY,notifyListener);
+        curX=newX;
+        curY=newY;
+        prevNormalizedTime=normalizedTime;
+        try {
+          Thread.sleep(50);
+        }
+ catch (        InterruptedException e) {
+          stopped=true;
+        }
+      }
+      if (!stopped) {
+      }
+    }
+  }
+,"Animatable dragging");
   thread.start();
 }

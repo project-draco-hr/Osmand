@@ -1,6 +1,5 @@
 {
   handler.removeMessages(1);
-  long time=System.currentTimeMillis();
   boolean useInternet=getSettings().USE_INTERNET_TO_DOWNLOAD_TILES.get();
   if (useInternet) {
     MapTileDownloader.getInstance().refuseAllPreviousRequests();
@@ -15,7 +14,6 @@ synchronized (holder) {
     Canvas canvas=holder.lockCanvas();
     if (canvas != null) {
       boolean nightMode=false;
-      log.info("Canvas " + (System.currentTimeMillis() - time));
       if (application != null) {
         Boolean dayNightRenderer=application.getDaynightHelper().getDayNightRenderer();
         if (dayNightRenderer != null) {
@@ -31,16 +29,13 @@ synchronized (holder) {
         latlonRect.left=(float)MapUtils.getLongitudeFromTile(nzoom,tilesRect.left);
         latlonRect.bottom=(float)MapUtils.getLatitudeFromTile(nzoom,tilesRect.bottom);
         latlonRect.right=(float)MapUtils.getLongitudeFromTile(nzoom,tilesRect.right);
-        log.info("Calc" + (System.currentTimeMillis() - time));
         if (nightMode) {
           canvas.drawARGB(255,220,220,220);
         }
  else {
           canvas.drawARGB(255,240,240,240);
         }
-        log.info("Draw before layers" + (System.currentTimeMillis() - time));
         drawOverMap(canvas,latlonRect,tilesRect,nightMode);
-        log.info("Draw with layers " + (System.currentTimeMillis() - time));
       }
   finally {
         holder.unlockCanvasAndPost(canvas);
