@@ -1,0 +1,53 @@
+{
+  stopAnimatingSync();
+  double startLat=tileView.getLatitude();
+  double startLon=tileView.getLongitude();
+  float rotate=tileView.getRotate();
+  final int startZoom=tileView.getZoom();
+  int tileSize=tileView.getSourceTileSize();
+  int mZoom=startZoom;
+  boolean skipAnimation=false;
+  float mStX=(float)((MapUtils.getTileNumberX(mZoom,startLon) - MapUtils.getTileNumberX(mZoom,finalLon)) * tileSize);
+  float mStY=(float)((MapUtils.getTileNumberY(mZoom,startLat) - MapUtils.getTileNumberY(mZoom,finalLat)) * tileSize);
+  while (Math.abs(mStX) + Math.abs(mStY) > 1200) {
+    mZoom--;
+    if (mZoom <= 4) {
+      skipAnimation=true;
+    }
+    mStX=(float)((MapUtils.getTileNumberX(mZoom,startLon) - MapUtils.getTileNumberX(mZoom,finalLon)) * tileSize);
+    mStY=(float)((MapUtils.getTileNumberY(mZoom,startLat) - MapUtils.getTileNumberY(mZoom,finalLat)) * tileSize);
+  }
+  final int moveZoom=mZoom;
+  skipAnimation=skipAnimation || (Math.abs(moveZoom - startZoom) >= 3 || Math.abs(endZoom - moveZoom) > 3);
+  if (skipAnimation) {
+    tileView.setLatLonAnimate(finalLat,finalLon,notifyListener);
+    tileView.zoomToAnimate(endZoom,notifyListener);
+    return;
+  }
+  float rad=(float)Math.toRadians(rotate);
+  final float mMoveX=FloatMath.cos(rad) * mStX - FloatMath.sin(rad) * mStY;
+  final float mMoveY=FloatMath.sin(rad) * mStX + FloatMath.cos(rad) * mStY;
+  startThreadAnimating(new Runnable(){
+    @Override public void run(){
+      setTargetValues(endZoom,finalLat,finalLon);
+      if (moveZoom != startZoom) {
+        animatingZoomInThread(startZoom,moveZoom,ZOOM_MOVE_ANIMATION_TIME,notifyListener);
+      }
+      if (!stopped) {
+        animatingMoveInThread(mMoveX,mMoveY,MOVE_MOVE_ANIMATION_TIME,notifyListener);
+      }
+      if (!stopped) {
+        tileView.setLatLonAnimate(finalLat,finalLon,notifyListener);
+      }
+      if (!stopped && moveZoom != endZoom) {
+        animatingZoomInThread(moveZoom,endZoom,ZOOM_MOVE_ANIMATION_TIME,notifyListener);
+      }
+      try {
+        pendingRotateAnimation();
+      }
+ catch (      InterruptedException e) {
+      }
+    }
+  }
+);
+}
