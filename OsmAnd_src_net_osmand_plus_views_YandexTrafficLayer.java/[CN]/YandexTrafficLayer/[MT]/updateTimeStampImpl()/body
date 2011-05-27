@@ -1,0 +1,33 @@
+{
+  if (mTimestamp == null || (System.currentTimeMillis() - lastTimestampUpdated) > DELTA) {
+    log.info("Updating timestamp");
+    try {
+      BufferedInputStream in=new BufferedInputStream(new URL("http://jgo.maps.yandex.net/trf/stat.js").openStream(),1024);
+      ByteArrayOutputStream dataStream=new ByteArrayOutputStream();
+      BufferedOutputStream out=new BufferedOutputStream(dataStream,1024);
+      Algoritms.streamCopy(in,out);
+      out.flush();
+      String str=dataStream.toString();
+      int start=str.indexOf("timestamp:");
+      start=str.indexOf("\"",start) + 1;
+      int end=str.indexOf("\"",start);
+      if (start < 0 || end < 0) {
+        return;
+      }
+      String newTimestamp=str.substring(start,end);
+      lastTimestampUpdated=System.currentTimeMillis();
+      Algoritms.closeStream(in);
+      Algoritms.closeStream(out);
+      log.info("Timestamp updated");
+      if (!newTimestamp.equals(mTimestamp)) {
+        mTimestamp=newTimestamp;
+        TileSourceTemplate template=new TileSourceTemplate(YANDEX_PREFFIX + mTimestamp,"http://jgo.maps.yandex.net/tiles?l=trf&x={1}&y={2}&z={3}&tm" + mTimestamp,".png",17,7,256,8,18000);
+        clearCache();
+        this.map=template;
+      }
+    }
+ catch (    IOException e) {
+      log.info("Exception while updating yandex traffic template",e);
+    }
+  }
+}
