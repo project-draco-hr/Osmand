@@ -1,0 +1,47 @@
+{
+  final List<TileSourceTemplate> templates=new ArrayList<TileSourceTemplate>();
+  try {
+    URLConnection connection=new URL("http://download.osmand.net/tile_sources.php").openConnection();
+    SAXParser saxParser=SAXParserFactory.newInstance().newSAXParser();
+    saxParser.parse(connection.getInputStream(),new DefaultHandler(){
+      @Override public void startElement(      String uri,      String localName,      String qName,      Attributes attributes) throws SAXException {
+        if (qName.equals("tile_source")) {
+          TileSourceTemplate template=null;
+          String rule=attributes.getValue("rule");
+          if (rule == null) {
+            template=createTileSourceTemplate(attributes,false);
+          }
+ else           if ("cykloatlas_cz".equalsIgnoreCase(rule)) {
+            template=createTileSourceTemplate(attributes,true);
+          }
+ else           if ("microsoft".equalsIgnoreCase(rule)) {
+            template=createMicrofsoftTileSourceTemplate(attributes);
+          }
+ else           if ("wms_tile".equalsIgnoreCase(rule)) {
+            template=createWmsTileSourceTemplate(attributes);
+          }
+ else {
+          }
+          if (template != null) {
+            template.setRule(rule);
+            templates.add(template);
+          }
+        }
+      }
+    }
+);
+  }
+ catch (  IOException e) {
+    log.error("Exception while downloading tile sources",e);
+    return null;
+  }
+catch (  SAXException e) {
+    log.error("Exception while downloading tile sources",e);
+    return null;
+  }
+catch (  ParserConfigurationException e) {
+    log.error("Exception while downloading tile sources",e);
+    return null;
+  }
+  return templates;
+}

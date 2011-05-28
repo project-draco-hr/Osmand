@@ -1,7 +1,13 @@
 {
   String tileName=globalPreferences.getString(MAP_TILE_SOURCES,null);
   if (tileName != null) {
-    List<TileSourceTemplate> list=TileSourceManager.getKnownSourceTemplates();
+    List<TileSourceTemplate> list=TileSourceManager.getKnownSourceTemplates(false);
+    if (internetAvailableSourceTemplates == null && isInternetConnectionAvailable()) {
+      internetAvailableSourceTemplates=TileSourceManager.downloadTileSourceTemplates();
+    }
+    if (internetAvailableSourceTemplates != null) {
+      list.addAll(internetAvailableSourceTemplates);
+    }
     for (    TileSourceTemplate l : list) {
       if (l.getName().equals(tileName)) {
         return l;
@@ -11,7 +17,7 @@
     File dir=new File(tPath,tileName);
     if (dir.exists()) {
       if (tileName.endsWith(SQLiteTileSource.EXT)) {
-        return new SQLiteTileSource(dir);
+        return new SQLiteTileSource(dir,list);
       }
  else       if (dir.isDirectory() && !dir.getName().startsWith(".")) {
         String url=null;
@@ -29,7 +35,7 @@
  catch (        IOException e) {
           Log.d(LogUtil.TAG,"Error reading url " + dir.getName(),e);
         }
-        return new TileSourceManager.TileSourceTemplate(dir,dir.getName(),url);
+        return new TileSourceManager.TileSourceTemplate(dir.getName(),url,TileSourceManager.determineExtOfTiles(dir,".jpg"),18,1,256,16,20000);
       }
     }
   }
