@@ -7,6 +7,7 @@
   layersList.add(getString(R.string.layer_osm_bugs));
   layersList.add(getString(R.string.layer_favorites));
   layersList.add(getString(R.string.layer_gpx_layer));
+  layersList.add(getString(R.string.layer_overlay));
   final int routeInfoInd=routeInfoLayer.couldBeVisible() ? layersList.size() : -1;
   if (routeInfoLayer.couldBeVisible()) {
     layersList.add(getString(R.string.layer_route));
@@ -24,6 +25,7 @@
   selected[3]=settings.SHOW_OSM_BUGS.get();
   selected[4]=settings.SHOW_FAVORITES.get();
   selected[5]=gpxLayer.isVisible();
+  selected[6]=overlayLayer.getMap() != null;
   selected[trafficInd]=trafficLayer.isVisible();
   if (routeInfoInd != -1) {
     selected[routeInfoInd]=routeInfoLayer.isUserDefinedVisible();
@@ -61,6 +63,16 @@
  else {
           dialog.dismiss();
           useGPXFileLayer(false,null,mapView);
+        }
+      }
+ else       if (item == 6) {
+        if (overlayLayer.getMap() != null) {
+          settings.MAP_OVERLAY.set(null);
+          updateMapSource(mapView);
+        }
+ else {
+          dialog.dismiss();
+          selectMapOverlayLayer(mapView);
         }
       }
  else       if (item == routeInfoInd) {

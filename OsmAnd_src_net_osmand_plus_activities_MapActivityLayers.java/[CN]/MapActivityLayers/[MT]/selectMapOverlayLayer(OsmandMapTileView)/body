@@ -1,29 +1,17 @@
 {
   final OsmandSettings settings=getApplication().getSettings();
   Map<String,String> entriesMap=settings.getTileSourceEntries();
-  Builder builder=new AlertDialog.Builder(activity);
   final ArrayList<String> keys=new ArrayList<String>(entriesMap.keySet());
-  final String[] items=new String[entriesMap.size() + 2];
-  items[0]=getString(R.string.vector_data);
-  int i=1;
+  Builder builder=new AlertDialog.Builder(activity);
+  final String[] items=new String[entriesMap.size() + 1];
+  int i=0;
   for (  String it : entriesMap.values()) {
     items[i++]=it;
   }
   items[i]=getString(R.string.more_external_layer);
   builder.setItems(items,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      if (which == 0) {
-        MapRenderRepositories r=((OsmandApplication)getApplication()).getResourceManager().getRenderer();
-        if (r.isEmpty()) {
-          Toast.makeText(activity,getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
-          return;
-        }
- else {
-          settings.MAP_VECTOR_DATA.set(true);
-        }
-        updateMapSource(mapView);
-      }
- else       if (which == items.length - 1) {
+      if (which == items.length - 1) {
         SettingsActivity.installMapLayers(activity,new DialogInterface.OnClickListener(){
           @Override public void onClick(          DialogInterface dialog,          int which){
             openLayerSelectionDialog(mapView);
@@ -32,8 +20,7 @@
 );
       }
  else {
-        settings.MAP_TILE_SOURCES.set(keys.get(which - 1));
-        settings.MAP_VECTOR_DATA.set(false);
+        settings.MAP_OVERLAY.set(keys.get(which));
         updateMapSource(mapView);
       }
     }
