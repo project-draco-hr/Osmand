@@ -3,12 +3,13 @@
   Map<String,String> entriesMap=settings.getTileSourceEntries();
   Builder builder=new AlertDialog.Builder(activity);
   final ArrayList<String> keys=new ArrayList<String>(entriesMap.keySet());
-  String[] items=new String[entriesMap.size() + 1];
+  final String[] items=new String[entriesMap.size() + 2];
   items[0]=getString(R.string.vector_data);
   int i=1;
   for (  String it : entriesMap.values()) {
     items[i++]=it;
   }
+  items[i]=getString(R.string.more_external_layer);
   builder.setItems(items,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (which == 0) {
@@ -20,12 +21,16 @@
  else {
           settings.setUsingMapVectorData(true);
         }
+        updateMapSource(mapView);
+      }
+ else       if (which == items.length - 1) {
+        installMapLayers(mapView);
       }
  else {
         settings.setMapTileSource(keys.get(which - 1));
         settings.setUsingMapVectorData(false);
+        updateMapSource(mapView);
       }
-      updateMapSource(mapView);
     }
   }
 );
