@@ -4,6 +4,13 @@
   OsmandPreference<String> editPref=editTextPreferences.get(preference.getKey());
   if (boolPref != null) {
     boolPref.set((Boolean)newValue);
+    if (boolPref.getId().equals(osmandSettings.MAP_VECTOR_DATA.getId())) {
+      MapRenderRepositories r=((OsmandApplication)getApplication()).getResourceManager().getRenderer();
+      if (r.isEmpty()) {
+        Toast.makeText(this,getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
+        return false;
+      }
+    }
   }
  else   if (editPref != null) {
     editPref.set((String)newValue);
@@ -56,14 +63,18 @@
     }
   }
  else   if (preference == tileSourcePreference) {
-    if (VECTOR_MAP.equals((String)newValue)) {
-      osmandSettings.setUsingMapVectorData(true);
+    if (MORE_VALUE.equals(newValue)) {
+      SettingsActivity.installMapLayers(this,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          updateTileSourceSummary();
+        }
+      }
+);
     }
  else {
-      osmandSettings.setUsingMapVectorData(false);
       osmandSettings.setMapTileSource((String)newValue);
+      updateTileSourceSummary();
     }
-    updateTileSourceSummary();
   }
   return true;
 }
