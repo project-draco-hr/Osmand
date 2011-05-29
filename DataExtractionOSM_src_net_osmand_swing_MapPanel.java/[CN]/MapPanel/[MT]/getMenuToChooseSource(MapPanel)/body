@@ -1,66 +1,59 @@
 {
   final JMenu tiles=new JMenu(Messages.getString("MapPanel.SOURCE.OF.TILES"));
-  final JMenu userDefined=new JMenu(Messages.getString("MapPanel.USER.DEFINED"));
-  final List<TileSourceTemplate> list=TileSourceManager.getKnownSourceTemplates();
-  final List<TileSourceTemplate> udf=TileSourceManager.getUserDefinedTemplates(DataExtractionSettings.getSettings().getTilesDirectory());
-  final Map<TileSourceTemplate,JCheckBoxMenuItem> items=new LinkedHashMap<TileSourceTemplate,JCheckBoxMenuItem>();
-  tiles.add(userDefined);
-  userDefined.add(new AbstractAction(Messages.getString("MapPanel.NEW.TILE.SRC")){
-    private static final long serialVersionUID=-8286622335859339130L;
-    @Override public void actionPerformed(    ActionEvent e){
-      NewTileSourceDialog dlg=new NewTileSourceDialog(panel);
-      dlg.showDialog();
-      List<TileSourceTemplate> templates=TileSourceManager.getUserDefinedTemplates(DataExtractionSettings.getSettings().getTilesDirectory());
-      TileSourceTemplate added=null;
-      for (      final TileSourceTemplate te : templates) {
-        if (!items.containsKey(te)) {
-          added=te;
-          JCheckBoxMenuItem menuItem=new JCheckBoxMenuItem(te.getName());
-          userDefined.add(menuItem);
-          items.put(added,menuItem);
-          menuItem.addActionListener(new ActionListener(){
-            @Override public void actionPerformed(            ActionEvent e){
-              for (              final Map.Entry<TileSourceTemplate,JCheckBoxMenuItem> es : items.entrySet()) {
-                es.getValue().setSelected(te.equals(es.getKey()));
-              }
-              panel.setMapName(te);
-            }
-          }
-);
-        }
-      }
-      if (added != null) {
-        for (        final Map.Entry<TileSourceTemplate,JCheckBoxMenuItem> es : items.entrySet()) {
-          es.getValue().setSelected(added.equals(es.getKey()));
-        }
-        panel.setMapName(added);
-      }
-    }
-  }
-);
-  for (  final TileSourceTemplate l : list) {
+  final JMenu downloadedMenu=new JMenu("Additional");
+  final File tilesDirectory=DataExtractionSettings.getSettings().getTilesDirectory();
+  Map<String,TileSourceTemplate> udf=getCommonTemplates(tilesDirectory);
+  final List<TileSourceTemplate> downloaded=TileSourceManager.downloadTileSourceTemplates();
+  final Map<TileSourceTemplate,JCheckBoxMenuItem> items=new IdentityHashMap<TileSourceTemplate,JCheckBoxMenuItem>();
+  tiles.add(downloadedMenu);
+  for (  final TileSourceTemplate l : udf.values()) {
     JCheckBoxMenuItem menuItem=new JCheckBoxMenuItem(l.getName());
     tiles.add(menuItem);
     items.put(l,menuItem);
+    menuItem.addActionListener(new ActionListener(){
+      @Override public void actionPerformed(      ActionEvent e){
+        for (        final Map.Entry<TileSourceTemplate,JCheckBoxMenuItem> es : items.entrySet()) {
+          es.getValue().setSelected(l.equals(es.getKey()));
+        }
+        File dir=new File(tilesDirectory,l.getName());
+        try {
+          dir.mkdirs();
+          TileSourceManager.createMetaInfoFile(dir,l,false);
+        }
+ catch (        IOException e1) {
+        }
+        panel.setMapName(l);
+      }
+    }
+);
   }
-  for (  final TileSourceTemplate l : udf) {
+  for (  final TileSourceTemplate l : downloaded) {
     JCheckBoxMenuItem menuItem=new JCheckBoxMenuItem(l.getName());
-    userDefined.add(menuItem);
+    downloadedMenu.add(menuItem);
     items.put(l,menuItem);
+    menuItem.addActionListener(new ActionListener(){
+      @Override public void actionPerformed(      ActionEvent e){
+        for (        final Map.Entry<TileSourceTemplate,JCheckBoxMenuItem> es : items.entrySet()) {
+          es.getValue().setSelected(l.equals(es.getKey()));
+        }
+        File dir=new File(tilesDirectory,l.getName());
+        try {
+          dir.mkdirs();
+          TileSourceManager.createMetaInfoFile(dir,l,true);
+        }
+ catch (        IOException e1) {
+        }
+        panel.setMapName(l);
+      }
+    }
+);
   }
   for (  final Map.Entry<TileSourceTemplate,JCheckBoxMenuItem> em : items.entrySet()) {
     if (Algoritms.objectEquals(panel.getMap(),em.getKey())) {
       em.getValue().setSelected(true);
     }
-    em.getValue().addActionListener(new ActionListener(){
-      @Override public void actionPerformed(      ActionEvent e){
-        for (        final Map.Entry<TileSourceTemplate,JCheckBoxMenuItem> es : items.entrySet()) {
-          es.getValue().setSelected(em.getKey().equals(es.getKey()));
-        }
-        panel.setMapName(em.getKey());
-      }
-    }
-);
   }
+  tiles.addSeparator();
+  tiles.add(createNewTileSourceAction(panel,tiles,items));
   return tiles;
 }

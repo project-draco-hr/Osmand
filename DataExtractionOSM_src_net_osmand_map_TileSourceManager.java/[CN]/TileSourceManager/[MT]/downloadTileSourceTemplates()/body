@@ -1,0 +1,46 @@
+{
+  final List<TileSourceTemplate> templates=new ArrayList<TileSourceTemplate>();
+  try {
+    URLConnection connection=new URL("http://download.osmand.net/tile_sources.php").openConnection();
+    final SAXParser saxParser=SAXParserFactory.newInstance().newSAXParser();
+    saxParser.parse(connection.getInputStream(),new DefaultHandler(){
+      @Override public void startElement(      String uri,      String localName,      String qName,      Attributes attributes) throws SAXException {
+        String name=saxParser.isNamespaceAware() ? localName : qName;
+        Map<String,String> attrs=new LinkedHashMap<String,String>();
+        if (name.equals("tile_source")) {
+          attrs.clear();
+          for (int i=0; i < attributes.getLength(); i++) {
+            String local=attributes.getLocalName(i);
+            if (local != null) {
+              attrs.put(local,attributes.getValue(i));
+            }
+ else             if (attributes.getQName(i) != null) {
+              attrs.put(attributes.getQName(i),attributes.getValue(i));
+            }
+ else {
+              return;
+            }
+          }
+          TileSourceTemplate template=createTileSourceTemplate(attrs);
+          if (template != null) {
+            templates.add(template);
+          }
+        }
+      }
+    }
+);
+  }
+ catch (  IOException e) {
+    log.error("Exception while downloading tile sources",e);
+    return null;
+  }
+catch (  SAXException e) {
+    log.error("Exception while downloading tile sources",e);
+    return null;
+  }
+catch (  ParserConfigurationException e) {
+    log.error("Exception while downloading tile sources",e);
+    return null;
+  }
+  return templates;
+}

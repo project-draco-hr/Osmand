@@ -1,0 +1,31 @@
+{
+  OsmandSettings settings=getApplication().getSettings();
+  boolean showTiles=!settings.isUsingMapVectorData();
+  ITileSource source=showTiles ? settings.getMapTileSource() : null;
+  if (showTiles == mapTileLayer.isVisible() && Algoritms.objectEquals(mapTileLayer.getMap(),source)) {
+    return;
+  }
+  boolean vectorData=settings.isUsingMapVectorData();
+  OsmandApplication app=((OsmandApplication)getApplication());
+  ResourceManager rm=app.getResourceManager();
+  if (vectorData && !app.isApplicationInitializing()) {
+    if (rm.getRenderer().isEmpty()) {
+      Toast.makeText(activity,activity.getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
+      vectorData=false;
+    }
+  }
+  ITileSource newSource=settings.getMapTileSource();
+  ITileSource oldMap=mapTileLayer.getMap();
+  if (oldMap instanceof SQLiteTileSource) {
+    ((SQLiteTileSource)oldMap).closeDB();
+  }
+  mapTileLayer.setMap(newSource);
+  mapTileLayer.setVisible(!vectorData);
+  mapVectorLayer.setVisible(vectorData);
+  if (vectorData) {
+    mapView.setMainLayer(mapVectorLayer);
+  }
+ else {
+    mapView.setMainLayer(mapTileLayer);
+  }
+}

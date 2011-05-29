@@ -1,0 +1,81 @@
+{
+  List<String> layersList=new ArrayList<String>();
+  final OsmandSettings settings=getApplication().getSettings();
+  layersList.add(getString(R.string.layer_map));
+  layersList.add(getString(R.string.layer_poi));
+  layersList.add(getString(R.string.layer_transport));
+  layersList.add(getString(R.string.layer_osm_bugs));
+  layersList.add(getString(R.string.layer_favorites));
+  layersList.add(getString(R.string.layer_gpx_layer));
+  final int routeInfoInd=routeInfoLayer.couldBeVisible() ? layersList.size() : -1;
+  if (routeInfoLayer.couldBeVisible()) {
+    layersList.add(getString(R.string.layer_route));
+  }
+  final int transportRouteInfoInd=!TransportRouteHelper.getInstance().routeIsCalculated() ? -1 : layersList.size();
+  if (transportRouteInfoInd > -1) {
+    layersList.add(getString(R.string.layer_transport_route));
+  }
+  final int trafficInd=layersList.size();
+  layersList.add(getString(R.string.layer_yandex_traffic));
+  final boolean[] selected=new boolean[layersList.size()];
+  Arrays.fill(selected,true);
+  selected[1]=settings.SHOW_POI_OVER_MAP.get();
+  selected[2]=settings.SHOW_TRANSPORT_OVER_MAP.get();
+  selected[3]=settings.SHOW_OSM_BUGS.get();
+  selected[4]=settings.SHOW_FAVORITES.get();
+  selected[5]=gpxLayer.isVisible();
+  selected[trafficInd]=trafficLayer.isVisible();
+  if (routeInfoInd != -1) {
+    selected[routeInfoInd]=routeInfoLayer.isUserDefinedVisible();
+  }
+  if (transportRouteInfoInd != -1) {
+    selected[transportRouteInfoInd]=transportInfoLayer.isVisible();
+  }
+  Builder builder=new AlertDialog.Builder(activity);
+  builder.setMultiChoiceItems(layersList.toArray(new String[layersList.size()]),selected,new DialogInterface.OnMultiChoiceClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int item,    boolean isChecked){
+      if (item == 0) {
+        dialog.dismiss();
+        selectMapLayer(mapView);
+      }
+ else       if (item == 1) {
+        if (isChecked) {
+          selectPOIFilterLayer(mapView);
+        }
+        settings.SHOW_POI_OVER_MAP.set(isChecked);
+      }
+ else       if (item == 2) {
+        settings.SHOW_TRANSPORT_OVER_MAP.set(isChecked);
+      }
+ else       if (item == 3) {
+        settings.SHOW_OSM_BUGS.set(isChecked);
+      }
+ else       if (item == 4) {
+        settings.SHOW_FAVORITES.set(isChecked);
+      }
+ else       if (item == 5) {
+        if (gpxLayer.isVisible()) {
+          gpxLayer.clearCurrentGPX();
+          getApplication().getFavorites().setFavoritePointsFromGPXFile(null);
+        }
+ else {
+          dialog.dismiss();
+          useGPXFileLayer(false,null,mapView);
+        }
+      }
+ else       if (item == routeInfoInd) {
+        routeInfoLayer.setVisible(isChecked);
+      }
+ else       if (item == transportRouteInfoInd) {
+        transportInfoLayer.setVisible(isChecked);
+      }
+ else       if (item == trafficInd) {
+        settings.SHOW_YANDEX_TRAFFIC.set(isChecked);
+      }
+      updateLayers(mapView);
+      mapView.refreshMap();
+    }
+  }
+);
+  builder.show();
+}

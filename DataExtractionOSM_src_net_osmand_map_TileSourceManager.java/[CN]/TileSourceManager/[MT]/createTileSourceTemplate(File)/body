@@ -1,0 +1,26 @@
+{
+  Map<String,String> metaInfo=readMetaInfoFile(dir);
+  if (!metaInfo.isEmpty()) {
+    metaInfo.put("name",dir.getName());
+    TileSourceTemplate template=createTileSourceTemplate(metaInfo);
+    return template;
+  }
+  String ext=findOneTile(dir);
+  ext=ext == null ? ".jpg" : ext;
+  String url=null;
+  File readUrl=new File(dir,"url");
+  try {
+    if (readUrl.exists()) {
+      BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream(readUrl),"UTF-8"));
+      url=reader.readLine();
+      url=url.replaceAll(Pattern.quote("{$z}"),"{0}");
+      url=url.replaceAll(Pattern.quote("{$x}"),"{1}");
+      url=url.replaceAll(Pattern.quote("{$y}"),"{2}");
+      reader.close();
+    }
+  }
+ catch (  IOException e) {
+    log.debug("Error reading url " + dir.getName(),e);
+  }
+  return new TileSourceManager.TileSourceTemplate(dir.getName(),url,ext,18,1,256,16,20000);
+}

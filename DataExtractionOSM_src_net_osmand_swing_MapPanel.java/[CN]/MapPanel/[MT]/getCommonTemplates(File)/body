@@ -1,0 +1,27 @@
+{
+  final List<TileSourceTemplate> list=TileSourceManager.getKnownSourceTemplates();
+  Map<String,TileSourceTemplate> map=new LinkedHashMap<String,TileSourceTemplate>();
+  for (  TileSourceTemplate t : list) {
+    map.put(t.getName(),t);
+  }
+  for (  File f : dir.listFiles()) {
+    if (f.isDirectory()) {
+      if (map.containsKey(f.getName())) {
+        if (TileSourceManager.isTileSourceMetaInfoExist(f)) {
+          map.put(f.getName(),TileSourceManager.createTileSourceTemplate(f));
+        }
+ else {
+          try {
+            TileSourceManager.createMetaInfoFile(f,map.get(f.getName()),false);
+          }
+ catch (          IOException e) {
+          }
+        }
+      }
+ else {
+        map.put(f.getName(),TileSourceManager.createTileSourceTemplate(f));
+      }
+    }
+  }
+  return map;
+}

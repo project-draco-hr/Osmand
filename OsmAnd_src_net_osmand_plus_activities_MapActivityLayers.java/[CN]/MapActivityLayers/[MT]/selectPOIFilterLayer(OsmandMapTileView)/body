@@ -1,0 +1,42 @@
+{
+  final List<PoiFilter> userDefined=new ArrayList<PoiFilter>();
+  List<String> list=new ArrayList<String>();
+  list.add(getString(R.string.any_poi));
+  final PoiFiltersHelper poiFilters=((OsmandApplication)getApplication()).getPoiFilters();
+  for (  PoiFilter f : poiFilters.getUserDefinedPoiFilters()) {
+    userDefined.add(f);
+    list.add(f.getName());
+  }
+  for (  AmenityType t : AmenityType.values()) {
+    list.add(OsmAndFormatter.toPublicString(t,activity));
+  }
+  Builder builder=new AlertDialog.Builder(activity);
+  builder.setItems(list.toArray(new String[list.size()]),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      String filterId;
+      if (which == 0) {
+        filterId=PoiFiltersHelper.getOsmDefinedFilterId(null);
+      }
+ else       if (which <= userDefined.size()) {
+        filterId=userDefined.get(which - 1).getFilterId();
+      }
+ else {
+        filterId=PoiFiltersHelper.getOsmDefinedFilterId(AmenityType.values()[which - userDefined.size() - 1]);
+      }
+      if (filterId.equals(PoiFilter.CUSTOM_FILTER_ID)) {
+        Intent newIntent=new Intent(activity,EditPOIFilterActivity.class);
+        newIntent.putExtra(EditPOIFilterActivity.AMENITY_FILTER,filterId);
+        newIntent.putExtra(EditPOIFilterActivity.SEARCH_LAT,mapView.getLatitude());
+        newIntent.putExtra(EditPOIFilterActivity.SEARCH_LON,mapView.getLongitude());
+        activity.startActivity(newIntent);
+      }
+ else {
+        getApplication().getSettings().setPoiFilterForMap(filterId);
+        poiMapLayer.setFilter(poiFilters.getFilterById(filterId));
+        mapView.refreshMap();
+      }
+    }
+  }
+);
+  builder.show();
+}

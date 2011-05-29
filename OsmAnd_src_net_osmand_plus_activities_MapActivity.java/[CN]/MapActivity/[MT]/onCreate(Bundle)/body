@@ -35,33 +35,8 @@
     }
   }
 );
-  mapView.setMapLocationListener(this);
-  routingHelper=((OsmandApplication)getApplication()).getRoutingHelper();
-  rendererLayer=new RendererLayer();
-  mapView.addLayer(rendererLayer,0.5f);
-  gpxLayer=new GPXLayer();
-  mapView.addLayer(gpxLayer,0.6f);
-  routeLayer=new RouteLayer(routingHelper);
-  mapView.addLayer(routeLayer,1);
-  trafficLayer=new YandexTrafficLayer();
-  mapView.addLayer(trafficLayer,1.5f);
-  osmBugsLayer=new OsmBugsLayer(this);
-  poiMapLayer=new POIMapLayer();
-  favoritesLayer=new FavoritesLayer();
-  transportStopsLayer=new TransportStopsLayer();
-  transportInfoLayer=new TransportInfoLayer(TransportRouteHelper.getInstance());
-  mapView.addLayer(transportInfoLayer,5.5f);
-  navigationLayer=new PointNavigationLayer();
-  mapView.addLayer(navigationLayer,6);
-  locationLayer=new PointLocationLayer();
-  mapView.addLayer(locationLayer,7);
-  mapInfoLayer=new MapInfoLayer(this,routeLayer);
-  mapView.addLayer(mapInfoLayer,8);
-  contextMenuLayer=new ContextMenuLayer(this);
-  mapView.addLayer(contextMenuLayer,9);
-  routeInfoLayer=new RouteInfoLayer(routingHelper,(LinearLayout)findViewById(R.id.RouteLayout));
-  mapView.addLayer(routeInfoLayer,10);
   savingTrackHelper=new SavingTrackHelper(this);
+  routingHelper=((OsmandApplication)getApplication()).getRoutingHelper();
   LatLon pointToNavigate=settings.getPointToNavigate();
   if (!Algoritms.objectEquals(routingHelper.getFinalLocation(),pointToNavigate)) {
     routingHelper.setFollowingMode(false);
@@ -94,7 +69,9 @@
       builder.show();
     }
   }
-  navigationLayer.setPointToNavigate(pointToNavigate);
+  mapView.setMapLocationListener(this);
+  mapLayers.createLayers(mapView);
+  mapLayers.getNavigationLayer().setPointToNavigate(pointToNavigate);
   if (!settings.isLastKnownMapLocation()) {
     LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
     Location location=null;
@@ -117,45 +94,10 @@
       mapView.setZoom(14);
     }
   }
-  final ZoomControls zoomControls=(ZoomControls)findViewById(R.id.ZoomControls);
-  updateZoomControls(zoomControls,mapView.getZoom());
-  zoomControls.setOnZoomInClickListener(new OnClickListener(){
-    @Override public void onClick(    View v){
-      updateZoomControls(zoomControls,mapView.getZoom() + 1);
-      mapView.getAnimatedDraggingThread().stopAnimatingSync();
-      mapView.getAnimatedDraggingThread().startZooming(mapView.getZoom(),mapView.getZoom() + 1);
-      showAndHideMapPosition();
-      if (settings.AUTO_ZOOM_MAP.get()) {
-        locationChanged(mapView.getLatitude(),mapView.getLongitude(),null);
-      }
-    }
-  }
-);
-  zoomControls.setOnZoomOutClickListener(new OnClickListener(){
-    @Override public void onClick(    View v){
-      updateZoomControls(zoomControls,mapView.getZoom() - 1);
-      mapView.getAnimatedDraggingThread().stopAnimatingSync();
-      mapView.getAnimatedDraggingThread().startZooming(mapView.getZoom(),mapView.getZoom() - 1);
-      showAndHideMapPosition();
-      if (settings.AUTO_ZOOM_MAP.get()) {
-        locationChanged(mapView.getLatitude(),mapView.getLongitude(),null);
-      }
-    }
-  }
-);
   backToLocation=(ImageButton)findViewById(R.id.BackToLocation);
   backToLocation.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       backToLocationImpl();
-    }
-  }
-);
-  backToMenu=(ImageButton)findViewById(R.id.BackToMenu);
-  backToMenu.setOnClickListener(new OnClickListener(){
-    @Override public void onClick(    View v){
-      Intent newIntent=new Intent(MapActivity.this,MainMenuActivity.class);
-      newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-      startActivity(newIntent);
     }
   }
 );
