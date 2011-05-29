@@ -8,9 +8,9 @@
     list.add(f.getName());
   }
   for (  AmenityType t : AmenityType.values()) {
-    list.add(OsmAndFormatter.toPublicString(t,this));
+    list.add(OsmAndFormatter.toPublicString(t,activity));
   }
-  Builder builder=new AlertDialog.Builder(this);
+  Builder builder=new AlertDialog.Builder(activity);
   builder.setItems(list.toArray(new String[list.size()]),new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       String filterId;
@@ -24,14 +24,14 @@
         filterId=PoiFiltersHelper.getOsmDefinedFilterId(AmenityType.values()[which - userDefined.size() - 1]);
       }
       if (filterId.equals(PoiFilter.CUSTOM_FILTER_ID)) {
-        Intent newIntent=new Intent(MapActivity.this,EditPOIFilterActivity.class);
+        Intent newIntent=new Intent(activity,EditPOIFilterActivity.class);
         newIntent.putExtra(EditPOIFilterActivity.AMENITY_FILTER,filterId);
         newIntent.putExtra(EditPOIFilterActivity.SEARCH_LAT,mapView.getLatitude());
         newIntent.putExtra(EditPOIFilterActivity.SEARCH_LON,mapView.getLongitude());
-        startActivity(newIntent);
+        activity.startActivity(newIntent);
       }
  else {
-        settings.setPoiFilterForMap(filterId);
+        getApplication().getSettings().setPoiFilterForMap(filterId);
         poiMapLayer.setFilter(poiFilters.getFilterById(filterId));
         mapView.refreshMap();
       }

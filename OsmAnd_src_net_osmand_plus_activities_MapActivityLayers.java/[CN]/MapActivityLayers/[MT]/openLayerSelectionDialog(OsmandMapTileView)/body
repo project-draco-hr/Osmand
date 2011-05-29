@@ -1,5 +1,6 @@
 {
   List<String> layersList=new ArrayList<String>();
+  final OsmandSettings settings=getApplication().getSettings();
   layersList.add(getString(R.string.layer_map));
   layersList.add(getString(R.string.layer_poi));
   layersList.add(getString(R.string.layer_transport));
@@ -30,16 +31,16 @@
   if (transportRouteInfoInd != -1) {
     selected[transportRouteInfoInd]=transportInfoLayer.isVisible();
   }
-  Builder builder=new AlertDialog.Builder(this);
+  Builder builder=new AlertDialog.Builder(activity);
   builder.setMultiChoiceItems(layersList.toArray(new String[layersList.size()]),selected,new DialogInterface.OnMultiChoiceClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int item,    boolean isChecked){
       if (item == 0) {
         dialog.dismiss();
-        selectMapLayer();
+        selectMapLayer(mapView);
       }
  else       if (item == 1) {
         if (isChecked) {
-          selectPOIFilterLayer();
+          selectPOIFilterLayer(mapView);
         }
         settings.SHOW_POI_OVER_MAP.set(isChecked);
       }
@@ -55,11 +56,11 @@
  else       if (item == 5) {
         if (gpxLayer.isVisible()) {
           gpxLayer.clearCurrentGPX();
-          getFavoritesHelper().setFavoritePointsFromGPXFile(null);
+          getApplication().getFavorites().setFavoritePointsFromGPXFile(null);
         }
  else {
           dialog.dismiss();
-          useGPXFileLayer(false,null);
+          useGPXFileLayer(false,null,mapView);
         }
       }
  else       if (item == routeInfoInd) {
@@ -71,7 +72,7 @@
  else       if (item == trafficInd) {
         settings.SHOW_YANDEX_TRAFFIC.set(isChecked);
       }
-      updateLayers();
+      updateLayers(mapView);
       mapView.refreshMap();
     }
   }

@@ -1,6 +1,7 @@
 {
+  final OsmandSettings settings=getApplication().getSettings();
   Map<String,String> entriesMap=settings.getTileSourceEntries();
-  Builder builder=new AlertDialog.Builder(this);
+  Builder builder=new AlertDialog.Builder(activity);
   final ArrayList<String> keys=new ArrayList<String>(entriesMap.keySet());
   String[] items=new String[entriesMap.size() + 1];
   items[0]=getString(R.string.vector_data);
@@ -13,7 +14,7 @@
       if (which == 0) {
         MapRenderRepositories r=((OsmandApplication)getApplication()).getResourceManager().getRenderer();
         if (r.isEmpty()) {
-          Toast.makeText(MapActivity.this,getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
+          Toast.makeText(activity,getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
           return;
         }
  else {
@@ -24,7 +25,7 @@
         settings.setMapTileSource(keys.get(which - 1));
         settings.setUsingMapVectorData(false);
       }
-      updateMapSource();
+      updateMapSource(mapView);
     }
   }
 );

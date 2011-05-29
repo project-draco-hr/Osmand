@@ -1,5 +1,6 @@
 {
   final List<String> list=new ArrayList<String>();
+  final OsmandSettings settings=getApplication().getSettings();
   final File dir=settings.extendOsmandPath(ResourceManager.APP_DIR + SavingTrackHelper.TRACKS_PATH);
   if (dir != null && dir.canRead()) {
     File[] files=dir.listFiles();
@@ -24,32 +25,32 @@
     }
   }
   if (list.isEmpty()) {
-    Toast.makeText(this,R.string.gpx_files_not_found,Toast.LENGTH_LONG).show();
+    Toast.makeText(activity,R.string.gpx_files_not_found,Toast.LENGTH_LONG).show();
   }
  else {
-    Builder builder=new AlertDialog.Builder(this);
+    Builder builder=new AlertDialog.Builder(activity);
     builder.setItems(list.toArray(new String[list.size()]),new DialogInterface.OnClickListener(){
       @Override public void onClick(      DialogInterface dialog,      int which){
         dialog.dismiss();
-        final ProgressDialog dlg=ProgressDialog.show(MapActivity.this,getString(R.string.loading),getString(R.string.loading_data));
+        final ProgressDialog dlg=ProgressDialog.show(activity,getString(R.string.loading),getString(R.string.loading_data));
         final File f=new File(dir,list.get(which));
         new Thread(new Runnable(){
           @Override public void run(){
             Looper.prepare();
-            final GPXFileResult res=GPXUtilities.loadGPXFile(MapActivity.this,f);
+            final GPXFileResult res=GPXUtilities.loadGPXFile(activity,f);
             if (res.error != null) {
-              runOnUiThread(new Runnable(){
+              activity.runOnUiThread(new Runnable(){
                 @Override public void run(){
-                  Toast.makeText(MapActivity.this,res.error,Toast.LENGTH_LONG).show();
+                  Toast.makeText(activity,res.error,Toast.LENGTH_LONG).show();
                 }
               }
 );
             }
             dlg.dismiss();
             if (useRouting) {
-              runOnUiThread(new Runnable(){
+              activity.runOnUiThread(new Runnable(){
                 @Override public void run(){
-                  useGPXRouting(endForRouting,res);
+                  activity.useGPXRouting(endForRouting,res);
                 }
               }
 );
@@ -64,7 +65,7 @@
                 pt.setName(p.name);
                 pts.add(pt);
               }
-              getFavoritesHelper().setFavoritePointsFromGPXFile(pts);
+              getApplication().getFavorites().setFavoritePointsFromGPXFile(pts);
               gpxLayer.setTracks(res.locations);
             }
             mapView.refreshMap();
