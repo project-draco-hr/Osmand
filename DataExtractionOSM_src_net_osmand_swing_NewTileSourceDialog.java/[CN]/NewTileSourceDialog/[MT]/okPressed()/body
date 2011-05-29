@@ -17,14 +17,11 @@
     File dir=new File(tilesDirectory,templateName.getText());
     if (dir.mkdirs()) {
       try {
-        FileOutputStream ous=new FileOutputStream(new File(dir,"url"));
-        ous.write(url.getBytes("UTF-8"));
-        ous.close();
+        url=url.replace("{$x}","{1}").replace("{$y}","{2}").replace("{$z}","{0}");
+        tileSourceTemplate=new TileSourceManager.TileSourceTemplate(templateName.getText(),url,".jpg",18,1,256,16,20000);
+        TileSourceManager.createMetaInfoFile(dir,tileSourceTemplate,true);
       }
- catch (      UnsupportedEncodingException e) {
-        log.error(Messages.getString("NewTileSourceDialog.ERROR.CREATING.NEW.TILE.SRC") + " " + url,e);
-      }
-catch (      IOException e) {
+ catch (      IOException e) {
         log.error(Messages.getString("NewTileSourceDialog.ERROR.CREATING.NEW.TILE.SRC") + " " + url,e);
       }
     }

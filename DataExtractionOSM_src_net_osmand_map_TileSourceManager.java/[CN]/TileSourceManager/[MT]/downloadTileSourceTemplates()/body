@@ -5,25 +5,14 @@
     SAXParser saxParser=SAXParserFactory.newInstance().newSAXParser();
     saxParser.parse(connection.getInputStream(),new DefaultHandler(){
       @Override public void startElement(      String uri,      String localName,      String qName,      Attributes attributes) throws SAXException {
+        Map<String,String> attrs=new LinkedHashMap<String,String>();
         if (qName.equals("tile_source")) {
-          TileSourceTemplate template=null;
-          String rule=attributes.getValue("rule");
-          if (rule == null) {
-            template=createTileSourceTemplate(attributes,false);
+          attrs.clear();
+          for (int i=0; i < attributes.getLength(); i++) {
+            attrs.put(attributes.getQName(i),attributes.getValue(i));
           }
- else           if ("cykloatlas_cz".equalsIgnoreCase(rule)) {
-            template=createTileSourceTemplate(attributes,true);
-          }
- else           if ("microsoft".equalsIgnoreCase(rule)) {
-            template=createMicrofsoftTileSourceTemplate(attributes);
-          }
- else           if ("wms_tile".equalsIgnoreCase(rule)) {
-            template=createWmsTileSourceTemplate(attributes);
-          }
- else {
-          }
+          TileSourceTemplate template=createTileSourceTemplate(attrs);
           if (template != null) {
-            template.setRule(rule);
             templates.add(template);
           }
         }

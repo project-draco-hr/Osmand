@@ -1,0 +1,27 @@
+{
+  String name=attributes.get("name");
+  String urlTemplate=attributes.get("url_template");
+  if (name == null || urlTemplate == null) {
+    return null;
+  }
+  urlTemplate.replace("${x}","{1}").replace("${y}","{2}").replace("${z}","{0}");
+  int maxZoom=parseInt(attributes,"max_zoom",18);
+  int minZoom=parseInt(attributes,"min_zoom",5);
+  int tileSize=parseInt(attributes,"tile_size",256);
+  String ext=attributes.get("ext") == null ? ".jpg" : attributes.get("ext");
+  int bitDensity=parseInt(attributes,"img_density",16);
+  int avgTileSize=parseInt(attributes,"avg_img_size",18000);
+  boolean ellipsoid=false;
+  if (Boolean.parseBoolean(attributes.get("ellipsoid"))) {
+    ellipsoid=true;
+  }
+  TileSourceTemplate templ;
+  if (cycloAtlas) {
+    templ=new CykloatlasSourceTemplate(name,urlTemplate,ext,maxZoom,minZoom,tileSize,bitDensity,avgTileSize);
+  }
+ else {
+    templ=new TileSourceTemplate(name,urlTemplate,ext,maxZoom,minZoom,tileSize,bitDensity,avgTileSize);
+  }
+  templ.setEllipticYTile(ellipsoid);
+  return templ;
+}

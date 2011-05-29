@@ -1,0 +1,32 @@
+{
+  File metainfo=new File(dir,".metainfo");
+  Map<String,String> properties=new LinkedHashMap<String,String>();
+  if (tm instanceof MicrosoftTileSourceTemplate) {
+    properties.put("rule",RULE_MICROSOFT);
+    properties.put("map_type",((MicrosoftTileSourceTemplate)tm).getMapTypeChar() + "");
+    properties.put("map_ext",((MicrosoftTileSourceTemplate)tm).getTileType());
+  }
+ else {
+    if (tm instanceof CykloatlasSourceTemplate) {
+      properties.put("rule",RULE_CYCLOATLAS);
+    }
+    if (tm.getUrlTemplate() == null) {
+      return;
+    }
+    properties.put("url_template",tm.getUrlTemplate());
+  }
+  properties.put("ext",tm.getTileFormat());
+  properties.put("min_zoom",tm.getMinimumZoomSupported() + "");
+  properties.put("max_zoom",tm.getMaximumZoomSupported() + "");
+  properties.put("tile_size",tm.getTileSize() + "");
+  properties.put("img_density",tm.getBitDensity() + "");
+  properties.put("avg_img_size",tm.getAverageSize() + "");
+  if (tm.isEllipticYTile()) {
+    properties.put("ellipsoid",tm.isEllipticYTile() + "");
+  }
+  BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream(metainfo)));
+  for (  String key : properties.keySet()) {
+    writer.write("[" + key + "]\n"+ properties.get(key)+ "\n");
+  }
+  writer.close();
+}
