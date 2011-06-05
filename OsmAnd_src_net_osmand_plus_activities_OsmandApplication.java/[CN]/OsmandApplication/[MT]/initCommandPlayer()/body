@@ -1,7 +1,10 @@
 {
-  if (player == null) {
-    player=new CommandPlayer(OsmandApplication.this);
+  final String voiceProvider=osmandSettings.VOICE_PROVIDER.get();
+  if (player == null || !Algoritms.objectEquals(voiceProvider,player.getCurrentVoice())) {
+    if (player != null) {
+      player.clear();
+    }
+    player=CommandPlayerFactory.createCommandPlayer(voiceProvider,OsmandApplication.this,getApplicationContext());
     routingHelper.getVoiceRouter().setPlayer(player);
   }
-  return player.init(osmandSettings.VOICE_PROVIDER.get());
 }
