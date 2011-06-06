@@ -48,9 +48,7 @@
   DialogInterface.OnClickListener onlyShowCall=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       ApplicationMode mode=getAppMode(buttons);
-      Location map=new Location("map");
-      map.setLatitude(lat);
-      map.setLongitude(lon);
+      Location map=getLocationToStartFrom(lat,lon);
       routingHelper.setAppMode(mode);
       settings.FOLLOW_TO_THE_ROUTE.set(false);
       routingHelper.setFollowingMode(false);
@@ -66,17 +64,13 @@
         updateApplicationModeSettings();
         mapView.refreshMap();
       }
-      Location location=getLastKnownLocation();
-      if (location == null) {
-        location=new Location("map");
-        location.setLatitude(lat);
-        location.setLongitude(lon);
-      }
+      Location location=getLocationToStartFrom(lat,lon);
       routingHelper.setAppMode(mode);
       settings.FOLLOW_TO_THE_ROUTE.set(true);
       routingHelper.setFollowingMode(true);
       routingHelper.setFinalAndCurrentLocation(getPointToNavigate(),location);
-      ((OsmandApplication)getApplication()).showDialogInitializingCommandPlayer(MapActivity.this);
+      dialog.dismiss();
+      getMyApplication().showDialogInitializingCommandPlayer(MapActivity.this);
     }
   }
 ;

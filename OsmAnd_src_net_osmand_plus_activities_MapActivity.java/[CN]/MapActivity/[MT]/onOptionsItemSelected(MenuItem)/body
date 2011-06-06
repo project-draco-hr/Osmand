@@ -1,79 +1,76 @@
 {
-  if (item.getItemId() == R.id.map_show_settings) {
-    final Intent settings=new Intent(MapActivity.this,SettingsActivity.class);
-    startActivity(settings);
-    return true;
-  }
- else   if (item.getItemId() == R.id.map_where_am_i) {
-    backToLocationImpl();
-    return true;
-  }
- else   if (item.getItemId() == R.id.map_show_gps_status) {
-    Intent intent=new Intent();
-    intent.setComponent(new ComponentName(GPS_STATUS_COMPONENT,GPS_STATUS_ACTIVITY));
-    ResolveInfo resolved=getPackageManager().resolveActivity(intent,PackageManager.MATCH_DEFAULT_ONLY);
-    if (resolved != null) {
-      startActivity(intent);
-    }
+switch (item.getItemId()) {
+case R.id.map_show_settings:
+    final Intent intentSettings=new Intent(MapActivity.this,SettingsActivity.class);
+  startActivity(intentSettings);
+return true;
+case R.id.map_where_am_i:
+backToLocationImpl();
+return true;
+case R.id.map_show_gps_status:
+Intent intent=new Intent();
+intent.setComponent(new ComponentName(GPS_STATUS_COMPONENT,GPS_STATUS_ACTIVITY));
+ResolveInfo resolved=getPackageManager().resolveActivity(intent,PackageManager.MATCH_DEFAULT_ONLY);
+if (resolved != null) {
+startActivity(intent);
+}
  else {
-      AlertDialog.Builder builder=new AlertDialog.Builder(this);
-      builder.setMessage(getString(R.string.gps_status_app_not_found));
-      builder.setPositiveButton(getString(R.string.default_buttons_yes),new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse("market://search?q=pname:" + GPS_STATUS_COMPONENT));
-          try {
-            startActivity(intent);
-          }
- catch (          ActivityNotFoundException e) {
-          }
-        }
-      }
+AlertDialog.Builder builder=new AlertDialog.Builder(this);
+builder.setMessage(getString(R.string.gps_status_app_not_found));
+builder.setPositiveButton(getString(R.string.default_buttons_yes),new DialogInterface.OnClickListener(){
+@Override public void onClick(DialogInterface dialog,int which){
+Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse("market://search?q=pname:" + GPS_STATUS_COMPONENT));
+try {
+startActivity(intent);
+}
+ catch (ActivityNotFoundException e) {
+}
+}
+}
 );
-      builder.setNegativeButton(getString(R.string.default_buttons_no),null);
-      builder.show();
-    }
-    return true;
-  }
- else   if (item.getItemId() == R.id.map_get_directions) {
-    getDirections(mapView.getLatitude(),mapView.getLongitude(),true);
-    return true;
-  }
- else   if (item.getItemId() == R.id.map_layers) {
-    mapLayers.openLayerSelectionDialog(mapView);
-    return true;
-  }
- else   if (item.getItemId() == R.id.map_specify_point) {
-    NavigatePointActivity dlg=new NavigatePointActivity(this);
-    dlg.showDialog();
-    return true;
-  }
- else   if (item.getItemId() == R.id.map_mute) {
-    routingHelper.getVoiceRouter().setMute(!routingHelper.getVoiceRouter().isMute());
-    return true;
-  }
- else   if (item.getItemId() == R.id.map_navigate_to_point) {
-    if (mapLayers.getNavigationLayer().getPointToNavigate() != null) {
-      if (routingHelper.isRouteCalculated()) {
-        routingHelper.setFinalAndCurrentLocation(null,null);
-        settings.FOLLOW_TO_THE_ROUTE.set(false);
-        routingHelper.setFollowingMode(false);
-      }
+builder.setNegativeButton(getString(R.string.default_buttons_no),null);
+builder.show();
+}
+return true;
+case R.id.map_get_directions:
+getDirections(mapView.getLatitude(),mapView.getLongitude(),true);
+return true;
+case R.id.map_layers:
+mapLayers.openLayerSelectionDialog(mapView);
+return true;
+case R.id.map_specify_point:
+NavigatePointActivity dlg=new NavigatePointActivity(this);
+dlg.showDialog();
+return true;
+case R.id.map_mute:
+routingHelper.getVoiceRouter().setMute(!routingHelper.getVoiceRouter().isMute());
+return true;
+case R.id.map_navigate_to_point:
+if (mapLayers.getNavigationLayer().getPointToNavigate() != null) {
+if (routingHelper.isRouteCalculated()) {
+routingHelper.setFinalAndCurrentLocation(null,null);
+settings.FOLLOW_TO_THE_ROUTE.set(false);
+routingHelper.setFollowingMode(false);
+}
  else {
-        navigateToPoint(null);
-      }
-    }
+navigateToPoint(null);
+}
+}
  else {
-      navigateToPoint(new LatLon(mapView.getLatitude(),mapView.getLongitude()));
-    }
-    mapView.refreshMap();
-  }
- else   if (item.getItemId() == R.id.map_gpx_routing) {
-    useGPXRouting();
-    return true;
-  }
- else   if (item.getItemId() == R.id.map_show_point_options) {
-    contextMenuPoint(mapView.getLatitude(),mapView.getLongitude());
-    return true;
-  }
-  return super.onOptionsItemSelected(item);
+navigateToPoint(new LatLon(mapView.getLatitude(),mapView.getLongitude()));
+}
+mapView.refreshMap();
+return true;
+case R.id.map_gpx_routing:
+useGPXRouting();
+return true;
+case R.id.map_show_point_options:
+contextMenuPoint(mapView.getLatitude(),mapView.getLongitude());
+return true;
+case R.id.map_animate_route:
+routeAnimation.startStopRouteAnimation(routingHelper,this);
+return true;
+default :
+return super.onOptionsItemSelected(item);
+}
 }
