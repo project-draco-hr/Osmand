@@ -1,9 +1,13 @@
 {
   Map<String,String> metaInfo=readMetaInfoFile(dir);
+  boolean ruleAcceptable=true;
   if (!metaInfo.isEmpty()) {
     metaInfo.put("name",dir.getName());
     TileSourceTemplate template=createTileSourceTemplate(metaInfo);
-    return template;
+    if (template != null) {
+      return template;
+    }
+    ruleAcceptable=false;
   }
   String ext=findOneTile(dir);
   ext=ext == null ? ".jpg" : ext;
@@ -22,5 +26,7 @@
  catch (  IOException e) {
     log.debug("Error reading url " + dir.getName(),e);
   }
-  return new TileSourceManager.TileSourceTemplate(dir.getName(),url,ext,18,1,256,16,20000);
+  TileSourceTemplate template=new TileSourceManager.TileSourceTemplate(dir.getName(),url,ext,18,1,256,16,20000);
+  template.setRuleAcceptable(ruleAcceptable);
+  return template;
 }
