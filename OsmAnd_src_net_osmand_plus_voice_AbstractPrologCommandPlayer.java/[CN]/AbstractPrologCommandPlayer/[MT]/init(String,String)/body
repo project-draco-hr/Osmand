@@ -31,21 +31,8 @@ catch (    IOException e) {
       throw new CommandPlayerException(ctx.getString(R.string.voice_data_corrupted));
     }
  else {
-      boolean versionSupported=false;
-      Var v=new Var("VERSION");
-      SolveInfo s=prologSystem.solve(new Struct(P_VERSION,v));
-      if (s.isSuccess()) {
-        prologSystem.solveEnd();
-        try {
-          Term val=s.getVarValue(v.getName());
-          if (val instanceof Number) {
-            versionSupported=((Number)val).intValue() == IndexConstants.VOICE_VERSION;
-          }
-        }
- catch (        NoSolutionException e) {
-        }
-      }
-      if (!versionSupported) {
+      Term val=solveSimplePredicate(P_VERSION);
+      if (!(val instanceof Number) || ((Number)val).intValue() != voiceVersion) {
         throw new CommandPlayerException(ctx.getString(R.string.voice_data_not_supported));
       }
     }
