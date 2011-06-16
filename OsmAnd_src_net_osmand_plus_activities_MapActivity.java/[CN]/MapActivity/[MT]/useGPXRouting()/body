@@ -1,0 +1,43 @@
+{
+  final LatLon endForRouting=getPointToNavigate();
+  mapLayers.selectGPXFileLayer(new CallbackWithObject<GPXFileResult>(){
+    @Override public boolean processResult(    final GPXFileResult result){
+      Builder builder=new AlertDialog.Builder(MapActivity.this);
+      builder.setItems(new String[]{getString(R.string.gpx_direct_route),getString(R.string.gpx_reverse_route)},new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          boolean reverse=which == 1;
+          ArrayList<List<Location>> locations=result.locations;
+          List<Location> l=new ArrayList<Location>();
+          for (          List<Location> s : locations) {
+            l.addAll(s);
+          }
+          if (reverse) {
+            Collections.reverse(l);
+          }
+          Location startForRouting=getLastKnownLocation();
+          if (startForRouting == null && !l.isEmpty()) {
+            startForRouting=l.get(0);
+          }
+          LatLon endPoint=endForRouting;
+          if (!l.isEmpty()) {
+            LatLon point=new LatLon(l.get(l.size() - 1).getLatitude(),l.get(l.size() - 1).getLongitude());
+            settings.setPointToNavigate(point.getLatitude(),point.getLongitude());
+            endPoint=point;
+            mapLayers.getNavigationLayer().setPointToNavigate(point);
+          }
+          mapView.refreshMap();
+          if (endForRouting != null) {
+            settings.FOLLOW_TO_THE_ROUTE.set(true);
+            routingHelper.setFollowingMode(true);
+            routingHelper.setFinalAndCurrentLocation(endPoint,startForRouting,l);
+            ((OsmandApplication)getApplication()).showDialogInitializingCommandPlayer(MapActivity.this);
+          }
+        }
+      }
+);
+      builder.show();
+      return true;
+    }
+  }
+);
+}

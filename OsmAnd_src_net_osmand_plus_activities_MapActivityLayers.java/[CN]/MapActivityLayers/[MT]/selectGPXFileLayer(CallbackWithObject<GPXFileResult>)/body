@@ -36,7 +36,6 @@
         final File f=new File(dir,list.get(which));
         new Thread(new Runnable(){
           @Override public void run(){
-            Looper.prepare();
             final GPXFileResult res=GPXUtilities.loadGPXFile(activity,f);
             if (res.error != null) {
               activity.runOnUiThread(new Runnable(){
@@ -47,28 +46,12 @@
 );
             }
             dlg.dismiss();
-            if (useRouting) {
-              activity.runOnUiThread(new Runnable(){
-                @Override public void run(){
-                  activity.useGPXRouting(endForRouting,res);
-                }
+            activity.runOnUiThread(new Runnable(){
+              @Override public void run(){
+                callbackWithObject.processResult(res);
               }
+            }
 );
-            }
- else {
-              settings.SHOW_FAVORITES.set(true);
-              List<FavouritePoint> pts=new ArrayList<FavouritePoint>();
-              for (              WptPt p : res.wayPoints) {
-                FavouritePoint pt=new FavouritePoint();
-                pt.setLatitude(p.lat);
-                pt.setLongitude(p.lon);
-                pt.setName(p.name);
-                pts.add(pt);
-              }
-              getApplication().getFavorites().setFavoritePointsFromGPXFile(pts);
-              gpxLayer.setTracks(res.locations);
-            }
-            mapView.refreshMap();
           }
         }
 ,"Loading gpx").start();
