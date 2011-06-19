@@ -1,0 +1,21 @@
+{
+  for (int i=0; i < result.size(); i++) {
+    Node nextStart;
+    if (i < result.size() - 1) {
+      nextStart=result.get(i + 1).getNodes().get(0);
+    }
+ else {
+      nextStart=result.get(0).getNodes().get(0);
+    }
+    Way w=result.get(i);
+    int sz=w.getNodes().size();
+    w.removeNodeByIndex(sz - 1);
+    w.addNode(nextStart);
+    if ("land_coastline".equals(w.getTag(OSMTagKey.NATURAL))) {
+      w.putTag(OSMTagKey.NATURAL.getValue(),"coastline");
+    }
+    EntityId eId=EntityId.valueOf(w);
+    storage.getRegisteredEntities().put(eId,w);
+    toWrite.add(eId);
+  }
+}

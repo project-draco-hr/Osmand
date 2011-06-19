@@ -37,10 +37,8 @@
   }
   boolean point=(type & 3) == MapRenderingTypes.POINT_TYPE;
   RTree rtree=null;
-  int zoom;
   long id=(baseId << 3) | ((level & 3) << 1);
   rtree=mapTree[level];
-  zoom=mapZooms.getLevel(level).getMaxZoom() - 1;
   boolean skip=false;
   String eName=renderingTypes.getEntityName(e);
   if (eName == null) {
@@ -52,8 +50,9 @@
   }
   if (e instanceof Way) {
     id|=1;
-    if (level > 0) {
-      e=simplifyWay((Way)e,id,hasMulti,zoom,eName,type,level);
+    int zoomToSimplify=mapZooms.getLevel(level).getMaxZoom() - 1;
+    if (zoomToSimplify < 15) {
+      e=simplifyWay((Way)e,id,hasMulti,zoomToSimplify,eName,type,level);
       skip=e == null;
     }
   }

@@ -1,0 +1,33 @@
+{
+  OsmBaseStorage storage=new OsmBaseStorage();
+  storage.parseOSM(new FileInputStream(read),new ConsoleProgressImplementation());
+  Map<EntityId,Entity> entities=new HashMap<EntityId,Entity>(storage.getRegisteredEntities());
+  List<EntityId> toWrite=new ArrayList<EntityId>();
+  for (  EntityId e : entities.keySet()) {
+    if (e.getType() == EntityType.WAY) {
+      Entity oldWay=storage.getRegisteredEntities().remove(e);
+      List<Way> result=processWay((Way)oldWay);
+      alignAndAddtoStorage(storage,toWrite,result);
+    }
+  }
+  System.out.println("ERROR Ways : ");
+  int errors=0;
+  for (  List<Way> w : endWays.values()) {
+    Way way=w.get(0);
+    Way lway=w.get(w.size() - 1);
+    LatLon first=way.getNodes().get(0).getLatLon();
+    LatLon last=lway.getNodes().get(lway.getNodes().size() - 1).getLatLon();
+    double dist=MapUtils.getDistance(first,last);
+    if (dist < 500 && w.size() >= 3) {
+      alignAndAddtoStorage(storage,toWrite,w);
+    }
+ else {
+      errors++;
+      String val="First " + first + "Last "+ last+ " id "+ way.getId()+ " dist "+ MapUtils.getDistance(first,last)+ " m";
+      System.out.println("Ways in chain - " + w.size() + " - "+ val);
+    }
+  }
+  System.out.println("Fixed errors : " + ERRORS + ", errors not fixed : "+ errors);
+  OsmStorageWriter writer=new OsmStorageWriter();
+  writer.saveStorage(new FileOutputStream(write),storage,toWrite,true);
+}

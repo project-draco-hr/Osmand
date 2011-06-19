@@ -1,0 +1,59 @@
+{
+  if (ways.isEmpty()) {
+    return true;
+  }
+  LatLon latLon=ways.get(0).getLatLon();
+  double lat=latLon.getLatitude();
+  double lon=180;
+  double firstLon=-360;
+  boolean firstDirectionUp=false;
+  double previousLon=-360;
+  double clockwiseSum=0;
+  Node prev=null;
+  boolean firstWay=true;
+  for (  Way w : ways) {
+    List<Node> ns=w.getNodes();
+    int startInd=0;
+    if (firstWay && ns.size() > 0) {
+      prev=ns.get(0);
+      startInd=1;
+      firstWay=false;
+    }
+    for (int i=startInd; i < ns.size(); i++) {
+      Node next=ns.get(i);
+      double rlon=ray_intersect_lon(prev,next,lat,lon);
+      if (rlon != -360d) {
+        boolean skipSameSide=(prev.getLatitude() <= lat) == (next.getLatitude() <= lat);
+        if (skipSameSide) {
+          continue;
+        }
+        boolean directionUp=prev.getLatitude() <= lat;
+        if (firstLon == -360) {
+          firstDirectionUp=directionUp;
+          firstLon=rlon;
+        }
+ else {
+          boolean clockwise=(!directionUp) == (previousLon < rlon);
+          if (clockwise) {
+            clockwiseSum+=Math.abs(previousLon - rlon);
+          }
+ else {
+            clockwiseSum-=Math.abs(previousLon - rlon);
+          }
+        }
+        previousLon=rlon;
+      }
+      prev=next;
+    }
+  }
+  if (firstLon != -360) {
+    boolean clockwise=(!firstDirectionUp) == (previousLon < firstLon);
+    if (clockwise) {
+      clockwiseSum+=Math.abs(previousLon - firstLon);
+    }
+ else {
+      clockwiseSum-=Math.abs(previousLon - firstLon);
+    }
+  }
+  return clockwiseSum >= 0;
+}

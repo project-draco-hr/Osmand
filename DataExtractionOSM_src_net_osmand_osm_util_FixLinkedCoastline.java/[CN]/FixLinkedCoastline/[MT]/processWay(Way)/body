@@ -1,0 +1,69 @@
+{
+  long start=firstPoint(way);
+  long end=lastPoint(way);
+  LatLon first=way.getNodes().get(0).getLatLon();
+  LatLon last=way.getNodes().get(way.getNodes().size() - 1).getLatLon();
+  String val="F " + first + "L "+ last+ " id "+ way.getId();
+  List<Way> cycle=null;
+  if (start == end || MapUtils.getDistance(first,last) < 20) {
+    LatLon c=way.getLatLon();
+    cycle=Collections.singletonList(way);
+    for (    Way w : duplicatedSimpleIslands.keySet()) {
+      LatLon center=duplicatedSimpleIslands.get(w);
+      if (MapUtils.getDistance(center,c) < 4000) {
+        return Collections.emptyList();
+      }
+    }
+    duplicatedSimpleIslands.put(way,c);
+  }
+ else {
+    List<Way> list=new ArrayList<Way>();
+    list.add(way);
+    while (pointContains(start,end)) {
+      if (startWays.containsKey(start) || endWays.containsKey(end)) {
+        ERRORS++;
+        Collections.reverse(list);
+        for (int i=0; i < list.size(); i++) {
+          list.set(i,revertWay(list.get(i)));
+        }
+        long t=start;
+        start=end;
+        end=t;
+      }
+      if (endWays.containsKey(start)) {
+        List<Way> tlist=endWays.remove(start);
+        startWays.remove(firstPoint(tlist));
+        tlist.addAll(list);
+        list=tlist;
+      }
+ else       if (startWays.containsKey(end)) {
+        List<Way> tlist=startWays.remove(end);
+        endWays.remove(lastPoint(tlist));
+        list.addAll(tlist);
+      }
+      start=firstPoint(list);
+      end=lastPoint(list);
+      if (start == end) {
+        cycle=list;
+        break;
+      }
+    }
+    if (cycle == null) {
+      startWays.put(start,list);
+      endWays.put(end,list);
+    }
+  }
+  if (cycle != null) {
+    boolean clockwiseWay=MapAlgorithms.isClockwiseWay(cycle);
+    if (clockwiseWay) {
+      List<Way> ways=new ArrayList<Way>();
+      ERRORS++;
+      for (int i=cycle.size() - 1; i >= 0; i--) {
+        ways.add(revertWay(cycle.get(i)));
+      }
+      return ways;
+    }
+    return cycle;
+  }
+  return Collections.emptyList();
+}
