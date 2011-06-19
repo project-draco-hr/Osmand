@@ -1,0 +1,25 @@
+{
+  if ("0".equals(way.getTag("admin_level")) && way.getTag(OSMTagKey.NAME) != null) {
+    String name=way.getTag(OSMTagKey.NAME);
+    if (way.getNodes().size() < 20) {
+      return;
+    }
+    if (!countryNames.containsKey(name)) {
+      ArrayList<Way> list=new ArrayList<Way>();
+      list.add(way);
+      countryNames.put(name,list);
+    }
+ else {
+      List<Way> r=countryNames.get(name);
+      for (int i=0; i < r.size(); ) {
+        if (way.getNodes().size() > 4 * r.get(i).getNodes().size()) {
+          r.remove(i);
+        }
+ else {
+          i++;
+        }
+      }
+      r.add(way);
+    }
+  }
+}

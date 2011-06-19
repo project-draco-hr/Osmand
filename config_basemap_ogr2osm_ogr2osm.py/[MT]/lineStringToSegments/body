@@ -1,0 +1,44 @@
+def lineStringToSegments(geometry, references):
+    'Given a LineString geometry, will create the appropiate segments. It will add the optional tags and will not check for duplicate segments. Needs a line or area ID for updating the segment references. Returns a list of segment IDs.'
+    global elementIdCounter, segmentCount, segmentNodes, segmentTags, showProgress, nodeRefs, segmentRefs, segmentIDByNodes
+    result = []
+    (lastx, lasty, z) = geometry.GetPoint(0)
+    lastNodeID = addNode(lastx, lasty)
+    for k in range(1, geometry.GetPointCount()):
+        (newx, newy, z) = geometry.GetPoint(k)
+        newNodeID = addNode(newx, newy)
+        if ((lastNodeID, newNodeID) in segmentIDByNodes):
+            if showProgress:
+                sys.stdout.write(u'-')
+            segmentID = segmentIDByNodes[(lastNodeID, newNodeID)]
+            reversed = False
+        elif ((newNodeID, lastNodeID) in segmentIDByNodes):
+            if showProgress:
+                sys.stdout.write(u'_')
+            segmentID = segmentIDByNodes[(newNodeID, lastNodeID)]
+            reversed = True
+        else:
+            if showProgress:
+                sys.stdout.write('.')
+            segmentID = elementIdCounter
+            elementIdCounter = (elementIdCounter - 1)
+            segmentCount = (segmentCount + 1)
+            segmentNodes[segmentID] = [lastNodeID, newNodeID]
+            segmentIDByNodes[(lastNodeID, newNodeID)] = segmentID
+            reversed = False
+            try:
+                nodeRefs[lastNodeID].update({segmentID: True, })
+            except:
+                nodeRefs[lastNodeID] = {segmentID: True, }
+            try:
+                nodeRefs[newNodeID].update({segmentID: True, })
+            except:
+                nodeRefs[newNodeID] = {segmentID: True, }
+        try:
+            segmentRefs[segmentID].update({references: reversed, })
+        except:
+            segmentRefs[segmentID] = {references: reversed, }
+        result.append(segmentID)
+        segmentRefs
+        lastNodeID = newNodeID
+    return result

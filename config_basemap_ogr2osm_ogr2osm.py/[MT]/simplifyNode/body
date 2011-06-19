@@ -1,0 +1,30 @@
+def simplifyNode(nodeID):
+    global nodeRefs, segmentNodes, segmentRefs, showProgress, lineSegments, areaRings, segmentJoinCount
+    segments = nodeRefs[nodeID]
+    segmentsJoined = 0
+    for segmentID1 in segments.copy():
+        for segmentID2 in segments.copy():
+            if (segmentID1 != segmentID2):
+                try:
+                    if ((segmentNodes[segmentID1][(-1)] == segmentNodes[segmentID2][0] == nodeID) and (segmentRefs[segmentID1] == segmentRefs[segmentID2])):
+                        segmentNodes[segmentID1].extend(segmentNodes[segmentID2][1:])
+                        for nodeShifted in segmentNodes[segmentID2][1:]:
+                            del nodeRefs[nodeShifted][segmentID2]
+                            nodeRefs[nodeShifted].update({segmentID1: True, })
+                        for segmentRef in segmentRefs[segmentID2]:
+                            try:
+                                lineSegments[segmentRef].remove(segmentID2)
+                            except:
+                                for ring in areaRings[segmentRef]:
+                                    try:
+                                        ring.remove(segmentID2)
+                                    except:
+                                        pass
+                        del segmentRefs[segmentID2]
+                        del segmentNodes[segmentID2]
+                        segmentJoinCount = (segmentJoinCount + 1)
+                        segmentsJoined = (segmentsJoined + 1)
+                except:
+                    pass
+    if showProgress:
+        sys.stdout.write(str(segmentsJoined))

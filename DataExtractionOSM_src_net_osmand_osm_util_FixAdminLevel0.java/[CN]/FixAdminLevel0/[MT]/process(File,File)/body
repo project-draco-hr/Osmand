@@ -1,0 +1,27 @@
+{
+  OsmBaseStorage storage=new OsmBaseStorage();
+  storage.parseOSM(new FileInputStream(read),new ConsoleProgressImplementation());
+  Map<EntityId,Entity> entities=new HashMap<EntityId,Entity>(storage.getRegisteredEntities());
+  long id=-1;
+  for (  EntityId e : entities.keySet()) {
+    Entity es=storage.getRegisteredEntities().get(e);
+    if (e.getId() < id) {
+      id=e.getId() - 1;
+    }
+    if (e.getType() == EntityType.WAY) {
+      processWay((Way)es);
+    }
+  }
+  for (  String country : countryNames.keySet()) {
+    List<Way> list=countryNames.get(country);
+    for (    Way w : list) {
+      LatLon latLon=w.getLatLon();
+      Node node=new Node(latLon.getLatitude(),latLon.getLongitude(),id--);
+      node.putTag("name",country);
+      node.putTag("place","country");
+      storage.getRegisteredEntities().put(EntityId.valueOf(node),node);
+    }
+  }
+  OsmStorageWriter writer=new OsmStorageWriter();
+  writer.saveStorage(new FileOutputStream(write),storage,null,true);
+}

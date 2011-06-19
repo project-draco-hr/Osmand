@@ -1,0 +1,14 @@
+def end(self, tag=None):
+    if tag:
+        assert self.__tags, ('unbalanced end(%s)' % tag)
+        assert (escape_cdata(tag, self.__encoding) == self.__tags[(-1)]), ('expected end(%s), got %s' % (self.__tags[(-1)], tag))
+    else:
+        assert self.__tags, 'unbalanced end()'
+    tag = self.__tags.pop()
+    if self.__data:
+        self.__flush()
+    elif self.__open:
+        self.__open = 0
+        self.__write(' />')
+        return
+    self.__write(('</%s>' % tag))
