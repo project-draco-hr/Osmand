@@ -40,7 +40,20 @@
       }
 );
     }
-    for (    BinaryMapIndexReader c : files.values()) {
+    boolean basemapSearch=false;
+    if (zoom < 8) {
+      for (      String f : files.keySet()) {
+        if (f.toLowerCase().contains(BASEMAP_NAME)) {
+          basemapSearch=true;
+          break;
+        }
+      }
+    }
+    for (    String mapName : files.keySet()) {
+      if (basemapSearch && mapName.toLowerCase().contains(BASEMAP_NAME)) {
+        continue;
+      }
+      BinaryMapIndexReader c=files.get(mapName);
       List<BinaryMapDataObject> res=c.searchMapIndex(searchRequest);
       if (checkWhetherInterrupted()) {
         return false;

@@ -3,18 +3,18 @@
   settings=((OsmandApplication)getApplication()).getSettings();
   requestWindowFeature(Window.FEATURE_NO_TITLE);
   setContentView(R.layout.main);
-  ProgressDialog dlg=((OsmandApplication)getApplication()).checkApplicationIsBeingInitialized(this);
-  if (dlg != null) {
-    dlg.setOnDismissListener(new DialogInterface.OnDismissListener(){
-      @Override public void onDismiss(      DialogInterface dialog){
-        OsmandApplication app=((OsmandApplication)getApplication());
-        if (settings.MAP_VECTOR_DATA.get() && app.getResourceManager().getRenderer().isEmpty()) {
-          Toast.makeText(MapActivity.this,getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
-        }
+  startProgressDialog=new ProgressDialog(this);
+  startProgressDialog.setCancelable(true);
+  ((OsmandApplication)getApplication()).checkApplicationIsBeingInitialized(this,startProgressDialog);
+  startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
+    @Override public void onDismiss(    DialogInterface dialog){
+      OsmandApplication app=((OsmandApplication)getApplication());
+      if (settings.MAP_VECTOR_DATA.get() && app.getResourceManager().getRenderer().isEmpty()) {
+        Toast.makeText(MapActivity.this,getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
       }
     }
-);
   }
+);
   parseLaunchIntentLocation();
   mapView=(OsmandMapTileView)findViewById(R.id.MapView);
   mapView.setTrackBallDelegate(new OsmandMapTileView.OnTrackBallListener(){

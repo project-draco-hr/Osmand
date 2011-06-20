@@ -19,19 +19,24 @@
       }
   finally {
 synchronized (OsmandApplication.this) {
+          final ProgressDialog toDismiss;
+          if (startDialog != null) {
+            toDismiss=startDialog.getDialog();
+          }
+ else {
+            toDismiss=null;
+          }
           startDialog=null;
-          if (progressDlg != null) {
-            final ProgressDialog toDismiss=progressDlg;
+          if (toDismiss != null) {
             uiHandler.post(new Runnable(){
               @Override public void run(){
                 if (toDismiss.getOwnerActivity() != null) {
-                  toDismiss.dismiss();
+                  toDismiss.getOwnerActivity().dismissDialog(PROGRESS_DIALOG);
                 }
               }
             }
 );
-            showWarnings(warnings,progressDlg.getContext());
-            progressDlg=null;
+            showWarnings(warnings,toDismiss.getContext());
           }
  else {
             startingWarnings=warnings;
