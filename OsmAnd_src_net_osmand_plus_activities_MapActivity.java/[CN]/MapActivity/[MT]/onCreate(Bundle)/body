@@ -1,6 +1,6 @@
 {
   super.onCreate(savedInstanceState);
-  settings=((OsmandApplication)getApplication()).getSettings();
+  settings=getMyApplication().getSettings();
   requestWindowFeature(Window.FEATURE_NO_TITLE);
   setContentView(R.layout.main);
   startProgressDialog=new ProgressDialog(this);
@@ -27,7 +27,7 @@
   MapTileDownloader.getInstance().addDownloaderCallback(new IMapDownloaderCallback(){
     @Override public void tileDownloaded(    DownloadRequest request){
       if (request != null && !request.error && request.fileToSave != null) {
-        ResourceManager mgr=((OsmandApplication)getApplication()).getResourceManager();
+        ResourceManager mgr=getMyApplication().getResourceManager();
         mgr.tileDownloaded(request);
       }
       mapView.tileDownloaded(request);
@@ -35,7 +35,8 @@
   }
 );
   savingTrackHelper=new SavingTrackHelper(this);
-  routingHelper=((OsmandApplication)getApplication()).getRoutingHelper();
+  routingHelper=getMyApplication().getRoutingHelper();
+  routingHelper.getVoiceRouter().onActivityInit(this);
   LatLon pointToNavigate=settings.getPointToNavigate();
   if (!Algoritms.objectEquals(routingHelper.getFinalLocation(),pointToNavigate)) {
     routingHelper.setFollowingMode(false);
@@ -51,7 +52,7 @@
       builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
         @Override public void onClick(        DialogInterface dialog,        int which){
           routingHelper.setFollowingMode(true);
-          ((OsmandApplication)getApplication()).showDialogInitializingCommandPlayer(MapActivity.this);
+          getMyApplication().showDialogInitializingCommandPlayer(MapActivity.this);
         }
       }
 );
