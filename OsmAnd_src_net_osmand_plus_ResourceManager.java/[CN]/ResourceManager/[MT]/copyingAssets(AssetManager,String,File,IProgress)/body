@@ -1,0 +1,18 @@
+{
+  for (  String asset : assetManager.list(ref)) {
+    boolean isDirectory=!asset.contains(".");
+    File file=new File(dir,asset);
+    String fullName=ref + asset;
+    if (isDirectory) {
+      file.mkdirs();
+      copyingAssets(assetManager,fullName + "/",file,progress);
+    }
+ else {
+      InputStream is=assetManager.open(fullName,AssetManager.ACCESS_STREAMING);
+      FileOutputStream out=new FileOutputStream(file);
+      Algoritms.streamCopy(is,out);
+      out.close();
+      is.close();
+    }
+  }
+}
