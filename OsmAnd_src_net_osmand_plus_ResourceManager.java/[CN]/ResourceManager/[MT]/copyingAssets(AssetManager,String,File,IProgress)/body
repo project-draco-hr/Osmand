@@ -1,18 +1,25 @@
 {
-  for (  String asset : assetManager.list(ref)) {
-    boolean isDirectory=!asset.contains(".");
-    File file=new File(dir,asset);
-    String fullName=ref + asset;
-    if (isDirectory) {
-      file.mkdirs();
-      copyingAssets(assetManager,fullName + "/",file,progress);
+  XmlPullParser parser=XmlPullParserFactory.newInstance().newPullParser();
+  Map<String,String> resourcesToCopy=new LinkedHashMap<String,String>();
+  InputStream open=assetManager.open("distributed_assets.xml");
+  parser.setInput(open,"UTF-8");
+  int next=0;
+  while ((next=parser.next()) != XmlPullParser.END_DOCUMENT) {
+    if (next == XmlPullParser.START_TAG && parser.getName().equals("asset")) {
+      String in=parser.getAttributeValue(null,"name");
+      String out=parser.getAttributeValue(null,"destination");
+      resourcesToCopy.put(in,out);
     }
- else {
-      InputStream is=assetManager.open(fullName,AssetManager.ACCESS_STREAMING);
-      FileOutputStream out=new FileOutputStream(file);
-      Algoritms.streamCopy(is,out);
-      out.close();
-      is.close();
-    }
+  }
+  open.close();
+  for (  String asset : resourcesToCopy.keySet()) {
+    String destination=resourcesToCopy.get(asset);
+    File file=new File(dir,destination);
+    file.mkdirs();
+    InputStream is=assetManager.open(asset,AssetManager.ACCESS_STREAMING);
+    FileOutputStream out=new FileOutputStream(file);
+    Algoritms.streamCopy(is,out);
+    out.close();
+    is.close();
   }
 }
