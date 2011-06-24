@@ -1,31 +1,55 @@
 {
-  double angle=0;
-  double prevAng=0;
-  int px=0;
-  int py=0;
+  if (c.size() == 0) {
+    return true;
+  }
   int mask=0xffffffff;
+  long middleY=0;
   for (int i=0; i < c.size(); i++) {
+    middleY+=(c.get(i) & mask);
+  }
+  middleY/=(long)c.size();
+  double clockwiseSum=0;
+  boolean firstDirectionUp=false;
+  int previousX=Integer.MIN_VALUE;
+  int firstX=Integer.MIN_VALUE;
+  int prevX=(int)(c.get(0) >> 32);
+  int prevY=(int)(c.get(0) & mask);
+  for (int i=1; i < c.size(); i++) {
     int x=(int)(c.get(i) >> 32);
     int y=(int)(c.get(i) & mask);
-    if (i >= 1) {
-      double ang=Math.atan2(py - y,x - px);
-      if (i > 1) {
-        double delta=(ang - prevAng);
-        if (delta < -Math.PI) {
-          delta+=2 * Math.PI;
-        }
- else         if (delta > Math.PI) {
-          delta-=2 * Math.PI;
-        }
-        angle+=delta;
-        prevAng=ang;
+    int rX=ray_intersect_x(prevX,prevY,x,y,(int)middleY);
+    if (rX != Integer.MIN_VALUE) {
+      boolean skipSameSide=(y <= middleY) == (prevY <= middleY);
+      if (skipSameSide) {
+        continue;
+      }
+      boolean directionUp=prevY >= middleY;
+      if (firstX == -Integer.MIN_VALUE) {
+        firstDirectionUp=directionUp;
+        firstX=rX;
       }
  else {
-        prevAng=ang;
+        boolean clockwise=(!directionUp) == (previousX < rX);
+        if (clockwise) {
+          clockwiseSum+=Math.abs(previousX - rX);
+        }
+ else {
+          clockwiseSum-=Math.abs(previousX - rX);
+        }
       }
+      previousX=rX;
+      prevX=x;
+      prevY=y;
     }
-    px=x;
-    py=y;
   }
-  return angle < 0;
+  if (firstX != -360) {
+    boolean clockwise=(!firstDirectionUp) == (previousX < firstX);
+    if (clockwise) {
+      clockwiseSum+=Math.abs(previousX - firstX);
+    }
+ else {
+      clockwiseSum-=Math.abs(previousX - firstX);
+    }
+  }
+  return clockwiseSum >= 0;
 }
