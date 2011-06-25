@@ -115,4 +115,24 @@
   }
 ;
   registerReceiver(broadcastReceiver,new IntentFilter(NavigationService.OSMAND_STOP_SERVICE_ACTION));
+  Intent intent=getIntent();
+  if (intent != null && intent.getIntExtra(INTENT_KEY_SETTINGS_SCREEN,0) != 0) {
+    int s=intent.getIntExtra(INTENT_KEY_SETTINGS_SCREEN,0);
+    String pref=null;
+    if (s == SCREEN_GENERAL_SETTINGS) {
+      pref="general_settings";
+    }
+ else     if (s == SCREEN_NAVIGATION_SETTINGS) {
+      pref="routing_settings";
+    }
+ else     if (s == SCREEN_MONITORING_SETTINGS) {
+      pref="monitor_settings";
+    }
+    if (pref != null) {
+      Preference toOpen=screen.findPreference(pref);
+      if (toOpen instanceof PreferenceScreen) {
+        setPreferenceScreen((PreferenceScreen)toOpen);
+      }
+    }
+  }
 }
