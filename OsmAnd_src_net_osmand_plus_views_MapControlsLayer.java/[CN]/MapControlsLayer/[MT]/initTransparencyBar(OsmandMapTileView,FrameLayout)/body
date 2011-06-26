@@ -1,0 +1,27 @@
+{
+  int minimumHeight=view.getResources().getDrawable(R.drawable.map_zoom_in).getMinimumHeight();
+  android.widget.FrameLayout.LayoutParams params;
+  transparencyBar=new SeekBar(view.getContext());
+  transparencyBar.setVisibility(View.GONE);
+  transparencyBar.setMax(255);
+  params=new FrameLayout.LayoutParams((int)(dm.density * 100),LayoutParams.WRAP_CONTENT,Gravity.BOTTOM | Gravity.CENTER);
+  params.setMargins(0,0,0,minimumHeight + 3);
+  parent.addView(transparencyBar,params);
+  transparencyBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+    @Override public void onStopTrackingTouch(    SeekBar seekBar){
+    }
+    @Override public void onStartTrackingTouch(    SeekBar seekBar){
+    }
+    @Override public void onProgressChanged(    SeekBar seekBar,    int progress,    boolean fromUser){
+      if (settingsToTransparency != null && transparencyLayers != null) {
+        settingsToTransparency.set(progress);
+        for (        BaseMapLayer base : transparencyLayers) {
+          base.setAlpha(progress);
+        }
+        MapControlsLayer.this.view.refreshMap();
+        showAndHideTransparencyBar(settingsToTransparency,transparencyLayers,SHOW_SEEKBAR_SECOND_DELAY);
+      }
+    }
+  }
+);
+}
