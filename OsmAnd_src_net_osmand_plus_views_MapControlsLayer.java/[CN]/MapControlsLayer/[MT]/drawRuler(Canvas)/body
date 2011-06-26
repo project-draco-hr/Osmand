@@ -1,37 +1,30 @@
 {
-  double screenPercent=0.2;
   if (view.isZooming()) {
-    rulerDistName=null;
+    cacheRulerText=null;
   }
- else   if (view.getZoom() != rulerCZoom || Math.abs(view.getXTile() - rulerCTileX) + Math.abs(view.getYTile() - rulerCTileY) > 1) {
-    rulerCZoom=view.getZoom();
-    rulerCTileX=view.getXTile();
-    rulerCTileY=view.getYTile();
+ else   if (view.getZoom() != cacheRulerZoom || Math.abs(view.getXTile() - cacheRulerTileX) + Math.abs(view.getYTile() - cacheRulerTileY) > 1) {
+    cacheRulerZoom=view.getZoom();
+    cacheRulerTileX=view.getXTile();
+    cacheRulerTileY=view.getYTile();
     double latitude=view.getLatitude();
-    double tileNumberLeft=rulerCTileX - ((double)view.getWidth()) / (2d * view.getTileSize());
-    double tileNumberRight=rulerCTileX + ((double)view.getWidth()) / (2d * view.getTileSize());
+    double tileNumberLeft=cacheRulerTileX - ((double)view.getWidth()) / (2d * view.getTileSize());
+    double tileNumberRight=cacheRulerTileX + ((double)view.getWidth()) / (2d * view.getTileSize());
     double dist=MapUtils.getDistance(latitude,MapUtils.getLongitudeFromTile(view.getZoom(),tileNumberLeft),latitude,MapUtils.getLongitudeFromTile(view.getZoom(),tileNumberRight));
-    dist*=screenPercent;
-    int baseDist=5;
-    byte pointer=0;
-    while (dist > baseDist) {
-      if (pointer++ % 3 == 2) {
-        baseDist=baseDist * 5 / 2;
-      }
- else {
-        baseDist*=2;
-      }
-    }
-    rulerDistPix=(int)(view.getWidth() * screenPercent / dist * baseDist);
-    rulerDistName=OsmAndFormatter.getFormattedDistance(baseDist,view.getContext());
-    rulerBaseLine=(int)(view.getHeight() - 50 * dm.density);
-    rulerTextLen=zoomTextPaint.measureText(rulerDistName);
+    double pixDensity=view.getWidth() / dist;
+    double roundedDist=OsmAndFormatter.calculateRoundedDist(dist * screenRulerPercent,view.getContext());
+    int cacheRulerDistPix=(int)(pixDensity * roundedDist);
+    cacheRulerText=OsmAndFormatter.getFormattedDistance((float)roundedDist,view.getContext());
+    cacheRulerTextLen=zoomTextPaint.measureText(cacheRulerText);
+    Rect bounds=rulerDrawable.getBounds();
+    bounds.right=(int)(view.getWidth() - 7 * dm.density);
+    bounds.bottom=(int)(view.getHeight() - view.getResources().getDrawable(R.drawable.map_zoom_in).getMinimumHeight());
+    bounds.top=bounds.bottom - rulerDrawable.getMinimumHeight();
+    bounds.left=bounds.right - cacheRulerDistPix;
+    rulerDrawable.setBounds(bounds);
   }
-  if (rulerDistName != null) {
-    int w2=(int)(view.getWidth() - 5 * dm.density);
-    canvas.drawLine(w2 - rulerDistPix,rulerBaseLine,w2,rulerBaseLine,zoomTextPaint);
-    canvas.drawLine(w2 - rulerDistPix,rulerBaseLine,w2 - rulerDistPix,rulerBaseLine - 10 * dm.density,zoomTextPaint);
-    canvas.drawLine(w2,rulerBaseLine,w2,rulerBaseLine - 10 * dm.density,zoomTextPaint);
-    canvas.drawText(rulerDistName,w2 - (rulerDistPix + rulerTextLen) / 2 + 1,rulerBaseLine - 5 * dm.density,zoomTextPaint);
+  if (cacheRulerText != null) {
+    rulerDrawable.draw(canvas);
+    Rect bounds=rulerDrawable.getBounds();
+    canvas.drawText(cacheRulerText,bounds.left + (bounds.width() - cacheRulerTextLen) / 2,bounds.bottom - 8 * dm.density,rulerTextPaint);
   }
 }

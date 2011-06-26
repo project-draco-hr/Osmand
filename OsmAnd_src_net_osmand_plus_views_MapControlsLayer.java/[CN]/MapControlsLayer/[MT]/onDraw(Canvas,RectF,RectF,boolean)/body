@@ -8,7 +8,19 @@
   if (zoomOutButton.isEnabled() != zoomOutEnabled) {
     zoomOutButton.setEnabled(zoomOutEnabled);
   }
-  String zoomText=view.getZoom() + "";
-  float length=zoomTextPaint.measureText(zoomText);
-  canvas.drawText(zoomText,zoomInButton.getLeft() + (zoomInButton.getWidth() - length - (ZOOM_IN_LEFT_MARGIN * dm.density)) / 2,zoomInButton.getTop() + 4 * dm.density,zoomTextPaint);
+  if (view.isZooming()) {
+    showZoomLevel=true;
+    showUIHandler.removeMessages(SHOW_ZOOM_LEVEL_MSG_ID);
+  }
+ else {
+    if (showZoomLevel) {
+      hideZoomLevelInTime();
+    }
+  }
+  if (showZoomLevel) {
+    drawZoomLevel(canvas);
+  }
+ else {
+    drawRuler(canvas);
+  }
 }
