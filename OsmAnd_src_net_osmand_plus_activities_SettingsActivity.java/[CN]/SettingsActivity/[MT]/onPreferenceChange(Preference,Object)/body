@@ -24,10 +24,19 @@
     CharSequence entry=((ListPreference)preference).getEntries()[ind];
     Map<String,?> map=listPrefValues.get(preference.getKey());
     Object obj=map.get(entry);
+    final Object oldValue=listPref.get();
     boolean changed=listPref.set(obj);
     if (changed) {
       if (listPref.getId().equals(osmandSettings.VOICE_PROVIDER.getId())) {
-        getMyApplication().showDialogInitializingCommandPlayer(this,false);
+        if (MORE_VALUE.equals(newValue)) {
+          listPref.set(oldValue);
+          final Intent intent=new Intent(this,DownloadIndexActivity.class);
+          intent.putExtra(DownloadIndexActivity.FILTER_KEY,"voice");
+          startActivity(intent);
+        }
+ else {
+          getMyApplication().showDialogInitializingCommandPlayer(this,false);
+        }
       }
  else       if (listPref.getId().equals(osmandSettings.APPLICATION_MODE.getId())) {
         updateAllSettings();
