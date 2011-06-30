@@ -8,7 +8,10 @@
     }
   }
 ;
-  next:   for (int i=0; i < size; i++) {
+  paint.setStyle(Style.STROKE);
+  paint.setTextSize(10);
+  paint.setColor(Color.BLACK);
+  nextText:   for (int i=0; i < size; i++) {
     TextDrawInfo text=rc.textToDraw.get(i);
     if (text.text != null) {
       int d=text.text.indexOf(MapRenderingTypes.DELIM_CHAR);
@@ -21,15 +24,16 @@
       RectF bounds=new RectF();
       paintText.setTextSize(text.textSize * dm.density);
       paintText.setFakeBoldText(text.bold);
-      float mes=paintText.measureText(text.text);
-      if (text.drawOnPath == null || (text.pathRotate > 45 && text.pathRotate < 135) || (text.pathRotate > 225 && text.pathRotate < 315)) {
-        bounds.set(text.centerX - mes / 2,text.centerY - 3 * text.textSize / 2,text.centerX + mes / 2,text.centerY + 3 * text.textSize / 2);
+      boolean horizontalWayDisplay=(text.pathRotate > 45 && text.pathRotate < 135) || (text.pathRotate > 225 && text.pathRotate < 315);
+      float mes=paintText.measureText(text.text) + (!horizontalWayDisplay ? 0 : text.minDistance);
+      int ascent=(int)Math.ceil(-paintText.ascent());
+      int descent=(int)Math.ceil(paintText.descent());
+      float textHeight=ascent + descent + (horizontalWayDisplay ? 0 : text.minDistance);
+      if (text.drawOnPath == null || horizontalWayDisplay) {
+        bounds.set(text.centerX - mes / 2,text.centerY - textHeight / 2,text.centerX + mes / 2,text.centerY + textHeight / 2);
       }
  else {
-        bounds.set(text.centerX - 3 * text.textSize,text.centerY - mes,text.centerX + 3 * text.textSize,text.centerY + mes);
-      }
-      if (text.minDistance > 0) {
-        bounds.set(bounds.left - text.minDistance / 2,bounds.top - text.minDistance / 2,bounds.right + text.minDistance / 2,bounds.bottom + text.minDistance / 2);
+        bounds.set(text.centerX - textHeight / 2,text.centerY - mes / 2,text.centerX + textHeight / 2,text.centerY + mes / 2);
       }
       List<RectF> boundsIntersect=text.drawOnPath == null || findAllTextIntersections ? boundsNotPathIntersect : boundsPathIntersect;
       if (boundsIntersect.isEmpty()) {
@@ -68,11 +72,8 @@
           float x=Math.min(bounds.right,b.right) - Math.max(b.left,bounds.left);
           float y=Math.min(bounds.bottom,b.bottom) - Math.max(b.top,bounds.top);
           if ((x > diff && y > diff2) || (x > diff2 && y > diff)) {
-            continue next;
+            continue nextText;
           }
-        }
-        if (text.minDistance > 0) {
-          bounds.set(bounds.left + text.minDistance / 2,bounds.top + text.minDistance / 2,bounds.right - text.minDistance / 2,bounds.bottom - text.minDistance / 2);
         }
         boundsIntersect.add(index,bounds);
       }
