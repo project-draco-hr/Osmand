@@ -6,10 +6,8 @@
   try {
     OsmandApplication app=((OsmandApplication)context.getApplicationContext());
     Boolean renderDay=app.getDaynightHelper().getDayNightRenderer();
+    boolean nightMode=renderDay != null && !renderDay.booleanValue();
     BaseOsmandRender renderingType=app.getRendererRegistry().getCurrentSelectedRenderer();
-    if (renderDay != null && renderingType != null && renderDay.booleanValue() != renderingType.isDayRender()) {
-      renderingType=app.getRendererRegistry().getOppositeRendererForDayNight(renderingType);
-    }
     requestedBox=new RotatedTileBox(tileRect);
     RectF dataBox=requestedBox.calculateLatLonBox(new RectF());
     long now=System.currentTimeMillis();
@@ -25,7 +23,7 @@
         dataBox.bottom-=hi;
       }
       validateLatLonBox(dataBox);
-      boolean loaded=loadVectorData(dataBox,requestedBox.getZoom(),renderingType);
+      boolean loaded=loadVectorData(dataBox,requestedBox.getZoom(),renderingType,nightMode);
       if (!loaded || checkWhetherInterrupted()) {
         return;
       }
@@ -38,6 +36,7 @@
     currentRenderingContext.rotate=requestedBox.getRotate();
     currentRenderingContext.width=(int)(requestedBox.getTileWidth() * OsmandRenderer.TILE_SIZE);
     currentRenderingContext.height=(int)(requestedBox.getTileHeight() * OsmandRenderer.TILE_SIZE);
+    currentRenderingContext.nightMode=nightMode;
     if (checkWhetherInterrupted()) {
       return;
     }
