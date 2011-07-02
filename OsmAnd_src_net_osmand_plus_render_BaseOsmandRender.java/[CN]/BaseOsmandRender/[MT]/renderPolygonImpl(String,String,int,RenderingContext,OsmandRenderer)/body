@@ -1,32 +1,22 @@
 {
-  if (rules[OsmandRenderingRulesParser.POLYGON_STATE] == null) {
-    return false;
-  }
-  Map<String,List<FilterState>> map=rules[OsmandRenderingRulesParser.POLYGON_STATE].get(tag);
-  if (map != null) {
-    List<FilterState> list=map.get(val);
-    if (list != null) {
-      for (      FilterState f : list) {
-        if (f.minzoom <= zoom && (zoom <= f.maxzoom || f.maxzoom == -1)) {
-          if (f.shader != null) {
-            Integer i=RenderingIcons.getIcons().get(f.shader);
-            if (i != null) {
-              rc.main.color=Color.BLACK;
-              rc.main.shader=o.getShader(i);
-            }
-          }
-          rc.main.fillArea=true;
-          applyEffectAttributes(f.main,rc.main,o);
-          if (f.effectAttributes.size() > 0) {
-            applyEffectAttributes(f.effectAttributes.get(0),rc.second,o);
-            if (f.effectAttributes.size() > 1) {
-              applyEffectAttributes(f.effectAttributes.get(1),rc.third,o);
-            }
-          }
-          return true;
-        }
+  FilterState f=findBestFilterState(tag,val,zoom,false,0,null,rules[OsmandRenderingRulesParser.POLYGON_STATE]);
+  if (f != null) {
+    if (f.shader != null) {
+      Integer i=RenderingIcons.getIcons().get(f.shader);
+      if (i != null) {
+        rc.main.color=Color.BLACK;
+        rc.main.shader=o.getShader(i);
       }
     }
+    rc.main.fillArea=true;
+    applyEffectAttributes(f.main,rc.main,o);
+    if (f.effectAttributes.size() > 0) {
+      applyEffectAttributes(f.effectAttributes.get(0),rc.second,o);
+      if (f.effectAttributes.size() > 1) {
+        applyEffectAttributes(f.effectAttributes.get(1),rc.third,o);
+      }
+    }
+    return true;
   }
   return false;
 }

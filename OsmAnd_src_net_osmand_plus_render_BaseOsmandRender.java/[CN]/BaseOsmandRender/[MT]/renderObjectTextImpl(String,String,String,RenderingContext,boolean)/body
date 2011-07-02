@@ -1,28 +1,8 @@
 {
-  if (rules[OsmandRenderingRulesParser.TEXT_STATE] == null) {
-    return null;
-  }
-  Map<String,List<FilterState>> map=rules[OsmandRenderingRulesParser.TEXT_STATE].get(tag);
-  if (map != null) {
-    List<FilterState> list=map.get(val);
-    if (list != null) {
-      for (      FilterState f : list) {
-        if (f.minzoom <= rc.zoom && (rc.zoom <= f.maxzoom || f.maxzoom == -1) && checkRefTextRule(f,ref)) {
-          if (f.textLength == name.length()) {
-            fillTextProperties(f,rc);
-            return name;
-          }
-        }
-      }
-      for (      FilterState f : list) {
-        if (f.minzoom <= rc.zoom && (rc.zoom <= f.maxzoom || f.maxzoom == -1) && checkRefTextRule(f,ref)) {
-          if (f.textLength == 0) {
-            fillTextProperties(f,rc);
-            return name;
-          }
-        }
-      }
-    }
+  FilterState fs=findBestFilterState(tag,val,rc.zoom,false,0,ref,rules[OsmandRenderingRulesParser.TEXT_STATE]);
+  if (fs != null) {
+    fillTextProperties(fs,rc);
+    return name;
   }
   return null;
 }
