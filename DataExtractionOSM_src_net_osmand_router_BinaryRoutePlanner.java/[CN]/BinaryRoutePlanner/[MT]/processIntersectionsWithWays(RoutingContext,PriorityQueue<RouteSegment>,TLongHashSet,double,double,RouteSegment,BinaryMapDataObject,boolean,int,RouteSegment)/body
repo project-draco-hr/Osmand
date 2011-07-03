@@ -1,0 +1,63 @@
+{
+  ArrayList<RouteSegment> segmentsToVisitPrescripted=new ArrayList<RouteSegment>(5);
+  ArrayList<RouteSegment> segmentsToVisitNotForbidden=new ArrayList<RouteSegment>(5);
+  double obstaclesTime=0;
+  boolean exclusiveRestriction=false;
+  if (firstOfSegment) {
+    RouteSegment possibleObstacle=next;
+    while (possibleObstacle != null) {
+      obstaclesTime+=ctx.router.defineObstacle(possibleObstacle.road,possibleObstacle.segmentStart);
+      possibleObstacle=possibleObstacle.next;
+    }
+  }
+  while (next != null) {
+    long nts=(next.road.getId() << 8l) + next.segmentStart;
+    if (!visitedSegments.contains(nts)) {
+      int type=-1;
+      for (int i=0; i < road.getRestrictionCount(); i++) {
+        if (road.getRestriction(i) == next.road.getId()) {
+          type=road.getRestrictionType(i);
+          break;
+        }
+      }
+      if (type == -1 && exclusiveRestriction) {
+      }
+ else       if (type == MapRenderingTypes.RESTRICTION_NO_LEFT_TURN || type == MapRenderingTypes.RESTRICTION_NO_RIGHT_TURN || type == MapRenderingTypes.RESTRICTION_NO_STRAIGHT_ON || type == MapRenderingTypes.RESTRICTION_NO_U_TURN) {
+      }
+ else {
+        double distanceToEnd=distToFinalPoint / ctx.router.getMaxDefaultSpeed();
+        double speed=ctx.router.defineSpeed(road);
+        if (speed == 0) {
+          speed=ctx.router.getMinDefaultSpeed();
+        }
+        double distanceFromStart=segment.distanceFromStart + distOnRoadToPass / speed;
+        distanceFromStart+=ctx.router.calculateTurnTime(segment,next,segmentEnd);
+        distanceFromStart+=obstaclesTime;
+        if (next.parentRoute == null || ctx.roadPriorityComparator(next.distanceFromStart,next.distanceToEnd,distanceFromStart,distanceToEnd) > 0) {
+          next.distanceFromStart=distanceFromStart;
+          next.distanceToEnd=distanceToEnd;
+          if (next.parentRoute != null) {
+            graphSegments.remove(next);
+          }
+          next.parentRoute=segment;
+          next.parentSegmentEnd=segmentEnd;
+          if (type == -1) {
+            segmentsToVisitNotForbidden.add(next);
+          }
+ else {
+            exclusiveRestriction=true;
+            segmentsToVisitNotForbidden.clear();
+            segmentsToVisitPrescripted.add(next);
+          }
+        }
+      }
+    }
+    next=next.next;
+  }
+  for (  RouteSegment s : segmentsToVisitNotForbidden) {
+    graphSegments.add(s);
+  }
+  for (  RouteSegment s : segmentsToVisitPrescripted) {
+    graphSegments.add(s);
+  }
+}
