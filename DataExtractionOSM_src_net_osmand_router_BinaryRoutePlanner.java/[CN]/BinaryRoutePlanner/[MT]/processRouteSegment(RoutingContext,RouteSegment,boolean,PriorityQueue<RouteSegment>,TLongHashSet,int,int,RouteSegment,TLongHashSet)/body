@@ -1,0 +1,58 @@
+{
+  final BinaryMapDataObject road=segment.road;
+  final int middle=segment.segmentStart;
+  int middlex=road.getPoint31XTile(middle);
+  int middley=road.getPoint31YTile(middle);
+  long nt=(road.getId() << 8l) + middle;
+  visitedSegments.add(nt);
+  if (oppositeSegments.contains(nt)) {
+    segment.segmentEnd=middle;
+    return segment;
+  }
+  boolean oneway=ctx.router.isOneWay(road.getHighwayAttributes());
+  boolean minusAllowed=!oneway || reverseWaySearch;
+  boolean plusAllowed=!oneway || !reverseWaySearch;
+  int d=plusAllowed ? 1 : -1;
+  while (minusAllowed || plusAllowed) {
+    int segmentEnd=middle + d;
+    if (!minusAllowed && d > 0) {
+      d++;
+    }
+ else     if (!plusAllowed && d < 0) {
+      d--;
+    }
+ else {
+      if (d <= 0) {
+        d=-d + 1;
+      }
+ else {
+        d=-d;
+      }
+    }
+    if (segmentEnd < 0) {
+      minusAllowed=false;
+      continue;
+    }
+    if (segmentEnd >= road.getPointsLength()) {
+      plusAllowed=false;
+      continue;
+    }
+    long nts=(road.getId() << 8l) + segmentEnd;
+    if (oppositeSegments.contains(nts)) {
+      segment.segmentEnd=segmentEnd;
+      return segment;
+    }
+    visitedSegments.add(nts);
+    int x=road.getPoint31XTile(segmentEnd);
+    int y=road.getPoint31YTile(segmentEnd);
+    loadRoutes(ctx,(x >> (31 - ZOOM_LOAD_TILES)),(y >> (31 - ZOOM_LOAD_TILES)));
+    long l=(((long)x) << 31) + (long)y;
+    RouteSegment next=ctx.routes.get(l);
+    if (next != null) {
+      double distOnRoadToPass=squareRootDist(x,y,middlex,middley);
+      double distToFinalPoint=squareRootDist(x,y,targetEndX,targetEndY);
+      processIntersectionsWithWays(ctx,graphSegments,visitedSegments,distOnRoadToPass,distToFinalPoint,segment,road,d == 0,segmentEnd,next);
+    }
+  }
+  return null;
+}

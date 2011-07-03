@@ -9,92 +9,26 @@
     }
   }
 ;
-  PriorityQueue<RouteSegment> graphSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
-  TLongHashSet visitedSegments=new TLongHashSet();
-  if (reverseWaySearch) {
-    RouteSegment t=start;
-    start=end;
-    end=t;
-  }
-  int targetEndX=end.road.getPoint31XTile(end.segmentEnd);
-  int targetEndY=end.road.getPoint31YTile(end.segmentEnd);
+  PriorityQueue<RouteSegment> graphDirectSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
+  PriorityQueue<RouteSegment> graphReverseSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
+  TLongHashSet visitedDirectSegments=new TLongHashSet();
+  TLongHashSet visitedOppositeSegments=new TLongHashSet();
+  int targetEndX=end.road.getPoint31XTile(end.segmentStart);
+  int targetEndY=end.road.getPoint31YTile(end.segmentStart);
   int startX=start.road.getPoint31XTile(start.segmentStart);
   int startY=start.road.getPoint31YTile(start.segmentStart);
   start.distanceToEnd=squareRootDist(startX,startY,targetEndX,targetEndY) / ctx.router.getMaxDefaultSpeed();
-  graphSegments.add(start);
-  long ls=(((long)startX) << 31) + (long)startY;
-  loadRoutes(ctx,(startX >> (31 - ZOOM_LOAD_TILES)),(startY >> (31 - ZOOM_LOAD_TILES)));
-  RouteSegment startNbs=ctx.routes.get(ls);
-  while (startNbs != null) {
-    if (startNbs.road.getId() != start.road.getId()) {
-      startNbs.parentRoute=start;
-      startNbs.parentSegmentEnd=start.segmentStart;
-      startNbs.distanceToEnd=start.distanceToEnd;
-      long nt=(startNbs.road.getId() << 8l) + startNbs.segmentStart;
-      visitedSegments.add(nt);
-      graphSegments.add(startNbs);
-    }
-    startNbs=startNbs.next;
-  }
+  end.distanceToEnd=start.distanceToEnd;
+  visitAllStartSegments(ctx,start,graphDirectSegments,visitedDirectSegments,startX,startY);
+  visitAllStartSegments(ctx,end,graphReverseSegments,visitedOppositeSegments,targetEndX,targetEndY);
   RouteSegment finalRoute=null;
-  while (!graphSegments.isEmpty() && finalRoute == null) {
-    RouteSegment segment=graphSegments.poll();
-    BinaryMapDataObject road=segment.road;
+  while (!graphDirectSegments.isEmpty() && finalRoute == null) {
+    RouteSegment segment=graphDirectSegments.poll();
     ctx.visitedSegments++;
     if (ctx.visitor != null) {
       ctx.visitor.visitSegment(segment);
     }
-    int middle=segment.segmentStart;
-    int middlex=road.getPoint31XTile(middle);
-    int middley=road.getPoint31YTile(middle);
-    boolean oneway=ctx.router.isOneWay(road.getHighwayAttributes());
-    boolean minusAllowed=!oneway || reverseWaySearch;
-    boolean plusAllowed=!oneway || !reverseWaySearch;
-    if (end.road.getId() == road.getId() && end.segmentStart == middle) {
-      finalRoute=segment;
-    }
-    int d=plusAllowed ? 1 : -1;
-    while (finalRoute == null && (minusAllowed || plusAllowed)) {
-      int j=middle + d;
-      if (!minusAllowed && d > 0) {
-        d++;
-      }
- else       if (!plusAllowed && d < 0) {
-        d--;
-      }
- else {
-        if (d <= 0) {
-          d=-d + 1;
-        }
- else {
-          d=-d;
-        }
-      }
-      if (j < 0) {
-        minusAllowed=false;
-        continue;
-      }
-      if (j >= road.getPointsLength()) {
-        plusAllowed=false;
-        continue;
-      }
-      if (end.road.getId() == road.getId() && end.segmentStart == j) {
-        finalRoute=segment;
-        break;
-      }
-      long l=(((long)road.getPoint31XTile(j)) << 31) + (long)road.getPoint31YTile(j);
-      loadRoutes(ctx,(road.getPoint31XTile(j) >> (31 - ZOOM_LOAD_TILES)),(road.getPoint31YTile(j) >> (31 - ZOOM_LOAD_TILES)));
-      long nt=(road.getId() << 8l) + segment.segmentStart;
-      visitedSegments.add(nt);
-      RouteSegment next=ctx.routes.get(l);
-      if (next != null) {
-        int x=road.getPoint31XTile(j);
-        int y=road.getPoint31YTile(j);
-        double distOnRoadToPass=squareRootDist(x,y,middlex,middley);
-        double distToFinalPoint=squareRootDist(x,y,targetEndX,targetEndY);
-        processIntersectionsWithWays(ctx,graphSegments,visitedSegments,distOnRoadToPass,distToFinalPoint,segment,road,d == 0,j,next);
-      }
-    }
+    finalRoute=processRouteSegment(ctx,end,reverseWaySearch,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments);
   }
   return prepareResult(ctx,start,end,startNanoTime,finalRoute,!reverseWaySearch);
 }

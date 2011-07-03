@@ -1,0 +1,19 @@
+{
+  long nt=(start.road.getId() << 8l) + start.segmentStart;
+  visitedSegments.add(nt);
+  graphDirectSegments.add(start);
+  loadRoutes(ctx,(startX >> (31 - ZOOM_LOAD_TILES)),(startY >> (31 - ZOOM_LOAD_TILES)));
+  long ls=(((long)startX) << 31) + (long)startY;
+  RouteSegment startNbs=ctx.routes.get(ls);
+  while (startNbs != null) {
+    if (startNbs.road.getId() != start.road.getId()) {
+      startNbs.parentRoute=start;
+      startNbs.parentSegmentEnd=start.segmentStart;
+      startNbs.distanceToEnd=start.distanceToEnd;
+      nt=(startNbs.road.getId() << 8l) + startNbs.segmentStart;
+      visitedSegments.add(nt);
+      graphDirectSegments.add(startNbs);
+    }
+    startNbs=startNbs.next;
+  }
+}

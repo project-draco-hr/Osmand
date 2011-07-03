@@ -1,7 +1,18 @@
 {
   List<RouteSegmentResult> result=new ArrayList<RouteSegmentResult>();
-  int parentSegmentEnd=finalRoute != null && finalRoute.segmentStart <= end.segmentStart ? end.segmentEnd : end.segmentStart;
+  int parentSegmentEnd=0;
   RouteSegment segment=finalRoute;
+  if (finalRoute != null) {
+    if (finalRoute.getRoad().getId() == end.getRoad().getId()) {
+      parentSegmentEnd=finalRoute.segmentStart <= end.segmentStart ? end.segmentEnd : end.segmentStart;
+    }
+ else {
+      end.parentRoute=finalRoute;
+      end.parentSegmentEnd=finalRoute.segmentEnd;
+      parentSegmentEnd=end.segmentEnd;
+      segment=end;
+    }
+  }
   if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
     System.out.println("ROUTE : ");
     System.out.println("Start lat=" + MapUtils.get31LatitudeY(start.road.getPoint31YTile(start.segmentEnd)) + " lon="+ MapUtils.get31LongitudeX(start.road.getPoint31XTile(start.segmentEnd)));
