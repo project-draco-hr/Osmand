@@ -1,0 +1,34 @@
+{
+  List<RouteSegmentResult> result=new ArrayList<RouteSegmentResult>();
+  int parentSegmentEnd=finalRoute != null && finalRoute.segmentStart <= end.segmentStart ? end.segmentEnd : end.segmentStart;
+  RouteSegment segment=finalRoute;
+  if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
+    System.out.println("ROUTE : ");
+    System.out.println("Start lat=" + MapUtils.get31LatitudeY(start.road.getPoint31YTile(start.segmentEnd)) + " lon="+ MapUtils.get31LongitudeX(start.road.getPoint31XTile(start.segmentEnd)));
+    System.out.println("END lat=" + MapUtils.get31LatitudeY(end.road.getPoint31YTile(end.segmentStart)) + " lon="+ MapUtils.get31LongitudeX(end.road.getPoint31XTile(end.segmentStart)));
+  }
+  while (segment != null) {
+    RouteSegmentResult res=new RouteSegmentResult();
+    res.object=segment.road;
+    res.endPointIndex=parentSegmentEnd;
+    res.startPointIndex=segment.segmentStart;
+    parentSegmentEnd=segment.parentSegmentEnd;
+    if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
+    }
+    segment=segment.parentRoute;
+    if (segment == null && res.startPointIndex >= res.endPointIndex) {
+      res.startPointIndex=start.segmentEnd;
+    }
+    if (res.startPointIndex != res.endPointIndex) {
+      if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
+        System.out.println("id=" + (res.object.id >> 1) + " start="+ res.startPointIndex+ " end="+ res.endPointIndex);
+      }
+      result.add(0,res);
+    }
+    res.startPoint=convertPoint(res.object,res.startPointIndex);
+    res.endPoint=convertPoint(res.object,res.endPointIndex);
+  }
+  ctx.timeToCalculate=(System.nanoTime() - startNanoTime);
+  log.info("Time to calculate : " + ctx.timeToCalculate / 1e6 + ", time to load : " + ctx.timeToLoad / 1e6 + ", loaded tiles : " + ctx.loadedTiles.size() + ", visited segments " + ctx.visitedSegments);
+  return result;
+}
