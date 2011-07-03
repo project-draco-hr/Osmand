@@ -1,6 +1,7 @@
 {
   ctx.timeToLoad=0;
   ctx.visitedSegments=0;
+  boolean reverseWaySearch=false;
   long startNanoTime=System.nanoTime();
   Comparator<RouteSegment> segmentsComparator=new Comparator<RouteSegment>(){
     @Override public int compare(    RouteSegment o1,    RouteSegment o2){
@@ -10,6 +11,11 @@
 ;
   PriorityQueue<RouteSegment> graphSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
   TLongHashSet visitedSegments=new TLongHashSet();
+  if (reverseWaySearch) {
+    RouteSegment t=start;
+    start=end;
+    end=t;
+  }
   int targetEndX=end.road.getPoint31XTile(end.segmentEnd);
   int targetEndY=end.road.getPoint31YTile(end.segmentEnd);
   int startX=start.road.getPoint31XTile(start.segmentStart);
@@ -41,17 +47,20 @@
     int middle=segment.segmentStart;
     int middlex=road.getPoint31XTile(middle);
     int middley=road.getPoint31YTile(middle);
-    int d=1;
     boolean oneway=ctx.router.isOneWay(road.getHighwayAttributes());
-    boolean minus=true;
-    boolean plus=true;
+    boolean minusAllowed=!oneway || reverseWaySearch;
+    boolean plusAllowed=!oneway || !reverseWaySearch;
     if (end.road.getId() == road.getId() && end.segmentStart == middle) {
       finalRoute=segment;
     }
-    while (finalRoute == null && ((!oneway && minus) || plus)) {
+    int d=plusAllowed ? 1 : -1;
+    while (finalRoute == null && (minusAllowed || plusAllowed)) {
       int j=middle + d;
-      if (oneway) {
+      if (!minusAllowed && d > 0) {
         d++;
+      }
+ else       if (!plusAllowed && d < 0) {
+        d--;
       }
  else {
         if (d <= 0) {
@@ -62,11 +71,11 @@
         }
       }
       if (j < 0) {
-        minus=false;
+        minusAllowed=false;
         continue;
       }
       if (j >= road.getPointsLength()) {
-        plus=false;
+        plusAllowed=false;
         continue;
       }
       if (end.road.getId() == road.getId() && end.segmentStart == j) {
@@ -87,5 +96,5 @@
       }
     }
   }
-  return prepareResult(ctx,start,end,startNanoTime,finalRoute);
+  return prepareResult(ctx,start,end,startNanoTime,finalRoute,!reverseWaySearch);
 }

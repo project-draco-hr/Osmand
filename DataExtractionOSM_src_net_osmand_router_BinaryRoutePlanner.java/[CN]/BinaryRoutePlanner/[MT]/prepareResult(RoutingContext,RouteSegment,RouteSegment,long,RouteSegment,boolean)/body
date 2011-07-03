@@ -13,20 +13,24 @@
     res.endPointIndex=parentSegmentEnd;
     res.startPointIndex=segment.segmentStart;
     parentSegmentEnd=segment.parentSegmentEnd;
-    if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
-    }
     segment=segment.parentRoute;
     if (segment == null && res.startPointIndex >= res.endPointIndex) {
       res.startPointIndex=start.segmentEnd;
     }
     if (res.startPointIndex != res.endPointIndex) {
-      if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
-        System.out.println("id=" + (res.object.getId() >> 1) + " start="+ res.startPointIndex+ " end="+ res.endPointIndex);
-      }
-      result.add(0,res);
+      result.add(res);
     }
     res.startPoint=convertPoint(res.object,res.startPointIndex);
     res.endPoint=convertPoint(res.object,res.endPointIndex);
+  }
+  if (reverseResult) {
+    Collections.reverse(result);
+  }
+  if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
+    for (    RouteSegmentResult res : result) {
+      System.out.println("id=" + (res.object.getId() >> 1) + " start="+ res.startPointIndex+ " end="+ res.endPointIndex);
+      System.out.println("Name :" + res.object.getName());
+    }
   }
   ctx.timeToCalculate=(System.nanoTime() - startNanoTime);
   log.info("Time to calculate : " + ctx.timeToCalculate / 1e6 + ", time to load : " + ctx.timeToLoad / 1e6 + ", loaded tiles : " + ctx.loadedTiles.size() + ", visited segments " + ctx.visitedSegments);
