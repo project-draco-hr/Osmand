@@ -4,12 +4,7 @@
     return;
   }
   long now=System.nanoTime();
-  SearchRequest<BinaryMapDataObject> request=new SearchRequest<BinaryMapDataObject>();
-  request.left=tileX << (31 - ZOOM_LOAD_TILES);
-  request.right=(tileX + 1) << (31 - ZOOM_LOAD_TILES);
-  request.top=tileY << (31 - ZOOM_LOAD_TILES);
-  request.bottom=(tileY + 1) << (31 - ZOOM_LOAD_TILES);
-  request.zoom=15;
+  SearchRequest<BinaryMapDataObject> request=BinaryMapIndexReader.buildSearchRequest(tileX << (31 - ZOOM_LOAD_TILES),(tileX + 1) << (31 - ZOOM_LOAD_TILES),tileY << (31 - ZOOM_LOAD_TILES),(tileY + 1) << (31 - ZOOM_LOAD_TILES),15);
   request.setSearchFilter(new BinaryMapIndexReader.SearchFilter(){
     @Override public boolean accept(    TIntArrayList types,    MapIndex index){
       for (int j=0; j < types.size(); j++) {
@@ -35,7 +30,7 @@
 );
   for (  BinaryMapIndexReader r : map) {
     r.searchMapIndex(request);
-    for (    BinaryMapDataObject o : request.searchResults) {
+    for (    BinaryMapDataObject o : request.getSearchResults()) {
       BinaryMapDataObject old=ctx.idObjects.get(o.getId());
       if (old != null && old.getPointsLength() >= o.getPointsLength()) {
         continue;

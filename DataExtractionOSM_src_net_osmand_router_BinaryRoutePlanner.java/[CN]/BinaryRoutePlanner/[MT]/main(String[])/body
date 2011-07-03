@@ -1,7 +1,7 @@
 {
   RandomAccessFile raf=new RandomAccessFile(new File("d:\\android\\data\\Belarus.obf"),"r");
   BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
-  BinaryRouteDataReader router=new BinaryRouteDataReader(reader);
+  BinaryRoutePlanner router=new BinaryRoutePlanner(reader);
   double lon=27.6024;
   double lat=53.9141;
   double elon=27.6018;
@@ -11,18 +11,18 @@
   RouteSegment start=router.findRouteSegment(lat,lon,ctx);
   if (start != null) {
     BinaryMapDataObject road=start.road;
-    TagValuePair pair=road.mapIndex.decodeType(road.getTypes()[0]);
-    System.out.println("ROAD TO START " + pair.tag + " "+ pair.value+ " "+ road.name+ " "+ start.segmentStart+ " "+ (road.id >> 1));
+    TagValuePair pair=road.getMapIndex().decodeType(road.getTypes()[0]);
+    System.out.println("ROAD TO START " + pair.tag + " "+ pair.value+ " "+ road.getName()+ " "+ start.segmentStart+ " "+ (road.getId() >> 1));
   }
   RouteSegment end=router.findRouteSegment(elat,elon,ctx);
   if (end != null) {
     BinaryMapDataObject road=end.road;
-    TagValuePair pair=road.mapIndex.decodeType(road.getTypes()[0]);
-    System.out.println("ROAD TO END " + pair.tag + " "+ pair.value+ " "+ road.name+ " "+ end.segmentStart+ " "+ (road.id >> 1));
+    TagValuePair pair=road.getMapIndex().decodeType(road.getTypes()[0]);
+    System.out.println("ROAD TO END " + pair.tag + " "+ pair.value+ " "+ road.getName()+ " "+ end.segmentStart+ " "+ (road.getId() >> 1));
   }
   for (  RouteSegmentResult s : router.searchRoute(ctx,start,end)) {
     double dist=MapUtils.getDistance(s.startPoint,s.endPoint);
-    System.out.println("Street " + s.object.name + " distance "+ dist);
+    System.out.println("Street " + s.object.getName() + " distance "+ dist);
   }
   Collection<BinaryMapDataObject> res=ctx.values();
   System.out.println(res.size() + " objects for " + (System.currentTimeMillis() - ms)+ " ms");

@@ -22,11 +22,11 @@
   loadRoutes(ctx,(startX >> (31 - ZOOM_LOAD_TILES)),(startY >> (31 - ZOOM_LOAD_TILES)));
   RouteSegment startNbs=ctx.routes.get(ls);
   while (startNbs != null) {
-    if (startNbs.road.id != start.road.id) {
+    if (startNbs.road.getId() != start.road.getId()) {
       startNbs.parentRoute=start;
       startNbs.parentSegmentEnd=start.segmentStart;
       startNbs.distanceToEnd=start.distanceToEnd;
-      long nt=(startNbs.road.id << 8l) + startNbs.segmentStart;
+      long nt=(startNbs.road.getId() << 8l) + startNbs.segmentStart;
       visitedSegments.add(nt);
       graphSegments.add(startNbs);
     }
@@ -47,7 +47,7 @@
     boolean oneway=ctx.router.isOneWay(road.getHighwayAttributes());
     boolean minus=true;
     boolean plus=true;
-    if (end.road.id == road.id && end.segmentStart == middle) {
+    if (end.road.getId() == road.getId() && end.segmentStart == middle) {
       finalRoute=segment;
     }
     double obstaclesTime=0;
@@ -72,13 +72,13 @@
         plus=false;
         continue;
       }
-      if (end.road.id == road.id && end.segmentStart == j) {
+      if (end.road.getId() == road.getId() && end.segmentStart == j) {
         finalRoute=segment;
         break;
       }
       long l=(((long)road.getPoint31XTile(j)) << 31) + (long)road.getPoint31YTile(j);
       loadRoutes(ctx,(road.getPoint31XTile(j) >> (31 - ZOOM_LOAD_TILES)),(road.getPoint31YTile(j) >> (31 - ZOOM_LOAD_TILES)));
-      long nt=(road.id << 8l) + segment.segmentStart;
+      long nt=(road.getId() << 8l) + segment.segmentStart;
       visitedSegments.add(nt);
       RouteSegment next=ctx.routes.get(l);
       if (next != null) {
@@ -93,11 +93,11 @@
           }
         }
         while (next != null) {
-          long nts=(next.road.id << 8l) + next.segmentStart;
+          long nts=(next.road.getId() << 8l) + next.segmentStart;
           if (!visitedSegments.contains(nts)) {
             int type=-1;
             for (int i=0; i < road.getRestrictionCount(); i++) {
-              if (road.getRestriction(i) == next.road.id) {
+              if (road.getRestriction(i) == next.road.getId()) {
                 type=road.getRestrictionType(i);
                 break;
               }
