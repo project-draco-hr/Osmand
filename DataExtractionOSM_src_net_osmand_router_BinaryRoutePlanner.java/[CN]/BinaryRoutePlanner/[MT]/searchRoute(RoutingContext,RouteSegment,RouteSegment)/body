@@ -1,7 +1,6 @@
 {
   ctx.timeToLoad=0;
   ctx.visitedSegments=0;
-  boolean reverseWaySearch=false;
   long startNanoTime=System.nanoTime();
   Comparator<RouteSegment> segmentsComparator=new Comparator<RouteSegment>(){
     @Override public int compare(    RouteSegment o1,    RouteSegment o2){
@@ -9,10 +8,16 @@
     }
   }
 ;
+  Comparator<RouteSegment> nonHeuristicSegmentsComparator=new Comparator<RouteSegment>(){
+    @Override public int compare(    RouteSegment o1,    RouteSegment o2){
+      return roadPriorityComparator(o1.distanceFromStart,o1.distanceToEnd,o2.distanceFromStart,o2.distanceToEnd,1);
+    }
+  }
+;
   PriorityQueue<RouteSegment> graphDirectSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
   PriorityQueue<RouteSegment> graphReverseSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
-  TLongHashSet visitedDirectSegments=new TLongHashSet();
-  TLongHashSet visitedOppositeSegments=new TLongHashSet();
+  TLongObjectHashMap<RouteSegment> visitedDirectSegments=new TLongObjectHashMap<RouteSegment>();
+  TLongObjectHashMap<RouteSegment> visitedOppositeSegments=new TLongObjectHashMap<RouteSegment>();
   int targetEndX=end.road.getPoint31XTile(end.segmentStart);
   int targetEndY=end.road.getPoint31YTile(end.segmentStart);
   int startX=start.road.getPoint31XTile(start.segmentStart);
@@ -21,14 +26,43 @@
   end.distanceToEnd=start.distanceToEnd;
   visitAllStartSegments(ctx,start,graphDirectSegments,visitedDirectSegments,startX,startY);
   visitAllStartSegments(ctx,end,graphReverseSegments,visitedOppositeSegments,targetEndX,targetEndY);
-  RouteSegment finalRoute=null;
-  while (!graphDirectSegments.isEmpty() && finalRoute == null) {
-    RouteSegment segment=graphDirectSegments.poll();
+  RouteSegment finalDirectRoute=null;
+  RouteSegment finalReverseRoute=null;
+  boolean inverse=false;
+  PriorityQueue<RouteSegment> graphSegments=inverse ? graphReverseSegments : graphDirectSegments;
+  while (!graphSegments.isEmpty()) {
+    RouteSegment segment=graphSegments.poll();
     ctx.visitedSegments++;
     if (ctx.visitor != null) {
       ctx.visitor.visitSegment(segment);
     }
-    finalRoute=processRouteSegment(ctx,end,reverseWaySearch,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments);
+    if (!inverse) {
+      finalDirectRoute=processRouteSegment(ctx,end,false,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments);
+      if (finalDirectRoute != null) {
+        long nt=(finalDirectRoute.road.getId() << 8l) + finalDirectRoute.segmentEnd;
+        finalReverseRoute=visitedOppositeSegments.get(nt);
+        if (finalReverseRoute != null) {
+          finalReverseRoute.segmentEnd=finalDirectRoute.segmentEnd;
+        }
+        break;
+      }
+    }
+ else {
+      finalReverseRoute=processRouteSegment(ctx,start,true,graphReverseSegments,visitedOppositeSegments,startX,startY,segment,visitedDirectSegments);
+      if (finalReverseRoute != null) {
+        long nt=(finalReverseRoute.road.getId() << 8l) + finalReverseRoute.segmentEnd;
+        finalDirectRoute=visitedDirectSegments.get(nt);
+        if (finalDirectRoute != null) {
+          finalDirectRoute.segmentEnd=finalReverseRoute.segmentEnd;
+        }
+        break;
+      }
+    }
+    if (graphReverseSegments.isEmpty() || graphDirectSegments.isEmpty()) {
+      break;
+    }
+    inverse=nonHeuristicSegmentsComparator.compare(graphDirectSegments.peek(),graphReverseSegments.peek()) > 0;
+    graphSegments=inverse ? graphReverseSegments : graphDirectSegments;
   }
-  return prepareResult(ctx,start,end,startNanoTime,finalRoute,!reverseWaySearch);
+  return prepareResult(ctx,start,end,startNanoTime,finalDirectRoute,finalReverseRoute);
 }

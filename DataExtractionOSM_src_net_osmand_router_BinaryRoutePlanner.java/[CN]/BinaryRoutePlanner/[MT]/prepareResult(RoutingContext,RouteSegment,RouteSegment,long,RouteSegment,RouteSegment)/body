@@ -1,23 +1,31 @@
 {
   List<RouteSegmentResult> result=new ArrayList<RouteSegmentResult>();
-  int parentSegmentEnd=0;
-  RouteSegment segment=finalRoute;
-  if (finalRoute != null) {
-    if (finalRoute.getRoad().getId() == end.getRoad().getId()) {
-      parentSegmentEnd=finalRoute.segmentStart <= end.segmentStart ? end.segmentEnd : end.segmentStart;
-    }
- else {
-      end.parentRoute=finalRoute;
-      end.parentSegmentEnd=finalRoute.segmentEnd;
-      parentSegmentEnd=end.segmentEnd;
-      segment=end;
-    }
-  }
   if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
     System.out.println("ROUTE : ");
     System.out.println("Start lat=" + MapUtils.get31LatitudeY(start.road.getPoint31YTile(start.segmentEnd)) + " lon="+ MapUtils.get31LongitudeX(start.road.getPoint31XTile(start.segmentEnd)));
     System.out.println("END lat=" + MapUtils.get31LatitudeY(end.road.getPoint31YTile(end.segmentStart)) + " lon="+ MapUtils.get31LongitudeX(end.road.getPoint31XTile(end.segmentStart)));
   }
+  RouteSegment segment=finalReverseRoute;
+  int parentSegmentStart=segment == null ? 0 : segment.segmentEnd;
+  while (segment != null) {
+    RouteSegmentResult res=new RouteSegmentResult();
+    res.object=segment.road;
+    res.endPointIndex=segment.segmentStart;
+    res.startPointIndex=parentSegmentStart;
+    parentSegmentStart=segment.parentSegmentEnd;
+    segment=segment.parentRoute;
+    if (segment == null && res.startPointIndex <= res.endPointIndex) {
+      res.endPointIndex=end.segmentEnd;
+    }
+    if (res.startPointIndex != res.endPointIndex) {
+      result.add(res);
+    }
+    res.startPoint=convertPoint(res.object,res.startPointIndex);
+    res.endPoint=convertPoint(res.object,res.endPointIndex);
+  }
+  Collections.reverse(result);
+  segment=finalDirectRoute;
+  int parentSegmentEnd=segment == null ? 0 : segment.segmentEnd;
   while (segment != null) {
     RouteSegmentResult res=new RouteSegmentResult();
     res.object=segment.road;
@@ -34,12 +42,10 @@
     res.startPoint=convertPoint(res.object,res.startPointIndex);
     res.endPoint=convertPoint(res.object,res.endPointIndex);
   }
-  if (reverseResult) {
-    Collections.reverse(result);
-  }
+  Collections.reverse(result);
   if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
     for (    RouteSegmentResult res : result) {
-      System.out.println("id=" + (res.object.getId() >> 1) + " start="+ res.startPointIndex+ " end="+ res.endPointIndex);
+      System.out.println("id=" + (res.object.getId() >> 3) + " start="+ res.startPointIndex+ " end="+ res.endPointIndex);
       System.out.println("Name :" + res.object.getName());
     }
   }
