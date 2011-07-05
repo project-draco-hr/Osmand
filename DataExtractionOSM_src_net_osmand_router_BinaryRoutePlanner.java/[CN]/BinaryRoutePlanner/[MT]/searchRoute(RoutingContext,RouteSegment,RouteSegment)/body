@@ -22,15 +22,13 @@
   int targetEndY=end.road.getPoint31YTile(end.segmentStart);
   int startX=start.road.getPoint31XTile(start.segmentStart);
   int startY=start.road.getPoint31YTile(start.segmentStart);
-  start.distanceToEnd=squareRootDist(startX,startY,targetEndX,targetEndY) / ctx.router.getMaxDefaultSpeed();
+  start.distanceToEnd=squareRootDist(startX,startY,targetEndX,targetEndY) / ctx.getRouter().getMaxDefaultSpeed();
   end.distanceToEnd=start.distanceToEnd;
   visitAllStartSegments(ctx,start,graphDirectSegments,visitedDirectSegments,startX,startY);
   visitAllStartSegments(ctx,end,graphReverseSegments,visitedOppositeSegments,targetEndX,targetEndY);
   RouteSegment finalDirectRoute=null;
   RouteSegment finalReverseRoute=null;
   boolean inverse=false;
-  double roadDirectPriority=0;
-  double roadOppositePriority=0;
   PriorityQueue<RouteSegment> graphSegments=inverse ? graphReverseSegments : graphDirectSegments;
   while (!graphSegments.isEmpty()) {
     RouteSegment segment=graphSegments.poll();
@@ -57,7 +55,12 @@
     if (graphReverseSegments.isEmpty() || graphDirectSegments.isEmpty()) {
       break;
     }
-    inverse=nonHeuristicSegmentsComparator.compare(graphDirectSegments.peek(),graphReverseSegments.peek()) > 0;
+    if (ctx.planRouteIn2Directions()) {
+      inverse=nonHeuristicSegmentsComparator.compare(graphDirectSegments.peek(),graphReverseSegments.peek()) > 0;
+    }
+ else {
+      inverse=!ctx.getPlanRoadDirection().booleanValue();
+    }
     graphSegments=inverse ? graphReverseSegments : graphDirectSegments;
   }
   return prepareResult(ctx,start,end,startNanoTime,finalDirectRoute,finalReverseRoute);
