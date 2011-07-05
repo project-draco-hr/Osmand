@@ -17,7 +17,15 @@
       oppSegment.segmentEnd=next.segmentStart;
       return oppSegment;
     }
-    if (!visitedSegments.contains(nts)) {
+    boolean processRoad=true;
+    if (ctx.useStrategyOfIncreasingRoadPriorities) {
+      double roadPriority=ctx.router.getRoadPriority(segment.road);
+      double nextRoadPriority=ctx.router.getRoadPriority(segment.road);
+      if (nextRoadPriority < roadPriority) {
+        processRoad=false;
+      }
+    }
+    if (!visitedSegments.contains(nts) && processRoad) {
       int type=-1;
       for (int i=0; i < road.getRestrictionCount(); i++) {
         if (road.getRestriction(i) == next.road.getId()) {
