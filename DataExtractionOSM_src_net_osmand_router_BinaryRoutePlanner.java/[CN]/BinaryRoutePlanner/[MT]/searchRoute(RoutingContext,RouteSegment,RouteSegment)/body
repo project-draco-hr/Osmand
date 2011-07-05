@@ -37,24 +37,18 @@
       ctx.visitor.visitSegment(segment);
     }
     if (!inverse) {
-      finalDirectRoute=processRouteSegment(ctx,end,false,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments);
-      if (finalDirectRoute != null) {
-        long nt=(finalDirectRoute.road.getId() << 8l) + finalDirectRoute.segmentEnd;
-        finalReverseRoute=visitedOppositeSegments.get(nt);
-        if (finalReverseRoute != null) {
-          finalReverseRoute.segmentEnd=finalDirectRoute.segmentEnd;
-        }
+      RoutePair pair=processRouteSegment(ctx,end,false,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments);
+      if (pair != null) {
+        finalDirectRoute=pair.a;
+        finalReverseRoute=pair.b;
         break;
       }
     }
  else {
-      finalReverseRoute=processRouteSegment(ctx,start,true,graphReverseSegments,visitedOppositeSegments,startX,startY,segment,visitedDirectSegments);
-      if (finalReverseRoute != null) {
-        long nt=(finalReverseRoute.road.getId() << 8l) + finalReverseRoute.segmentEnd;
-        finalDirectRoute=visitedDirectSegments.get(nt);
-        if (finalDirectRoute != null) {
-          finalDirectRoute.segmentEnd=finalReverseRoute.segmentEnd;
-        }
+      RoutePair pair=processRouteSegment(ctx,start,true,graphReverseSegments,visitedOppositeSegments,startX,startY,segment,visitedDirectSegments);
+      if (pair != null) {
+        finalReverseRoute=pair.a;
+        finalDirectRoute=pair.b;
         break;
       }
     }
