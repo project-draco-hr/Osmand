@@ -1,10 +1,11 @@
 {
-  int tileC=(tileX << ZOOM_LOAD_TILES) + tileY;
+  int tileC=(tileX << ctx.getZoomToLoadTileWithRoads()) + tileY;
   if (ctx.loadedTiles.contains(tileC)) {
     return;
   }
   long now=System.nanoTime();
-  SearchRequest<BinaryMapDataObject> request=BinaryMapIndexReader.buildSearchRequest(tileX << (31 - ZOOM_LOAD_TILES),(tileX + 1) << (31 - ZOOM_LOAD_TILES),tileY << (31 - ZOOM_LOAD_TILES),(tileY + 1) << (31 - ZOOM_LOAD_TILES),15);
+  int zoomToLoad=31 - ctx.getZoomToLoadTileWithRoads();
+  SearchRequest<BinaryMapDataObject> request=BinaryMapIndexReader.buildSearchRequest(tileX << zoomToLoad,(tileX + 1) << zoomToLoad,tileY << zoomToLoad,(tileY + 1) << zoomToLoad,15);
   request.setSearchFilter(new BinaryMapIndexReader.SearchFilter(){
     @Override public boolean accept(    TIntArrayList types,    MapIndex index){
       for (int j=0; j < types.size(); j++) {

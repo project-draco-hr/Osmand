@@ -18,9 +18,9 @@
       return oppSegment;
     }
     boolean processRoad=true;
-    if (ctx.useStrategyOfIncreasingRoadPriorities) {
-      double roadPriority=ctx.getRouter().getRoadPriority(segment.road);
-      double nextRoadPriority=ctx.getRouter().getRoadPriority(segment.road);
+    if (ctx.isUseStrategyOfIncreasingRoadPriorities()) {
+      double roadPriority=ctx.getRouter().getRoadPriorityHeuristicToIncrease(segment.road);
+      double nextRoadPriority=ctx.getRouter().getRoadPriorityHeuristicToIncrease(segment.road);
       if (nextRoadPriority < roadPriority) {
         processRoad=false;
       }
@@ -38,17 +38,17 @@
  else       if (type == MapRenderingTypes.RESTRICTION_NO_LEFT_TURN || type == MapRenderingTypes.RESTRICTION_NO_RIGHT_TURN || type == MapRenderingTypes.RESTRICTION_NO_STRAIGHT_ON || type == MapRenderingTypes.RESTRICTION_NO_U_TURN) {
       }
  else {
-        double distanceToEnd=distToFinalPoint / ctx.router.getMaxDefaultSpeed();
+        double distanceToEnd=distToFinalPoint / ctx.getRouter().getMaxDefaultSpeed();
         if (ctx.isUseDynamicRoadPrioritising()) {
-          double priority=ctx.router.getRoadPriority(next.road);
+          double priority=ctx.getRouter().getRoadPriorityToCalculateRoute(next.road);
           distanceToEnd/=priority;
         }
-        double speed=ctx.router.defineSpeed(road);
+        double speed=ctx.getRouter().defineSpeed(road);
         if (speed == 0) {
-          speed=ctx.router.getMinDefaultSpeed();
+          speed=ctx.getRouter().getMinDefaultSpeed();
         }
         double distanceFromStart=segment.distanceFromStart + distOnRoadToPass / speed;
-        distanceFromStart+=ctx.router.calculateTurnTime(segment,next,segmentEnd);
+        distanceFromStart+=ctx.getRouter().calculateTurnTime(segment,next,segmentEnd);
         distanceFromStart+=obstaclesTime;
         if (next.parentRoute == null || ctx.roadPriorityComparator(next.distanceFromStart,next.distanceToEnd,distanceFromStart,distanceToEnd) > 0) {
           next.distanceFromStart=distanceFromStart;
