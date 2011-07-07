@@ -27,25 +27,29 @@ case OsmandOdb.OsmAndStructure.ADDRESSINDEX_FIELD_NUMBER:
 AddressRegion region=new AddressRegion();
 region.length=readInt();
 region.filePointer=codedIS.getTotalBytesRead();
+if (addressAdapter != null) {
 oldLimit=codedIS.pushLimit(region.length);
 addressAdapter.readAddressIndex(region);
-codedIS.popLimit(oldLimit);
-codedIS.seek(region.filePointer + region.length);
 if (region.name != null) {
 addressIndexes.add(region);
 indexes.add(region);
 }
+codedIS.popLimit(oldLimit);
+}
+codedIS.seek(region.filePointer + region.length);
 break;
 case OsmandOdb.OsmAndStructure.TRANSPORTINDEX_FIELD_NUMBER:
 TransportIndex ind=new TransportIndex();
 ind.length=readInt();
 ind.filePointer=codedIS.getTotalBytesRead();
+if (transportAdapter != null) {
 oldLimit=codedIS.pushLimit(ind.length);
 transportAdapter.readTransportIndex(ind);
 codedIS.popLimit(oldLimit);
-codedIS.seek(ind.filePointer + ind.length);
 transportIndexes.add(ind);
 indexes.add(ind);
+}
+codedIS.seek(ind.filePointer + ind.length);
 break;
 case OsmandOdb.OsmAndStructure.VERSIONCONFIRM_FIELD_NUMBER:
 int cversion=codedIS.readUInt32();

@@ -1,5 +1,4 @@
 {
-  MapRoot root=new MapRoot();
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
@@ -25,14 +24,18 @@ case OsmandOdb.MapRootLevel.MINZOOM_FIELD_NUMBER:
 root.minZoom=codedIS.readInt32();
 break;
 case OsmandOdb.MapRootLevel.ROOT_FIELD_NUMBER:
+int length=readInt();
+int filePointer=codedIS.getTotalBytesRead();
+if (root.trees != null) {
 MapTree r=new MapTree();
-r.length=readInt();
-r.filePointer=codedIS.getTotalBytesRead();
+r.length=length;
+r.filePointer=filePointer;
 int oldLimit=codedIS.pushLimit(r.length);
 readMapTreeBounds(r,root.left,root.right,root.top,root.bottom);
 root.trees.add(r);
 codedIS.popLimit(oldLimit);
-codedIS.seek(r.filePointer + r.length);
+}
+codedIS.seek(filePointer + length);
 break;
 default :
 skipUnknownField(t);
