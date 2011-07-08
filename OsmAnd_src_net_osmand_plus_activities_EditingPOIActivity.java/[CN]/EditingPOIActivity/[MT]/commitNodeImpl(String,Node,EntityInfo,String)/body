@@ -1,5 +1,8 @@
 {
-  long changeSetId=openChangeSet(comment,n.getLatitude(),n.getLongitude());
+  if (isNewChangesetRequired()) {
+    changeSetId=openChangeSet(comment);
+    changeSetTimeStamp=System.currentTimeMillis();
+  }
   if (changeSetId < 0) {
     return false;
   }
@@ -43,11 +46,11 @@
         }
       }
       updateNodeInIndexes(action,n);
+      changeSetTimeStamp=System.currentTimeMillis();
       return true;
     }
     return false;
   }
   finally {
-    closeChangeSet(changeSetId);
   }
 }
