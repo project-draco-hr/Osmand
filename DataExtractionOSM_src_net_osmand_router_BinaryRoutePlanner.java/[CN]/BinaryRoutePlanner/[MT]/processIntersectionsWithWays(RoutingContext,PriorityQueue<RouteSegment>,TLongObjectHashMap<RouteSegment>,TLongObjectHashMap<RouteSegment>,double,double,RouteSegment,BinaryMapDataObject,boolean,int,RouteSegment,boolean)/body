@@ -12,11 +12,7 @@
   }
   while (next != null) {
     long nts=(next.road.getId() << 8l) + next.segmentStart;
-    if (oppositeSegments.containsKey(nts)) {
-      RouteSegment oppSegment=oppositeSegments.get(nts);
-      oppSegment.segmentEnd=next.segmentStart;
-      return oppSegment;
-    }
+    boolean oppositeConnectionFound=oppositeSegments.containsKey(nts) && oppositeSegments.get(nts) != null;
     boolean processRoad=true;
     if (ctx.isUseStrategyOfIncreasingRoadPriorities()) {
       double roadPriority=ctx.getRouter().getRoadPriorityHeuristicToIncrease(segment.road);
@@ -25,12 +21,22 @@
         processRoad=false;
       }
     }
-    if (!visitedSegments.contains(nts) && processRoad) {
+    if ((!visitedSegments.contains(nts) && processRoad) || oppositeConnectionFound) {
       int type=-1;
-      for (int i=0; i < road.getRestrictionCount(); i++) {
-        if (road.getRestriction(i) == next.road.getId()) {
-          type=road.getRestrictionType(i);
-          break;
+      if (!reverseWay) {
+        for (int i=0; i < road.getRestrictionCount(); i++) {
+          if (road.getRestriction(i) == next.road.getId()) {
+            type=road.getRestrictionType(i);
+            break;
+          }
+        }
+      }
+ else {
+        for (int i=0; i < next.road.getRestrictionCount(); i++) {
+          if (next.road.getRestriction(i) == road.getId()) {
+            type=next.road.getRestrictionType(i);
+            break;
+          }
         }
       }
       if (type == -1 && exclusiveRestriction) {
@@ -38,6 +44,11 @@
  else       if (type == MapRenderingTypes.RESTRICTION_NO_LEFT_TURN || type == MapRenderingTypes.RESTRICTION_NO_RIGHT_TURN || type == MapRenderingTypes.RESTRICTION_NO_STRAIGHT_ON || type == MapRenderingTypes.RESTRICTION_NO_U_TURN) {
       }
  else {
+        if (oppositeConnectionFound) {
+          RouteSegment oppSegment=oppositeSegments.get(nts);
+          oppSegment.segmentEnd=next.segmentStart;
+          return oppSegment;
+        }
         double distanceToEnd=distToFinalPoint / ctx.getRouter().getMaxDefaultSpeed();
         if (ctx.isUseDynamicRoadPrioritising()) {
           double priority=ctx.getRouter().getRoadPriorityToCalculateRoute(next.road);

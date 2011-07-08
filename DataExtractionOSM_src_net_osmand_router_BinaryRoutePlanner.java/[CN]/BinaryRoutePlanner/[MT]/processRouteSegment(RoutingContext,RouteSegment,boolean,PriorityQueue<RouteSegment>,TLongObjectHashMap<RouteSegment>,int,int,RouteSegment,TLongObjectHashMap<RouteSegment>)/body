@@ -4,8 +4,8 @@
   int middlex=road.getPoint31XTile(middle);
   int middley=road.getPoint31YTile(middle);
   long nt=(road.getId() << 8l) + middle;
-  visitedSegments.put(nt,segment);
-  if (oppositeSegments.contains(nt)) {
+  visitedSegments.put(nt,null);
+  if (oppositeSegments.contains(nt) && oppositeSegments.get(nt) != null) {
     segment.segmentEnd=middle;
     RouteSegment opposite=oppositeSegments.get(nt);
     opposite.segmentEnd=middle;
@@ -40,7 +40,7 @@
       continue;
     }
     long nts=(road.getId() << 8l) + segmentEnd;
-    if (oppositeSegments.contains(nts)) {
+    if (oppositeSegments.contains(nts) && oppositeSegments.get(nt) != null) {
       segment.segmentEnd=segmentEnd;
       RouteSegment opposite=oppositeSegments.get(nts);
       opposite.segmentEnd=segmentEnd;
@@ -55,7 +55,7 @@
     if (next != null) {
       double distOnRoadToPass=squareRootDist(x,y,middlex,middley);
       double distToFinalPoint=squareRootDist(x,y,targetEndX,targetEndY);
-      RouteSegment foundIntersection=processIntersectionsWithWays(ctx,graphSegments,visitedSegments,oppositeSegments,distOnRoadToPass,distToFinalPoint,segment,road,d == 0,segmentEnd,next);
+      RouteSegment foundIntersection=processIntersectionsWithWays(ctx,graphSegments,visitedSegments,oppositeSegments,distOnRoadToPass,distToFinalPoint,segment,road,d == 0,segmentEnd,next,reverseWaySearch);
       if (foundIntersection != null) {
         segment.segmentEnd=segmentEnd;
         return new RoutePair(segment,foundIntersection);

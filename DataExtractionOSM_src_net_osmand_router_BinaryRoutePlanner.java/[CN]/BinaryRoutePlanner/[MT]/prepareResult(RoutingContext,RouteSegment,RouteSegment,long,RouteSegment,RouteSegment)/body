@@ -1,10 +1,5 @@
 {
   List<RouteSegmentResult> result=new ArrayList<RouteSegmentResult>();
-  if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
-    System.out.println("ROUTE : ");
-    System.out.println("Start lat=" + MapUtils.get31LatitudeY(start.road.getPoint31YTile(start.segmentEnd)) + " lon="+ MapUtils.get31LongitudeX(start.road.getPoint31XTile(start.segmentEnd)));
-    System.out.println("END lat=" + MapUtils.get31LatitudeY(end.road.getPoint31YTile(end.segmentStart)) + " lon="+ MapUtils.get31LongitudeX(end.road.getPoint31XTile(end.segmentStart)));
-  }
   RouteSegment segment=finalReverseRoute;
   int parentSegmentStart=segment == null ? 0 : segment.segmentEnd;
   while (segment != null) {
@@ -44,10 +39,16 @@
   }
   Collections.reverse(result);
   if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
+    System.out.println("ROUTE : ");
+    double startLat=MapUtils.get31LatitudeY(start.road.getPoint31YTile(start.segmentEnd));
+    double startLon=MapUtils.get31LongitudeX(start.road.getPoint31XTile(start.segmentEnd));
+    double endLat=MapUtils.get31LatitudeY(end.road.getPoint31YTile(end.segmentStart));
+    double endLon=MapUtils.get31LongitudeX(end.road.getPoint31XTile(end.segmentEnd));
+    System.out.println(MessageFormat.format("<test regions=\"\" description=\"\" best_percent=\"\" vehicle=\"\" \n" + "    start_lat=\"{0}\" start_lon=\"{1}\" target_lat=\"{2}\" target_lon=\"{3}\">",startLat + "",startLon + "",endLat + "",endLon + ""));
     for (    RouteSegmentResult res : result) {
-      System.out.println("id=" + (res.object.getId() >> 3) + " start="+ res.startPointIndex+ " end="+ res.endPointIndex);
-      System.out.println("Name :" + res.object.getName());
+      System.out.println(MessageFormat.format("\t<segment id=\"{0}\" start=\"{1}\" end=\"{2}\" name=\"{3}\"/>",(res.object.getId() >> 1) + "",res.startPointIndex,res.endPointIndex,(res.object.getName() + "").replace(MapRenderingTypes.REF_CHAR,' ')));
     }
+    System.out.println("</test>");
   }
   ctx.timeToCalculate=(System.nanoTime() - startNanoTime);
   log.info("Time to calculate : " + ctx.timeToCalculate / 1e6 + ", time to load : " + ctx.timeToLoad / 1e6 + ", loaded tiles : " + ctx.loadedTiles.size() + ", visited segments " + ctx.visitedSegments);
