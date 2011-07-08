@@ -65,6 +65,7 @@
   if (!pref.contains(FIRST_TIME_APP_RUN)) {
     firstTime=true;
     pref.edit().putBoolean(FIRST_TIME_APP_RUN,true).commit();
+    pref.edit().putString(VERSION_INSTALLED,Version.APP_VERSION).commit();
     boolean netOsmandWasInstalled=false;
     try {
       ApplicationInfo applicationInfo=getPackageManager().getApplicationInfo("net.osmand",PackageManager.GET_META_DATA);
@@ -96,11 +97,16 @@
     int i=pref.getInt(TIPS_SHOW,0);
     if (i < 7) {
       pref.edit().putInt(TIPS_SHOW,++i).commit();
-      if (i == 1 || i == 5) {
-        TipsAndTricksActivity tipsActivity=new TipsAndTricksActivity(this);
-        Dialog dlg=tipsActivity.getDialogToShowTips(true);
-        dlg.show();
-      }
+    }
+    boolean appVersionChanged=false;
+    if (!Version.APP_VERSION.equals(pref.getString(VERSION_INSTALLED,""))) {
+      pref.edit().putString(VERSION_INSTALLED,Version.APP_VERSION).commit();
+      appVersionChanged=true;
+    }
+    if (i == 1 || i == 5 || appVersionChanged) {
+      TipsAndTricksActivity tipsActivity=new TipsAndTricksActivity(this);
+      Dialog dlg=tipsActivity.getDialogToShowTips(!appVersionChanged,false);
+      dlg.show();
     }
   }
   checkPreviousRunsForExceptions(firstTime);
