@@ -8,18 +8,27 @@
   int py=MapUtils.get31TileNumberY(lat);
   for (  BinaryMapDataObject r : ctx.values()) {
     if (r.getPointsLength() > 1) {
-      double prevDist=squareRootDist(r.getPoint31XTile(0),r.getPoint31YTile(0),px,py);
+      double priority=ctx.getRouter().getRoadPriorityToCalculateRoute(r);
       for (int j=1; j < r.getPointsLength(); j++) {
-        double cDist=squareRootDist(r.getPoint31XTile(j),r.getPoint31YTile(j),px,py);
         double mDist=squareRootDist(r.getPoint31XTile(j),r.getPoint31YTile(j),r.getPoint31XTile(j - 1),r.getPoint31YTile(j - 1));
-        if (road == null || prevDist + cDist - mDist < dist) {
+        double projection=calculateProjection(r.getPoint31XTile(j - 1),r.getPoint31YTile(j - 1),r.getPoint31XTile(j),r.getPoint31YTile(j),px,py,mDist);
+        double currentDist;
+        if (projection < 0) {
+          currentDist=squareRootDist(r.getPoint31XTile(j - 1),r.getPoint31YTile(j - 1),px,py) / priority;
+        }
+ else         if (projection > mDist) {
+          currentDist=squareRootDist(r.getPoint31XTile(j),r.getPoint31YTile(j),px,py) / priority;
+        }
+ else {
+          currentDist=Math.abs(calculateDistance(r.getPoint31XTile(j - 1),r.getPoint31YTile(j - 1),r.getPoint31XTile(j),r.getPoint31YTile(j),px,py,mDist)) / priority;
+        }
+        if (road == null || currentDist < dist) {
           road=new RouteSegment();
           road.road=r;
           road.segmentStart=j - 1;
           road.segmentEnd=j;
-          dist=prevDist + cDist - mDist;
+          dist=currentDist;
         }
-        prevDist=cDist;
       }
     }
   }
