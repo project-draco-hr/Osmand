@@ -96,8 +96,17 @@
     for (    File fs : splittedFiles) {
       uploaded&=uploadFileToServer(fs,toUpload,summary);
     }
-    if (uploaded && deleteFilesAfterUploading && toUpload.exists()) {
-      toUpload.delete();
+    if (uploaded) {
+      if (deleteFilesAfterUploading && toUpload.exists()) {
+        toUpload.delete();
+      }
+ else       if (backupUploadedFiles != null) {
+        File toBackup=new File(backupUploadedFiles,toUpload.getName());
+        if (toBackup.exists()) {
+          toBackup.delete();
+        }
+        toUpload.renameTo(toBackup);
+      }
     }
     alreadyUploadedFiles.add(fileName);
   }
