@@ -22,13 +22,18 @@
         text.text=Junidecode.unidecode(text.text);
       }
       RectF bounds=new RectF();
-      paintText.setTextSize(text.textSize * dm.density);
+      if (!rc.highResMode) {
+        paintText.setTextSize(getDensityValue(rc,text.textSize));
+      }
+ else {
+        paintText.setTextSize(text.textSize);
+      }
       paintText.setFakeBoldText(text.bold);
       boolean horizontalWayDisplay=(text.pathRotate > 45 && text.pathRotate < 135) || (text.pathRotate > 225 && text.pathRotate < 315);
       float mes=paintText.measureText(text.text) + (!horizontalWayDisplay ? 0 : text.minDistance);
       int ascent=(int)Math.ceil(-paintText.ascent());
       int descent=(int)Math.ceil(paintText.descent());
-      float textHeight=ascent + descent + (horizontalWayDisplay ? 0 : text.minDistance)+ 5 * dm.density;
+      float textHeight=ascent + descent + (horizontalWayDisplay ? 0 : text.minDistance)+ getDensityValue(rc,5);
       if (text.drawOnPath == null || horizontalWayDisplay) {
         bounds.set(text.centerX - mes / 2,text.centerY - textHeight / 2,text.centerX + mes / 2,text.centerY + textHeight / 2);
       }
@@ -40,8 +45,8 @@
         boundsIntersect.add(bounds);
       }
  else {
-        final int diff=(int)(3 * dm.density);
-        final int diff2=(int)(15 * dm.density);
+        final int diff=(int)(getDensityValue(rc,3));
+        final int diff2=(int)(getDensityValue(rc,15));
         int index=Collections.binarySearch(boundsIntersect,bounds,c);
         if (index < 0) {
           index=-(index + 1);
@@ -91,7 +96,7 @@
           }
           Bitmap ico=cachedIcons.get(text.shieldRes);
           if (ico != null) {
-            cv.drawBitmap(ico,text.centerX - ico.getWidth() / 2 - 0.5f * dm.density,text.centerY - text.textSize / 2 - 6.5f * dm.density,paintIcon);
+            cv.drawBitmap(ico,text.centerX - ico.getWidth() / 2 - getDensityValue(rc,0.5f),text.centerY - text.textSize / 2 - getDensityValue(rc,6.5f),paintIcon);
           }
         }
         if (text.text.length() > text.textWrap) {
