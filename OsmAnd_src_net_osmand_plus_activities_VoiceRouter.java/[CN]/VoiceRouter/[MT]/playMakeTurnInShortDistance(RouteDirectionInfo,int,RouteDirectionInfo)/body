@@ -1,0 +1,35 @@
+{
+  CommandBuilder play=getNewCommandPlayerToPlay();
+  if (play != null) {
+    String tParam=getTurnType(next.turnType);
+    boolean isPlay=true;
+    if (tParam != null) {
+      play.turn(tParam,dist);
+    }
+ else     if (next.turnType.isRoundAbout()) {
+      play.roundAbout(dist,next.turnType.getTurnAngle(),next.turnType.getExitOut());
+    }
+ else     if (next.turnType.getValue().equals(TurnType.TU)) {
+      play.makeUT(dist);
+    }
+ else {
+      isPlay=false;
+    }
+    if (pronounceNextNext != null) {
+      TurnType t=pronounceNextNext.turnType;
+      isPlay=true;
+      if (next.turnType.getValue().equals(TurnType.C) && !TurnType.C.equals(t.getValue())) {
+        play.goAhead(dist);
+      }
+      if (TurnType.TL.equals(t.getValue()) || TurnType.TSHL.equals(t.getValue()) || TurnType.TSLL.equals(t.getValue())|| TurnType.TU.equals(t.getValue())) {
+        play.then().bearLeft();
+      }
+ else       if (TurnType.TR.equals(t.getValue()) || TurnType.TSHR.equals(t.getValue()) || TurnType.TSLR.equals(t.getValue())) {
+        play.then().bearRight();
+      }
+    }
+    if (isPlay) {
+      play.play();
+    }
+  }
+}

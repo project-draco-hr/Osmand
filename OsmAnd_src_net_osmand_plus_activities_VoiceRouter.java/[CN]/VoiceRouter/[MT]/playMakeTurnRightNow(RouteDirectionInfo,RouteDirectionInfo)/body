@@ -1,0 +1,44 @@
+{
+  CommandBuilder play=getNewCommandPlayerToPlay();
+  if (play != null) {
+    String tParam=getTurnType(next.turnType);
+    boolean isplay=true;
+    if (tParam != null) {
+      play.turn(tParam);
+    }
+ else     if (next.turnType.isRoundAbout()) {
+      play.roundAbout(next.turnType.getTurnAngle(),next.turnType.getExitOut());
+    }
+ else     if (next.turnType.getValue().equals(TurnType.TU)) {
+      play.makeUT();
+    }
+ else {
+      isplay=false;
+    }
+    if (nextNext != null) {
+      String t2Param=getTurnType(nextNext.turnType);
+      if (t2Param != null) {
+        if (isplay) {
+          play.then();
+        }
+        play.turn(t2Param,next.distance);
+      }
+ else       if (nextNext.turnType.isRoundAbout()) {
+        if (isplay) {
+          play.then();
+        }
+        play.roundAbout(next.distance,nextNext.turnType.getTurnAngle(),nextNext.turnType.getExitOut());
+      }
+ else       if (nextNext.turnType.getValue().equals(TurnType.TU)) {
+        if (isplay) {
+          play.then();
+        }
+        play.makeUT(next.distance);
+      }
+      isplay=true;
+    }
+    if (isplay) {
+      play.play();
+    }
+  }
+}

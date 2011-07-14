@@ -1,0 +1,69 @@
+{
+  float speed=DEFAULT_SPEED;
+  if (currentLocation != null && currentLocation.hasSpeed()) {
+    speed=Math.max(currentLocation.getSpeed(),speed);
+  }
+  RouteDirectionInfo next=router.getNextRouteDirectionInfo();
+  int dist=router.getDistanceToNextRouteDirection();
+  if (currentDirection != router.currentDirectionInfo) {
+    currentDirection=router.currentDirectionInfo;
+    currentStatus=STATUS_UNKNOWN;
+  }
+  if (next == null || next.distance == 0) {
+    if (currentStatus == STATUS_UNKNOWN && currentDirection > 0) {
+      CommandBuilder play=getNewCommandPlayerToPlay();
+      if (play != null) {
+        play.goAhead(router.getLeftDistance()).andArriveAtDestination().play();
+      }
+      currentStatus=STATUS_TOLD;
+    }
+    return;
+  }
+  if (dist == 0 || currentStatus == STATUS_TOLD) {
+    return;
+  }
+  RouteDirectionInfo nextNext=router.getNextNextRouteDirectionInfo();
+  if (statusNotPassed(STATUS_TURN) && isDistanceLess(speed,dist,TURN_DISTANCE)) {
+    if (isDistanceLess(speed,next.distance,TURN_DISTANCE) || next.distance < TURN_IN_DISTANCE_END) {
+      playMakeTurnRightNow(next,nextNext);
+    }
+ else {
+      playMakeTurnRightNow(next,null);
+    }
+    nextStatusAfter(STATUS_TURN);
+  }
+ else   if (statusNotPassed(STATUS_200_TURN) && isDistanceLess(speed,dist,TURN_IN_DISTANCE)) {
+    if (dist >= TURN_IN_DISTANCE_END) {
+      if (isDistanceLess(speed,next.distance,TURN_DISTANCE) || next.distance < TURN_IN_DISTANCE_END) {
+        playMakeTurnInShortDistance(next,dist,nextNext);
+      }
+ else {
+        playMakeTurnInShortDistance(next,dist,null);
+      }
+    }
+    nextStatusAfter(STATUS_200_TURN);
+  }
+ else   if (statusNotPassed(STATUS_800_PREPARE) && isDistanceLess(speed,dist,PREPARE_DISTANCE)) {
+    if (dist >= PREPARE_DISTANCE_END) {
+      playPrepareLongDistanceTurn(next,dist);
+    }
+    nextStatusAfter(STATUS_800_PREPARE);
+  }
+ else   if (statusNotPassed(STATUS_UNKNOWN)) {
+    if (dist >= PREPARE_DISTANCE * 1.3f) {
+      playGoAhead(dist);
+    }
+    if (dist >= PREPARE_LONG_DISTANCE_END * 1.5f) {
+      nextStatusAfter(STATUS_UNKNOWN);
+    }
+ else {
+      nextStatusAfter(STATUS_3000_PREPARE);
+    }
+  }
+ else   if (statusNotPassed(STATUS_3000_PREPARE) && isDistanceLess(speed,dist,PREPARE_LONG_DISTANCE_END)) {
+    if (dist >= PREPARE_LONG_DISTANCE_ST) {
+      playPrepareLongDistanceTurn(next,dist);
+    }
+    nextStatusAfter(STATUS_3000_PREPARE);
+  }
+}
