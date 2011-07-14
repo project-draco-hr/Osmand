@@ -8,9 +8,6 @@
     }
   }
 ;
-  paint.setStyle(Style.STROKE);
-  paint.setTextSize(10);
-  paint.setColor(Color.BLACK);
   nextText:   for (int i=0; i < size; i++) {
     TextDrawInfo text=rc.textToDraw.get(i);
     if (text.text != null) {
@@ -21,115 +18,38 @@
       if (useEnglishNames) {
         text.text=Junidecode.unidecode(text.text);
       }
-      RectF bounds=new RectF();
-      if (!rc.highResMode) {
-        paintText.setTextSize(getDensityValue(rc,text.textSize));
-      }
- else {
-        paintText.setTextSize(text.textSize);
-      }
+      float textSize=getDensityValue(rc,text.textSize);
+      paintText.setTextSize(textSize);
       paintText.setFakeBoldText(text.bold);
-      boolean horizontalWayDisplay=(text.pathRotate > 45 && text.pathRotate < 135) || (text.pathRotate > 225 && text.pathRotate < 315);
-      float mes=paintText.measureText(text.text) + (!horizontalWayDisplay ? 0 : text.minDistance);
-      int ascent=(int)Math.ceil(-paintText.ascent());
-      int descent=(int)Math.ceil(paintText.descent());
-      float textHeight=ascent + descent + (horizontalWayDisplay ? 0 : text.minDistance)+ getDensityValue(rc,5);
-      if (text.drawOnPath == null || horizontalWayDisplay) {
-        bounds.set(text.centerX - mes / 2,text.centerY - textHeight / 2,text.centerX + mes / 2,text.centerY + textHeight / 2);
-      }
- else {
-        bounds.set(text.centerX - textHeight / 2,text.centerY - mes / 2,text.centerX + textHeight / 2,text.centerY + mes / 2);
-      }
-      List<RectF> boundsIntersect=text.drawOnPath == null || findAllTextIntersections ? boundsNotPathIntersect : boundsPathIntersect;
-      if (boundsIntersect.isEmpty()) {
-        boundsIntersect.add(bounds);
-      }
- else {
-        final int diff=(int)(getDensityValue(rc,3));
-        final int diff2=(int)(getDensityValue(rc,15));
-        int index=Collections.binarySearch(boundsIntersect,bounds,c);
-        if (index < 0) {
-          index=-(index + 1);
-        }
-        int e=index;
-        while (e < boundsIntersect.size()) {
-          if (boundsIntersect.get(e).left < bounds.right) {
-            e++;
-          }
- else {
-            break;
-          }
-        }
-        int st=index - 1;
-        while (st >= 0) {
-          if (boundsIntersect.get(st).right > bounds.left) {
-            st--;
-          }
- else {
-            break;
-          }
-        }
-        if (st < 0) {
-          st=0;
-        }
-        for (int j=st; j < e; j++) {
-          RectF b=boundsIntersect.get(j);
-          float x=Math.min(bounds.right,b.right) - Math.max(b.left,bounds.left);
-          float y=Math.min(bounds.bottom,b.bottom) - Math.max(b.top,bounds.top);
-          if ((x > diff && y > diff2) || (x > diff2 && y > diff)) {
-            continue nextText;
-          }
-        }
-        boundsIntersect.add(index,bounds);
-      }
       paintText.setColor(text.textColor);
+      text.centerY+=(-paintText.ascent());
+      boolean intersects=findTextIntersection(rc,boundsNotPathIntersect,boundsPathIntersect,c,text);
+      if (intersects) {
+        continue nextText;
+      }
       if (text.drawOnPath != null) {
+        if (text.textShadow > 0) {
+          paintText.setColor(Color.WHITE);
+          paintText.setStyle(Style.STROKE);
+          paintText.setStrokeWidth(2 + text.textShadow);
+          cv.drawTextOnPath(text.text,text.drawOnPath,0,text.vOffset,paintText);
+          paintText.setStyle(Style.FILL);
+          paintText.setStrokeWidth(2);
+          paintText.setColor(text.textColor);
+        }
         cv.drawTextOnPath(text.text,text.drawOnPath,0,text.vOffset,paintText);
       }
  else {
-        if (text.textWrap == 0) {
-          text.textWrap=40;
-        }
         if (text.shieldRes != 0) {
           if (cachedIcons.get(text.shieldRes) == null) {
             cachedIcons.put(text.shieldRes,BitmapFactory.decodeResource(context.getResources(),text.shieldRes));
           }
           Bitmap ico=cachedIcons.get(text.shieldRes);
           if (ico != null) {
-            cv.drawBitmap(ico,text.centerX - ico.getWidth() / 2 - getDensityValue(rc,0.5f),text.centerY - text.textSize / 2 - getDensityValue(rc,6.5f),paintIcon);
+            cv.drawBitmap(ico,text.centerX - ico.getWidth() / 2 - 0.5f,text.centerY - ico.getHeight() / 2 - getDensityValue(rc,4.5f),paintIcon);
           }
         }
-        if (text.text.length() > text.textWrap) {
-          int start=0;
-          int end=text.text.length();
-          int lastSpace=-1;
-          int line=0;
-          int pos=0;
-          int limit=0;
-          while (pos < end) {
-            lastSpace=-1;
-            limit+=text.textWrap;
-            while (pos < limit && pos < end) {
-              if (!Character.isLetterOrDigit(text.text.charAt(pos))) {
-                lastSpace=pos;
-              }
-              pos++;
-            }
-            if (lastSpace == -1) {
-              cv.drawText(text.text.substring(start,pos),text.centerX,text.centerY + line * (text.textSize + 2),paintText);
-              start=pos;
-            }
- else {
-              cv.drawText(text.text.substring(start,lastSpace),text.centerX,text.centerY + line * (text.textSize + 2),paintText);
-              start=lastSpace + 1;
-              limit+=(start - pos) - 1;
-            }
-            line++;
-          }
-        }
- else {
-          cv.drawText(text.text,text.centerX,text.centerY,paintText);
-        }
+        drawWrappedText(cv,text,textSize);
       }
     }
   }

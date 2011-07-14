@@ -1,0 +1,36 @@
+{
+  if (text.textWrap == 0) {
+    text.textWrap=40;
+  }
+  if (text.text.length() > text.textWrap) {
+    int start=0;
+    int end=text.text.length();
+    int lastSpace=-1;
+    int line=0;
+    int pos=0;
+    int limit=0;
+    while (pos < end) {
+      lastSpace=-1;
+      limit+=text.textWrap;
+      while (pos < limit && pos < end) {
+        if (!Character.isLetterOrDigit(text.text.charAt(pos))) {
+          lastSpace=pos;
+        }
+        pos++;
+      }
+      if (lastSpace == -1) {
+        drawTextOnCanvas(cv,text.text.substring(start,pos),text.centerX,text.centerY + line * (textSize + 2),paintText,text.textShadow);
+        start=pos;
+      }
+ else {
+        drawTextOnCanvas(cv,text.text.substring(start,lastSpace),text.centerX,text.centerY + line * (textSize + 2),paintText,text.textShadow);
+        start=lastSpace + 1;
+        limit+=(start - pos) - 1;
+      }
+      line++;
+    }
+  }
+ else {
+    drawTextOnCanvas(cv,text.text,text.centerX,text.centerY,paintText,text.textShadow);
+  }
+}
