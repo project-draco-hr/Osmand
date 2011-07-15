@@ -13,12 +13,27 @@
  else {
     searchOffline.setVisibility(View.INVISIBLE);
   }
+  final EditText searchText=(EditText)findViewById(R.id.SearchText);
+  Button clearSearch=(Button)findViewById(R.id.ClearSearch);
+  clearSearch.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      searchText.setText("");
+      lastResult=null;
+      setListAdapter(null);
+    }
+  }
+);
   Button searchButton=(Button)findViewById(R.id.SearchButton);
   searchButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      searchPlaces(((EditText)findViewById(R.id.SearchText)).getText().toString());
+      InputMethodManager inputMethodManager=(InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+      inputMethodManager.hideSoftInputFromWindow(searchText.getWindowToken(),0);
+      searchPlaces(searchText.getText().toString());
     }
   }
 );
   location=OsmandSettings.getOsmandSettings(this).getLastKnownMapLocation();
+  if (lastResult != null) {
+    setListAdapter(lastResult);
+  }
 }
