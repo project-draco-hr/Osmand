@@ -20,11 +20,15 @@
       impl.setRunnable("DownloadIndex",new Runnable(){
         @Override public void run(){
           try {
-            for (            String s : new ArrayList<String>(entriesToDownload.keySet())) {
-              DownloadEntry entry=entriesToDownload.get(s);
+            List<File> filesToReindex=new ArrayList<File>();
+            ArrayList<String> filesToDownload=new ArrayList<String>(entriesToDownload.keySet());
+            for (int i=0; i < filesToDownload.size(); i++) {
+              String filename=filesToDownload.get(i);
+              DownloadEntry entry=entriesToDownload.get(filename);
               if (entry != null) {
-                if (downloadFile(s,entry.fileToSave,entry.fileToUnzip,entry.unzip,impl,entry.dateModified,entry.parts)) {
-                  entriesToDownload.remove(s);
+                String indexOfAllFiles=filesToDownload.size() < 1 ? "" : (" [" + (i + 1) + "/"+ filesToDownload.size()+ "]");
+                if (downloadFile(filename,entry.fileToSave,entry.fileToUnzip,entry.unzip,impl,entry.dateModified,entry.parts,filesToReindex,indexOfAllFiles)) {
+                  entriesToDownload.remove(filename);
                   runOnUiThread(new Runnable(){
                     @Override public void run(){
                       ((DownloadIndexAdapter)getListAdapter()).notifyDataSetChanged();
@@ -33,6 +37,24 @@
                   }
 );
                 }
+              }
+            }
+            boolean vectorMapsToReindex=false;
+            for (            File f : filesToReindex) {
+              if (f.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
+                vectorMapsToReindex=true;
+                break;
+              }
+            }
+            if (vectorMapsToReindex) {
+              ResourceManager manager=((OsmandApplication)getApplication()).getResourceManager();
+              List<String> warnings=manager.indexingMaps(impl);
+              if (warnings.isEmpty() && !OsmandSettings.getOsmandSettings(getApplicationContext()).MAP_VECTOR_DATA.get()) {
+                warnings.add(getString(R.string.binary_map_download_success));
+                OsmandSettings.getOsmandSettings(getApplicationContext()).MAP_VECTOR_DATA.set(true);
+              }
+              if (!warnings.isEmpty()) {
+                showWarning(warnings.get(0));
               }
             }
           }

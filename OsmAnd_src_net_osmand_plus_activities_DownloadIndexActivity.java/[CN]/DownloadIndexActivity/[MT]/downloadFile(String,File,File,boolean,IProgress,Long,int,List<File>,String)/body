@@ -4,13 +4,13 @@
     out=new FileOutputStream(fileToDownload);
     try {
       if (parts == 1) {
-        URL url=new URL("http://download.osmand.net/download?file=" + key);
-        downloadFile(key,out,url,null,progress);
+        URL url=new URL("http://download.osmand.net/download?file=" + fileName);
+        downloadFile(fileName,out,url,null,indexOfAllFiles,progress);
       }
  else {
         for (int i=1; i <= parts; i++) {
-          URL url=new URL("http://download.osmand.net/download?file=" + key + "-"+ i);
-          downloadFile(key,out,url," [" + i + "/"+ parts+ "]",progress);
+          URL url=new URL("http://download.osmand.net/download?file=" + fileName + "-"+ i);
+          downloadFile(fileName,out,url," [" + i + "/"+ parts+ "]",indexOfAllFiles,progress);
         }
       }
     }
@@ -72,19 +72,11 @@
     if (toIndex.getName().endsWith(IndexConstants.POI_INDEX_EXT)) {
       manager.indexingPoi(progress,warnings,toIndex);
     }
- else     if (toIndex.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
-      warnings.addAll(manager.indexingMaps(progress));
-      if (warnings.isEmpty() && !OsmandSettings.getOsmandSettings(getApplicationContext()).MAP_VECTOR_DATA.get()) {
-        warnings.add(getString(R.string.binary_map_download_success));
-        OsmandSettings.getOsmandSettings(getApplicationContext()).MAP_VECTOR_DATA.set(true);
-      }
-    }
- else     if (toIndex.getName().endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
-    }
     if (dateModified != null) {
       toIndex.setLastModified(dateModified);
       manager.updateIndexLastDateModified(toIndex);
     }
+    toReIndex.add(toIndex);
     if (warnings.isEmpty()) {
       showWarning(getString(R.string.download_index_success));
     }
