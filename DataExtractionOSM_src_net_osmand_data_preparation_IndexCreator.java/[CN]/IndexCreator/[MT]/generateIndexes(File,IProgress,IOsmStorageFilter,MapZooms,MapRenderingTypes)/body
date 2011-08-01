@@ -29,7 +29,7 @@
     if (recreateOnlyBinaryFile) {
       mapFile=new File(workingDir,getMapFileName());
       File tempDBMapFile=new File(workingDir,getTempMapDBFileName());
-      mapConnection=getDatabaseConnection(tempDBMapFile.getAbsolutePath());
+      mapConnection=(Connection)getDatabaseConnection(tempDBMapFile.getAbsolutePath(),mapDBDialect);
       mapConnection.setAutoCommit(false);
       try {
         if (indexMap) {
@@ -188,15 +188,12 @@ catch (  SAXException e) {
         mapConnection.close();
         mapConnection=null;
         File tempDBFile=new File(workingDir,getTempMapDBFileName());
-        if (dialect.databaseFileExists(tempDBFile) && deleteDatabaseIndexes) {
-          dialect.removeDatabase(tempDBFile);
+        if (mapDBDialect.databaseFileExists(tempDBFile) && deleteDatabaseIndexes) {
+          mapDBDialect.removeDatabase(tempDBFile);
         }
       }
       if (dbConn != null) {
-        if (DBDialect.H2 == dialect) {
-          dbConn.createStatement().execute("SHUTDOWN COMPACT");
-        }
-        dbConn.close();
+        dialect.commitDatabase(dbConn);
       }
       if (deleteOsmDB) {
         if (DBDialect.DERBY == dialect) {
@@ -210,6 +207,9 @@ catch (  SAXException e) {
       }
     }
  catch (    SQLException e) {
+      e.printStackTrace();
+    }
+catch (    RuntimeException e) {
       e.printStackTrace();
     }
   }

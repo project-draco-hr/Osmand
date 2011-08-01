@@ -3,20 +3,20 @@
     mapFile=new File(workingDir,getMapFileName());
     mapFile.getParentFile().mkdirs();
     File tempDBMapFile=new File(workingDir,getTempMapDBFileName());
-    dialect.removeDatabase(tempDBMapFile);
-    mapConnection=getDatabaseConnection(tempDBMapFile.getAbsolutePath());
+    mapDBDialect.removeDatabase(tempDBMapFile);
+    mapConnection=(Connection)getDatabaseConnection(tempDBMapFile.getAbsolutePath(),mapDBDialect);
     mapConnection.setAutoCommit(false);
   }
   if (indexMap) {
-    indexMapCreator.createDatabaseStructure(mapConnection,dialect,getRTreeMapIndexNonPackFileName());
+    indexMapCreator.createDatabaseStructure(mapConnection,mapDBDialect,getRTreeMapIndexNonPackFileName());
   }
   if (indexAddress) {
-    indexAddressCreator.createDatabaseStructure(mapConnection,dialect);
+    indexAddressCreator.createDatabaseStructure(mapConnection,mapDBDialect);
   }
   if (indexPOI) {
     indexPoiCreator.createDatabaseStructure(new File(workingDir,getPoiFileName()));
   }
   if (indexTransport) {
-    indexTransportCreator.createDatabaseStructure(mapConnection,dialect,getRTreeTransportStopsFileName());
+    indexTransportCreator.createDatabaseStructure(mapConnection,mapDBDialect,getRTreeTransportStopsFileName());
   }
 }
