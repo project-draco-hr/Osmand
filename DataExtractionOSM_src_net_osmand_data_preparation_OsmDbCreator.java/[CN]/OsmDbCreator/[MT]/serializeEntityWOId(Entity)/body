@@ -1,0 +1,40 @@
+{
+  StringBuilder builder=new StringBuilder();
+  ArraySerializer.startArray(builder,true);
+  if (!e.getTags().isEmpty()) {
+    ArraySerializer.startArray(builder,true);
+    boolean f=true;
+    for (    Map.Entry<String,String> es : e.getTags().entrySet()) {
+      ArraySerializer.value(builder,es.getKey(),f);
+      f=false;
+      ArraySerializer.value(builder,es.getValue(),f);
+    }
+    ArraySerializer.endArray(builder);
+  }
+  if (e instanceof Node) {
+    ArraySerializer.value(builder,((Node)e).getLatitude() + "",false);
+    ArraySerializer.value(builder,((Node)e).getLongitude() + "",false);
+  }
+ else   if (e instanceof Way) {
+    ArraySerializer.startArray(builder,false);
+    boolean f=true;
+    for (    Long l : ((Way)e).getNodeIds()) {
+      ArraySerializer.value(builder,l.longValue() + "",f);
+      f=false;
+    }
+    ArraySerializer.endArray(builder);
+  }
+ else {
+    ArraySerializer.startArray(builder,false);
+    boolean f=true;
+    for (    Entry<EntityId,String> l : ((Relation)e).getMembersMap().entrySet()) {
+      String k=l.getKey().getType() == EntityType.NODE ? "0" : (l.getKey().getType() == EntityType.WAY ? "1" : "2");
+      ArraySerializer.value(builder,k + "" + l.getKey().getId(),f);
+      f=false;
+      ArraySerializer.value(builder,l.getValue(),f);
+    }
+    ArraySerializer.endArray(builder);
+  }
+  ArraySerializer.endArray(builder);
+  return builder.toString();
+}

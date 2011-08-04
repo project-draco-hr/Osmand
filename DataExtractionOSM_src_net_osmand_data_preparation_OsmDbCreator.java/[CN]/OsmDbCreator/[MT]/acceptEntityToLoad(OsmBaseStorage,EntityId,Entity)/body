@@ -1,18 +1,22 @@
 {
   if (dialect == DBDialect.NOSQL) {
-    batch.Put(e.getId() + "",e.getTags() + "");
+    String key;
     currentCountNode++;
     if (e instanceof Node) {
       if (!e.getTags().isEmpty()) {
         allNodes++;
       }
+      key="0" + e.getId();
     }
  else     if (e instanceof Way) {
       allWays++;
+      key="1" + e.getId();
     }
  else {
       allRelations++;
+      key="2" + e.getId();
     }
+    batch.Put(key,serializeEntityWOId(e));
     if (currentCountNode > BATCH_SIZE_OSM) {
       database.Write(options,batch);
       batch=new DBWriteBatch();

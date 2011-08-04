@@ -1,0 +1,61 @@
+{
+  value="";
+  int currentInd=lastReadIndex;
+  lastReadIndex++;
+  if (currentInd >= tokenize.length()) {
+    return END;
+  }
+  if (tokenize.charAt(currentInd) == '[') {
+    firstElementAfterArrayOpened=true;
+    return START_ARRAY;
+  }
+  if (tokenize.charAt(currentInd) == ']') {
+    return END_ARRAY;
+  }
+  int startRead=currentInd;
+  if (tokenize.charAt(currentInd) == ',') {
+    if (firstElementAfterArrayOpened) {
+      firstElementAfterArrayOpened=false;
+      lastReadIndex--;
+      return ELEMENT;
+    }
+ else {
+      startRead++;
+    }
+  }
+  firstElementAfterArrayOpened=false;
+  boolean previousSpecial=tokenize.charAt(currentInd) == '\\';
+  while (++currentInd < tokenize.length()) {
+    char c=tokenize.charAt(currentInd);
+    if (c == '\\') {
+      if (previousSpecial) {
+        value+=tokenize.substring(startRead,currentInd - 1);
+        startRead=currentInd;
+        previousSpecial=false;
+      }
+ else {
+        previousSpecial=true;
+      }
+    }
+ else {
+      if (c == ',' || c == ']' || c == '[') {
+        if (!previousSpecial) {
+          if (c == '[' && value.length() == 0) {
+            lastReadIndex++;
+            firstElementAfterArrayOpened=true;
+            return START_ARRAY;
+          }
+          break;
+        }
+ else {
+          value+=tokenize.substring(startRead,currentInd - 1);
+          startRead=currentInd;
+        }
+      }
+      previousSpecial=false;
+    }
+    lastReadIndex++;
+  }
+  value+=tokenize.substring(startRead,currentInd);
+  return ELEMENT;
+}
