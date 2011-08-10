@@ -1,0 +1,40 @@
+{
+  final MyCookieStore cookies=new MyCookieStore(new java.net.CookieManager().getCookieStore());
+  CookieHandler.setDefault(new java.net.CookieManager(cookies,null));
+  HttpURLConnection conn=connectTo("http://code.google.com/p/osmand/downloads/delete?name=en-tts_0.voice.zip");
+  StringBuilder responseBody=readAnswer(conn.getInputStream());
+  conn=connectTo("https://www.google.com/accounts/ServiceLogin?service=code&ltmpl=phosting&continue=http%3A%2F%2Fcode.google.com%2Fp%2Fosmand%2Fdownloads%2Fdelete%3Fname%3Den-tts_0.voice.zip");
+  responseBody=readAnswer(conn.getInputStream());
+  String dsh=matchResponseBody(".*id=\"dsh\"[^\"]*value=\"([^\"]*)\".*",responseBody);
+  String galx=matchResponseBody(".*name=\"GALX\"[^\"]*value=\"([^\"]*)\".*",responseBody);
+  if (dsh == null || galx == null) {
+    throw new IOException("Failed to retrieve dsh or galx from login page!");
+  }
+  StringBuilder data=buildPostData(user,password,dsh,galx);
+  URL url=new URL("https://www.google.com/accounts/ServiceLoginAuth");
+  conn=(HttpURLConnection)url.openConnection();
+  conn.setDoOutput(true);
+  conn.setRequestMethod("POST");
+  conn.setRequestProperty("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+  conn.setRequestProperty("Accept-Charset","ISO-8859-2,utf-8;q=0.7,*;q=0.7");
+  conn.setRequestProperty("Accept-Language","sk,cs;q=0.8,en-us;q=0.5,en;q=0.3");
+  conn.setRequestProperty("Connection","keep-alive");
+  conn.setRequestProperty("Referer","https://www.google.com/accounts/ServiceLogin?service=code&ltmpl=phosting&continue=http%3A%2F%2Fcode.google.com%2Fp%2Fosmand%2Fdownloads%2Fdelete%3Fname%3Den-tts_0.voice.zip");
+  conn.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; rv:5.0) Gecko/20100101 Firefox/5.0");
+  conn.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+  conn.setRequestProperty("Content-Length",data.length() + "");
+  OutputStreamWriter writer=new OutputStreamWriter(conn.getOutputStream());
+  writer.write(data.toString());
+  writer.flush();
+  conn.connect();
+  responseBody=readAnswer(conn.getInputStream());
+  writer.close();
+  conn=connectTo("http://code.google.com/p/osmand/downloads/delete?name=en-tts_0.voice.zip");
+  responseBody=readAnswer(conn.getInputStream());
+  String token=matchResponseBody(".*name=\"token\"[^\"]*value=\"([^\"]*)\".*",responseBody);
+  String pagegen=matchResponseBody(".*name=\"pagegen\"[^\"]*value=\"([^\"]*)\".*",responseBody);
+  if (token == null || pagegen == null) {
+    throw new IOException("Faild to retrieve token or pagegen from delete page!");
+  }
+  return new GooglecodeUploadTokens(cookies.getCookie("SID"),cookies.getCookie("HSID"),token,pagegen);
+}
