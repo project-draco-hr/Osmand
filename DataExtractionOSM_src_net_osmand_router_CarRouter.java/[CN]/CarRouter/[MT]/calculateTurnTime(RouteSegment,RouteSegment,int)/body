@@ -1,18 +1,10 @@
 {
   boolean end=(segmentEnd == segment.road.getPointsLength() - 1 || segmentEnd == 0);
-  boolean start=next.segmentStart == 0;
+  boolean start=next.segmentStart == 0 || next.segmentStart == next.getRoad().getPointsLength() - 1;
   if (end && start) {
     if (next.road.getPointsLength() > 1) {
-      int x=segment.road.getPoint31XTile(segmentEnd);
-      int y=segment.road.getPoint31XTile(segmentEnd);
-      int prevSegmentEnd=segmentEnd - 1;
-      if (prevSegmentEnd < 0) {
-        prevSegmentEnd=segmentEnd + 1;
-      }
-      int px=segment.road.getPoint31XTile(prevSegmentEnd);
-      int py=segment.road.getPoint31XTile(prevSegmentEnd);
-      double a1=Math.atan2(y - py,x - px);
-      double a2=Math.atan2(y - next.road.getPoint31YTile(1),x - next.road.getPoint31XTile(1));
+      double a1=directionRoute(segment,segmentEnd,false);
+      double a2=directionRoute(next,next.segmentStart,true);
       double diff=Math.abs(a1 - a2);
       if (diff > Math.PI / 2 && diff < 3 * Math.PI / 2) {
         return 25;

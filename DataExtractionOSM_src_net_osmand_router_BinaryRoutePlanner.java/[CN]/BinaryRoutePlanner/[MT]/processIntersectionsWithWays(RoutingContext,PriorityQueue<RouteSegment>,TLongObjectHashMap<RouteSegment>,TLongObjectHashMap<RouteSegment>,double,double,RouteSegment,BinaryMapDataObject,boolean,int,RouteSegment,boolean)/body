@@ -4,12 +4,13 @@
   double obstaclesTime=0;
   boolean exclusiveRestriction=false;
   if (firstOfSegment) {
-    RouteSegment possibleObstacle=next;
+    RouteSegment possibleObstacle=inputNext;
     while (possibleObstacle != null) {
       obstaclesTime+=ctx.getRouter().defineObstacle(possibleObstacle.road,possibleObstacle.segmentStart);
       possibleObstacle=possibleObstacle.next;
     }
   }
+  RouteSegment next=inputNext;
   while (next != null) {
     long nts=(next.road.getId() << 8l) + next.segmentStart;
     boolean oppositeConnectionFound=oppositeSegments.containsKey(nts) && oppositeSegments.get(nts) != null;
@@ -37,9 +38,20 @@
             type=next.road.getRestrictionType(i);
             break;
           }
+          if (next.road.getRestrictionType(i) == MapRenderingTypes.RESTRICTION_ONLY_RIGHT_TURN || next.road.getRestrictionType(i) == MapRenderingTypes.RESTRICTION_ONLY_LEFT_TURN || next.road.getRestrictionType(i) == MapRenderingTypes.RESTRICTION_ONLY_STRAIGHT_ON) {
+            RouteSegment foundNext=inputNext;
+            while (foundNext != null && foundNext.getRoad().getId() != next.road.getRestriction(i)) {
+              foundNext=foundNext.next;
+            }
+            if (foundNext != null) {
+              type=REVERSE_WAY_RESTRICTION_ONLY;
+            }
+          }
         }
       }
-      if (type == -1 && exclusiveRestriction) {
+      if (type == REVERSE_WAY_RESTRICTION_ONLY) {
+      }
+ else       if (type == -1 && exclusiveRestriction) {
       }
  else       if (type == MapRenderingTypes.RESTRICTION_NO_LEFT_TURN || type == MapRenderingTypes.RESTRICTION_NO_RIGHT_TURN || type == MapRenderingTypes.RESTRICTION_NO_STRAIGHT_ON || type == MapRenderingTypes.RESTRICTION_NO_U_TURN) {
       }
@@ -73,9 +85,14 @@
             segmentsToVisitNotForbidden.add(next);
           }
  else {
-            exclusiveRestriction=true;
-            segmentsToVisitNotForbidden.clear();
-            segmentsToVisitPrescripted.add(next);
+            if (!reverseWay) {
+              exclusiveRestriction=true;
+              segmentsToVisitNotForbidden.clear();
+              segmentsToVisitPrescripted.add(next);
+            }
+ else {
+              segmentsToVisitNotForbidden.add(next);
+            }
           }
         }
       }
