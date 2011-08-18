@@ -1,0 +1,21 @@
+{
+  if (tilesPath.canRead()) {
+    for (    File tileFile : tilesPath.listFiles()) {
+      if (tileFile.isFile() && tileFile.getName().endsWith(SQLiteTileSource.EXT)) {
+        LocalIndexInfo info=new LocalIndexInfo(LocalIndexType.TILES_DATA,tileFile,backup);
+        result.add(info);
+        loadTask.loadFile(info);
+      }
+ else       if (tileFile.isDirectory()) {
+        LocalIndexInfo info=new LocalIndexInfo(LocalIndexType.TILES_DATA,tileFile,backup);
+        if (!TileSourceManager.isTileSourceMetaInfoExist(tileFile)) {
+          info.setCorrupted(true);
+        }
+ else {
+        }
+        result.add(info);
+        loadTask.loadFile(info);
+      }
+    }
+  }
+}

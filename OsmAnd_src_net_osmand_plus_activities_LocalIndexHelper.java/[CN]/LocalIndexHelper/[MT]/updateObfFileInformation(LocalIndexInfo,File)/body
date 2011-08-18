@@ -1,0 +1,28 @@
+{
+  try {
+    RandomAccessFile mf=new RandomAccessFile(mapFile,"r");
+    BinaryMapIndexReader reader=new BinaryMapIndexReader(mf,false);
+    info.setNotSupported(reader.getVersion() != IndexConstants.BINARY_MAP_VERSION);
+    List<BinaryIndexPart> indexes=reader.getIndexes();
+    StringBuilder builder=new StringBuilder();
+    for (    BinaryIndexPart part : indexes) {
+      if (part instanceof MapIndex) {
+        MapIndex mi=((MapIndex)part);
+        builder.append(app.getString(R.string.local_index_map_data)).append(": ").append(mi.getName()).append("\n");
+      }
+ else       if (part instanceof TransportIndex) {
+        TransportIndex mi=((TransportIndex)part);
+        builder.append(app.getString(R.string.local_index_transport_data)).append(": ").append(mi.getName()).append("\n");
+      }
+ else       if (part instanceof AddressRegion) {
+        AddressRegion mi=((AddressRegion)part);
+        builder.append(app.getString(R.string.local_index_address_data)).append(": ").append(mi.getName()).append("\n");
+      }
+    }
+    info.setDescription(builder.toString());
+    reader.close();
+  }
+ catch (  IOException e) {
+    info.setCorrupted(true);
+  }
+}

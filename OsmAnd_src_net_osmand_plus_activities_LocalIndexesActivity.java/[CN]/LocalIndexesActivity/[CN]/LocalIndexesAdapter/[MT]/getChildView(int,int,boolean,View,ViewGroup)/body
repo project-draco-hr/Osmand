@@ -5,13 +5,40 @@
     LayoutInflater inflater=getLayoutInflater();
     v=inflater.inflate(net.osmand.plus.R.layout.local_index_list_item,parent,false);
   }
-  ((TextView)v.findViewById(R.id.local_index_name)).setText(child.getName());
-  if (child.getSize() != 0) {
-    String size=format.format(new Object[]{(float)child.getSize() / (1 << 10)});
-    ((TextView)v.findViewById(R.id.local_index_descr)).setText(size);
+  TextView viewName=((TextView)v.findViewById(R.id.local_index_name));
+  viewName.setText(child.getName());
+  if (child.isNotSupported()) {
+    viewName.setTextColor(Color.RED);
+  }
+ else   if (child.isCorrupted()) {
+    viewName.setTextColor(Color.MAGENTA);
+  }
+ else   if (child.isLoaded()) {
+    viewName.setTextColor(Color.GREEN);
   }
  else {
-    ((TextView)v.findViewById(R.id.local_index_descr)).setText("");
+    viewName.setTextColor(Color.LTGRAY);
+  }
+  if (child.getSize() >= 0) {
+    String size;
+    if (child.getSize() > 100) {
+      size=formatMb.format(new Object[]{(float)child.getSize() / (1 << 10)});
+    }
+ else {
+      size=child.getSize() + " Kb";
+    }
+    ((TextView)v.findViewById(R.id.local_index_size)).setText(size);
+  }
+ else {
+    ((TextView)v.findViewById(R.id.local_index_size)).setText("");
+  }
+  TextView descr=((TextView)v.findViewById(R.id.local_index_descr));
+  if (child.isExpanded()) {
+    descr.setVisibility(View.VISIBLE);
+    descr.setText(child.getDescription());
+  }
+ else {
+    descr.setVisibility(View.GONE);
   }
   return v;
 }
