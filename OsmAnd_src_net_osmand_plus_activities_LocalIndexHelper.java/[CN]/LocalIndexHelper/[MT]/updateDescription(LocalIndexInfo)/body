@@ -1,0 +1,56 @@
+{
+  File f=new File(info.getPathToData());
+  if (info.getType() == LocalIndexType.MAP_DATA) {
+    updateObfFileInformation(info,f);
+    info.setDescription(info.getDescription() + getInstalledDate(f));
+  }
+ else   if (info.getType() == LocalIndexType.POI_DATA) {
+    info.setDescription(getInstalledDate(f));
+  }
+ else   if (info.getType() == LocalIndexType.GPX_DATA) {
+    GPXFileResult result=GPXUtilities.loadGPXFile(app,f);
+    if (result.error != null) {
+      info.setCorrupted(true);
+      info.setDescription(result.error);
+    }
+ else {
+      int points=0;
+      for (int i=0; i < result.locations.size(); i++) {
+        points+=result.locations.get(i).size();
+      }
+      info.setDescription(app.getString(R.string.local_index_gpx_info,result.locations.size(),points,result.wayPoints.size()));
+    }
+  }
+ else   if (info.getType() == LocalIndexType.VOICE_DATA) {
+    info.setDescription(getInstalledDate(f));
+  }
+ else   if (info.getType() == LocalIndexType.TTS_VOICE_DATA) {
+    info.setDescription(getInstalledDate(f));
+  }
+ else   if (info.getType() == LocalIndexType.TILES_DATA) {
+    if (f.isDirectory() && TileSourceManager.isTileSourceMetaInfoExist(f)) {
+      TileSourceTemplate template=TileSourceManager.createTileSourceTemplate(new File(info.getPathToData()));
+      Set<Integer> zooms=new TreeSet<Integer>();
+      for (      String s : f.list()) {
+        try {
+          zooms.add(Integer.parseInt(s));
+        }
+ catch (        NumberFormatException e) {
+        }
+      }
+      String descr=app.getString(R.string.local_index_tile_data,template.getName(),template.getMinimumZoomSupported(),template.getMaximumZoomSupported(),template.getUrlTemplate() != null,zooms.toString());
+      info.setDescription(descr);
+    }
+ else     if (f.isFile() && f.getName().endsWith(SQLiteTileSource.EXT)) {
+      SQLiteTileSource template=new SQLiteTileSource(f,Collections.EMPTY_LIST);
+      Set<Integer> zooms=new TreeSet<Integer>();
+      for (int i=1; i < 22; i++) {
+        if (template.exists(i)) {
+          zooms.add(i);
+        }
+      }
+      String descr=app.getString(R.string.local_index_tile_data,template.getName(),template.getMinimumZoomSupported(),template.getMaximumZoomSupported(),template.couldBeDownloadedFromInternet(),zooms.toString());
+      info.setDescription(descr);
+    }
+  }
+}

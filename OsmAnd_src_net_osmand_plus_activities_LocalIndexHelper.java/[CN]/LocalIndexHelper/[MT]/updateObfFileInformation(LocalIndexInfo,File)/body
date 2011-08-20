@@ -1,0 +1,36 @@
+{
+  try {
+    RandomAccessFile mf=new RandomAccessFile(mapFile,"r");
+    BinaryMapIndexReader reader=new BinaryMapIndexReader(mf,false);
+    info.setNotSupported(reader.getVersion() != IndexConstants.BINARY_MAP_VERSION);
+    List<BinaryIndexPart> indexes=reader.getIndexes();
+    StringBuilder builder=new StringBuilder();
+    for (    BinaryIndexPart part : indexes) {
+      if (part instanceof MapIndex) {
+        MapIndex mi=((MapIndex)part);
+        builder.append(app.getString(R.string.local_index_map_data)).append(": ").append(mi.getName()).append("\n");
+        if (mi.getRoots().size() > 0) {
+          MapRoot mapRoot=mi.getRoots().get(0);
+          String box=formatLatLonBox(mapRoot.getLeft(),mapRoot.getRight(),mapRoot.getTop(),mapRoot.getBottom());
+          builder.append(box).append("\n");
+        }
+      }
+ else       if (part instanceof TransportIndex) {
+        TransportIndex mi=((TransportIndex)part);
+        int sh=(31 - BinaryMapIndexReader.TRANSPORT_STOP_ZOOM);
+        builder.append(app.getString(R.string.local_index_transport_data)).append(": ").append(mi.getName()).append("\n");
+        String box=formatLatLonBox(mi.getLeft() << sh,mi.getRight() << sh,mi.getTop() << sh,mi.getBottom() << sh);
+        builder.append(box).append("\n");
+      }
+ else       if (part instanceof AddressRegion) {
+        AddressRegion mi=((AddressRegion)part);
+        builder.append(app.getString(R.string.local_index_address_data)).append(": ").append(mi.getName()).append("\n");
+      }
+    }
+    info.setDescription(builder.toString());
+    reader.close();
+  }
+ catch (  IOException e) {
+    info.setCorrupted(true);
+  }
+}
