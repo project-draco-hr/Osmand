@@ -1,0 +1,40 @@
+{
+  int count=0;
+  int total=0;
+  for (  LocalIndexInfo info : params) {
+    if (!isCancelled()) {
+      boolean successfull=false;
+      if (operation == DELETE_OPERATION) {
+        File f=new File(info.getPathToData());
+        successfull=f.delete();
+      }
+ else       if (operation == RESTORE_OPERATION) {
+        successfull=move(new File(info.getPathToData()),getFileToRestore(info));
+        if (successfull) {
+          info.setBackupedData(false);
+        }
+      }
+ else       if (operation == BACKUP_OPERATION) {
+        successfull=move(new File(info.getPathToData()),getFileToBackup(info));
+        if (successfull) {
+          info.setBackupedData(true);
+        }
+      }
+      total++;
+      if (successfull) {
+        count++;
+        publishProgress(info);
+      }
+    }
+  }
+  if (operation == DELETE_OPERATION) {
+    return getString(R.string.local_index_items_deleted,count,total);
+  }
+ else   if (operation == BACKUP_OPERATION) {
+    return getString(R.string.local_index_items_backuped,count,total);
+  }
+ else   if (operation == RESTORE_OPERATION) {
+    return getString(R.string.local_index_items_restored,count,total);
+  }
+  return "";
+}
