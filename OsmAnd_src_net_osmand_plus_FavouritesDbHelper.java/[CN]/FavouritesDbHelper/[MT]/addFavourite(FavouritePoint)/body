@@ -3,8 +3,12 @@
   SQLiteDatabase db=getWritableDatabase();
   if (db != null) {
     deleteFavourite(p);
-    db.execSQL("INSERT INTO " + FAVOURITE_TABLE_NAME + " VALUES (?, ?, ?)",new Object[]{p.getName(),p.getLatitude(),p.getLongitude()});
-    favoritePoints.put(p.getName(),p);
+    db.execSQL("INSERT INTO " + FAVOURITE_TABLE_NAME + " ("+ FAVOURITE_COL_NAME+ ", "+ FAVOURITE_COL_CATEGORY+ ", "+ FAVOURITE_COL_LAT+ ", "+ FAVOURITE_COL_LON+ ")"+ " VALUES (?, ?, ?, ?)",new Object[]{p.getName(),p.getCategory(),p.getLatitude(),p.getLongitude()});
+    if (!favoriteGroups.containsKey(p.getCategory())) {
+      favoriteGroups.put(p.getCategory(),new ArrayList<FavouritePoint>());
+    }
+    favoriteGroups.get(p.getCategory()).add(p);
+    cachedFavoritePoints.add(p);
     p.setStored(true);
     return true;
   }

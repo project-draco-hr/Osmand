@@ -1,22 +1,31 @@
 {
-  if (favoritePoints == null) {
-    favoritePoints=new LinkedHashMap<String,FavouritePoint>();
+  if (favoriteGroups == null) {
+    favoriteGroups=new LinkedHashMap<String,List<FavouritePoint>>();
     SQLiteDatabase db=getReadableDatabase();
     if (db != null) {
-      Cursor query=db.rawQuery("SELECT " + FAVOURITE_COL_NAME + ", "+ FAVOURITE_COL_LAT+ ","+ FAVOURITE_COL_LON+ " FROM "+ FAVOURITE_TABLE_NAME,null);
-      favoritePoints.clear();
+      Cursor query=db.rawQuery("SELECT " + FAVOURITE_COL_NAME + ", "+ FAVOURITE_COL_CATEGORY+ ", "+ FAVOURITE_COL_LAT+ ","+ FAVOURITE_COL_LON+ " FROM "+ FAVOURITE_TABLE_NAME,null);
+      cachedFavoritePoints.clear();
       if (query.moveToFirst()) {
         do {
-          FavouritePoint p=new FavouritePoint();
-          p.setName(query.getString(0));
-          p.setStored(true);
-          p.setLatitude(query.getDouble(1));
-          p.setLongitude(query.getDouble(2));
-          favoritePoints.put(p.getName(),p);
+          String name=query.getString(0);
+          String cat=query.getString(1);
+          if (!favoriteGroups.containsKey(cat)) {
+            favoriteGroups.put(cat,new ArrayList<FavouritePoint>());
+          }
+          if (!name.equals("")) {
+            FavouritePoint p=new FavouritePoint();
+            p.setName(name);
+            p.setCategory(cat);
+            p.setStored(true);
+            p.setLatitude(query.getDouble(2));
+            p.setLongitude(query.getDouble(3));
+            favoriteGroups.get(cat).add(p);
+          }
         }
  while (query.moveToNext());
       }
       query.close();
     }
+    recalculateCachedFavPoints();
   }
 }

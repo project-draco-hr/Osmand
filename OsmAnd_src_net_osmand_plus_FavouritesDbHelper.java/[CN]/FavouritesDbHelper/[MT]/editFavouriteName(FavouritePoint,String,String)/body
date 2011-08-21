@@ -1,0 +1,16 @@
+{
+  checkFavoritePoints();
+  SQLiteDatabase db=getWritableDatabase();
+  if (db != null) {
+    String oldCategory=p.getCategory();
+    db.execSQL("UPDATE " + FAVOURITE_TABLE_NAME + " SET name = ?, category = ? WHERE name = ?",new Object[]{newName,category,p.getName()});
+    p.setName(newName);
+    p.setCategory(category);
+    if (!oldCategory.equals(category)) {
+      favoriteGroups.get(oldCategory).remove(p);
+      favoriteGroups.get(category).add(p);
+    }
+    return true;
+  }
+  return false;
+}

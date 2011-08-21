@@ -2,9 +2,11 @@
   checkFavoritePoints();
   SQLiteDatabase db=getWritableDatabase();
   if (db != null) {
-    db.execSQL("DELETE FROM " + FAVOURITE_TABLE_NAME + " WHERE name = ?",new Object[]{p.getName()});
-    FavouritePoint fp=favoritePoints.remove(p.getName());
+    db.execSQL("DELETE FROM " + FAVOURITE_TABLE_NAME + " WHERE name = ? AND category = ? ",new Object[]{p.getName(),p.getCategory()});
+    FavouritePoint fp=findFavoriteByName(p.getName(),p.getCategory());
     if (fp != null) {
+      favoriteGroups.get(p.getCategory()).remove(fp);
+      cachedFavoritePoints.remove(fp);
       fp.setStored(false);
     }
     return true;
