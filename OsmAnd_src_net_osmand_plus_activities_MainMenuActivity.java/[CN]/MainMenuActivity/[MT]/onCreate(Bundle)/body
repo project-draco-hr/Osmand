@@ -66,32 +66,7 @@
     firstTime=true;
     pref.edit().putBoolean(FIRST_TIME_APP_RUN,true).commit();
     pref.edit().putString(VERSION_INSTALLED,Version.APP_VERSION).commit();
-    boolean netOsmandWasInstalled=false;
-    try {
-      ApplicationInfo applicationInfo=getPackageManager().getApplicationInfo("net.osmand",PackageManager.GET_META_DATA);
-      netOsmandWasInstalled=applicationInfo != null;
-    }
- catch (    NameNotFoundException e) {
-      netOsmandWasInstalled=false;
-    }
-    if (netOsmandWasInstalled) {
-      Builder builder=new AlertDialog.Builder(this);
-      builder.setMessage(R.string.osmand_net_previously_installed);
-      builder.setPositiveButton(R.string.default_buttons_ok,null);
-      builder.show();
-    }
- else {
-      Builder builder=new AlertDialog.Builder(this);
-      builder.setMessage(R.string.first_time_msg);
-      builder.setPositiveButton(R.string.first_time_download,new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          startActivity(new Intent(MainMenuActivity.this,DownloadIndexActivity.class));
-        }
-      }
-);
-      builder.setNegativeButton(R.string.first_time_continue,null);
-      builder.show();
-    }
+    applicationInstalledFirstTime();
   }
  else {
     int i=pref.getInt(TIPS_SHOW,0);
@@ -109,12 +84,17 @@
       dlg.show();
     }
  else {
-      startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
-        @Override public void onDismiss(        DialogInterface dialog){
-          checkVectorIndexesDownloaded();
+      if (startProgressDialog.isShowing()) {
+        startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
+          @Override public void onDismiss(          DialogInterface dialog){
+            checkVectorIndexesDownloaded();
+          }
         }
-      }
 );
+      }
+ else {
+        checkVectorIndexesDownloaded();
+      }
     }
   }
   checkPreviousRunsForExceptions(firstTime);
