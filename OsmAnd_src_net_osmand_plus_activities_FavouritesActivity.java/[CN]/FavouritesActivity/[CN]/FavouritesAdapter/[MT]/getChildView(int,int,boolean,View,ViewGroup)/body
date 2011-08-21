@@ -7,7 +7,7 @@
   TextView label=(TextView)row.findViewById(R.id.favourite_label);
   TextView distanceLabel=(TextView)row.findViewById(R.id.favouritedistance_label);
   ImageView icon=(ImageView)row.findViewById(R.id.favourite_icon);
-  FavouritePoint model=(FavouritePoint)getItem(position);
+  final FavouritePoint model=(FavouritePoint)getChild(groupPosition,childPosition);
   row.setTag(model);
   if (model.isStored()) {
     icon.setImageResource(R.drawable.favorites);
@@ -19,5 +19,30 @@
   int dist=(int)(MapUtils.getDistance(model.getLatitude(),model.getLongitude(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
   distanceLabel.setText(OsmAndFormatter.getFormattedDistance(dist,FavouritesActivity.this));
   label.setText(model.getName());
+  final CheckBox ch=(CheckBox)row.findViewById(R.id.check_item);
+  if (selectionMode && model.isStored()) {
+    ch.setVisibility(View.VISIBLE);
+    ch.setChecked(favoritesToDelete.contains(model));
+    row.findViewById(R.id.favourite_icon).setVisibility(View.GONE);
+    ch.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        if (ch.isChecked()) {
+          favoritesToDelete.add(model);
+        }
+ else {
+          favoritesToDelete.remove(model);
+          if (groupsToDelete.contains(model.getCategory())) {
+            groupsToDelete.remove(model.getCategory());
+            favouritesAdapter.notifyDataSetInvalidated();
+          }
+        }
+      }
+    }
+);
+  }
+ else {
+    row.findViewById(R.id.favourite_icon).setVisibility(View.VISIBLE);
+    ch.setVisibility(View.GONE);
+  }
   return row;
 }

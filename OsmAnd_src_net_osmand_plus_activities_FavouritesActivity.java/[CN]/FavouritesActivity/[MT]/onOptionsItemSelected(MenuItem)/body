@@ -1,6 +1,6 @@
 {
   if (item.getItemId() == EXPORT_ID) {
-    File appDir=OsmandSettings.getOsmandSettings(this).extendOsmandPath(ResourceManager.APP_DIR);
+    final File appDir=OsmandSettings.getOsmandSettings(this).extendOsmandPath(ResourceManager.APP_DIR);
     if (favouritesAdapter.isEmpty()) {
       Toast.makeText(this,R.string.no_fav_to_save,Toast.LENGTH_LONG).show();
     }
@@ -8,55 +8,103 @@
       Toast.makeText(this,R.string.sd_dir_not_accessible,Toast.LENGTH_LONG).show();
     }
  else {
-      File f=new File(appDir,FILE_TO_SAVE);
-      GPXFile gpx=new GPXFile();
-      for (int i=0; i < favouritesAdapter.getCount(); i++) {
-        FavouritePoint p=favouritesAdapter.getItem(i);
-        WptPt pt=new WptPt();
-        pt.lat=p.getLatitude();
-        pt.lon=p.getLongitude();
-        pt.name=p.getName();
-        gpx.points.add(pt);
-      }
-      String warning=GPXUtilities.writeGpxFile(f,gpx,this);
-      if (warning == null) {
-        Toast.makeText(this,MessageFormat.format(getString(R.string.fav_saved_sucessfully),f.getAbsolutePath()),Toast.LENGTH_LONG).show();
-      }
+      final File f=new File(appDir,FILE_TO_SAVE);
+      new AsyncTask<Void,Void,String>(){
+        @Override protected String doInBackground(        Void... params){
+          GPXFile gpx=new GPXFile();
+          for (          FavouritePoint p : helper.getFavouritePoints()) {
+            if (p.isStored()) {
+              WptPt pt=new WptPt();
+              pt.lat=p.getLatitude();
+              pt.lon=p.getLongitude();
+              pt.name=p.getName() + "_" + p.getCategory();
+              gpx.points.add(pt);
+            }
+          }
+          return GPXUtilities.writeGpxFile(f,gpx,FavouritesActivity.this);
+        }
+        protected void onPreExecute(){
+          showProgressBar();
+        }
+        protected void onPostExecute(        String warning){
+          hideProgressBar();
+          if (warning == null) {
+            Toast.makeText(FavouritesActivity.this,MessageFormat.format(getString(R.string.fav_saved_sucessfully),f.getAbsolutePath()),Toast.LENGTH_LONG).show();
+          }
  else {
-        Toast.makeText(this,warning,Toast.LENGTH_LONG).show();
+            Toast.makeText(FavouritesActivity.this,warning,Toast.LENGTH_LONG).show();
+          }
+        }
       }
+.execute();
     }
   }
  else   if (item.getItemId() == IMPORT_ID) {
     File appDir=OsmandSettings.getOsmandSettings(this).extendOsmandPath(ResourceManager.APP_DIR);
-    File f=new File(appDir,FILE_TO_SAVE);
+    final File f=new File(appDir,FILE_TO_SAVE);
     if (!f.exists()) {
       Toast.makeText(this,MessageFormat.format(getString(R.string.fav_file_to_load_not_found),f.getAbsolutePath()),Toast.LENGTH_LONG).show();
     }
  else {
-      Set<String> existedPoints=new LinkedHashSet<String>();
-      if (!favouritesAdapter.isEmpty()) {
-        for (int i=0; i < favouritesAdapter.getCount(); i++) {
-          FavouritePoint fp=favouritesAdapter.getItem(i);
-          existedPoints.add(fp.getName());
-        }
-      }
-      GPXFileResult res=GPXUtilities.loadGPXFile(this,f);
-      if (res.error == null) {
-        for (        WptPt p : res.wayPoints) {
-          if (!existedPoints.contains(p.name)) {
-            FavouritePoint fp=new FavouritePoint(p.lat,p.lon,p.name);
-            if (helper.addFavourite(fp)) {
-              favouritesAdapter.add(fp);
+      new AsyncTask<Void,FavouritePoint,String>(){
+        @Override protected String doInBackground(        Void... params){
+          Set<String> existedPoints=new LinkedHashSet<String>();
+          if (!favouritesAdapter.isEmpty()) {
+            for (            FavouritePoint fp : helper.getFavouritePoints()) {
+              existedPoints.add(fp.getName() + "_" + fp.getCategory());
             }
           }
+          GPXFileResult res=GPXUtilities.loadGPXFile(FavouritesActivity.this,f);
+          if (res.error != null) {
+            return res.error;
+          }
+          for (          WptPt p : res.wayPoints) {
+            if (!existedPoints.contains(p.name)) {
+              String categoryName=FavouritesActivity.this.getString(R.string.favorite_default_category);
+              int c;
+              String name=p.name;
+              if ((c=p.name.lastIndexOf('_')) != -1) {
+                categoryName=p.name.substring(c + 1);
+                name=p.name.substring(0,c);
+              }
+              FavouritePoint fp=new FavouritePoint(p.lat,p.lon,name,categoryName);
+              if (helper.addFavourite(fp)) {
+                publishProgress(fp);
+              }
+            }
+          }
+          return null;
         }
-        Toast.makeText(this,R.string.fav_imported_sucessfully,Toast.LENGTH_SHORT).show();
-      }
+        protected void onProgressUpdate(        FavouritePoint... values){
+          for (          FavouritePoint p : values) {
+            favouritesAdapter.addFavoritePoint(p);
+          }
+        }
+        protected void onPreExecute(){
+          showProgressBar();
+        }
+        protected void onPostExecute(        String warning){
+          hideProgressBar();
+          if (warning == null) {
+            Toast.makeText(FavouritesActivity.this,R.string.fav_imported_sucessfully,Toast.LENGTH_SHORT).show();
+          }
  else {
-        Toast.makeText(this,res.error,Toast.LENGTH_LONG).show();
+            Toast.makeText(FavouritesActivity.this,warning,Toast.LENGTH_LONG).show();
+          }
+          favouritesAdapter.synchronizeGroups();
+        }
       }
+.execute();
     }
+  }
+ else   if (item.getItemId() == DELETE_ID) {
+    selectionMode=true;
+    findViewById(R.id.ActionButton).setVisibility(View.VISIBLE);
+    findViewById(R.id.CancelButton).setVisibility(View.VISIBLE);
+    findViewById(R.id.LoadingPanel).setVisibility(View.VISIBLE);
+    favoritesToDelete.clear();
+    groupsToDelete.clear();
+    favouritesAdapter.notifyDataSetInvalidated();
   }
  else {
     return false;

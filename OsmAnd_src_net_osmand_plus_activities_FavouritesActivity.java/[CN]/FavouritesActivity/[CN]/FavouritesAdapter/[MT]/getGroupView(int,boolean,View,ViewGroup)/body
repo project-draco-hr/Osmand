@@ -1,0 +1,34 @@
+{
+  View row=convertView;
+  if (row == null) {
+    LayoutInflater inflater=getLayoutInflater();
+    row=inflater.inflate(R.layout.favourites_list_category,parent,false);
+  }
+  TextView label=(TextView)row.findViewById(R.id.category_name);
+  final String model=getGroup(groupPosition);
+  List<FavouritePoint> ms=helper.getFavoriteGroups().get(model);
+  int sz=ms != null ? ms.size() : 0;
+  label.setText(model + " [" + sz+ "]");
+  final CheckBox ch=(CheckBox)row.findViewById(R.id.check_item);
+  if (selectionMode) {
+    ch.setVisibility(View.VISIBLE);
+    ch.setChecked(groupsToDelete.contains(model));
+    ch.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        if (ch.isChecked()) {
+          groupsToDelete.add(model);
+          favoritesToDelete.addAll(helper.getFavoriteGroups().get(model));
+          favouritesAdapter.notifyDataSetInvalidated();
+        }
+ else {
+          groupsToDelete.remove(model);
+        }
+      }
+    }
+);
+  }
+ else {
+    ch.setVisibility(View.GONE);
+  }
+  return row;
+}
