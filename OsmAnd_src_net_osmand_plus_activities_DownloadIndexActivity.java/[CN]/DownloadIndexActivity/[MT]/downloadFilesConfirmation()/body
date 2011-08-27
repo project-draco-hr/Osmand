@@ -1,0 +1,17 @@
+{
+  Builder builder=new AlertDialog.Builder(this);
+  double sz=0;
+  for (  DownloadEntry es : entriesToDownload.values()) {
+    sz+=es.sizeMB;
+  }
+  builder.setMessage(MessageFormat.format(getString(R.string.download_files_question),entriesToDownload.size(),sz));
+  builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      DownloadIndexesAsyncTask task=new DownloadIndexesAsyncTask();
+      task.execute(entriesToDownload.keySet().toArray(new String[0]));
+    }
+  }
+);
+  builder.setNegativeButton(R.string.default_buttons_no,null);
+  builder.show();
+}

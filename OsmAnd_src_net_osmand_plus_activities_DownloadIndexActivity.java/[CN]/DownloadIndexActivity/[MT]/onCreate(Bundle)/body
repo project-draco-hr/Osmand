@@ -1,14 +1,28 @@
 {
   super.onCreate(savedInstanceState);
   setContentView(R.layout.download_index);
+  downloadFileHelper=new DownloadFileHelper(this);
   findViewById(R.id.DownloadButton).setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      downloadFiles();
+      downloadFilesConfirmation();
     }
   }
 );
   indexFileNames=((OsmandApplication)getApplication()).getResourceManager().getIndexFileNames();
   filterText=(EditText)findViewById(R.id.search_box);
+  textWatcher=new TextWatcher(){
+    public void afterTextChanged(    Editable s){
+    }
+    public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+      DownloadIndexAdapter adapter=((DownloadIndexAdapter)getListAdapter());
+      if (adapter != null) {
+        adapter.getFilter().filter(s);
+      }
+    }
+  }
+;
   filterText.addTextChangedListener(textWatcher);
   final Intent intent=getIntent();
   if (intent != null && intent.getExtras() != null) {

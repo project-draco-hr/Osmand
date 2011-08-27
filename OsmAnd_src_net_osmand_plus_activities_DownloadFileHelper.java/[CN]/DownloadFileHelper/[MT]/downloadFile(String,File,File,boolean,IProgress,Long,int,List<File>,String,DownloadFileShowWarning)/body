@@ -20,7 +20,7 @@
     }
     File toIndex=fileToDownload;
     if (fileToDownload.getName().endsWith(".zip")) {
-      progress.startTask(getString(R.string.unzipping_file),-1);
+      progress.startTask(ctx.getString(R.string.unzipping_file),-1);
       if (!unzipToDir) {
         toIndex=fileToUnZip;
       }
@@ -65,7 +65,7 @@
       fileToDownload.delete();
     }
     ArrayList<String> warnings=new ArrayList<String>();
-    ResourceManager manager=((OsmandApplication)getApplication()).getResourceManager();
+    ResourceManager manager=((OsmandApplication)ctx.getApplicationContext()).getResourceManager();
     if (dateModified != null) {
       toIndex.setLastModified(dateModified);
     }
@@ -78,16 +78,16 @@
     }
     toReIndex.add(toIndex);
     if (warnings.isEmpty()) {
-      showWarning(getString(R.string.download_index_success));
+      showWarningCallback.showWarning(ctx.getString(R.string.download_index_success));
     }
  else {
-      showWarning(warnings.get(0));
+      showWarningCallback.showWarning(warnings.get(0));
     }
     return true;
   }
  catch (  IOException e) {
     log.error("Exception ocurred",e);
-    showWarning(getString(R.string.error_io_error));
+    showWarningCallback.showWarning(ctx.getString(R.string.error_io_error));
     if (out != null) {
       try {
         out.close();
