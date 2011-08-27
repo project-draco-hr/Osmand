@@ -14,14 +14,18 @@
   getExpandableListView().setOnCreateContextMenuListener(new View.OnCreateContextMenuListener(){
     @Override public void onCreateContextMenu(    ContextMenu menu,    View v,    ContextMenuInfo menuInfo){
       long packedPos=((ExpandableListContextMenuInfo)menuInfo).packedPosition;
-      final LocalIndexInfo point=(LocalIndexInfo)listAdapter.getChild(ExpandableListView.getPackedPositionGroup(packedPos),ExpandableListView.getPackedPositionChild(packedPos));
-      if (point.getGpxFile() != null) {
-        Location loc=point.getGpxFile().findFistLocation();
-        if (loc != null) {
-          OsmandSettings.getOsmandSettings(LocalIndexesActivity.this).setMapLocationToShow(loc.getLatitude(),loc.getLongitude());
+      int group=ExpandableListView.getPackedPositionGroup(packedPos);
+      int child=ExpandableListView.getPackedPositionChild(packedPos);
+      if (child >= 0 && group >= 0) {
+        final LocalIndexInfo point=(LocalIndexInfo)listAdapter.getChild(group,child);
+        if (point != null && point.getGpxFile() != null) {
+          Location loc=point.getGpxFile().findFistLocation();
+          if (loc != null) {
+            OsmandSettings.getOsmandSettings(LocalIndexesActivity.this).setMapLocationToShow(loc.getLatitude(),loc.getLongitude());
+          }
+          ((OsmandApplication)getApplication()).setGpxFileToDisplay(point.getGpxFile());
+          MapActivity.launchMapActivityMoveToTop(LocalIndexesActivity.this);
         }
-        ((OsmandApplication)getApplication()).setGpxFileToDisplay(point.getGpxFile());
-        MapActivity.launchMapActivityMoveToTop(LocalIndexesActivity.this);
       }
     }
   }
