@@ -18,6 +18,16 @@
       allRelations=dbCreator.getAllRelations();
     }
   }
+ else {
+    if (DBDialect.NOSQL != dialect) {
+      Connection dbc=(Connection)dbConn;
+      final Statement stmt=dbc.createStatement();
+      allRelations=stmt.executeQuery("select count(*) from relations").getInt(1);
+      allNodes=stmt.executeQuery("select count(*) from node").getInt(1);
+      allWays=stmt.executeQuery("select count(*) from ways").getInt(1);
+      stmt.close();
+    }
+  }
   accessor.initDatabase(dbConn,dialect,allNodes,allWays,allRelations);
   return loadFromExistingFile;
 }
