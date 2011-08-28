@@ -1,0 +1,65 @@
+{
+  URL url;
+  try {
+    log.info("Start uploading file to " + urlText + " "+ fileToUpload.getName());
+    url=new URL(urlText);
+    HttpURLConnection conn=(HttpURLConnection)url.openConnection();
+    conn.setDoInput(true);
+    conn.setDoOutput(true);
+    conn.setRequestMethod("POST");
+    conn.setRequestProperty("Content-Type","multipart/form-data; boundary=" + BOUNDARY);
+    conn.setRequestProperty("User-Agent","Osmand");
+    OutputStream ous=conn.getOutputStream();
+    ous.write(("--" + BOUNDARY + "\r\n").getBytes());
+    ous.write(("content-disposition: form-data; name=\"" + formName + "\"; filename=\""+ fileToUpload.getName()+ "\"\r\n").getBytes());
+    ous.write(("Content-Type: application/octet-stream\r\n\r\n").getBytes());
+    InputStream fis=new FileInputStream(fileToUpload);
+    BufferedInputStream bis=new BufferedInputStream(fis,20 * 1024);
+    ous.flush();
+    if (gzip) {
+      GZIPOutputStream gous=new GZIPOutputStream(ous,1024);
+      Algoritms.streamCopy(bis,gous);
+      gous.flush();
+      gous.finish();
+    }
+ else {
+      Algoritms.streamCopy(bis,ous);
+    }
+    ous.write(("\r\n--" + BOUNDARY + "--\r\n").getBytes());
+    ous.flush();
+    Algoritms.closeStream(bis);
+    Algoritms.closeStream(ous);
+    log.info("Finish uploading file " + fileToUpload.getName());
+    log.info("Response code and message : " + conn.getResponseCode() + " "+ conn.getResponseMessage());
+    if (conn.getResponseCode() != 200) {
+      return conn.getResponseMessage();
+    }
+    InputStream is=conn.getInputStream();
+    StringBuilder responseBody=new StringBuilder();
+    if (is != null) {
+      BufferedReader in=new BufferedReader(new InputStreamReader(is,"UTF-8"));
+      String s;
+      boolean first=true;
+      while ((s=in.readLine()) != null) {
+        if (first) {
+          first=false;
+        }
+ else {
+          responseBody.append("\n");
+        }
+        responseBody.append(s);
+      }
+      is.close();
+    }
+    String response=responseBody.toString();
+    log.info("Response : " + response);
+    if (response.startsWith("OK")) {
+      return null;
+    }
+    return response;
+  }
+ catch (  IOException e) {
+    log.error(e.getMessage(),e);
+    return e.getMessage();
+  }
+}
