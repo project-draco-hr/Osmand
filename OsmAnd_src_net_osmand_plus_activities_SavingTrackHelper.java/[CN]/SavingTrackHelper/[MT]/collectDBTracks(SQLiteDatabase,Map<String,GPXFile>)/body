@@ -1,17 +1,18 @@
 {
-  Cursor query=db.rawQuery("SELECT " + TRACK_COL_LAT + ","+ TRACK_COL_LON+ ","+ TRACK_COL_ALTITUDE+ ","+ TRACK_COL_SPEED+ ","+ TRACK_COL_DATE+ " FROM "+ TRACK_NAME+ " ORDER BY "+ TRACK_COL_DATE+ " ASC",null);
+  Cursor query=db.rawQuery("SELECT " + TRACK_COL_LAT + ","+ TRACK_COL_LON+ ","+ TRACK_COL_ALTITUDE+ ","+ TRACK_COL_SPEED+ ","+ TRACK_COL_HDOP+ ","+ TRACK_COL_DATE+ " FROM "+ TRACK_NAME+ " ORDER BY "+ TRACK_COL_DATE+ " ASC",null);
   long previousTime=0;
   long previousInterval=0;
   TrkSegment segment=null;
   Track track=null;
   if (query.moveToFirst()) {
     do {
-      TrkPt pt=new TrkPt();
+      WptPt pt=new WptPt();
       pt.lat=query.getDouble(0);
       pt.lon=query.getDouble(1);
       pt.ele=query.getDouble(2);
       pt.speed=query.getDouble(3);
-      long time=query.getLong(4);
+      pt.hdop=query.getDouble(4);
+      long time=query.getLong(5);
       pt.time=time;
       long currentInterval=Math.abs(time - previousTime);
       if (track != null && (currentInterval < 6 * 60 * 1000 || currentInterval < 10 * previousInterval)) {
