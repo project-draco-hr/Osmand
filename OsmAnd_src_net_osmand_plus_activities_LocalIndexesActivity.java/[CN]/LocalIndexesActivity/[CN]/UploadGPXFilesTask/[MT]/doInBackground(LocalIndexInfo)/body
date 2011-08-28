@@ -1,0 +1,27 @@
+{
+  int count=0;
+  int total=0;
+  for (  LocalIndexInfo info : params) {
+    if (!isCancelled()) {
+      String warning=null;
+      try {
+        File file=new File(info.getPathToData());
+        String userName=settings.USER_NAME.get();
+        String pwd=settings.USER_PASSWORD.get();
+        String url=URL_TO_UPLOAD_GPX + "?author=" + URLEncoder.encode(userName,"UTF-8")+ "&wd="+ URLEncoder.encode(pwd,"UTF-8")+ "&file="+ URLEncoder.encode(file.getName(),"UTF-8");
+        warning=Algoritms.uploadFile(url,file,"filename",true);
+      }
+ catch (      UnsupportedEncodingException e) {
+        warning=e.getMessage();
+      }
+      total++;
+      if (warning == null) {
+        count++;
+      }
+ else {
+        publishProgress(warning);
+      }
+    }
+  }
+  return getString(R.string.local_index_items_uploaded,count,total);
+}

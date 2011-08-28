@@ -3,7 +3,7 @@
   SimpleDateFormat format=new SimpleDateFormat(GPX_TIME_FORMAT);
   format.setTimeZone(TimeZone.getTimeZone("UTC"));
   try {
-    boolean cloudMade=false;
+    res.cloudMadeFile=false;
     XmlPullParser parser=Xml.newPullParser();
     parser.setInput(new FileInputStream(f),"UTF-8");
     int tok;
@@ -12,12 +12,12 @@
     while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
       if (tok == XmlPullParser.START_TAG) {
         if (parser.getName().equals("copyright")) {
-          cloudMade|="cloudmade".equalsIgnoreCase(parser.getAttributeValue("","author"));
+          res.cloudMadeFile|="cloudmade".equalsIgnoreCase(parser.getAttributeValue("","author"));
         }
  else         if (parser.getName().equals("trkseg")) {
           res.locations.add(new ArrayList<Location>());
         }
- else         if (parser.getName().equals("wpt") || parser.getName().equals("trkpt") || (!cloudMade && parser.getName().equals("rtept"))) {
+ else         if (parser.getName().equals("wpt") || parser.getName().equals("trkpt") || (!res.cloudMadeFile && parser.getName().equals("rtept"))) {
           try {
             currentName="";
             current=new Location("gpx_file");
@@ -42,6 +42,15 @@
             }
           }
         }
+ else         if (current != null && parser.getName().equals("hdop")) {
+          if (parser.next() == XmlPullParser.TEXT) {
+            try {
+              current.setAccuracy(Float.parseFloat(parser.getText()));
+            }
+ catch (            NumberFormatException e) {
+            }
+          }
+        }
  else         if (current != null && parser.getName().equals("ele")) {
           if (parser.next() == XmlPullParser.TEXT) {
             try {
@@ -62,14 +71,10 @@
         }
       }
  else       if (tok == XmlPullParser.END_TAG) {
-        if (parser.getName().equals("wpt") || parser.getName().equals("trkpt") || (!cloudMade && parser.getName().equals("rtept"))) {
+        if (parser.getName().equals("wpt") || parser.getName().equals("trkpt") || (!res.cloudMadeFile && parser.getName().equals("rtept"))) {
           if (current != null) {
-            if (parser.getName().equals("wpt") && !cloudMade) {
-              WptPt pt=new WptPt();
-              pt.lat=current.getLatitude();
-              pt.lon=current.getLongitude();
-              pt.name=currentName;
-              res.wayPoints.add(pt);
+            if (parser.getName().equals("wpt") && !res.cloudMadeFile) {
+              res.wayPoints.add(convertLocationToWayPoint(current,currentName));
             }
  else {
               if (res.locations.isEmpty()) {
