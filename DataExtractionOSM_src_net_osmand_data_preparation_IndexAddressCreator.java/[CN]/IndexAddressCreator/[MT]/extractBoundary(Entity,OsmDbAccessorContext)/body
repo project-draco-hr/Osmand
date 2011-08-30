@@ -1,0 +1,49 @@
+{
+  if (isBoundary(e)) {
+    Boundary boundary=null;
+    if (e instanceof Relation) {
+      Relation i=(Relation)e;
+      ctx.loadEntityData(i,true);
+      boundary=new Boundary();
+      boundary.setAdminLevel(e.getTag(OSMTagKey.ADMIN_LEVEL));
+      if (i.getTag(OSMTagKey.NAME) != null) {
+        boundary.setName(i.getTag(OSMTagKey.NAME));
+      }
+      boundary.setBoundaryId(i.getId());
+      Map<Entity,String> entities=i.getMemberEntities();
+      for (      Entity es : entities.keySet()) {
+        if (es instanceof Way) {
+          boolean inner="inner".equals(entities.get(es));
+          if (inner) {
+            boundary.getInnerWays().add((Way)es);
+          }
+ else {
+            String wName=es.getTag(OSMTagKey.NAME);
+            if (Algoritms.objectEquals(wName,boundary.getName()) || wName == null) {
+              visitedBoundaryWays.add(es.getId());
+            }
+            boundary.getOuterWays().add((Way)es);
+          }
+        }
+ else         if (isBoundary(es)) {
+          boundary.addSubBoundary(extractBoundary(es,ctx));
+        }
+      }
+    }
+ else     if (e instanceof Way) {
+      if (!visitedBoundaryWays.contains(e.getId())) {
+        boundary=new Boundary();
+        boundary.setAdminLevel(e.getTag(OSMTagKey.ADMIN_LEVEL));
+        if (e.getTag(OSMTagKey.NAME) != null) {
+          boundary.setName(e.getTag(OSMTagKey.NAME));
+        }
+        boundary.setBoundaryId(e.getId());
+        boundary.getOuterWays().add((Way)e);
+      }
+    }
+    return boundary;
+  }
+ else {
+    return null;
+  }
+}
