@@ -27,6 +27,25 @@
       minDist=d - 40;
     }
   }
-  res=new RouteCalculationResult(new ArrayList<Location>(gpxRoute.subList(startI,endI)),null,start,end,null);
+  ArrayList<Location> sublist=new ArrayList<Location>(gpxRoute.subList(startI,endI));
+  if (params.directions == null) {
+    res=new RouteCalculationResult(sublist,params.directions,start,end,null);
+  }
+ else {
+    List<RouteDirectionInfo> subdirections=new ArrayList<RouteDirectionInfo>();
+    for (    RouteDirectionInfo info : params.directions) {
+      if (info.routePointOffset >= startI && info.routePointOffset < endI) {
+        RouteDirectionInfo ch=new RouteDirectionInfo();
+        ch.routePointOffset=info.routePointOffset - startI;
+        ch.descriptionRoute=info.descriptionRoute;
+        ch.expectedTime=info.expectedTime;
+        ch.turnType=info.turnType;
+        ch.distance=0;
+        ch.afterLeftTime=0;
+        subdirections.add(ch);
+      }
+    }
+    res=new RouteCalculationResult(sublist,subdirections,start,end,null);
+  }
   return res;
 }
