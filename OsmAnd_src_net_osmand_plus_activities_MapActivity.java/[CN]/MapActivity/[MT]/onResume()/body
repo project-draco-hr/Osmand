@@ -26,7 +26,6 @@
   LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
   try {
     service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,gpsListener);
-    currentLocationProvider=LocationManager.GPS_PROVIDER;
   }
  catch (  IllegalArgumentException e) {
     Log.d(LogUtil.TAG,"GPS location provider not available");
@@ -34,15 +33,11 @@
   if (!useOnlyGPS()) {
     try {
       service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,networkListener);
-      currentLocationProvider=LocationManager.NETWORK_PROVIDER;
     }
  catch (    IllegalArgumentException e) {
       Log.d(LogUtil.TAG,"Network location provider not available");
     }
   }
-  LocationProvider prov=currentLocationProvider != null ? service.getProvider(currentLocationProvider) : null;
-  providerSupportsBearing=prov == null ? false : prov.supportsBearing() && !isRunningOnEmulator();
-  providerSupportsSpeed=prov == null ? false : prov.supportsSpeed() && !isRunningOnEmulator();
   if (settings != null && settings.isLastKnownMapLocation()) {
     LatLon l=settings.getLastKnownMapLocation();
     mapView.setLatLon(l.getLatitude(),l.getLongitude());
