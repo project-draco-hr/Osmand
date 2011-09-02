@@ -36,19 +36,16 @@
         final File f=new File(dir,list.get(which));
         new Thread(new Runnable(){
           @Override public void run(){
-            final GPXFile res=GPXUtilities.loadGPXFile(activity,f,true);
-            if (res.warning != null) {
-              activity.runOnUiThread(new Runnable(){
-                @Override public void run(){
-                  Toast.makeText(activity,res.warning,Toast.LENGTH_LONG).show();
-                }
-              }
-);
-            }
+            final GPXFile res=GPXUtilities.loadGPXFile(activity,f,convertCloudmade);
             dlg.dismiss();
             activity.runOnUiThread(new Runnable(){
               @Override public void run(){
-                callbackWithObject.processResult(res);
+                if (res.warning != null) {
+                  Toast.makeText(activity,res.warning,Toast.LENGTH_LONG).show();
+                }
+ else {
+                  callbackWithObject.processResult(res);
+                }
               }
             }
 );
