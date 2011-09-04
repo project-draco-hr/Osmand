@@ -2,30 +2,18 @@
   serializer.attribute(null,"lat",latLonFormat.format(p.lat));
   serializer.attribute(null,"lon",latLonFormat.format(p.lon));
   if (!Double.isNaN(p.ele)) {
-    serializer.startTag(null,"ele");
-    serializer.text(p.ele + "");
-    serializer.endTag(null,"ele");
+    writeNotNullText(serializer,"ele",p.ele + "");
   }
-  if (p.name != null) {
-    serializer.startTag(null,"name");
-    serializer.text(p.name);
-    serializer.endTag(null,"name");
-  }
+  writeNotNullText(serializer,"name",p.name);
+  writeNotNullText(serializer,"desc",p.desc);
   if (!Double.isNaN(p.hdop)) {
-    serializer.startTag(null,"hdop");
-    serializer.text(p.hdop + "");
-    serializer.endTag(null,"hdop");
+    writeNotNullText(serializer,"hdop",p.hdop + "");
   }
   if (p.time != 0) {
-    serializer.startTag(null,"time");
-    serializer.text(format.format(new Date(p.time)));
-    serializer.endTag(null,"time");
+    writeNotNullText(serializer,"time",format.format(new Date(p.time)));
   }
   if (p.speed > 0) {
-    serializer.startTag(null,"extensions");
-    serializer.startTag(null,"speed");
-    serializer.text(p.speed + "");
-    serializer.endTag(null,"speed");
-    serializer.endTag(null,"extensions");
+    p.getExtensionsToWrite().put("speed",p.speed + "");
   }
+  writeExtensions(serializer,p);
 }
