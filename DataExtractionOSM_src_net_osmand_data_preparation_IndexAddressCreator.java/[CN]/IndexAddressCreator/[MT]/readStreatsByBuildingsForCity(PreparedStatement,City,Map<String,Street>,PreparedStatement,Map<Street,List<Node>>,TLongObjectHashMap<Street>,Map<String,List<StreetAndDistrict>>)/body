@@ -6,27 +6,23 @@
     if (!visitedStreets.containsKey(streetId)) {
       Street street=new Street(null);
       String streetName=set.getString(2);
-      String district="";
-      if (uniqueNames.contains(streetName)) {
-        district=" (" + set.getString(12) + ")";
-      }
-      uniqueNames.add(streetName);
-      street.setName(streetName + district);
-      street.setEnName(set.getString(3) + district);
       street.setLocation(set.getDouble(4),set.getDouble(5));
       street.setId(streetId);
-      streets.add(street);
-      visitedStreets.put(streetId,street);
-      if (waynodesStat != null && streetNodes != null) {
-        ArrayList<Node> list=new ArrayList<Node>();
-        streetNodes.put(street,list);
-        waynodesStat.setLong(1,street.getId());
-        ResultSet rs=waynodesStat.executeQuery();
-        while (rs.next()) {
-          list.add(new Node(rs.getDouble(2),rs.getDouble(3),rs.getLong(1)));
-        }
-        rs.close();
+      loadStreetNodes(street,waynodesStat,streetNodes);
+      String cityPart=" (" + set.getString(12) + ")";
+      String district=identifyBestDistrict(street,streetName,cityPart,uniqueNames,streetNodes);
+      street.setName(streetName + district);
+      street.setEnName(set.getString(3) + district);
+      if (!streets.containsKey(street.getName())) {
+        streets.put(street.getName(),street);
       }
+ else {
+        List<Node> firstStreetNodes=streetNodes.get(streets.get(street.getName()));
+        if (firstStreetNodes != null && streetNodes.get(street) != null) {
+          firstStreetNodes.addAll(streetNodes.get(street));
+        }
+      }
+      visitedStreets.put(streetId,street);
     }
     if (set.getObject(6) != null) {
       Street s=visitedStreets.get(streetId);

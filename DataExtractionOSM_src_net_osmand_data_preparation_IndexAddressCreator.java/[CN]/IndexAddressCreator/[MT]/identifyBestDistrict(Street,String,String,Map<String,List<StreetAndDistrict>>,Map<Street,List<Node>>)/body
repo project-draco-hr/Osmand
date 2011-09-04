@@ -1,0 +1,29 @@
+{
+  String result="";
+  List<StreetAndDistrict> sameStreets=uniqueNames.get(streetName);
+  if (sameStreets == null) {
+    sameStreets=new ArrayList<StreetAndDistrict>(1);
+    uniqueNames.put(streetName,sameStreets);
+  }
+ else {
+    result=district;
+    similarStreets:     for (    StreetAndDistrict ld : sameStreets) {
+      if (streetNodes != null) {
+        for (        Node n1 : streetNodes.get(street)) {
+          for (          Node n2 : streetNodes.get(ld.getStreet())) {
+            if (MapUtils.getDistance(n1.getLatLon(),n2.getLatLon()) < 400) {
+              result=ld.getDistrict();
+              break similarStreets;
+            }
+          }
+        }
+      }
+      if (MapUtils.getDistance(ld.getStreet().getLocation(),street.getLocation()) < 400) {
+        result=ld.getDistrict();
+        break;
+      }
+    }
+  }
+  sameStreets.add(new StreetAndDistrict(street,result));
+  return result;
+}
