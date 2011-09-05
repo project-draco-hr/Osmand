@@ -1,5 +1,5 @@
 {
-  boolean updateRoute=!routeNodes.isEmpty();
+  final boolean updateRoute=!routeNodes.isEmpty();
   routeNodes=res.getLocations();
   directionInfo=res.getDirections();
   listDistance=res.getListDistance();
@@ -8,7 +8,12 @@
   if (isFollowingMode) {
     voiceRouter.newRouteIsCalculated(updateRoute);
   }
-  for (  IRouteInformationListener l : listeners) {
-    l.newRouteIsCalculated(updateRoute);
+  uiHandler.post(new Runnable(){
+    @Override public void run(){
+      for (      IRouteInformationListener l : listeners) {
+        l.newRouteIsCalculated(updateRoute);
+      }
+    }
   }
+);
 }

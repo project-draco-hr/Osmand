@@ -35,56 +35,28 @@
   }
 );
   savingTrackHelper=new SavingTrackHelper(this);
-  routingHelper=getMyApplication().getRoutingHelper();
   LatLon pointToNavigate=settings.getPointToNavigate();
-  if (!Algoritms.objectEquals(routingHelper.getFinalLocation(),pointToNavigate)) {
-    routingHelper.setFollowingMode(false);
-    routingHelper.setFinalAndCurrentLocation(pointToNavigate,null);
-  }
-  if (settings.FOLLOW_TO_THE_ROUTE.get()) {
-    if (pointToNavigate == null) {
-      settings.FOLLOW_TO_THE_ROUTE.set(false);
-    }
- else     if (!routingHelper.isRouteCalculated()) {
-      Builder builder=new AlertDialog.Builder(this);
-      builder.setMessage(R.string.continue_follow_previous_route);
-      builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          routingHelper.setFollowingMode(true);
-          getMyApplication().showDialogInitializingCommandPlayer(MapActivity.this);
-        }
-      }
-);
-      builder.setNegativeButton(R.string.default_buttons_no,new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          settings.APPLICATION_MODE.set(ApplicationMode.DEFAULT);
-          updateApplicationModeSettings();
-          settings.FOLLOW_TO_THE_ROUTE.set(false);
-          routingHelper.setFinalAndCurrentLocation(null,null);
-          mapView.refreshMap();
-        }
-      }
-);
-      builder.show();
-    }
+  routingHelper=getMyApplication().getRoutingHelper();
+  if (settings.FOLLOW_THE_ROUTE.get() && !routingHelper.isRouteCalculated()) {
+    restoreRoutingMode(pointToNavigate);
   }
   mapView.setMapLocationListener(this);
   mapLayers.createLayers(mapView);
   if (!settings.isLastKnownMapLocation()) {
     LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
     Location location=null;
-    try {
-      location=service.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-    }
- catch (    IllegalArgumentException e) {
-      Log.d(LogUtil.TAG,"GPS location provider not available");
-    }
-    if (location == null) {
+    for (    String provider : service.getAllProviders()) {
       try {
-        location=service.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        Location loc=service.getLastKnownLocation(provider);
+        if (location == null) {
+          location=loc;
+        }
+ else         if (loc != null && location.getTime() < loc.getTime()) {
+          location=loc;
+        }
       }
  catch (      IllegalArgumentException e) {
-        Log.d(LogUtil.TAG,"Network location provider not available");
+        Log.d(LogUtil.TAG,"Location provider not available");
       }
     }
     if (location != null) {

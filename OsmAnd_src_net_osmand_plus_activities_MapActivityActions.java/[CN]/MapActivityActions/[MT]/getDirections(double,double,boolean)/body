@@ -1,10 +1,13 @@
 {
+  MapActivityLayers mapLayers=mapActivity.getMapLayers();
+  final OsmandSettings settings=OsmandSettings.getOsmandSettings(mapActivity);
+  final RoutingHelper routingHelper=mapActivity.getRoutingHelper();
   if (mapLayers.getNavigationLayer().getPointToNavigate() == null) {
-    Toast.makeText(this,R.string.mark_final_location_first,Toast.LENGTH_LONG).show();
+    Toast.makeText(mapActivity,R.string.mark_final_location_first,Toast.LENGTH_LONG).show();
     return;
   }
-  Builder builder=new AlertDialog.Builder(this);
-  View view=getLayoutInflater().inflate(R.layout.calculate_route,null);
+  Builder builder=new AlertDialog.Builder(mapActivity);
+  View view=mapActivity.getLayoutInflater().inflate(R.layout.calculate_route,null);
   final ToggleButton[] buttons=new ToggleButton[ApplicationMode.values().length];
   buttons[ApplicationMode.CAR.ordinal()]=(ToggleButton)view.findViewById(R.id.CarButton);
   buttons[ApplicationMode.BICYCLE.ordinal()]=(ToggleButton)view.findViewById(R.id.BicycleButton);
@@ -47,40 +50,42 @@
   }
   DialogInterface.OnClickListener onlyShowCall=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      ApplicationMode mode=getAppMode(buttons);
+      ApplicationMode mode=getAppMode(buttons,settings);
       Location location=new Location("map");
       location.setLatitude(lat);
       location.setLongitude(lon);
       routingHelper.setAppMode(mode);
-      settings.FOLLOW_TO_THE_ROUTE.set(false);
+      settings.FOLLOW_THE_ROUTE.set(false);
+      settings.FOLLOW_THE_GPX_ROUTE.set(null);
       routingHelper.setFollowingMode(false);
-      routingHelper.setFinalAndCurrentLocation(getPointToNavigate(),location);
+      routingHelper.setFinalAndCurrentLocation(mapActivity.getPointToNavigate(),location);
     }
   }
 ;
   DialogInterface.OnClickListener followCall=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      ApplicationMode mode=getAppMode(buttons);
+      ApplicationMode mode=getAppMode(buttons,settings);
       boolean changed=settings.APPLICATION_MODE.set(mode);
       if (changed) {
-        updateApplicationModeSettings();
-        mapView.refreshMap();
+        mapActivity.updateApplicationModeSettings();
+        mapActivity.getMapView().refreshMap();
       }
       Location location=getLocationToStartFrom(lat,lon);
       routingHelper.setAppMode(mode);
-      settings.FOLLOW_TO_THE_ROUTE.set(true);
+      settings.FOLLOW_THE_ROUTE.set(true);
+      settings.FOLLOW_THE_GPX_ROUTE.set(null);
       routingHelper.setFollowingMode(true);
-      routingHelper.setFinalAndCurrentLocation(getPointToNavigate(),location);
+      routingHelper.setFinalAndCurrentLocation(mapActivity.getPointToNavigate(),location);
       dialog.dismiss();
-      getMyApplication().showDialogInitializingCommandPlayer(MapActivity.this);
+      getMyApplication().showDialogInitializingCommandPlayer(mapActivity);
     }
   }
 ;
   DialogInterface.OnClickListener showRoute=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      Intent intent=new Intent(MapActivity.this,ShowRouteInfoActivity.class);
+      Intent intent=new Intent(mapActivity,ShowRouteInfoActivity.class);
       intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-      startActivity(intent);
+      mapActivity.startActivity(intent);
     }
   }
 ;

@@ -1,0 +1,51 @@
+{
+  final String gpxPath=settings.FOLLOW_THE_GPX_ROUTE.get();
+  if (pointToNavigate == null && gpxPath == null) {
+    notRestoreRoutingMode();
+  }
+ else {
+    Builder builder=new AlertDialog.Builder(MapActivity.this);
+    builder.setMessage(R.string.continue_follow_previous_route);
+    builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        AsyncTask<String,Void,GPXFile> task=new AsyncTask<String,Void,GPXFile>(){
+          @Override protected GPXFile doInBackground(          String... params){
+            if (gpxPath != null) {
+              GPXFile f=GPXUtilities.loadGPXFile(MapActivity.this,new File(gpxPath),false);
+              if (f.warning != null) {
+                return null;
+              }
+              return f;
+            }
+ else {
+              return null;
+            }
+          }
+          @Override protected void onPostExecute(          GPXFile result){
+            final GPXRouteParams gpxRoute=result == null ? null : new GPXRouteParams(result,false);
+            LatLon endPoint=pointToNavigate != null ? pointToNavigate : gpxRoute.getLastPoint();
+            Location startPoint=gpxRoute == null ? null : gpxRoute.getStartPointForRoute();
+            if (endPoint == null) {
+              notRestoreRoutingMode();
+            }
+ else {
+              routingHelper.setFollowingMode(true);
+              routingHelper.setFinalAndCurrentLocation(endPoint,startPoint,gpxRoute);
+              getMyApplication().showDialogInitializingCommandPlayer(MapActivity.this);
+            }
+          }
+        }
+;
+        task.execute(gpxPath);
+      }
+    }
+);
+    builder.setNegativeButton(R.string.default_buttons_no,new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        notRestoreRoutingMode();
+      }
+    }
+);
+    builder.show();
+  }
+}
