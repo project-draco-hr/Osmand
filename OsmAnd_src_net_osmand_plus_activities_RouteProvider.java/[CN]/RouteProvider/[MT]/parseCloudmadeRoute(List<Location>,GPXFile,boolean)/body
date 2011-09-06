@@ -1,7 +1,18 @@
 {
   List<RouteDirectionInfo> directions=null;
-  for (  WptPt pt : gpxFile.points) {
-    res.add(createLocation(pt));
+  if (!osmandRouter) {
+    for (    WptPt pt : gpxFile.points) {
+      res.add(createLocation(pt));
+    }
+  }
+ else {
+    for (    Track tr : gpxFile.tracks) {
+      for (      TrkSegment ts : tr.segments) {
+        for (        WptPt p : ts.points) {
+          res.add(createLocation(p));
+        }
+      }
+    }
   }
   Route route=null;
   if (gpxFile.routes.size() > 0) {
@@ -31,7 +42,7 @@
         }
         int offset=Integer.parseInt(item.getExtensionsToRead().get("offset"));
         dirInfo.routePointOffset=offset;
-        if (previous != null && previous.turnType != null && !TurnType.C.equals(previous.turnType.getValue())) {
+        if (previous != null && previous.turnType != null && !TurnType.C.equals(previous.turnType.getValue()) && !osmandRouter) {
           if (previous.routePointOffset > 0) {
             float paz=res.get(previous.routePointOffset - 1).bearingTo(res.get(previous.routePointOffset));
             float caz;
