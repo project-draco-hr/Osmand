@@ -3,7 +3,10 @@
     if (!isContinuous()) {
       LocationManager locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
       locationManager.removeUpdates(this);
-      getLock(this).release();
+      WakeLock lock=getLock(this);
+      if (lock.isHeld()) {
+        lock.release();
+      }
     }
     savingTrackHelper.insertData(location.getLatitude(),location.getLongitude(),location.getAltitude(),location.getSpeed(),location.getAccuracy(),location.getTime(),settings);
     if (routingHelper.isFollowingMode()) {
