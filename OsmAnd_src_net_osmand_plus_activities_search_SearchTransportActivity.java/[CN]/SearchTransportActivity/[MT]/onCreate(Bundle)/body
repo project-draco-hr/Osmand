@@ -1,12 +1,16 @@
 {
   super.onCreate(icicle);
   settings=OsmandSettings.getOsmandSettings(this);
-  Bundle extras=getIntent().getExtras();
-  if (extras != null && extras.containsKey(LAT_KEY) && extras.containsKey(LON_KEY)) {
-    lastKnownMapLocation=new LatLon(extras.getDouble(LAT_KEY),extras.getDouble(LON_KEY));
+  Intent intent=getIntent();
+  if (intent != null) {
+    float lat=intent.getFloatExtra(SEARCH_LAT,0);
+    float lon=intent.getFloatExtra(SEARCH_LON,0);
+    if (lat != 0 || lon != 0) {
+      lastKnownMapLocation=new LatLon(lat,lon);
+    }
   }
- else {
-    lastKnownMapLocation=settings.getLastKnownMapLocation();
+  if (lastKnownMapLocation == null) {
+    lastKnownMapLocation=OsmandSettings.getOsmandSettings(this).getLastKnownMapLocation();
   }
   setContentView(R.layout.search_transport);
   searchTransportLevel=(Button)findViewById(R.id.SearchTransportLevelButton);
