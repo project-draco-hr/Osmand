@@ -1,0 +1,26 @@
+{
+  if (locationListener == null) {
+    locationListener=new LocationListener(){
+      @Override public void onStatusChanged(      String provider,      int status,      Bundle extras){
+      }
+      @Override public void onProviderEnabled(      String provider){
+      }
+      @Override public void onProviderDisabled(      String provider){
+      }
+      @Override public void onLocationChanged(      Location location){
+        if (location != null) {
+          updateSearchPoint(new LatLon(location.getLatitude(),location.getLongitude()),getString(R.string.search_position_current_location_found),false);
+          if (location.getAccuracy() < GPS_ACCURACY) {
+            endSearchCurrentLocation();
+          }
+        }
+      }
+    }
+;
+    LocationManager locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
+    for (    String provider : locationManager.getAllProviders()) {
+      locationManager.requestLocationUpdates(provider,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,locationListener);
+    }
+  }
+  updateSearchPoint(null,getString(R.string.search_position_current_location_search),false);
+}
