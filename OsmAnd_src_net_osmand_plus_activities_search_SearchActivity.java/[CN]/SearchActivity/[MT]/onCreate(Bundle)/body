@@ -3,7 +3,7 @@
   requestWindowFeature(Window.FEATURE_NO_TITLE);
   setContentView(R.layout.search_main);
   spinner=(Spinner)findViewById(R.id.SpinnerLocation);
-  spinnerAdapter=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,new ArrayList<String>(Arrays.asList(new String[]{getString(R.string.search_position_undefined),getString(R.string.search_position_current_location),getString(R.string.search_position_map_view),getString(R.string.search_position_favorites),getString(R.string.search_position_address)})));
+  spinnerAdapter=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,new ArrayList<String>(Arrays.asList(new String[]{getString(R.string.search_position_undefined),getString(R.string.search_position_current_location),getString(R.string.search_position_map_view),getString(R.string.search_position_favorites)})));
   TabHost host=getTabHost();
   host.addTab(host.newTabSpec("Search_POI").setIndicator(getString(R.string.poi)).setContent(new Intent(this,SearchPoiFilterActivity.class)));
   addressSpec=host.newTabSpec("Search_Address").setIndicator(getString(R.string.address));
@@ -12,6 +12,7 @@
   host.addTab(host.newTabSpec("Search_Location").setIndicator(getString(R.string.search_tabs_location)).setContent(createIntent(NavigatePointActivity.class)));
   TabSpec transportTab=host.newTabSpec("Search_Transport").setIndicator(getString(R.string.transport)).setContent(createIntent(SearchTransportActivity.class));
   host.addTab(transportTab);
+  host.addTab(host.newTabSpec("Search_Favorites").setIndicator(getString(R.string.favorite)).setContent(createIntent(FavouritesListActivity.class)));
   host.addTab(host.newTabSpec("Search_History").setIndicator(getString(R.string.history)).setContent(createIntent(SearchHistoryActivity.class)));
   host.setCurrentTab(POI_TAB_INDEX);
   spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -29,6 +30,12 @@
           if (position == POSITION_LAST_MAP_VIEW) {
             OsmandSettings settings=OsmandSettings.getOsmandSettings(SearchActivity.this);
             updateSearchPoint(settings.getLastKnownMapLocation(),getString(R.string.search_position_fixed),true);
+          }
+ else           if (position == POSITION_FAVORITES) {
+            Intent intent=new Intent(SearchActivity.this,FavouritesListActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intent.putExtra(FavouritesListActivity.SELECT_FAVORITE_POINT_INTENT_KEY,(Serializable)null);
+            startActivityForResult(intent,REQUEST_FAVORITE_SELECT);
           }
         }
       }
