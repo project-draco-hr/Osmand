@@ -1,6 +1,6 @@
 {
-  super.onResume();
   LatLon loc=null;
+  boolean searchAround=false;
   Intent intent=getIntent();
   if (intent != null) {
     double lat=intent.getDoubleExtra(SEARCH_LAT,0);
@@ -11,9 +11,13 @@
   }
   if (loc == null && getParent() instanceof SearchActivity) {
     loc=((SearchActivity)getParent()).getSearchPoint();
+    searchAround=((SearchActivity)getParent()).isSearchAroundCurrentLocation();
   }
-  if (loc == null) {
+  if (loc == null && !searchAround) {
     loc=OsmandSettings.getOsmandSettings(this).getLastKnownMapLocation();
   }
-  initUI(loc.getLatitude(),loc.getLongitude());
+  if (loc != null && !searchAround) {
+    intentToLaunch.putExtra(SearchActivity.SEARCH_LAT,loc.getLatitude());
+    intentToLaunch.putExtra(SearchActivity.SEARCH_LON,loc.getLongitude());
+  }
 }
