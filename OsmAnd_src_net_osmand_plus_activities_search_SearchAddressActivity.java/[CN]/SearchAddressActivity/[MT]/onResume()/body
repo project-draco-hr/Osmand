@@ -1,37 +1,14 @@
 {
   super.onResume();
+  searchPoint=osmandSettings.getLastSearchedPoint();
+  showOnMap.setEnabled(searchPoint != null);
+  navigateTo.setEnabled(searchPoint != null);
   region=null;
-  String lastSearchedRegion=osmandSettings.getLastSearchedRegion();
-  region=((OsmandApplication)getApplication()).getResourceManager().getRegionRepository(lastSearchedRegion);
-  String progressMsg=null;
-  if (region != null) {
-    Long cityId=osmandSettings.getLastSearchedCity();
-    String postcode=osmandSettings.getLastSearchedPostcode();
-    if (!region.areCitiesPreloaded()) {
-      progressMsg=getString(R.string.loading_cities);
-    }
- else     if (postcode != null && !region.arePostcodesPreloaded()) {
-      progressMsg=getString(R.string.loading_postcodes);
-    }
- else     if (cityId != -1 && region.getCityById(cityId) != null && region.getCityById(cityId).isEmptyWithStreets()) {
-      progressMsg=getString(R.string.loading_streets_buildings);
-    }
- else     if (postcode != null && region.getPostcode(postcode) != null && region.getPostcode(postcode).isEmptyWithStreets()) {
-      progressMsg=getString(R.string.loading_streets_buildings);
-    }
- else     if (osmandSettings.USE_ENGLISH_NAMES.get() != region.useEnglishNames()) {
-      progressMsg=getString(R.string.converting_names);
-    }
-  }
   postcode=null;
   city=null;
   street=null;
   building=null;
-  if (progressMsg != null) {
-    startLoadDataInThread(progressMsg);
-  }
- else {
-    loadData();
-    updateUI();
-  }
+  region=osmandSettings.getLastSearchedRegion();
+  loadData();
+  updateUI();
 }

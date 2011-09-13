@@ -1,34 +1,34 @@
 {
-  findViewById(R.id.ResetCountry).setEnabled(region != null);
-  if (region == null) {
+  findViewById(R.id.ResetCountry).setEnabled(!Algoritms.isEmpty(region));
+  if (Algoritms.isEmpty(region)) {
     countryButton.setText(R.string.ChooseCountry);
   }
  else {
-    countryButton.setText(region.getName());
+    countryButton.setText(region);
   }
   findViewById(R.id.ResetCity).setEnabled(postcode != null || city != null);
-  if (city == null && postcode == null) {
+  if (Algoritms.isEmpty(city) && Algoritms.isEmpty(postcode)) {
     cityButton.setText(R.string.choose_city);
   }
  else {
-    if (postcode != null) {
-      cityButton.setText(postcode.getName());
+    if (!Algoritms.isEmpty(postcode)) {
+      cityButton.setText(postcode);
     }
  else {
-      cityButton.setText(city.getName(region.useEnglishNames()));
+      cityButton.setText(city);
     }
   }
-  cityButton.setEnabled(region != null);
-  findViewById(R.id.ResetStreet).setEnabled(street != null);
+  cityButton.setEnabled(!Algoritms.isEmpty(region));
+  findViewById(R.id.ResetStreet).setEnabled(!Algoritms.isEmpty(street));
   if (street == null) {
     streetButton.setText(R.string.choose_street);
   }
  else {
-    streetButton.setText(street.getName(region.useEnglishNames()));
+    streetButton.setText(street);
   }
-  streetButton.setEnabled(city != null || postcode != null);
-  buildingButton.setEnabled(street != null);
-  ((RadioGroup)findViewById(R.id.RadioGroup)).setVisibility(street == null ? View.GONE : View.VISIBLE);
+  streetButton.setEnabled(!Algoritms.isEmpty(city) || !Algoritms.isEmpty(postcode));
+  buildingButton.setEnabled(!Algoritms.isEmpty(street));
+  ((RadioGroup)findViewById(R.id.RadioGroup)).setVisibility(Algoritms.isEmpty(street) ? View.GONE : View.VISIBLE);
   if (radioBuilding) {
     ((RadioButton)findViewById(R.id.RadioBuilding)).setChecked(true);
   }
@@ -36,6 +36,4 @@
     ((RadioButton)findViewById(R.id.RadioIntersStreet)).setChecked(true);
   }
   updateBuildingSection();
-  showOnMap.setEnabled(city != null || street != null);
-  navigateTo.setEnabled(city != null || street != null);
 }
