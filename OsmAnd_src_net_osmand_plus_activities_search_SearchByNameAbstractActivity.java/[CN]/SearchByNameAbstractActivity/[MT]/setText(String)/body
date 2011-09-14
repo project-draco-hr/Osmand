@@ -4,20 +4,13 @@
     return;
   }
   ((NamesAdapter)getListAdapter()).clear();
-  if (handlerToLoop == null) {
-    return;
+  Status status=searchTask.getStatus();
+  if (status == Status.FINISHED) {
+    searchTask=new SearchByNameTask();
   }
-  handlerToLoop.removeMessages(1);
-  Message msg=Message.obtain(handlerToLoop,new Runnable(){
-    @Override public void run(){
-      showProgress(View.VISIBLE);
-      List<T> loadedObjects=getObjects(filter);
-      if (handlerToLoop != null && !handlerToLoop.hasMessages(1)) {
-        updateUIList(loadedObjects);
-      }
-    }
+ else   if (status == Status.RUNNING) {
+    searchTask.cancel(true);
+    searchTask=new SearchByNameTask();
   }
-);
-  msg.what=1;
-  handlerToLoop.sendMessageDelayed(msg,150);
+  searchTask.execute(filter);
 }

@@ -1,0 +1,74 @@
+{
+  List<MapObject> citiesToFill=new ArrayList<MapObject>();
+  if (cities.isEmpty()) {
+    preloadCities(resultMatcher);
+    citiesToFill.addAll(cities.values());
+    return citiesToFill;
+  }
+ else {
+    preloadCities(null);
+  }
+  try {
+    int ind=0;
+    if (name.length() >= 2 && Algoritms.containsDigit(name)) {
+      String uName=name.toUpperCase();
+      for (      PostCode code : file.getPostcodes(region,resultMatcher,new ContainsStringMatcher(uName,collator))) {
+        if (cstartsWith(collator,code.getName(),uName)) {
+          citiesToFill.add(ind++,code);
+        }
+ else         if (ccontains(collator,code.getName(),uName)) {
+          citiesToFill.add(code);
+        }
+      }
+    }
+    if (name.length() < 3) {
+      if (name.length() == 0) {
+        citiesToFill.addAll(cities.values());
+      }
+ else {
+        name=name.toLowerCase();
+        for (        City c : cities.values()) {
+          String cName=useEnglishNames ? c.getEnName() : c.getName();
+          if (cstartsWith(collator,cName,name)) {
+            if (resultMatcher.publish(c)) {
+              citiesToFill.add(c);
+            }
+          }
+        }
+      }
+    }
+ else {
+      name=name.toLowerCase();
+      for (      City c : cities.values()) {
+        String cName=useEnglishNames ? c.getEnName() : c.getName();
+        if (cstartsWith(collator,cName,name)) {
+          if (resultMatcher.publish(c)) {
+            citiesToFill.add(ind,c);
+            ind++;
+          }
+        }
+ else         if (ccontains(collator,name,cName)) {
+          if (resultMatcher.publish(c)) {
+            citiesToFill.add(c);
+          }
+        }
+      }
+      int initialsize=citiesToFill.size();
+      for (      City c : file.getVillages(region,resultMatcher,new ContainsStringMatcher(name,collator),useEnglishNames)) {
+        String cName=c.getName(useEnglishNames);
+        if (cstartsWith(collator,cName,name)) {
+          citiesToFill.add(ind,c);
+          ind++;
+        }
+ else         if (ccontains(collator,name,cName)) {
+          citiesToFill.add(c);
+        }
+      }
+      log.debug("Loaded citites " + (citiesToFill.size() - initialsize));
+    }
+  }
+ catch (  IOException e) {
+    log.error("Disk operation failed",e);
+  }
+  return citiesToFill;
+}

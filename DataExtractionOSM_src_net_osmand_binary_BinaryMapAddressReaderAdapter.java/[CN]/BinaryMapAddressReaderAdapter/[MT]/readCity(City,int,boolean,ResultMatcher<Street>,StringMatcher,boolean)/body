@@ -1,0 +1,96 @@
+{
+  int x=0;
+  int y=0;
+  int streetInd=0;
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+    boolean englishNameMatched=false;
+switch (tag) {
+case 0:
+      return c;
+case OsmandOdb.CityIndex.CITY_TYPE_FIELD_NUMBER:
+    int type=codedIS.readUInt32();
+  if (c == null) {
+    c=new City(CityType.values()[type]);
+    c.setFileOffset(fileOffset);
+  }
+break;
+case OsmandOdb.CityIndex.ID_FIELD_NUMBER:
+c.setId(codedIS.readUInt64());
+if (nameMatcher != null && useEn && !englishNameMatched) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return null;
+}
+break;
+case OsmandOdb.CityIndex.NAME_EN_FIELD_NUMBER:
+String enName=codedIS.readString();
+if (nameMatcher != null && enName.length() > 0) {
+if (!nameMatcher.matches(enName)) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return null;
+}
+ else {
+englishNameMatched=true;
+}
+}
+c.setEnName(enName);
+break;
+case OsmandOdb.CityIndex.NAME_FIELD_NUMBER:
+String name=codedIS.readString();
+c.setName(name);
+if (nameMatcher != null) {
+if (!useEn) {
+if (!nameMatcher.matches(name)) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return null;
+}
+}
+ else {
+if (nameMatcher.matches(Junidecode.unidecode(name))) {
+englishNameMatched=true;
+}
+}
+}
+break;
+case OsmandOdb.CityIndex.X_FIELD_NUMBER:
+x=codedIS.readFixed32();
+break;
+case OsmandOdb.CityIndex.Y_FIELD_NUMBER:
+y=codedIS.readFixed32();
+c.setLocation(MapUtils.get31LatitudeY(y),MapUtils.get31LongitudeX(x));
+if (c.getEnName().length() == 0) {
+c.setEnName(Junidecode.unidecode(c.getName()));
+}
+if (!loadStreets) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return c;
+}
+break;
+case OsmandOdb.CityIndex.INTERSECTIONS_FIELD_NUMBER:
+codedIS.skipRawBytes(codedIS.readRawVarint32());
+break;
+case OsmandOdb.CityIndex.STREETS_FIELD_NUMBER:
+int offset=codedIS.getTotalBytesRead();
+int length=codedIS.readRawVarint32();
+if (loadStreets) {
+Street s=new Street(c);
+int oldLimit=codedIS.pushLimit(length);
+s.setFileOffset(offset);
+s.setIndexInCity(streetInd++);
+readStreet(s,null,false,x >> 7,y >> 7,null);
+if (resultMatcher == null || resultMatcher.publish(s)) {
+c.registerStreet(s);
+}
+codedIS.popLimit(oldLimit);
+}
+ else {
+codedIS.skipRawBytes(length);
+}
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}
