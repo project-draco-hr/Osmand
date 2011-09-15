@@ -3,13 +3,14 @@
     @Override protected void onPostExecute(    Void result){
       ((TextView)findViewById(R.id.Label)).setText(R.string.incremental_search_building);
       progress.setVisibility(View.INVISIBLE);
-      resetText();
+      updateSearchText();
     }
     @Override protected void onPreExecute(){
       ((TextView)findViewById(R.id.Label)).setText(R.string.loading_streets_buildings);
       progress.setVisibility(View.VISIBLE);
     }
     @Override protected Void doInBackground(    Object... params){
+      region=((OsmandApplication)getApplication()).getResourceManager().getRegionRepository(settings.getLastSearchedRegion());
       if (region != null) {
         postcode=region.getPostcode(settings.getLastSearchedPostcode());
         city=region.getCityById(settings.getLastSearchedCity());
@@ -20,7 +21,9 @@
           street=region.getStreetByName(city,settings.getLastSearchedStreet());
         }
       }
-      region=((OsmandApplication)getApplication()).getResourceManager().getRegionRepository(settings.getLastSearchedRegion());
+      if (street != null) {
+        region.fillWithSuggestedBuildings(postcode,street,"",null);
+      }
       return null;
     }
   }

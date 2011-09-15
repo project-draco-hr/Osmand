@@ -7,14 +7,13 @@
   }
   preloadBuildings(street,null);
   name=name.toLowerCase();
-  int ind=0;
   for (  Building building : street.getBuildings()) {
-    String bName=useEnglishNames ? building.getEnName() : building.getName();
-    if (cstartsWith(collator,bName,name)) {
-      buildingsToFill.add(ind,building);
-      ind++;
+    if (resultMatcher.isCancelled()) {
+      return buildingsToFill;
     }
- else     if (ccontains(collator,name,bName)) {
+    String bName=useEnglishNames ? building.getEnName() : building.getName();
+    if (cmatches(collator,bName,name,StringMatcherMode.CHECK_ONLY_STARTS_WITH)) {
+      resultMatcher.publish(building);
       buildingsToFill.add(building);
     }
   }

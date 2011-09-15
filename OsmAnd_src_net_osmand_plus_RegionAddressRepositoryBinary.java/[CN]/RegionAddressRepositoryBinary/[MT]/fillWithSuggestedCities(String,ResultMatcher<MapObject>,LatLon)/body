@@ -5,67 +5,43 @@
     citiesToFill.addAll(cities.values());
     return citiesToFill;
   }
- else {
-    preloadCities(null);
+  preloadCities(null);
+  if (name.length() == 0) {
+    citiesToFill.addAll(cities.values());
+    return citiesToFill;
   }
   try {
-    int ind=0;
     if (name.length() >= 2 && Algoritms.containsDigit(name)) {
       String uName=name.toUpperCase();
-      for (      PostCode code : file.getPostcodes(region,resultMatcher,new ContainsStringMatcher(uName,collator))) {
-        if (cstartsWith(collator,code.getName(),uName)) {
-          citiesToFill.add(ind++,code);
-        }
- else         if (ccontains(collator,code.getName(),uName)) {
-          citiesToFill.add(code);
+      for (      PostCode code : file.getPostcodes(region,resultMatcher,new CollatorStringMatcher(collator,uName,StringMatcherMode.CHECK_CONTAINS))) {
+        citiesToFill.add(code);
+        if (resultMatcher.isCancelled()) {
+          return citiesToFill;
         }
       }
     }
-    if (name.length() < 3) {
-      if (name.length() == 0) {
-        citiesToFill.addAll(cities.values());
-      }
- else {
-        name=name.toLowerCase();
-        for (        City c : cities.values()) {
-          String cName=useEnglishNames ? c.getEnName() : c.getName();
-          if (cstartsWith(collator,cName,name)) {
-            if (resultMatcher.publish(c)) {
-              citiesToFill.add(c);
-            }
-          }
-        }
-      }
-    }
- else {
-      name=name.toLowerCase();
-      for (      City c : cities.values()) {
-        String cName=useEnglishNames ? c.getEnName() : c.getName();
-        if (cstartsWith(collator,cName,name)) {
-          if (resultMatcher.publish(c)) {
-            citiesToFill.add(ind,c);
-            ind++;
-          }
-        }
- else         if (ccontains(collator,name,cName)) {
-          if (resultMatcher.publish(c)) {
-            citiesToFill.add(c);
-          }
-        }
-      }
-      int initialsize=citiesToFill.size();
-      for (      City c : file.getVillages(region,resultMatcher,new ContainsStringMatcher(name,collator),useEnglishNames)) {
-        String cName=c.getName(useEnglishNames);
-        if (cstartsWith(collator,cName,name)) {
-          citiesToFill.add(ind,c);
-          ind++;
-        }
- else         if (ccontains(collator,name,cName)) {
+    name=name.toLowerCase();
+    for (    City c : cities.values()) {
+      String cName=c.getName(useEnglishNames);
+      if (cmatches(collator,cName,name,StringMatcherMode.CHECK_STARTS_FROM_SPACE)) {
+        if (resultMatcher.publish(c)) {
           citiesToFill.add(c);
         }
       }
-      log.debug("Loaded citites " + (citiesToFill.size() - initialsize));
+      if (resultMatcher.isCancelled()) {
+        return citiesToFill;
+      }
     }
+    int initialsize=citiesToFill.size();
+    if (name.length() >= 3) {
+      for (      City c : file.getVillages(region,resultMatcher,new CollatorStringMatcher(collator,name,StringMatcherMode.CHECK_STARTS_FROM_SPACE),useEnglishNames)) {
+        citiesToFill.add(c);
+        if (resultMatcher.isCancelled()) {
+          return citiesToFill;
+        }
+      }
+    }
+    log.debug("Loaded citites " + (citiesToFill.size() - initialsize));
   }
  catch (  IOException e) {
     log.error("Disk operation failed",e);
