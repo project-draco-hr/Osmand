@@ -3,31 +3,46 @@
     return;
   }
   String historyName=null;
+  String objectName="";
   int zoom=12;
   if (!Algoritms.isEmpty(street2) && !Algoritms.isEmpty(street)) {
     String cityName=!Algoritms.isEmpty(postcode) ? postcode : city;
+    objectName=street;
     historyName=MessageFormat.format(getString(R.string.search_history_int_streets),street,street2,cityName);
     zoom=16;
   }
  else   if (!Algoritms.isEmpty(building)) {
     String cityName=!Algoritms.isEmpty(postcode) ? postcode : city;
+    objectName=street + " " + building;
     historyName=MessageFormat.format(getString(R.string.search_history_building),building,street,cityName);
     zoom=16;
   }
  else   if (!Algoritms.isEmpty(street)) {
     String cityName=postcode != null ? postcode : city;
+    objectName=street;
     historyName=MessageFormat.format(getString(R.string.search_history_street),street,cityName);
     zoom=15;
   }
  else   if (!Algoritms.isEmpty(city)) {
     historyName=MessageFormat.format(getString(R.string.search_history_city),city);
+    objectName=city;
     zoom=13;
   }
-  if (navigateTo) {
-    osmandSettings.setPointToNavigate(searchPoint.getLatitude(),searchPoint.getLongitude(),historyName);
+  if (selectAddressMode) {
+    Intent intent=getIntent();
+    intent.putExtra(SELECT_ADDRESS_POINT_INTENT_KEY,objectName);
+    intent.putExtra(SELECT_ADDRESS_POINT_LAT,searchPoint.getLatitude());
+    intent.putExtra(SELECT_ADDRESS_POINT_LON,searchPoint.getLongitude());
+    setResult(SELECT_ADDRESS_POINT_RESULT_OK,intent);
+    finish();
   }
  else {
-    osmandSettings.setMapLocationToShow(searchPoint.getLatitude(),searchPoint.getLongitude(),zoom,historyName);
+    if (navigateTo) {
+      osmandSettings.setPointToNavigate(searchPoint.getLatitude(),searchPoint.getLongitude(),historyName);
+    }
+ else {
+      osmandSettings.setMapLocationToShow(searchPoint.getLatitude(),searchPoint.getLongitude(),zoom,historyName);
+    }
+    MapActivity.launchMapActivityMoveToTop(SearchAddressActivity.this);
   }
-  MapActivity.launchMapActivityMoveToTop(SearchAddressActivity.this);
 }
