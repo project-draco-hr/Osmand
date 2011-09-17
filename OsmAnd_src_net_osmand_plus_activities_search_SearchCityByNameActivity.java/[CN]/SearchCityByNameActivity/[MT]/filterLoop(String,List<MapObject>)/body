@@ -1,0 +1,18 @@
+{
+  if (!initializeTaskIsFinished() || query.length() <= 2) {
+    super.filterLoop(query,list);
+  }
+ else {
+    region.fillWithSuggestedCities(query,new ResultMatcher<MapObject>(){
+      @Override public boolean isCancelled(){
+        return namesFilter.isCancelled;
+      }
+      @Override public boolean publish(      MapObject object){
+        Message msg=uiHandler.obtainMessage(MESSAGE_ADD_ENTITY,object);
+        msg.sendToTarget();
+        return true;
+      }
+    }
+,locationToSearch);
+  }
+}

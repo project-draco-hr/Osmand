@@ -1,0 +1,50 @@
+{
+  List<MapObject> citiesToFill=new ArrayList<MapObject>();
+  if (cities.isEmpty()) {
+    preloadCities(resultMatcher);
+    citiesToFill.addAll(cities.values());
+    return citiesToFill;
+  }
+  preloadCities(null);
+  if (name.length() == 0) {
+    citiesToFill.addAll(cities.values());
+    return citiesToFill;
+  }
+  try {
+    if (name.length() >= 2 && Algoritms.containsDigit(name)) {
+      String uName=name.toUpperCase();
+      for (      PostCode code : file.getPostcodes(region,resultMatcher,new CollatorStringMatcher(collator,uName,StringMatcherMode.CHECK_CONTAINS))) {
+        citiesToFill.add(code);
+        if (resultMatcher.isCancelled()) {
+          return citiesToFill;
+        }
+      }
+    }
+    name=name.toLowerCase();
+    for (    City c : cities.values()) {
+      String cName=c.getName(useEnglishNames);
+      if (cmatches(collator,cName,name,StringMatcherMode.CHECK_STARTS_FROM_SPACE)) {
+        if (resultMatcher.publish(c)) {
+          citiesToFill.add(c);
+        }
+      }
+      if (resultMatcher.isCancelled()) {
+        return citiesToFill;
+      }
+    }
+    int initialsize=citiesToFill.size();
+    if (name.length() >= 3) {
+      for (      City c : file.getVillages(region,resultMatcher,new CollatorStringMatcher(collator,name,StringMatcherMode.CHECK_STARTS_FROM_SPACE),useEnglishNames)) {
+        citiesToFill.add(c);
+        if (resultMatcher.isCancelled()) {
+          return citiesToFill;
+        }
+      }
+    }
+    log.debug("Loaded citites " + (citiesToFill.size() - initialsize));
+  }
+ catch (  IOException e) {
+    log.error("Disk operation failed",e);
+  }
+  return citiesToFill;
+}

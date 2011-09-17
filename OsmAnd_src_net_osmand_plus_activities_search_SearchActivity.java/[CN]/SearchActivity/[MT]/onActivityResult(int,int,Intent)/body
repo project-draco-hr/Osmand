@@ -1,0 +1,20 @@
+{
+  super.onActivityResult(requestCode,resultCode,data);
+  if (requestCode == REQUEST_FAVORITE_SELECT && resultCode == FavouritesListActivity.SELECT_FAVORITE_POINT_RESULT_OK) {
+    FavouritePoint p=(FavouritePoint)data.getSerializableExtra(FavouritesListActivity.SELECT_FAVORITE_POINT_INTENT_KEY);
+    if (p != null) {
+      LatLon latLon=new LatLon(p.getLatitude(),p.getLongitude());
+      updateSearchPoint(latLon,p.getName(),false);
+    }
+  }
+ else   if (requestCode == REQUEST_ADDRESS_SELECT && resultCode == SearchAddressActivity.SELECT_ADDRESS_POINT_RESULT_OK) {
+    String name=data.getStringExtra(SearchAddressActivity.SELECT_ADDRESS_POINT_INTENT_KEY);
+    LatLon latLon=new LatLon(data.getDoubleExtra(SearchAddressActivity.SELECT_ADDRESS_POINT_LAT,0),data.getDoubleExtra(SearchAddressActivity.SELECT_ADDRESS_POINT_LON,0));
+    if (name != null) {
+      updateSearchPoint(latLon,name,false);
+    }
+ else {
+      updateSearchPoint(latLon,getString(R.string.search_position_fixed),true);
+    }
+  }
+}

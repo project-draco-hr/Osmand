@@ -1,0 +1,41 @@
+{
+  return new AsyncTask<Object,Void,List<Building>>(){
+    @Override protected void onPostExecute(    List<Building> result){
+      ((TextView)findViewById(R.id.Label)).setText(R.string.incremental_search_building);
+      progress.setVisibility(View.INVISIBLE);
+      finishInitializing(result);
+    }
+    @Override protected void onPreExecute(){
+      ((TextView)findViewById(R.id.Label)).setText(R.string.loading_streets_buildings);
+      progress.setVisibility(View.VISIBLE);
+    }
+    @Override protected List<Building> doInBackground(    Object... params){
+      region=((OsmandApplication)getApplication()).getResourceManager().getRegionRepository(settings.getLastSearchedRegion());
+      if (region != null) {
+        postcode=region.getPostcode(settings.getLastSearchedPostcode());
+        city=region.getCityById(settings.getLastSearchedCity());
+        if (postcode != null) {
+          street=region.getStreetByName(postcode,settings.getLastSearchedStreet());
+        }
+ else         if (city != null) {
+          street=region.getStreetByName(city,settings.getLastSearchedStreet());
+        }
+      }
+      if (street != null) {
+        region.preloadBuildings(street,new ResultMatcher<Building>(){
+          @Override public boolean isCancelled(){
+            return false;
+          }
+          @Override public boolean publish(          Building object){
+            addObjectToInitialList(object);
+            return true;
+          }
+        }
+);
+        return street.getBuildings();
+      }
+      return null;
+    }
+  }
+;
+}

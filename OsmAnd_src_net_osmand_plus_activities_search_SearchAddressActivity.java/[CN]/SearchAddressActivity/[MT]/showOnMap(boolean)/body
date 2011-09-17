@@ -1,39 +1,47 @@
 {
-  LatLon l=null;
-  String historyName=null;
-  int zoom=12;
-  boolean en=osmandSettings.USE_ENGLISH_NAMES.get();
-  if (street2 != null && street != null) {
-    l=region.findStreetIntersection(street,street2);
-    if (l != null) {
-      String cityName=postcode != null ? postcode.getName() : city.getName(en);
-      historyName=MessageFormat.format(getString(R.string.search_history_int_streets),street.getName(en),street2.getName(en),cityName);
-      zoom=16;
-    }
+  if (searchPoint == null) {
+    return;
   }
- else   if (building != null) {
-    l=building.getLocation();
-    String cityName=postcode != null ? postcode.getName() : city.getName(en);
-    historyName=MessageFormat.format(getString(R.string.search_history_building),building.getName(en),street.getName(en),cityName);
+  String historyName=null;
+  String objectName="";
+  int zoom=12;
+  if (!Algoritms.isEmpty(street2) && !Algoritms.isEmpty(street)) {
+    String cityName=!Algoritms.isEmpty(postcode) ? postcode : city;
+    objectName=street;
+    historyName=MessageFormat.format(getString(R.string.search_history_int_streets),street,street2,cityName);
     zoom=16;
   }
- else   if (street != null) {
-    l=street.getLocation();
-    String cityName=postcode != null ? postcode.getName() : city.getName(en);
-    historyName=MessageFormat.format(getString(R.string.search_history_street),street.getName(en),cityName);
-    zoom=14;
+ else   if (!Algoritms.isEmpty(building)) {
+    String cityName=!Algoritms.isEmpty(postcode) ? postcode : city;
+    objectName=street + " " + building;
+    historyName=MessageFormat.format(getString(R.string.search_history_building),building,street,cityName);
+    zoom=16;
   }
- else   if (city != null) {
-    l=city.getLocation();
-    historyName=MessageFormat.format(getString(R.string.search_history_city),city.getName(en));
-    zoom=12;
+ else   if (!Algoritms.isEmpty(street)) {
+    String cityName=postcode != null ? postcode : city;
+    objectName=street;
+    historyName=MessageFormat.format(getString(R.string.search_history_street),street,cityName);
+    zoom=15;
   }
-  if (l != null) {
+ else   if (!Algoritms.isEmpty(city)) {
+    historyName=MessageFormat.format(getString(R.string.search_history_city),city);
+    objectName=city;
+    zoom=13;
+  }
+  if (selectAddressMode) {
+    Intent intent=getIntent();
+    intent.putExtra(SELECT_ADDRESS_POINT_INTENT_KEY,objectName);
+    intent.putExtra(SELECT_ADDRESS_POINT_LAT,searchPoint.getLatitude());
+    intent.putExtra(SELECT_ADDRESS_POINT_LON,searchPoint.getLongitude());
+    setResult(SELECT_ADDRESS_POINT_RESULT_OK,intent);
+    finish();
+  }
+ else {
     if (navigateTo) {
-      osmandSettings.setPointToNavigate(l.getLatitude(),l.getLongitude(),historyName);
+      osmandSettings.setPointToNavigate(searchPoint.getLatitude(),searchPoint.getLongitude(),historyName);
     }
  else {
-      osmandSettings.setMapLocationToShow(l.getLatitude(),l.getLongitude(),zoom,historyName);
+      osmandSettings.setMapLocationToShow(searchPoint.getLatitude(),searchPoint.getLongitude(),zoom,historyName);
     }
     MapActivity.launchMapActivityMoveToTop(SearchAddressActivity.this);
   }

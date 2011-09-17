@@ -1,0 +1,31 @@
+{
+  return new AsyncTask<Object,MapObject,List<MapObject>>(){
+    @Override protected void onPostExecute(    List<MapObject> result){
+      ((TextView)findViewById(R.id.Label)).setText(R.string.incremental_search_city);
+      progress.setVisibility(View.INVISIBLE);
+      finishInitializing(result);
+    }
+    @Override protected void onPreExecute(){
+      ((TextView)findViewById(R.id.Label)).setText(R.string.loading_cities);
+      progress.setVisibility(View.VISIBLE);
+    }
+    @Override protected List<MapObject> doInBackground(    Object... params){
+      region=((OsmandApplication)getApplication()).getResourceManager().getRegionRepository(settings.getLastSearchedRegion());
+      if (region != null) {
+        region.preloadCities(new ResultMatcher<MapObject>(){
+          @Override public boolean publish(          MapObject object){
+            addObjectToInitialList(object);
+            return true;
+          }
+          @Override public boolean isCancelled(){
+            return false;
+          }
+        }
+);
+        return region.getLoadedCities();
+      }
+      return null;
+    }
+  }
+;
+}

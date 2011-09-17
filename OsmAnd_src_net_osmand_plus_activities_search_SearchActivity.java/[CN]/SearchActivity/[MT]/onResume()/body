@@ -1,0 +1,28 @@
+{
+  super.onResume();
+  TabHost host=getTabHost();
+  Intent intent=getIntent();
+  int tabIndex=0;
+  if (intent != null) {
+    if (intent.hasExtra(TAB_INDEX_EXTRA)) {
+      tabIndex=intent.getIntExtra(TAB_INDEX_EXTRA,POI_TAB_INDEX);
+      host.setCurrentTab(tabIndex);
+    }
+    double lat=intent.getDoubleExtra(SEARCH_LAT,0);
+    double lon=intent.getDoubleExtra(SEARCH_LON,0);
+    if (lat != 0 || lon != 0) {
+      LatLon l=new LatLon(lat,lon);
+      if (!Algoritms.objectEquals(reqSearchPoint,l)) {
+        reqSearchPoint=l;
+        updateSearchPoint(reqSearchPoint,getString(R.string.search_position_fixed),true);
+      }
+    }
+  }
+  if (searchPoint == null) {
+    LatLon last=OsmandSettings.getOsmandSettings(this).getLastKnownMapLocation();
+    if (!Algoritms.objectEquals(reqSearchPoint,last)) {
+      reqSearchPoint=last;
+      updateSearchPoint(last,getString(R.string.search_position_fixed),true);
+    }
+  }
+}

@@ -1,26 +1,22 @@
 {
-  if (region != null) {
-    if (region.useEnglishNames() != osmandSettings.USE_ENGLISH_NAMES.get()) {
-      region.setUseEnglishNames(osmandSettings.USE_ENGLISH_NAMES.get());
-    }
+  if (!Algoritms.isEmpty(region)) {
     String postcodeStr=osmandSettings.getLastSearchedPostcode();
-    if (postcodeStr != null) {
-      postcode=region.getPostcode(postcodeStr);
+    if (!Algoritms.isEmpty(postcodeStr)) {
+      postcode=postcodeStr;
     }
  else {
-      city=region.getCityById(osmandSettings.getLastSearchedCity());
+      city=osmandSettings.getLastSearchedCityName();
     }
-    if (postcode != null || city != null) {
-      MapObject o=postcode == null ? city : postcode;
-      street=region.getStreetByName(o,osmandSettings.getLastSearchedStreet());
-      if (street != null) {
+    if (!Algoritms.isEmpty(postcode) || !Algoritms.isEmpty(city)) {
+      street=osmandSettings.getLastSearchedStreet();
+      if (!Algoritms.isEmpty(street)) {
         String str=osmandSettings.getLastSearchedIntersectedStreet();
-        radioBuilding=str == null;
-        if (str != null) {
-          street2=region.getStreetByName(o,str);
+        radioBuilding=Algoritms.isEmpty(str);
+        if (!radioBuilding) {
+          street2=str;
         }
  else {
-          building=region.getBuildingByName(street,osmandSettings.getLastSearchedBuilding());
+          building=osmandSettings.getLastSearchedBuilding();
         }
       }
     }

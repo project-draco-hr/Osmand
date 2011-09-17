@@ -1,0 +1,30 @@
+{
+  View row=convertView;
+  if (row == null) {
+    LayoutInflater inflater=getLayoutInflater();
+    row=inflater.inflate(R.layout.favourites_list_item,parent,false);
+  }
+  TextView label=(TextView)row.findViewById(R.id.favourite_label);
+  TextView distanceLabel=(TextView)row.findViewById(R.id.favouritedistance_label);
+  ImageView icon=(ImageView)row.findViewById(R.id.favourite_icon);
+  final FavouritePoint model=getItem(position);
+  if (model.isStored()) {
+    icon.setImageResource(R.drawable.favorites);
+  }
+ else {
+    icon.setImageResource(R.drawable.opened_poi);
+  }
+  if (location != null) {
+    int dist=(int)(MapUtils.getDistance(model.getLatitude(),model.getLongitude(),location.getLatitude(),location.getLongitude()));
+    distanceLabel.setText(OsmAndFormatter.getFormattedDistance(dist,FavouritesListActivity.this));
+    distanceLabel.setVisibility(View.VISIBLE);
+  }
+ else {
+    distanceLabel.setVisibility(View.GONE);
+  }
+  label.setText(getName(model));
+  final CheckBox ch=(CheckBox)row.findViewById(R.id.check_item);
+  row.findViewById(R.id.favourite_icon).setVisibility(View.VISIBLE);
+  ch.setVisibility(View.GONE);
+  return row;
+}

@@ -1,15 +1,14 @@
 {
-synchronized (this) {
-    if (handlerToLoop == null) {
-      new Thread("Filter data"){
-        @Override public void run(){
-          Looper.prepare();
-          handlerToLoop=new Handler();
-          Looper.loop();
-        }
-      }
-.start();
+  super.onResume();
+  Intent intent=getIntent();
+  if (intent != null) {
+    if (intent.hasExtra(SearchActivity.SEARCH_LAT) && intent.hasExtra(SearchActivity.SEARCH_LON)) {
+      double lat=intent.getDoubleExtra(SearchActivity.SEARCH_LAT,0);
+      double lon=intent.getDoubleExtra(SearchActivity.SEARCH_LON,0);
+      locationToSearch=new LatLon(lat,lon);
     }
   }
-  super.onResume();
+  if (locationToSearch == null) {
+    locationToSearch=settings.getLastKnownMapLocation();
+  }
 }

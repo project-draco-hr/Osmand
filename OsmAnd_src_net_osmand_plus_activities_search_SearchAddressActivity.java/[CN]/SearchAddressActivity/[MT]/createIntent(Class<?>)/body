@@ -1,0 +1,20 @@
+{
+  LatLon location=null;
+  Intent intent=getIntent();
+  if (intent != null) {
+    double lat=intent.getDoubleExtra(SearchActivity.SEARCH_LAT,0);
+    double lon=intent.getDoubleExtra(SearchActivity.SEARCH_LON,0);
+    if (lat != 0 || lon != 0) {
+      location=new LatLon(lat,lon);
+    }
+  }
+  if (location == null && getParent() instanceof SearchActivity) {
+    location=((SearchActivity)getParent()).getSearchPoint();
+  }
+  Intent newIntent=new Intent(SearchAddressActivity.this,cl);
+  if (location != null) {
+    newIntent.putExtra(SearchActivity.SEARCH_LAT,location.getLatitude());
+    newIntent.putExtra(SearchActivity.SEARCH_LON,location.getLongitude());
+  }
+  return newIntent;
+}
