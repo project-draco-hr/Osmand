@@ -4,9 +4,8 @@
     if (!exist) {
       ctx.loadEntityData(e,false);
       LatLon l=e.getLatLon();
-      City city=getClosestCity(l,getIsINames(e));
-      Long idStreet=getStreetInCity(city,e.getTag(OSMTagKey.ADDR_STREET),l,(e.getId() << 2));
-      if (idStreet != null) {
+      Set<Long> idStreet=getStreetInCity(getIsINames(e),e.getTag(OSMTagKey.ADDR_STREET),null,l,(e.getId() << 2));
+      if (!idStreet.isEmpty()) {
         Building building=new Building(e);
         building.setName(e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER));
         streetDAO.writeBuilding(idStreet,building);
@@ -21,9 +20,8 @@
     if (!exist) {
       ctx.loadEntityData(e,false);
       LatLon l=e.getLatLon();
-      City city=getClosestCity(l,getIsINames(e));
-      Long idStreet=getStreetInCity(city,e.getTag(OSMTagKey.NAME),l,(e.getId() << 2) | 1);
-      if (idStreet != null && saveAddressWays) {
+      Set<Long> idStreet=getStreetInCity(getIsINames(e),e.getTag(OSMTagKey.NAME),e.getTag(OSMTagKey.NAME_EN),l,(e.getId() << 2) | 1);
+      if (!idStreet.isEmpty() && saveAddressWays) {
         streetDAO.writeStreetWayNodes(idStreet,(Way)e);
       }
     }

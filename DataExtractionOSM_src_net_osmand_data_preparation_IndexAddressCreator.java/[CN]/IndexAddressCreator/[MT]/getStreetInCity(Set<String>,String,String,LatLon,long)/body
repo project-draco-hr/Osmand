@@ -1,0 +1,23 @@
+{
+  if (name == null || location == null) {
+    return Collections.emptySet();
+  }
+  name=normalizeStreetName(name);
+  List<City> result=new ArrayList<City>();
+  List<City> nearestObjects=new ArrayList<City>();
+  nearestObjects.addAll(cityManager.getClosestObjects(location.getLatitude(),location.getLongitude()));
+  nearestObjects.addAll(cityVillageManager.getClosestObjects(location.getLatitude(),location.getLongitude()));
+  for (  City c : nearestObjects) {
+    Boundary boundary=cityBoundaries.get(c);
+    if (isInNames.contains(c.getName()) || boundary.containsPoint(location)) {
+      result.add(c);
+    }
+  }
+  if (result.isEmpty()) {
+    City city=getClosestCity(location,isInNames);
+    if (city != null) {
+      result.add(city);
+    }
+  }
+  return registerStreetInCity(name,nameEn,location,initId,result);
+}
