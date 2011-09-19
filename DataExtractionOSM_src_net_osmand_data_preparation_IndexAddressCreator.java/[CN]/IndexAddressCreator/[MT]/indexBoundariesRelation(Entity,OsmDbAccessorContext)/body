@@ -11,28 +11,39 @@
  catch (    NumberFormatException ex) {
       return;
     }
+    if (adminLevel < 4) {
+      return;
+    }
     Boundary boundary=extractBoundary(e,ctx);
     if (boundary != null && boundary.getCenterPoint() != null && !Algoritms.isEmpty(boundary.getName())) {
       boundary.setAdminLevel(adminLevel);
       LatLon point=boundary.getCenterPoint();
-      boolean cityFound=false;
-      for (      City c : cityManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3)) {
+      City cityFound=null;
+      List<City> citiesToSearch=new ArrayList<City>();
+      citiesToSearch.addAll(cityManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3));
+      citiesToSearch.addAll(cityVillageManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3));
+      String boundaryName=boundary.getName().toLowerCase();
+      for (      City c : citiesToSearch) {
         if (boundary.containsPoint(c.getLocation())) {
-          if (boundary.getName().equalsIgnoreCase(c.getName())) {
-            putCityBoundary(boundary,c);
-            cityFound=true;
+          if (boundaryName.equalsIgnoreCase(c.getName())) {
+            cityFound=c;
+            break;
           }
         }
       }
-      if (!cityFound) {
-        for (        City c : cityVillageManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3)) {
+      if (cityFound != null) {
+        for (        City c : citiesToSearch) {
           if (boundary.containsPoint(c.getLocation())) {
-            if (boundary.getName().equalsIgnoreCase(c.getName())) {
-              putCityBoundary(boundary,c);
-              cityFound=true;
+            String lower=c.getName().toLowerCase();
+            if (boundaryName.startsWith(lower) || boundaryName.endsWith(lower) || boundaryName.contains(" " + lower + " ")) {
+              cityFound=c;
+              break;
             }
           }
         }
+      }
+      if (cityFound != null) {
+        putCityBoundary(boundary,cityFound);
       }
     }
   }
