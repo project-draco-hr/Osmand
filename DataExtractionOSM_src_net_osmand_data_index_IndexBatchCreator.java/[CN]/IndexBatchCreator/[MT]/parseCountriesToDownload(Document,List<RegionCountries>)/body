@@ -1,0 +1,32 @@
+{
+  NodeList regions=doc.getElementsByTagName("regions");
+  for (int i=0; i < regions.getLength(); i++) {
+    Element el=(Element)regions.item(i);
+    if (!Boolean.parseBoolean(el.getAttribute("skip"))) {
+      RegionCountries countries=new RegionCountries();
+      countries.siteToDownload=el.getAttribute("siteToDownload");
+      if (countries.siteToDownload == null) {
+        continue;
+      }
+      countries.namePrefix=el.getAttribute("region_prefix");
+      if (countries.namePrefix == null) {
+        countries.namePrefix="";
+      }
+      countries.nameSuffix=el.getAttribute("region_suffix");
+      if (countries.nameSuffix == null) {
+        countries.nameSuffix="";
+      }
+      NodeList ncountries=el.getElementsByTagName("region");
+      for (int j=0; j < ncountries.getLength(); j++) {
+        Element ncountry=(Element)ncountries.item(j);
+        String name=ncountry.getAttribute("name");
+        RegionSpecificData data=new RegionSpecificData();
+        data.cityAdminLevel=ncountry.getAttribute("cityAdminLevel");
+        if (name != null && !Boolean.parseBoolean(ncountry.getAttribute("skip"))) {
+          countries.regionNames.put(name,data);
+        }
+      }
+      countriesToDownload.add(countries);
+    }
+  }
+}
