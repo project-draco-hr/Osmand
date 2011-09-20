@@ -1,0 +1,33 @@
+{
+  if (poiPreparedStatement != null) {
+    closePreparedStatements(poiPreparedStatement);
+  }
+  poiConnection.commit();
+  Statement categoriesAndSubcategories=poiConnection.createStatement();
+  ResultSet rs=categoriesAndSubcategories.executeQuery("SELECT DISTINCT type, subtype FROM poi");
+  Map<String,Map<String,Integer>> categories=new LinkedHashMap<String,Map<String,Integer>>();
+  while (rs.next()) {
+    String category=rs.getString(1);
+    String subcategory=rs.getString(2).trim();
+    if (!categories.containsKey(category)) {
+      categories.put(category,new LinkedHashMap<String,Integer>());
+    }
+    if (subcategory.contains(";") || subcategory.contains(",")) {
+      String[] split=subcategory.split(",|;");
+      for (      String sub : split) {
+        categories.get(category).put(sub.trim(),0);
+      }
+    }
+ else {
+      categories.get(category).put(subcategory.trim(),0);
+    }
+  }
+  rs.close();
+  categoriesAndSubcategories.close();
+  writer.startWritePOIIndex(regionName);
+  Map<String,Integer> catIndexes=writer.writePOICategoriesTable(categories);
+  for (  String s : categories.keySet()) {
+    System.out.println(s + " " + categories.get(s).size());
+  }
+  writer.endWritePOIIndex();
+}

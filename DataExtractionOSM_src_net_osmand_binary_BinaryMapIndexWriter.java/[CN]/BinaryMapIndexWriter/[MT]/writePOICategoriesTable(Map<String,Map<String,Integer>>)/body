@@ -1,0 +1,21 @@
+{
+  checkPeekState(POI_INDEX_INIT);
+  Map<String,Integer> catIndexes=new LinkedHashMap<String,Integer>();
+  int i=0;
+  for (  String cat : categories.keySet()) {
+    Builder builder=OsmandOdb.OsmAndCategoryTable.newBuilder();
+    builder.setCategory(cat);
+    Map<String,Integer> subcatSource=categories.get(cat);
+    Map<String,Integer> subcats=new LinkedHashMap<String,Integer>(subcatSource);
+    int j=0;
+    for (    String s : subcats.keySet()) {
+      builder.addSubcategories(s);
+      subcatSource.put(s,j);
+      j++;
+    }
+    catIndexes.put(cat,i);
+    codedOutStream.writeMessage(OsmandOdb.OsmAndPoiIndex.CATEGORIESTABLE_FIELD_NUMBER,builder.build());
+    i++;
+  }
+  return catIndexes;
+}
