@@ -51,6 +51,19 @@ indexes.add(ind);
 }
 codedIS.seek(ind.filePointer + ind.length);
 break;
+case OsmandOdb.OsmAndStructure.POIINDEX_FIELD_NUMBER:
+PoiRegion poiInd=new PoiRegion();
+poiInd.length=readInt();
+poiInd.filePointer=codedIS.getTotalBytesRead();
+if (poiAdapter != null) {
+oldLimit=codedIS.pushLimit(poiInd.length);
+poiAdapter.readPoiIndex(poiInd);
+codedIS.popLimit(oldLimit);
+poiIndexes.add(poiInd);
+indexes.add(poiInd);
+}
+codedIS.seek(poiInd.filePointer + poiInd.length);
+break;
 case OsmandOdb.OsmAndStructure.VERSIONCONFIRM_FIELD_NUMBER:
 int cversion=codedIS.readUInt32();
 calculateCenterPointForRegions();

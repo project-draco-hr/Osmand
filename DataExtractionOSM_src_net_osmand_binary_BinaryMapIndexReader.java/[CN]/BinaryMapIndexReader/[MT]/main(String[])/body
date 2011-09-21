@@ -1,23 +1,15 @@
 {
-  RandomAccessFile raf=new RandomAccessFile(new File("/home/victor/projects/OsmAnd/data/osm-gen/Ru-mow.obf"),"r");
+  RandomAccessFile raf=new RandomAccessFile(new File("/home/victor/projects/OsmAnd/data/osm-gen/POI/Test-Ru.poi.obf"),"r");
   BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
   System.out.println("VERSION " + reader.getVersion());
   long time=System.currentTimeMillis();
-  System.out.println(reader.mapIndexes.get(0).encodingRules);
-  String reg=reader.getRegionNames().get(0);
-  List<City> cs=reader.getCities(reg,null);
-  for (  City c : cs) {
-    int buildings=0;
-    reader.preloadStreets(c,null);
-    for (    Street s : c.getStreets()) {
-      if (s.getName().toLowerCase().startsWith("????????")) {
-        System.out.println("  " + s.getName());
-      }
- else       if (s.getName().toLowerCase().contains("????????????")) {
-        System.out.println("  " + s.getName());
-      }
-    }
-    System.out.println(c.getName() + " " + c.getLocation()+ " "+ c.getStreets().size()+ " "+ buildings+ " "+ c.getEnName());
+  testMapSearch(reader);
+  testAddressSearch(reader);
+  testTransportSearch(reader);
+  PoiRegion poiRegion=reader.getPoiIndexes().get(0);
+  for (int i=0; i < poiRegion.categories.size(); i++) {
+    System.out.println(poiRegion.categories.get(i));
+    System.out.println(" " + poiRegion.subcategories.get(i));
   }
   System.out.println("MEMORY " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
   System.out.println("Time " + (System.currentTimeMillis() - time));

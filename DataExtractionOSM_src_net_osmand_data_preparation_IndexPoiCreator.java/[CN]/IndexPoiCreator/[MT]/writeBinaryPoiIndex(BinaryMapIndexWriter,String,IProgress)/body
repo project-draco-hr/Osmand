@@ -3,13 +3,15 @@
     closePreparedStatements(poiPreparedStatement);
   }
   poiConnection.commit();
+  Collator collator=Collator.getInstance();
+  collator.setStrength(Collator.PRIMARY);
   ResultSet rs=poiConnection.createStatement().executeQuery("SELECT DISTINCT type, subtype FROM poi");
   Map<String,Map<String,Integer>> categories=new LinkedHashMap<String,Map<String,Integer>>();
   while (rs.next()) {
     String category=rs.getString(1);
     String subcategory=rs.getString(2).trim();
     if (!categories.containsKey(category)) {
-      categories.put(category,new LinkedHashMap<String,Integer>());
+      categories.put(category,new TreeMap<String,Integer>(collator));
     }
     if (subcategory.contains(";") || subcategory.contains(",")) {
       String[] split=subcategory.split(",|;");
