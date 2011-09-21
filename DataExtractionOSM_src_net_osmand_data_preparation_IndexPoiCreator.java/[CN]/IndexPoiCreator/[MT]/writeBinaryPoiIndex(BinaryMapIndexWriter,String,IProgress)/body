@@ -3,8 +3,7 @@
     closePreparedStatements(poiPreparedStatement);
   }
   poiConnection.commit();
-  Statement categoriesAndSubcategories=poiConnection.createStatement();
-  ResultSet rs=categoriesAndSubcategories.executeQuery("SELECT DISTINCT type, subtype FROM poi");
+  ResultSet rs=poiConnection.createStatement().executeQuery("SELECT DISTINCT type, subtype FROM poi");
   Map<String,Map<String,Integer>> categories=new LinkedHashMap<String,Map<String,Integer>>();
   while (rs.next()) {
     String category=rs.getString(1);
@@ -22,12 +21,38 @@
       categories.get(category).put(subcategory.trim(),0);
     }
   }
+  Statement stat=rs.getStatement();
   rs.close();
-  categoriesAndSubcategories.close();
+  stat.close();
   writer.startWritePOIIndex(regionName);
   Map<String,Integer> catIndexes=writer.writePOICategoriesTable(categories);
-  for (  String s : categories.keySet()) {
-    System.out.println(s + " " + categories.get(s).size());
+  String selectZm=(31 - ZOOM_TO_SAVE_END) + "";
+  rs=poiConnection.createStatement().executeQuery("SELECT DISTINCT x>>" + selectZm + ", y>>"+ selectZm+ " from poi");
+  Set<Long>[] zooms=new Set[ZOOM_TO_SAVE_END + 1];
+  int zoomToStart=ZOOM_TO_SAVE_START;
+  for (int i=zoomToStart; i <= ZOOM_TO_SAVE_END; i++) {
+    zooms[i]=new TreeSet<Long>();
   }
+  while (rs.next()) {
+    int x=rs.getInt(1);
+    int y=rs.getInt(2);
+    for (int i=zoomToStart; i <= ZOOM_TO_SAVE_END; i++) {
+      int shift=ZOOM_TO_SAVE_END - i;
+      long l=(((long)x >> shift) << 31) | ((long)y >> shift);
+      zooms[i].add(l);
+    }
+  }
+  for (int i=zoomToStart; i < ZOOM_TO_SAVE_END; i++) {
+    if (zooms[i].size() > 4) {
+      break;
+    }
+    zoomToStart=i;
+  }
+  for (int i=zoomToStart; i <= ZOOM_TO_SAVE_END; i++) {
+    System.out.println(i + " " + zooms[i].size());
+  }
+  stat=rs.getStatement();
+  rs.close();
+  stat.close();
   writer.endWritePOIIndex();
 }
