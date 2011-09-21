@@ -1,0 +1,27 @@
+{
+  types.clear();
+  Map<String,Integer> map=categories.get(category);
+  if (map == null) {
+    throw new IllegalArgumentException("Unknown category " + category);
+  }
+  int catInd=catIndexes.get(category);
+  if (subcategory.contains(";") || subcategory.contains(",")) {
+    String[] split=subcategory.split(",|;");
+    for (    String sub : split) {
+      sub=sub.trim();
+      Integer subcatInd=map.get(sub);
+      if (subcatInd == null) {
+        throw new IllegalArgumentException("Unknown subcategory " + sub + " category "+ category);
+      }
+      types.add((subcatInd << SHIFT_BYTES_CATEGORY) | catInd);
+    }
+  }
+ else {
+    subcategory=subcategory.trim();
+    Integer subcatInd=map.get(subcategory);
+    if (subcatInd == null) {
+      throw new IllegalArgumentException("Unknown subcategory " + subcategory + " category "+ category);
+    }
+    types.add((subcatInd << SHIFT_BYTES_CATEGORY) | catInd);
+  }
+}
