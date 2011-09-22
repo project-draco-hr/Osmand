@@ -29,6 +29,25 @@
           System.out.println(MessageFormat.format("\t{4}.{5} Map level minZoom = {0}, maxZoom = {1}, size = {2} bytes \n\t\tBounds {3}",mi.getMinZoom(),mi.getMaxZoom(),mi.getLength(),formatBounds(mi.getLeft(),mi.getRight(),mi.getTop(),mi.getBottom()),i,j++));
         }
       }
+ else       if (p instanceof AddressRegion && verbose) {
+        for (        String region : index.getRegionNames()) {
+          System.out.println("\tRegion:" + region);
+          for (          City c : index.getCities(region,null)) {
+            index.preloadStreets(c,null);
+            System.out.println("\t\tCity:" + c.getName());
+            for (            Street t : c.getStreets()) {
+              System.out.println("\t\t\t" + t.getName());
+            }
+          }
+          for (          City c : index.getVillages(region,null,null,false)) {
+            index.preloadStreets(c,null);
+            System.out.println("\t\tVillage:" + c.getName());
+            for (            Street t : c.getStreets()) {
+              System.out.println("\t\t\t" + t.getName());
+            }
+          }
+        }
+      }
       i++;
     }
   }
