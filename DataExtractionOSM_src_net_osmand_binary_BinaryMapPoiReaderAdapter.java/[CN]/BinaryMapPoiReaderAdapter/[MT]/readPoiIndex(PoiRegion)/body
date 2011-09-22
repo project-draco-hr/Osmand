@@ -8,11 +8,21 @@ case 0:
 case OsmandOdb.OsmAndPoiIndex.NAME_FIELD_NUMBER:
     region.name=codedIS.readString();
   break;
+case OsmandOdb.OsmAndPoiIndex.BOUNDARIES_FIELD_NUMBER:
+{
+  int length=codedIS.readRawVarint32();
+  int oldLimit=codedIS.pushLimit(length);
+  readPoiBoundariesIndex(region);
+  codedIS.popLimit(oldLimit);
+}
+break;
 case OsmandOdb.OsmAndPoiIndex.CATEGORIESTABLE_FIELD_NUMBER:
+{
 int length=codedIS.readRawVarint32();
 int oldLimit=codedIS.pushLimit(length);
 readCategory(region);
 codedIS.popLimit(oldLimit);
+}
 break;
 case OsmandOdb.OsmAndPoiIndex.BOXES_FIELD_NUMBER:
 codedIS.skipRawBytes(codedIS.getBytesUntilLimit());

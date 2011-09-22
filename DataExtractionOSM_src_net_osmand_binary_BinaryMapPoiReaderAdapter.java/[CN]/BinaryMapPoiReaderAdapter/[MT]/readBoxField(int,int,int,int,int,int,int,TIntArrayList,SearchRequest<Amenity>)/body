@@ -1,16 +1,9 @@
 {
-  if (pzoom > 0) {
-    int x1=px << (31 - pzoom);
-    int x2=(px + 1) << (31 - pzoom);
-    int y1=py << (31 - pzoom);
-    int y2=(py + 1) << (31 - pzoom);
-    if (!(left31 <= x2 && x1 <= right31 && bottom31 <= y2 && y1 <= top31)) {
-      codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
-    }
-  }
+  req.numberOfReadSubtrees++;
+  boolean checkBox=true;
   int zoom=pzoom;
-  int y=py;
-  int x=px;
+  int dy=py;
+  int dx=px;
   while (true) {
     if (req.isInterrupted()) {
       return;
@@ -24,19 +17,33 @@ case OsmandOdb.OsmAndPoiBox.ZOOM_FIELD_NUMBER:
     zoom=codedIS.readUInt32() + pzoom;
   break;
 case OsmandOdb.OsmAndPoiBox.LEFT_FIELD_NUMBER:
-x=codedIS.readSInt32() + px;
+dx=codedIS.readSInt32();
 break;
 case OsmandOdb.OsmAndPoiBox.TOP_FIELD_NUMBER:
-y=codedIS.readSInt32() + py;
+dy=codedIS.readSInt32();
 break;
 case OsmandOdb.OsmAndPoiBox.SUBBOXES_FIELD_NUMBER:
-int length=codedIS.readFixed32();
+int x=dx + (px << (zoom - pzoom));
+int y=dy + (py << (zoom - pzoom));
+if (checkBox) {
+int xL=x << (31 - zoom);
+int xR=(x + 1) << (31 - zoom);
+int yT=y << (31 - zoom);
+int yB=(y + 1) << (31 - zoom);
+if (left31 > xR || xL > right31 || bottom31 < yT || yB < top31) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return;
+}
+req.numberOfAcceptedSubtrees++;
+checkBox=false;
+}
+int length=readInt();
 int oldLimit=codedIS.pushLimit(length);
 readBoxField(left31,right31,top31,bottom31,x,y,zoom,offsets,req);
 codedIS.popLimit(oldLimit);
 break;
 case OsmandOdb.OsmAndPoiBox.SHIFTTODATA_FIELD_NUMBER:
-offsets.add(codedIS.readFixed32());
+offsets.add(readInt());
 break;
 default :
 skipUnknownField(t);

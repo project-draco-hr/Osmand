@@ -11,13 +11,15 @@ case 0:
         am.setEnName(Junidecode.unidecode(am.getName()));
       }
     req.getSearchResults().add(am);
-  return;
+  req.numberOfAcceptedObjects++;
+return;
 case OsmandOdb.OsmAndPoiBoxDataAtom.DX_FIELD_NUMBER:
 x=(codedIS.readSInt32() + (px << (24 - zoom))) << 7;
 break;
 case OsmandOdb.OsmAndPoiBoxDataAtom.DY_FIELD_NUMBER:
 y=(codedIS.readSInt32() + (py << (24 - zoom))) << 7;
-if (left31 > x || right31 < x || top31 < y || bottom31 > y) {
+req.numberOfVisitedObjects++;
+if (left31 > x || right31 < x || top31 > y || bottom31 < y) {
 codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
 return;
 }
@@ -32,7 +34,7 @@ if (catId < region.categoriesType.size()) {
 am.setType(region.categoriesType.get(catId));
 List<String> subcats=region.subcategories.get(catId);
 if (subcatId < subcats.size()) {
-am.setSubType(subcats.get(catId));
+am.setSubType(subcats.get(subcatId));
 }
 }
  else {

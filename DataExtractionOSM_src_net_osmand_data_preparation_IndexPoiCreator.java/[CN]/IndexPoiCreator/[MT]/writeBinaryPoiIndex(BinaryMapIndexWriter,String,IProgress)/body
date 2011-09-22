@@ -26,7 +26,14 @@
   Statement stat=rs.getStatement();
   rs.close();
   stat.close();
-  long startFpPoiIndex=writer.startWritePOIIndex(regionName);
+  rs=poiConnection.createStatement().executeQuery("SELECT max(x), min(x), max(y), min(y) FROM poi");
+  rs.next();
+  int right31=rs.getInt(1);
+  int left31=rs.getInt(2);
+  int bottom31=rs.getInt(3);
+  int top31=rs.getInt(4);
+  rs.close();
+  long startFpPoiIndex=writer.startWritePOIIndex(regionName,left31,right31,bottom31,top31);
   Map<String,Integer> catIndexes=writer.writePOICategoriesTable(categories);
   String selectZm=(31 - ZOOM_TO_SAVE_END) + "";
   rs=poiConnection.createStatement().executeQuery("SELECT DISTINCT x>>" + selectZm + ", y>>"+ selectZm+ " from poi");
