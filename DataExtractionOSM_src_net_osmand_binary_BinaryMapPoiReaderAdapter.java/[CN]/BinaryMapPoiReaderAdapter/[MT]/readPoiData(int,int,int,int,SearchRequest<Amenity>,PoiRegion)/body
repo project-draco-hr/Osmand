@@ -1,0 +1,34 @@
+{
+  int x=0;
+  int y=0;
+  int zoom=0;
+  while (true) {
+    if (req.isInterrupted()) {
+      return;
+    }
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      return;
+case OsmandOdb.OsmAndPoiBoxData.X_FIELD_NUMBER:
+    x=codedIS.readUInt32();
+  break;
+case OsmandOdb.OsmAndPoiBoxData.ZOOM_FIELD_NUMBER:
+zoom=codedIS.readUInt32();
+break;
+case OsmandOdb.OsmAndPoiBoxData.Y_FIELD_NUMBER:
+y=codedIS.readUInt32();
+break;
+case OsmandOdb.OsmAndPoiBoxData.POIDATA_FIELD_NUMBER:
+int len=codedIS.readRawVarint32();
+int oldLim=codedIS.pushLimit(len);
+readPoiPoint(left31,right31,top31,bottom31,x,y,zoom,req,region);
+codedIS.popLimit(oldLim);
+return;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}
