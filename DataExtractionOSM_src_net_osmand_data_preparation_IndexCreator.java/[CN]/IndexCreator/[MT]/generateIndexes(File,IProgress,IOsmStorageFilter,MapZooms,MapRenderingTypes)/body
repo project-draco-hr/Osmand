@@ -49,7 +49,7 @@
  else {
       createDatabaseIndexesStructure();
       if (indexAddress) {
-        progress.setGeneralProgress("[40 / 100]");
+        progress.setGeneralProgress("[20 / 100]");
         progress.startTask(Messages.getString("IndexCreator.INDEX_CITIES"),accessor.getAllNodes());
         if (loadFromExistingFile) {
           accessor.iterateOverEntities(progress,EntityType.NODE,new OsmDbVisitor(){
@@ -67,7 +67,6 @@
         accessor.iterateOverEntities(progress,EntityType.RELATION,new OsmDbVisitor(){
           @Override public void iterateEntity(          Entity e,          OsmDbAccessorContext ctx) throws SQLException {
             if (indexAddress) {
-              indexAddressCreator.indexAddressRelation((Relation)e,ctx);
               indexAddressCreator.indexBoundariesRelation((Relation)e,ctx);
             }
             if (indexMap) {
@@ -82,6 +81,14 @@
           accessor.iterateOverEntities(progress,EntityType.WAY,new OsmDbVisitor(){
             @Override public void iterateEntity(            Entity e,            OsmDbAccessorContext ctx) throws SQLException {
               indexAddressCreator.indexBoundariesRelation(e,ctx);
+            }
+          }
+);
+          progress.setGeneralProgress("[45 / 100]");
+          progress.startTask(Messages.getString("IndexCreator.PREINDEX_ADRESS_MAP"),accessor.getAllRelations());
+          accessor.iterateOverEntities(progress,EntityType.RELATION,new OsmDbVisitor(){
+            @Override public void iterateEntity(            Entity e,            OsmDbAccessorContext ctx) throws SQLException {
+              indexAddressCreator.indexAddressRelation((Relation)e,ctx);
             }
           }
 );

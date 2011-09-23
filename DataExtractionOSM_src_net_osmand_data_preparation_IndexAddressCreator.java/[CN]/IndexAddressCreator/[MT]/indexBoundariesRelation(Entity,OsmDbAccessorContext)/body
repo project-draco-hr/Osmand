@@ -1,50 +1,33 @@
 {
-  if (isBoundary(e)) {
-    int adminLevel=8;
-    try {
-      String tag=e.getTag(OSMTagKey.ADMIN_LEVEL);
-      if (tag == null) {
-        return;
+  Boundary boundary=extractBoundary(e,ctx);
+  if (boundary != null && boundary.getAdminLevel() >= 4 && boundary.getCenterPoint() != null && !Algoritms.isEmpty(boundary.getName())) {
+    LatLon boundaryCenter=boundary.getCenterPoint();
+    List<City> citiesToSearch=new ArrayList<City>();
+    citiesToSearch.addAll(cityManager.getClosestObjects(boundaryCenter.getLatitude(),boundaryCenter.getLongitude(),3));
+    citiesToSearch.addAll(cityVillageManager.getClosestObjects(boundaryCenter.getLatitude(),boundaryCenter.getLongitude(),3));
+    List<City> cityFound=new ArrayList<City>();
+    String boundaryName=boundary.getName().toLowerCase();
+    for (    City c : citiesToSearch) {
+      if (boundary.containsPoint(c.getLocation())) {
+        if (boundaryName.equalsIgnoreCase(c.getName())) {
+          cityFound.add(c);
+          break;
+        }
       }
-      adminLevel=Integer.parseInt(tag);
     }
- catch (    NumberFormatException ex) {
-      return;
-    }
-    if (adminLevel < 4) {
-      return;
-    }
-    Boundary boundary=extractBoundary(e,ctx);
-    if (boundary != null && boundary.getCenterPoint() != null && !Algoritms.isEmpty(boundary.getName())) {
-      boundary.setAdminLevel(adminLevel);
-      LatLon point=boundary.getCenterPoint();
-      City cityFound=null;
-      List<City> citiesToSearch=new ArrayList<City>();
-      citiesToSearch.addAll(cityManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3));
-      citiesToSearch.addAll(cityVillageManager.getClosestObjects(point.getLatitude(),point.getLongitude(),3));
-      String boundaryName=boundary.getName().toLowerCase();
+    if (cityFound.isEmpty()) {
       for (      City c : citiesToSearch) {
         if (boundary.containsPoint(c.getLocation())) {
-          if (boundaryName.equalsIgnoreCase(c.getName())) {
-            cityFound=c;
+          String lower=c.getName().toLowerCase();
+          if (boundaryName.startsWith(lower) || boundaryName.endsWith(lower) || boundaryName.contains(" " + lower + " ")) {
+            cityFound.add(c);
             break;
           }
         }
       }
-      if (cityFound != null) {
-        for (        City c : citiesToSearch) {
-          if (boundary.containsPoint(c.getLocation())) {
-            String lower=c.getName().toLowerCase();
-            if (boundaryName.startsWith(lower) || boundaryName.endsWith(lower) || boundaryName.contains(" " + lower + " ")) {
-              cityFound=c;
-              break;
-            }
-          }
-        }
-      }
-      if (cityFound != null) {
-        putCityBoundary(boundary,cityFound);
-      }
+    }
+    if (!cityFound.isEmpty()) {
+      putCityBoundary(boundary,cityFound);
     }
   }
 }

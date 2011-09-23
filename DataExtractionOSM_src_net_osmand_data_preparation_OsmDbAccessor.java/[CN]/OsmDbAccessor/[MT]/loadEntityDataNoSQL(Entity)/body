@@ -1,0 +1,19 @@
+{
+  Collection<EntityId> ids=e instanceof Relation ? ((Relation)e).getMemberIds() : ((Way)e).getEntityIds();
+  Map<EntityId,Entity> map=new LinkedHashMap<EntityId,Entity>();
+  for (  EntityId i : ids) {
+    char pr=i.getType() == EntityType.NODE ? '0' : (i.getType() == EntityType.WAY ? '1' : '2');
+    String key=pr + "" + i.getId();
+    String value=accessor.get(randomAccessOptions,key);
+    if (value != null && value.length() > 0) {
+      try {
+        Entity es=loadEntityNoSqlFromValue(randomAccessOptions,key,value,false);
+        map.put(i,es);
+      }
+ catch (      JSONException e1) {
+        log.warn(key + " - " + e1.getMessage()+ " "+ value+ "("+ value.length()+ "]",e1);
+      }
+    }
+  }
+  e.initializeLinks(map);
+}

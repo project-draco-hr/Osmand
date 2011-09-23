@@ -2,13 +2,13 @@
   if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && e.getTag(OSMTagKey.ADDR_STREET) != null) {
     boolean exist=streetDAO.findBuilding(e);
     if (!exist) {
-      ctx.loadEntityData(e,false);
+      ctx.loadEntityData(e);
       LatLon l=e.getLatLon();
-      Set<Long> idStreet=getStreetInCity(getIsINames(e),e.getTag(OSMTagKey.ADDR_STREET),null,l,(e.getId() << 2));
-      if (!idStreet.isEmpty()) {
+      Set<Long> idsOfStreet=getStreetInCity(e.getIsInNames(),e.getTag(OSMTagKey.ADDR_STREET),null,l);
+      if (!idsOfStreet.isEmpty()) {
         Building building=new Building(e);
         building.setName(e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER));
-        streetDAO.writeBuilding(idStreet,building);
+        streetDAO.writeBuilding(idsOfStreet,building);
       }
     }
   }
@@ -18,17 +18,17 @@
       exist=streetDAO.findStreetNode(e);
     }
     if (!exist) {
-      ctx.loadEntityData(e,false);
+      ctx.loadEntityData(e);
       LatLon l=e.getLatLon();
-      Set<Long> idStreet=getStreetInCity(getIsINames(e),e.getTag(OSMTagKey.NAME),e.getTag(OSMTagKey.NAME_EN),l,(e.getId() << 2) | 1);
-      if (!idStreet.isEmpty() && saveAddressWays) {
-        streetDAO.writeStreetWayNodes(idStreet,(Way)e);
+      Set<Long> idsOfStreet=getStreetInCity(e.getIsInNames(),e.getTag(OSMTagKey.NAME),e.getTag(OSMTagKey.NAME_EN),l);
+      if (!idsOfStreet.isEmpty() && saveAddressWays) {
+        streetDAO.writeStreetWayNodes(idsOfStreet,(Way)e);
       }
     }
   }
   if (e instanceof Relation) {
     if (e.getTag(OSMTagKey.POSTAL_CODE) != null) {
-      ctx.loadEntityData(e,false);
+      ctx.loadEntityData(e);
       postalCodeRelations.add((Relation)e);
     }
   }

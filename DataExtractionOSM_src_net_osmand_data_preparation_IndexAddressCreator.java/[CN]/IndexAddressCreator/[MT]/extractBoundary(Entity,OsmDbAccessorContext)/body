@@ -2,14 +2,13 @@
   if (isBoundary(e)) {
     Boundary boundary=null;
     if (e instanceof Relation) {
-      Relation i=(Relation)e;
-      ctx.loadEntityData(i,true);
+      Relation aRelation=(Relation)e;
+      ctx.loadEntityData(aRelation);
       boundary=new Boundary(true);
-      if (i.getTag(OSMTagKey.NAME) != null) {
-        boundary.setName(i.getTag(OSMTagKey.NAME));
-      }
-      boundary.setBoundaryId(i.getId());
-      Map<Entity,String> entities=i.getMemberEntities();
+      boundary.setName(aRelation.getTag(OSMTagKey.NAME));
+      boundary.setBoundaryId(aRelation.getId());
+      boundary.setAdminLevel(extractBoundaryAdminLevel(aRelation));
+      Map<Entity,String> entities=aRelation.getMemberEntities();
       for (      Entity es : entities.keySet()) {
         if (es instanceof Way) {
           boolean inner="inner".equals(entities.get(es));
@@ -34,10 +33,9 @@
           closed=Algoritms.objectEquals(nodeIds.get(0),nodeIds.get(nodeIds.size() - 1));
         }
         boundary=new Boundary(closed);
-        if (e.getTag(OSMTagKey.NAME) != null) {
-          boundary.setName(e.getTag(OSMTagKey.NAME));
-        }
+        boundary.setName(e.getTag(OSMTagKey.NAME));
         boundary.setBoundaryId(e.getId());
+        boundary.setAdminLevel(extractBoundaryAdminLevel(e));
         boundary.getOuterWays().add((Way)e);
       }
     }

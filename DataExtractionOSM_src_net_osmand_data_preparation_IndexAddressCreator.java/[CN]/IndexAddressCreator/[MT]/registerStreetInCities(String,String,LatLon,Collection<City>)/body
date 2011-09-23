@@ -1,0 +1,29 @@
+{
+  if (result.isEmpty()) {
+    return null;
+  }
+  if (Algoritms.isEmpty(nameEn)) {
+    nameEn=Junidecode.unidecode(name);
+  }
+  Set<Long> values=new TreeSet<Long>();
+  for (  City city : result) {
+    String cityPart=city.getName();
+    for (    City subpart : result) {
+      if (subpart != city) {
+        Boundary subBoundary=cityBoundaries.get(subpart);
+        Boundary b=cityBoundaries.get(city);
+        if (b != null && subBoundary != null && subBoundary.getAdminLevel() > b.getAdminLevel()) {
+          cityPart=subpart.getName();
+        }
+      }
+    }
+    Long foundId=streetDAO.findStreet(name,city,cityPart);
+    if (foundId == null) {
+      long streetId=insertStreetData(addressStreetStat,name,nameEn,location.getLatitude(),location.getLongitude(),city.getId(),cityPart);
+      streetDAO.insertStreet(addressStreetStat,name,city,cityPart,streetId);
+      foundId=streetId;
+    }
+    values.add(foundId);
+  }
+  return values;
+}
