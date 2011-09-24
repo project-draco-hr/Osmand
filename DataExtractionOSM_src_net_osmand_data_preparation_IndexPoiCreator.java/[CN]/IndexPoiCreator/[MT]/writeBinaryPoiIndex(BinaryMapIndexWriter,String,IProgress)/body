@@ -67,14 +67,16 @@
     rootZoomsTree.extractChildrenFromLevel(level);
     zoomToStart=zoomToStart + level;
   }
+  PreparedStatement prepareStatement=poiConnection.prepareStatement("SELECT DISTINCT type, subtype FROM poi WHERE x >= ? AND x < ? AND y >= ? AND y < ?");
   Map<Long,Long> fpToWriteSeeks=new LinkedHashMap<Long,Long>();
   for (  Tree<Long> subs : rootZoomsTree.getSubtrees()) {
-    writePoiBoxes(writer,subs,zoomToStart,fpToWriteSeeks);
+    writePoiBoxes(writer,subs,zoomToStart,fpToWriteSeeks,prepareStatement,categories,catIndexes);
   }
   stat=rs.getStatement();
   rs.close();
   stat.close();
-  PreparedStatement prepareStatement=poiConnection.prepareStatement("SELECT id, x, y, name_en, name, type, subtype, opening_hours, site, phone from poi " + "where x >= ? AND x < ? AND y >= ? AND y < ?");
+  prepareStatement.close();
+  prepareStatement=poiConnection.prepareStatement("SELECT id, x, y, name_en, name, type, subtype, opening_hours, site, phone from poi " + "where x >= ? AND x < ? AND y >= ? AND y < ?");
   TIntArrayList types=new TIntArrayList();
   for (  Map.Entry<Long,Long> entry : fpToWriteSeeks.entrySet()) {
     long l=entry.getKey();
@@ -97,6 +99,7 @@
       String name=rs.getString(5);
       String type=rs.getString(6);
       String subtype=rs.getString(7);
+      types.clear();
       buildTypeIds(type,subtype,categories,catIndexes,types);
       String openingHours=rs.getString(8);
       String site=rs.getString(9);

@@ -30,16 +30,21 @@ case OsmandOdb.OsmAndPoiBoxDataAtom.CATEGORIES_FIELD_NUMBER:
 int cat=codedIS.readUInt32();
 int subcatId=cat >> SHIFT_BITS_CATEGORY;
 int catId=cat & CATEGORY_MASK;
+AmenityType type=AmenityType.OTHER;
+String subtype="";
 if (catId < region.categoriesType.size()) {
-am.setType(region.categoriesType.get(catId));
+type=region.categoriesType.get(catId);
 List<String> subcats=region.subcategories.get(catId);
 if (subcatId < subcats.size()) {
-am.setSubType(subcats.get(subcatId));
+subtype=subcats.get(subcatId);
 }
 }
- else {
-am.setType(AmenityType.OTHER);
+if (req.poiTypeFilter != null && !req.poiTypeFilter.accept(type,subtype)) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return;
 }
+am.setSubType(subtype);
+am.setType(type);
 break;
 case OsmandOdb.OsmAndPoiBoxDataAtom.ID_FIELD_NUMBER:
 am.setId(codedIS.readUInt64());
