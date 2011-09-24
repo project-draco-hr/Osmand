@@ -2,9 +2,6 @@
   super.onCreate(icicle);
   setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
   setContentView(R.layout.searchpoi);
-  Bundle bundle=this.getIntent().getExtras();
-  String filterId=bundle.getString(AMENITY_FILTER);
-  filter=((OsmandApplication)getApplication()).getPoiFilters().getFilterById(filterId);
   uiHandler=new Handler();
   searchPOILevel=(Button)findViewById(R.id.SearchPOILevelButton);
   searchArea=(TextView)findViewById(R.id.SearchAreaText);
@@ -15,29 +12,15 @@
   settings=OsmandSettings.getOsmandSettings(this);
   searchPOILevel.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      if (isNameFinderFilter()) {
-        String query=searchFilter.getText().toString();
-        if (query.length() == 0) {
-          Toast.makeText(SearchPOIActivity.this,R.string.poi_namefinder_query_empty,Toast.LENGTH_LONG).show();
-          return;
-        }
-        String res=((NameFinderPoiFilter)filter).searchOnline(location.getLatitude(),location.getLongitude(),query);
-        if (res != null) {
-          Toast.makeText(SearchPOIActivity.this,res,Toast.LENGTH_LONG).show();
-        }
-        amenityAdapter.setNewModel(((NameFinderPoiFilter)filter).getSearchedAmenities(),"");
-        showOnMap.setEnabled(amenityAdapter.getCount() > 0);
+      String query=searchFilter.getText().toString();
+      if (query.length() == 0 && isNameFinderFilter()) {
+        Toast.makeText(SearchPOIActivity.this,R.string.poi_namefinder_query_empty,Toast.LENGTH_LONG).show();
+        return;
       }
- else {
-        amenityAdapter.setNewModel(filter.searchFurther(location.getLatitude(),location.getLongitude()),searchFilter.getText().toString());
-      }
-      searchedLocation=location;
-      searchArea.setText(filter.getSearchArea());
-      searchPOILevel.setEnabled(filter.isSearchFurtherAvailable());
+      runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.SEARCH_FURTHER,query));
     }
   }
 );
-  showFilter.setVisibility(isNameFinderFilter() ? View.GONE : View.VISIBLE);
   showFilter.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       if (searchFilterLayout.getVisibility() == View.GONE) {
@@ -50,9 +33,6 @@
     }
   }
 );
-  if (isNameFinderFilter()) {
-    searchFilterLayout.setVisibility(View.VISIBLE);
-  }
   searchFilter.addTextChangedListener(new TextWatcher(){
     @Override public void afterTextChanged(    Editable s){
       if (!isNameFinderFilter()) {
@@ -65,22 +45,6 @@
     }
   }
 );
-  if (bundle.containsKey(SEARCH_LAT) && bundle.containsKey(SEARCH_LON)) {
-    location=new Location("internal");
-    location.setLatitude(bundle.getDouble(SEARCH_LAT));
-    location.setLongitude(bundle.getDouble(SEARCH_LON));
-    searchNearBy=false;
-  }
- else {
-    location=null;
-    searchNearBy=true;
-  }
-  if (isNameFinderFilter()) {
-    showOnMap.setEnabled(false);
-  }
- else {
-    showOnMap.setEnabled(filter != null);
-  }
   showOnMap.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       settings.setPoiFilterForMap(filter.getFilterId());
@@ -92,53 +56,13 @@
     }
   }
 );
-  if (filter != null) {
-    amenityAdapter=new AmenityAdapter(new ArrayList<Amenity>());
-    if (location == null) {
-      filter.clearPreviousZoom();
-    }
- else     if (!isNameFinderFilter()) {
-      searchedLocation=location;
-      amenityAdapter.setNewModel(filter.initializeNewSearch(location.getLatitude(),location.getLongitude(),40),"");
-    }
-    setListAdapter(amenityAdapter);
-    searchPOILevel.setEnabled(filter.isSearchFurtherAvailable());
-    searchArea.setText(filter.getSearchArea());
-  }
- else {
-    searchPOILevel.setEnabled(false);
-  }
+  amenityAdapter=new AmenityAdapter(new ArrayList<Amenity>());
+  setListAdapter(amenityAdapter);
   ListView lv=getListView();
   lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
     @Override public boolean onItemLongClick(    AdapterView<?> av,    View v,    int pos,    long id){
       final Amenity amenity=((AmenityAdapter)getListAdapter()).getItem(pos);
-      String format=OsmAndFormatter.getPoiSimpleFormat(amenity,SearchPOIActivity.this,settings.USE_ENGLISH_NAMES.get());
-      if (amenity.getOpeningHours() != null) {
-        format+="  " + getString(R.string.opening_hours) + " : "+ amenity.getOpeningHours();
-      }
-      AlertDialog.Builder builder=new AlertDialog.Builder(SearchPOIActivity.this);
-      builder.setTitle(format);
-      builder.setItems(new String[]{getString(R.string.show_poi_on_map),getString(R.string.navigate_to)},new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          if (which == 0) {
-            int z=settings.getLastKnownMapZoom();
-            String poiSimpleFormat=OsmAndFormatter.getPoiSimpleFormat(amenity,SearchPOIActivity.this,settings.usingEnglishNames());
-            settings.setMapLocationToShow(amenity.getLocation().getLatitude(),amenity.getLocation().getLongitude(),Math.max(16,z),getString(R.string.poi) + " : " + poiSimpleFormat);
-          }
- else           if (which == 1) {
-            LatLon l=amenity.getLocation();
-            String poiSimpleFormat=OsmAndFormatter.getPoiSimpleFormat(amenity,SearchPOIActivity.this,settings.usingEnglishNames());
-            settings.setPointToNavigate(l.getLatitude(),l.getLongitude(),getString(R.string.poi) + " : " + poiSimpleFormat);
-          }
-          if (filter != null) {
-            settings.setPoiFilterForMap(filter.getFilterId());
-            settings.SHOW_POI_OVER_MAP.set(true);
-          }
-          MapActivity.launchMapActivityMoveToTop(SearchPOIActivity.this);
-        }
-      }
-);
-      builder.show();
+      onLongClick(amenity);
       return true;
     }
   }

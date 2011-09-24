@@ -1,29 +1,50 @@
 {
   super.onResume();
-  if (searchNearBy) {
+  Bundle bundle=this.getIntent().getExtras();
+  if (bundle.containsKey(SEARCH_LAT) && bundle.containsKey(SEARCH_LON)) {
+    location=new Location("internal");
+    location.setLatitude(bundle.getDouble(SEARCH_LAT));
+    location.setLongitude(bundle.getDouble(SEARCH_LON));
+    searchNearBy=false;
+  }
+ else {
     location=null;
-    amenityAdapter.notifyDataSetChanged();
-    searchPOILevel.setEnabled(false);
+    searchNearBy=true;
+  }
+  String filterId=bundle.getString(AMENITY_FILTER);
+  PoiFilter filter=((OsmandApplication)getApplication()).getPoiFilters().getFilterById(filterId);
+  if (filter != this.filter) {
+    this.filter=filter;
+    if (filter != null) {
+      filter.clearPreviousZoom();
+    }
+ else {
+      amenityAdapter.setNewModel(Collections.<Amenity>emptyList(),"");
+      searchPOILevel.setText(R.string.search_POI_level_btn);
+      searchPOILevel.setEnabled(false);
+    }
+    clearSearchQuery();
+  }
+  if (isNameFinderFilter()) {
+    showFilter.setVisibility(View.GONE);
+    searchFilterLayout.setVisibility(View.VISIBLE);
   }
  else {
+    showFilter.setVisibility(View.VISIBLE);
+    showOnMap.setEnabled(filter != null);
+  }
+  if (filter != null) {
+    searchArea.setText(filter.getSearchArea());
+    updateSearchPoiTextButton();
     setLocation(location);
-  }
-  if (searchNearBy && location == null) {
-    searchPOILevel.setText(R.string.search_poi_location);
-  }
- else   if (isNameFinderFilter()) {
-    searchPOILevel.setText(R.string.search_button);
-  }
- else {
-    searchPOILevel.setText(R.string.search_POI_level_btn);
-  }
-  if (searchNearBy) {
-    LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
-    service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,gpsListener);
-    currentLocationProvider=LocationManager.GPS_PROVIDER;
-    if (!isRunningOnEmulator()) {
-      service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,networkListener);
-      currentLocationProvider=LocationManager.NETWORK_PROVIDER;
+    if (searchNearBy) {
+      LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
+      service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,gpsListener);
+      currentLocationProvider=LocationManager.GPS_PROVIDER;
+      if (!isRunningOnEmulator()) {
+        service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,networkListener);
+        currentLocationProvider=LocationManager.NETWORK_PROVIDER;
+      }
     }
   }
 }

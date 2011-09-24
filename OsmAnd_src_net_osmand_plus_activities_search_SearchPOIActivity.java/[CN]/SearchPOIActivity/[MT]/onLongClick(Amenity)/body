@@ -1,0 +1,29 @@
+{
+  String format=OsmAndFormatter.getPoiSimpleFormat(amenity,SearchPOIActivity.this,settings.USE_ENGLISH_NAMES.get());
+  if (amenity.getOpeningHours() != null) {
+    Toast.makeText(this,format + "  " + getString(R.string.opening_hours)+ " : "+ amenity.getOpeningHours(),Toast.LENGTH_LONG).show();
+  }
+  AlertDialog.Builder builder=new AlertDialog.Builder(SearchPOIActivity.this);
+  builder.setTitle(format);
+  builder.setItems(new String[]{getString(R.string.show_poi_on_map),getString(R.string.navigate_to)},new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (which == 0) {
+        int z=settings.getLastKnownMapZoom();
+        String poiSimpleFormat=OsmAndFormatter.getPoiSimpleFormat(amenity,SearchPOIActivity.this,settings.usingEnglishNames());
+        settings.setMapLocationToShow(amenity.getLocation().getLatitude(),amenity.getLocation().getLongitude(),Math.max(16,z),getString(R.string.poi) + " : " + poiSimpleFormat);
+      }
+ else       if (which == 1) {
+        LatLon l=amenity.getLocation();
+        String poiSimpleFormat=OsmAndFormatter.getPoiSimpleFormat(amenity,SearchPOIActivity.this,settings.usingEnglishNames());
+        settings.setPointToNavigate(l.getLatitude(),l.getLongitude(),getString(R.string.poi) + " : " + poiSimpleFormat);
+      }
+      if (filter != null) {
+        settings.setPoiFilterForMap(filter.getFilterId());
+        settings.SHOW_POI_OVER_MAP.set(true);
+      }
+      MapActivity.launchMapActivityMoveToTop(SearchPOIActivity.this);
+    }
+  }
+);
+  builder.show();
+}

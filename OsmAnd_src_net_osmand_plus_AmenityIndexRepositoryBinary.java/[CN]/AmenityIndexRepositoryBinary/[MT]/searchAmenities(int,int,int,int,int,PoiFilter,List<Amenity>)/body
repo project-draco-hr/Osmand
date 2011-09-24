@@ -1,0 +1,26 @@
+{
+  long now=System.currentTimeMillis();
+  SearchRequest<Amenity> req=BinaryMapIndexReader.buildSearchPoiRequest(sleft,sright,stop,sbottom,limit,16);
+  req.setPoiTypeFilter(new SearchPoiTypeFilter(){
+    @Override public boolean accept(    AmenityType type,    String subcategory){
+      return filter.acceptTypeSubtype(type,subcategory);
+    }
+  }
+);
+  try {
+    List<Amenity> result=index.searchPoi(req);
+    for (    Amenity am : result) {
+      if (filter.acceptTypeSubtype(am.getType(),am.getSubType())) {
+        amenities.add(am);
+      }
+    }
+  }
+ catch (  IOException e) {
+    log.error("Error searching amenities",e);
+    return amenities;
+  }
+  if (log.isDebugEnabled()) {
+    log.debug(String.format("Search for %s done in %s ms found %s.",MapUtils.get31LatitudeY(stop) + " " + MapUtils.get31LongitudeX(sleft),System.currentTimeMillis() - now,amenities.size()));
+  }
+  return amenities;
+}

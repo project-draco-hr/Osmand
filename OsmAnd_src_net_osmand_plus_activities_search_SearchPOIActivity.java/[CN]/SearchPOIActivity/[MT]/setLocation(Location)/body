@@ -2,36 +2,30 @@
   registerUnregisterSensor(l);
   boolean handled=false;
   if (l != null && filter != null) {
-    if (location == null) {
+    Location searchedLocation=getSearchedLocation();
+    if (searchedLocation == null) {
       searchedLocation=l;
       if (!isNameFinderFilter()) {
-        amenityAdapter.setNewModel(filter.searchAgain(l.getLatitude(),l.getLongitude()),searchFilter.getText().toString());
-        searchPOILevel.setText(R.string.search_POI_level_btn);
+        runNewSearchQuery(SearchAmenityRequest.buildRequest(l,SearchAmenityRequest.NEW_SEARCH_INIT,searchFilter.getText().toString()));
       }
- else {
-        searchPOILevel.setText(R.string.search_button);
-      }
-      searchPOILevel.setEnabled(filter.isSearchFurtherAvailable());
-      searchArea.setText(filter.getSearchArea());
       handled=true;
     }
- else     if (searchedLocation != null && l.distanceTo(searchedLocation) > MIN_DISTANCE_TO_RESEARCH) {
-      amenityAdapter.setNewModel(filter.searchAgain(l.getLatitude(),l.getLongitude()),searchFilter.getText().toString());
+ else     if (l.distanceTo(searchedLocation) > MIN_DISTANCE_TO_RESEARCH) {
+      runNewSearchQuery(SearchAmenityRequest.buildRequest(l,SearchAmenityRequest.SEARCH_AGAIN,searchFilter.getText().toString()));
       handled=true;
     }
- else     if (location.distanceTo(l) > MIN_DISTANCE_TO_UPDATE) {
+ else     if (location == null || location.distanceTo(l) > MIN_DISTANCE_TO_UPDATE) {
       handled=true;
     }
   }
  else {
     if (location != null) {
-      searchPOILevel.setText(R.string.search_poi_location);
-      searchPOILevel.setEnabled(false);
       handled=true;
     }
   }
   if (handled) {
+    updateSearchPoiTextButton();
     location=l;
-    amenityAdapter.notifyDataSetChanged();
+    amenityAdapter.notifyDataSetInvalidated();
   }
 }
