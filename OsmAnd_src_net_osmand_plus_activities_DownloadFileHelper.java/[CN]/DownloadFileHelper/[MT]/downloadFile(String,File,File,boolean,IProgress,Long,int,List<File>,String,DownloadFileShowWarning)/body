@@ -20,7 +20,6 @@
     }
     File toIndex=fileToDownload;
     if (fileToDownload.getName().endsWith(".zip")) {
-      progress.startTask(ctx.getString(R.string.unzipping_file),-1);
       if (!unzipToDir) {
         toIndex=fileToUnZip;
       }
@@ -31,6 +30,8 @@
       ZipEntry entry=null;
       boolean first=true;
       while ((entry=zipIn.getNextEntry()) != null) {
+        int size=(int)entry.getSize();
+        progress.startTask(ctx.getString(R.string.unzipping_file),size);
         File fs;
         if (!unzipToDir) {
           if (first) {
@@ -56,8 +57,19 @@
         out=new FileOutputStream(fs);
         int read;
         byte[] buffer=new byte[BUFFER_SIZE];
+        int prg=0;
         while ((read=zipIn.read(buffer)) != -1) {
           out.write(buffer,0,read);
+          if (size > -1) {
+            prg+=read;
+            if (prg > size / 100) {
+              progress.progress(prg);
+              prg=0;
+            }
+          }
+        }
+        if (prg > 0) {
+          progress.progress(prg);
         }
         out.close();
       }

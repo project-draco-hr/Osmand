@@ -1,6 +1,12 @@
 {
   this.cancelable=cancelable;
   context=ctx;
+  if (context instanceof Activity) {
+    activity=(Activity)context;
+  }
+ else   if (ctx instanceof ContextWrapper && ((ContextWrapper)ctx).getBaseContext() instanceof Activity) {
+    activity=(Activity)((ContextWrapper)ctx).getBaseContext();
+  }
   setDialog(dlg);
   mViewUpdateHandler=new Handler(){
     @Override public void handleMessage(    Message msg){
@@ -8,7 +14,7 @@
       if (dialog != null) {
         dialog.setMessage(message);
         if (isIndeterminate()) {
-          dialog.setMax(0);
+          dialog.setMax(1);
           dialog.setIndeterminate(true);
         }
  else {
