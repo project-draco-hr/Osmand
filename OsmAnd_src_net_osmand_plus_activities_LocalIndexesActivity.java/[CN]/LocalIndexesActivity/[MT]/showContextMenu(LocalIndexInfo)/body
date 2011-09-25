@@ -1,0 +1,69 @@
+{
+  Builder builder=new AlertDialog.Builder(this);
+  final List<Integer> menu=new ArrayList<Integer>();
+  if (info.getGpxFile() != null && info.getType() == LocalIndexType.GPX_DATA) {
+    menu.add(R.string.show_gpx_route);
+    menu.add(R.string.local_index_mi_upload_gpx);
+  }
+  if (info.getType() == LocalIndexType.MAP_DATA || info.getType() == LocalIndexType.POI_DATA) {
+    if (!info.isBackupedData()) {
+      menu.add(R.string.local_index_mi_backup);
+    }
+  }
+  if (info.isBackupedData()) {
+    menu.add(R.string.local_index_mi_restore);
+  }
+  menu.add(R.string.local_index_mi_rename);
+  menu.add(R.string.local_index_mi_delete);
+  if (!menu.isEmpty()) {
+    String[] values=new String[menu.size()];
+    for (int i=0; i < values.length; i++) {
+      values[i]=getString(menu.get(i));
+    }
+    builder.setItems(values,new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        int resId=menu.get(which);
+        if (resId == R.string.show_gpx_route) {
+          if (info != null && info.getGpxFile() != null) {
+            WptPt loc=info.getGpxFile().findPointToShow();
+            if (loc != null) {
+              OsmandSettings.getOsmandSettings(LocalIndexesActivity.this).setMapLocationToShow(loc.lat,loc.lon);
+            }
+            ((OsmandApplication)getApplication()).setGpxFileToDisplay(info.getGpxFile());
+            MapActivity.launchMapActivityMoveToTop(LocalIndexesActivity.this);
+          }
+        }
+ else         if (resId == R.string.local_index_mi_rename) {
+        }
+ else         if (resId == R.string.local_index_mi_restore) {
+          boolean successfull=move(new File(info.getPathToData()),getFileToRestore(info));
+          if (successfull) {
+            info.setBackupedData(false);
+            reloadIndexes();
+          }
+          listAdapter.move(new LocalIndexInfo[]{info},true);
+        }
+ else         if (resId == R.string.local_index_mi_delete) {
+          File f=new File(info.getPathToData());
+          boolean successfull=Algoritms.removeAllFiles(f);
+          if (successfull) {
+            listAdapter.delete(new LocalIndexInfo[]{info});
+            reloadIndexes();
+          }
+        }
+ else         if (resId == R.string.local_index_mi_backup) {
+          boolean successfull=move(new File(info.getPathToData()),getFileToBackup(info));
+          if (successfull) {
+            info.setBackupedData(true);
+            reloadIndexes();
+          }
+          listAdapter.move(new LocalIndexInfo[]{info},false);
+        }
+ else         if (resId == R.string.local_index_mi_upload_gpx) {
+        }
+      }
+    }
+);
+  }
+  builder.show();
+}
