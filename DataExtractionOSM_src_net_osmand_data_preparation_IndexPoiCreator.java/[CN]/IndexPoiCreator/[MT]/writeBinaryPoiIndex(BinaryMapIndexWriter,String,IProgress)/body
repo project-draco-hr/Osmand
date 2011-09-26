@@ -5,6 +5,7 @@
   poiConnection.commit();
   Collator collator=Collator.getInstance();
   collator.setStrength(Collator.PRIMARY);
+  Map<String,List<PoiTileBox>> namesIndex=new LinkedHashMap<String,List<PoiTileBox>>();
   ResultSet rs;
   if (useInMemoryCreator) {
     rs=poiConnection.createStatement().executeQuery("SELECT x,y,name,name_en,type,subtype, id, opening_hours, site, phone from poi");
@@ -13,8 +14,8 @@
     rs=poiConnection.createStatement().executeQuery("SELECT x,y,name,name_en,type,subtype from poi");
   }
   int zoomToStart=ZOOM_TO_SAVE_START;
-  Tree<PoiBox> rootZoomsTree=new Tree<PoiBox>();
-  rootZoomsTree.setNode(new PoiBox());
+  Tree<PoiTileBox> rootZoomsTree=new Tree<PoiTileBox>();
+  rootZoomsTree.setNode(new PoiTileBox());
   int minX=Integer.MAX_VALUE;
   int maxX=0;
   int minY=Integer.MAX_VALUE;
@@ -35,22 +36,21 @@
     String nameEn=rs.getString(4);
     String type=rs.getString(5);
     String subtype=rs.getString(6);
-    Tree<PoiBox> prevTree=rootZoomsTree;
+    Tree<PoiTileBox> prevTree=rootZoomsTree;
     rootZoomsTree.getNode().addCategory(type,subtype);
-    rootZoomsTree.getNode().addNamePrefix(name,nameEn);
     for (int i=zoomToStart; i <= ZOOM_TO_SAVE_END; i++) {
       int xs=x >> (31 - i);
       int ys=y >> (31 - i);
-      Tree<PoiBox> subtree=null;
-      for (      Tree<PoiBox> sub : prevTree.getSubtrees()) {
+      Tree<PoiTileBox> subtree=null;
+      for (      Tree<PoiTileBox> sub : prevTree.getSubtrees()) {
         if (sub.getNode().x == xs && sub.getNode().y == ys && sub.getNode().zoom == i) {
           subtree=sub;
           break;
         }
       }
       if (subtree == null) {
-        subtree=new Tree<PoiBox>();
-        PoiBox poiBox=new PoiBox();
+        subtree=new Tree<PoiTileBox>();
+        PoiTileBox poiBox=new PoiTileBox();
         subtree.setNode(poiBox);
         poiBox.x=xs;
         poiBox.y=ys;
@@ -58,9 +58,9 @@
         prevTree.addSubTree(subtree);
       }
       subtree.getNode().addCategory(type,subtype);
-      subtree.getNode().addNamePrefix(name,nameEn);
       prevTree=subtree;
     }
+    addNamePrefix(name,nameEn,prevTree.getNode(),namesIndex);
     if (useInMemoryCreator) {
       if (prevTree.getNode().poiData == null) {
         prevTree.getNode().poiData=new ArrayList<PoiData>();
@@ -87,6 +87,7 @@
   long startFpPoiIndex=writer.startWritePOIIndex(regionName,left31,right31,bottom31,top31);
   Map<String,Map<String,Integer>> categories=rootZoomsTree.node.categories;
   Map<String,Integer> catIndexes=writer.writePOICategoriesTable(categories);
+  Map<PoiTileBox,TLongList> fpToWriteSeeks=writer.writePoiNameIndex(namesIndex,startFpPoiIndex);
   log.info("Poi box processing finishied");
   int level=0;
   for (; level < (ZOOM_TO_SAVE_END - zoomToStart); level++) {
@@ -100,13 +101,12 @@
     rootZoomsTree.extractChildrenFromLevel(level);
     zoomToStart=zoomToStart + level;
   }
-  Map<PoiBox,Long> fpToWriteSeeks=new LinkedHashMap<PoiBox,Long>();
-  for (  Tree<PoiBox> subs : rootZoomsTree.getSubtrees()) {
-    writePoiBoxes(writer,subs,fpToWriteSeeks,categories,catIndexes,rootZoomsTree.getNode().startsName);
+  for (  Tree<PoiTileBox> subs : rootZoomsTree.getSubtrees()) {
+    writePoiBoxes(writer,subs,fpToWriteSeeks,categories,catIndexes);
   }
   PreparedStatement prepareStatement=poiConnection.prepareStatement("SELECT id, x, y, name_en, name, type, subtype, opening_hours, site, phone from poi " + "where x >= ? AND x < ? AND y >= ? AND y < ?");
   TIntArrayList types=new TIntArrayList();
-  for (  Map.Entry<PoiBox,Long> entry : fpToWriteSeeks.entrySet()) {
+  for (  Map.Entry<PoiTileBox,TLongList> entry : fpToWriteSeeks.entrySet()) {
     int z=entry.getKey().zoom;
     int x=entry.getKey().x;
     int y=entry.getKey().y;

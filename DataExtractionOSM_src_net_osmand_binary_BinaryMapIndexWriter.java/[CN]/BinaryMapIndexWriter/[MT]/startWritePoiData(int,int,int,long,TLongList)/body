@@ -1,0 +1,14 @@
+{
+  pushState(POI_DATA,POI_INDEX_INIT);
+  codedOutStream.writeTag(OsmandOdb.OsmAndPoiIndex.POIDATA_FIELD_NUMBER,WireFormat.WIRETYPE_FIXED32_LENGTH_DELIMITED);
+  long startPoiData=preserveInt32Size();
+  long filePointer=raf.getFilePointer();
+  for (int i=0; i < fpPoiBox.size(); i++) {
+    raf.seek(fpPoiBox.get(i));
+    raf.writeInt((int)(startPoiData - fpPoiIndex - 4));
+  }
+  raf.seek(filePointer);
+  codedOutStream.writeUInt32(OsmandOdb.OsmAndPoiBoxData.ZOOM_FIELD_NUMBER,zoom);
+  codedOutStream.writeUInt32(OsmandOdb.OsmAndPoiBoxData.X_FIELD_NUMBER,x);
+  codedOutStream.writeUInt32(OsmandOdb.OsmAndPoiBoxData.Y_FIELD_NUMBER,y);
+}
