@@ -5,7 +5,13 @@
   poiConnection.commit();
   Collator collator=Collator.getInstance();
   collator.setStrength(Collator.PRIMARY);
-  ResultSet rs=poiConnection.createStatement().executeQuery("SELECT x,y,name,name_en,type,subtype from poi");
+  ResultSet rs;
+  if (useInMemoryCreator) {
+    rs=poiConnection.createStatement().executeQuery("SELECT x,y,name,name_en,type,subtype, id, opening_hours, site, phone from poi");
+  }
+ else {
+    rs=poiConnection.createStatement().executeQuery("SELECT x,y,name,name_en,type,subtype from poi");
+  }
   int zoomToStart=ZOOM_TO_SAVE_START;
   Tree<PoiBox> rootZoomsTree=new Tree<PoiBox>();
   rootZoomsTree.setNode(new PoiBox());
@@ -55,6 +61,23 @@
       subtree.getNode().addNamePrefix(name,nameEn);
       prevTree=subtree;
     }
+    if (useInMemoryCreator) {
+      if (prevTree.getNode().poiData == null) {
+        prevTree.getNode().poiData=new ArrayList<PoiData>();
+      }
+      PoiData poiData=new PoiData();
+      poiData.x=x;
+      poiData.y=y;
+      poiData.name=name;
+      poiData.nameEn=nameEn;
+      poiData.type=type;
+      poiData.subtype=subtype;
+      poiData.id=rs.getLong(7);
+      poiData.openingHours=rs.getString(8);
+      poiData.site=rs.getString(9);
+      poiData.phone=rs.getString(10);
+      prevTree.getNode().poiData.add(poiData);
+    }
   }
   log.info("Poi processing finishied");
   int right31=maxX;
@@ -79,7 +102,7 @@
   }
   Map<PoiBox,Long> fpToWriteSeeks=new LinkedHashMap<PoiBox,Long>();
   for (  Tree<PoiBox> subs : rootZoomsTree.getSubtrees()) {
-    writePoiBoxes(writer,subs,fpToWriteSeeks,categories,catIndexes);
+    writePoiBoxes(writer,subs,fpToWriteSeeks,categories,catIndexes,rootZoomsTree.getNode().startsName);
   }
   PreparedStatement prepareStatement=poiConnection.prepareStatement("SELECT id, x, y, name_en, name, type, subtype, opening_hours, site, phone from poi " + "where x >= ? AND x < ? AND y >= ? AND y < ?");
   TIntArrayList types=new TIntArrayList();
@@ -88,30 +111,46 @@
     int x=entry.getKey().x;
     int y=entry.getKey().y;
     writer.startWritePoiData(z,x,y,startFpPoiIndex,entry.getValue());
-    prepareStatement.setInt(1,x << (31 - z));
-    prepareStatement.setInt(2,(x + 1) << (31 - z));
-    prepareStatement.setInt(3,y << (31 - z));
-    prepareStatement.setInt(4,(y + 1) << (31 - z));
-    rs=prepareStatement.executeQuery();
-    while (rs.next()) {
-      long id=rs.getLong(1);
-      int x31=rs.getInt(2);
-      int y31=rs.getInt(3);
-      int x24shift=(x31 >> 7) - (x << (24 - z));
-      int y24shift=(y31 >> 7) - (y << (24 - z));
-      String nameEn=rs.getString(4);
-      String name=rs.getString(5);
-      String type=rs.getString(6);
-      String subtype=rs.getString(7);
-      types.clear();
-      buildTypeIds(type,subtype,categories,catIndexes,types);
-      String openingHours=rs.getString(8);
-      String site=rs.getString(9);
-      String phone=rs.getString(10);
-      writer.writePoiDataAtom(id,x24shift,y24shift,nameEn,name,types,openingHours,site,phone);
+    if (useInMemoryCreator) {
+      List<PoiData> poiData=entry.getKey().poiData;
+      for (      PoiData poi : poiData) {
+        int x31=poi.x;
+        int y31=poi.y;
+        String type=poi.type;
+        String subtype=poi.subtype;
+        types.clear();
+        buildTypeIds(type,subtype,categories,catIndexes,types);
+        int x24shift=(x31 >> 7) - (x << (24 - z));
+        int y24shift=(y31 >> 7) - (y << (24 - z));
+        writer.writePoiDataAtom(poi.id,x24shift,y24shift,poi.nameEn,poi.name,types,poi.openingHours,poi.site,poi.phone);
+      }
+    }
+ else {
+      prepareStatement.setInt(1,x << (31 - z));
+      prepareStatement.setInt(2,(x + 1) << (31 - z));
+      prepareStatement.setInt(3,y << (31 - z));
+      prepareStatement.setInt(4,(y + 1) << (31 - z));
+      ResultSet rset=prepareStatement.executeQuery();
+      while (rset.next()) {
+        long id=rset.getLong(1);
+        int x31=rset.getInt(2);
+        int y31=rset.getInt(3);
+        int x24shift=(x31 >> 7) - (x << (24 - z));
+        int y24shift=(y31 >> 7) - (y << (24 - z));
+        String nameEn=rset.getString(4);
+        String name=rset.getString(5);
+        String type=rset.getString(6);
+        String subtype=rset.getString(7);
+        types.clear();
+        buildTypeIds(type,subtype,categories,catIndexes,types);
+        String openingHours=rset.getString(8);
+        String site=rset.getString(9);
+        String phone=rset.getString(10);
+        writer.writePoiDataAtom(id,x24shift,y24shift,nameEn,name,types,openingHours,site,phone);
+      }
+      rset.close();
     }
     writer.endWritePoiData();
-    rs.close();
   }
   prepareStatement.close();
   writer.endWritePOIIndex();
