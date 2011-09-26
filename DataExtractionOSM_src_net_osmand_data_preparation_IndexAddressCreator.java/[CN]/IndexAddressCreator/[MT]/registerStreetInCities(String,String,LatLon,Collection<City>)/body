@@ -8,13 +8,21 @@
   Set<Long> values=new TreeSet<Long>();
   for (  City city : result) {
     String cityPart=city.getName();
+    boolean found=false;
     for (    City subpart : result) {
       if (subpart != city) {
         Boundary subBoundary=cityBoundaries.get(subpart);
         Boundary b=cityBoundaries.get(city);
         if (b != null && subBoundary != null && subBoundary.getAdminLevel() > b.getAdminLevel()) {
-          cityPart=subpart.getName();
+          cityPart=findNearestCityOrSuburb(subBoundary,location);
+          found=true;
         }
+      }
+    }
+    if (!found) {
+      Boundary b=cityBoundaries.get(city);
+      if (b != null) {
+        cityPart=findNearestCityOrSuburb(b,location);
       }
     }
     Long foundId=streetDAO.findStreet(name,city,cityPart);

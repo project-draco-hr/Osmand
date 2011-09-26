@@ -1,0 +1,39 @@
+{
+  Way way=getOuterWays().get(0);
+  List<Node> nodes=way.getNodes();
+  if (!nodes.isEmpty()) {
+    int nodesSize=nodes.size();
+    Node first=nodes.get(0);
+    Node last=nodes.get(nodesSize - 1);
+    int size=getOuterWays().size();
+    for (int i=size - 1; i >= 1; i--) {
+      Way anotherWay=getOuterWays().get(i);
+      if (anotherWay.getNodes().isEmpty()) {
+        getOuterWays().remove(i);
+      }
+ else {
+        if (anotherWay.getNodes().get(0).getId() == first.getId()) {
+          Collections.reverse(anotherWay.getNodes());
+          way.getNodes().addAll(0,anotherWay.getNodes());
+          getOuterWays().remove(i);
+        }
+ else         if (anotherWay.getNodes().get(0).getId() == last.getId()) {
+          way.getNodes().addAll(anotherWay.getNodes());
+          getOuterWays().remove(i);
+        }
+ else         if (anotherWay.getNodes().get(anotherWay.getNodes().size() - 1).getId() == first.getId()) {
+          way.getNodes().addAll(0,anotherWay.getNodes());
+          getOuterWays().remove(i);
+        }
+ else         if (anotherWay.getNodes().get(anotherWay.getNodes().size() - 1).getId() == last.getId()) {
+          Collections.reverse(anotherWay.getNodes());
+          way.getNodes().addAll(anotherWay.getNodes());
+          getOuterWays().remove(i);
+        }
+      }
+    }
+  }
+ else {
+    getOuterWays().remove(0);
+  }
+}
