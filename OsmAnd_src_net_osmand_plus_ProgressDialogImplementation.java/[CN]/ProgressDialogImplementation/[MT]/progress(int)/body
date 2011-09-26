@@ -1,17 +1,21 @@
 {
-  this.progress+=deltaWork;
-  final int prg=progress;
   if (!isIndeterminate() && dialog != null) {
-    if (activity != null) {
-      activity.runOnUiThread(new Runnable(){
-        @Override public void run(){
-          dialog.setProgress(prg);
+    this.deltaProgress+=deltaWork;
+    if ((deltaProgress > (work / 100)) || ((progress + deltaProgress) >= work)) {
+      this.progress+=deltaProgress;
+      this.deltaProgress=0;
+      final int prg=progress;
+      if (activity != null) {
+        activity.runOnUiThread(new Runnable(){
+          @Override public void run(){
+            dialog.setProgress(prg);
+          }
         }
-      }
 );
-    }
+      }
  else {
-      dialog.setProgress(prg);
+        dialog.setProgress(prg);
+      }
     }
   }
 }
