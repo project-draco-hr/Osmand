@@ -2,9 +2,14 @@
   Amenity am=null;
   int x=0;
   int y=0;
+  AmenityType amenityType=null;
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
+    if (amenityType == null && (tag > OsmandOdb.OsmAndPoiBoxDataAtom.CATEGORIES_FIELD_NUMBER || tag == 0)) {
+      codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+      return null;
+    }
 switch (tag) {
 case 0:
       if (Algoritms.isEmpty(am.getEnName())) {
@@ -38,12 +43,16 @@ if (subcatId < subcats.size()) {
 subtype=subcats.get(subcatId);
 }
 }
-if (req.poiTypeFilter != null && !req.poiTypeFilter.accept(type,subtype)) {
-codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
-return null;
-}
+if (req.poiTypeFilter == null || req.poiTypeFilter.accept(type,subtype)) {
+if (amenityType == null) {
+amenityType=type;
 am.setSubType(subtype);
-am.setType(type);
+am.setType(amenityType);
+}
+ else {
+am.setSubType(am.getSubType() + ";" + subtype);
+}
+}
 break;
 case OsmandOdb.OsmAndPoiBoxDataAtom.ID_FIELD_NUMBER:
 am.setId(codedIS.readUInt64());

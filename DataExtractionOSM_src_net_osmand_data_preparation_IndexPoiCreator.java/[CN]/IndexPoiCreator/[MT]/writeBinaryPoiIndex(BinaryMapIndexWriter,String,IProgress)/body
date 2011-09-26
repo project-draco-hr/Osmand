@@ -5,56 +5,66 @@
   poiConnection.commit();
   Collator collator=Collator.getInstance();
   collator.setStrength(Collator.PRIMARY);
-  ResultSet rs=poiConnection.createStatement().executeQuery("SELECT DISTINCT type, subtype FROM poi");
-  Map<String,Map<String,Integer>> categories=new LinkedHashMap<String,Map<String,Integer>>();
-  while (rs.next()) {
-    String category=rs.getString(1);
-    String subcategory=rs.getString(2).trim();
-    if (!categories.containsKey(category)) {
-      categories.put(category,new TreeMap<String,Integer>(collator));
-    }
-    if (subcategory.contains(";") || subcategory.contains(",")) {
-      String[] split=subcategory.split(",|;");
-      for (      String sub : split) {
-        categories.get(category).put(sub.trim(),0);
-      }
-    }
- else {
-      categories.get(category).put(subcategory.trim(),0);
-    }
-  }
-  Statement stat=rs.getStatement();
-  rs.close();
-  stat.close();
-  rs=poiConnection.createStatement().executeQuery("SELECT max(x), min(x), max(y), min(y) FROM poi");
-  rs.next();
-  int right31=rs.getInt(1);
-  int left31=rs.getInt(2);
-  int bottom31=rs.getInt(3);
-  int top31=rs.getInt(4);
-  rs.close();
-  long startFpPoiIndex=writer.startWritePOIIndex(regionName,left31,right31,bottom31,top31);
-  Map<String,Integer> catIndexes=writer.writePOICategoriesTable(categories);
-  String selectZm=(31 - ZOOM_TO_SAVE_END) + "";
-  rs=poiConnection.createStatement().executeQuery("SELECT DISTINCT x>>" + selectZm + ", y>>"+ selectZm+ " from poi");
-  Tree<Long> rootZoomsTree=new Tree<Long>();
+  ResultSet rs=poiConnection.createStatement().executeQuery("SELECT x,y,name,name_en,type,subtype from poi");
   int zoomToStart=ZOOM_TO_SAVE_START;
+  Tree<PoiBox> rootZoomsTree=new Tree<PoiBox>();
+  rootZoomsTree.setNode(new PoiBox());
+  int minX=Integer.MAX_VALUE;
+  int maxX=0;
+  int minY=Integer.MAX_VALUE;
+  int maxY=0;
+  int count=0;
   while (rs.next()) {
     int x=rs.getInt(1);
     int y=rs.getInt(2);
-    Tree<Long> prevTree=rootZoomsTree;
+    minX=Math.min(x,minX);
+    maxX=Math.max(x,maxX);
+    minY=Math.min(y,minY);
+    maxY=Math.max(y,maxY);
+    if (count++ > 10000) {
+      count=0;
+      log.info("proccess 10000 entities");
+    }
+    String name=rs.getString(3);
+    String nameEn=rs.getString(4);
+    String type=rs.getString(5);
+    String subtype=rs.getString(6);
+    Tree<PoiBox> prevTree=rootZoomsTree;
+    rootZoomsTree.getNode().addCategory(type,subtype);
+    rootZoomsTree.getNode().addNamePrefix(name,nameEn);
     for (int i=zoomToStart; i <= ZOOM_TO_SAVE_END; i++) {
-      int shift=ZOOM_TO_SAVE_END - i;
-      long l=(((long)x >> shift) << 31) | ((long)y >> shift);
-      Tree<Long> subtree=prevTree.getSubtreeByNode(l);
+      int xs=x >> (31 - i);
+      int ys=y >> (31 - i);
+      Tree<PoiBox> subtree=null;
+      for (      Tree<PoiBox> sub : prevTree.getSubtrees()) {
+        if (sub.getNode().x == xs && sub.getNode().y == ys && sub.getNode().zoom == i) {
+          subtree=sub;
+          break;
+        }
+      }
       if (subtree == null) {
-        subtree=new Tree<Long>();
-        subtree.setNode(l);
+        subtree=new Tree<PoiBox>();
+        PoiBox poiBox=new PoiBox();
+        subtree.setNode(poiBox);
+        poiBox.x=xs;
+        poiBox.y=ys;
+        poiBox.zoom=i;
         prevTree.addSubTree(subtree);
       }
+      subtree.getNode().addCategory(type,subtype);
+      subtree.getNode().addNamePrefix(name,nameEn);
       prevTree=subtree;
     }
   }
+  log.info("Poi processing finishied");
+  int right31=maxX;
+  int left31=minX;
+  int bottom31=maxY;
+  int top31=minY;
+  long startFpPoiIndex=writer.startWritePOIIndex(regionName,left31,right31,bottom31,top31);
+  Map<String,Map<String,Integer>> categories=rootZoomsTree.node.categories;
+  Map<String,Integer> catIndexes=writer.writePOICategoriesTable(categories);
+  log.info("Poi box processing finishied");
   int level=0;
   for (; level < (ZOOM_TO_SAVE_END - zoomToStart); level++) {
     int subtrees=rootZoomsTree.getSubTreesOnLevel(level);
@@ -67,22 +77,16 @@
     rootZoomsTree.extractChildrenFromLevel(level);
     zoomToStart=zoomToStart + level;
   }
-  PreparedStatement prepareStatement=poiConnection.prepareStatement("SELECT DISTINCT type, subtype FROM poi WHERE x >= ? AND x < ? AND y >= ? AND y < ?");
-  Map<Long,Long> fpToWriteSeeks=new LinkedHashMap<Long,Long>();
-  for (  Tree<Long> subs : rootZoomsTree.getSubtrees()) {
-    writePoiBoxes(writer,subs,zoomToStart,fpToWriteSeeks,prepareStatement,categories,catIndexes);
+  Map<PoiBox,Long> fpToWriteSeeks=new LinkedHashMap<PoiBox,Long>();
+  for (  Tree<PoiBox> subs : rootZoomsTree.getSubtrees()) {
+    writePoiBoxes(writer,subs,fpToWriteSeeks,categories,catIndexes);
   }
-  stat=rs.getStatement();
-  rs.close();
-  stat.close();
-  prepareStatement.close();
-  prepareStatement=poiConnection.prepareStatement("SELECT id, x, y, name_en, name, type, subtype, opening_hours, site, phone from poi " + "where x >= ? AND x < ? AND y >= ? AND y < ?");
+  PreparedStatement prepareStatement=poiConnection.prepareStatement("SELECT id, x, y, name_en, name, type, subtype, opening_hours, site, phone from poi " + "where x >= ? AND x < ? AND y >= ? AND y < ?");
   TIntArrayList types=new TIntArrayList();
-  for (  Map.Entry<Long,Long> entry : fpToWriteSeeks.entrySet()) {
-    long l=entry.getKey();
-    int z=ZOOM_TO_SAVE_END;
-    int x=(int)(l >> 31);
-    int y=(int)(l & ((1 << 31) - 1));
+  for (  Map.Entry<PoiBox,Long> entry : fpToWriteSeeks.entrySet()) {
+    int z=entry.getKey().zoom;
+    int x=entry.getKey().x;
+    int y=entry.getKey().y;
     writer.startWritePoiData(z,x,y,startFpPoiIndex,entry.getValue());
     prepareStatement.setInt(1,x << (31 - z));
     prepareStatement.setInt(2,(x + 1) << (31 - z));
