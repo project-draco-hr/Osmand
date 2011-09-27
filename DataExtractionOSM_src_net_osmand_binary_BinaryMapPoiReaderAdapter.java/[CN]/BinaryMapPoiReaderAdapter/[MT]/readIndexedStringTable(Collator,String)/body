@@ -1,0 +1,39 @@
+{
+  TIntArrayList list=new TIntArrayList();
+  int charMatches=0;
+  boolean keyMatches=false;
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      return list;
+case OsmandOdb.IndexedStringTable.KEY_FIELD_NUMBER:
+    String key=codedIS.readString();
+  keyMatches=false;
+int i=0;
+for (; i < query.length(); i++) {
+if (i >= key.length() || instance.compare(key.substring(i,i + 1),query.substring(i,i + 1)) != 0) {
+  break;
+}
+}
+if (i >= charMatches && i > 0) {
+if (i > charMatches) {
+list.clear();
+charMatches=i;
+}
+keyMatches=true;
+}
+break;
+case OsmandOdb.IndexedStringTable.VAL_FIELD_NUMBER:
+int val=codedIS.readUInt32();
+if (keyMatches) {
+list.add(val);
+}
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

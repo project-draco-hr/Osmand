@@ -1,0 +1,43 @@
+{
+  TIntArrayList offsets=new TIntArrayList();
+  TIntArrayList dataOffsets=null;
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      return offsets;
+case OsmandOdb.OsmAndPoiNameIndex.TABLE_FIELD_NUMBER:
+{
+      int length=readInt();
+      int oldLimit=codedIS.pushLimit(length);
+      dataOffsets=readIndexedStringTable(instance,query);
+      codedIS.popLimit(oldLimit);
+      break;
+    }
+case OsmandOdb.OsmAndPoiNameIndex.DATA_FIELD_NUMBER:
+{
+    if (dataOffsets != null) {
+      dataOffsets.sort();
+      int offset=codedIS.getTotalBytesRead();
+      for (int i=0; i < dataOffsets.size(); i++) {
+        codedIS.seek(dataOffsets.get(i) + offset);
+        int len=codedIS.readRawVarint32();
+        int oldLim=codedIS.pushLimit(len);
+        readPoiNameIndexData(offsets);
+        codedIS.popLimit(oldLim);
+        if (req.isCancelled()) {
+          codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+          return offsets;
+        }
+      }
+    }
+    codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+    return offsets;
+  }
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

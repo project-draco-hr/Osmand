@@ -1,0 +1,82 @@
+{
+  Amenity am=null;
+  int x=0;
+  int y=0;
+  AmenityType amenityType=null;
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+    if (amenityType == null && (tag > OsmandOdb.OsmAndPoiBoxDataAtom.CATEGORIES_FIELD_NUMBER || tag == 0)) {
+      codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+      return null;
+    }
+switch (tag) {
+case 0:
+      if (Algoritms.isEmpty(am.getEnName())) {
+        am.setEnName(Junidecode.unidecode(am.getName()));
+      }
+    req.numberOfAcceptedObjects++;
+  return am;
+case OsmandOdb.OsmAndPoiBoxDataAtom.DX_FIELD_NUMBER:
+x=(codedIS.readSInt32() + (px << (24 - zoom))) << 7;
+break;
+case OsmandOdb.OsmAndPoiBoxDataAtom.DY_FIELD_NUMBER:
+y=(codedIS.readSInt32() + (py << (24 - zoom))) << 7;
+req.numberOfVisitedObjects++;
+if (checkBounds) {
+if (left31 > x || right31 < x || top31 > y || bottom31 < y) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return null;
+}
+}
+am=new Amenity();
+am.setLocation(MapUtils.get31LatitudeY(y),MapUtils.get31LongitudeX(x));
+break;
+case OsmandOdb.OsmAndPoiBoxDataAtom.CATEGORIES_FIELD_NUMBER:
+int cat=codedIS.readUInt32();
+int subcatId=cat >> SHIFT_BITS_CATEGORY;
+int catId=cat & CATEGORY_MASK;
+AmenityType type=AmenityType.OTHER;
+String subtype="";
+if (catId < region.categoriesType.size()) {
+type=region.categoriesType.get(catId);
+List<String> subcats=region.subcategories.get(catId);
+if (subcatId < subcats.size()) {
+subtype=subcats.get(subcatId);
+}
+}
+if (req.poiTypeFilter == null || req.poiTypeFilter.accept(type,subtype)) {
+if (amenityType == null) {
+amenityType=type;
+am.setSubType(subtype);
+am.setType(amenityType);
+}
+ else {
+am.setSubType(am.getSubType() + ";" + subtype);
+}
+}
+break;
+case OsmandOdb.OsmAndPoiBoxDataAtom.ID_FIELD_NUMBER:
+am.setId(codedIS.readUInt64());
+break;
+case OsmandOdb.OsmAndPoiBoxDataAtom.NAME_FIELD_NUMBER:
+am.setName(codedIS.readString());
+break;
+case OsmandOdb.OsmAndPoiBoxDataAtom.NAMEEN_FIELD_NUMBER:
+am.setEnName(codedIS.readString());
+break;
+case OsmandOdb.OsmAndPoiBoxDataAtom.OPENINGHOURS_FIELD_NUMBER:
+am.setOpeningHours(codedIS.readString());
+break;
+case OsmandOdb.OsmAndPoiBoxDataAtom.SITE_FIELD_NUMBER:
+am.setSite(codedIS.readString());
+break;
+case OsmandOdb.OsmAndPoiBoxDataAtom.PHONE_FIELD_NUMBER:
+am.setPhone(codedIS.readString());
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

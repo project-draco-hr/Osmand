@@ -5,7 +5,7 @@
   poiConnection.commit();
   Collator collator=Collator.getInstance();
   collator.setStrength(Collator.PRIMARY);
-  Map<String,List<PoiTileBox>> namesIndex=new LinkedHashMap<String,List<PoiTileBox>>();
+  Map<String,Set<PoiTileBox>> namesIndex=new TreeMap<String,Set<PoiTileBox>>();
   ResultSet rs;
   if (useInMemoryCreator) {
     rs=poiConnection.createStatement().executeQuery("SELECT x,y,name,name_en,type,subtype, id, opening_hours, site, phone from poi");
@@ -87,7 +87,7 @@
   long startFpPoiIndex=writer.startWritePOIIndex(regionName,left31,right31,bottom31,top31);
   Map<String,Map<String,Integer>> categories=rootZoomsTree.node.categories;
   Map<String,Integer> catIndexes=writer.writePOICategoriesTable(categories);
-  Map<PoiTileBox,TLongList> fpToWriteSeeks=writer.writePoiNameIndex(namesIndex,startFpPoiIndex);
+  Map<PoiTileBox,TLongList> fpToWriteSeeks=writer.writePoiNameIndex(namesIndex);
   log.info("Poi box processing finishied");
   int level=0;
   for (; level < (ZOOM_TO_SAVE_END - zoomToStart); level++) {

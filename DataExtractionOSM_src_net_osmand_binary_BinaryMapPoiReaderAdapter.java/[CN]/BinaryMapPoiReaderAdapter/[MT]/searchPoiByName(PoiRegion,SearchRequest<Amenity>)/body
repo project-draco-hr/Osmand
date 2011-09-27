@@ -1,0 +1,44 @@
+{
+  TIntArrayList offsets=new TIntArrayList();
+  Collator instance=Collator.getInstance();
+  instance.setStrength(Collator.PRIMARY);
+  CollatorStringMatcher matcher=new CollatorStringMatcher(instance,req.nameQuery,StringMatcherMode.CHECK_STARTS_FROM_SPACE);
+  long time=System.currentTimeMillis();
+  int indexOffset=codedIS.getTotalBytesRead();
+  while (true) {
+    if (req.isCancelled()) {
+      return;
+    }
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      return;
+case OsmandOdb.OsmAndPoiIndex.NAMEINDEX_FIELD_NUMBER:
+    int length=readInt();
+  int oldLimit=codedIS.pushLimit(length);
+offsets=readPoiNameIndex(instance,req.nameQuery,req);
+codedIS.popLimit(oldLimit);
+break;
+case OsmandOdb.OsmAndPoiIndex.POIDATA_FIELD_NUMBER:
+offsets.sort();
+LOG.info("Searched poi structure in " + (System.currentTimeMillis() - time) + "ms. Found "+ offsets.size()+ " subtress");
+for (int j=0; j < offsets.size(); j++) {
+codedIS.seek(offsets.get(j) + indexOffset);
+int len=readInt();
+int oldLim=codedIS.pushLimit(len);
+readPoiData(matcher,req,region);
+codedIS.popLimit(oldLim);
+if (req.isCancelled()) {
+return;
+}
+}
+LOG.info("Whole poi by name search is done in " + (System.currentTimeMillis() - time) + "ms. Found "+ req.getSearchResults().size());
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}
