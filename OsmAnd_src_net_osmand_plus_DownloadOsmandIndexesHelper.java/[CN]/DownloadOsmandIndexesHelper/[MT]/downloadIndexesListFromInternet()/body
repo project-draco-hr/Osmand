@@ -1,40 +1,24 @@
 {
   try {
     log.debug("Start loading list of index files");
-    TreeMap<String,IndexItem> indexFiles=new TreeMap<String,IndexItem>(new Comparator<String>(){
-      private static final long serialVersionUID=1L;
-      @Override public int compare(      String object1,      String object2){
-        if (object1.endsWith(IndexConstants.ANYVOICE_INDEX_EXT_ZIP)) {
-          if (object2.endsWith(IndexConstants.ANYVOICE_INDEX_EXT_ZIP)) {
-            return object1.compareTo(object2);
-          }
- else {
-            return -1;
-          }
-        }
- else         if (object2.endsWith(IndexConstants.ANYVOICE_INDEX_EXT_ZIP)) {
-          return 1;
-        }
-        return object1.compareTo(object2);
-      }
-    }
-);
+    IndexFileList result=new IndexFileList();
     try {
       URL url=new URL("http://download.osmand.net/get_indexes");
       XmlPullParser parser=XmlPullParserFactory.newInstance().newPullParser();
       parser.setInput(url.openStream(),"UTF-8");
       int next;
       while ((next=parser.next()) != XmlPullParser.END_DOCUMENT) {
-        if (next == XmlPullParser.START_TAG && (parser.getName().equals("region") || parser.getName().equals("multiregion"))) {
+        if (next == XmlPullParser.START_TAG && ("region".equals(parser.getName()) || "multiregion".equals(parser.getName()))) {
           String name=parser.getAttributeValue(null,"name");
           String size=parser.getAttributeValue(null,"size");
           String date=parser.getAttributeValue(null,"date");
           String description=parser.getAttributeValue(null,"description");
           String parts=parser.getAttributeValue(null,"parts");
-          IndexItem indexItem=new IndexItem(name,description,date,size,parts);
-          if (indexItem.isAccepted()) {
-            indexFiles.put(name,indexItem);
-          }
+          result.add(name,new IndexItem(name,description,date,size,parts));
+        }
+ else         if (next == XmlPullParser.START_TAG && ("osmand_regions".equals(parser.getName()))) {
+          String mapversion=parser.getAttributeValue(null,"mapversion");
+          result.setMapVersion(mapversion);
         }
       }
     }
@@ -46,8 +30,8 @@ catch (    XmlPullParserException e) {
       log.error("Error while loading indexes from repository",e);
       return null;
     }
-    if (indexFiles != null && !indexFiles.isEmpty()) {
-      return indexFiles;
+    if (result.isAcceptable()) {
+      return result;
     }
  else {
       return null;
