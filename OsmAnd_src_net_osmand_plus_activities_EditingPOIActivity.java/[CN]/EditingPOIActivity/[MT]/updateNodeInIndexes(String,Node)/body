@@ -1,22 +1,26 @@
 {
-  List<AmenityIndexRepository> repos=app.getResourceManager().searchAmenityRepositories(n.getLatitude(),n.getLongitude());
-  if (DELETE_ACTION.equals(action) || MODIFY_ACTION.equals(action)) {
-    for (    AmenityIndexRepository r : repos) {
-      if (r instanceof AmenityIndexRepositoryOdb) {
-        ((AmenityIndexRepositoryOdb)r).deleteAmenities(n.getId() << 1);
-        ((AmenityIndexRepositoryOdb)r).clearCache();
+  final AmenityIndexRepositoryOdb repo=app.getResourceManager().getUpdatablePoiDb();
+  view.post(new Runnable(){
+    @Override public void run(){
+      if (repo == null) {
+        Toast.makeText(app,app.getString(R.string.update_poi_no_offline_poi_index),Toast.LENGTH_SHORT).show();
+        return;
+      }
+ else {
+        Toast.makeText(app,app.getString(R.string.update_poi_does_not_change_indexes),Toast.LENGTH_SHORT).show();
       }
     }
+  }
+);
+  if (DELETE_ACTION.equals(action) || MODIFY_ACTION.equals(action)) {
+    repo.deleteAmenities(n.getId() << 1);
+    repo.clearCache();
   }
   if (!DELETE_ACTION.equals(action)) {
     List<Amenity> ams=Amenity.parseAmenities(n,new ArrayList<Amenity>());
     for (    Amenity a : ams) {
-      for (      AmenityIndexRepository r : repos) {
-        if (r instanceof AmenityIndexRepositoryOdb) {
-          ((AmenityIndexRepositoryOdb)r).addAmenity(a);
-          ((AmenityIndexRepositoryOdb)r).clearCache();
-        }
-      }
+      repo.addAmenity(a);
+      repo.clearCache();
     }
   }
 }

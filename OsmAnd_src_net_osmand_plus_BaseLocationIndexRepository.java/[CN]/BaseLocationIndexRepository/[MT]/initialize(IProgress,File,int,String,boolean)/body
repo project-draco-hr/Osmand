@@ -10,7 +10,7 @@
     db=null;
     return false;
   }
-  String metaTable="loc_meta_" + tableLocation;
+  String metaTable=getMetaLocation(tableLocation);
   Cursor cursor=db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='" + metaTable + "'",null);
   boolean dbExist=cursor.moveToFirst();
   cursor.close();
@@ -60,7 +60,7 @@
       query.close();
     }
     if (write) {
-      db.execSQL("INSERT INTO " + metaTable + " VALUES (?, ?, ? ,?)",new Double[]{dataTopLatitude,dataRightLongitude,dataBottomLatitude,dataLeftLongitude});
+      updateMaxMinBoundaries(tableLocation);
     }
   }
   if (log.isDebugEnabled()) {

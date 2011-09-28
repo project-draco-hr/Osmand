@@ -1,0 +1,62 @@
+{
+  String key=null;
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      return charMatches;
+case OsmandOdb.IndexedStringTable.KEY_FIELD_NUMBER:
+    key=codedIS.readString();
+  if (prefix.length() > 0) {
+    key=prefix + key;
+  }
+if (CollatorStringMatcher.cmatches(instance,key,query,StringMatcherMode.CHECK_ONLY_STARTS_WITH)) {
+  if (query.length() >= charMatches) {
+    if (query.length() > charMatches) {
+      charMatches=key.length();
+      list.clear();
+    }
+  }
+ else {
+    key=null;
+  }
+}
+ else if (CollatorStringMatcher.cmatches(instance,query,key,StringMatcherMode.CHECK_ONLY_STARTS_WITH)) {
+  if (key.length() >= charMatches) {
+    if (key.length() > charMatches) {
+      charMatches=key.length();
+      list.clear();
+    }
+  }
+ else {
+    key=null;
+  }
+}
+ else {
+  key=null;
+}
+break;
+case OsmandOdb.IndexedStringTable.VAL_FIELD_NUMBER:
+int val=codedIS.readUInt32();
+if (key != null) {
+list.add(val);
+}
+break;
+case OsmandOdb.IndexedStringTable.SUBTABLES_FIELD_NUMBER:
+int len=codedIS.readRawVarint32();
+int oldLim=codedIS.pushLimit(len);
+if (key != null) {
+charMatches=readIndexedStringTable(instance,query,key,list,charMatches);
+}
+ else {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+}
+codedIS.popLimit(oldLim);
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}
