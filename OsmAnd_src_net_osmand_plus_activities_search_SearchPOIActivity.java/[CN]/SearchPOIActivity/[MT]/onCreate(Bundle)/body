@@ -23,7 +23,9 @@
         runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
       }
  else       if (isSearchByNameFilter() && !Algoritms.objectEquals(((SearchByNameFilter)filter).getQuery(),query)) {
+        showFilter.setVisibility(View.INVISIBLE);
         filter.clearPreviousZoom();
+        showPoiCategoriesByNameFilter(query,location);
         ((SearchByNameFilter)filter).setQuery(query);
         runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
       }
@@ -35,12 +37,23 @@
 );
   showFilter.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      if (searchFilterLayout.getVisibility() == View.GONE) {
-        searchFilterLayout.setVisibility(View.VISIBLE);
+      if (isSearchByNameFilter()) {
+        Intent newIntent=new Intent(SearchPOIActivity.this,EditPOIFilterActivity.class);
+        newIntent.putExtra(EditPOIFilterActivity.AMENITY_FILTER,PoiFilter.CUSTOM_FILTER_ID);
+        if (location != null) {
+          newIntent.putExtra(EditPOIFilterActivity.SEARCH_LAT,location.getLatitude());
+          newIntent.putExtra(EditPOIFilterActivity.SEARCH_LON,location.getLongitude());
+        }
+        startActivity(newIntent);
       }
  else {
-        searchFilter.setText("");
-        searchFilterLayout.setVisibility(View.GONE);
+        if (searchFilterLayout.getVisibility() == View.GONE) {
+          searchFilterLayout.setVisibility(View.VISIBLE);
+        }
+ else {
+          searchFilter.setText("");
+          searchFilterLayout.setVisibility(View.GONE);
+        }
       }
     }
   }
