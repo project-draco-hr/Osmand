@@ -1,0 +1,31 @@
+{
+  if (req.nameQuery == null || req.nameQuery.length() == 0) {
+    throw new IllegalArgumentException();
+  }
+  Collator collator=Collator.getInstance();
+  collator.setStrength(Collator.PRIMARY);
+  for (  PoiRegion poiIndex : poiIndexes) {
+    for (int i=0; i < poiIndex.categories.size(); i++) {
+      String cat=poiIndex.categories.get(i);
+      AmenityType catType=poiIndex.categoriesType.get(i);
+      if (CollatorStringMatcher.cmatches(collator,cat,req.nameQuery,StringMatcherMode.CHECK_STARTS_FROM_SPACE)) {
+        map.put(catType,null);
+      }
+ else {
+        List<String> subcats=poiIndex.subcategories.get(i);
+        for (int j=0; j < subcats.size(); j++) {
+          if (CollatorStringMatcher.cmatches(collator,subcats.get(j),req.nameQuery,StringMatcherMode.CHECK_STARTS_FROM_SPACE)) {
+            if (!map.containsKey(catType)) {
+              map.put(catType,new ArrayList<String>());
+            }
+            List<String> list=map.get(catType);
+            if (list != null) {
+              list.add(subcats.get(j));
+            }
+          }
+        }
+      }
+    }
+  }
+  return map;
+}
