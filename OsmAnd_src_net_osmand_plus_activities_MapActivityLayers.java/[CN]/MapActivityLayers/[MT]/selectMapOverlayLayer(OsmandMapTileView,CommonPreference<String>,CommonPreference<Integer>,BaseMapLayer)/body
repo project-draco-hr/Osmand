@@ -12,9 +12,28 @@
   builder.setSingleChoiceItems(items,-1,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (which == items.length - 1) {
-        SettingsActivity.installMapLayers(activity,new DialogInterface.OnClickListener(){
-          @Override public void onClick(          DialogInterface dialog,          int which){
-            openLayerSelectionDialog(mapView);
+        SettingsActivity.installMapLayers(activity,new ResultMatcher<TileSourceTemplate>(){
+          TileSourceTemplate template=null;
+          int count=0;
+          @Override public boolean publish(          TileSourceTemplate object){
+            if (object == null) {
+              if (count == 1) {
+                mapPref.set(template.getName());
+                mapControlsLayer.showAndHideTransparencyBar(transparencyPref,transparencyToChange);
+                updateMapSource(mapView,mapPref);
+              }
+ else {
+                selectMapOverlayLayer(mapView,mapPref,transparencyPref,transparencyToChange);
+              }
+            }
+ else {
+              count++;
+              template=object;
+            }
+            return false;
+          }
+          @Override public boolean isCancelled(){
+            return false;
           }
         }
 );

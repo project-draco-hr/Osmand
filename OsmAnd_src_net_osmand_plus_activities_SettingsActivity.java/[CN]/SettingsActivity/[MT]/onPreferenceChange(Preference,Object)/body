@@ -77,9 +77,15 @@
   }
  else   if (preference == tileSourcePreference || preference == overlayPreference || preference == underlayPreference) {
     if (MORE_VALUE.equals(newValue)) {
-      SettingsActivity.installMapLayers(this,new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          updateTileSourceSummary();
+      SettingsActivity.installMapLayers(this,new ResultMatcher<TileSourceTemplate>(){
+        @Override public boolean isCancelled(){
+          return false;
+        }
+        @Override public boolean publish(        TileSourceTemplate object){
+          if (object == null) {
+            updateTileSourceSummary();
+          }
+          return true;
         }
       }
 );
