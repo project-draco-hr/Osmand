@@ -1,0 +1,24 @@
+{
+  List<Amenity> amenities=new ArrayList<Amenity>();
+  List<AmenityIndexRepositoryBinary> list=new ArrayList<AmenityIndexRepositoryBinary>();
+  for (  AmenityIndexRepository index : amenityRepositories) {
+    if (index instanceof AmenityIndexRepositoryBinary) {
+      if (index.checkContains(topLatitude,leftLongitude,bottomLatitude,rightLongitude)) {
+        if (index.checkContains(lat,lon)) {
+          list.add(0,(AmenityIndexRepositoryBinary)index);
+        }
+ else {
+          list.add((AmenityIndexRepositoryBinary)index);
+        }
+      }
+    }
+  }
+  for (  AmenityIndexRepositoryBinary index : list) {
+    if (matcher != null && matcher.isCancelled()) {
+      break;
+    }
+    List<Amenity> result=index.searchAmenitiesByName(MapUtils.get31TileNumberX(lon),MapUtils.get31TileNumberY(lat),searchQuery,matcher);
+    amenities.addAll(result);
+  }
+  return amenities;
+}

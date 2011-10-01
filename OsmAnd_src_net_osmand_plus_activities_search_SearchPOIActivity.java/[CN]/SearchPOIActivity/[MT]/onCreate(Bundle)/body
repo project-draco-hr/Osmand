@@ -13,13 +13,18 @@
   searchPOILevel.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       String query=searchFilter.getText().toString();
-      if (query.length() == 0 && isNameFinderFilter()) {
+      if (query.length() < 2 && (isNameFinderFilter() || isSearchByNameFilter())) {
         Toast.makeText(SearchPOIActivity.this,R.string.poi_namefinder_query_empty,Toast.LENGTH_LONG).show();
         return;
       }
-      if (filter instanceof NameFinderPoiFilter && !Algoritms.objectEquals(((NameFinderPoiFilter)filter).getQuery(),query)) {
+      if (isNameFinderFilter() && !Algoritms.objectEquals(((NameFinderPoiFilter)filter).getQuery(),query)) {
         filter.clearPreviousZoom();
         ((NameFinderPoiFilter)filter).setQuery(query);
+        runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
+      }
+ else       if (isSearchByNameFilter() && !Algoritms.objectEquals(((SearchByNameFilter)filter).getQuery(),query)) {
+        filter.clearPreviousZoom();
+        ((SearchByNameFilter)filter).setQuery(query);
         runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
       }
  else {
@@ -42,11 +47,12 @@
 );
   searchFilter.addTextChangedListener(new TextWatcher(){
     @Override public void afterTextChanged(    Editable s){
-      if (!isNameFinderFilter()) {
+      if (!isNameFinderFilter() && !isSearchByNameFilter()) {
         amenityAdapter.getFilter().filter(s);
       }
  else {
         searchPOILevel.setEnabled(true);
+        searchPOILevel.setText(R.string.search_button);
       }
     }
     @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){

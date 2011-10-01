@@ -1,5 +1,5 @@
 {
-  TIntArrayList offsets=new TIntArrayList();
+  TIntLongHashMap offsets=new TIntLongHashMap();
   Collator instance=Collator.getInstance();
   instance.setStrength(Collator.PRIMARY);
   CollatorStringMatcher matcher=new CollatorStringMatcher(instance,req.nameQuery,StringMatcherMode.CHECK_STARTS_FROM_SPACE);
@@ -21,10 +21,36 @@ offsets=readPoiNameIndex(instance,req.nameQuery,req);
 codedIS.popLimit(oldLimit);
 break;
 case OsmandOdb.OsmAndPoiIndex.POIDATA_FIELD_NUMBER:
-offsets.sort();
-LOG.info("Searched poi structure in " + (System.currentTimeMillis() - time) + "ms. Found "+ offsets.size()+ " subtress");
-for (int j=0; j < offsets.size(); j++) {
-codedIS.seek(offsets.get(j) + indexOffset);
+Integer[] offKeys=new Integer[offsets.size()];
+if (offsets.size() > 0) {
+int[] keys=offsets.keys();
+for (int i=0; i < keys.length; i++) {
+offKeys[i]=keys[i];
+}
+final TIntLongHashMap foffsets=offsets;
+Arrays.sort(offKeys,new Comparator<Integer>(){
+@Override public int compare(Integer object1,Integer object2){
+return Double.compare(foffsets.get(object1),foffsets.get(object2));
+}
+}
+);
+int p=BUCKET_SEARCH_BY_NAME * 3;
+if (p < offKeys.length) {
+for (int i=p + BUCKET_SEARCH_BY_NAME; ; i+=BUCKET_SEARCH_BY_NAME) {
+if (i > offKeys.length) {
+Arrays.sort(offKeys,p,offKeys.length);
+break;
+}
+ else {
+Arrays.sort(offKeys,p,i);
+}
+p=i;
+}
+}
+}
+LOG.info("Searched poi structure in " + (System.currentTimeMillis() - time) + "ms. Found "+ offKeys.length+ " subtress");
+for (int j=0; j < offKeys.length; j++) {
+codedIS.seek(offKeys[j] + indexOffset);
 int len=readInt();
 int oldLim=codedIS.pushLimit(len);
 readPoiData(matcher,req,region);

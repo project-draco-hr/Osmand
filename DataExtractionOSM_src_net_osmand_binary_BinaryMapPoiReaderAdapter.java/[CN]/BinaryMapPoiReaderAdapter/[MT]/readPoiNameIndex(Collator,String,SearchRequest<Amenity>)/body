@@ -1,5 +1,5 @@
 {
-  TIntArrayList offsets=new TIntArrayList();
+  TIntLongHashMap offsets=new TIntLongHashMap();
   TIntArrayList dataOffsets=null;
   while (true) {
     int t=codedIS.readTag();
@@ -11,7 +11,8 @@ case OsmandOdb.OsmAndPoiNameIndex.TABLE_FIELD_NUMBER:
 {
       int length=readInt();
       int oldLimit=codedIS.pushLimit(length);
-      dataOffsets=readIndexedStringTable(instance,query);
+      dataOffsets=new TIntArrayList();
+      readIndexedStringTable(instance,query,"",dataOffsets,0);
       codedIS.popLimit(oldLimit);
       break;
     }
@@ -24,7 +25,7 @@ case OsmandOdb.OsmAndPoiNameIndex.DATA_FIELD_NUMBER:
         codedIS.seek(dataOffsets.get(i) + offset);
         int len=codedIS.readRawVarint32();
         int oldLim=codedIS.pushLimit(len);
-        readPoiNameIndexData(offsets);
+        readPoiNameIndexData(offsets,req);
         codedIS.popLimit(oldLim);
         if (req.isCancelled()) {
           codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
