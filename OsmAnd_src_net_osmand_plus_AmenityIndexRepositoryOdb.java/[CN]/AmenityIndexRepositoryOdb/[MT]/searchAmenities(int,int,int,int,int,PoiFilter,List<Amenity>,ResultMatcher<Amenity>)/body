@@ -1,0 +1,45 @@
+{
+  long now=System.currentTimeMillis();
+  String squery="? < y AND y < ? AND ? < x AND x < ?";
+  if (filter != null) {
+    String sql=filter.buildSqlWhereFilter();
+    if (sql != null) {
+      squery+=" AND " + sql;
+    }
+  }
+  int limit=-1;
+  if (zoom != -1) {
+    limit=200;
+    squery+=" ORDER BY RANDOM() LIMIT 200";
+  }
+  Cursor query=db.query(IndexConstants.POI_TABLE,columns,squery,new String[]{stop + "",sbottom + "",sleft + "",sright + ""},null,null,null);
+  if (query.moveToFirst()) {
+    do {
+      Amenity am=new Amenity();
+      am.setId(query.getLong(0));
+      am.setLocation(MapUtils.get31LatitudeY(query.getInt(2)),MapUtils.get31LongitudeX(query.getInt(1)));
+      am.setName(query.getString(3));
+      am.setEnName(query.getString(4));
+      if (am.getEnName().length() == 0) {
+        am.setEnName(Junidecode.unidecode(am.getName()));
+      }
+      am.setType(AmenityType.fromString(query.getString(5)));
+      am.setSubType(query.getString(6));
+      am.setOpeningHours(query.getString(7));
+      am.setPhone(query.getString(8));
+      am.setSite(query.getString(9));
+      if (matcher == null || matcher.publish(am)) {
+        amenities.add(am);
+      }
+      if (limit != -1 && amenities.size() >= limit) {
+        break;
+      }
+    }
+ while (query.moveToNext());
+  }
+  query.close();
+  if (log.isDebugEnabled()) {
+    log.debug(String.format("Search for %s done in %s ms found %s.",MapUtils.get31LatitudeY(stop) + " " + MapUtils.get31LongitudeX(sleft),System.currentTimeMillis() - now,amenities.size()));
+  }
+  return amenities;
+}
