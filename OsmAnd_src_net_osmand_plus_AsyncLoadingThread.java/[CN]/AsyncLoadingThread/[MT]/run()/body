@@ -1,0 +1,96 @@
+{
+  while (true) {
+    try {
+      boolean update=false;
+      boolean amenityLoaded=false;
+      boolean transportLoaded=false;
+      boolean mapLoaded=false;
+      int progress=0;
+      if (downloader.isSomethingBeingDownloaded()) {
+        progress=BusyIndicator.STATUS_GREEN;
+      }
+synchronized (resourceManger) {
+        if (resourceManger.getBusyIndicator() != null) {
+          if (resourceManger.getContext().getRoutingHelper().isRouteBeingCalculated()) {
+            progress=BusyIndicator.STATUS_BLUE;
+          }
+ else           if (!requests.isEmpty()) {
+            progress=BusyIndicator.STATUS_BLACK;
+          }
+          resourceManger.getBusyIndicator().updateStatus(progress);
+        }
+      }
+      while (!requests.isEmpty()) {
+        Object req=requests.pop();
+        if (req instanceof TileLoadDownloadRequest) {
+          TileLoadDownloadRequest r=(TileLoadDownloadRequest)req;
+          if (cacheOfImages.get(r.tileId) == null) {
+            update|=getRequestedImageTile(r) != null;
+          }
+        }
+ else         if (req instanceof AmenityLoadRequest) {
+          if (!amenityLoaded) {
+            if (poiLoadRequest == null || asyncLoadingPoi == null) {
+              startPoiLoadingThread();
+              poiLoadRequest=(AmenityLoadRequest)req;
+              asyncLoadingPoi.post(poiLoadRequest.prepareToRun());
+            }
+ else             if (poiLoadRequest.recalculateRequest((AmenityLoadRequest)req)) {
+              asyncLoadingPoi.post(poiLoadRequest.prepareToRun());
+            }
+            amenityLoaded=true;
+          }
+        }
+ else         if (req instanceof TransportLoadRequest) {
+          if (!transportLoaded) {
+            if (transportLoadRequest == null || asyncLoadingTransport == null) {
+              startTransportLoadingThread();
+              transportLoadRequest=(TransportLoadRequest)req;
+              asyncLoadingTransport.post(transportLoadRequest.prepareToRun());
+            }
+ else             if (transportLoadRequest.recalculateRequest((TransportLoadRequest)req)) {
+              asyncLoadingTransport.post(transportLoadRequest.prepareToRun());
+            }
+            transportLoaded=true;
+          }
+        }
+ else         if (req instanceof MapLoadRequest) {
+          if (!mapLoaded) {
+            MapLoadRequest r=(MapLoadRequest)req;
+            renderer.loadMap(r.tileBox,downloader.getDownloaderCallbacks());
+            mapLoaded=true;
+          }
+        }
+      }
+      if (update || amenityLoaded || transportLoaded|| mapLoaded) {
+        for (        IMapDownloaderCallback c : downloader.getDownloaderCallbacks()) {
+          c.tileDownloaded(null);
+        }
+      }
+      boolean routeBeingCalculated=resourceManger.getContext().getRoutingHelper().isRouteBeingCalculated();
+      if (progress != 0 || routeBeingCalculated || downloader.isSomethingBeingDownloaded()) {
+synchronized (resourceManger) {
+          if (resourceManger.getBusyIndicator() != null) {
+            if (routeBeingCalculated) {
+              progress=BusyIndicator.STATUS_BLUE;
+            }
+ else             if (downloader.isSomethingBeingDownloaded()) {
+              progress=BusyIndicator.STATUS_GREEN;
+            }
+ else {
+              progress=0;
+            }
+            resourceManger.getBusyIndicator().updateStatus(progress);
+          }
+        }
+      }
+      sleep(750);
+    }
+ catch (    InterruptedException e) {
+      log.error(e,e);
+    }
+catch (    RuntimeException e) {
+      log.error(e,e);
+    }
+  }
+}

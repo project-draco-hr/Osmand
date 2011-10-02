@@ -10,12 +10,18 @@
   }
  else {
     String filterId=filter == null ? null : filter.getFilterId();
+    List<AmenityIndexRepository> repos=new ArrayList<AmenityIndexRepository>();
     for (    AmenityIndexRepository index : amenityRepositories) {
       if (index.checkContains(topLatitude,leftLongitude,bottomLatitude,rightLongitude)) {
         if (!index.checkCachedAmenities(topLatitude,leftLongitude,bottomLatitude,rightLongitude,zoom,filterId,toFill,true)) {
-          asyncLoadingTiles.requestToLoadAmenities(new AmenityLoadRequest(index,topLatitude,leftLongitude,bottomLatitude,rightLongitude,zoom,filter));
+          repos.add(index);
         }
       }
+    }
+    if (!repos.isEmpty()) {
+      AmenityLoadRequest req=new AmenityLoadRequest(repos,zoom,filter);
+      req.setBoundaries(topLatitude,leftLongitude,bottomLatitude,rightLongitude);
+      asyncLoadingTthread.requestToLoadAmenities(req);
     }
   }
 }
