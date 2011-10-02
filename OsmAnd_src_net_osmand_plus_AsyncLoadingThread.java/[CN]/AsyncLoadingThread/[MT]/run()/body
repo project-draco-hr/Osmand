@@ -1,0 +1,78 @@
+{
+  while (true) {
+    try {
+      boolean tileLoaded=false;
+      boolean amenityLoaded=false;
+      boolean transportLoaded=false;
+      boolean mapLoaded=false;
+      int progress=calculateProgressStatus();
+synchronized (resourceManger) {
+        if (resourceManger.getBusyIndicator() != null) {
+          resourceManger.getBusyIndicator().updateStatus(progress);
+        }
+      }
+      while (!requests.isEmpty()) {
+        Object req=requests.pop();
+        if (req instanceof TileLoadDownloadRequest) {
+          TileLoadDownloadRequest r=(TileLoadDownloadRequest)req;
+          tileLoaded|=resourceManger.getRequestedImageTile(r) != null;
+        }
+ else         if (req instanceof AmenityLoadRequest) {
+          if (!amenityLoaded) {
+            if (poiLoadRequest == null || asyncLoadingPoi == null) {
+              startPoiLoadingThread();
+              poiLoadRequest=(AmenityLoadRequest)req;
+              asyncLoadingPoi.post(poiLoadRequest.prepareToRun());
+            }
+ else             if (poiLoadRequest.recalculateRequest((AmenityLoadRequest)req)) {
+              poiLoadRequest=(AmenityLoadRequest)req;
+              asyncLoadingPoi.post(poiLoadRequest.prepareToRun());
+            }
+            amenityLoaded=true;
+          }
+        }
+ else         if (req instanceof TransportLoadRequest) {
+          if (!transportLoaded) {
+            if (transportLoadRequest == null || asyncLoadingTransport == null) {
+              startTransportLoadingThread();
+              transportLoadRequest=(TransportLoadRequest)req;
+              asyncLoadingTransport.post(transportLoadRequest.prepareToRun());
+            }
+ else             if (transportLoadRequest.recalculateRequest((TransportLoadRequest)req)) {
+              transportLoadRequest=(TransportLoadRequest)req;
+              asyncLoadingTransport.post(transportLoadRequest.prepareToRun());
+            }
+            transportLoaded=true;
+          }
+        }
+ else         if (req instanceof MapLoadRequest) {
+          if (!mapLoaded) {
+            MapLoadRequest r=(MapLoadRequest)req;
+            resourceManger.getRenderer().loadMap(r.tileBox,downloader.getDownloaderCallbacks());
+            mapLoaded=true;
+          }
+        }
+      }
+      if (tileLoaded || amenityLoaded || transportLoaded|| mapLoaded) {
+        for (        IMapDownloaderCallback c : downloader.getDownloaderCallbacks()) {
+          c.tileDownloaded(null);
+        }
+      }
+      int newProgress=calculateProgressStatus();
+      if (progress != newProgress) {
+synchronized (resourceManger) {
+          if (resourceManger.getBusyIndicator() != null) {
+            resourceManger.getBusyIndicator().updateStatus(newProgress);
+          }
+        }
+      }
+      sleep(750);
+    }
+ catch (    InterruptedException e) {
+      log.error(e,e);
+    }
+catch (    RuntimeException e) {
+      log.error(e,e);
+    }
+  }
+}

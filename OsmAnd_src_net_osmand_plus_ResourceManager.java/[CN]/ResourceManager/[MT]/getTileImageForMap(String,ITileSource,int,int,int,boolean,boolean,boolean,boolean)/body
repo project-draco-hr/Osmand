@@ -19,7 +19,8 @@
     imagesOnFS.put(tileId,null);
   }
   if (loadFromFs && cacheOfImages.get(tileId) == null && map != null) {
-    if (!loadFromInternetIfNeeded && !tileExistOnFileSystem(tileId,map,x,y,zoom)) {
+    boolean locked=map instanceof SQLiteTileSource && ((SQLiteTileSource)map).isLocked();
+    if (!loadFromInternetIfNeeded && !locked && !tileExistOnFileSystem(tileId,map,x,y,zoom)) {
       return null;
     }
     String url=loadFromInternetIfNeeded ? map.getUrlToLoad(x,y,zoom) : null;
@@ -37,7 +38,7 @@
       return getRequestedImageTile(req);
     }
  else {
-      asyncLoadingTiles.requestToLoadImage(req);
+      asyncLoadingThread.requestToLoadImage(req);
     }
   }
   return cacheOfImages.get(tileId);

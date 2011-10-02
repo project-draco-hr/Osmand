@@ -2,10 +2,14 @@
   if (req.tileId == null || req.dirWithTiles == null) {
     return null;
   }
+  Bitmap cacheBmp=cacheOfImages.get(req.tileId);
+  if (cacheBmp != null) {
+    return cacheBmp;
+  }
   if (cacheOfImages.size() > maxImgCacheSize) {
     clearTiles();
   }
-  if (req.dirWithTiles.canRead() && !downloader.isFileCurrentlyDownloaded(req.fileToSave)) {
+  if (req.dirWithTiles.canRead() && !asyncLoadingThread.isFileCurrentlyDownloaded(req.fileToSave)) {
     long time=System.currentTimeMillis();
     if (log.isDebugEnabled()) {
       log.debug("Start loaded file : " + req.tileId + " "+ Thread.currentThread().getName());
@@ -33,7 +37,7 @@
       }
     }
     if (cacheOfImages.get(req.tileId) == null && req.url != null) {
-      downloader.requestToDownload(req);
+      asyncLoadingThread.requestToDownload(req);
     }
   }
   return cacheOfImages.get(req.tileId);
