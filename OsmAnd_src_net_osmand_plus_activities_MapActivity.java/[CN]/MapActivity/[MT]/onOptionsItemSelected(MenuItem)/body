@@ -11,6 +11,10 @@ case R.id.map_show_gps_status:
 startGpsStatusIntent();
 return true;
 case R.id.map_get_directions:
+if (routingHelper.isRouteCalculated()) {
+mapActions.aboutRoute();
+}
+ else {
 Location loc=getLastKnownLocation();
 if (loc != null) {
 mapActions.getDirections(loc.getLatitude(),loc.getLongitude(),true);
@@ -18,12 +22,10 @@ mapActions.getDirections(loc.getLatitude(),loc.getLongitude(),true);
  else {
 mapActions.getDirections(mapView.getLatitude(),mapView.getLongitude(),true);
 }
+}
 return true;
 case R.id.map_layers:
 mapLayers.openLayerSelectionDialog(mapView);
-return true;
-case R.id.map_save_directions:
-mapActions.saveDirections();
 return true;
 case R.id.map_specify_point:
 Intent newIntent=new Intent(MapActivity.this,SearchActivity.class);
@@ -50,9 +52,6 @@ navigateToPoint(null);
 navigateToPoint(new LatLon(mapView.getLatitude(),mapView.getLongitude()));
 }
 mapView.refreshMap();
-return true;
-case R.id.map_gpx_routing:
-mapActions.navigateUsingGPX();
 return true;
 case R.id.map_show_point_options:
 contextMenuPoint(mapView.getLatitude(),mapView.getLongitude());
