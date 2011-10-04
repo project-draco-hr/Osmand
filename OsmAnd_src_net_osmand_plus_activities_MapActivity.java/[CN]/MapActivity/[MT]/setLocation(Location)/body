@@ -13,6 +13,19 @@
   if (routingHelper.isFollowingMode()) {
     if (location == null || !location.hasAccuracy() || location.getAccuracy() < ACCURACY_FOR_GPX_AND_ROUTING) {
       routingHelper.setCurrentLocation(location);
+      if (location != null && routingHelper.getLeftDistance() > 0) {
+        Message msg=Message.obtain(uiHandler,new Runnable(){
+          @Override public void run(){
+            if (routingHelper.getLeftDistance() > 0 && settings.MAP_ACTIVITY_ENABLED.get()) {
+              routingHelper.getVoiceRouter().gpsLocationLost();
+            }
+          }
+        }
+);
+        msg.what=LOST_LOCATION_MSG_ID;
+        uiHandler.removeMessages(LOST_LOCATION_MSG_ID);
+        uiHandler.sendMessageDelayed(msg,LOST_LOCATION_CHECK_DELAY);
+      }
     }
   }
   if (location != null) {
