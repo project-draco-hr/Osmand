@@ -1,9 +1,11 @@
 {
   Builder builder=new AlertDialog.Builder(this);
   final List<Integer> menu=new ArrayList<Integer>();
-  if (info.getGpxFile() != null && info.getType() == LocalIndexType.GPX_DATA) {
+  if (info.getType() == LocalIndexType.GPX_DATA) {
     menu.add(R.string.show_gpx_route);
     menu.add(R.string.local_index_mi_upload_gpx);
+    descriptionLoader=new LoadLocalIndexDescriptionTask();
+    descriptionLoader.execute(info);
   }
   if (info.getType() == LocalIndexType.MAP_DATA || info.getType() == LocalIndexType.POI_DATA) {
     if (!info.isBackupedData()) {
@@ -34,6 +36,7 @@
           }
         }
  else         if (resId == R.string.local_index_mi_rename) {
+          renameFile(info);
         }
  else         if (resId == R.string.local_index_mi_restore) {
           new LocalIndexOperationTask(RESTORE_OPERATION).execute(info);
