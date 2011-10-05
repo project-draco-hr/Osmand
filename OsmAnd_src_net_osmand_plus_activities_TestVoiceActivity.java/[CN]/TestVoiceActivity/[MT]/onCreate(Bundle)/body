@@ -1,7 +1,6 @@
 {
   super.onCreate(icicle);
   final OsmandApplication app=((OsmandApplication)getApplication());
-  app.showDialogInitializingCommandPlayer(this,true);
   LinearLayout gl=new LinearLayout(this);
   gl.setOrientation(LinearLayout.VERTICAL);
   gl.setPadding(3,3,3,3);
@@ -14,22 +13,9 @@
   ll.setOrientation(LinearLayout.VERTICAL);
   sv.addView(ll,new LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.FILL_PARENT));
   setContentView(gl);
-  new AsyncTask<Void,Void,CommandPlayer>(){
-    private ProgressDialog dlg;
-    @Override protected void onPreExecute(){
-      super.onPreExecute();
-      dlg=ProgressDialog.show(TestVoiceActivity.this,"Loading","Initializing voice player...",true,false);
-    }
-    @Override protected CommandPlayer doInBackground(    Void... params){
-      try {
-        return CommandPlayerFactory.createCommandPlayer(app.getSettings().VOICE_PROVIDER.get(),app,TestVoiceActivity.this);
-      }
- catch (      CommandPlayerException e) {
-        return null;
-      }
-    }
-    @Override protected void onPostExecute(    CommandPlayer p){
-      dlg.dismiss();
+  app.showDialogInitializingCommandPlayer(this,true,new Runnable(){
+    @Override public void run(){
+      CommandPlayer p=app.getRoutingHelper().getVoiceRouter().getPlayer();
       if (p == null) {
         Toast.makeText(TestVoiceActivity.this,"Voice player not initialized",Toast.LENGTH_SHORT).show();
       }
@@ -38,5 +24,5 @@
       }
     }
   }
-.execute((Void)null);
+);
 }
