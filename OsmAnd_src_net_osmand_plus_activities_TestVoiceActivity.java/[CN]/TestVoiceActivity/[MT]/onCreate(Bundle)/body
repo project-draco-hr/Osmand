@@ -1,0 +1,42 @@
+{
+  super.onCreate(icicle);
+  final OsmandApplication app=((OsmandApplication)getApplication());
+  app.showDialogInitializingCommandPlayer(this,true);
+  LinearLayout gl=new LinearLayout(this);
+  gl.setOrientation(LinearLayout.VERTICAL);
+  gl.setPadding(3,3,3,3);
+  TextView tv=new TextView(this);
+  tv.setText("Press buttons and listen various voice instructions, if you don't hear anything probably they are missed.");
+  tv.setPadding(0,5,0,7);
+  ScrollView sv=new ScrollView(this);
+  gl.addView(sv,new LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.FILL_PARENT));
+  final LinearLayout ll=new LinearLayout(this);
+  ll.setOrientation(LinearLayout.VERTICAL);
+  sv.addView(ll,new LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.FILL_PARENT));
+  new AsyncTask<Void,Void,CommandPlayer>(){
+    private ProgressDialog dlg;
+    @Override protected void onPreExecute(){
+      super.onPreExecute();
+      dlg=ProgressDialog.show(app,"Loading","Initializing voice player...",true,false);
+    }
+    @Override protected CommandPlayer doInBackground(    Void... params){
+      try {
+        return CommandPlayerFactory.createCommandPlayer(app.getSettings().VOICE_PROVIDER.get(),app,TestVoiceActivity.this);
+      }
+ catch (      CommandPlayerException e) {
+        return null;
+      }
+    }
+    @Override protected void onPostExecute(    CommandPlayer p){
+      dlg.dismiss();
+      if (p == null) {
+        Toast.makeText(TestVoiceActivity.this,"Voice player not initialized",Toast.LENGTH_SHORT).show();
+      }
+ else {
+        addButtons(ll,p);
+      }
+    }
+  }
+.execute((Void)null);
+  setContentView(gl);
+}
