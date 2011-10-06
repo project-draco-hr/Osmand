@@ -1,16 +1,20 @@
 {
-  String result=greatestBoundary.getName();
-  List<City> nearestObjects=new ArrayList<City>();
-  nearestObjects.addAll(cityManager.getClosestObjects(location.getLatitude(),location.getLongitude()));
-  nearestObjects.addAll(cityVillageManager.getClosestObjects(location.getLatitude(),location.getLongitude()));
+  String result=null;
   double dist=Double.MAX_VALUE;
-  for (  City c : nearestObjects) {
-    if (greatestBoundary.containsPoint(c.getLocation())) {
-      double actualDistance=MapUtils.getDistance(location,c.getLocation());
-      if (actualDistance < dist) {
-        result=c.getName();
-        dist=actualDistance;
-      }
+  List<City> list=new ArrayList<City>();
+  if (greatestBoundary != null) {
+    result=greatestBoundary.getName();
+    list=boundariesToCities.get(greatestBoundary);
+  }
+ else {
+    list.addAll(cityManager.getClosestObjects(location.getLatitude(),location.getLongitude()));
+    list.addAll(cityVillageManager.getClosestObjects(location.getLatitude(),location.getLongitude()));
+  }
+  for (  City c : list) {
+    double actualDistance=MapUtils.getDistance(location,c.getLocation());
+    if (actualDistance < dist) {
+      result=c.getName();
+      dist=actualDistance;
     }
   }
   return result;

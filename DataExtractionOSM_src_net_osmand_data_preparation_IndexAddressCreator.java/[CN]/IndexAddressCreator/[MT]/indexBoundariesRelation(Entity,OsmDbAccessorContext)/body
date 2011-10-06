@@ -1,34 +1,37 @@
 {
   Boundary boundary=extractBoundary(e,ctx);
-  if (boundary != null && boundary.getAdminLevel() >= 4 && boundary.getCenterPoint() != null && !Algoritms.isEmpty(boundary.getName())) {
+  if (boundary != null && boundary.isClosedWay() && boundary.getAdminLevel() >= 4 && boundary.getCenterPoint() != null && !Algoritms.isEmpty(boundary.getName())) {
     LatLon boundaryCenter=boundary.getCenterPoint();
     List<City> citiesToSearch=new ArrayList<City>();
     citiesToSearch.addAll(cityManager.getClosestObjects(boundaryCenter.getLatitude(),boundaryCenter.getLongitude(),3));
     citiesToSearch.addAll(cityVillageManager.getClosestObjects(boundaryCenter.getLatitude(),boundaryCenter.getLongitude(),3));
-    List<City> cityFound=new ArrayList<City>();
+    City cityFound=null;
     String boundaryName=boundary.getName().toLowerCase();
     for (    City c : citiesToSearch) {
       if (boundary.containsPoint(c.getLocation())) {
         if (boundaryName.equalsIgnoreCase(c.getName())) {
-          cityFound.add(c);
+          cityFound=c;
           break;
         }
       }
     }
-    if (cityFound.isEmpty()) {
+    if (cityFound == null) {
       for (      City c : citiesToSearch) {
         if (boundary.containsPoint(c.getLocation())) {
           String lower=c.getName().toLowerCase();
           if (boundaryName.startsWith(lower + " ") || boundaryName.endsWith(lower + " ") || boundaryName.contains(" " + lower + " ")) {
-            cityFound.add(c);
+            cityFound=c;
             break;
           }
         }
       }
     }
-    if (!cityFound.isEmpty()) {
+    if (cityFound != null) {
       putCityBoundary(boundary,cityFound);
     }
     allBoundaries.add(boundary);
+  }
+ else   if (boundary != null && !boundary.isClosedWay()) {
+    System.out.println("Not using opened boundary: " + boundary);
   }
 }

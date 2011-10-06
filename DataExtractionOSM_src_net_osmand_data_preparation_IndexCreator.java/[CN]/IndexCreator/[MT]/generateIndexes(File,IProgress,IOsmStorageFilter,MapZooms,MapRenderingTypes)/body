@@ -61,7 +61,7 @@
       }
       if (indexAddress || indexMap) {
         progress.setGeneralProgress("[30 / 100]");
-        progress.startTask(Messages.getString("IndexCreator.PREINDEX_ADRESS_MAP"),accessor.getAllRelations());
+        progress.startTask(Messages.getString("IndexCreator.PREINDEX_BOUNDARIES_RELATIONS"),accessor.getAllRelations());
         accessor.iterateOverEntities(progress,EntityType.RELATION,new OsmDbVisitor(){
           @Override public void iterateEntity(          Entity e,          OsmDbAccessorContext ctx) throws SQLException {
             if (indexAddress) {
@@ -75,14 +75,16 @@
 );
         if (indexAddress) {
           progress.setGeneralProgress("[40 / 100]");
-          progress.startTask(Messages.getString("IndexCreator.PREINDEX_ADRESS_MAP"),accessor.getAllWays());
-          accessor.iterateOverEntities(progress,EntityType.WAY,new OsmDbVisitor(){
+          progress.startTask(Messages.getString("IndexCreator.PREINDEX_BOUNDARIES_WAYS"),accessor.getAllWays());
+          accessor.iterateOverEntities(progress,EntityType.WAY_BOUNDARY,new OsmDbVisitor(){
             @Override public void iterateEntity(            Entity e,            OsmDbAccessorContext ctx) throws SQLException {
               indexAddressCreator.indexBoundariesRelation(e,ctx);
             }
           }
 );
-          indexAddressCreator.bindCitiesWithBoundaries();
+          progress.setGeneralProgress("[42 / 100]");
+          progress.startTask(Messages.getString("IndexCreator.BIND_CITIES_AND_BOUNDARIES"),100);
+          indexAddressCreator.bindCitiesWithBoundaries(progress);
           progress.setGeneralProgress("[45 / 100]");
           progress.startTask(Messages.getString("IndexCreator.PREINDEX_ADRESS_MAP"),accessor.getAllRelations());
           accessor.iterateOverEntities(progress,EntityType.RELATION,new OsmDbVisitor(){

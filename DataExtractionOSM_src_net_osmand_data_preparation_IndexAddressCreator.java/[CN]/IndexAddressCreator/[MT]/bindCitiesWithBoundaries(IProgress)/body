@@ -1,0 +1,42 @@
+{
+  progress.startWork(cities.size() * 2);
+  Set<Boundary> freeBoundaries=new HashSet<Boundary>(allBoundaries);
+  freeBoundaries.removeAll(cityBoundaries.values());
+  for (  City c : cities.values()) {
+    progress.progress(1);
+    Boundary cityB=cityBoundaries.get(c);
+    int smallestAdminLevel=8;
+    if (cityB == null) {
+      LatLon location=c.getLocation();
+      Boundary smallestBoundary=null;
+      for (      Boundary b : freeBoundaries) {
+        if (b.getAdminLevel() > smallestAdminLevel) {
+          if (b.containsPoint(location.getLatitude(),location.getLongitude())) {
+            smallestAdminLevel=b.getAdminLevel();
+            smallestBoundary=b;
+          }
+        }
+      }
+      if (smallestBoundary != null) {
+        Boundary oldBoundary=putCityBoundary(smallestBoundary,c);
+        freeBoundaries.remove(smallestBoundary);
+        if (oldBoundary != null) {
+          freeBoundaries.add(oldBoundary);
+        }
+      }
+    }
+  }
+  for (  City c : cities.values()) {
+    progress.progress(1);
+    for (    Boundary b : allBoundaries) {
+      if (b.containsPoint(c.getLocation())) {
+        List<City> list=boundariesToCities.get(b);
+        if (list == null) {
+          list=new ArrayList<City>(1);
+          boundariesToCities.put(b,list);
+        }
+        list.add(c);
+      }
+    }
+  }
+}

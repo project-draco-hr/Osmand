@@ -1,0 +1,24 @@
+{
+  this.mapConnection=mapConnection;
+  Statement stat=mapConnection.createStatement();
+  stat.executeUpdate("create table street (id bigint primary key, latitude double, longitude double, " + "name varchar(1024), name_en varchar(1024), city bigint, citypart varchar(1024))");
+  stat.executeUpdate("create index street_cnp on street (city,citypart,name,id)");
+  stat.executeUpdate("create index street_city on street (city)");
+  stat.executeUpdate("create index street_id on street (id)");
+  stat.executeUpdate("create table building (id bigint, latitude double, longitude double, " + "name varchar(1024), name_en varchar(1024), street bigint, postcode varchar(1024), primary key(street, id))");
+  stat.executeUpdate("create index building_postcode on building (postcode)");
+  stat.executeUpdate("create index building_street on building (street)");
+  stat.executeUpdate("create index building_id on building (id)");
+  stat.executeUpdate("create table street_node (id bigint, latitude double, longitude double, " + "street bigint, way bigint)");
+  stat.executeUpdate("create index street_node_street on street_node (street)");
+  stat.executeUpdate("create index street_node_way on street_node (way)");
+  stat.close();
+  addressStreetStat=createPrepareStatement(mapConnection,"insert into street (id, latitude, longitude, name, name_en, city, citypart) values (?, ?, ?, ?, ?, ?, ?)");
+  addressStreetNodeStat=createPrepareStatement(mapConnection,"insert into street_node (id, latitude, longitude, street, way) values (?, ?, ?, ?, ?)");
+  addressBuildingStat=createPrepareStatement(mapConnection,"insert into building (id, latitude, longitude, name, name_en, street, postcode) values (?, ?, ?, ?, ?, ?, ?)");
+  addressSearchStreetStat=createPrepareStatement(mapConnection,"SELECT id,latitude,longitude FROM street WHERE ? = city AND ? = citypart AND ? = name");
+  addressSearchStreetStatWithoutCityPart=createPrepareStatement(mapConnection,"SELECT id,name,citypart,latitude,longitude FROM street WHERE ? = city AND ? = name");
+  addressStreetUpdateCityPart=createPrepareStatement(mapConnection,"UPDATE street SET citypart = ? WHERE id = ?");
+  addressSearchBuildingStat=createPrepareStatement(mapConnection,"SELECT id FROM building where ? = id");
+  addressSearchStreetNodeStat=createPrepareStatement(mapConnection,"SELECT way FROM street_node WHERE ? = way");
+}

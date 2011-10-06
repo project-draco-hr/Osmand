@@ -7,31 +7,22 @@
   }
   Set<Long> values=new TreeSet<Long>();
   for (  City city : result) {
-    String cityPart=city.getName();
-    boolean found=false;
-    for (    City subpart : result) {
-      if (subpart != city) {
-        Boundary subBoundary=cityBoundaries.get(subpart);
-        Boundary b=cityBoundaries.get(city);
-        if (b != null && subBoundary != null && subBoundary.getAdminLevel() > b.getAdminLevel()) {
-          cityPart=findNearestCityOrSuburb(subBoundary,location);
-          found=true;
-        }
+    String cityPart=null;
+    SimpleStreet foundStreet=streetDAO.findStreet(name,city);
+    if (foundStreet != null) {
+      if (foundStreet.getCityPart() == null) {
+        String aCityPart=findCityPart(foundStreet.getLocation(),city);
+        foundStreet=streetDAO.updateStreetCityPart(foundStreet,city,aCityPart != null ? aCityPart : city.getName());
+      }
+      if (MapUtils.getDistance(location,foundStreet.getLocation()) > 500) {
+        cityPart=findCityPart(location,city);
+        foundStreet=streetDAO.findStreet(name,city,cityPart);
       }
     }
-    if (!found) {
-      Boundary b=cityBoundaries.get(city);
-      if (b != null) {
-        cityPart=findNearestCityOrSuburb(b,location);
-      }
+    if (foundStreet == null) {
+      long streetId=streetDAO.insertStreet(name,nameEn,location,city,cityPart);
+      values.add(streetId);
     }
-    Long foundId=streetDAO.findStreet(name,city,cityPart);
-    if (foundId == null) {
-      long streetId=insertStreetData(addressStreetStat,name,nameEn,location.getLatitude(),location.getLongitude(),city.getId(),cityPart);
-      streetDAO.insertStreet(addressStreetStat,name,city,cityPart,streetId);
-      foundId=streetId;
-    }
-    values.add(foundId);
   }
   return values;
 }

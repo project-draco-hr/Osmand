@@ -7,30 +7,36 @@
   int count=0;
   computeRealCounts(statement);
   statement.close();
-  if (type == EntityType.NODE) {
-    select=iterateNodes;
-    count=allNodes;
-  }
- else   if (type == EntityType.WAY) {
-    select=iterateWays;
-    count=allWays;
+  BlockingQueue<Entity> toProcess=new ArrayBlockingQueue<Entity>(100000);
+  AbstractProducer entityProducer=null;
+  if (type == EntityType.WAY_BOUNDARY) {
+    select=iterateWayBoundaries;
+    count=allBoundaries;
+    entityProducer=new BoundaryProducer(toProcess,select);
   }
  else {
-    select=iterateRelations;
-    count=allRelations;
+    if (type == EntityType.NODE) {
+      select=iterateNodes;
+      count=allNodes;
+    }
+ else     if (type == EntityType.WAY) {
+      select=iterateWays;
+      count=allWays;
+    }
+ else {
+      select=iterateRelations;
+      count=allRelations;
+    }
+    entityProducer=new EntityProducer(toProcess,type,select);
   }
   progress.startWork(count);
-  BlockingQueue<Entity> toProcess=new ArrayBlockingQueue<Entity>(100000);
-  EntityProducer entityProducer=new EntityProducer(toProcess,type,select);
   entityProducer.start();
-  int counter=0;
   Entity entityToProcess=null;
   Entity endEntity=entityProducer.getEndingEntity();
   while ((entityToProcess=toProcess.take()) != endEntity) {
     if (progress != null) {
       progress.progress(1);
     }
-    counter++;
     visitor.iterateEntity(entityToProcess,this);
   }
   return count;

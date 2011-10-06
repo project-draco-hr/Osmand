@@ -1,0 +1,46 @@
+{
+  ResultSet rs;
+  try {
+    select.execute();
+    rs=select.getResultSet();
+    TLongArrayList boundariesToLoad=new TLongArrayList();
+    while (rs.next()) {
+      boundariesToLoad.add(rs.getLong(1));
+    }
+    rs.close();
+    PreparedStatement iterateWaysByIds=null;
+    int idsSize=0;
+    while (!boundariesToLoad.isEmpty()) {
+      int chunk=Math.min(100,boundariesToLoad.size());
+      if (chunk != idsSize) {
+        if (iterateWaysByIds != null) {
+          iterateWaysByIds.close();
+        }
+        StringBuilder b=new StringBuilder();
+        for (int i=0; i <= chunk; i++) {
+          b.append('?').append(',');
+        }
+        b.deleteCharAt(b.length() - 1);
+        iterateWaysByIds=dbConn.prepareStatement("select w.id, w.node, w.ord, t.skeys, t.value, n.latitude, n.longitude " + "from ways w left join tags t on w.id = t.id and t.type = 1 and w.ord = 0 inner join node n on w.node = n.id where w.id in (" + b.toString() + ") order by w.id, w.ord");
+        idsSize=chunk;
+      }
+      TLongList subList=boundariesToLoad.subList(0,chunk);
+      for (int i=0; i < chunk; i++) {
+        iterateWaysByIds.setLong(i + 1,subList.get(i));
+      }
+      boundariesToLoad.remove(0,chunk);
+      new EntityProducer(toProcess,EntityType.WAY,iterateWaysByIds,false).run();
+    }
+  }
+ catch (  SQLException e1) {
+    e1.printStackTrace();
+  }
+ finally {
+    try {
+      toProcess.put(getEndingEntity());
+    }
+ catch (    InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+}
