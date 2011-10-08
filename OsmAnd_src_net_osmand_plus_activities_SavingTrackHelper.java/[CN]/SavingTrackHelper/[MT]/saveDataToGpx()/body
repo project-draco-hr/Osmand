@@ -11,9 +11,8 @@
       collectDBTracks(db,data);
       for (      String f : data.keySet()) {
         File fout=new File(dir,f + ".gpx");
-        int ind=1;
-        while (fout.exists()) {
-          fout=new File(dir,f + "_" + (++ind)+ ".gpx");
+        if (fout.exists() && !data.get(f).isEmpty()) {
+          fout=new File(dir,f + "." + new SimpleDateFormat("HHmmss.EEEE").format(new Date(data.get(f).findPointToShow().time))+ ".gpx");
         }
         String warn=GPXUtilities.writeGpxFile(fout,data.get(f),ctx);
         if (warn != null) {
