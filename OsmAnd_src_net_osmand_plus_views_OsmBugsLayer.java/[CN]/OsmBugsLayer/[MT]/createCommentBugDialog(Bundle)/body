@@ -1,0 +1,29 @@
+{
+  Builder builder=new AlertDialog.Builder(activity);
+  builder.setTitle(R.string.osb_comment_dialog_title);
+  final View view=activity.getLayoutInflater().inflate(R.layout.open_bug,null);
+  builder.setView(view);
+  ((EditText)view.findViewById(R.id.AuthorName)).setText(OsmandSettings.getOsmandSettings(activity).USER_OSM_BUG_NAME.get());
+  builder.setNegativeButton(R.string.default_buttons_cancel,null);
+  builder.setPositiveButton(R.string.osb_comment_dialog_add_button,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      OpenStreetBug bug=(OpenStreetBug)args.getSerializable(KEY_BUG);
+      String text=((EditText)view.findViewById(R.id.BugMessage)).getText().toString();
+      String author=((EditText)view.findViewById(R.id.AuthorName)).getText().toString();
+      OsmandSettings.getOsmandSettings(activity).USER_OSM_BUG_NAME.set(author);
+      boolean added=addingComment(bug.getId(),text,author);
+      if (added) {
+        Toast.makeText(activity,activity.getResources().getString(R.string.osb_comment_dialog_success),Toast.LENGTH_LONG).show();
+        clearCache();
+        if (OsmBugsLayer.this.view.getLayers().contains(OsmBugsLayer.this)) {
+          OsmBugsLayer.this.view.refreshMap();
+        }
+      }
+ else {
+        Toast.makeText(activity,activity.getResources().getString(R.string.osb_comment_dialog_error),Toast.LENGTH_LONG).show();
+      }
+    }
+  }
+);
+  return builder.create();
+}

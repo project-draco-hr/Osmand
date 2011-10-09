@@ -1,37 +1,3 @@
 {
-  OsmandSettings settings=getMyApplication().getSettings();
-  final File fileDir=settings.extendOsmandPath(ResourceManager.GPX_PATH);
-  final Dialog dlg=new Dialog(mapActivity);
-  dlg.setTitle(R.string.save_route_dialog_title);
-  dlg.setContentView(R.layout.save_directions_dialog);
-  final EditText edit=(EditText)dlg.findViewById(R.id.FileNameEdit);
-  edit.setText(MessageFormat.format("{0,date,dd-MM-yyyy}",new Date()));
-  ((Button)dlg.findViewById(R.id.Save)).setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      String name=edit.getText().toString();
-      fileDir.mkdirs();
-      File toSave=fileDir;
-      if (name.length() > 0) {
-        if (!name.endsWith(".gpx")) {
-          name+=".gpx";
-        }
-        toSave=new File(fileDir,name);
-      }
-      if (toSave.exists()) {
-        dlg.findViewById(R.id.DuplicateFileName).setVisibility(View.VISIBLE);
-      }
- else {
-        dlg.dismiss();
-        new SaveDirectionsAsyncTask().execute(toSave);
-      }
-    }
-  }
-);
-  ((Button)dlg.findViewById(R.id.Cancel)).setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      dlg.dismiss();
-    }
-  }
-);
-  dlg.show();
+  mapActivity.showDialog(DIALOG_SAVE_DIRECTIONS,dialogBundle);
 }

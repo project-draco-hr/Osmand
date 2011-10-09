@@ -1,0 +1,37 @@
+{
+  List<OpeningHoursRule> time=OpeningHoursParser.parseOpenedHours(openingHours.getText().toString());
+  if (time == null) {
+    Toast.makeText(ctx,ctx.getString(R.string.opening_hours_not_supported),Toast.LENGTH_LONG).show();
+    return null;
+  }
+  List<BasicDayOpeningHourRule> simple=null;
+  if (time != null) {
+    simple=new ArrayList<BasicDayOpeningHourRule>();
+    for (    OpeningHoursRule r : time) {
+      if (r instanceof BasicDayOpeningHourRule) {
+        simple.add((BasicDayOpeningHourRule)r);
+      }
+ else {
+        time=null;
+        break;
+      }
+    }
+  }
+  Builder builder=new AlertDialog.Builder(ctx);
+  final OpeningHoursView v=new OpeningHoursView(ctx);
+  builder.setView(v.createOpeningHoursEditView(simple));
+  builder.setPositiveButton(ctx.getString(R.string.default_buttons_apply),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      openingHours.setText(OpeningHoursParser.toStringOpenedHours(v.getTime()));
+      ctx.removeDialog(DIALOG_OPENING_HOURS);
+    }
+  }
+);
+  builder.setNegativeButton(ctx.getString(R.string.default_buttons_cancel),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      ctx.removeDialog(DIALOG_OPENING_HOURS);
+    }
+  }
+);
+  return builder.create();
+}

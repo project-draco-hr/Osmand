@@ -1,0 +1,119 @@
+{
+  Dialog dlg=new Dialog(ctx);
+  dlg.setContentView(R.layout.editing_poi);
+  nameText=((EditText)dlg.findViewById(R.id.Name));
+  openingHours=((EditText)dlg.findViewById(R.id.OpeningHours));
+  typeText=((AutoCompleteTextView)dlg.findViewById(R.id.Type));
+  typeButton=((Button)dlg.findViewById(R.id.TypeButton));
+  openHoursButton=((Button)dlg.findViewById(R.id.OpenHoursButton));
+  typeText=((AutoCompleteTextView)dlg.findViewById(R.id.Type));
+  typeText.setThreshold(1);
+  commentText=((EditText)dlg.findViewById(R.id.Comment));
+  TextView linkToOsmDoc=(TextView)dlg.findViewById(R.id.LinkToOsmDoc);
+  linkToOsmDoc.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      ctx.startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("http://wiki.openstreetmap.org/wiki/Map_Features")));
+    }
+  }
+);
+  linkToOsmDoc.setMovementMethod(LinkMovementMethod.getInstance());
+  typeText.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      showSubCategory(args);
+    }
+  }
+);
+  typeText.setOnLongClickListener(new View.OnLongClickListener(){
+    @Override public boolean onLongClick(    View v){
+      showSubCategory(args);
+      return true;
+    }
+  }
+);
+  openHoursButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      ctx.showDialog(DIALOG_OPENING_HOURS,args);
+    }
+  }
+);
+  typeText.addTextChangedListener(new TextWatcher(){
+    @Override public void afterTextChanged(    Editable s){
+      Amenity a=(Amenity)args.getSerializable(KEY_AMENITY);
+      String str=s.toString();
+      a.setSubType(str);
+      AmenityType t=MapRenderingTypes.getDefault().getAmenityNameToType().get(str);
+      if (t != null && a.getType() != t) {
+        a.setType(t);
+        typeButton.setText(OsmAndFormatter.toPublicString(t,ctx));
+        updateSubTypesAdapter(t);
+      }
+    }
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+  }
+);
+  typeButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      ctx.showDialog(DIALOG_POI_TYPES,args);
+    }
+  }
+);
+  ((Button)dlg.findViewById(R.id.Cancel)).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      ctx.dismissDialog(dialogID);
+    }
+  }
+);
+  ((Button)dlg.findViewById(R.id.Commit)).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      final Amenity a=(Amenity)args.getSerializable(KEY_AMENITY);
+      final Node n=(Node)args.getSerializable(KEY_AMENITY_NODE);
+      Resources resources=v.getResources();
+      final String msg=n.getId() == -1 ? resources.getString(R.string.poi_action_add) : resources.getString(R.string.poi_action_change);
+      String action=n.getId() == -1 ? CREATE_ACTION : MODIFY_ACTION;
+      Map<AmenityType,Map<String,String>> typeNameToTagVal=MapRenderingTypes.getDefault().getAmenityTypeNameToTagVal();
+      AmenityType type=a.getType();
+      String tag=type.getDefaultTag();
+      String subType=typeText.getText().toString();
+      String val=subType;
+      if (typeNameToTagVal.containsKey(type)) {
+        Map<String,String> map=typeNameToTagVal.get(type);
+        if (map.containsKey(subType)) {
+          String res=map.get(subType);
+          if (res != null) {
+            int i=res.indexOf(' ');
+            if (i != -1) {
+              tag=res.substring(0,i);
+              val=res.substring(i + 1);
+            }
+ else {
+              tag=res;
+            }
+          }
+        }
+      }
+      n.putTag(tag,val);
+      n.putTag(OSMTagKey.NAME.getValue(),nameText.getText().toString());
+      if (openingHours.getText().toString().length() == 0) {
+        n.removeTag(OSMTagKey.OPENING_HOURS.getValue());
+      }
+ else {
+        n.putTag(OSMTagKey.OPENING_HOURS.getValue(),openingHours.getText().toString());
+      }
+      commitNode(action,n,entityInfo,commentText.getText().toString(),new Runnable(){
+        @Override public void run(){
+          Toast.makeText(ctx,MessageFormat.format(ctx.getResources().getString(R.string.poi_action_succeded_template),msg),Toast.LENGTH_LONG).show();
+          if (ctx.getMapView() != null) {
+            ctx.getMapView().refreshMap();
+          }
+          ctx.dismissDialog(dialogID);
+        }
+      }
+);
+    }
+  }
+);
+  return dlg;
+}

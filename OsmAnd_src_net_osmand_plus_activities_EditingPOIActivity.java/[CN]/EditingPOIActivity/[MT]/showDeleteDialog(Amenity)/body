@@ -4,26 +4,7 @@
     Toast.makeText(ctx,ctx.getResources().getString(R.string.poi_error_poi_not_found),Toast.LENGTH_LONG).show();
     return;
   }
-  Builder builder=new AlertDialog.Builder(ctx);
-  builder.setTitle(MessageFormat.format(this.view.getResources().getString(R.string.poi_remove_confirm_template),OsmAndFormatter.getPoiStringWithoutType(a,OsmandSettings.getOsmandSettings(ctx).usingEnglishNames())));
-  final EditText comment=new EditText(ctx);
-  comment.setText(R.string.poi_remove_title);
-  builder.setView(comment);
-  builder.setNegativeButton(R.string.default_buttons_cancel,null);
-  builder.setPositiveButton(R.string.default_buttons_delete,new DialogInterface.OnClickListener(){
-    @Override public void onClick(    DialogInterface dialog,    int which){
-      String c=comment.getText().toString();
-      commitNode(DELETE_ACTION,n,entityInfo,c,new Runnable(){
-        @Override public void run(){
-          Toast.makeText(ctx,ctx.getResources().getString(R.string.poi_remove_success),Toast.LENGTH_LONG).show();
-          if (view != null) {
-            view.refreshMap();
-          }
-        }
-      }
-);
-    }
-  }
-);
-  builder.show();
+  dialogBundle.putSerializable(KEY_AMENITY,a);
+  dialogBundle.putSerializable(KEY_AMENITY_NODE,n);
+  ctx.showDialog(DIALOG_DELETE_POI,dialogBundle);
 }

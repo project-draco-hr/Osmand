@@ -1,0 +1,37 @@
+{
+  AlertDialog.Builder builder=new Builder(mapActivity);
+  builder.setTitle(R.string.send_location_way_choose_title);
+  builder.setItems(new String[]{"Email","SMS","Clipboard"},new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      final double latitude=args.getDouble(KEY_LATITUDE);
+      final double longitude=args.getDouble(KEY_LONGITUDE);
+      final int zoom=args.getInt(KEY_ZOOM);
+      final String shortOsmUrl=MapUtils.buildShortOsmUrl(latitude,longitude,zoom);
+      final String appLink="http://download.osmand.net/go?lat=" + ((float)latitude) + "&lon="+ ((float)longitude)+ "&z="+ zoom;
+      if (which == 0) {
+        String email=mapActivity.getString(R.string.send_location_email_pattern,shortOsmUrl,appLink);
+        Intent intent=new Intent(Intent.ACTION_SEND);
+        intent.setType("vnd.android.cursor.dir/email");
+        intent.putExtra(Intent.EXTRA_SUBJECT,"Mine location");
+        intent.putExtra(Intent.EXTRA_TEXT,Html.fromHtml(email));
+        intent.setType("text/html");
+        mapActivity.startActivity(Intent.createChooser(intent,getString(R.string.send_location)));
+      }
+ else {
+        String sms=mapActivity.getString(R.string.send_location_sms_pattern,shortOsmUrl,appLink);
+        if (which == 1) {
+          Intent sendIntent=new Intent(Intent.ACTION_VIEW);
+          sendIntent.putExtra("sms_body",sms);
+          sendIntent.setType("vnd.android-dir/mms-sms");
+          mapActivity.startActivity(sendIntent);
+        }
+ else         if (which == 2) {
+          ClipboardManager clipboard=(ClipboardManager)mapActivity.getSystemService(Activity.CLIPBOARD_SERVICE);
+          clipboard.setText(sms);
+        }
+      }
+    }
+  }
+);
+  return builder.create();
+}
