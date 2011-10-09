@@ -1,0 +1,31 @@
+{
+  int[] values=stringTable.keys();
+  Arrays.sort(values);
+  codedIS.seek(ind.stringTable.fileOffset);
+  int oldLimit=codedIS.pushLimit(ind.stringTable.length);
+  int current=0;
+  int i=0;
+  while (i < values.length) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      break;
+case OsmandOdb.StringTable.S_FIELD_NUMBER:
+    if (current == values[i]) {
+      String value=codedIS.readString();
+      stringTable.put(values[i],value);
+      i++;
+    }
+ else {
+      skipUnknownField(t);
+    }
+  current++;
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+codedIS.popLimit(oldLimit);
+}

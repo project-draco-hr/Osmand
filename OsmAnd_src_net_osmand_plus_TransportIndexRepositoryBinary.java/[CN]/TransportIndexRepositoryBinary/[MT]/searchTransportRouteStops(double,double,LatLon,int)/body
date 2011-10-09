@@ -11,48 +11,48 @@
   List<RouteInfoLocation> listRoutes=new ArrayList<RouteInfoLocation>();
   try {
     List<TransportStop> stops=file.searchTransportIndex(req);
-    Map<Long,RouteInfoLocation> registeredRoutes=new LinkedHashMap<Long,RouteInfoLocation>();
+    TIntObjectHashMap<TransportStop> stopsToProcess=new TIntObjectHashMap<TransportStop>();
     for (    TransportStop s : stops) {
       for (      int ref : s.getReferencesToRoutes()) {
-        TransportRoute route=file.getTransportRoute(ref);
-        for (int i=0; i < 2; i++) {
-          boolean direction=i == 0;
-          List<TransportStop> stps=direction ? route.getForwardStops() : route.getBackwardStops();
-          while (!stps.isEmpty() && (stps.get(0).getId().longValue() != s.getId().longValue())) {
-            stps.remove(0);
-          }
-          if (!stps.isEmpty()) {
-            long idToPut=route.getId() << 1 + (direction ? 1 : 0);
-            if (registeredRoutes.containsKey(idToPut)) {
-              TransportStop st=registeredRoutes.get(idToPut).getStart();
-              if (MapUtils.getDistance(loc,st.getLocation()) < MapUtils.getDistance(loc,s.getLocation())) {
-                continue;
+        TransportStop exist=stopsToProcess.get(ref);
+        if (exist == null || MapUtils.getDistance(loc,s.getLocation()) < MapUtils.getDistance(loc,exist.getLocation())) {
+          stopsToProcess.put(ref,s);
+        }
+      }
+    }
+    TIntObjectHashMap<TransportRoute> transportRoutes=file.getTransportRoutes(stopsToProcess.keys());
+    for (    int ref : stopsToProcess.keys()) {
+      TransportRoute route=transportRoutes.get(ref);
+      TransportStop s=stopsToProcess.get(ref);
+      for (int i=0; i < 2; i++) {
+        boolean direction=i == 0;
+        List<TransportStop> stps=direction ? route.getForwardStops() : route.getBackwardStops();
+        while (!stps.isEmpty() && (stps.get(0).getId().longValue() != s.getId().longValue())) {
+          stps.remove(0);
+        }
+        if (!stps.isEmpty()) {
+          RouteInfoLocation r=new RouteInfoLocation();
+          r.setRoute(route);
+          r.setStart(stps.get(0));
+          r.setDirection(direction);
+          if (locationToGo != null) {
+            int distToLoc=Integer.MAX_VALUE;
+            for (            TransportStop st : stps) {
+              double ndist=MapUtils.getDistance(locationToGo,st.getLocation());
+              if (ndist < distToLoc) {
+                distToLoc=(int)ndist;
+                r.setStop(st);
+                r.setDistToLocation(distToLoc);
               }
             }
-            RouteInfoLocation r=new RouteInfoLocation();
-            r.setRoute(route);
-            r.setStart(stps.get(0));
-            r.setDirection(direction);
-            if (locationToGo != null) {
-              int distToLoc=Integer.MAX_VALUE;
-              for (              TransportStop st : stps) {
-                double ndist=MapUtils.getDistance(locationToGo,st.getLocation());
-                if (ndist < distToLoc) {
-                  distToLoc=(int)ndist;
-                  r.setStop(st);
-                  r.setDistToLocation(distToLoc);
-                }
-              }
-            }
-            registeredRoutes.put(idToPut,r);
           }
+          listRoutes.add(r);
         }
       }
     }
     if (log.isDebugEnabled()) {
-      log.debug(String.format("Search for routes done in %s ms found %s.",System.currentTimeMillis() - now,registeredRoutes.size()));
+      log.debug(String.format("Search for routes done in %s ms found %s.",System.currentTimeMillis() - now,listRoutes.size()));
     }
-    listRoutes=new ArrayList<RouteInfoLocation>(registeredRoutes.values());
     if (locationToGo != null) {
       Collections.sort(listRoutes,new Comparator<RouteInfoLocation>(){
         @Override public int compare(        RouteInfoLocation object1,        RouteInfoLocation object2){

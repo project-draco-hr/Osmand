@@ -4,10 +4,6 @@
   int old=codedIS.pushLimit(routeLength);
   net.osmand.data.TransportRoute dataObject=new net.osmand.data.TransportRoute();
   boolean end=false;
-  int name=-1;
-  int nameEn=-1;
-  int operator=-1;
-  int type=-1;
   long rid=0;
   int rx=0;
   int ry=0;
@@ -31,21 +27,26 @@ case OsmandOdb.TransportRoute.REF_FIELD_NUMBER:
 dataObject.setRef(codedIS.readString());
 break;
 case OsmandOdb.TransportRoute.TYPE_FIELD_NUMBER:
-type=codedIS.readUInt32();
+dataObject.setType(regStr(stringTable));
 break;
 case OsmandOdb.TransportRoute.NAME_EN_FIELD_NUMBER:
-nameEn=codedIS.readUInt32();
+dataObject.setEnName(regStr(stringTable));
 break;
 case OsmandOdb.TransportRoute.NAME_FIELD_NUMBER:
-name=codedIS.readUInt32();
+dataObject.setName(regStr(stringTable));
 break;
 case OsmandOdb.TransportRoute.OPERATOR_FIELD_NUMBER:
-operator=codedIS.readUInt32();
+dataObject.setOperator(regStr(stringTable));
 break;
 case OsmandOdb.TransportRoute.REVERSESTOPS_FIELD_NUMBER:
+if (onlyDescription) {
+end=true;
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+break;
+}
 int length=codedIS.readRawVarint32();
 int olds=codedIS.pushLimit(length);
-TransportStop stop=readTransportRouteStop(dx,dy,did);
+TransportStop stop=readTransportRouteStop(dx,dy,did,stringTable);
 dataObject.getBackwardStops().add(stop);
 did=stop.getId();
 dx=(int)MapUtils.getTileNumberX(TRANSPORT_STOP_ZOOM,stop.getLocation().getLongitude());
@@ -53,9 +54,14 @@ dy=(int)MapUtils.getTileNumberY(TRANSPORT_STOP_ZOOM,stop.getLocation().getLatitu
 codedIS.popLimit(olds);
 break;
 case OsmandOdb.TransportRoute.DIRECTSTOPS_FIELD_NUMBER:
+if (onlyDescription) {
+end=true;
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+break;
+}
 length=codedIS.readRawVarint32();
 olds=codedIS.pushLimit(length);
-stop=readTransportRouteStop(rx,ry,rid);
+stop=readTransportRouteStop(rx,ry,rid,stringTable);
 dataObject.getForwardStops().add(stop);
 rid=stop.getId();
 rx=(int)MapUtils.getTileNumberX(TRANSPORT_STOP_ZOOM,stop.getLocation().getLongitude());
@@ -68,34 +74,5 @@ break;
 }
 }
 codedIS.popLimit(old);
-if (name != -1) {
-dataObject.setName(getStringFromStringTable(ind.stringTable,name));
-}
-if (nameEn != -1) {
-dataObject.setEnName(getStringFromStringTable(ind.stringTable,nameEn));
-}
-if (nameEn == -1 || dataObject.getEnName().length() == 0) {
-dataObject.setEnName(Junidecode.unidecode(dataObject.getName()));
-}
-if (operator != -1) {
-dataObject.setOperator(getStringFromStringTable(ind.stringTable,operator));
-}
-if (type != -1) {
-dataObject.setType(getStringFromStringTable(ind.stringTable,type));
-}
-for (int i=0; i < 2; i++) {
-List<TransportStop> stops=i == 0 ? dataObject.getForwardStops() : dataObject.getBackwardStops();
-for (TransportStop s : stops) {
-if (s.getName().length() > 0) {
-s.setName(getStringFromStringTable(ind.stringTable,s.getName().charAt(0)));
-}
-if (s.getEnName().length() > 0) {
-s.setEnName(getStringFromStringTable(ind.stringTable,s.getEnName().charAt(0)));
-}
-if (s.getEnName().length() == 0) {
-s.setEnName(Junidecode.unidecode(s.getName()));
-}
-}
-}
 return dataObject;
 }

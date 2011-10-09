@@ -8,16 +8,11 @@
     int offset=req.searchResults.size();
     transportAdapter.searchTransportTreeBounds(0,0,0,0,req);
     codedIS.popLimit(oldLimit);
-    for (int i=offset; i < req.searchResults.size(); i++) {
-      TransportStop st=req.searchResults.get(i);
-      if (st.getName().length() != 0) {
-        st.setName(transportAdapter.getStringFromStringTable(index.stringTable,st.getName().charAt(0)));
-      }
-      if (st.getEnName().length() != 0) {
-        st.setEnName(transportAdapter.getStringFromStringTable(index.stringTable,st.getEnName().charAt(0)));
-      }
-      if (st.getEnName().length() == 0) {
-        st.setEnName(Junidecode.unidecode(st.getName()));
+    if (req.stringTable != null) {
+      transportAdapter.initializeStringTable(index,req.stringTable);
+      for (int i=offset; i < req.searchResults.size(); i++) {
+        TransportStop st=req.searchResults.get(i);
+        transportAdapter.initializeNames(req.stringTable,st);
       }
     }
   }
