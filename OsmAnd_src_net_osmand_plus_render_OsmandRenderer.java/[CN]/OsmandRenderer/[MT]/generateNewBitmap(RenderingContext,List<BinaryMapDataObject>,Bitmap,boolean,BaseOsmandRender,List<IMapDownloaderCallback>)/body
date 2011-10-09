@@ -1,9 +1,6 @@
 {
   long now=System.currentTimeMillis();
-  boolean streetsdrawn=false;
   Canvas cv=new Canvas(bmp);
-  Bitmap streetbmp=Bitmap.createBitmap(cv.getWidth(),cv.getHeight(),Bitmap.Config.ARGB_8888);
-  streetcv=new Canvas(streetbmp);
   if (renderer != null) {
     int dc=renderer.getDefaultColor(rc.nightMode);
     if (dc != 0) {
@@ -46,22 +43,25 @@
     rc.tileDivisor=(int)(1 << (31 - rc.zoom));
     rc.cosRotateTileSize=FloatMath.cos((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
     rc.sinRotateTileSize=FloatMath.sin((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
+    int shadow=3;
+    boolean repeat=false;
     float[] keys=orderMap.keys();
     Arrays.sort(keys);
     int objCount=0;
+    shadowarray=new int[keys.length];
+    shadownum=0;
     for (int k=0; k < keys.length; k++) {
+      if (repeat == true && shadowarray[shadownum] == k) {
+        shadownum++;
+        continue;
+      }
       TIntArrayList list=orderMap.get(keys[k]);
       for (int j=0; j < list.size(); j++) {
         int i=list.get(j);
         int ind=i >> 8;
         int l=i & 0xff;
         BinaryMapDataObject obj=objects.get(ind);
-        if (keys[k] > 57 && !streetsdrawn) {
-          drawStreetsShadow(cv,streetbmp);
-          streetsdrawn=true;
-          cv.drawBitmap(streetbmp,0,0,null);
-        }
-        drawObj(obj,renderer,cv,rc,l,l == 0,keys[k]);
+        drawObj(obj,renderer,cv,rc,l,l == 0,shadow,k);
         objCount++;
       }
       if (objCount > 25) {
@@ -70,6 +70,12 @@
       }
       if (rc.interrupted) {
         return null;
+      }
+      if (keys[k] > 57 && repeat == false && shadow > 1) {
+        shadow=0;
+        shadownum=0;
+        k=shadowarray[0];
+        repeat=true;
       }
     }
     notifyListeners(notifyList);
@@ -105,7 +111,6 @@
       }
     }
     notifyListeners(notifyList);
-    drawStreetsWithShadow(cv,streetbmp);
     drawTextOverCanvas(rc,cv,useEnglishNames);
     long time=System.currentTimeMillis() - now;
     rc.renderingDebugInfo=String.format("Rendering done in %s (%s text) ms\n" + "(%s points, %s points inside, %s objects visile from %s)",time,time - beforeIconTextTime,rc.pointCount,rc.pointInsideCount,rc.visible,rc.allObjects);
