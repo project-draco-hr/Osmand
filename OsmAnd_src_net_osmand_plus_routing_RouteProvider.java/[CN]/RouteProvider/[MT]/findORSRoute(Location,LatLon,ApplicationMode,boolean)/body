@@ -1,0 +1,45 @@
+{
+  List<Location> res=new ArrayList<Location>();
+  String rpref="Fastest";
+  if (ApplicationMode.PEDESTRIAN == mode) {
+    rpref="Pedestrian";
+  }
+ else   if (ApplicationMode.BICYCLE == mode) {
+    rpref="Bicycle";
+  }
+ else   if (!fast) {
+    rpref="Shortest";
+  }
+  StringBuilder request=new StringBuilder();
+  request.append("http://openls.geog.uni-heidelberg.de/osm/eu/routing?").append("start=").append(start.getLongitude()).append(',').append(start.getLatitude()).append("&end=").append(end.getLongitude()).append(',').append(end.getLatitude()).append("&preference=").append(rpref);
+  URI uri=URI.create(request.toString());
+  URL url=uri.toURL();
+  URLConnection connection=url.openConnection();
+  DocumentBuilder dom=DocumentBuilderFactory.newInstance().newDocumentBuilder();
+  Document doc=dom.parse(new InputSource(new InputStreamReader(connection.getInputStream())));
+  NodeList list=doc.getElementsByTagName("xls:RouteGeometry");
+  for (int i=0; i < list.getLength(); i++) {
+    NodeList poslist=((Element)list.item(i)).getElementsByTagName("gml:pos");
+    for (int j=0; j < poslist.getLength(); j++) {
+      String text=poslist.item(j).getFirstChild().getNodeValue();
+      int s=text.indexOf(' ');
+      try {
+        double lon=Double.parseDouble(text.substring(0,s));
+        double lat=Double.parseDouble(text.substring(s + 1));
+        Location l=new Location("router");
+        l.setLatitude(lat);
+        l.setLongitude(lon);
+        res.add(l);
+      }
+ catch (      NumberFormatException nfe) {
+      }
+    }
+  }
+  if (list.getLength() == 0) {
+    if (doc.getChildNodes().getLength() == 1) {
+      Node item=doc.getChildNodes().item(0);
+      return new RouteCalculationResult(item.getNodeValue());
+    }
+  }
+  return new RouteCalculationResult(res,null,start,end,null);
+}
