@@ -1,10 +1,12 @@
 {
   String reg=reader.getRegionNames().get(0);
+  final Map<String,Integer> streetFreq=new LinkedHashMap<String,Integer>();
   List<City> cs=reader.getCities(reg,null);
   for (  City c : cs) {
     int buildings=0;
     reader.preloadStreets(c,null);
     for (    Street s : c.getStreets()) {
+      updateFrequence(streetFreq,s.getName());
       reader.preloadBuildings(s,buildAddressRequest((ResultMatcher<Building>)null));
       buildings+=s.getBuildings().size();
     }
@@ -17,9 +19,29 @@
   }
   List<City> villages=reader.getVillages(reg,buildAddressRequest((ResultMatcher<MapObject>)null),new StringMatcher(){
     @Override public boolean matches(    String name){
-      return false;
+      return true;
     }
   }
 ,true);
-  println("Villages " + villages.size());
+  for (  City v : villages) {
+    reader.preloadStreets(v,null);
+    for (    Street s : v.getStreets()) {
+      updateFrequence(streetFreq,s.getName());
+    }
+  }
+  System.out.println("Villages " + villages.size());
+  List<String> sorted=new ArrayList<String>(streetFreq.keySet());
+  Collections.sort(sorted,new Comparator<String>(){
+    @Override public int compare(    String o1,    String o2){
+      return -streetFreq.get(o1) + streetFreq.get(o2);
+    }
+  }
+);
+  System.out.println(streetFreq.size());
+  for (  String s : sorted) {
+    System.out.println(s + "   " + streetFreq.get(s));
+    if (streetFreq.get(s) < 10) {
+      break;
+    }
+  }
 }
