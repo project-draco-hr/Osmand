@@ -1,0 +1,101 @@
+{
+  double cBottomLatitude=dataBox.bottom;
+  double cTopLatitude=dataBox.top;
+  double cLeftLongitude=dataBox.left;
+  double cRightLongitude=dataBox.right;
+  log.info(String.format("BLat=%s, TLat=%s, LLong=%s, RLong=%s, zoom=%s",cBottomLatitude,cTopLatitude,cLeftLongitude,cRightLongitude,zoom));
+  long now=System.currentTimeMillis();
+  if (files.isEmpty()) {
+    cObjectsBox=dataBox;
+    cObjects=new ArrayList<BinaryMapDataObject>();
+    return true;
+  }
+  try {
+    int count=0;
+    ArrayList<BinaryMapDataObject> tempList=new ArrayList<BinaryMapDataObject>();
+    System.gc();
+    TLongSet ids=new TLongHashSet();
+    Map<TagValuePair,List<BinaryMapDataObject>> multiPolygons=new LinkedHashMap<TagValuePair,List<BinaryMapDataObject>>();
+    int leftX=MapUtils.get31TileNumberX(cLeftLongitude);
+    int rightX=MapUtils.get31TileNumberX(cRightLongitude);
+    int bottomY=MapUtils.get31TileNumberY(cBottomLatitude);
+    int topY=MapUtils.get31TileNumberY(cTopLatitude);
+    BinaryMapIndexReader.SearchFilter searchFilter=new BinaryMapIndexReader.SearchFilter(){
+      @Override public boolean accept(      TIntArrayList types,      BinaryMapIndexReader.MapIndex root){
+        for (int j=0; j < types.size(); j++) {
+          int type=types.get(j);
+          int mask=type & 3;
+          TagValuePair pair=root.decodeType(type);
+          if (pair != null) {
+            renderingReq.setInitialTagValueZoom(pair.tag,pair.value,zoom);
+            if (renderingReq.search(mask)) {
+              return true;
+            }
+            if (mask == RenderingRulesStorage.POINT_RULES) {
+              if (renderingReq.search(RenderingRulesStorage.TEXT_RULES)) {
+                return true;
+              }
+            }
+          }
+        }
+        return false;
+      }
+    }
+;
+    if (zoom > 17) {
+      searchFilter=null;
+    }
+    boolean basemapSearch=false;
+    if (zoom <= 7) {
+      for (      String f : files.keySet()) {
+        if (f.toLowerCase().contains(BASEMAP_NAME)) {
+          basemapSearch=true;
+          break;
+        }
+      }
+    }
+    for (    String mapName : files.keySet()) {
+      if (basemapSearch && !mapName.toLowerCase().contains(BASEMAP_NAME)) {
+        continue;
+      }
+      BinaryMapIndexReader c=files.get(mapName);
+      searchRequest=BinaryMapIndexReader.buildSearchRequest(leftX,rightX,topY,bottomY,zoom,searchFilter);
+      List<BinaryMapDataObject> res=c.searchMapIndex(searchRequest);
+      for (      BinaryMapDataObject r : res) {
+        if (PerformanceFlags.checkForDuplicateObjectIds) {
+          if (ids.contains(r.getId())) {
+            continue;
+          }
+          ids.add(r.getId());
+        }
+        count++;
+        for (int i=0; i < r.getTypes().length; i++) {
+          if ((r.getTypes()[i] & 0x3) == MapRenderingTypes.MULTY_POLYGON_TYPE) {
+            TagValuePair pair=r.getMapIndex().decodeType(MapRenderingTypes.getMainObjectType(r.getTypes()[i]),MapRenderingTypes.getObjectSubType(r.getTypes()[i]));
+            if (pair != null) {
+              pair=new TagValuePair(pair.tag,pair.value,r.getTypes()[i]);
+              if (!multiPolygons.containsKey(pair)) {
+                multiPolygons.put(pair,new ArrayList<BinaryMapDataObject>());
+              }
+              multiPolygons.get(pair).add(r);
+            }
+          }
+        }
+        if (checkWhetherInterrupted()) {
+          return false;
+        }
+        tempList.add(r);
+      }
+    }
+    List<MultyPolygon> pMulti=proccessMultiPolygons(multiPolygons,leftX,rightX,bottomY,topY,zoom);
+    tempList.addAll(pMulti);
+    log.info(String.format("Search done in %s ms. %s results were found.",System.currentTimeMillis() - now,count));
+    cObjects=tempList;
+    cObjectsBox=dataBox;
+  }
+ catch (  IOException e) {
+    log.debug("Search failed",e);
+    return false;
+  }
+  return true;
+}
