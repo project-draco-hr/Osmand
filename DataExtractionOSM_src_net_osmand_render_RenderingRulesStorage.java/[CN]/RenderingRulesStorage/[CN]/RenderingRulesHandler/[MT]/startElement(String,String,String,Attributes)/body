@@ -24,6 +24,7 @@
   }
  else   if ("groupFilter".equals(name)) {
     attrsMap.clear();
+    parseAttributes(attributes,attrsMap);
     RenderingRule renderingRule=new RenderingRule(attrsMap,RenderingRulesStorage.this);
     if (stack.size() > 0 && stack.peek() instanceof GroupRules) {
       GroupRules parent=((GroupRules)stack.peek());
@@ -66,6 +67,26 @@
  else   if ("polygon".equals(name)) {
     state=POLYGON_RULES;
     stateChanged=true;
+  }
+ else   if ("renderingProperty".equals(name)) {
+    String attr=attributes.getValue("attr");
+    RenderingRuleProperty prop;
+    String type=attributes.getValue("type");
+    if ("boolean".equalsIgnoreCase(type)) {
+      prop=RenderingRuleProperty.createInputBooleanProperty(attr);
+    }
+ else     if ("string".equalsIgnoreCase(type)) {
+      prop=RenderingRuleProperty.createInputStringProperty(attr);
+    }
+ else {
+      prop=RenderingRuleProperty.createInputIntProperty(attr);
+    }
+    prop.setDescription(attributes.getValue("description"));
+    prop.setName(attributes.getValue("name"));
+    if (attributes.getValue("possibleValues") != null) {
+      prop.setPossibleValues(attributes.getValue("possibleValues").split(","));
+    }
+    PROPS.registerRule(prop);
   }
  else   if ("renderingStyle".equals(name)) {
     String dc=attributes.getValue("defaultColor");

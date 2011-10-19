@@ -1,5 +1,14 @@
 {
   RenderingRulesStorage storage=new RenderingRulesStorage();
   storage.parseRulesFromXmlInputStream(RenderingRulesStorage.class.getResourceAsStream("new_default.render.xml"));
-  storage.printDebug(TEXT_RULES,System.out);
+  RenderingRuleSearchRequest searchRequest=new RenderingRuleSearchRequest(storage);
+  searchRequest.setStringFilter(storage.PROPS.R_TAG,"highway");
+  searchRequest.setStringFilter(storage.PROPS.R_VALUE,"motorway");
+  searchRequest.setIntFilter(storage.PROPS.R_LAYER,1);
+  searchRequest.setIntFilter(storage.PROPS.R_MINZOOM,14);
+  searchRequest.setIntFilter(storage.PROPS.R_MAXZOOM,14);
+  searchRequest.setStringFilter(storage.PROPS.R_ORDER_TYPE,"line");
+  searchRequest.setBooleanFilter(storage.PROPS.R_NIGHT_MODE,true);
+  searchRequest.search(LINE_RULES);
+  printResult(searchRequest,System.out);
 }
