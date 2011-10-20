@@ -1,0 +1,87 @@
+{
+  if (render == null || pair == null) {
+    return;
+  }
+  int length=obj.getPointsLength();
+  if (length < 2) {
+    return;
+  }
+  render.setInitialTagValueZoom(pair.tag,pair.value,rc.zoom);
+  render.setIntFilter(render.ALL.R_LAYER,layer);
+  boolean rendered=render.search(RenderingRulesStorage.LINE_RULES);
+  if (!rendered || !updatePaint(render,paint,0,false)) {
+    return;
+  }
+  boolean oneway=false;
+  if (rc.zoom >= 16 && "highway".equals(pair.tag) && MapRenderingTypes.isOneWayWay(obj.getHighwayAttributes())) {
+    oneway=true;
+  }
+  rc.visible++;
+  Path path=null;
+  float pathRotate=0;
+  float roadLength=0;
+  boolean inverse=false;
+  float xPrev=0;
+  float yPrev=0;
+  float xMid=0;
+  float yMid=0;
+  PointF middlePoint=new PointF();
+  int middle=obj.getPointsLength() / 2;
+  for (int i=0; i < length; i++) {
+    PointF p=calcPoint(obj,i,rc);
+    if (i == 0 || i == length - 1) {
+      xMid+=p.x;
+      yMid+=p.y;
+    }
+    if (path == null) {
+      path=new Path();
+      path.moveTo(p.x,p.y);
+    }
+ else {
+      roadLength+=Math.sqrt((p.x - xPrev) * (p.x - xPrev) + (p.y - yPrev) * (p.y - yPrev));
+      if (i == middle) {
+        middlePoint.set(p.x,p.y);
+        double rot=-Math.atan2(p.x - xPrev,p.y - yPrev) * 180 / Math.PI;
+        if (rot < 0) {
+          rot+=360;
+        }
+        if (rot < 180) {
+          rot+=180;
+          inverse=true;
+        }
+        pathRotate=(float)rot;
+      }
+      path.lineTo(p.x,p.y);
+    }
+    xPrev=p.x;
+    yPrev=p.y;
+  }
+  if (path != null) {
+    if (drawOnlyShadow) {
+      int shadowColor=render.getIntPropertyValue(render.ALL.R_SHADOW_COLOR);
+      int shadowRadius=render.getIntPropertyValue(render.ALL.R_SHADOW_RADIUS);
+      drawPolylineShadow(canvas,rc,path,shadowColor,shadowRadius);
+    }
+ else {
+      if (rc.shadowRenderingMode != 1) {
+        paint.clearShadowLayer();
+      }
+      canvas.drawPath(path,paint);
+      if (updatePaint(render,paint,1,false)) {
+        canvas.drawPath(path,paint);
+        if (updatePaint(render,paint,2,false)) {
+          canvas.drawPath(path,paint);
+        }
+      }
+    }
+    if (oneway && !drawOnlyShadow) {
+      Paint[] paints=getOneWayPaints();
+      for (int i=0; i < paints.length; i++) {
+        canvas.drawPath(path,paints[i]);
+      }
+    }
+    if (!drawOnlyShadow && obj.getName() != null && obj.getName().length() > 0) {
+      calculatePolylineText(obj,render,rc,pair,path,pathRotate,roadLength,inverse,xMid,yMid,middlePoint);
+    }
+  }
+}

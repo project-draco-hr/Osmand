@@ -1,0 +1,50 @@
+{
+  TIntObjectHashMap<TIntArrayList> orderMap=new TIntObjectHashMap<TIntArrayList>();
+  if (render != null) {
+    render.clearState();
+    for (int i=0; i < sz; i++) {
+      BinaryMapDataObject o=objects.get(i);
+      int sh=i << 8;
+      if (o instanceof MultyPolygon) {
+        int layer=((MultyPolygon)o).getLayer();
+        render.setTagValueZoomLayer(((MultyPolygon)o).getTag(),((MultyPolygon)o).getValue(),rc.zoom,layer);
+        render.setIntFilter(render.ALL.R_ORDER_TYPE,MapRenderingTypes.POLYGON_TYPE);
+        if (render.search(RenderingRulesStorage.ORDER_RULES)) {
+          int order=render.getIntPropertyValue(render.ALL.R_ORDER);
+          put(orderMap,order,sh,init);
+          if (render.isSpecified(render.ALL.R_SHADOW_LEVEL)) {
+            rc.shadowLevelMin=Math.min(rc.shadowLevelMin,order);
+            rc.shadowLevelMax=Math.max(rc.shadowLevelMax,order);
+          }
+        }
+      }
+ else {
+        for (int j=0; j < o.getTypes().length; j++) {
+          int wholeType=o.getTypes()[j];
+          int mask=wholeType & 3;
+          int layer=0;
+          if (mask != 1) {
+            layer=MapRenderingTypes.getNegativeWayLayer(wholeType);
+          }
+          TagValuePair pair=o.getMapIndex().decodeType(MapRenderingTypes.getMainObjectType(wholeType),MapRenderingTypes.getObjectSubType(wholeType));
+          if (pair != null) {
+            render.setTagValueZoomLayer(pair.tag,pair.value,rc.zoom,layer);
+            render.setIntFilter(render.ALL.R_ORDER_TYPE,mask);
+            if (render.search(RenderingRulesStorage.ORDER_RULES)) {
+              int order=render.getIntPropertyValue(render.ALL.R_ORDER);
+              put(orderMap,order,sh + j,init);
+              if (render.isSpecified(render.ALL.R_SHADOW_LEVEL)) {
+                rc.shadowLevelMin=Math.min(rc.shadowLevelMin,order);
+                rc.shadowLevelMax=Math.max(rc.shadowLevelMax,order);
+              }
+            }
+          }
+        }
+      }
+      if (rc.interrupted) {
+        return null;
+      }
+    }
+  }
+  return orderMap;
+}

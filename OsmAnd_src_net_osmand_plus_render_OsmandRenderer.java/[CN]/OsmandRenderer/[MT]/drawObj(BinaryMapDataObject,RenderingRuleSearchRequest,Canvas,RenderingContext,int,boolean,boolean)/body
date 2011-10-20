@@ -1,7 +1,9 @@
 {
   rc.allObjects++;
   if (obj instanceof MultyPolygon) {
-    drawMultiPolygon(obj,render,canvas,rc);
+    if (!drawOnlyShadow) {
+      drawMultiPolygon(obj,render,canvas,rc);
+    }
   }
  else {
     int mainType=obj.getTypes()[l];
@@ -9,14 +11,14 @@
     int type=MapRenderingTypes.getMainObjectType(mainType);
     int subtype=MapRenderingTypes.getObjectSubType(mainType);
     TagValuePair pair=obj.getMapIndex().decodeType(type,subtype);
-    if (t == MapRenderingTypes.POINT_TYPE) {
+    if (t == MapRenderingTypes.POINT_TYPE && !drawOnlyShadow) {
       drawPoint(obj,render,canvas,rc,pair,renderText);
     }
  else     if (t == MapRenderingTypes.POLYLINE_TYPE) {
       int layer=MapRenderingTypes.getNegativeWayLayer(mainType);
-      drawPolyline(obj,render,canvas,rc,pair,layer,shadow,index);
+      drawPolyline(obj,render,canvas,rc,pair,layer,drawOnlyShadow);
     }
- else     if (t == MapRenderingTypes.POLYGON_TYPE) {
+ else     if (t == MapRenderingTypes.POLYGON_TYPE && !drawOnlyShadow) {
       drawPolygon(obj,render,canvas,rc,pair);
     }
  else {
