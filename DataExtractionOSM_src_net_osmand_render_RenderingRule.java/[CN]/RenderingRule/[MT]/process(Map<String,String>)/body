@@ -1,0 +1,27 @@
+{
+  ArrayList<RenderingRuleProperty> props=new ArrayList<RenderingRuleProperty>(attributes.size());
+  intProperties=new int[attributes.size()];
+  int i=0;
+  Iterator<Entry<String,String>> it=attributes.entrySet().iterator();
+  while (it.hasNext()) {
+    Entry<String,String> e=it.next();
+    RenderingRuleProperty property=storage.PROPS.get(e.getKey());
+    if (property != null) {
+      props.add(property);
+      if (property.isString()) {
+        intProperties[i]=storage.getDictionaryValue(e.getValue());
+      }
+ else       if (property.isFloat()) {
+        if (floatProperties == null) {
+          floatProperties=new float[attributes.size()];
+        }
+        floatProperties[i]=property.parseFloatValue(e.getValue());
+      }
+ else {
+        intProperties[i]=property.parseIntValue(e.getValue());
+      }
+      i++;
+    }
+  }
+  properties=props.toArray(new RenderingRuleProperty[props.size()]);
+}

@@ -1,0 +1,38 @@
+{
+  if (render == null || pair == null) {
+    return;
+  }
+  float xText=0;
+  float yText=0;
+  int zoom=rc.zoom;
+  Path path=null;
+  render.setInitialTagValueZoom(pair.tag,pair.value,zoom);
+  boolean rendered=render.search(RenderingRulesStorage.POLYGON_RULES);
+  if (!rendered || !updatePaint(render,paint,0,true)) {
+    return;
+  }
+  rc.visible++;
+  int len=obj.getPointsLength();
+  for (int i=0; i < obj.getPointsLength(); i++) {
+    PointF p=calcPoint(obj,i,rc);
+    xText+=p.x;
+    yText+=p.y;
+    if (path == null) {
+      path=new Path();
+      path.moveTo(p.x,p.y);
+    }
+ else {
+      path.lineTo(p.x,p.y);
+    }
+  }
+  if (path != null && len > 0) {
+    canvas.drawPath(path,paint);
+    if (updatePaint(render,paint,1,false)) {
+      canvas.drawPath(path,paint);
+    }
+    String name=obj.getName();
+    if (name != null) {
+      drawPointText(render,rc,pair,xText / len,yText / len,name);
+    }
+  }
+}

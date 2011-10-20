@@ -1,0 +1,40 @@
+{
+  String tag=((MultyPolygon)obj).getTag();
+  String value=((MultyPolygon)obj).getValue();
+  if (render == null || tag == null) {
+    return;
+  }
+  render.setInitialTagValueZoom(tag,value,rc.zoom);
+  boolean rendered=render.search(RenderingRulesStorage.POLYGON_RULES);
+  if (!rendered || !updatePaint(render,paint,0,true)) {
+    return;
+  }
+  rc.visible++;
+  Path path=new Path();
+  for (int i=0; i < ((MultyPolygon)obj).getBoundsCount(); i++) {
+    int cnt=((MultyPolygon)obj).getBoundPointsCount(i);
+    float xText=0;
+    float yText=0;
+    for (int j=0; j < cnt; j++) {
+      PointF p=calcMultiPolygonPoint((MultyPolygon)obj,j,i,rc);
+      xText+=p.x;
+      yText+=p.y;
+      if (j == 0) {
+        path.moveTo(p.x,p.y);
+      }
+ else {
+        path.lineTo(p.x,p.y);
+      }
+    }
+    if (cnt > 0) {
+      String name=((MultyPolygon)obj).getName(i);
+      if (name != null) {
+        drawPointText(render,rc,new TagValuePair(tag,value),xText / cnt,yText / cnt,name);
+      }
+    }
+  }
+  canvas.drawPath(path,paint);
+  if (updatePaint(render,paint,1,false)) {
+    canvas.drawPath(path,paint);
+  }
+}

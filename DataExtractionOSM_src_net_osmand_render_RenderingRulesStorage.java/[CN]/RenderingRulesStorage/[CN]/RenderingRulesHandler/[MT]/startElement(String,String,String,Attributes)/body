@@ -1,0 +1,114 @@
+{
+  name=parser.isNamespaceAware() ? localName : name;
+  boolean stateChanged=false;
+  if ("filter".equals(name)) {
+    attrsMap.clear();
+    if (stack.size() > 0 && stack.peek() instanceof GroupRules) {
+      GroupRules parent=((GroupRules)stack.peek());
+      attrsMap.putAll(parent.groupAttributes);
+    }
+    parseAttributes(attributes,attrsMap);
+    RenderingRule renderingRule=new RenderingRule(attrsMap,RenderingRulesStorage.this);
+    if (stack.size() > 0 && stack.peek() instanceof GroupRules) {
+      GroupRules parent=((GroupRules)stack.peek());
+      parent.children.add(renderingRule);
+    }
+ else     if (stack.size() > 0 && stack.peek() instanceof RenderingRule) {
+      RenderingRule parent=((RenderingRule)stack.peek());
+      parent.addIfElseChildren(renderingRule);
+    }
+ else {
+      registerGlobalRule(renderingRule,state,attrsMap);
+    }
+    stack.push(renderingRule);
+  }
+ else   if ("groupFilter".equals(name)) {
+    attrsMap.clear();
+    parseAttributes(attributes,attrsMap);
+    RenderingRule renderingRule=new RenderingRule(attrsMap,RenderingRulesStorage.this);
+    if (stack.size() > 0 && stack.peek() instanceof GroupRules) {
+      GroupRules parent=((GroupRules)stack.peek());
+      parent.addGroupFilter(renderingRule);
+    }
+ else     if (stack.size() > 0 && stack.peek() instanceof RenderingRule) {
+      ((RenderingRule)stack.peek()).addIfChildren(renderingRule);
+    }
+ else {
+      throw new SAXException("Group filter without parent");
+    }
+    stack.push(renderingRule);
+  }
+ else   if ("group".equals(name)) {
+    GroupRules groupRules=new GroupRules();
+    if (stack.size() > 0 && stack.peek() instanceof GroupRules) {
+      GroupRules parent=((GroupRules)stack.peek());
+      groupRules.groupAttributes.putAll(parent.groupAttributes);
+      parent.childrenGroups.add(groupRules);
+    }
+    parseAttributes(attributes,groupRules.groupAttributes);
+    stack.push(groupRules);
+  }
+ else   if ("order".equals(name)) {
+    state=ORDER_RULES;
+    stateChanged=true;
+  }
+ else   if ("text".equals(name)) {
+    state=TEXT_RULES;
+    stateChanged=true;
+  }
+ else   if ("point".equals(name)) {
+    state=POINT_RULES;
+    stateChanged=true;
+  }
+ else   if ("line".equals(name)) {
+    state=LINE_RULES;
+    stateChanged=true;
+  }
+ else   if ("polygon".equals(name)) {
+    state=POLYGON_RULES;
+    stateChanged=true;
+  }
+ else   if ("renderingProperty".equals(name)) {
+    String attr=attributes.getValue("attr");
+    RenderingRuleProperty prop;
+    String type=attributes.getValue("type");
+    if ("boolean".equalsIgnoreCase(type)) {
+      prop=RenderingRuleProperty.createInputBooleanProperty(attr);
+    }
+ else     if ("string".equalsIgnoreCase(type)) {
+      prop=RenderingRuleProperty.createInputStringProperty(attr);
+    }
+ else {
+      prop=RenderingRuleProperty.createInputIntProperty(attr);
+    }
+    prop.setDescription(attributes.getValue("description"));
+    prop.setName(attributes.getValue("name"));
+    if (attributes.getValue("possibleValues") != null) {
+      prop.setPossibleValues(attributes.getValue("possibleValues").split(","));
+    }
+    PROPS.registerRule(prop);
+  }
+ else   if ("renderingStyle".equals(name)) {
+    String dc=attributes.getValue("defaultColor");
+    int defaultColor=0;
+    if (dc != null && dc.length() > 0) {
+      bgColor=RenderingRuleProperty.parseColor(dc);
+    }
+    String dnc=attributes.getValue("defaultNightColor");
+    bgNightColor=defaultColor;
+    if (dnc != null && dnc.length() > 0) {
+      bgNightColor=RenderingRuleProperty.parseColor(dnc);
+    }
+    renderingName=attributes.getValue("name");
+    depends=attributes.getValue("depends");
+  }
+ else   if ("renderer".equals(name)) {
+    throw new SAXException("Rendering style is deprecated and no longer supported.");
+  }
+ else {
+    log.warn("Unknown tag : " + name);
+  }
+  if (stateChanged) {
+    tagValueGlobalRules[state]=new TIntObjectHashMap<RenderingRule>();
+  }
+}

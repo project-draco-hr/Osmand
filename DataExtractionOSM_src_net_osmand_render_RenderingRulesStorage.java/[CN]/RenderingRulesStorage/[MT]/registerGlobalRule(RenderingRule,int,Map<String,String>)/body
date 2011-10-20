@@ -1,0 +1,24 @@
+{
+  int tag=rr.getIntPropertyValue(RenderingRuleStorageProperties.TAG);
+  if (tag == -1) {
+    throw new SAXException("Attribute tag should be specified for root filter " + attrsMap.toString());
+  }
+  int value=rr.getIntPropertyValue(RenderingRuleStorageProperties.VALUE);
+  if (value == -1) {
+    throw new SAXException("Attribute tag should be specified for root filter " + attrsMap.toString());
+  }
+  int key=(tag << SHIFT_TAG_VAL) + value;
+  RenderingRule toInsert=rr;
+  RenderingRule previous=tagValueGlobalRules[state].get(key);
+  if (previous != null) {
+    if (previous.getProperties().length != 0) {
+      toInsert=new RenderingRule(Collections.EMPTY_MAP,RenderingRulesStorage.this);
+      toInsert.addIfElseChildren(previous);
+    }
+ else {
+      toInsert=previous;
+    }
+    toInsert.addIfElseChildren(rr);
+  }
+  tagValueGlobalRules[state].put(key,toInsert);
+}
