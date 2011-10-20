@@ -4,30 +4,26 @@
     is=new FileInputStream(externalRenderers.get(name));
   }
  else   if (internalRenderers.containsKey(name)) {
-    is=OsmandRenderingRulesParser.class.getResourceAsStream(internalRenderers.get(name));
+    is=RenderingRulesStorage.class.getResourceAsStream(internalRenderers.get(name));
   }
  else {
     throw new IllegalArgumentException("Not found " + name);
   }
-  BaseOsmandRender b=new BaseOsmandRender();
-  b.init(is);
+  RenderingRulesStorage main=new RenderingRulesStorage();
+  main.parseRulesFromXmlInputStream(is);
   loadedRenderers.add(name);
-  List<BaseOsmandRender> dependencies=new ArrayList<BaseOsmandRender>();
-  for (  String s : b.getDepends()) {
-    if (loadedRenderers.contains(s)) {
+  if (!Algoritms.isEmpty(main.getDepends())) {
+    if (loadedRenderers.contains(main.getDepends())) {
       log.warn("Circular dependencies found " + name);
     }
  else {
-      BaseOsmandRender dep=getRenderer(s,loadedRenderers);
+      RenderingRulesStorage dep=getRenderer(main.getDepends(),loadedRenderers);
       if (dep == null) {
         log.warn("Dependent renderer not found : " + name);
       }
- else {
-        dependencies.add(dep);
-      }
+      main.setDependsStorage(dep);
     }
   }
-  b.setDependRenderers(dependencies);
-  renderers.put(name,b);
-  return b;
+  renderers.put(name,main);
+  return main;
 }

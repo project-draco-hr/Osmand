@@ -9,10 +9,15 @@
       Map<String,GPXFile> data=new LinkedHashMap<String,GPXFile>();
       collectDBPoints(db,data);
       collectDBTracks(db,data);
-      for (      String f : data.keySet()) {
+      for (      final String f : data.keySet()) {
         File fout=new File(dir,f + ".gpx");
         if (fout.exists() && !data.get(f).isEmpty()) {
-          fout=new File(dir,f + "." + new SimpleDateFormat("HHmmss.EEEE").format(new Date(data.get(f).findPointToShow().time))+ ".gpx");
+          String fileName=f + "_" + new SimpleDateFormat("HH-mm-ss_EEEE").format(new Date(data.get(f).findPointToShow().time));
+          fout=new File(dir,fileName + ".gpx");
+          int ind=1;
+          while (fout.exists()) {
+            fout=new File(dir,fileName + "_" + (++ind)+ ".gpx");
+          }
         }
         String warn=GPXUtilities.writeGpxFile(fout,data.get(f),ctx);
         if (warn != null) {

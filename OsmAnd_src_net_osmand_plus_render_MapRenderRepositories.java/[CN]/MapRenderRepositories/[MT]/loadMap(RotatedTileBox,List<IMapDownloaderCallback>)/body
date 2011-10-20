@@ -7,7 +7,30 @@
     OsmandApplication app=((OsmandApplication)context.getApplicationContext());
     Boolean renderDay=app.getDaynightHelper().getDayNightRenderer();
     boolean nightMode=renderDay != null && !renderDay.booleanValue();
-    BaseOsmandRender renderingType=app.getRendererRegistry().getCurrentSelectedRenderer();
+    RenderingRulesStorage storage=app.getRendererRegistry().getCurrentSelectedRenderer();
+    RenderingRuleSearchRequest renderingReq=new RenderingRuleSearchRequest(storage);
+    renderingReq.setBooleanFilter(renderingReq.ALL.R_NIGHT_MODE,nightMode);
+    for (    RenderingRuleProperty customProp : storage.PROPS.getCustomRules()) {
+      CommonPreference<String> settings=app.getSettings().getCustomRenderProperty(customProp.getAttrName());
+      String res=settings.get();
+      if (!Algoritms.isEmpty(res)) {
+        if (customProp.isString()) {
+          renderingReq.setStringFilter(customProp,res);
+        }
+ else         if (customProp.isBoolean()) {
+          renderingReq.setBooleanFilter(customProp,"true".equalsIgnoreCase(res));
+        }
+ else {
+          try {
+            renderingReq.setIntFilter(customProp,Integer.parseInt(res));
+          }
+ catch (          NumberFormatException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    }
+    renderingReq.saveState();
     requestedBox=new RotatedTileBox(tileRect);
     RectF dataBox=requestedBox.calculateLatLonBox(new RectF());
     long now=System.currentTimeMillis();
@@ -23,7 +46,7 @@
         dataBox.bottom-=hi;
       }
       validateLatLonBox(dataBox);
-      boolean loaded=loadVectorData(dataBox,requestedBox.getZoom(),renderingType,nightMode);
+      boolean loaded=loadVectorData(dataBox,requestedBox.getZoom(),renderingReq,nightMode);
       if (!loaded || checkWhetherInterrupted()) {
         return;
       }
@@ -44,28 +67,19 @@
     }
     now=System.currentTimeMillis();
     Bitmap bmp=Bitmap.createBitmap(currentRenderingContext.width,currentRenderingContext.height,Config.RGB_565);
-    boolean stepByStep=prefs.USE_STEP_BY_STEP_RENDERING.get();
-    if (stepByStep) {
-      this.prevBmp=this.bmp;
-      this.prevBmpLocation=this.bmpLocation;
-      this.bmp=bmp;
-      this.bmpLocation=tileRect;
-    }
-    renderer.generateNewBitmap(currentRenderingContext,cObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingType,stepByStep ? notifyList : null);
+    this.prevBmp=this.bmp;
+    this.prevBmpLocation=this.bmpLocation;
+    this.bmp=bmp;
+    this.bmpLocation=tileRect;
+    renderer.generateNewBitmap(currentRenderingContext,cObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingReq,notifyList,storage.getBgColor(nightMode));
     String renderingDebugInfo=currentRenderingContext.renderingDebugInfo;
     if (checkWhetherInterrupted()) {
       currentRenderingContext=null;
       return;
     }
     currentRenderingContext=null;
-    if (!stepByStep) {
-      this.bmp=bmp;
-      this.bmpLocation=tileRect;
-    }
- else {
-      this.prevBmpLocation=null;
-      this.prevBmp=null;
-    }
+    this.prevBmp=null;
+    this.prevBmpLocation=null;
     if (prefs.DEBUG_RENDERING_INFO.get()) {
       String timeInfo="Search done in " + searchTime + " ms";
       if (renderingDebugInfo != null) {

@@ -1,0 +1,43 @@
+{
+  RenderingRuleProperty[] properties=rule.getProperties();
+  for (int i=0; i < properties.length; i++) {
+    RenderingRuleProperty rp=properties[i];
+    if (rp.isInputProperty()) {
+      boolean match;
+      if (rp.isFloat()) {
+        match=rp.accept(rule.getFloatProp(i),fvalues[rp.getId()]);
+      }
+ else {
+        match=rp.accept(rule.getIntProp(i),values[rp.getId()]);
+      }
+      if (!match) {
+        return false;
+      }
+    }
+  }
+  if (!loadOutput) {
+    return true;
+  }
+  for (int i=0; i < properties.length; i++) {
+    RenderingRuleProperty rp=properties[i];
+    if (rp.isOutputProperty()) {
+      searchResult=true;
+      if (rp.isFloat()) {
+        fvalues[rp.getId()]=rule.getFloatProp(i);
+      }
+ else {
+        values[rp.getId()]=rule.getIntProp(i);
+      }
+    }
+  }
+  for (  RenderingRule rr : rule.getIfElseChildren()) {
+    boolean match=visitRule(rr,loadOutput);
+    if (match) {
+      break;
+    }
+  }
+  for (  RenderingRule rr : rule.getIfChildren()) {
+    visitRule(rr,loadOutput);
+  }
+  return true;
+}

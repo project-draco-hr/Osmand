@@ -1,0 +1,37 @@
+{
+  if (text.length() > TEXT_WRAP) {
+    int start=0;
+    int end=text.length();
+    int lastSpace=-1;
+    int line=0;
+    int pos=0;
+    int limit=0;
+    while (pos < end && (line < lines)) {
+      lastSpace=-1;
+      limit+=TEXT_WRAP;
+      while (pos < limit && pos < end) {
+        if (!Character.isLetterOrDigit(text.charAt(pos))) {
+          lastSpace=pos;
+        }
+        pos++;
+      }
+      if (lastSpace == -1) {
+        drawShadowText(cv,text.substring(start,pos),x,y + line * (textSize + 2));
+        start=pos;
+      }
+ else {
+        String subtext=text.substring(start,lastSpace);
+        if (line + 1 == lines) {
+          subtext+="..";
+        }
+        drawShadowText(cv,subtext,x,y + line * (textSize + 2));
+        start=lastSpace + 1;
+        limit+=(start - pos) - 1;
+      }
+      line++;
+    }
+  }
+ else {
+    drawShadowText(cv,text,x,y);
+  }
+}
