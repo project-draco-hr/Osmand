@@ -7,100 +7,53 @@
   cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillEmpty);
   int sz=objects.size();
   int init=sz / 4;
-  TIntObjectHashMap<TIntArrayList> orderMap=new TIntObjectHashMap<TIntArrayList>();
-  if (render != null) {
-    render.clearState();
-    for (int i=0; i < sz; i++) {
-      BinaryMapDataObject o=objects.get(i);
-      int sh=i << 8;
-      if (o instanceof MultyPolygon) {
-        int layer=((MultyPolygon)o).getLayer();
-        render.setTagValueZoomLayer(((MultyPolygon)o).getTag(),((MultyPolygon)o).getValue(),rc.zoom,layer);
-        render.setIntFilter(render.ALL.R_ORDER_TYPE,MapRenderingTypes.POLYGON_TYPE);
-        if (render.search(RenderingRulesStorage.ORDER_RULES)) {
-          put(orderMap,render.getIntPropertyValue(render.ALL.R_ORDER),sh,init);
-        }
-      }
- else {
-        for (int j=0; j < o.getTypes().length; j++) {
-          int wholeType=o.getTypes()[j];
-          int mask=wholeType & 3;
-          int layer=0;
-          if (mask != 1) {
-            layer=MapRenderingTypes.getNegativeWayLayer(wholeType);
-          }
-          TagValuePair pair=o.getMapIndex().decodeType(MapRenderingTypes.getMainObjectType(wholeType),MapRenderingTypes.getObjectSubType(wholeType));
-          if (pair != null) {
-            render.setTagValueZoomLayer(pair.tag,pair.value,rc.zoom,layer);
-            render.setIntFilter(render.ALL.R_ORDER_TYPE,mask);
-            if (render.search(RenderingRulesStorage.ORDER_RULES)) {
-              put(orderMap,render.getIntPropertyValue(render.ALL.R_ORDER),sh + j,init);
-            }
-          }
-        }
-      }
-      if (rc.interrupted) {
-        return null;
-      }
-    }
-  }
+  TIntObjectHashMap<TIntArrayList> orderMap=sortObjectsByProperOrder(rc,objects,render,sz,init);
   if (objects != null && !objects.isEmpty() && rc.width > 0 && rc.height > 0) {
+    int objCount=0;
     rc.tileDivisor=(int)(1 << (31 - rc.zoom));
     rc.cosRotateTileSize=FloatMath.cos((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
     rc.sinRotateTileSize=FloatMath.sin((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
     int[] keys=orderMap.keys();
     Arrays.sort(keys);
-    int objCount=0;
+    boolean shadowDrawn=false;
     for (int k=0; k < keys.length; k++) {
+      if (!shadowDrawn && keys[k] >= rc.shadowLevelMin && keys[k] <= rc.shadowLevelMax && rc.shadowRenderingMode > 1) {
+        for (int ki=k; ki < keys.length; ki++) {
+          if (keys[ki] > rc.shadowLevelMax || rc.interrupted) {
+            break;
+          }
+          TIntArrayList list=orderMap.get(keys[ki]);
+          for (int j=0; j < list.size(); j++) {
+            int i=list.get(j);
+            int ind=i >> 8;
+            int l=i & 0xff;
+            BinaryMapDataObject obj=objects.get(ind);
+            drawObj(obj,render,cv,rc,l,l == 0,true);
+            objCount++;
+          }
+        }
+        shadowDrawn=true;
+      }
+      if (rc.interrupted) {
+        return null;
+      }
       TIntArrayList list=orderMap.get(keys[k]);
       for (int j=0; j < list.size(); j++) {
         int i=list.get(j);
         int ind=i >> 8;
         int l=i & 0xff;
         BinaryMapDataObject obj=objects.get(ind);
-        drawObj(obj,render,cv,rc,l,l == 0);
+        drawObj(obj,render,cv,rc,l,l == 0,false);
         objCount++;
       }
       if (objCount > 25) {
         notifyListeners(notifyList);
         objCount=0;
       }
-      if (rc.interrupted) {
-        return null;
-      }
     }
-    notifyListeners(notifyList);
     long beforeIconTextTime=System.currentTimeMillis() - now;
-    int skewConstant=(int)getDensityValue(rc,16);
-    int iconsW=rc.width / skewConstant;
-    int iconsH=rc.height / skewConstant;
-    int[] alreadyDrawnIcons=new int[iconsW * iconsH / 32];
-    for (    IconDrawInfo icon : rc.iconsToDraw) {
-      if (icon.resId != 0) {
-        if (cachedIcons.get(icon.resId) == null) {
-          cachedIcons.put(icon.resId,UnscaledBitmapLoader.loadFromResource(context.getResources(),icon.resId,null,dm));
-        }
-        Bitmap ico=cachedIcons.get(icon.resId);
-        if (ico != null) {
-          if (icon.y >= 0 && icon.y < rc.height && icon.x >= 0 && icon.x < rc.width) {
-            int z=(((int)icon.x / skewConstant) + ((int)icon.y / skewConstant) * iconsW);
-            int i=z / 32;
-            if (i >= alreadyDrawnIcons.length) {
-              continue;
-            }
-            int ind=alreadyDrawnIcons[i];
-            int b=z % 32;
-            if (((ind >> b) & 1) == 0) {
-              alreadyDrawnIcons[i]=ind | (1 << b);
-              cv.drawBitmap(ico,icon.x - ico.getWidth() / 2,icon.y - ico.getHeight() / 2,paintIcon);
-            }
-          }
-        }
-      }
-      if (rc.interrupted) {
-        return null;
-      }
-    }
+    notifyListeners(notifyList);
+    drawIconsOverCanvas(rc,cv);
     notifyListeners(notifyList);
     drawTextOverCanvas(rc,cv,useEnglishNames);
     long time=System.currentTimeMillis() - now;
