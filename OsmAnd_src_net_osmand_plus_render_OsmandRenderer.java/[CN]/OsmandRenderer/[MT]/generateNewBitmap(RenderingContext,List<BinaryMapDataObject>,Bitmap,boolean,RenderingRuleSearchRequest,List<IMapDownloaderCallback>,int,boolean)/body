@@ -1,15 +1,15 @@
 {
   long now=System.currentTimeMillis();
-  Canvas cv=new Canvas(bmp);
-  if (defaultColor != 0) {
-    paintFillEmpty.setColor(defaultColor);
-  }
-  cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillEmpty);
   if (objects != null && !objects.isEmpty() && rc.width > 0 && rc.height > 0) {
     rc.tileDivisor=(int)(1 << (31 - rc.zoom));
     rc.cosRotateTileSize=FloatMath.cos((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
     rc.sinRotateTileSize=FloatMath.sin((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
     if (!nativeRendering) {
+      Canvas cv=new Canvas(bmp);
+      if (defaultColor != 0) {
+        paintFillEmpty.setColor(defaultColor);
+      }
+      cv.drawRect(0,0,bmp.getWidth(),bmp.getHeight(),paintFillEmpty);
       TIntObjectHashMap<TIntArrayList> orderMap=sortObjectsByProperOrder(rc,objects,render);
       int objCount=0;
       int[] keys=orderMap.keys();
@@ -61,9 +61,14 @@
     }
  else {
       BinaryMapDataObject[] array=objects.toArray(new BinaryMapDataObject[objects.size()]);
-      String res=NativeOsmandLibrary.generateRendering(rc,array,cv,useEnglishNames,render,paint);
-      long time=System.currentTimeMillis() - now;
-      rc.renderingDebugInfo=String.format("Rendering done in %s (%s text) ms\n" + "(%s points, %s points inside, %s objects visile from %s)\n" + res,time,0,rc.pointCount,rc.pointInsideCount,rc.visible,rc.allObjects);
+      try {
+        String res=NativeOsmandLibrary.generateRendering(rc,array,bmp,useEnglishNames,render,defaultColor);
+        long time=System.currentTimeMillis() - now;
+        rc.renderingDebugInfo=String.format("Rendering done in %s (%s text) ms\n" + "(%s points, %s points inside, %s objects visile from %s)\n" + res,time,0,rc.pointCount,rc.pointInsideCount,rc.visible,rc.allObjects);
+      }
+ catch (      Exception e) {
+        e.printStackTrace();
+      }
     }
   }
   return bmp;
