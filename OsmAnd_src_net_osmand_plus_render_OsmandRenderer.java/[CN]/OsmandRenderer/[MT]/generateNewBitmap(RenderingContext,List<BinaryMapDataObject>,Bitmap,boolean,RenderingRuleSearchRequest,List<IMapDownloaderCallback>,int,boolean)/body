@@ -63,7 +63,12 @@
  else {
       BinaryMapDataObject[] array=objects.toArray(new BinaryMapDataObject[objects.size()]);
       try {
+        if (Looper.getMainLooper() != null) {
+          final Handler h=new Handler(Looper.getMainLooper());
+          notifyListenersWithDelay(rc,notifyList,h);
+        }
         String res=NativeOsmandLibrary.generateRendering(rc,array,bmp,useEnglishNames,render,defaultColor);
+        rc.ended=true;
         long time=System.currentTimeMillis() - now;
         rc.renderingDebugInfo=String.format("Rendering done in %s (%s text) ms\n" + "(%s points, %s points inside, %s objects visile from %s)\n" + res,time,rc.textRenderingTime,rc.pointCount,rc.pointInsideCount,rc.visible,rc.allObjects);
       }
