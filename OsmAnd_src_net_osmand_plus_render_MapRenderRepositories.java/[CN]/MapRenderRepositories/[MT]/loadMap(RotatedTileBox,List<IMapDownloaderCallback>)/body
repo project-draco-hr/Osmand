@@ -52,7 +52,7 @@
       }
     }
     final long searchTime=System.currentTimeMillis() - now;
-    currentRenderingContext=new OsmandRenderer.RenderingContext();
+    currentRenderingContext=new OsmandRenderer.RenderingContext(context);
     currentRenderingContext.leftX=(float)requestedBox.getLeftTileX();
     currentRenderingContext.topY=(float)requestedBox.getTopTileY();
     currentRenderingContext.zoom=requestedBox.getZoom();
@@ -71,9 +71,12 @@
     this.prevBmpLocation=this.bmpLocation;
     this.bmp=bmp;
     this.bmpLocation=tileRect;
-    renderer.generateNewBitmap(currentRenderingContext,cObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingReq,notifyList,storage.getBgColor(nightMode));
+    renderer.generateNewBitmap(currentRenderingContext,cObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingReq,notifyList,storage.getBgColor(nightMode),app.getSettings().NATIVE_RENDERING.get());
     String renderingDebugInfo=currentRenderingContext.renderingDebugInfo;
+    currentRenderingContext.ended=true;
     if (checkWhetherInterrupted()) {
+      this.bmp=this.prevBmp;
+      this.bmpLocation=this.prevBmpLocation;
       currentRenderingContext=null;
       return;
     }
@@ -86,6 +89,7 @@
         timeInfo+="\n" + renderingDebugInfo;
       }
       final String msg=timeInfo;
+      log.info(msg);
       handler.post(new Runnable(){
         @Override public void run(){
           Toast.makeText(context,msg,Toast.LENGTH_LONG).show();
@@ -113,5 +117,10 @@ catch (  OutOfMemoryError e) {
       }
     }
 );
+  }
+ finally {
+    if (currentRenderingContext != null) {
+      currentRenderingContext.ended=true;
+    }
   }
 }

@@ -1,6 +1,5 @@
 {
   if (view.getZoom() >= startZoom) {
-    Map<String,Integer> icons=RenderingIcons.getIcons();
     objects.clear();
     resourceManager.searchAmenitiesAsync(latLonBounds.top,latLonBounds.left,latLonBounds.bottom,latLonBounds.right,view.getZoom(),filter,objects);
     int r=getRadiusPoi(view.getZoom());
@@ -10,15 +9,14 @@
       canvas.drawCircle(x,y,r,pointAltUI);
       canvas.drawCircle(x,y,r,point);
       String id=null;
-      if (icons.containsKey(o.getSubType())) {
+      if (RenderingIcons.containsIcon(o.getSubType())) {
         id=o.getSubType();
       }
- else       if (icons.containsKey(o.getType().getDefaultTag() + "_" + o.getSubType())) {
+ else       if (RenderingIcons.containsIcon(o.getType().getDefaultTag() + "_" + o.getSubType())) {
         id=o.getType().getDefaultTag() + "_" + o.getSubType();
       }
       if (id != null) {
-        int resId=icons.get(id);
-        Bitmap bmp=getCachedImg(resId);
+        Bitmap bmp=RenderingIcons.getIcon(view.getContext(),id);
         if (bmp != null) {
           canvas.drawBitmap(bmp,x - bmp.getWidth() / 2,y - bmp.getHeight() / 2,paintIcon);
         }
