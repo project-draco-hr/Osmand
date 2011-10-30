@@ -1,0 +1,39 @@
+{
+  int leftX=MapUtils.get31TileNumberX(dataBox.left);
+  int rightX=MapUtils.get31TileNumberX(dataBox.right);
+  int bottomY=MapUtils.get31TileNumberY(dataBox.bottom);
+  int topY=MapUtils.get31TileNumberY(dataBox.top);
+  long now=System.currentTimeMillis();
+  boolean basemapSearch=false;
+  if (zoom <= 7) {
+    for (    String f : files.keySet()) {
+      if (f.toLowerCase().contains(BASEMAP_NAME)) {
+        basemapSearch=true;
+        break;
+      }
+    }
+  }
+  NativeSearchResult resultHandler=null;
+  for (  String mapName : files.keySet()) {
+    if (basemapSearch && !mapName.toLowerCase().contains(BASEMAP_NAME)) {
+      continue;
+    }
+    if (!nativeFiles.contains(mapName)) {
+      nativeFiles.add(mapName);
+      if (!NativeOsmandLibrary.initBinaryMapFile(mapName)) {
+        continue;
+      }
+      log.debug("Native resource " + mapName + " initialized");
+    }
+    resultHandler=NativeOsmandLibrary.searchObjectsForRendering(leftX,rightX,topY,bottomY,zoom,mapName,renderingReq,PerformanceFlags.checkForDuplicateObjectIds,resultHandler,this);
+    if (checkWhetherInterrupted()) {
+      NativeOsmandLibrary.deleteSearchResult(resultHandler);
+      return false;
+    }
+  }
+  cNativeObjects=resultHandler;
+  cObjectsBox=dataBox;
+  log.info(String.format("BLat=%s, TLat=%s, LLong=%s, RLong=%s, zoom=%s",dataBox.bottom,dataBox.top,dataBox.left,dataBox.right,zoom));
+  log.info(String.format("Native search done in %s ms. ",System.currentTimeMillis() - now));
+  return true;
+}
