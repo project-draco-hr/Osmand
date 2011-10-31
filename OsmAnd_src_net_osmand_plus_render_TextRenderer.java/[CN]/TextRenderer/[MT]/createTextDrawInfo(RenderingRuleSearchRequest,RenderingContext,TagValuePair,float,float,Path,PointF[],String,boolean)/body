@@ -1,0 +1,31 @@
+{
+  render.setInitialTagValueZoom(pair.tag,pair.value,rc.zoom);
+  render.setIntFilter(render.ALL.R_TEXT_LENGTH,name.length());
+  render.setBooleanFilter(render.ALL.R_REF,ref);
+  if (render.search(RenderingRulesStorage.TEXT_RULES)) {
+    if (render.getIntPropertyValue(render.ALL.R_TEXT_SIZE) > 0) {
+      TextDrawInfo text=new TextDrawInfo(name);
+      text.fillProperties(render,xMid,yMid);
+      paintText.setTextSize(text.textSize);
+      Rect bs=new Rect();
+      paintText.getTextBounds(name,0,name.length(),bs);
+      text.bounds=new RectF(bs);
+      text.bounds.inset(-rc.getDensityValue(3),-rc.getDensityValue(10));
+      boolean display=true;
+      if (path != null) {
+        text.drawOnPath=path;
+        display=calculatePathToRotate(rc,text,points,render.getIntPropertyValue(render.ALL.R_TEXT_ON_PATH,0) != 0);
+      }
+      if (text.drawOnPath == null) {
+        text.bounds.offset(text.centerX,text.centerY);
+        text.bounds.offset(-text.bounds.width() / 2,0);
+      }
+ else {
+        text.bounds.offset(text.centerX - text.bounds.width() / 2,text.centerY - text.bounds.height() / 2);
+      }
+      if (display) {
+        rc.textToDraw.add(text);
+      }
+    }
+  }
+}

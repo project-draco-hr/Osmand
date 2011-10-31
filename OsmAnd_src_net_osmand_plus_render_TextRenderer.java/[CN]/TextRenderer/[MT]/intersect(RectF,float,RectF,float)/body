@@ -1,0 +1,24 @@
+{
+  if (Math.abs(tRot) < Math.PI / 15 && Math.abs(sRot) < Math.PI / 15) {
+    return tRect.intersect(sRect);
+  }
+  float dist=FloatMath.sqrt(sqr(tRect.centerX() - sRect.centerX()) + sqr(tRect.centerY() - sRect.centerY()));
+  if (dist < 3) {
+    return true;
+  }
+  if (Math.abs(Math.cos(tRot - sRot)) < 0.3) {
+    tRot+=Math.PI / 2;
+    float l=tRect.centerX() - tRect.height() / 2;
+    float t=tRect.centerY() - tRect.width() / 2;
+    tRect=new RectF(l,t,l + tRect.height(),t + tRect.width());
+  }
+  if (Math.abs(FloatMath.sin(tRot - sRot)) < 0.3) {
+    float diff=(float)(-Math.atan2(tRect.centerX() - sRect.centerX(),tRect.centerY() - sRect.centerY()) + Math.PI / 2);
+    diff-=sRot;
+    float left=sRect.centerX() + dist * FloatMath.cos(diff) - tRect.width() / 2;
+    float top=sRect.centerY() - dist * FloatMath.sin(diff) - tRect.height() / 2;
+    RectF nRect=new RectF(left,top,left + tRect.width(),top + tRect.height());
+    return nRect.intersect(sRect);
+  }
+  return tRect.intersect(sRect);
+}

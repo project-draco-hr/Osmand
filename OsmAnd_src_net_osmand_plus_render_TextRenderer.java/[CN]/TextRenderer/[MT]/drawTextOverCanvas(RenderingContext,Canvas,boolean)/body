@@ -1,0 +1,53 @@
+{
+  int size=rc.textToDraw.size();
+  Collections.sort(rc.textToDraw,new Comparator<TextDrawInfo>(){
+    @Override public int compare(    TextDrawInfo object1,    TextDrawInfo object2){
+      return object1.textOrder - object2.textOrder;
+    }
+  }
+);
+  RectF r=new RectF(0,0,rc.width,rc.height);
+  r.inset(-100,-100);
+  QuadTree<TextDrawInfo> nonIntersectedBounds=new QuadTree<TextDrawInfo>(r,4,0.6f);
+  for (int i=0; i < size; i++) {
+    TextDrawInfo text=rc.textToDraw.get(i);
+    if (text.text != null && text.text.length() > 0) {
+      int d=text.text.indexOf(MapRenderingTypes.DELIM_CHAR);
+      if (d > 0) {
+        text.text=text.text.substring(0,d);
+      }
+      if (useEnglishNames) {
+        text.text=Junidecode.unidecode(text.text);
+      }
+      float textSize=rc.getDensityValue(text.textSize);
+      paintText.setTextSize(textSize);
+      paintText.setFakeBoldText(text.bold);
+      paintText.setColor(text.textColor);
+      text.centerY+=(-paintText.ascent());
+      boolean intersects=findTextIntersection(cv,rc,nonIntersectedBounds,text);
+      if (!intersects) {
+        if (text.drawOnPath != null) {
+          if (text.textShadow > 0) {
+            paintText.setColor(Color.WHITE);
+            paintText.setStyle(Style.STROKE);
+            paintText.setStrokeWidth(2 + text.textShadow);
+            cv.drawTextOnPath(text.text,text.drawOnPath,0,text.vOffset,paintText);
+            paintText.setStyle(Style.FILL);
+            paintText.setStrokeWidth(2);
+            paintText.setColor(text.textColor);
+          }
+          cv.drawTextOnPath(text.text,text.drawOnPath,0,text.vOffset,paintText);
+        }
+ else {
+          if (text.shieldRes != null) {
+            Bitmap ico=RenderingIcons.getIcon(context,text.shieldRes);
+            if (ico != null) {
+              cv.drawBitmap(ico,text.centerX - ico.getWidth() / 2 - 0.5f,text.centerY - ico.getHeight() / 2 - rc.getDensityValue(4.5f),paintIcon);
+            }
+          }
+          drawWrappedText(cv,text,textSize);
+        }
+      }
+    }
+  }
+}
