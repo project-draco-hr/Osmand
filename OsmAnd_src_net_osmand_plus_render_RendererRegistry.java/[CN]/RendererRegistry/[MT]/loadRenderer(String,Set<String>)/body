@@ -10,20 +10,23 @@
     throw new IllegalArgumentException("Not found " + name);
   }
   RenderingRulesStorage main=new RenderingRulesStorage();
-  main.parseRulesFromXmlInputStream(is);
   loadedRenderers.add(name);
-  if (!Algoritms.isEmpty(main.getDepends())) {
-    if (loadedRenderers.contains(main.getDepends())) {
-      log.warn("Circular dependencies found " + name);
-    }
- else {
-      RenderingRulesStorage dep=getRenderer(main.getDepends(),loadedRenderers);
+  main.parseRulesFromXmlInputStream(is,new RenderingRulesStorageResolver(){
+    @Override public RenderingRulesStorage resolve(    String name,    RenderingRulesStorageResolver ref) throws SAXException {
+      if (renderers.containsKey(name)) {
+        return renderers.get(name);
+      }
+      if (loadedRenderers.contains(name)) {
+        log.warn("Circular dependencies found " + name);
+      }
+      RenderingRulesStorage dep=getRenderer(name,loadedRenderers);
       if (dep == null) {
         log.warn("Dependent renderer not found : " + name);
       }
-      main.setDependsStorage(dep);
+      return null;
     }
   }
+);
   renderers.put(name,main);
   return main;
 }

@@ -89,6 +89,17 @@
     PROPS.registerRule(prop);
   }
  else   if ("renderingStyle".equals(name)) {
+    String depends=attributes.getValue("depends");
+    if (depends != null && depends.length() > 0) {
+      this.dependsStorage=resolver.resolve(depends,resolver);
+    }
+    if (dependsStorage != null) {
+      bgColor=dependsStorage.bgColor;
+      bgNightColor=dependsStorage.bgNightColor;
+      dictionary=new ArrayList<String>(dependsStorage.dictionary);
+      dictionaryMap=new LinkedHashMap<String,Integer>(dependsStorage.dictionaryMap);
+      PROPS=new RenderingRuleStorageProperties(dependsStorage.PROPS);
+    }
     String dc=attributes.getValue("defaultColor");
     int defaultColor=0;
     if (dc != null && dc.length() > 0) {
@@ -100,7 +111,6 @@
       bgNightColor=RenderingRuleProperty.parseColor(dnc);
     }
     renderingName=attributes.getValue("name");
-    depends=attributes.getValue("depends");
   }
  else   if ("renderer".equals(name)) {
     throw new SAXException("Rendering style is deprecated and no longer supported.");
