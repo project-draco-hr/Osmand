@@ -61,17 +61,16 @@
     }
     final long searchTime=System.currentTimeMillis() - now;
     currentRenderingContext=new OsmandRenderer.RenderingContext(context);
-    RenderingRuleProperty rr=storage.PROPS.get("shadowRenderingMode");
-    if (rr != null) {
-      CommonPreference<String> settings=app.getSettings().getCustomRenderProperty(rr.getAttrName());
-      if (settings.get().length() > 0) {
-        try {
-          ShadowRenderingMode m=ShadowRenderingMode.valueOf(settings.get().replace(' ','_').toUpperCase());
-          currentRenderingContext.shadowRenderingMode=m.value;
-        }
- catch (        IllegalArgumentException e) {
-        }
-      }
+    int fillColor=0xf1eee8;
+    renderingReq.clearState();
+    renderingReq.setIntFilter(renderingReq.ALL.R_MINZOOM,requestedBox.getZoom());
+    if (renderingReq.searchRenderingAttribute(RenderingRuleStorageProperties.A_DEFAULT_COLOR)) {
+      fillColor=renderingReq.getIntPropertyValue(renderingReq.ALL.R_ATTR_COLOR_VALUE);
+    }
+    renderingReq.clearState();
+    renderingReq.setIntFilter(renderingReq.ALL.R_MINZOOM,requestedBox.getZoom());
+    if (renderingReq.searchRenderingAttribute(RenderingRuleStorageProperties.A_SHADOW_RENDERING)) {
+      currentRenderingContext.shadowRenderingMode=renderingReq.getIntPropertyValue(renderingReq.ALL.R_ATTR_INT_VALUE);
     }
     currentRenderingContext.leftX=(float)requestedBox.getLeftTileX();
     currentRenderingContext.topY=(float)requestedBox.getTopTileY();
@@ -86,16 +85,17 @@
       return;
     }
     now=System.currentTimeMillis();
-    Bitmap bmp=Bitmap.createBitmap(currentRenderingContext.width,currentRenderingContext.height,Config.RGB_565);
+    Bitmap bmp=Bitmap.createBitmap(currentRenderingContext.width,currentRenderingContext.height,Config.ARGB_8888);
+    bmp.eraseColor(Color.TRANSPARENT);
     this.prevBmp=this.bmp;
     this.prevBmpLocation=this.bmpLocation;
     this.bmp=bmp;
     this.bmpLocation=tileRect;
     if (app.getSettings().NATIVE_RENDERING.get()) {
-      renderer.generateNewBitmapNative(currentRenderingContext,cNativeObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingReq,notifyList,storage.getBgColor(nightMode));
+      renderer.generateNewBitmapNative(currentRenderingContext,cNativeObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingReq,notifyList,fillColor);
     }
  else {
-      renderer.generateNewBitmap(currentRenderingContext,cObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingReq,notifyList,storage.getBgColor(nightMode));
+      renderer.generateNewBitmap(currentRenderingContext,cObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingReq,notifyList,fillColor);
     }
     String renderingDebugInfo=currentRenderingContext.renderingDebugInfo;
     currentRenderingContext.ended=true;

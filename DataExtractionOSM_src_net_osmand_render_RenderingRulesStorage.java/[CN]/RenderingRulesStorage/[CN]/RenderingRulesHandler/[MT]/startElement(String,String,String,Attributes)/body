@@ -68,6 +68,12 @@
     state=POLYGON_RULES;
     stateChanged=true;
   }
+ else   if ("renderingAttribute".equals(name)) {
+    String attr=attributes.getValue("name");
+    @SuppressWarnings("unchecked") RenderingRule root=new RenderingRule(Collections.EMPTY_MAP,RenderingRulesStorage.this);
+    renderingAttributes.put(attr,root);
+    stack.push(root);
+  }
  else   if ("renderingProperty".equals(name)) {
     String attr=attributes.getValue("attr");
     RenderingRuleProperty prop;
@@ -94,21 +100,9 @@
       this.dependsStorage=resolver.resolve(depends,resolver);
     }
     if (dependsStorage != null) {
-      bgColor=dependsStorage.bgColor;
-      bgNightColor=dependsStorage.bgNightColor;
       dictionary=new ArrayList<String>(dependsStorage.dictionary);
       dictionaryMap=new LinkedHashMap<String,Integer>(dependsStorage.dictionaryMap);
       PROPS=new RenderingRuleStorageProperties(dependsStorage.PROPS);
-    }
-    String dc=attributes.getValue("defaultColor");
-    int defaultColor=0;
-    if (dc != null && dc.length() > 0) {
-      bgColor=RenderingRuleProperty.parseColor(dc);
-    }
-    String dnc=attributes.getValue("defaultNightColor");
-    bgNightColor=defaultColor;
-    if (dnc != null && dnc.length() > 0) {
-      bgNightColor=RenderingRuleProperty.parseColor(dnc);
     }
     renderingName=attributes.getValue("name");
   }
