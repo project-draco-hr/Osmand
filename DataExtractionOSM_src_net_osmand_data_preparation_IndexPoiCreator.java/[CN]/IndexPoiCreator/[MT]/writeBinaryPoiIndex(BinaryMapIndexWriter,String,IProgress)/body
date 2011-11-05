@@ -87,10 +87,10 @@
   int left31=minX;
   int bottom31=maxY;
   int top31=minY;
-  long startFpPoiIndex=writer.startWritePOIIndex(regionName,left31,right31,bottom31,top31);
+  BinaryFileReference startFpPoiIndex=writer.startWritePOIIndex(regionName,left31,right31,bottom31,top31);
   Map<String,Map<String,Integer>> categories=rootZoomsTree.node.categories;
   Map<String,Integer> catIndexes=writer.writePOICategoriesTable(categories);
-  Map<PoiTileBox,TLongList> fpToWriteSeeks=writer.writePoiNameIndex(namesIndex);
+  Map<PoiTileBox,List<BinaryFileReference>> fpToWriteSeeks=writer.writePoiNameIndex(namesIndex,startFpPoiIndex);
   log.info("Poi box processing finishied");
   int level=0;
   for (; level < (ZOOM_TO_SAVE_END - zoomToStart); level++) {
@@ -105,15 +105,15 @@
     zoomToStart=zoomToStart + level;
   }
   for (  Tree<PoiTileBox> subs : rootZoomsTree.getSubtrees()) {
-    writePoiBoxes(writer,subs,fpToWriteSeeks,categories,catIndexes);
+    writePoiBoxes(writer,subs,startFpPoiIndex,fpToWriteSeeks,categories,catIndexes);
   }
   PreparedStatement prepareStatement=poiConnection.prepareStatement("SELECT id, x, y, name_en, name, type, subtype, opening_hours, site, phone from poi " + "where x >= ? AND x < ? AND y >= ? AND y < ?");
   TIntArrayList types=new TIntArrayList();
-  for (  Map.Entry<PoiTileBox,TLongList> entry : fpToWriteSeeks.entrySet()) {
+  for (  Map.Entry<PoiTileBox,List<BinaryFileReference>> entry : fpToWriteSeeks.entrySet()) {
     int z=entry.getKey().zoom;
     int x=entry.getKey().x;
     int y=entry.getKey().y;
-    writer.startWritePoiData(z,x,y,startFpPoiIndex,entry.getValue());
+    writer.startWritePoiData(z,x,y,entry.getValue());
     if (useInMemoryCreator) {
       List<PoiData> poiData=entry.getKey().poiData;
       for (      PoiData poi : poiData) {
