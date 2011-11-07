@@ -1,17 +1,12 @@
 {
-  if (amenityTagValToPrefix == null) {
-    amenityTagValToPrefix=new LinkedHashMap<String,String>();
-    amenityTagValToPrefix.put("traffic_calming","traffic_calming_");
-    amenityTagValToPrefix.put("power","power_");
-    amenityTagValToPrefix.put("waterway","water_");
-    amenityTagValToPrefix.put("waterway" + TAG_DELIMETER + "riverbank",null);
-    amenityTagValToPrefix.put("railway","railway_");
-    amenityTagValToPrefix.put("railway" + TAG_DELIMETER + "subway_entrance",null);
-    amenityTagValToPrefix.put("aeroway","aeroway_");
-    amenityTagValToPrefix.put("aerialway","aerialway_");
+  Map<String,MapRulType> rules=getEncodingRuleTypes();
+  MapRulType rt=rules.get(constructRuleKey(tag,val));
+  if (rt != null && rt.poiPrefix != null) {
+    return rt.poiPrefix;
   }
-  if (val != null && amenityTagValToPrefix.containsKey(tag + TAG_DELIMETER + val)) {
-    return amenityTagValToPrefix.get(tag + TAG_DELIMETER + val);
+  rt=rules.get(constructRuleKey(tag,null));
+  if (rt != null && rt.poiPrefix != null) {
+    return rt.poiPrefix;
   }
-  return amenityTagValToPrefix.get(tag);
+  return null;
 }

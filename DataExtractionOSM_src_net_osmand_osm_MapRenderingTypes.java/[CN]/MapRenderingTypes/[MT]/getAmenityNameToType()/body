@@ -1,11 +1,17 @@
 {
-  initAmenityMap();
   if (amenityNameToType == null) {
     amenityNameToType=new LinkedHashMap<String,AmenityType>();
-    for (    AmenityType s : amenityTypeNameToTagVal.keySet()) {
-      Map<String,String> map=amenityTypeNameToTagVal.get(s);
-      for (      String t : map.keySet()) {
-        amenityNameToType.put(t,s);
+    Map<AmenityType,Map<String,String>> map=getAmenityTypeNameToTagVal();
+    Iterator<Entry<AmenityType,Map<String,String>>> iter=map.entrySet().iterator();
+    while (iter.hasNext()) {
+      Entry<AmenityType,Map<String,String>> e=iter.next();
+      for (      String t : e.getValue().keySet()) {
+        if (t != null) {
+          if (amenityNameToType.containsKey(t)) {
+            System.err.println("Conflict " + t + " "+ amenityNameToType.get(t)+ " <> "+ e.getKey());
+          }
+          amenityNameToType.put(t,e.getKey());
+        }
       }
     }
   }

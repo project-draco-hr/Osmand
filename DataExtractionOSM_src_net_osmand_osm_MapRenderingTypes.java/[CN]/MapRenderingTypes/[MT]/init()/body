@@ -1,0 +1,115 @@
+{
+  InputStream is;
+  try {
+    if (resourceName == null) {
+      is=MapRenderingTypes.class.getResourceAsStream("rendering_types.xml");
+    }
+ else {
+      is=new FileInputStream(resourceName);
+    }
+    long time=System.currentTimeMillis();
+    final SAXParser parser=SAXParserFactory.newInstance().newSAXParser();
+    types=new LinkedHashMap<String,MapRenderingTypes.MapRulType>();
+    parser.parse(is,new DefaultHandler(){
+      String poiParentCategory=null;
+      String poiParentPrefix=null;
+      @Override public void startElement(      String uri,      String localName,      String name,      Attributes attributes) throws SAXException {
+        name=parser.isNamespaceAware() ? localName : name;
+        if (name.equals("category")) {
+          poiParentCategory=attributes.getValue("poi:category");
+          poiParentPrefix=attributes.getValue("poi:prefix");
+          String tag=attributes.getValue("poi:tag");
+          if (tag != null) {
+            MapRulType rtype=new MapRulType(types.size());
+            rtype.poiCategory=AmenityType.valueOf(poiParentCategory.toUpperCase());
+            rtype.poiSpecified=true;
+            rtype.poiPrefix=poiParentPrefix;
+            rtype.tag=tag;
+            types.put(constructRuleKey(tag,null),rtype);
+          }
+        }
+ else         if (name.equals("type")) {
+          MapRulType rtype=new MapRulType(types.size());
+          String val=attributes.getValue("minzoom");
+          rtype.minzoom=15;
+          if (val != null) {
+            rtype.minzoom=Integer.parseInt(val);
+          }
+          rtype.tag=attributes.getValue("tag");
+          rtype.value=attributes.getValue("value");
+          if (rtype.value != null && rtype.value.length() == 0) {
+            rtype.value=null;
+          }
+          String keyVal=constructRuleKey(rtype.tag,rtype.value);
+          if (types.containsKey(keyVal)) {
+            throw new RuntimeException("Duplicate " + keyVal);
+          }
+          types.put(keyVal,rtype);
+          rtype.polygon=Boolean.parseBoolean(attributes.getValue("polygon"));
+          rtype.polyline=Boolean.parseBoolean(attributes.getValue("polyline"));
+          rtype.point=Boolean.parseBoolean(attributes.getValue("point"));
+          rtype.additional=Boolean.parseBoolean(attributes.getValue("additional"));
+          rtype.nameNullTag=attributes.getValue("nameNullTag");
+          String targetTag=attributes.getValue("target:tag");
+          String targetValue=attributes.getValue("target:value");
+          if (targetTag != null || targetValue != null) {
+            if (targetTag == null) {
+              targetTag=rtype.tag;
+            }
+            if (targetValue == null) {
+              targetValue=rtype.value;
+            }
+            rtype.targetTagValue=types.get(constructRuleKey(targetTag,targetValue));
+            if (rtype.targetTagValue == null) {
+              throw new RuntimeException("Illegal target tag/value " + targetTag + " "+ targetValue);
+            }
+          }
+          if (poiParentCategory != null) {
+            rtype.poiCategory=AmenityType.valueOf(poiParentCategory.toUpperCase());
+            rtype.poiSpecified=true;
+          }
+          if (poiParentPrefix != null) {
+            rtype.poiPrefix=poiParentPrefix;
+          }
+          String poiCategory=attributes.getValue("poi:category");
+          if (poiCategory != null) {
+            rtype.poiSpecified=true;
+            if (poiCategory.length() == 0) {
+              rtype.poiCategory=null;
+            }
+ else {
+              rtype.poiCategory=AmenityType.valueOf(poiCategory.toUpperCase());
+            }
+          }
+          String poiPrefix=attributes.getValue("poi:prefix");
+          if (poiPrefix != null) {
+            rtype.poiPrefix=poiPrefix;
+          }
+        }
+      }
+    }
+);
+    log.info("Time to init " + (System.currentTimeMillis() - time));
+    is.close();
+  }
+ catch (  IOException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw new RuntimeException(e);
+  }
+catch (  RuntimeException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw e;
+  }
+catch (  ParserConfigurationException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw new RuntimeException(e);
+  }
+catch (  SAXException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw new RuntimeException(e);
+  }
+}

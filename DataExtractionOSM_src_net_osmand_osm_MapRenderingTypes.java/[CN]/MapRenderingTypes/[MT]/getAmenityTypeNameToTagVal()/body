@@ -1,4 +1,24 @@
 {
-  initAmenityMap();
+  if (amenityTypeNameToTagVal == null) {
+    Map<String,MapRulType> types=getEncodingRuleTypes();
+    amenityTypeNameToTagVal=new LinkedHashMap<AmenityType,Map<String,String>>();
+    for (    MapRulType type : types.values()) {
+      if (type.poiCategory != null && type.targetTagValue == null) {
+        if (!amenityTypeNameToTagVal.containsKey(type.poiCategory)) {
+          amenityTypeNameToTagVal.put(type.poiCategory,new LinkedHashMap<String,String>());
+        }
+        String name=type.value;
+        if (name != null) {
+          if (type.poiPrefix != null) {
+            name=type.poiPrefix + name;
+            amenityTypeNameToTagVal.get(type.poiCategory).put(name,type.tag + " " + type.value);
+          }
+ else {
+            amenityTypeNameToTagVal.get(type.poiCategory).put(name,type.tag);
+          }
+        }
+      }
+    }
+  }
   return amenityTypeNameToTagVal;
 }
