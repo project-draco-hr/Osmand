@@ -1,0 +1,24 @@
+{
+  try {
+    if (!Algoritms.isZipFile(f)) {
+      return f;
+    }
+    log.info("Unzipping file: " + f.getName());
+    ZipFile zipFile;
+    zipFile=new ZipFile(f);
+    Enumeration<? extends ZipEntry> entries=zipFile.entries();
+    while (entries.hasMoreElements()) {
+      ZipEntry entry=entries.nextElement();
+      File tempFile=new File(f.getParentFile(),entry.getName());
+      copyAndClose(zipFile.getInputStream(entry),new FileOutputStream(tempFile));
+      return tempFile;
+    }
+    return null;
+  }
+ catch (  ZipException e) {
+    throw new OneFileException("cannot unzip:" + e.getMessage());
+  }
+catch (  IOException e) {
+    throw new OneFileException("cannot unzip:" + e.getMessage());
+  }
+}

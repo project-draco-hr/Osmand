@@ -1,0 +1,50 @@
+{
+  String fileName=f.getName();
+  String summary=null;
+  if (fileName.endsWith(IndexConstants.POI_INDEX_EXT) || fileName.endsWith(IndexConstants.POI_INDEX_EXT_ZIP)) {
+    summary="POI index for ";
+  }
+ else   if (fileName.endsWith(IndexConstants.BINARY_MAP_INDEX_EXT) || fileName.endsWith(IndexConstants.BINARY_MAP_INDEX_EXT_ZIP)) {
+    RandomAccessFile raf=null;
+    try {
+      raf=new RandomAccessFile(f,"r");
+      BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
+      summary=" index for ";
+      boolean fir=true;
+      if (reader.containsAddressData()) {
+        summary="Address" + (fir ? "" : ", ") + summary;
+        fir=false;
+      }
+      if (reader.hasTransportData()) {
+        summary="Transport" + (fir ? "" : ", ") + summary;
+        fir=false;
+      }
+      if (reader.containsPoiData()) {
+        summary="POI" + (fir ? "" : ", ") + summary;
+        fir=false;
+      }
+      if (reader.containsMapData()) {
+        summary="Map" + (fir ? "" : ", ") + summary;
+        fir=false;
+      }
+      reader.close();
+    }
+ catch (    IOException e) {
+      if (raf != null) {
+        try {
+          raf.close();
+        }
+ catch (        IOException e1) {
+        }
+      }
+      throw new OneFileException("Reader could not read the index: " + e.getMessage());
+    }
+  }
+ else {
+    throw new OneFileException("Not a processable file.");
+  }
+  String regionName=fileName.substring(0,fileName.lastIndexOf('_',fileName.indexOf('.')));
+  summary+=regionName;
+  summary=summary.replace('_',' ');
+  return summary;
+}
