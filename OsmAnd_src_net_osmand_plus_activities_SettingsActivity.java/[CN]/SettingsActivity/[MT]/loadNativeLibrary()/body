@@ -1,16 +1,17 @@
 {
   if (!NativeOsmandLibrary.isLoaded()) {
+    final RenderingRulesStorage storage=getMyApplication().getRendererRegistry().getCurrentSelectedRenderer();
     new AsyncTask<Void,Void,Void>(){
       @Override protected void onPreExecute(){
         progressDlg=ProgressDialog.show(SettingsActivity.this,getString(R.string.loading_data),getString(R.string.init_native_library),true);
       }
       @Override protected Void doInBackground(      Void... params){
-        NativeOsmandLibrary.getLibrary();
+        NativeOsmandLibrary.getLibrary(storage);
         return null;
       }
       @Override protected void onPostExecute(      Void result){
         progressDlg.dismiss();
-        if (NativeOsmandLibrary.isNativeSupported()) {
+        if (!NativeOsmandLibrary.isNativeSupported(storage)) {
           Toast.makeText(SettingsActivity.this,R.string.native_library_not_supported,Toast.LENGTH_LONG).show();
         }
       }

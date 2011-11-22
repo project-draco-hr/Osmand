@@ -31,10 +31,11 @@
       }
     }
     renderingReq.saveState();
+    NativeOsmandLibrary nativeLib=prefs.NATIVE_RENDERING.get() ? NativeOsmandLibrary.getLibrary(storage) : null;
     requestedBox=new RotatedTileBox(tileRect);
     RectF dataBox=requestedBox.calculateLatLonBox(new RectF());
     long now=System.currentTimeMillis();
-    if (cObjectsBox.left > dataBox.left || cObjectsBox.top > dataBox.top || cObjectsBox.right < dataBox.right || cObjectsBox.bottom < dataBox.bottom || prefs.NATIVE_RENDERING.get() == (cNativeObjects == null)) {
+    if (cObjectsBox.left > dataBox.left || cObjectsBox.top > dataBox.top || cObjectsBox.right < dataBox.right || cObjectsBox.bottom < dataBox.bottom || (nativeLib != null) == (cNativeObjects == null)) {
       if ((dataBox.right - dataBox.left) > (dataBox.top - dataBox.bottom)) {
         double wi=(dataBox.right - dataBox.left) * .2;
         dataBox.left-=wi;
@@ -47,9 +48,9 @@
       }
       validateLatLonBox(dataBox);
       boolean loaded;
-      if (prefs.NATIVE_RENDERING.get()) {
+      if (nativeLib != null) {
         cObjects=new LinkedList<BinaryMapDataObject>();
-        loaded=loadVectorDataNative(dataBox,requestedBox.getZoom(),renderingReq);
+        loaded=loadVectorDataNative(dataBox,requestedBox.getZoom(),renderingReq,nativeLib);
       }
  else {
         cNativeObjects=null;
@@ -101,8 +102,8 @@
     this.prevBmpLocation=this.bmpLocation;
     this.bmp=bmp;
     this.bmpLocation=tileRect;
-    if (app.getSettings().NATIVE_RENDERING.get() && NativeOsmandLibrary.isNativeSupported()) {
-      renderer.generateNewBitmapNative(currentRenderingContext,cNativeObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingReq,notifyList,fillColor);
+    if (nativeLib != null) {
+      renderer.generateNewBitmapNative(currentRenderingContext,nativeLib,cNativeObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingReq,notifyList,fillColor);
     }
  else {
       renderer.generateNewBitmap(currentRenderingContext,cObjects,bmp,prefs.USE_ENGLISH_NAMES.get(),renderingReq,notifyList,fillColor);
