@@ -2,4 +2,25 @@
   super.onCreate(savedInstanceState);
   setContentView(R.layout.local_openstreetmap);
   settings=OsmandSettings.getOsmandSettings(this);
+  listAdapter=new LocalOpenstreetmapAdapter();
+  getExpandableListView().setOnCreateContextMenuListener(new View.OnCreateContextMenuListener(){
+    @Override public void onCreateContextMenu(    ContextMenu menu,    View v,    ContextMenuInfo menuInfo){
+      long packedPos=((ExpandableListContextMenuInfo)menuInfo).packedPosition;
+      int group=ExpandableListView.getPackedPositionGroup(packedPos);
+      int child=ExpandableListView.getPackedPositionChild(packedPos);
+      if (child >= 0 && group >= 0) {
+        final OpenstreetmapPoint point=(OpenstreetmapPoint)listAdapter.getChild(group,child);
+        showContextMenu(point);
+      }
+    }
+  }
+);
+  setListAdapter(listAdapter);
+  db=new OpenstreetmapsDbHelper(this);
+  List<OpenstreetmapPoint> l=db.getOpenstreetmapPoints();
+  android.util.Log.d(LogUtil.TAG,"List of POI " + l.size() + " length");
+  for (  OpenstreetmapPoint p : l) {
+    listAdapter.addOpenstreetmapPoint(p);
+  }
+  listAdapter.notifyDataSetChanged();
 }

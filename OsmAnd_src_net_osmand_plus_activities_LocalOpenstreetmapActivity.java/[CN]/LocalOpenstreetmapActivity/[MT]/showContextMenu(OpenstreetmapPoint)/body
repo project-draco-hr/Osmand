@@ -1,0 +1,38 @@
+{
+  Builder builder=new AlertDialog.Builder(this);
+  final List<Integer> menu=new ArrayList<Integer>();
+  menu.add(R.string.local_openstreetmap_show_poi);
+  menu.add(R.string.local_openstreetmap_upload);
+  menu.add(R.string.local_openstreetmap_delete);
+  String[] values=new String[menu.size()];
+  for (int i=0; i < values.length; i++) {
+    values[i]=getString(menu.get(i));
+  }
+  builder.setItems(values,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      int resId=menu.get(which);
+      if (info != null) {
+        if (resId == R.string.local_openstreetmap_show_poi) {
+          OsmandSettings settings=OsmandSettings.getOsmandSettings(LocalOpenstreetmapActivity.this);
+          settings.setMapLocationToShow(info.getLatitude(),info.getLongitude(),settings.getLastKnownMapZoom());
+          MapActivity.launchMapActivityMoveToTop(LocalOpenstreetmapActivity.this);
+        }
+ else         if (resId == R.string.local_openstreetmap_delete) {
+          listAdapter.delete(info);
+        }
+ else         if (resId == R.string.local_openstreetmap_upload) {
+          OpenstreetmapRemoteUtil remote=new OpenstreetmapRemoteUtil(LocalOpenstreetmapActivity.this,LocalOpenstreetmapActivity.this.getWindow().getDecorView());
+          EntityInfo entityInfo=null;
+          if (OpenstreetmapUtil.Action.CREATE != info.getAction()) {
+            entityInfo=remote.loadNode(info.getEntity());
+          }
+          if (remote.commitNodeImpl(info.getAction(),info.getEntity(),entityInfo,info.getComment())) {
+            listAdapter.delete(info);
+          }
+        }
+      }
+    }
+  }
+);
+  builder.show();
+}
