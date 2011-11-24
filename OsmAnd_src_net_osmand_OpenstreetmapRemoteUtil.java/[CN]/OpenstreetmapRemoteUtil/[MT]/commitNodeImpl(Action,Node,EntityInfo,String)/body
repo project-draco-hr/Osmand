@@ -6,16 +6,6 @@
   if (changeSetId < 0) {
     return false;
   }
-  final String a;
-  if (Action.MODIFY == action) {
-    a="modify";
-  }
- else   if (Action.DELETE == action) {
-    a="delete";
-  }
- else {
-    a="create";
-  }
   try {
     StringWriter writer=new StringWriter(256);
     XmlSerializer ser=Xml.newSerializer();
@@ -25,11 +15,11 @@
       ser.startTag(null,"osmChange");
       ser.attribute(null,"version","0.6");
       ser.attribute(null,"generator",Version.APP_NAME);
-      ser.startTag(null,a);
+      ser.startTag(null,stringAction.get(action));
       ser.attribute(null,"version","0.6");
       ser.attribute(null,"generator",Version.APP_NAME);
       writeNode(n,info,ser,changeSetId,OsmandSettings.getOsmandSettings(ctx).USER_NAME.get());
-      ser.endTag(null,a);
+      ser.endTag(null,stringAction.get(action));
       ser.endTag(null,"osmChange");
       ser.endDocument();
     }
