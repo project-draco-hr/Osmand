@@ -6,6 +6,16 @@
   if (changeSetId < 0) {
     return false;
   }
+  final String a;
+  if (Action.MODIFY == action) {
+    a="modify";
+  }
+ else   if (Action.DELETE == action) {
+    a="delete";
+  }
+ else {
+    a="create";
+  }
   try {
     StringWriter writer=new StringWriter(256);
     XmlSerializer ser=Xml.newSerializer();
@@ -14,12 +24,12 @@
       ser.startDocument("UTF-8",true);
       ser.startTag(null,"osmChange");
       ser.attribute(null,"version","0.6");
-      ser.attribute(null,"generator",Version.getFullVersion(ctx));
-      ser.startTag(null,action);
+      ser.attribute(null,"generator",Version.APP_NAME);
+      ser.startTag(null,a);
       ser.attribute(null,"version","0.6");
-      ser.attribute(null,"generator",Version.getFullVersion(ctx));
+      ser.attribute(null,"generator",Version.APP_NAME);
       writeNode(n,info,ser,changeSetId,OsmandSettings.getOsmandSettings(ctx).USER_NAME.get());
-      ser.endTag(null,action);
+      ser.endTag(null,a);
       ser.endTag(null,"osmChange");
       ser.endDocument();
     }
@@ -29,7 +39,7 @@
     String res=sendRequest(SITE_API + "api/0.6/changeset/" + changeSetId+ "/upload","POST",writer.getBuffer().toString(),ctx.getString(R.string.commiting_node),true);
     log.debug(res + "");
     if (res != null) {
-      if (CREATE_ACTION.equals(action)) {
+      if (Action.CREATE == action) {
         long newId=n.getId();
         int i=res.indexOf("new_id=\"");
         if (i > 0) {
@@ -45,7 +55,6 @@
           }
         }
       }
-      updateNodeInIndexes(action,n);
       changeSetTimeStamp=System.currentTimeMillis();
       return true;
     }

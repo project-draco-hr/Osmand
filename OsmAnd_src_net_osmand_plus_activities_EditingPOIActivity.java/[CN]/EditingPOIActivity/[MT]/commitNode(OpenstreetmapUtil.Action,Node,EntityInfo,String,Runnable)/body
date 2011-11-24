@@ -1,5 +1,5 @@
 {
-  if (info == null && !CREATE_ACTION.equals(action)) {
+  if (info == null && OpenstreetmapUtil.Action.CREATE != action) {
     Toast.makeText(ctx,ctx.getResources().getString(R.string.poi_error_info_not_loaded),Toast.LENGTH_LONG).show();
     return;
   }
@@ -7,7 +7,8 @@
   new Thread(new Runnable(){
     @Override public void run(){
       try {
-        if (commitNodeImpl(action,n,info,comment)) {
+        if (openstreetmapUtil.commitNodeImpl(action,n,info,comment)) {
+          updateNodeInIndexes(action,n);
           ctx.getMapView().post(successAction);
         }
       }
