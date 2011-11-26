@@ -25,7 +25,8 @@
         }
         conn.setConnectTimeout(30000);
         log.info(conn.getResponseMessage() + " " + conn.getResponseCode());
-        if (conn.getResponseCode() != HttpURLConnection.HTTP_PARTIAL && conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+        boolean wifiConnectionBroken=forceWifi && !isWifiConnected();
+        if ((conn.getResponseCode() != HttpURLConnection.HTTP_PARTIAL && conn.getResponseCode() != HttpURLConnection.HTTP_OK) || wifiConnectionBroken) {
           conn.disconnect();
           triesDownload--;
           continue;
