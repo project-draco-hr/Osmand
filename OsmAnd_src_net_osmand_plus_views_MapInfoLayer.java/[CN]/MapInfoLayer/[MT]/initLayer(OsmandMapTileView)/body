@@ -59,30 +59,25 @@
   pathTransform=new Matrix();
   pathTransform.postScale(scaleCoefficient,scaleCoefficient);
   pathTransform.postTranslate(boundsForMiniRoute.left,boundsForMiniRoute.top);
-  compass=BitmapFactory.decodeResource(view.getResources(),R.drawable.compass);
   LEFT_MARGIN_X=(int)(LEFT_MARGIN_X * scaleCoefficient);
   STATUS_BAR_MARGIN_X=(int)(STATUS_BAR_MARGIN_X * scaleCoefficient);
   statusBar=createStatusBar();
   statusBarBackground=view.getResources().getDrawable(R.drawable.box_top).mutate();
   LEFT_MARGIN_Y=statusBar.getMeasuredHeight();
   Drawable time=view.getResources().getDrawable(R.drawable.info_time);
-  speedControl=new TextInfoControl(R.drawable.box_top,null,time.getMinimumWidth(),paintText,paintSubText);
-  leftTimeControl=new TextInfoControl(R.drawable.box_top,null,time.getMinimumWidth(),paintText,paintSubText){
-    @Override public boolean isClickable(){
-      return true;
-    }
-    @Override public void click(){
+  speedControl=new TextInfoControl(R.drawable.box_top,null,0,paintText,paintSubText);
+  leftTimeControl=new TextInfoControl(R.drawable.box_top,time,0,paintText,paintSubText);
+  leftTimeControl.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
       showArrivalTime=!showArrivalTime;
       view.getSettings().SHOW_ARRIVAL_TIME_OTHERWISE_EXPECTED_TIME.set(showArrivalTime);
       view.refreshMap();
     }
   }
-;
-  distanceControl=new TextInfoControl(R.drawable.box_top,view.getResources().getDrawable(R.drawable.info_target),0,paintText,paintSubText){
-    @Override public boolean isClickable(){
-      return true;
-    }
-    @Override public void click(){
+);
+  distanceControl=new TextInfoControl(R.drawable.box_top,view.getResources().getDrawable(R.drawable.info_target),0,paintText,paintSubText);
+  distanceControl.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
       AnimateDraggingMapThread thread=view.getAnimatedDraggingThread();
       LatLon pointToNavigate=view.getSettings().getPointToNavigate();
       if (pointToNavigate != null) {
@@ -91,7 +86,7 @@
       }
     }
   }
-;
+);
   leftControls.add(distanceControl);
   leftControls.add(speedControl);
   leftControls.add(leftTimeControl);

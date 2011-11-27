@@ -2,23 +2,30 @@
   int x=(int)event.getX();
   int y=(int)event.getY();
   if (event.getAction() == MotionEvent.ACTION_DOWN) {
-    MapInfoControl control=detectLeftControl(x,y);
-    if (control != null && control.isClickable()) {
-      control.setPressed(true);
-      view.refreshMap();
-    }
-  }
-  if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-    MapInfoControl control=detectLeftControl(x,y);
-    for (    MapInfoControl c : leftControls) {
-      if (c.isPressed()) {
-        if (control == c) {
-          c.click();
+    pressedView=null;
+    ArrayList<View> touchables=statusBar.getTouchables();
+    touchables.addAll(leftControls);
+    for (    View v : touchables) {
+      if (v.getMeasuredHeight() > 0 && v.isClickable()) {
+        if (v.getLeft() <= x && x <= v.getRight() && v.getTop() <= y && y <= v.getBottom()) {
+          pressedView=v;
+          break;
         }
-        c.setPressed(false);
       }
+    }
+    if (pressedView != null) {
+      pressedView.setPressed(true);
       view.refreshMap();
     }
+    return pressedView != null;
   }
-  return false;
+  boolean pressed=pressedView != null;
+  if (pressed && (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL)) {
+    pressedView.setPressed(false);
+    if (pressedView.getLeft() <= x && x <= pressedView.getRight() && pressedView.getTop() <= y && y <= pressedView.getBottom()) {
+      pressedView.performClick();
+    }
+    view.refreshMap();
+  }
+  return pressed;
 }

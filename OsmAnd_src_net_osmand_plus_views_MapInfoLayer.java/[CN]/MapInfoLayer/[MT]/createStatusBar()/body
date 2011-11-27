@@ -1,13 +1,17 @@
 {
-  final int mw=(int)compass.getWidth();
-  final int mh=(int)compass.getHeight();
-  FrameLayout statusBar=new FrameLayout(view.getContext());
-  LayoutParams params=new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT,Gravity.LEFT | Gravity.TOP);
+  final Drawable compass=view.getResources().getDrawable(R.drawable.compass);
+  final int mw=(int)compass.getMinimumWidth();
+  final int mh=(int)compass.getMinimumHeight();
+  LinearLayout statusBar=new LinearLayout(view.getContext());
+  statusBar.setOrientation(LinearLayout.HORIZONTAL);
+  LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+  params.leftMargin=(int)(5 * scaleCoefficient);
   ImageView compassView=new ImageView(view.getContext()){
     @Override protected void onDraw(    Canvas canvas){
       canvas.save();
-      canvas.rotate(view.getRotate(),getLeft() + mw / 2,getTop() + mh / 2);
-      canvas.drawBitmap(compass,getLeft(),getTop(),paintImg);
+      canvas.translate(getLeft(),getTop());
+      canvas.rotate(view.getRotate(),mw / 2,mh / 2);
+      compass.draw(canvas);
       canvas.restore();
     }
   }
@@ -18,8 +22,31 @@
     }
   }
 );
+  compassView.setImageDrawable(compass);
   statusBar.addView(compassView,params);
-  compassView.setImageBitmap(compass);
+  params=new LinearLayout.LayoutParams(0,0,1);
+  TextView space=new TextView(view.getContext());
+  statusBar.addView(space,params);
+  statusBar.setWeightSum(1);
+  params=new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+  ImageView globus=new ImageView(view.getContext());
+  globus.setImageDrawable(view.getResources().getDrawable(R.drawable.globus));
+  globus.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+    }
+  }
+);
+  statusBar.addView(globus,params);
+  params=new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+  ImageView backToLocation=new ImageView(view.getContext());
+  backToLocation.setImageDrawable(view.getResources().getDrawable(R.drawable.back_to_loc));
+  backToLocation.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      map.backToLocationImpl();
+    }
+  }
+);
+  statusBar.addView(backToLocation,params);
   statusBar.measure(MeasureSpec.UNSPECIFIED,MeasureSpec.UNSPECIFIED);
   return statusBar;
 }
