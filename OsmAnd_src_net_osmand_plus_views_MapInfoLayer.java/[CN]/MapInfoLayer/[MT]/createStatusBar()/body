@@ -1,0 +1,25 @@
+{
+  final int mw=(int)compass.getWidth();
+  final int mh=(int)compass.getHeight();
+  FrameLayout statusBar=new FrameLayout(view.getContext());
+  LayoutParams params=new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT,Gravity.LEFT | Gravity.TOP);
+  ImageView compassView=new ImageView(view.getContext()){
+    @Override protected void onDraw(    Canvas canvas){
+      canvas.save();
+      canvas.rotate(view.getRotate(),getLeft() + mw / 2,getTop() + mh / 2);
+      canvas.drawBitmap(compass,getLeft(),getTop(),paintImg);
+      canvas.restore();
+    }
+  }
+;
+  compassView.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      map.switchRotateMapMode();
+    }
+  }
+);
+  statusBar.addView(compassView,params);
+  compassView.setImageBitmap(compass);
+  statusBar.measure(MeasureSpec.UNSPECIFIED,MeasureSpec.UNSPECIFIED);
+  return statusBar;
+}
