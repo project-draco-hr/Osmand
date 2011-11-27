@@ -1,48 +1,15 @@
 {
-  if (map.getPointToNavigate() != null) {
-    int d=0;
-    if (map.getRoutingHelper().isRouterEnabled()) {
-      d=map.getRoutingHelper().getLeftDistance();
-    }
-    if (d == 0) {
-      Location.distanceBetween(view.getLatitude(),view.getLongitude(),map.getPointToNavigate().getLatitude(),map.getPointToNavigate().getLongitude(),calculations);
-      d=(int)calculations[0];
-    }
-    if (distChanged(cachedMeters,d)) {
-      cachedMeters=d;
-      if (cachedMeters <= 20) {
-        cachedMeters=0;
-        cachedDistString=null;
-      }
- else {
-        cachedDistString=OsmAndFormatter.getFormattedDistance(cachedMeters,map);
-        float right=paintBlack.measureText(cachedDistString) + 25 * scaleCoefficient + boundsForDist.left;
-        if (cachedSpeedString != null) {
-          boundsForSpeed.right=boundsForDist.right=Math.max(right,boundsForDist.right);
-        }
- else {
-          boundsForDist.right=right;
-        }
-      }
-    }
-  }
- else {
-    cachedMeters=0;
-    cachedDistString=null;
-  }
+  updateDistanceToGo();
   if (view.getZoom() != cachedZoom) {
-    cachedZoom=view.getZoom();
-    cachedZoomString=view.getZoom() + "";
+    zoomControl.setText(view.getZoom() + "","zm");
+    relayoutLeftControls(zoomControl);
   }
-  canvas.drawRoundRect(boundsForZoom,roundCorner,roundCorner,paintAlphaGray);
-  canvas.drawRoundRect(boundsForZoom,roundCorner,roundCorner,paintBlack);
-  canvas.drawText(cachedZoomString,boundsForZoom.left + 5 * scaleCoefficient,boundsForZoom.bottom - 8 * scaleCoefficient,paintBlack);
   if (map.getLastKnownLocation() != null && map.getLastKnownLocation().hasSpeed()) {
     if (Math.abs(map.getLastKnownLocation().getSpeed() - cachedSpeed) > .3f) {
       cachedSpeed=map.getLastKnownLocation().getSpeed();
       cachedSpeedString=OsmAndFormatter.getFormattedSpeed(cachedSpeed,map);
       float right=paintBlack.measureText(cachedSpeedString) + 8 * scaleCoefficient + boundsForSpeed.left;
-      boundsForSpeed.right=boundsForDist.right=Math.max(right,boundsForDist.right);
+      boundsForSpeed.right=right;
     }
     if (cachedSpeed > 0) {
       canvas.drawRoundRect(boundsForSpeed,roundCorner,roundCorner,paintAlphaGray);
@@ -50,15 +17,19 @@
       canvas.drawText(cachedSpeedString,boundsForSpeed.left + 8 * scaleCoefficient,boundsForSpeed.bottom - 9f * scaleCoefficient,paintBlack);
     }
   }
-  if (cachedDistString != null) {
-    canvas.drawRoundRect(boundsForDist,roundCorner,roundCorner,paintAlphaGray);
-    canvas.drawRoundRect(boundsForDist,roundCorner,roundCorner,paintBlack);
-    canvas.drawCircle(boundsForDist.left + 8 * scaleCoefficient,boundsForDist.bottom - 15 * scaleCoefficient,4 * scaleCoefficient,fillRed);
-    canvas.drawText(cachedDistString,boundsForDist.left + 15 * scaleCoefficient,boundsForDist.bottom - 9f * scaleCoefficient,paintBlack);
-  }
   drawRouteInfo(canvas);
-  boxTop.setBounds(boundsForCompass);
-  boxTop.draw(canvas);
-  canvas.rotate(view.getRotate(),17 * scaleCoefficient,15 * scaleCoefficient);
-  canvas.drawBitmap(compass,0,0,paintImg);
+  int h=0;
+  for (int i=0; i < leftControls.size(); i++) {
+    h+=leftControls.get(i).getHeight();
+  }
+  canvas.translate(LEFT_MARGIN,0);
+  for (int i=leftControls.size() - 1; i >= 0; i--) {
+    h-=leftControls.get(i).getHeight();
+    canvas.save();
+    canvas.translate(0,h);
+    if (leftControls.get(i).isVisible()) {
+      leftControls.get(i).onDraw(canvas);
+    }
+    canvas.restore();
+  }
 }

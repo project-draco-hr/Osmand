@@ -1,13 +1,16 @@
 {
+  int x=(int)event.getX();
+  int y=(int)event.getY();
   if (event.getAction() == MotionEvent.ACTION_DOWN) {
-    if (boxTop.getBounds().contains((int)event.getX(),(int)event.getY())) {
-      boxTop.setState(pressedState);
+    MapInfoControl control=detectLeftControl(x,y);
+    if (control != null && control.isClickable()) {
+      control.setPressed(true);
       view.refreshMap();
     }
   }
   if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-    if (boxTop.getState() == pressedState) {
-      boxTop.setState(simpleState);
+    for (    MapInfoControl c : leftControls) {
+      c.setPressed(false);
       view.refreshMap();
     }
   }

@@ -1,6 +1,8 @@
 {
   this.view=view;
   paintBlack=new Paint();
+  paintText=new Paint();
+  paintSubText=new Paint();
   WindowManager mgr=(WindowManager)view.getContext().getSystemService(Context.WINDOW_SERVICE);
   dm=new DisplayMetrics();
   mgr.getDefaultDisplay().getMetrics(dm);
@@ -13,6 +15,15 @@
   paintBlack.setColor(Color.BLACK);
   paintBlack.setTextSize(23 * scaleCoefficient);
   paintBlack.setAntiAlias(true);
+  paintText.setStyle(Style.FILL_AND_STROKE);
+  paintText.setColor(Color.BLACK);
+  paintText.setTextSize(23 * scaleCoefficient);
+  paintText.setAntiAlias(true);
+  paintSubText.setStyle(Style.FILL_AND_STROKE);
+  paintSubText.setColor(Color.BLACK);
+  paintSubText.setTextSize(15 * scaleCoefficient);
+  paintSubText.setFakeBoldText(true);
+  paintSubText.setAntiAlias(true);
   paintImg=new Paint();
   paintImg.setDither(true);
   paintImg.setFilterBitmap(true);
@@ -40,15 +51,9 @@
   fillRed.setStyle(Style.FILL_AND_STROKE);
   fillRed.setColor(Color.RED);
   fillRed.setAntiAlias(true);
-  boundsForCompass=new Rect(0,0,35,32);
-  boundsForDist=new RectF(35,0,110,32);
-  boundsForZoom=new RectF(0,32,35,64);
   boundsForSpeed=new RectF(35,32,110,64);
   boundsForMiniRoute=new RectF(0,64,96,196);
   boundsForLeftTime=new RectF(0,0,75,32);
-  scaleRect(boundsForCompass);
-  scaleRect(boundsForDist);
-  scaleRect(boundsForZoom);
   scaleRect(boundsForSpeed);
   scaleRect(boundsForMiniRoute);
   scaleRect(boundsForLeftTime);
@@ -60,6 +65,26 @@
   pathTransform.postScale(scaleCoefficient,scaleCoefficient);
   pathTransform.postTranslate(boundsForMiniRoute.left,boundsForMiniRoute.top);
   compass=BitmapFactory.decodeResource(view.getResources(),R.drawable.compass);
-  boxTop=view.getResources().getDrawable(R.drawable.box_top);
+  LEFT_MARGIN=(int)(LEFT_MARGIN * scaleCoefficient);
+  compassControl=createCompassControl(R.drawable.box_top);
+  zoomControl=new TextInfoControl(R.drawable.box_top,paintText,paintSubText);
+  distanceControl=new TextInfoControl(R.drawable.box_top,paintText,paintSubText){
+    @Override public boolean isClickable(){
+      return true;
+    }
+    @Override public void click(){
+      AnimateDraggingMapThread thread=view.getAnimatedDraggingThread();
+      LatLon pointToNavigate=view.getSettings().getPointToNavigate();
+      if (pointToNavigate != null) {
+        int fZoom=view.getZoom() < 15 ? 15 : view.getZoom();
+        thread.startMoving(pointToNavigate.getLatitude(),pointToNavigate.getLongitude(),fZoom,true);
+      }
+    }
+  }
+;
+  leftControls.add(compassControl);
+  leftControls.add(zoomControl);
+  leftControls.add(distanceControl);
+  relayoutLeftControls(compassControl);
   showArrivalTime=view.getSettings().SHOW_ARRIVAL_TIME_OTHERWISE_EXPECTED_TIME.get();
 }
