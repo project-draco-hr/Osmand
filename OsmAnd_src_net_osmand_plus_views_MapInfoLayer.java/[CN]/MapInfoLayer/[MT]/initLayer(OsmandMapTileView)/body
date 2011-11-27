@@ -51,12 +51,8 @@
   fillRed.setStyle(Style.FILL_AND_STROKE);
   fillRed.setColor(Color.RED);
   fillRed.setAntiAlias(true);
-  boundsForSpeed=new RectF(35,32,110,64);
   boundsForMiniRoute=new RectF(0,64,96,196);
-  boundsForLeftTime=new RectF(0,0,75,32);
-  scaleRect(boundsForSpeed);
   scaleRect(boundsForMiniRoute);
-  scaleRect(boundsForLeftTime);
   centerMiniRouteX=(int)(boundsForMiniRoute.width() / 2);
   centerMiniRouteY=(int)(boundsForMiniRoute.top + 3 * boundsForMiniRoute.height() / 4);
   scaleMiniRoute=0.15f;
@@ -68,6 +64,18 @@
   LEFT_MARGIN=(int)(LEFT_MARGIN * scaleCoefficient);
   compassControl=createCompassControl(R.drawable.box_top);
   zoomControl=new TextInfoControl(R.drawable.box_top,paintText,paintSubText);
+  speedControl=new TextInfoControl(R.drawable.box_top,paintText,paintSubText);
+  leftTimeControl=new TextInfoControl(R.drawable.box_top,paintText,paintSubText){
+    @Override public boolean isClickable(){
+      return true;
+    }
+    @Override public void click(){
+      showArrivalTime=!showArrivalTime;
+      view.getSettings().SHOW_ARRIVAL_TIME_OTHERWISE_EXPECTED_TIME.set(showArrivalTime);
+      view.refreshMap();
+    }
+  }
+;
   distanceControl=new TextInfoControl(R.drawable.box_top,paintText,paintSubText){
     @Override public boolean isClickable(){
       return true;
@@ -85,6 +93,8 @@
   leftControls.add(compassControl);
   leftControls.add(zoomControl);
   leftControls.add(distanceControl);
+  leftControls.add(speedControl);
+  leftControls.add(leftTimeControl);
   relayoutLeftControls(compassControl);
   showArrivalTime=view.getSettings().SHOW_ARRIVAL_TIME_OTHERWISE_EXPECTED_TIME.get();
 }
