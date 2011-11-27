@@ -1,8 +1,5 @@
 {
   this.view=view;
-  paintBlack=new Paint();
-  paintText=new Paint();
-  paintSubText=new Paint();
   WindowManager mgr=(WindowManager)view.getContext().getSystemService(Context.WINDOW_SERVICE);
   dm=new DisplayMetrics();
   mgr.getDefaultDisplay().getMetrics(dm);
@@ -10,14 +7,18 @@
   if (Math.min(dm.widthPixels / (dm.density * 160),dm.heightPixels / (dm.density * 160)) > 2.5f) {
     scaleCoefficient*=1.5f;
   }
+  FrameLayout parent=(FrameLayout)view.getParent();
+  paintBlack=new Paint();
   paintBlack.setStyle(Style.STROKE);
   paintBlack.setColor(Color.BLACK);
   paintBlack.setTextSize(23 * scaleCoefficient);
   paintBlack.setAntiAlias(true);
+  paintText=new Paint();
   paintText.setStyle(Style.FILL_AND_STROKE);
   paintText.setColor(Color.BLACK);
   paintText.setTextSize(23 * scaleCoefficient);
   paintText.setAntiAlias(true);
+  paintSubText=new Paint();
   paintSubText.setStyle(Style.FILL_AND_STROKE);
   paintSubText.setColor(Color.BLACK);
   paintSubText.setTextSize(15 * scaleCoefficient);
@@ -59,11 +60,10 @@
   pathTransform=new Matrix();
   pathTransform.postScale(scaleCoefficient,scaleCoefficient);
   pathTransform.postTranslate(boundsForMiniRoute.left,boundsForMiniRoute.top);
-  LEFT_MARGIN_X=(int)(LEFT_MARGIN_X * scaleCoefficient);
   STATUS_BAR_MARGIN_X=(int)(STATUS_BAR_MARGIN_X * scaleCoefficient);
   statusBar=createStatusBar();
-  statusBarBackground=view.getResources().getDrawable(R.drawable.box_top).mutate();
-  LEFT_MARGIN_Y=statusBar.getMeasuredHeight();
+  parent.addView(statusBar);
+  MARGIN_Y=statusBar.getMeasuredHeight();
   Drawable time=view.getResources().getDrawable(R.drawable.info_time);
   speedControl=new TextInfoControl(R.drawable.box_top,null,0,paintText,paintSubText);
   leftTimeControl=new TextInfoControl(R.drawable.box_top,time,0,paintText,paintSubText);
@@ -87,8 +87,8 @@
     }
   }
 );
-  leftControls.add(distanceControl);
-  leftControls.add(speedControl);
-  leftControls.add(leftTimeControl);
+  rightControls.add(distanceControl);
+  rightControls.add(speedControl);
+  rightControls.add(leftTimeControl);
   showArrivalTime=view.getSettings().SHOW_ARRIVAL_TIME_OTHERWISE_EXPECTED_TIME.get();
 }
