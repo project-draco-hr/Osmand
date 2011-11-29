@@ -2,10 +2,13 @@
   if (latLon != null) {
     int x=view.getRotatedMapXForPoint(latLon.getLatitude(),latLon.getLongitude());
     int y=view.getRotatedMapYForPoint(latLon.getLatitude(),latLon.getLongitude());
-    canvas.drawCircle(x,y,5 * dm.density,paintBorder);
-    canvas.drawCircle(x,y,5 * dm.density,paintBlack);
+    int tx=x - boxLeg.getMinimumWidth() / 2;
+    int ty=y - boxLeg.getMinimumHeight() + SHADOW_OF_LEG;
+    canvas.translate(tx,ty);
+    boxLeg.draw(canvas);
+    canvas.translate(-tx,-ty);
     if (textView.getText().length() > 0) {
-      canvas.translate(x - textView.getWidth() / 2,y - textView.getHeight() - MARGIN_Y_TO_BOX);
+      canvas.translate(x - textView.getWidth() / 2,ty - textView.getTop());
       int c=textView.getLineCount();
       textView.draw(canvas);
       if (c == 0) {

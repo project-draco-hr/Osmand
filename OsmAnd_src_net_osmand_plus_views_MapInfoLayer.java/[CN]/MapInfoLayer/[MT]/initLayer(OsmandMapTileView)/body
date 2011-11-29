@@ -28,10 +28,6 @@
   paintImg.setDither(true);
   paintImg.setFilterBitmap(true);
   paintImg.setAntiAlias(true);
-  paintAlphaGray=new Paint();
-  paintAlphaGray.setStyle(Style.FILL_AND_STROKE);
-  paintAlphaGray.setColor(Color.LTGRAY);
-  paintAlphaGray.setAlpha(180);
   paintRouteDirection=new Paint();
   paintRouteDirection.setStyle(Style.FILL_AND_STROKE);
   paintRouteDirection.setColor(Color.rgb(100,0,255));
@@ -51,15 +47,6 @@
   fillRed.setStyle(Style.FILL_AND_STROKE);
   fillRed.setColor(Color.RED);
   fillRed.setAntiAlias(true);
-  boundsForMiniRoute=new RectF(0,64,96,196);
-  scaleRect(boundsForMiniRoute);
-  centerMiniRouteX=(int)(boundsForMiniRoute.width() / 2);
-  centerMiniRouteY=(int)(boundsForMiniRoute.top + 3 * boundsForMiniRoute.height() / 4);
-  scaleMiniRoute=0.15f;
-  pathForTurn=new Path();
-  pathTransform=new Matrix();
-  pathTransform.postScale(scaleCoefficient,scaleCoefficient);
-  pathTransform.postTranslate(boundsForMiniRoute.left,boundsForMiniRoute.top);
   STATUS_BAR_MARGIN_X=(int)(STATUS_BAR_MARGIN_X * scaleCoefficient);
   statusBar=createStatusBar();
   parent.addView(statusBar);
@@ -90,5 +77,14 @@
   rightControls.add(distanceControl);
   rightControls.add(speedControl);
   rightControls.add(leftTimeControl);
+  nextTurnInfo=new NextTurnInfoControl(R.drawable.box_top,paintText,paintSubText);
+  nextTurnInfo.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      showMiniMap=!showMiniMap;
+      view.refreshMap();
+    }
+  }
+);
+  leftControls.add(nextTurnInfo);
   showArrivalTime=view.getSettings().SHOW_ARRIVAL_TIME_OTHERWISE_EXPECTED_TIME.get();
 }
