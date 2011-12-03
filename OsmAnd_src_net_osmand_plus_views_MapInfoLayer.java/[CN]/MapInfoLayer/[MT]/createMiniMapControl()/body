@@ -2,8 +2,11 @@
   MiniMapControl miniMapControl=new MiniMapControl(map,view,R.drawable.box_top){
     @Override public boolean updateInfo(){
       boolean visible=false;
-      if (routeLayer != null && routeLayer.getHelper().isRouterEnabled()) {
-        visible=true;
+      if (routeLayer != null && routeLayer.getHelper().isRouterEnabled() && routeLayer.getHelper().isFollowingMode()) {
+        if (showMiniMap && !routeLayer.getPath().isEmpty()) {
+          visible=true;
+          miniMapPath=routeLayer.getPath();
+        }
       }
       updateVisibility(visible);
       return super.updateInfo();
@@ -14,6 +17,7 @@
   miniMapControl.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       showMiniMap=false;
+      view.refreshMap();
     }
   }
 );

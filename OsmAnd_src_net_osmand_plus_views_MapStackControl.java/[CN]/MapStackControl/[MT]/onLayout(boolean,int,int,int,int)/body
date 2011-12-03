@@ -2,17 +2,28 @@
   int y=0;
   int cw=right - left;
   for (  View c : stackViews) {
-    c.layout(0,y,cw,y + c.getMeasuredHeight());
-    y+=c.getMeasuredHeight();
+    if (c.getVisibility() != View.GONE) {
+      if (y > 0) {
+        y-=c.getPaddingTop();
+      }
+      c.layout(0,y,cw,y + c.getMeasuredHeight());
+      y+=c.getMeasuredHeight();
+      y-=c.getPaddingBottom();
+    }
   }
   for (  View c : collapsedViews) {
     if (!isCollapsed) {
-      c.setVisibility(VISIBLE);
-      c.layout(0,y,cw,y + c.getMeasuredHeight());
-      y+=c.getMeasuredHeight();
+      if (c.getVisibility() != View.GONE) {
+        if (y > 0) {
+          y-=c.getPaddingTop();
+        }
+        c.layout(0,y,cw,y + c.getMeasuredHeight());
+        y+=c.getMeasuredHeight();
+        y-=c.getPaddingBottom();
+      }
     }
  else {
-      c.setVisibility(GONE);
+      c.layout(0,0,0,0);
     }
   }
   if (isCollapsible) {
