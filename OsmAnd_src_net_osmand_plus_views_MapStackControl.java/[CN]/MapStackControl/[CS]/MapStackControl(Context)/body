@@ -1,0 +1,36 @@
+{
+  super(context);
+  final Bitmap arrowDown=BitmapFactory.decodeResource(context.getResources(),R.drawable.arrow_down);
+  final Bitmap arrowUp=BitmapFactory.decodeResource(context.getResources(),R.drawable.arrow_up);
+  final Paint paintImg=new Paint();
+  paintImg.setAntiAlias(true);
+  setChildrenDrawingOrderEnabled(true);
+  expandView=new ImageView(context){
+    @Override protected void onDraw(    Canvas canvas){
+      super.onDraw(canvas);
+      int cx=(getLeft() + getRight()) / 2 - getLeft();
+      int t=(int)(getBottom() - getTop() - 12 * MapInfoLayer.scaleCoefficient);
+      if (!isCollapsed) {
+        canvas.drawBitmap(arrowUp,cx - arrowUp.getWidth() / 2,t - arrowUp.getHeight(),paintImg);
+      }
+ else {
+        canvas.drawBitmap(arrowDown,cx - arrowDown.getWidth() / 2,t - arrowUp.getHeight(),paintImg);
+      }
+    }
+  }
+;
+  expandView.setImageDrawable(context.getResources().getDrawable(R.drawable.box_expand).mutate());
+  expandView.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      isCollapsed=!isCollapsed;
+      if (!isCollapsed) {
+        for (        MapInfoControl l : collapsedViews) {
+          l.updateInfo();
+        }
+      }
+      MapStackControl.this.requestLayout();
+    }
+  }
+);
+  MapStackControl.this.addView(expandView);
+}

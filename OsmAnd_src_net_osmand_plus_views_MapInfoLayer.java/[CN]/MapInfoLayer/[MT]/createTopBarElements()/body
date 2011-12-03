@@ -1,0 +1,32 @@
+{
+  statusBar=createStatusBar();
+  rightStack=new MapStackControl(view.getContext());
+  rightStack.addStackView(createDistanceControl());
+  rightStack.addCollapsedView(createSpeedControl());
+  rightStack.addCollapsedView(createTimeControl());
+  leftStack=new MapStackControl(view.getContext());
+  leftStack.addStackView(createNextInfoControl());
+  leftStack.addStackView(createMiniMapControl());
+  STATUS_BAR_MARGIN_X=(int)(STATUS_BAR_MARGIN_X * scaleCoefficient);
+  statusBar.measure(MeasureSpec.UNSPECIFIED,MeasureSpec.UNSPECIFIED);
+  Rect statusBarPadding=new Rect();
+  statusBar.getBackground().getPadding(statusBarPadding);
+  Rect topRectPadding=new Rect();
+  view.getResources().getDrawable(R.drawable.box_top).getPadding(topRectPadding);
+  FrameLayout parent=(FrameLayout)view.getParent();
+  int topMargin=statusBar.getMeasuredHeight() - statusBarPadding.top;
+  topMargin-=topRectPadding.bottom;
+  FrameLayout.LayoutParams flp=new FrameLayout.LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT,Gravity.RIGHT);
+  flp.rightMargin=STATUS_BAR_MARGIN_X;
+  flp.topMargin=topMargin;
+  parent.addView(rightStack,flp);
+  flp=new FrameLayout.LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT,Gravity.LEFT);
+  flp.leftMargin=STATUS_BAR_MARGIN_X;
+  flp.topMargin=topMargin;
+  parent.addView(leftStack,flp);
+  flp=new FrameLayout.LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT,Gravity.TOP);
+  flp.leftMargin=STATUS_BAR_MARGIN_X;
+  flp.rightMargin=STATUS_BAR_MARGIN_X;
+  flp.topMargin=-topRectPadding.top;
+  parent.addView(statusBar,flp);
+}

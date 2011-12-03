@@ -1,29 +1,14 @@
 {
+  LinearLayout statusBar=new LinearLayout(view.getContext());
+  statusBar.setBackgroundDrawable(view.getResources().getDrawable(R.drawable.box_top).mutate());
+  statusBar.setOrientation(LinearLayout.HORIZONTAL);
   final Drawable compass=view.getResources().getDrawable(R.drawable.compass);
   final int mw=(int)compass.getMinimumWidth();
   final int mh=(int)compass.getMinimumHeight();
-  statusBarBackground=view.getResources().getDrawable(R.drawable.box_top).mutate();
-  LinearLayout statusBar=new LinearLayout(view.getContext()){
-    @Override protected void onLayout(    boolean changed,    int left,    int top,    int right,    int bottom){
-      super.onLayout(changed,left,top,right,bottom);
-      Rect padding=new Rect();
-      if (statusBarBackground.getPadding(padding)) {
-        statusBarBackground.setBounds(-padding.left + left,top - padding.top,right + padding.right,bottom + padding.bottom);
-      }
-    }
-  }
-;
-  statusBar.setOrientation(LinearLayout.HORIZONTAL);
-  FrameLayout.LayoutParams flp=new FrameLayout.LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
-  flp.leftMargin=STATUS_BAR_MARGIN_X;
-  flp.rightMargin=STATUS_BAR_MARGIN_X;
-  flp.gravity=Gravity.TOP;
-  statusBar.setLayoutParams(flp);
   LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
   compassView=new ImageView(view.getContext()){
     @Override protected void onDraw(    Canvas canvas){
       canvas.save();
-      canvas.translate(getLeft(),getTop());
       canvas.rotate(view.getRotate(),mw / 2,mh / 2);
       compass.draw(canvas);
       canvas.restore();
@@ -76,6 +61,5 @@
   }
 );
   statusBar.addView(backToLocation,params);
-  statusBar.measure(MeasureSpec.UNSPECIFIED,MeasureSpec.UNSPECIFIED);
   return statusBar;
 }

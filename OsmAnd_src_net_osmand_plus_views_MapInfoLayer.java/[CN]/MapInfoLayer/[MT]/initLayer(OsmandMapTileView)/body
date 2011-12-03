@@ -1,18 +1,12 @@
 {
   this.view=view;
   WindowManager mgr=(WindowManager)view.getContext().getSystemService(Context.WINDOW_SERVICE);
-  dm=new DisplayMetrics();
+  DisplayMetrics dm=new DisplayMetrics();
   mgr.getDefaultDisplay().getMetrics(dm);
   scaleCoefficient=dm.density;
   if (Math.min(dm.widthPixels / (dm.density * 160),dm.heightPixels / (dm.density * 160)) > 2.5f) {
     scaleCoefficient*=1.5f;
   }
-  FrameLayout parent=(FrameLayout)view.getParent();
-  paintBlack=new Paint();
-  paintBlack.setStyle(Style.STROKE);
-  paintBlack.setColor(Color.BLACK);
-  paintBlack.setTextSize(23 * scaleCoefficient);
-  paintBlack.setAntiAlias(true);
   paintText=new Paint();
   paintText.setStyle(Style.FILL_AND_STROKE);
   paintText.setColor(Color.BLACK);
@@ -28,63 +22,5 @@
   paintImg.setDither(true);
   paintImg.setFilterBitmap(true);
   paintImg.setAntiAlias(true);
-  paintRouteDirection=new Paint();
-  paintRouteDirection.setStyle(Style.FILL_AND_STROKE);
-  paintRouteDirection.setColor(Color.rgb(100,0,255));
-  paintRouteDirection.setAntiAlias(true);
-  fillBlack=new Paint();
-  fillBlack.setStyle(Style.FILL_AND_STROKE);
-  fillBlack.setColor(Color.BLACK);
-  fillBlack.setAntiAlias(true);
-  paintMiniRoute=new Paint();
-  paintMiniRoute.setStyle(Style.STROKE);
-  paintMiniRoute.setStrokeWidth(35 * scaleCoefficient);
-  paintMiniRoute.setColor(Color.BLUE);
-  paintMiniRoute.setStrokeJoin(Join.ROUND);
-  paintMiniRoute.setStrokeCap(Cap.ROUND);
-  paintMiniRoute.setAntiAlias(true);
-  fillRed=new Paint();
-  fillRed.setStyle(Style.FILL_AND_STROKE);
-  fillRed.setColor(Color.RED);
-  fillRed.setAntiAlias(true);
-  STATUS_BAR_MARGIN_X=(int)(STATUS_BAR_MARGIN_X * scaleCoefficient);
-  statusBar=createStatusBar();
-  parent.addView(statusBar);
-  MARGIN_Y=statusBar.getMeasuredHeight();
-  Drawable time=view.getResources().getDrawable(R.drawable.info_time);
-  speedControl=new TextInfoControl(R.drawable.box_top,null,0,paintText,paintSubText);
-  leftTimeControl=new TextInfoControl(R.drawable.box_top,time,0,paintText,paintSubText);
-  leftTimeControl.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      showArrivalTime=!showArrivalTime;
-      view.getSettings().SHOW_ARRIVAL_TIME_OTHERWISE_EXPECTED_TIME.set(showArrivalTime);
-      view.refreshMap();
-    }
-  }
-);
-  distanceControl=new TextInfoControl(R.drawable.box_top,view.getResources().getDrawable(R.drawable.info_target),0,paintText,paintSubText);
-  distanceControl.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      AnimateDraggingMapThread thread=view.getAnimatedDraggingThread();
-      LatLon pointToNavigate=view.getSettings().getPointToNavigate();
-      if (pointToNavigate != null) {
-        int fZoom=view.getZoom() < 15 ? 15 : view.getZoom();
-        thread.startMoving(pointToNavigate.getLatitude(),pointToNavigate.getLongitude(),fZoom,true);
-      }
-    }
-  }
-);
-  rightControls.add(distanceControl);
-  rightControls.add(speedControl);
-  rightControls.add(leftTimeControl);
-  nextTurnInfo=new NextTurnInfoControl(R.drawable.box_top,paintText,paintSubText);
-  nextTurnInfo.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      showMiniMap=!showMiniMap;
-      view.refreshMap();
-    }
-  }
-);
-  leftControls.add(nextTurnInfo);
-  showArrivalTime=view.getSettings().SHOW_ARRIVAL_TIME_OTHERWISE_EXPECTED_TIME.get();
+  createTopBarElements();
 }
