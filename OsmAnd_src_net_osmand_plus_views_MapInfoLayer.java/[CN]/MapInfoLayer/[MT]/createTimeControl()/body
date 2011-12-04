@@ -1,7 +1,8 @@
 {
-  Drawable time=view.getResources().getDrawable(R.drawable.info_time);
+  final Drawable time=view.getResources().getDrawable(R.drawable.info_time);
+  final Drawable timeToGo=view.getResources().getDrawable(R.drawable.info_time_to_go);
   showArrivalTime=view.getSettings().SHOW_ARRIVAL_TIME_OTHERWISE_EXPECTED_TIME.get();
-  TextInfoControl leftTimeControl=new TextInfoControl(map,R.drawable.box_top,time,0,paintText,paintSubText){
+  final TextInfoControl leftTimeControl=new TextInfoControl(map,R.drawable.box_top,0,paintText,paintSubText){
     private long cachedLeftTime=0;
     @Override public boolean updateInfo(){
       int time=0;
@@ -45,11 +46,13 @@
   leftTimeControl.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       showArrivalTime=!showArrivalTime;
+      leftTimeControl.setImageDrawable(showArrivalTime ? time : timeToGo);
       view.getSettings().SHOW_ARRIVAL_TIME_OTHERWISE_EXPECTED_TIME.set(showArrivalTime);
       view.refreshMap();
     }
   }
 );
   leftTimeControl.setText(null,null);
+  leftTimeControl.setImageDrawable(showArrivalTime ? time : timeToGo);
   return leftTimeControl;
 }
