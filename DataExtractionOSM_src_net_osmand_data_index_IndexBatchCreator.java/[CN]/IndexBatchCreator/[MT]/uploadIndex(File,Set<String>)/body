@@ -63,41 +63,28 @@
   if (mbLengh < MIN_SIZE_TO_UPLOAD) {
     return;
   }
+  String regionName=fileName.substring(0,fileName.lastIndexOf('_',fileName.indexOf('.')));
+  summary+=regionName;
+  summary=summary.replace('_',' ');
   File toUpload=f;
-  if (mbLengh > MIN_SIZE_TO_NOT_ZIP && (fileName.endsWith(".odb") || fileName.endsWith(".obf")) && zip) {
+  if ((fileName.endsWith(".odb") || fileName.endsWith(".obf")) && zip) {
     String n=fileName;
     if (fileName.endsWith(".odb")) {
       n=fileName.substring(0,fileName.length() - 4);
     }
     String zipFileName=n + ".zip";
-    File zFile=new File(f.getParentFile(),zipFileName);
     log.info("Zipping file " + fileName);
     try {
-      ZipOutputStream zout=new ZipOutputStream(new FileOutputStream(zFile));
-      zout.setLevel(9);
-      ZipEntry zEntry=new ZipEntry(fileName);
-      zEntry.setSize(f.length());
-      zout.putNextEntry(zEntry);
-      FileInputStream is=new FileInputStream(f);
-      byte[] BUFFER=new byte[8192];
-      int read=0;
-      while ((read=is.read(BUFFER)) != -1) {
-        zout.write(BUFFER,0,read);
-      }
-      is.close();
-      zout.close();
+      toUpload=IndexZipper.zip(f,zipFileName,summary);
     }
- catch (    IOException e) {
+ catch (    OneFileException e) {
       log.error("Exception while zipping file",e);
+      return;
     }
     if (f.delete()) {
       log.info("Source odb file was deleted");
     }
-    toUpload=zFile;
   }
-  String regionName=fileName.substring(0,fileName.lastIndexOf('_',fileName.indexOf('.')));
-  summary+=regionName;
-  summary=summary.replace('_',' ');
   List<File> splittedFiles=Collections.emptyList();
   try {
     splittedFiles=splitFiles(toUpload);
