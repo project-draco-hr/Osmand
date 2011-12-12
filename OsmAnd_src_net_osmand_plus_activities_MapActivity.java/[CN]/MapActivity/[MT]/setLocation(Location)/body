@@ -17,6 +17,7 @@
         Message msg=Message.obtain(uiHandler,new Runnable(){
           @Override public void run(){
             if (routingHelper.getLeftDistance() > 0 && settings.MAP_ACTIVITY_ENABLED.get()) {
+              routingHelper.getVoiceRouter().gpsLocationLost();
             }
           }
         }
@@ -32,7 +33,7 @@
       if (settings.AUTO_ZOOM_MAP.get() && location.hasSpeed()) {
         int z=defineZoomFromSpeed(location.getSpeed(),mapView.getZoom());
         if (mapView.getZoom() != z && !mapView.mapIsAnimating()) {
-          long now=System.currentTimeMillis();
+          long now=SystemClock.elapsedRealtime();
           if (Math.abs(mapView.getZoom() - z) > 1 || (lastTimeAutoZooming - now) > 6500) {
             lastTimeAutoZooming=now;
             mapView.setZoom(z);

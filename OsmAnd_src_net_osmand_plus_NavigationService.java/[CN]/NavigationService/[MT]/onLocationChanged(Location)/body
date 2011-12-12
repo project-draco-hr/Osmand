@@ -8,6 +8,21 @@
         lock.release();
       }
     }
+ else {
+      if (routingHelper.isFollowingMode() && routingHelper.getLeftDistance() > 0) {
+        Message msg=Message.obtain(handler,new Runnable(){
+          @Override public void run(){
+            if (routingHelper.getLeftDistance() > 0 && !settings.MAP_ACTIVITY_ENABLED.get()) {
+              routingHelper.getVoiceRouter().gpsLocationLost();
+            }
+          }
+        }
+);
+        msg.what=LOST_LOCATION_MSG_ID;
+        handler.removeMessages(LOST_LOCATION_MSG_ID);
+        handler.sendMessageDelayed(msg,LOST_LOCATION_CHECK_DELAY);
+      }
+    }
     savingTrackHelper.insertData(location.getLatitude(),location.getLongitude(),location.getAltitude(),location.getSpeed(),location.getAccuracy(),location.getTime(),settings);
     if (routingHelper.isFollowingMode()) {
       routingHelper.setCurrentLocation(location);
