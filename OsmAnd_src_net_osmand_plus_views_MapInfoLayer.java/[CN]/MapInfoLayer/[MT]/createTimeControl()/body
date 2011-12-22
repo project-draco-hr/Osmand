@@ -5,32 +5,28 @@
   final TextInfoControl leftTimeControl=new TextInfoControl(map,0,paintText,paintSubText){
     private long cachedLeftTime=0;
     @Override public boolean updateInfo(){
-      int time=0;
-      if (routeLayer != null && routeLayer.getHelper().isRouterEnabled()) {
-        boolean followingMode=routeLayer.getHelper().isFollowingMode();
-        time=routeLayer.getHelper().getLeftTime();
-        if (time != 0) {
-          if (followingMode && showArrivalTime) {
-            long toFindTime=time * 1000 + System.currentTimeMillis();
-            if (Math.abs(toFindTime - cachedLeftTime) > 30000) {
-              cachedLeftTime=toFindTime;
-              if (DateFormat.is24HourFormat(map)) {
-                setText(DateFormat.format("kk:mm",toFindTime).toString(),null);
-              }
- else {
-                setText(DateFormat.format("k:mm aa",toFindTime).toString(),null);
-              }
-              return true;
+      int time=1500;
+      if (time != 0) {
+        if (showArrivalTime) {
+          long toFindTime=time * 1000 + System.currentTimeMillis();
+          if (Math.abs(toFindTime - cachedLeftTime) > 30000) {
+            cachedLeftTime=toFindTime;
+            if (DateFormat.is24HourFormat(map)) {
+              setText(DateFormat.format("kk:mm",toFindTime).toString(),null);
             }
+ else {
+              setText(DateFormat.format("k:mm aa",toFindTime).toString(),null);
+            }
+            return true;
           }
+        }
  else {
-            if (Math.abs(time - cachedLeftTime) > 30) {
-              cachedLeftTime=time;
-              int hours=time / (60 * 60);
-              int minutes=(time / 60) % 60;
-              setText(String.format("%d:%02d",hours,minutes),null);
-              return true;
-            }
+          if (Math.abs(time - cachedLeftTime) > 30) {
+            cachedLeftTime=time;
+            int hours=time / (60 * 60);
+            int minutes=(time / 60) % 60;
+            setText(String.format("%d:%02d",hours,minutes),null);
+            return true;
           }
         }
       }
