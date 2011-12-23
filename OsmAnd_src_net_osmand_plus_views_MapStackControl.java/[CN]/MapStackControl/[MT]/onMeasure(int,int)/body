@@ -3,10 +3,11 @@
   int h=0;
   int prevBot=0;
   boolean first=true;
+  int cacheStack=0;
   if (stackViews != null) {
     for (    MapInfoControl c : stackViews) {
       if (c.getVisibility() != View.GONE) {
-        c.setBackgroundDrawable(first ? topDrawable.mutate() : stackDrawable.mutate());
+        c.setBackgroundDrawable(first ? topDrawable : getStackDrawable(cacheStack++));
         first=false;
         c.measure(MeasureSpec.UNSPECIFIED,MeasureSpec.UNSPECIFIED);
         w=Math.max(w,c.getMeasuredWidth());
@@ -23,7 +24,7 @@
       if (c.getVisibility() != View.GONE) {
         isCollapsible=true;
         if (!isCollapsed) {
-          c.setBackgroundDrawable(first ? topDrawable.mutate() : stackDrawable.mutate());
+          c.setBackgroundDrawable(first ? topDrawable : getStackDrawable(cacheStack++));
           first=false;
           c.measure(MeasureSpec.UNSPECIFIED,MeasureSpec.UNSPECIFIED);
           w=Math.max(w,c.getMeasuredWidth());
