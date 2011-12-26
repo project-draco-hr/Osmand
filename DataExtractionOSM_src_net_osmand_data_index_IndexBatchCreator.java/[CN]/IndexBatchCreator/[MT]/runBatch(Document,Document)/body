@@ -29,22 +29,9 @@
     throw new IllegalArgumentException("Please specify directory with generated index files  as directory_for_index_files (attribute)");
   }
   indexDirFiles=new File(dir);
-  InputStream regionsStream=null;
   if (downloadFiles) {
-    dir=process.getAttribute("list_download_regions_file");
-    if (!Algoritms.isEmpty(dir)) {
-      File regionsFile=new File(dir);
-      if (!regionsFile.exists()) {
-        if (local) {
-          regionsStream=IndexBatchCreator.class.getResourceAsStream("regions.xml");
-        }
-        if (regionsStream == null) {
-          throw new IllegalArgumentException("Please specify file with regions to download as list_download_regions_file (attribute)");
-        }
-      }
- else {
-        regionsStream=new FileInputStream(regionsFile);
-      }
+    if (regions == null) {
+      throw new IllegalArgumentException("Please specify regions.xml file as 2nd parameter");
     }
   }
   dir=process.getAttribute("directory_for_uploaded_files");
@@ -90,9 +77,8 @@
   }
   List<RegionCountries> countriesToDownload=new ArrayList<RegionCountries>();
   parseCountriesToDownload(doc,countriesToDownload);
-  if (regionsStream != null) {
-    Document innerDoc=DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(regionsStream);
-    parseCountriesToDownload(innerDoc,countriesToDownload);
+  if (regions != null) {
+    parseCountriesToDownload(regions,countriesToDownload);
   }
   runBatch(countriesToDownload);
 }

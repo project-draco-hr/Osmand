@@ -7,25 +7,36 @@
   }
   String name=args[0];
   InputStream stream;
+  InputStream regionsStream=null;
   if (name.equals("-local")) {
     stream=IndexBatchCreator.class.getResourceAsStream("batch.xml");
-    creator.setLocal(true);
+    regionsStream=IndexBatchCreator.class.getResourceAsStream("regions.xml");
   }
  else {
     try {
       stream=new FileInputStream(name);
     }
  catch (    FileNotFoundException e) {
-      System.out.println("XML configuration file not found : " + name);
-      return;
+      throw new IllegalArgumentException("XML configuration file not found : " + name,e);
     }
-  }
-  if (args.length >= 2 && args[1] != null && args[1].startsWith("-gp")) {
-    creator.googlePassword=args[1].substring(3);
+    if (args.length > 1) {
+      try {
+        File regionsFile=new File(args[1]);
+        regionsStream=new FileInputStream(regionsFile);
+      }
+ catch (      FileNotFoundException e) {
+        throw new IllegalArgumentException("Please specify xml-file with regions to download",e);
+      }
+    }
   }
   try {
     Document doc=DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
-    creator.runBatch(doc);
+    Document regions=null;
+    if (regionsStream != null) {
+      name=args[1];
+      regions=DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(regionsStream);
+    }
+    creator.runBatch(doc,regions);
   }
  catch (  SAXException e) {
     System.out.println("XML configuration file could not be read from " + name);
