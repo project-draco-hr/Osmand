@@ -7,10 +7,15 @@
       name=name.toLowerCase();
       RegionSpecificData regionSpecificData=regionCountries.regionNames.get(name);
       String url=MessageFormat.format(site,name);
-      String country=prefix + name;
-      File toSave=downloadFile(url,country,suffix,alreadyGeneratedFiles,alreadyUploadedFiles);
+      String regionName=prefix + name;
+      String fileName=prefix + name + suffix;
+      File bmif=new File(indexDirFiles,fileName + "_" + IndexConstants.BINARY_MAP_VERSION+ IndexConstants.BINARY_MAP_INDEX_EXT);
+      if (skipGeneratedIndexes && bmif.exists()) {
+        continue;
+      }
+      File toSave=downloadFile(url,fileName,alreadyGeneratedFiles,alreadyUploadedFiles);
       if (toSave != null && generateIndexes) {
-        generateIndex(toSave,country,regionSpecificData,alreadyGeneratedFiles,alreadyUploadedFiles);
+        generateIndex(toSave,regionName,regionSpecificData,alreadyGeneratedFiles,alreadyUploadedFiles);
       }
     }
   }

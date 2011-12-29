@@ -9,6 +9,7 @@
   uploadIndexes=Boolean.parseBoolean(process.getAttribute("uploadIndexes"));
   deleteFilesAfterUploading=Boolean.parseBoolean(process.getAttribute("deleteFilesAfterUploading"));
   IndexCreator.REMOVE_POI_DB=!Boolean.parseBoolean(process.getAttribute("keepPoiOdb"));
+  skipGeneratedIndexes=Boolean.parseBoolean(process.getAttribute("skipGeneratedIndexes"));
   wget=process.getAttribute("wget");
   indexPOI=Boolean.parseBoolean(process.getAttribute("indexPOI"));
   indexMap=Boolean.parseBoolean(process.getAttribute("indexMap"));
@@ -29,6 +30,11 @@
     throw new IllegalArgumentException("Please specify directory with generated index files  as directory_for_index_files (attribute)");
   }
   indexDirFiles=new File(dir);
+  workDir=indexDirFiles;
+  dir=process.getAttribute("directory_for_generation");
+  if (dir != null && new File(dir).exists()) {
+    workDir=new File(dir);
+  }
   if (downloadFiles) {
     if (regions == null) {
       throw new IllegalArgumentException("Please specify regions.xml file as 2nd parameter");

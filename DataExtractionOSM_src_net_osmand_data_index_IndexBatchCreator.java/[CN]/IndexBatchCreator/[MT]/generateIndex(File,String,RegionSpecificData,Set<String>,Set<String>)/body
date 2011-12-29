@@ -5,6 +5,9 @@
   try {
     RTree.clearCache();
     String regionName=f.getName();
+    System.out.println("-----------------------------------------------");
+    System.out.println("----------- Generate " + f.getName());
+    System.out.println("\n\n\n\n");
     int i=f.getName().indexOf('.');
     if (i > -1) {
       regionName=Algoritms.capitalizeFirstLetterAndLowercase(f.getName().substring(0,i));
@@ -15,7 +18,7 @@
  else {
       rName=Algoritms.capitalizeFirstLetterAndLowercase(rName);
     }
-    IndexCreator indexCreator=new IndexCreator(indexDirFiles);
+    IndexCreator indexCreator=new IndexCreator(workDir);
     indexCreator.setIndexAddress(indexAddress);
     indexCreator.setIndexPOI(indexPOI);
     indexCreator.setIndexTransport(indexTransport);
@@ -27,6 +30,9 @@
     if (regionSpecificData != null && regionSpecificData.cityAdminLevel != null) {
       indexCreator.setCityAdminLevel(regionSpecificData.cityAdminLevel);
     }
+    if (zoomWaySmoothness != null) {
+      indexCreator.setZoomWaySmothness(zoomWaySmoothness);
+    }
     String poiFileName=regionName + "_" + IndexConstants.POI_TABLE_VERSION+ IndexConstants.POI_INDEX_EXT;
     indexCreator.setPoiFileName(poiFileName);
     String mapFileName=regionName + "_" + IndexConstants.BINARY_MAP_VERSION+ IndexConstants.BINARY_MAP_INDEX_EXT;
@@ -34,11 +40,11 @@
     try {
       alreadyGeneratedFiles.add(f.getName());
       indexCreator.generateIndexes(f,new ConsoleProgressImplementation(3),null,mapZooms,types);
-      if (zoomWaySmoothness != null) {
-        indexCreator.setZoomWaySmothness(zoomWaySmoothness);
-      }
+      File generated=new File(workDir,mapFileName);
+      File ready=new File(indexDirFiles,mapFileName);
+      generated.renameTo(ready);
       if (indexMap || indexAddress || indexTransport|| indexPOI) {
-        uploadIndex(new File(indexDirFiles,mapFileName),alreadyUploadedFiles);
+        uploadIndex(ready,alreadyUploadedFiles);
       }
     }
  catch (    Exception e) {
