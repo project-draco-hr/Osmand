@@ -5,9 +5,8 @@
   try {
     RTree.clearCache();
     String regionName=f.getName();
-    System.out.println("-----------------------------------------------");
-    System.out.println("----------- Generate " + f.getName());
-    System.out.println("\n\n\n\n");
+    log.warn("-------------------------------------------");
+    log.warn("----------- Generate " + f.getName() + "\n\n\n");
     int i=f.getName().indexOf('.');
     if (i > -1) {
       regionName=Algoritms.capitalizeFirstLetterAndLowercase(f.getName().substring(0,i));
@@ -39,12 +38,37 @@
     indexCreator.setMapFileName(mapFileName);
     try {
       alreadyGeneratedFiles.add(f.getName());
-      indexCreator.generateIndexes(f,new ConsoleProgressImplementation(3),null,mapZooms,types);
+      Log warningsAboutMapData=null;
+      FileHandler fh=null;
+      try {
+        fh=new FileHandler(new File(workDir,mapFileName + ".gen.log").getAbsolutePath(),5000000,1,true);
+        fh.setFormatter(new SimpleFormatter());
+        Logger logger=LogManager.getLogManager().getLogger("batch.file.generation.log");
+        Handler[] hs=logger.getHandlers();
+        for (int ik=0; ik < hs.length; ik++) {
+          logger.removeHandler(hs[ik]);
+        }
+        logger.addHandler(fh);
+        warningsAboutMapData=LogFactory.getLog("net.osmand.batch.generation.log");
+      }
+ catch (      SecurityException e1) {
+        e1.printStackTrace();
+      }
+catch (      IOException e1) {
+        e1.printStackTrace();
+      }
+      if (fh != null) {
+        LogManager.getLogManager().getLogger("").addHandler(fh);
+      }
+      indexCreator.generateIndexes(f,new ConsoleProgressImplementation(3),null,mapZooms,types,warningsAboutMapData);
       File generated=new File(workDir,mapFileName);
       File ready=new File(indexDirFiles,mapFileName);
       generated.renameTo(ready);
       if (indexMap || indexAddress || indexTransport|| indexPOI) {
         uploadIndex(ready,alreadyUploadedFiles);
+      }
+      if (fh != null) {
+        LogManager.getLogManager().getLogger("").removeHandler(fh);
       }
     }
  catch (    Exception e) {
