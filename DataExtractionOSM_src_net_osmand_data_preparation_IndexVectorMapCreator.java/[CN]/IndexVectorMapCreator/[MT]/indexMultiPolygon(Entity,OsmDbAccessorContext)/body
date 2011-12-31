@@ -16,7 +16,7 @@
       }
     }
     if (!outerFound) {
-      log.warn("Probably map bug: Multipoligon id=" + e.getId() + " contains only inner ways : ");
+      logMapDataWarn.warn("Probably map bug: Multipoligon id=" + e.getId() + " contains only inner ways : ");
       return;
     }
     int mtType=findMultiPolygonType(e,0);
@@ -32,6 +32,7 @@
         }
       }
       if (!incompletedRings.isEmpty()) {
+        logMapDataWarn.warn("In multipolygon  " + e.getId() + " there are incompleted ways : "+ incompletedRings);
         return;
       }
       for (      List<Way> l : completedRings) {
@@ -39,14 +40,14 @@
         for (        Way way : l) {
           boolean inner="inner".equals(entities.get(way));
           if (innerType != inner) {
-            log.warn("Probably map bug: Multipoligon contains outer and inner ways.\n" + "Way:" + way.getId() + " is strange part of completed ring. InnerType:"+ innerType+ " way inner: "+ inner+ " way inner string:"+ entities.get(way));
+            logMapDataWarn.warn("Probably map bug: Multipoligon contains outer and inner ways.\n" + "Way:" + way.getId() + " is strange part of completed ring. InnerType:"+ innerType+ " way inner: "+ inner+ " way inner string:"+ entities.get(way));
             return;
           }
         }
       }
       Node nodeOut=checkOuterWaysEncloseInnerWays(completedRings,entities);
       if (nodeOut != null) {
-        log.warn("Map bug: Multipoligon contains 'inner' way point outside of 'outer' border.\n" + "Multipolygon id : " + e.getId() + ", inner node out id : "+ nodeOut.getId());
+        logMapDataWarn.warn("Map bug: Multipoligon contains 'inner' way point outside of 'outer' border.\n" + "Multipolygon id : " + e.getId() + ", inner node out id : "+ nodeOut.getId());
       }
       for (      List<Way> l : completedRings) {
         boolean innerType="inner".equals(entities.get(l.get(0)));
