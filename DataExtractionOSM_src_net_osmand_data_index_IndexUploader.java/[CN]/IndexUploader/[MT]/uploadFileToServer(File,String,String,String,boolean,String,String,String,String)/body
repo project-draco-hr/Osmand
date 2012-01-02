@@ -1,0 +1,35 @@
+{
+  double originalLength=(double)original.length() / MB;
+  MessageFormat dateFormat=new MessageFormat("{0,date,dd.MM.yyyy}",Locale.US);
+  MessageFormat numberFormat=new MessageFormat("{0,number,##.#}",Locale.US);
+  String size=numberFormat.format(new Object[]{originalLength});
+  String date=dateFormat.format(new Object[]{new Date(original.lastModified())});
+  try {
+    if (uploadToOsmandGooglecode) {
+      uploadToDownloadOsmandNet(original,summary,size,date,user,password);
+    }
+ else {
+      String descriptionFile="{" + date + " : "+ size+ " MB}";
+      summary+=" " + descriptionFile;
+      List<File> splittedFiles=Collections.emptyList();
+      try {
+        splittedFiles=splitFiles(original);
+        for (        File fs : splittedFiles) {
+          uploadToGoogleCode(fs,summary,user,password,token,pagegen,cookieHSID,cookieSID);
+        }
+      }
+  finally {
+        for (        File fs : splittedFiles) {
+          if (!fs.equals(original)) {
+            fs.delete();
+          }
+        }
+      }
+    }
+  }
+ catch (  IOException e) {
+    log.error("Input/output exception uploading " + original.getName(),e);
+    return false;
+  }
+  return true;
+}

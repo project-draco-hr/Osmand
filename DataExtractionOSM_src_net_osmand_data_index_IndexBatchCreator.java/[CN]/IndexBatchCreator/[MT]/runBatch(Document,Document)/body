@@ -4,11 +4,7 @@
     throw new IllegalArgumentException("You should specify exactly 1 process element!");
   }
   Element process=(Element)list.item(0);
-  downloadFiles=Boolean.parseBoolean(process.getAttribute("downloadOsmFiles"));
-  generateIndexes=Boolean.parseBoolean(process.getAttribute("generateIndexes"));
-  uploadIndexes=Boolean.parseBoolean(process.getAttribute("uploadIndexes"));
-  deleteFilesAfterUploading=Boolean.parseBoolean(process.getAttribute("deleteFilesAfterUploading"));
-  IndexCreator.REMOVE_POI_DB=!Boolean.parseBoolean(process.getAttribute("keepPoiOdb"));
+  IndexCreator.REMOVE_POI_DB=true;
   skipGeneratedIndexes=Boolean.parseBoolean(process.getAttribute("skipGeneratedIndexes"));
   wget=process.getAttribute("wget");
   indexPOI=Boolean.parseBoolean(process.getAttribute("indexPOI"));
@@ -34,52 +30,6 @@
   dir=process.getAttribute("directory_for_generation");
   if (dir != null && new File(dir).exists()) {
     workDir=new File(dir);
-  }
-  if (downloadFiles) {
-    if (regions == null) {
-      throw new IllegalArgumentException("Please specify regions.xml file as 2nd parameter");
-    }
-  }
-  dir=process.getAttribute("directory_for_uploaded_files");
-  if (dir != null) {
-    File file=new File(dir);
-    file.mkdirs();
-    if (file.exists()) {
-      backupUploadedFiles=file;
-    }
-  }
-  if (uploadIndexes) {
-    list=doc.getElementsByTagName("authorization_info");
-    if (list.getLength() != 1) {
-      throw new IllegalArgumentException("You should specify exactly 1 authorization_info element to upload indexes!");
-    }
-    Element authorization=(Element)list.item(0);
-    uploadToOsmandGooglecode=Boolean.parseBoolean(process.getAttribute("upload_osmand_googlecode"));
-    if (uploadToOsmandGooglecode) {
-      user=authorization.getAttribute("google_code_user");
-      password=authorization.getAttribute("google_code_password");
-      cookieHSID=authorization.getAttribute("cookieHSID");
-      cookieSID=authorization.getAttribute("cookieSID");
-      pagegen=authorization.getAttribute("pagegen");
-      token=authorization.getAttribute("token");
-      if (googlePassword.length() > 0) {
-        ExtractGooglecodeAuthorization gca=new ExtractGooglecodeAuthorization();
-        try {
-          GooglecodeUploadTokens tokens=gca.getGooglecodeTokensForUpload(user,googlePassword);
-          cookieHSID=tokens.getHsid();
-          cookieSID=tokens.getSid();
-          pagegen=tokens.getPagegen();
-          token=tokens.getToken();
-        }
- catch (        IOException e) {
-          log.error("Error retrieving google tokens",e);
-        }
-      }
-    }
- else {
-      user=authorization.getAttribute("osmand_download_user");
-      password=authorization.getAttribute("osmand_download_password");
-    }
   }
   List<RegionCountries> countriesToDownload=new ArrayList<RegionCountries>();
   parseCountriesToDownload(doc,countriesToDownload);

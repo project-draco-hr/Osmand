@@ -1,0 +1,36 @@
+{
+  if (f.length() / MB > MAX_UPLOAD_SIZE) {
+    System.err.println("ERROR : file " + f.getName() + " exceeded 200 mb!!! Could not be uploaded.");
+    throw new IOException("ERROR : file " + f.getName() + " exceeded 200 mb!!! Could not be uploaded.");
+  }
+  try {
+    DownloaderIndexFromGoogleCode.deleteFileFromGoogleDownloads(f.getName(),token,pagegen,cookieHSID,cookieSID);
+    if (f.getName().endsWith("obf.zip") && f.length() / MB < 5) {
+      DownloaderIndexFromGoogleCode.deleteFileFromGoogleDownloads(f.getName().substring(0,f.getName().length() - 4),token,pagegen,cookieHSID,cookieSID);
+    }
+ else     if (f.getName().endsWith("poi.zip") && f.length() / MB < 5) {
+      DownloaderIndexFromGoogleCode.deleteFileFromGoogleDownloads(f.getName().substring(0,f.getName().length() - 3) + "odb",token,pagegen,cookieHSID,cookieSID);
+    }
+ else     if (f.getName().endsWith(".zip-1")) {
+      DownloaderIndexFromGoogleCode.deleteFileFromGoogleDownloads(f.getName().substring(0,f.getName().length() - 2),token,pagegen,cookieHSID,cookieSID);
+    }
+    try {
+      Thread.sleep(4000);
+    }
+ catch (    InterruptedException e) {
+    }
+  }
+ catch (  IOException e) {
+    log.warn("Deleting file from downloads" + f.getName() + " "+ e.getMessage());
+  }
+  GoogleCodeUploadIndex uploader=new GoogleCodeUploadIndex();
+  uploader.setFileName(f.getAbsolutePath());
+  uploader.setTargetFileName(f.getName());
+  uploader.setProjectName("osmand");
+  uploader.setUserName(user);
+  uploader.setPassword(password);
+  uploader.setLabels("Type-Archive, Testdata");
+  uploader.setSummary(summary);
+  uploader.setDescription(summary);
+  uploader.upload();
+}

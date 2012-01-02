@@ -1,0 +1,82 @@
+{
+  try {
+    RTree.clearCache();
+    String regionName=f.getName();
+    log.warn("-------------------------------------------");
+    log.warn("----------- Generate " + f.getName() + "\n\n\n");
+    int i=f.getName().indexOf('.');
+    if (i > -1) {
+      regionName=Algoritms.capitalizeFirstLetterAndLowercase(f.getName().substring(0,i));
+    }
+    if (Algoritms.isEmpty(rName)) {
+      rName=regionName;
+    }
+ else {
+      rName=Algoritms.capitalizeFirstLetterAndLowercase(rName);
+    }
+    IndexCreator indexCreator=new IndexCreator(workDir);
+    indexCreator.setIndexAddress(indexAddress);
+    indexCreator.setIndexPOI(indexPOI);
+    indexCreator.setIndexTransport(indexTransport);
+    indexCreator.setIndexMap(indexMap);
+    indexCreator.setLastModifiedDate(f.lastModified());
+    indexCreator.setNormalizeStreets(true);
+    indexCreator.setSaveAddressWays(true);
+    indexCreator.setRegionName(rName);
+    if (regionSpecificData != null && regionSpecificData.cityAdminLevel != null) {
+      indexCreator.setCityAdminLevel(regionSpecificData.cityAdminLevel);
+    }
+    if (zoomWaySmoothness != null) {
+      indexCreator.setZoomWaySmothness(zoomWaySmoothness);
+    }
+    String poiFileName=regionName + "_" + IndexConstants.POI_TABLE_VERSION+ IndexConstants.POI_INDEX_EXT;
+    indexCreator.setPoiFileName(poiFileName);
+    String mapFileName=regionName + "_" + IndexConstants.BINARY_MAP_VERSION+ IndexConstants.BINARY_MAP_INDEX_EXT;
+    indexCreator.setMapFileName(mapFileName);
+    try {
+      alreadyGeneratedFiles.add(f.getName());
+      Log warningsAboutMapData=null;
+      FileHandler fh=null;
+      try {
+        File fs=new File(workDir,mapFileName + ".gen.log");
+        FileOutputStream fout=new FileOutputStream(fs);
+        fout.write((new Date() + "\n").getBytes());
+        fout.write((Version.APP_MAP_CREATOR_FULL_NAME + "\n").getBytes());
+        fout.close();
+        fh=new FileHandler(fs.getAbsolutePath(),5000000,1,false);
+        fh.setFormatter(new SimpleFormatter());
+        fh.setLevel(Level.ALL);
+        Jdk14Logger jdk14Logger=new Jdk14Logger("tempLogger");
+        jdk14Logger.getLogger().setLevel(Level.ALL);
+        jdk14Logger.getLogger().setUseParentHandlers(false);
+        jdk14Logger.getLogger().addHandler(fh);
+        warningsAboutMapData=jdk14Logger;
+      }
+ catch (      SecurityException e1) {
+        e1.printStackTrace();
+      }
+catch (      IOException e1) {
+        e1.printStackTrace();
+      }
+      if (fh != null) {
+        LogManager.getLogManager().getLogger("").addHandler(fh);
+      }
+      indexCreator.generateIndexes(f,new ConsoleProgressImplementation(3),null,mapZooms,types,warningsAboutMapData);
+      File generated=new File(workDir,mapFileName);
+      File ready=new File(indexDirFiles,mapFileName);
+      generated.renameTo(ready);
+      if (fh != null) {
+        LogManager.getLogManager().getLogger("").removeHandler(fh);
+        fh.close();
+      }
+    }
+ catch (    Exception e) {
+      log.error("Exception generating indexes for " + f.getName(),e);
+    }
+  }
+ catch (  OutOfMemoryError e) {
+    System.gc();
+    log.error("OutOfMemory",e);
+  }
+  System.gc();
+}

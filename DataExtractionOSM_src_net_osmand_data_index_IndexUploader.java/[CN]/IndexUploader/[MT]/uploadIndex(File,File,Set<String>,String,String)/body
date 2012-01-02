@@ -1,0 +1,37 @@
+{
+  double mbLengh=(double)indexFile.length() / MB;
+  String fileName=indexFile.getName();
+  if (mbLengh < MIN_SIZE_TO_UPLOAD) {
+    log.info("Skip uploading index due to size " + fileName);
+    return;
+  }
+  try {
+    log.info("Upload index " + fileName);
+    String summary=getDescription(indexFile);
+    File toUpload=indexFile;
+    if (fileName.endsWith(".obf")) {
+      String zipFileName=fileName + ".zip";
+      log.info("Zipping file " + fileName);
+      toUpload=IndexUploader.zip(indexFile,zipFileName,summary);
+      if (indexFile.delete()) {
+        log.info("Source obf file was deleted.");
+      }
+    }
+    boolean uploaded=uploadFileToServer(toUpload,summary,user,password,false,null,null,null,null);
+    if (uploaded && dirToBackup != null) {
+      File toBackup=new File(dirToBackup,toUpload.getName());
+      if (toBackup.exists()) {
+        toBackup.delete();
+      }
+      toUpload.renameTo(toBackup);
+    }
+    alreadyUploadedFiles.add(toUpload.getName());
+  }
+ catch (  OneFileException e) {
+    log.error("Exception ",e);
+    return;
+  }
+catch (  IOException e) {
+    log.error("Input/output exception uploading " + fileName,e);
+  }
+}
