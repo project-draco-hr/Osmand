@@ -1,0 +1,21 @@
+{
+  try {
+    ZipOutputStream zout=new ZipOutputStream(new FileOutputStream(zFile));
+    zout.setLevel(9);
+    for (    File f : fs) {
+      log.info("Zipping to file: " + zFile.getName() + " file:"+ f.getName()+ " with desc:"+ description);
+      ZipEntry zEntry=new ZipEntry(f.getName());
+      zEntry.setSize(f.length());
+      zEntry.setComment(description);
+      zout.putNextEntry(zEntry);
+      FileInputStream is=new FileInputStream(f);
+      Algoritms.streamCopy(is,zout);
+      Algoritms.closeStream(is);
+    }
+    Algoritms.closeStream(zout);
+  }
+ catch (  IOException e) {
+    throw new OneFileException("cannot zip file:" + e.getMessage());
+  }
+  return zFile;
+}
