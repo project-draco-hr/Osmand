@@ -5,17 +5,14 @@
   String size=numberFormat.format(new Object[]{originalLength});
   String date=dateFormat.format(new Object[]{new Date(original.lastModified())});
   try {
-    if (uploadToOsmandGooglecode) {
-      uploadToDownloadOsmandNet(original,summary,size,date,user,password);
-    }
- else {
+    if (credentials instanceof UploadToGoogleCodeCredentials) {
       String descriptionFile="{" + date + " : "+ size+ " MB}";
       summary+=" " + descriptionFile;
       List<File> splittedFiles=Collections.emptyList();
       try {
         splittedFiles=splitFiles(original);
         for (        File fs : splittedFiles) {
-          uploadToGoogleCode(fs,summary,user,password,token,pagegen,cookieHSID,cookieSID);
+          uploadToGoogleCode(fs,summary,(UploadToGoogleCodeCredentials)credentials);
         }
       }
   finally {
@@ -26,8 +23,18 @@
         }
       }
     }
+ else     if (credentials instanceof UploadCredentials) {
+      uploadToSSH(original,summary,size,date,(UploadSSHCredentials)credentials);
+    }
+ else {
+      uploadToFTP(original,summary,size,date,credentials);
+    }
   }
  catch (  IOException e) {
+    log.error("Input/output exception uploading " + original.getName(),e);
+    return false;
+  }
+catch (  JSchException e) {
     log.error("Input/output exception uploading " + original.getName(),e);
     return false;
   }
