@@ -1,8 +1,10 @@
 {
   log.info("Uploading file " + f.getName() + " "+ size+ " MB "+ date+ " of "+ description);
   JSch jSch=new JSch();
+  boolean knownHosts=false;
   if (cred.knownHosts != null) {
     jSch.setKnownHosts(cred.knownHosts);
+    knownHosts=true;
   }
   if (cred.privateKey != null) {
     jSch.addIdentity(cred.privateKey);
@@ -11,11 +13,16 @@
   if (serverName.startsWith("ssh://")) {
     serverName=serverName.substring("ssh://".length());
   }
-  Session session=jSch.getSession(cred.user,cred.url);
+  Session session=jSch.getSession(cred.user,serverName);
   if (cred.password != null) {
     session.setPassword(cred.password);
   }
-  String rfile=cred.path + f.getName();
+  if (!knownHosts) {
+    java.util.Properties config=new java.util.Properties();
+    config.put("StrictHostKeyChecking","no");
+    session.setConfig(config);
+  }
+  String rfile=cred.path + "/" + f.getName();
   String lfile=f.getAbsolutePath();
   session.connect();
   String command="scp -p -t " + rfile;

@@ -2,18 +2,18 @@
   File[] listFiles=directory.listFiles();
   for (  File f : listFiles) {
     try {
-      if (!f.isFile()) {
+      if (!f.isFile() || f.getName().endsWith(IndexBatchCreator.GEN_LOG_EXT)) {
         continue;
       }
       File unzipped=unzip(f);
       String description=getDescription(unzipped);
-      File zFile=new File(f.getParentFile(),unzipped.getName() + ".zip");
       File logFile=new File(f.getParentFile(),unzipped.getName() + IndexBatchCreator.GEN_LOG_EXT);
       List<File> files=new ArrayList<File>();
-      files.add(zFile);
+      files.add(unzipped);
       if (logFile.exists()) {
         files.add(logFile);
       }
+      File zFile=new File(f.getParentFile(),unzipped.getName() + ".zip");
       zip(files,zFile,description);
       unzipped.delete();
       if (logFile.exists()) {
