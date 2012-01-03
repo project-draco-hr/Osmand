@@ -9,9 +9,12 @@
       String url=MessageFormat.format(site,name);
       String regionName=prefix + name;
       String fileName=Algoritms.capitalizeFirstLetterAndLowercase(prefix + name + suffix);
-      File bmif=new File(indexDirFiles,fileName + "_" + IndexConstants.BINARY_MAP_VERSION+ IndexConstants.BINARY_MAP_INDEX_EXT);
-      if (skipGeneratedIndexes && bmif.exists()) {
-        continue;
+      if (skipExistingIndexes != null) {
+        File bmif=new File(skipExistingIndexes,fileName + "_" + IndexConstants.BINARY_MAP_VERSION+ IndexConstants.BINARY_MAP_INDEX_EXT);
+        File bmifz=new File(skipExistingIndexes,bmif.getName() + ".zip");
+        if (bmif.exists() || bmifz.exists()) {
+          continue;
+        }
       }
       File toSave=downloadFile(url,fileName,alreadyGeneratedFiles);
       if (toSave != null) {
