@@ -1,7 +1,21 @@
 {
   super.onResume();
-  favouritesAdapter.synchronizeGroups();
   final LatLon mapLocation=OsmandSettings.getOsmandSettings(this).getLastKnownMapLocation();
+  favouritesAdapter.synchronizeGroups();
   if (mapLocation != null) {
+    favouritesAdapter.sort(new Comparator<FavouritePoint>(){
+      @Override public int compare(      FavouritePoint object1,      FavouritePoint object2){
+        double d1=MapUtils.getDistance(mapLocation,object1.getLatitude(),object1.getLongitude());
+        double d2=MapUtils.getDistance(mapLocation,object2.getLatitude(),object2.getLongitude());
+        if (d1 == d2) {
+          return 0;
+        }
+ else         if (d1 > d2) {
+          return 1;
+        }
+        return -1;
+      }
+    }
+);
   }
 }
