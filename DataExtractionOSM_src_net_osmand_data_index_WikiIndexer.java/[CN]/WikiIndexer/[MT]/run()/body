@@ -1,0 +1,38 @@
+{
+  File[] listFiles=srcPath.listFiles();
+  for (  File f : listFiles) {
+    try {
+      if (f.isFile() && (f.getName().endsWith(".xml") || f.getName().endsWith(".xml.bz2"))) {
+        log.info("About to process " + f.getName());
+        File outFile=process(f);
+        if (outFile != null) {
+          IndexCreator ic=new IndexCreator(workPath);
+          ic.setIndexPOI(true);
+          ic.setIndexMap(false);
+          ic.setIndexTransport(false);
+          ic.setIndexAddress(false);
+          ic.generateIndexes(outFile,new ConsoleProgressImplementation(3),null,null,null,log);
+          new File(workPath,ic.getMapFileName()).renameTo(new File(targetPath,ic.getMapFileName()));
+        }
+      }
+    }
+ catch (    WikiIndexerException e) {
+      log.error("Error processing " + f.getName(),e);
+    }
+catch (    RuntimeException e) {
+      log.error("Error processing " + f.getName(),e);
+    }
+catch (    IOException e) {
+      log.error("Error processing " + f.getName(),e);
+    }
+catch (    SAXException e) {
+      log.error("Error processing " + f.getName(),e);
+    }
+catch (    SQLException e) {
+      log.error("Error processing " + f.getName(),e);
+    }
+catch (    InterruptedException e) {
+      log.error("Error processing " + f.getName(),e);
+    }
+  }
+}

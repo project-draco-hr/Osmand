@@ -1,0 +1,43 @@
+{
+  InputStream fi=null;
+  BufferedWriter out=null;
+  try {
+    int in=f.getName().indexOf('.');
+    File osmOut=new File(workPath,f.getName().substring(0,in) + ".osm");
+    fi=new BufferedInputStream(new FileInputStream(f));
+    InputStream progressStream=fi;
+    if (f.getName().endsWith(".bz2")) {
+      if (fi.read() != 'B' || fi.read() != 'Z') {
+        throw new RuntimeException("The source stream must start with the characters BZ if it is to be read as a BZip2 stream.");
+      }
+ else {
+        fi=new CBZip2InputStream(fi);
+      }
+    }
+    ConsoleProgressImplementation progress=new ConsoleProgressImplementation();
+    out=new BufferedWriter(new OutputStreamWriter(new FileOutputStream(osmOut),"UTF-8"));
+    SAXParser saxParser=SAXParserFactory.newInstance().newSAXParser();
+    WikiOsmHandler wikiOsmHandler=new WikiOsmHandler(saxParser,out,progress,progressStream);
+    saxParser.parse(fi,wikiOsmHandler);
+    if (wikiOsmHandler.getCount() < 1) {
+      return null;
+    }
+    return osmOut;
+  }
+ catch (  ParserConfigurationException e) {
+    throw new WikiIndexerException("Parse exception",e);
+  }
+catch (  SAXException e) {
+    throw new WikiIndexerException("Parse exception",e);
+  }
+catch (  IOException e) {
+    throw new WikiIndexerException("Parse exception",e);
+  }
+catch (  XMLStreamException e) {
+    throw new WikiIndexerException("Parse exception",e);
+  }
+ finally {
+    Algoritms.closeStream(out);
+    Algoritms.closeStream(fi);
+  }
+}

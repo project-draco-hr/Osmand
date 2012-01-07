@@ -6,12 +6,12 @@
   poiIndexFile.getParentFile().mkdirs();
   poiConnection=(Connection)DBDialect.SQLITE.getDatabaseConnection(poiIndexFile.getAbsolutePath(),log);
   Statement stat=poiConnection.createStatement();
-  stat.executeUpdate("create table " + IndexConstants.POI_TABLE + "(id bigint, x int, y int, name_en varchar(1024), name varchar(1024), "+ "type varchar(1024), subtype varchar(1024), opening_hours varchar(1024), phone varchar(1024), site varchar(1024),"+ "primary key(id, type, subtype))");
+  stat.executeUpdate("create table " + IndexConstants.POI_TABLE + " (id bigint, x int, y int, name_en varchar(1024), name varchar(1024), "+ "type varchar(1024), subtype varchar(1024), opening_hours varchar(1024), phone varchar(1024), site varchar(1024), description varchar(4096), "+ "primary key(id, type, subtype))");
   stat.executeUpdate("create index poi_loc on poi (x, y, type, subtype)");
   stat.executeUpdate("create index poi_id on poi (id, type, subtype)");
   stat.execute("PRAGMA user_version = " + IndexConstants.POI_TABLE_VERSION);
   stat.close();
-  poiPreparedStatement=poiConnection.prepareStatement("INSERT INTO " + IndexConstants.POI_TABLE + "(id, x, y, name_en, name, type, subtype, opening_hours, site, phone) "+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+  poiPreparedStatement=poiConnection.prepareStatement("INSERT INTO " + IndexConstants.POI_TABLE + "(id, x, y, name_en, name, type, subtype, opening_hours, site, phone, description) "+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
   pStatements.put(poiPreparedStatement,0);
   poiConnection.setAutoCommit(false);
 }

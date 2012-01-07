@@ -1,0 +1,54 @@
+{
+  if (title.toString().endsWith("/doc")) {
+    return;
+  }
+  int ls=text.indexOf("lat_dir");
+  if (ls != -1 && text.charAt(ls + 1 + "lat_dir".length()) != '|') {
+    float lat=0;
+    float lon=0;
+    String subcategory="";
+    StringBuilder description=new StringBuilder();
+    int h=findOpenBrackets(0);
+    int e=findClosedBrackets(h);
+    while (h != -1 && e != -1) {
+      String lat_dir=readProperty("lat_dir",h,e);
+      if (lat_dir != null) {
+        break;
+      }
+      h=findOpenBrackets(e);
+      e=findClosedBrackets(h);
+    }
+    if (h == -1 || e == -1) {
+      return;
+    }
+    try {
+      String lat_dir=readProperty("lat_dir",h,e);
+      String lon_dir=readProperty("lon_dir",h,e);
+      float lat_deg=Float.parseFloat(readProperty("lat_deg",h,e));
+      float lon_deg=Float.parseFloat(readProperty("lon_deg",h,e));
+      float lat_min=zeroParseFloat(readProperty("lat_min",h,e));
+      float lon_min=zeroParseFloat(readProperty("lon_min",h,e));
+      float lat_sec=zeroParseFloat(readProperty("lat_sec",h,e));
+      float lon_sec=zeroParseFloat(readProperty("lon_sec",h,e));
+      lat=(("S".equals(lat_dir)) ? -1 : 1) * (lat_deg + (lat_min + lat_sec / 60) / 60);
+      lon=(("E".equals(lon_dir)) ? -1 : 1) * (lon_deg + (lon_min + lon_sec / 60) / 60);
+    }
+ catch (    RuntimeException es) {
+      log.debug("Article " + title,es);
+      return;
+    }
+    for (int j=h + 2; j < e; j++) {
+      if (Character.isWhitespace(text.charAt(j)) || text.charAt(j) == '|') {
+        subcategory=text.substring(h + 2,j).trim();
+        break;
+      }
+    }
+    processDescription(description,e + 3);
+    if (description.length() > 0) {
+      writeNode(lat,lon,subcategory,description);
+    }
+    System.out.println("Point " + title + " "+ subcategory+ " Lon:"+ lat+ " Lon:"+ lon+ " ");
+    System.out.println("Description : " + description.toString().trim());
+    System.out.println("---------------------");
+  }
+}
