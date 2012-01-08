@@ -1,16 +1,22 @@
 {
   StringBuilder description=new StringBuilder();
-  int beg=0;
-  int h=findOpenBrackets(beg);
-  while (h != -1 && text.substring(beg,h).trim().length() == 0) {
-    beg=findClosedBrackets(h);
-    if (beg == -1) {
-      return;
+  try {
+    int beg=0;
+    int h=findOpenBrackets(beg);
+    while (h != -1 && text.substring(beg,h).trim().length() == 0) {
+      beg=findClosedBrackets(h);
+      if (beg == -1) {
+        return;
+      }
+      beg+=2;
+      h=findOpenBrackets(beg);
     }
-    beg+=2;
-    h=findOpenBrackets(beg);
+    processDescription(description,beg);
   }
-  processDescription(description,beg);
+ catch (  RuntimeException e) {
+    description.setLength(0);
+    log.error(e.getMessage(),e);
+  }
   if (description.length() > 0) {
     writeNode(clat,clon,subcategory,description);
   }
