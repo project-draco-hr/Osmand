@@ -4,13 +4,29 @@
     if (page) {
       if (name.equals("page")) {
         page=false;
+        parseText=false;
         progress.remaining(progIS.available());
       }
  else       if (name.equals("title")) {
         ctext=null;
       }
+ else       if (name.equals("id")) {
+        ctext=null;
+        long pid=Long.parseLong(pageId.toString());
+        dbStat.setLong(1,pid);
+        ResultSet rs=dbStat.executeQuery();
+        parseText=false;
+        if (rs.next()) {
+          parseText=true;
+          clat=rs.getFloat(1);
+          clon=rs.getFloat(2);
+          subcategory=(rs.getString(3) + "").toLowerCase();
+        }
+      }
  else       if (name.equals("text")) {
-        analyzeTextForGeoInfo();
+        if (parseText) {
+          analyzeTextForGeoInfoNew();
+        }
         ctext=null;
       }
     }
@@ -19,6 +35,9 @@
     throw new SAXException(e);
   }
 catch (  XMLStreamException e) {
+    throw new SAXException(e);
+  }
+catch (  SQLException e) {
     throw new SAXException(e);
   }
 }

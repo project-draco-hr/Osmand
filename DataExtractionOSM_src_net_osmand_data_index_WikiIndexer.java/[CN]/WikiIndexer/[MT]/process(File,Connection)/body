@@ -3,6 +3,9 @@
   BufferedWriter out=null;
   try {
     int in=f.getName().indexOf('.');
+    String wikiLocale=f.getName().substring(in + 1,f.getName().indexOf('.',in));
+    log.info("Locale for file " + wikiLocale);
+    PreparedStatement statement=dbConnection.prepareStatement("SELECT gc_lat, gc_lon, gc_type FROM coord_" + wikiLocale + "wiki WHERE gc_from=?");
     File osmOut=new File(workPath,f.getName().substring(0,in) + ".osm");
     fi=new BufferedInputStream(new FileInputStream(f));
     InputStream progressStream=fi;
@@ -17,8 +20,9 @@
     ConsoleProgressImplementation progress=new ConsoleProgressImplementation();
     out=new BufferedWriter(new OutputStreamWriter(new FileOutputStream(osmOut),"UTF-8"));
     SAXParser saxParser=SAXParserFactory.newInstance().newSAXParser();
-    WikiOsmHandler wikiOsmHandler=new WikiOsmHandler(saxParser,out,progress,progressStream);
+    WikiOsmHandler wikiOsmHandler=new WikiOsmHandler(saxParser,out,progress,progressStream,statement);
     saxParser.parse(fi,wikiOsmHandler);
+    statement.close();
     if (wikiOsmHandler.getCount() < 1) {
       return null;
     }
@@ -35,6 +39,9 @@ catch (  IOException e) {
   }
 catch (  XMLStreamException e) {
     throw new WikiIndexerException("Parse exception",e);
+  }
+catch (  SQLException e) {
+    throw new WikiIndexerException("Database exception or locale configuration problem",e);
   }
  finally {
     Algoritms.closeStream(out);

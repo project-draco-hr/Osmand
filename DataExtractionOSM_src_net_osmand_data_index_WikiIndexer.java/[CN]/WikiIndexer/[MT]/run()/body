@@ -1,10 +1,29 @@
 {
+  log.info("Obtain database connection");
+  Connection conn;
+  try {
+    Class.forName("com.mysql.jdbc.Driver").newInstance();
+    conn=DriverManager.getConnection(url,userName,password);
+    log.info("Database connection established");
+  }
+ catch (  InstantiationException e1) {
+    throw new WikiIndexerException("Could not establish connection to " + url + " with "+ userName,e1);
+  }
+catch (  IllegalAccessException e1) {
+    throw new WikiIndexerException("Could not establish connection to " + url + " with "+ userName,e1);
+  }
+catch (  ClassNotFoundException e1) {
+    throw new WikiIndexerException("Could not establish connection to " + url + " with "+ userName,e1);
+  }
+catch (  SQLException e1) {
+    throw new WikiIndexerException("Could not establish connection to " + url + " with "+ userName,e1);
+  }
   File[] listFiles=srcPath.listFiles();
   for (  File f : listFiles) {
     try {
       if (f.isFile() && (f.getName().endsWith(".xml") || f.getName().endsWith(".xml.bz2"))) {
         log.info("About to process " + f.getName());
-        File outFile=process(f);
+        File outFile=process(f,conn);
         if (outFile != null) {
           IndexCreator ic=new IndexCreator(workPath);
           ic.setIndexPOI(true);
