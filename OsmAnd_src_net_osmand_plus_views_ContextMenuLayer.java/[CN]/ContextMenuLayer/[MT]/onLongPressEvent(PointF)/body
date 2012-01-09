@@ -5,26 +5,28 @@
     return true;
   }
   selectedContextProvider=null;
-  selectedObject=null;
+  selectedObjects.clear();
   for (  OsmandMapLayer l : view.getLayers()) {
     if (l instanceof ContextMenuLayer.IContextMenuProvider) {
-      selectedObject=((ContextMenuLayer.IContextMenuProvider)l).getPointObject(point);
-      if (selectedObject != null) {
+      ((ContextMenuLayer.IContextMenuProvider)l).collectObjectsFromPoint(point,selectedObjects);
+      if (!selectedObjects.isEmpty()) {
         selectedContextProvider=(IContextMenuProvider)l;
         break;
       }
     }
   }
   LatLon latLon=view.getLatLonFromScreenPoint(point.x,point.y);
-  String description="";
-  if (selectedObject != null) {
-    description=selectedContextProvider.getObjectDescription(selectedObject);
-    LatLon l=selectedContextProvider.getObjectLocation(selectedObject);
+  StringBuilder description=new StringBuilder();
+  if (!selectedObjects.isEmpty()) {
+    for (    Object o : selectedObjects) {
+      description.append(selectedContextProvider.getObjectDescription(o));
+    }
+    LatLon l=selectedContextProvider.getObjectLocation(selectedObjects.get(0));
     if (l != null) {
       latLon=l;
     }
   }
-  setLocation(latLon,description);
+  setLocation(latLon,description.toString());
   view.refreshMap();
   return true;
 }
