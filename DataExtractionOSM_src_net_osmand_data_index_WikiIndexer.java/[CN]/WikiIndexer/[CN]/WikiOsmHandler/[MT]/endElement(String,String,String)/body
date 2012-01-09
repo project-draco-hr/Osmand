@@ -16,17 +16,24 @@
  else       if (name.equals("id") && !revision) {
         ctext=null;
         cid=Long.parseLong(pageId.toString());
-        dbStat.setLong(1,cid);
-        ResultSet rs=dbStat.executeQuery();
+        locSearch.setLong(1,cid);
+        ResultSet rs=locSearch.executeQuery();
         parseText=false;
         if (rs.next()) {
           parseText=true;
           clat=rs.getFloat(1);
           clon=rs.getFloat(2);
-          subcategory=(rs.getString(3) + "").toLowerCase();
+          subcategory=rs.getString(3);
+          if (subcategory == null) {
+            subcategory="";
+          }
+          subcategory=subcategory.toLowerCase();
         }
       }
  else       if (name.equals("text")) {
+        if (!parseText && RECOGNIZE_ENGLISH) {
+          tryToMatchEnglish();
+        }
         if (parseText) {
           if (id % 500 == 0) {
             log.debug("Article accepted " + cid + " "+ title.toString());
