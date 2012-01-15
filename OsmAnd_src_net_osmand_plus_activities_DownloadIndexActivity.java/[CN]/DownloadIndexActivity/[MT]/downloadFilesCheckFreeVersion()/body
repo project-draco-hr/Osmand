@@ -1,0 +1,24 @@
+{
+  if (getPackageName().equals(FREE_VERSION_NAME)) {
+    int total=OsmandSettings.getOsmandSettings(this).NUMBER_OF_FREE_DOWNLOADS.get() + entriesToDownload.size();
+    boolean wiki=false;
+    for (    DownloadEntry es : entriesToDownload.values()) {
+      if (es.baseName.contains("_wiki")) {
+        wiki=true;
+        break;
+      }
+    }
+    if (total > MAXIMUM_AVAILABLE_FREE_DOWNLOADS || wiki) {
+      Builder msg=new AlertDialog.Builder(this);
+      msg.setTitle(R.string.free_version_message);
+      msg.setMessage(getString(R.string.free_version_message,MAXIMUM_AVAILABLE_FREE_DOWNLOADS + "","( > " + total + ") "));
+      msg.show();
+    }
+ else {
+      downloadFilesPreCheckSpace();
+    }
+  }
+ else {
+    downloadFilesPreCheckSpace();
+  }
+}
