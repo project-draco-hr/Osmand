@@ -8,17 +8,20 @@
     zipFile=new ZipFile(f);
     Enumeration<? extends ZipEntry> entries=zipFile.entries();
     File mainFile=null;
+    long slastModified=f.lastModified();
     while (entries.hasMoreElements()) {
       ZipEntry entry=entries.nextElement();
+      long lastModified=slastModified;
       File tempFile=new File(f.getParentFile(),entry.getName());
       InputStream zin=zipFile.getInputStream(entry);
       FileOutputStream out=new FileOutputStream(tempFile);
       Algoritms.streamCopy(zin,out);
       Algoritms.closeStream(zin);
       Algoritms.closeStream(out);
-      if (!tempFile.getName().endsWith(IndexBatchCreator.GEN_LOG_EXT)) {
+      if (!tempFile.getName().endsWith(IndexConstants.GEN_LOG_EXT)) {
         mainFile=tempFile;
       }
+      tempFile.setLastModified(lastModified);
     }
     return mainFile;
   }
