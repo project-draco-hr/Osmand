@@ -18,12 +18,8 @@
       out.close();
       out=null;
     }
-    File toIndex=fileToDownload;
     if (fileToDownload.getName().endsWith(".zip")) {
-      if (!unzipToDir) {
-        toIndex=fileToUnZip;
-      }
- else {
+      if (unzipToDir) {
         fileToUnZip.mkdirs();
       }
       ZipInputStream zipIn=new ZipInputStream(new FileInputStream(fileToDownload));
@@ -38,7 +34,7 @@
         File fs;
         if (!unzipToDir) {
           if (first) {
-            fs=toIndex;
+            fs=fileToUnZip;
             first=false;
           }
  else {
@@ -51,7 +47,6 @@
               }
             }
             fs=new File(fileToUnZip.getParent(),name);
-            toIndex=fs;
           }
         }
  else {
@@ -68,23 +63,12 @@
         if (dateModified != null) {
           fs.setLastModified(dateModified);
         }
+        toReIndex.add(fs);
       }
       zipIn.close();
       fileToDownload.delete();
     }
-    ArrayList<String> warnings=new ArrayList<String>();
-    ResourceManager manager=((OsmandApplication)ctx.getApplicationContext()).getResourceManager();
-    if (dateModified != null) {
-      toIndex.setLastModified(dateModified);
-      manager.updateIndexLastDateModified(toIndex);
-    }
-    toReIndex.add(toIndex);
-    if (warnings.isEmpty()) {
-      showWarningCallback.showWarning(ctx.getString(R.string.download_index_success));
-    }
- else {
-      showWarningCallback.showWarning(warnings.get(0));
-    }
+    showWarningCallback.showWarning(ctx.getString(R.string.download_index_success));
     return true;
   }
  catch (  IOException e) {
