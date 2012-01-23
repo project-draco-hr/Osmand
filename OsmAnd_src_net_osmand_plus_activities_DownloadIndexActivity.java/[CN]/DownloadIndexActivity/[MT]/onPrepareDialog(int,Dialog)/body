@@ -3,15 +3,15 @@ switch (id) {
 case DIALOG_PROGRESS_FILE:
     DownloadIndexesAsyncTask task=new DownloadIndexesAsyncTask(new ProgressDialogImplementation(progressFileDlg,true));
   String[] indexes=entriesToDownload.keySet().toArray(new String[0]);
-String v=Version.APP_NAME_VERSION;
-if (Version.APP_DESCRIPTION.equals("beta")) {
-v+="beta";
+String v=Version.getAppName(this);
+if (Version.isProductionVersion(this)) {
+v=Version.getFullVersion(this);
 }
  else {
-v+="test";
+v+=" test";
 }
 for (String index : indexes) {
-tracker.trackEvent(v,Version.APP_NAME,index,1);
+tracker.trackEvent(v,Version.getAppName(this),index,1);
 }
 task.execute(indexes);
 break;
@@ -21,7 +21,7 @@ if (downloadListIndexThread.getState() == Thread.State.NEW) {
 downloadListIndexThread.start();
 }
  else if (downloadListIndexThread.getState() == Thread.State.TERMINATED) {
-downloadListIndexThread=new DownloadIndexListThread();
+downloadListIndexThread=new DownloadIndexListThread(Version.getVersionAsURLParam(this));
 downloadListIndexThread.setUiActivity(this);
 downloadListIndexThread.start();
 }
