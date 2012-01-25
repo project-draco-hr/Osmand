@@ -27,31 +27,39 @@
   if (list.isEmpty()) {
     Toast.makeText(activity,R.string.gpx_files_not_found,Toast.LENGTH_LONG).show();
   }
- else {
+  if (!list.isEmpty() || showCurrentGpx) {
     Builder builder=new AlertDialog.Builder(activity);
+    if (showCurrentGpx) {
+      list.add(0,getString(R.string.show_current_gpx_title));
+    }
     builder.setItems(list.toArray(new String[list.size()]),new DialogInterface.OnClickListener(){
       @Override public void onClick(      DialogInterface dialog,      int which){
         dialog.dismiss();
-        final ProgressDialog dlg=ProgressDialog.show(activity,getString(R.string.loading),getString(R.string.loading_data));
-        final File f=new File(dir,list.get(which));
-        new Thread(new Runnable(){
-          @Override public void run(){
-            final GPXFile res=GPXUtilities.loadGPXFile(activity,f,convertCloudmade);
-            dlg.dismiss();
-            activity.runOnUiThread(new Runnable(){
-              @Override public void run(){
-                if (res.warning != null) {
-                  Toast.makeText(activity,res.warning,Toast.LENGTH_LONG).show();
-                }
+        if (showCurrentGpx && which == 0) {
+          callbackWithObject.processResult(null);
+        }
  else {
-                  callbackWithObject.processResult(res);
+          final ProgressDialog dlg=ProgressDialog.show(activity,getString(R.string.loading),getString(R.string.loading_data));
+          final File f=new File(dir,list.get(which));
+          new Thread(new Runnable(){
+            @Override public void run(){
+              final GPXFile res=GPXUtilities.loadGPXFile(activity,f,convertCloudmade);
+              dlg.dismiss();
+              activity.runOnUiThread(new Runnable(){
+                @Override public void run(){
+                  if (res.warning != null) {
+                    Toast.makeText(activity,res.warning,Toast.LENGTH_LONG).show();
+                  }
+ else {
+                    callbackWithObject.processResult(res);
+                  }
                 }
               }
-            }
 );
+            }
           }
-        }
 ,"Loading gpx").start();
+        }
       }
     }
 );

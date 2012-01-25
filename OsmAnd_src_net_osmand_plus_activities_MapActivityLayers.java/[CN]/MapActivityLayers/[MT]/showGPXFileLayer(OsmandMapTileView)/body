@@ -2,14 +2,26 @@
   final OsmandSettings settings=getApplication().getSettings();
   selectGPXFileLayer(new CallbackWithObject<GPXFile>(){
     @Override public boolean processResult(    GPXFile result){
-      settings.SHOW_FAVORITES.set(true);
-      if (result != null) {
-        getApplication().setGpxFileToDisplay(result);
-        updateGPXLayer();
-        mapView.refreshMap();
+      GPXFile toShow=result;
+      if (toShow == null) {
+        if (!settings.SAVE_TRACK_TO_GPX.get()) {
+          Toast.makeText(activity,R.string.gpx_monitoring_disabled_warn,Toast.LENGTH_SHORT).show();
+          return true;
+        }
+        Map<String,GPXFile> data=activity.getSavingTrackHelper().collectRecordedData();
+        if (data.isEmpty()) {
+          toShow=new GPXFile();
+        }
+ else {
+          toShow=data.values().iterator().next();
+        }
       }
+      settings.SHOW_FAVORITES.set(true);
+      getApplication().setGpxFileToDisplay(toShow,result == null);
+      updateGPXLayer();
+      mapView.refreshMap();
       return true;
     }
   }
-,true);
+,true,true);
 }

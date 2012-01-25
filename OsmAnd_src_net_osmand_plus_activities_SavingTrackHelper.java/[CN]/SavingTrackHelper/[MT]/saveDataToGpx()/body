@@ -1,14 +1,11 @@
 {
-  SQLiteDatabase db=getReadableDatabase();
   List<String> warnings=new ArrayList<String>();
   File dir=OsmandSettings.getOsmandSettings(ctx).getExternalStorageDirectory();
-  if (db != null && dir.canWrite()) {
+  if (dir.canWrite()) {
     dir=new File(dir,ResourceManager.GPX_PATH);
     dir.mkdirs();
     if (dir.exists()) {
-      Map<String,GPXFile> data=new LinkedHashMap<String,GPXFile>();
-      collectDBPoints(db,data);
-      collectDBTracks(db,data);
+      Map<String,GPXFile> data=collectRecordedData();
       for (      final String f : data.keySet()) {
         File fout=new File(dir,f + ".gpx");
         if (!data.get(f).isEmpty()) {
@@ -27,7 +24,7 @@
       }
     }
   }
-  db=getWritableDatabase();
+  SQLiteDatabase db=getWritableDatabase();
   if (db != null && warnings.isEmpty()) {
     db.execSQL("DELETE FROM " + TRACK_NAME + " WHERE "+ TRACK_COL_DATE+ " <= ?",new Object[]{System.currentTimeMillis()});
     db.execSQL("DELETE FROM " + POINT_NAME + " WHERE "+ POINT_COL_DATE+ " <= ?",new Object[]{System.currentTimeMillis()});
