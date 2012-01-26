@@ -108,7 +108,7 @@
   }
 ;
   Builder b=new AlertDialog.Builder(activity);
-  ListView list=new ListView(activity);
+  ListView list=new ListView(activity,null,R.style.NiceActivity);
   b.setView(list);
   final List<String> layerNames=new ArrayList<String>();
   for (int i=0; i < layers.size(); i++) {
@@ -141,22 +141,23 @@
         }
 );
       }
-      row.setOnClickListener(new View.OnClickListener(){
-        @Override public void onClick(        View v){
-          if (selectedList.get(position) >= 0) {
-            ch.setChecked(!ch.isChecked());
-          }
- else {
-            listener.onClick(dlg,position,selectedList.get(position) > 0);
-          }
-        }
-      }
-);
       return row;
     }
   }
 ;
   list.setAdapter(adapter);
+  list.setOnItemClickListener(new OnItemClickListener(){
+    @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
+      if (selectedList.get(position) >= 0) {
+        CheckBox ch=((CheckBox)view.findViewById(R.id.check_item));
+        ch.setChecked(!ch.isChecked());
+      }
+ else {
+        listener.onClick(dlg,position,selectedList.get(position) > 0);
+      }
+    }
+  }
+);
   dlg.setCanceledOnTouchOutside(true);
   dlg.show();
 }
