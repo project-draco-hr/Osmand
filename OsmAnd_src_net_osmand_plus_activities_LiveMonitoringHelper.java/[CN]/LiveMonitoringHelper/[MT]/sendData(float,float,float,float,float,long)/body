@@ -1,11 +1,19 @@
 {
-  String url=MessageFormat.format(settings.LIVE_MONITORING_URL.get(),lat,lon,time,hdop,alt,speed);
+  String url=MessageFormat.format(settings.LIVE_MONITORING_URL.get(),lat,lon,time + "",hdop,alt,speed);
   try {
     URL curl=new URL(url);
+    log.info("Monitor " + url);
     URLConnection conn=curl.openConnection();
-    conn.setDoInput(false);
     conn.setDoOutput(false);
     conn.connect();
+    InputStream is=conn.getInputStream();
+    BufferedReader reader=new BufferedReader(new InputStreamReader(is));
+    String r;
+    StringBuilder bs=new StringBuilder();
+    while ((r=reader.readLine()) != null) {
+      bs.append(r).append('\n');
+    }
+    is.close();
   }
  catch (  Exception e) {
     log.error("Failed connect to " + url,e);
