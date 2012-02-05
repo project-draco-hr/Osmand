@@ -1,0 +1,22 @@
+{
+  long nodeId=n.getId() >> 1;
+  try {
+    String res=sendRequest(SITE_API + "api/0.6/node/" + nodeId,"GET",null,ctx.getString(R.string.loading_poi_obj) + nodeId,false);
+    if (res != null) {
+      OsmBaseStorage st=new OsmBaseStorage();
+      st.parseOSM(new ByteArrayInputStream(res.getBytes("UTF-8")),null,null,true);
+      EntityId id=new Entity.EntityId(EntityType.NODE,nodeId);
+      entityInfo=st.getRegisteredEntityInfo().get(id);
+      return entityInfo;
+    }
+  }
+ catch (  IOException e) {
+    log.error("Loading node failed " + nodeId,e);
+    Toast.makeText(ctx,ctx.getResources().getString(R.string.error_io_error),Toast.LENGTH_LONG).show();
+  }
+catch (  SAXException e) {
+    log.error("Loading node failed " + nodeId,e);
+    Toast.makeText(ctx,ctx.getResources().getString(R.string.error_io_error),Toast.LENGTH_LONG).show();
+  }
+  return null;
+}

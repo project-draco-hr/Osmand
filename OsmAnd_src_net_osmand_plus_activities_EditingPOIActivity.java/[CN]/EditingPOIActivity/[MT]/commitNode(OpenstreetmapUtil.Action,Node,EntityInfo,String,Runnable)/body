@@ -1,0 +1,21 @@
+{
+  if (info == null && OpenstreetmapUtil.Action.CREATE != action) {
+    Toast.makeText(ctx,ctx.getResources().getString(R.string.poi_error_info_not_loaded),Toast.LENGTH_LONG).show();
+    return;
+  }
+  final ProgressDialog progress=ProgressDialog.show(ctx,ctx.getString(R.string.uploading),ctx.getString(R.string.uploading_data));
+  new Thread(new Runnable(){
+    @Override public void run(){
+      try {
+        if (openstreetmapUtil.commitNodeImpl(action,n,info,comment)) {
+          updateNodeInIndexes(action,n);
+          ctx.getMapView().post(successAction);
+        }
+      }
+  finally {
+        progress.dismiss();
+      }
+    }
+  }
+,"EditingPoi").start();
+}

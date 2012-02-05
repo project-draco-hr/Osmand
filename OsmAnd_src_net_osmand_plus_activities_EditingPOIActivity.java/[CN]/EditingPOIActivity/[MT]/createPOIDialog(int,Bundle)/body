@@ -72,7 +72,7 @@
       final Node n=(Node)args.getSerializable(KEY_AMENITY_NODE);
       Resources resources=v.getResources();
       final String msg=n.getId() == -1 ? resources.getString(R.string.poi_action_add) : resources.getString(R.string.poi_action_change);
-      String action=n.getId() == -1 ? CREATE_ACTION : MODIFY_ACTION;
+      OpenstreetmapUtil.Action action=n.getId() == -1 ? OpenstreetmapUtil.Action.CREATE : OpenstreetmapUtil.Action.MODIFY;
       Map<AmenityType,Map<String,String>> typeNameToTagVal=MapRenderingTypes.getDefault().getAmenityTypeNameToTagVal();
       AmenityType type=a.getType();
       String tag=type.getDefaultTag();
@@ -102,7 +102,7 @@
  else {
         n.putTag(OSMTagKey.OPENING_HOURS.getValue(),openingHours.getText().toString());
       }
-      commitNode(action,n,entityInfo,commentText.getText().toString(),new Runnable(){
+      commitNode(action,n,openstreetmapUtil.getEntityInfo(),commentText.getText().toString(),new Runnable(){
         @Override public void run(){
           Toast.makeText(ctx,MessageFormat.format(ctx.getResources().getString(R.string.poi_action_succeded_template),msg),Toast.LENGTH_LONG).show();
           if (ctx.getMapView() != null) {
