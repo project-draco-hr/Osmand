@@ -6,6 +6,7 @@
   int ctop=0;
   int cbottom=0;
   req.numberOfReadSubtrees++;
+  List<BinaryMapDataObject> tempResults=null;
   while (true) {
     if (req.isCancelled()) {
       return;
@@ -23,10 +24,15 @@
     }
 switch (tag) {
 case 0:
-      return;
+      if (tempResults != null) {
+        for (int i=0; i < tempResults.size(); i++) {
+          req.publish(tempResults.get(i));
+        }
+      }
+    return;
 case OsmandOdb.MapTree.BOTTOM_FIELD_NUMBER:
-    cbottom=codedIS.readSInt32() + pbottom;
-  init|=1;
+  cbottom=codedIS.readSInt32() + pbottom;
+init|=1;
 break;
 case OsmandOdb.MapTree.LEFT_FIELD_NUMBER:
 cleft=codedIS.readSInt32() + pleft;
@@ -48,7 +54,10 @@ lastIndexResult=req.searchResults.size();
 }
 BinaryMapDataObject mapObject=readMapDataObject(cleft,cright,ctop,cbottom,req,root);
 if (mapObject != null) {
-req.searchResults.add(mapObject);
+if (tempResults == null) {
+tempResults=new ArrayList<BinaryMapDataObject>();
+}
+tempResults.add(mapObject);
 }
 codedIS.popLimit(oldLimit);
 break;
@@ -66,9 +75,9 @@ break;
 case OsmandOdb.MapTree.BASEID_FIELD_NUMBER:
 case OsmandOdb.MapTree.OLDBASEID_FIELD_NUMBER:
 long baseId=codedIS.readUInt64();
-if (lastIndexResult != -1) {
-for (int i=lastIndexResult; i < req.searchResults.size(); i++) {
-BinaryMapDataObject rs=req.searchResults.get(i);
+if (tempResults != null) {
+for (int i=0; i < tempResults.size(); i++) {
+BinaryMapDataObject rs=tempResults.get(i);
 rs.id+=baseId;
 if (rs.restrictions != null) {
 for (int j=0; j < rs.restrictions.length; j++) {
@@ -84,9 +93,9 @@ length=codedIS.readRawVarint32();
 oldLimit=codedIS.pushLimit(length);
 List<String> stringTable=readStringTable();
 codedIS.popLimit(oldLimit);
-if (lastIndexResult != -1) {
-for (int i=lastIndexResult; i < req.searchResults.size(); i++) {
-BinaryMapDataObject rs=req.searchResults.get(i);
+if (tempResults != null) {
+for (int i=0; i < tempResults.size(); i++) {
+BinaryMapDataObject rs=tempResults.get(i);
 if (rs.stringId != -1) {
 rs.name=stringTable.get(rs.stringId);
 }

@@ -1,0 +1,107 @@
+{
+  RandomAccessFile r=new RandomAccessFile(file.getAbsolutePath(),"r");
+  try {
+    BinaryMapIndexReader index=new BinaryMapIndexReader(r);
+    int i=1;
+    println("Binary index " + file.getName() + " version = "+ index.getVersion());
+    for (    BinaryIndexPart p : index.getIndexes()) {
+      String partname="";
+      if (p instanceof MapIndex) {
+        partname="Map";
+      }
+ else       if (p instanceof TransportIndex) {
+        partname="Transport";
+      }
+ else       if (p instanceof PoiRegion) {
+        partname="Poi";
+      }
+ else       if (p instanceof AddressRegion) {
+        partname="Address";
+      }
+      String name=p.getName() == null ? "" : p.getName();
+      println(MessageFormat.format("{0}. {1} data {3} - {2} bytes",i,partname,p.getLength(),name));
+      if (p instanceof TransportIndex) {
+        TransportIndex ti=((TransportIndex)p);
+        int sh=(31 - BinaryMapIndexReader.TRANSPORT_STOP_ZOOM);
+        println("\t Bounds " + formatBounds(ti.getLeft() << sh,ti.getRight() << sh,ti.getTop() << sh,ti.getBottom() << sh));
+      }
+ else       if (p instanceof MapIndex) {
+        MapIndex m=((MapIndex)p);
+        int j=1;
+        for (        MapRoot mi : m.getRoots()) {
+          println(MessageFormat.format("\t{4}.{5} Map level minZoom = {0}, maxZoom = {1}, size = {2} bytes \n\t\tBounds {3}",mi.getMinZoom(),mi.getMaxZoom(),mi.getLength(),formatBounds(mi.getLeft(),mi.getRight(),mi.getTop(),mi.getBottom()),i,j++));
+        }
+        if ((verbose != null && verbose.isVmap())) {
+          final StringBuilder b=new StringBuilder();
+          SearchRequest<BinaryMapDataObject> req=BinaryMapIndexReader.buildSearchRequest(MapUtils.get31TileNumberX(verbose.lonleft),MapUtils.get31TileNumberX(verbose.lonright),MapUtils.get31TileNumberY(verbose.lattop),MapUtils.get31TileNumberY(verbose.latbottom),verbose.getZoom(),new SearchFilter(){
+            @Override public boolean accept(            TIntArrayList types,            MapIndex index){
+              return true;
+            }
+          }
+,new ResultMatcher<BinaryMapDataObject>(){
+            @Override public boolean publish(            BinaryMapDataObject object){
+              boolean way=object.getPointsLength() > 1;
+              b.setLength(0);
+              b.append(way ? "Way " : "Point ");
+              if (object.getName() != null) {
+                b.append(object.getName());
+              }
+              b.append(" ").append((object.getId() >> 1)).append(" ");
+              formatTags(object,b);
+              b.append("   ");
+              for (int i=0; i < object.getPointsLength(); i++) {
+                b.append(" ");
+                formatPoint(object,i,b);
+              }
+              println(b.toString());
+              return false;
+            }
+            @Override public boolean isCancelled(){
+              return false;
+            }
+          }
+);
+          index.searchMapIndex(req);
+        }
+      }
+ else       if (p instanceof AddressRegion && (verbose != null && verbose.isVaddress())) {
+        for (        String region : index.getRegionNames()) {
+          println("\tRegion:" + region);
+          for (          City c : index.getCities(region,null)) {
+            index.preloadStreets(c,null);
+            println("\t\tCity:" + c.getName() + getId(c));
+            for (            Street t : c.getStreets()) {
+              if (verbose.contains(t)) {
+                print("\t\t\t" + t.getName() + getId(t));
+                index.preloadBuildings(t,null);
+                List<Building> buildings=t.getBuildings();
+                if (buildings != null && !buildings.isEmpty()) {
+                  print("\t\t\t\t (");
+                  for (                  Building b : buildings) {
+                    print(b.getName() + ",");
+                  }
+                  print(")");
+                }
+                println("");
+              }
+            }
+          }
+          for (          City c : index.getVillages(region,null,null,false)) {
+            if (verbose.contains(c)) {
+              index.preloadStreets(c,null);
+              println("\t\tVillage:" + c.getName() + getId(c));
+              for (              Street t : c.getStreets()) {
+                println("\t\t\t" + t.getName() + getId(t));
+              }
+            }
+          }
+        }
+      }
+      i++;
+    }
+  }
+ catch (  IOException e) {
+    System.err.println("File is not valid index : " + file.getAbsolutePath());
+    throw e;
+  }
+}
