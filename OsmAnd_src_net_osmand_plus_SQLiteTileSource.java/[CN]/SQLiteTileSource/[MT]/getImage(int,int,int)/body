@@ -3,14 +3,37 @@
   if (db == null) {
     return null;
   }
-  Cursor cursor=db.rawQuery("SELECT image FROM tiles WHERE x = ? AND y = ? AND z = ?",new String[]{x + "",y + "",(17 - zoom) + ""});
-  byte[] blob=null;
-  if (cursor.moveToFirst()) {
-    blob=cursor.getBlob(0);
+  if (zoom <= baseZoom) {
+    Cursor cursor=db.rawQuery("SELECT image FROM tiles WHERE x = ? AND y = ? AND z = ?",new String[]{x + "",y + "",(17 - zoom) + ""});
+    byte[] blob=null;
+    if (cursor.moveToFirst()) {
+      blob=cursor.getBlob(0);
+    }
+    cursor.close();
+    if (blob != null) {
+      return BitmapFactory.decodeByteArray(blob,0,blob.length);
+    }
+    return null;
   }
-  cursor.close();
-  if (blob != null) {
-    return BitmapFactory.decodeByteArray(blob,0,blob.length);
+ else {
+    int n=zoom - baseZoom;
+    int base_xtile=(int)(x / Math.pow(2,n));
+    int base_ytile=(int)(y / Math.pow(2,n));
+    Bitmap metaTile=getMetaTile(base_xtile,base_ytile,baseZoom);
+    if (metaTile != null) {
+      int scaledSize=(int)(256 / Math.pow(2,n));
+      int offset_x=(int)((x - base_xtile * Math.pow(2,n)));
+      int offset_y=(int)((y - base_ytile * Math.pow(2,n)));
+      int delta_px=(int)(scaledSize * offset_x);
+      int delta_py=(int)(scaledSize * offset_y);
+      Bitmap xn=Bitmap.createBitmap(metaTile,delta_px,delta_py,scaledSize + 12,scaledSize + 12);
+      metaTile.recycle();
+      int scaleto=(int)(256 + 12 * Math.pow(2,n));
+      Bitmap scaled=Bitmap.createScaledBitmap(xn,scaleto,scaleto,true);
+      xn.recycle();
+      System.gc();
+      return Bitmap.createBitmap(scaled,(int)(6 * Math.pow(2,n)),(int)(6 * Math.pow(2,n)),256,256);
+    }
+    return null;
   }
-  return null;
 }
