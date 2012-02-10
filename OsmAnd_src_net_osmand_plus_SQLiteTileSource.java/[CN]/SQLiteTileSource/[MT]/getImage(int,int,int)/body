@@ -11,13 +11,7 @@
     }
     cursor.close();
     if (blob != null) {
-      try {
-        return BitmapFactory.decodeByteArray(blob,0,blob.length);
-      }
- catch (      OutOfMemoryError ome) {
-        double free=Runtime.getRuntime().freeMemory();
-        if (log.isDebugEnabled())         log.debug("Out of memory, skipping. Free mem = " + free);
-      }
+      return BitmapFactory.decodeByteArray(blob,0,blob.length);
     }
     return null;
   }
@@ -38,18 +32,12 @@
     if (metaTile != null) {
       int delta_px=scaledSize * offset_x;
       int delta_py=scaledSize * offset_y;
-      try {
-        Bitmap xn=Bitmap.createBitmap(metaTile,delta_px,delta_py,scaledSize + 2 * margin,scaledSize + 2 * margin);
-        metaTile.recycle();
-        int scaleto=tileSize + ((2 * margin) << n);
-        Bitmap scaled=Bitmap.createScaledBitmap(xn,scaleto,scaleto,true);
-        xn.recycle();
-        return Bitmap.createBitmap(scaled,(margin << n),(margin << n),tileSize,tileSize);
-      }
- catch (      OutOfMemoryError ome) {
-        double free=Runtime.getRuntime().freeMemory();
-        if (log.isDebugEnabled())         log.debug("Out of memory, skipping. Free mem = " + free);
-      }
+      Bitmap xn=Bitmap.createBitmap(metaTile,delta_px,delta_py,scaledSize + 2 * margin,scaledSize + 2 * margin);
+      metaTile.recycle();
+      int scaleto=tileSize + ((2 * margin) << n);
+      Bitmap scaled=Bitmap.createScaledBitmap(xn,scaleto,scaleto,true);
+      xn.recycle();
+      return Bitmap.createBitmap(scaled,(margin << n),(margin << n),tileSize,tileSize);
     }
     return null;
   }
