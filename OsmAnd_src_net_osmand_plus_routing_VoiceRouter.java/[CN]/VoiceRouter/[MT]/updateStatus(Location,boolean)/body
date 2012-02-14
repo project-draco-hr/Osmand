@@ -3,6 +3,16 @@
   if (currentLocation != null && currentLocation.hasSpeed()) {
     speed=Math.max(currentLocation.getSpeed(),speed);
   }
+  if (makeUturnWhenPossible == true) {
+    if (System.currentTimeMillis() - lastTimeMakeUTwpAnnounced > 60000) {
+      CommandBuilder play=getNewCommandPlayerToPlay();
+      if (play != null) {
+        play.makeUT().play();
+        lastTimeMakeUTwpAnnounced=System.currentTimeMillis();
+      }
+    }
+    return;
+  }
   RouteDirectionInfo next=router.getNextRouteDirectionInfo();
   int dist=router.getDistanceToNextRouteDirection();
   if (currentDirection != router.currentDirectionInfo) {

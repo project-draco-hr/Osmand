@@ -4,29 +4,39 @@
       boolean visible=false;
       if (routeLayer != null && routeLayer.getHelper().isRouterEnabled() && routeLayer.getHelper().isFollowingMode()) {
         int d=routeLayer.getHelper().getDistanceToNextRouteDirection();
-        if (d > 0 && !showMiniMap) {
-          visible=true;
-          RouteDirectionInfo next=routeLayer.getHelper().getNextRouteDirectionInfo();
-          if (next == null) {
-            if (turnType != null) {
-              turnType=null;
+        if (routeLayer.getHelper().makeUturnWhenPossible() == true) {
+          if (!showMiniMap) {
+            visible=true;
+            turnType=TurnType.valueOf(TurnType.TU);
+            TurnPathHelper.calcTurnPath(pathForTurn,turnType,pathTransform);
+            invalidate();
+          }
+        }
+ else {
+          if (d > 0 && !showMiniMap) {
+            visible=true;
+            RouteDirectionInfo next=routeLayer.getHelper().getNextRouteDirectionInfo();
+            if (next == null) {
+              if (turnType != null) {
+                turnType=null;
+                invalidate();
+              }
+            }
+ else             if (!Algoritms.objectEquals(turnType,next.turnType)) {
+              turnType=next.turnType;
+              TurnPathHelper.calcTurnPath(pathForTurn,turnType,pathTransform);
+              if (turnType.getExitOut() > 0) {
+                exitOut=turnType.getExitOut() + "";
+              }
+ else {
+                exitOut=null;
+              }
               invalidate();
             }
-          }
- else           if (!Algoritms.objectEquals(turnType,next.turnType)) {
-            turnType=next.turnType;
-            TurnPathHelper.calcTurnPath(pathForTurn,turnType,pathTransform);
-            if (turnType.getExitOut() > 0) {
-              exitOut=turnType.getExitOut() + "";
+            if (distChanged(d,nextTurnDirection)) {
+              invalidate();
+              nextTurnDirection=d;
             }
- else {
-              exitOut=null;
-            }
-            invalidate();
-          }
-          if (distChanged(d,nextTurnDirection)) {
-            invalidate();
-            nextTurnDirection=d;
           }
         }
       }
