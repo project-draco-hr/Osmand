@@ -1,13 +1,28 @@
 {
-  if (!hasName)   return false;
-  if (hasBoundaries()) {
-    if (!getBoundaries().isInitialized())     return false;
+  byte isInitialized=memoizedIsInitialized;
+  if (isInitialized != -1)   return isInitialized == 1;
+  if (!hasName()) {
+    memoizedIsInitialized=0;
+    return false;
   }
-  for (  net.osmand.binary.OsmandOdb.OsmAndAddressIndex.CitiesIndex element : getCitiesList()) {
-    if (!element.isInitialized())     return false;
+  if (hasBoundaries()) {
+    if (!getBoundaries().isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  for (int i=0; i < getCitiesCount(); i++) {
+    if (!getCities(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
   if (hasNameIndex()) {
-    if (!getNameIndex().isInitialized())     return false;
+    if (!getNameIndex().isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
+  memoizedIsInitialized=1;
   return true;
 }

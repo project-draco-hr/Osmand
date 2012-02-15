@@ -1,10 +1,22 @@
 {
-  if (!hasId)   return false;
-  for (  net.osmand.binary.OsmandOdb.TransportRouteStop element : getDirectStopsList()) {
-    if (!element.isInitialized())     return false;
+  byte isInitialized=memoizedIsInitialized;
+  if (isInitialized != -1)   return isInitialized == 1;
+  if (!hasId()) {
+    memoizedIsInitialized=0;
+    return false;
   }
-  for (  net.osmand.binary.OsmandOdb.TransportRouteStop element : getReverseStopsList()) {
-    if (!element.isInitialized())     return false;
+  for (int i=0; i < getDirectStopsCount(); i++) {
+    if (!getDirectStops(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
+  for (int i=0; i < getReverseStopsCount(); i++) {
+    if (!getReverseStops(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  memoizedIsInitialized=1;
   return true;
 }
