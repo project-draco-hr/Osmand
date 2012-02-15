@@ -1,0 +1,22 @@
+{
+  Element[] e=parent.getAllElements();
+  boolean containsLeaf=false;
+  for (int i=0; i < parent.getTotalElements(); i++) {
+    if (e[i].getElementType() == rtree.Node.LEAF_NODE) {
+      containsLeaf=true;
+    }
+  }
+  for (int i=0; i < parent.getTotalElements(); i++) {
+    Rect re=e[i].getRect();
+    if (e[i].getElementType() != rtree.Node.LEAF_NODE) {
+      long ptr=((NonLeafElement)e[i]).getPtr();
+      rtree.Node ns=r.getReadNode(ptr);
+      BinaryFileReference ref=writer.startMapTreeElement(re.getMinX(),re.getMaxX(),re.getMinY(),re.getMaxY(),containsLeaf);
+      if (ref != null) {
+        bounds.put(ns.getNodeIndex(),ref);
+      }
+      writeBinaryMapTree(ns,r,writer,bounds);
+      writer.endWriteMapTreeElement();
+    }
+  }
+}

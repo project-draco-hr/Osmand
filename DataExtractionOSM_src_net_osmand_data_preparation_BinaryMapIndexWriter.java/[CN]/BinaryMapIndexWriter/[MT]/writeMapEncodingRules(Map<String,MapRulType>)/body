@@ -1,26 +1,35 @@
 {
   checkPeekState(MAP_INDEX_INIT);
   long fp=getFilePointer();
-  MapEncodingRule.Builder builder=OsmandOdb.MapEncodingRule.newBuilder();
-  for (  String tag : types.keySet()) {
-    MapRulType rule=types.get(tag);
-    int type=rule.getType(null);
-    int subType=rule.getSubType(null);
-    Collection<String> valuesSet=types.get(tag).getValuesSet();
-    if (type != 0 && subType != 0) {
-      builder.setTag(tag).setValue("").setType(type).setSubtype(subType).setMinZoom(rule.getMinZoom(null));
-      if (valuesSet.isEmpty()) {
-        codedOutStream.writeMessage(OsmandOdb.OsmAndMapIndex.RULES_FIELD_NUMBER,builder.build());
-      }
-      builder=OsmandOdb.MapEncodingRule.newBuilder();
+  ArrayList<MapRulType> out=new ArrayList<MapRulType>();
+  int highestTargetId=types.size();
+  for (  MapRulType t : types.values()) {
+    if (!t.isMapIndexed() || t.getTargetTagValue() != null || t.getFreq() == 0) {
+      t.setTargetId(highestTargetId++);
     }
-    for (    String val : valuesSet) {
-      type=rule.getType(val);
-      subType=rule.getSubType(val);
-      builder.setTag(tag).setValue(val).setType(type).setSubtype(subType).setMinZoom(rule.getMinZoom(null));
-      codedOutStream.writeMessage(OsmandOdb.OsmAndMapIndex.RULES_FIELD_NUMBER,builder.build());
-      builder=OsmandOdb.MapEncodingRule.newBuilder();
+ else {
+      out.add(t);
     }
+  }
+  Collections.sort(out,new Comparator<MapRulType>(){
+    @Override public int compare(    MapRulType o1,    MapRulType o2){
+      return o1.getFreq() - o2.getFreq();
+    }
+  }
+);
+  for (int i=0; i < out.size(); i++) {
+    MapEncodingRule.Builder builder=OsmandOdb.OsmAndMapIndex.MapEncodingRule.newBuilder();
+    MapRulType rule=out.get(i);
+    rule.setTargetId(i);
+    builder.setTag(rule.getTag());
+    if (rule.getValue() != null) {
+      builder.setValue(rule.getValue());
+    }
+    builder.setMinZoom(rule.getMinzoom());
+    if (rule.isAdditional()) {
+      builder.setType(1);
+    }
+    codedOutStream.writeMessage(OsmandOdb.OsmAndMapIndex.RULES_FIELD_NUMBER,builder.build());
   }
   long newfp=getFilePointer();
   System.out.println("RENDERING SCHEMA takes " + (newfp - fp));

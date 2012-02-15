@@ -1,0 +1,23 @@
+{
+  checkPeekState(MAP_ROOT_LEVEL_INIT,MAP_TREE);
+  if (state.peek() == MAP_ROOT_LEVEL_INIT) {
+    codedOutStream.writeTag(MapRootLevel.BOXES_FIELD_NUMBER,WireFormat.WIRETYPE_FIXED32_LENGTH_DELIMITED);
+  }
+ else {
+    codedOutStream.writeTag(MapDataBox.BOXES_FIELD_NUMBER,WireFormat.WIRETYPE_FIXED32_LENGTH_DELIMITED);
+  }
+  state.push(MAP_TREE);
+  preserveInt32Size();
+  long fp=getFilePointer();
+  Bounds bounds=stackBounds.peek();
+  codedOutStream.writeSInt32(MapDataBox.LEFT_FIELD_NUMBER,leftX - bounds.leftX);
+  codedOutStream.writeSInt32(MapDataBox.RIGHT_FIELD_NUMBER,rightX - bounds.rightX);
+  codedOutStream.writeSInt32(MapDataBox.TOP_FIELD_NUMBER,topY - bounds.topY);
+  codedOutStream.writeSInt32(MapDataBox.BOTTOM_FIELD_NUMBER,bottomY - bounds.bottomY);
+  stackBounds.push(new Bounds(leftX,rightX,topY,bottomY));
+  BinaryFileReference ref=null;
+  if (containsLeaf) {
+    ref=BinaryFileReference.createShiftReference(getFilePointer(),fp);
+  }
+  return ref;
+}
