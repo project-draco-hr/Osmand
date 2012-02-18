@@ -49,7 +49,21 @@
           rtype.polyline=Boolean.parseBoolean(attributes.getValue("polyline"));
           rtype.point=Boolean.parseBoolean(attributes.getValue("point"));
           rtype.additional=Boolean.parseBoolean(attributes.getValue("additional"));
-          rtype.nameNullTag=attributes.getValue("nameNullTag");
+          String v=attributes.getValue("nameTags");
+          if (v != null) {
+            String[] names=v.split(",");
+            rtype.names=new MapRulType[names.length];
+            for (int i=0; i < names.length; i++) {
+              MapRulType mt=types.get(constructRuleKey(names[i],null));
+              if (mt == null) {
+                mt=new MapRulType(types.size());
+                mt.tag=names[i];
+                mt.additional=true;
+                types.put(constructRuleKey(names[i],null),mt);
+              }
+              rtype.names[i]=mt;
+            }
+          }
           String targetTag=attributes.getValue("target:tag");
           String targetValue=attributes.getValue("target:value");
           if (targetTag != null || targetValue != null) {
