@@ -20,16 +20,16 @@
           poiParentPrefix=attributes.getValue("poi:prefix");
           String tag=attributes.getValue("poi:tag");
           if (tag != null) {
-            MapRulType rtype=new MapRulType(types.size());
+            MapRulType rtype=new MapRulType();
             rtype.poiCategory=AmenityType.valueOf(poiParentCategory.toUpperCase());
             rtype.poiSpecified=true;
             rtype.poiPrefix=poiParentPrefix;
             rtype.tag=tag;
-            types.put(constructRuleKey(tag,null),rtype);
+            registerRuleType(tag,null,rtype);
           }
         }
  else         if (name.equals("type")) {
-          MapRulType rtype=new MapRulType(types.size());
+          MapRulType rtype=new MapRulType();
           String val=attributes.getValue("minzoom");
           rtype.minzoom=15;
           if (val != null) {
@@ -40,14 +40,7 @@
           if (rtype.value != null && rtype.value.length() == 0) {
             rtype.value=null;
           }
-          String keyVal=constructRuleKey(rtype.tag,rtype.value);
-          if (types.containsKey(keyVal)) {
-            throw new RuntimeException("Duplicate " + keyVal);
-          }
-          types.put(keyVal,rtype);
-          rtype.polygon=Boolean.parseBoolean(attributes.getValue("polygon"));
-          rtype.polyline=Boolean.parseBoolean(attributes.getValue("polyline"));
-          rtype.point=Boolean.parseBoolean(attributes.getValue("point"));
+          registerRuleType(rtype.tag,rtype.value,rtype);
           rtype.additional=Boolean.parseBoolean(attributes.getValue("additional"));
           String v=attributes.getValue("nameTags");
           if (v != null) {
@@ -56,10 +49,10 @@
             for (int i=0; i < names.length; i++) {
               MapRulType mt=types.get(constructRuleKey(names[i],null));
               if (mt == null) {
-                mt=new MapRulType(types.size());
+                mt=new MapRulType();
                 mt.tag=names[i];
                 mt.additional=true;
-                types.put(constructRuleKey(names[i],null),mt);
+                registerRuleType(names[i],null,mt);
               }
               rtype.names[i]=mt;
             }

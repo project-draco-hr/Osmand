@@ -1,0 +1,41 @@
+{
+  Map<String,MapRulType> types=getEncodingRuleTypes();
+  outTypes.clear();
+  outaddTypes.clear();
+  namesToEncode.clear();
+  tempList.clear();
+  tempList.add(nameRuleType);
+  boolean area=multipolygon || "yes".equals(e.getTag("area"));
+  Collection<String> tagKeySet=e.getTagKeySet();
+  for (  String tag : tagKeySet) {
+    String val=e.getTag(tag);
+    MapRulType rType=types.get(constructRuleKey(tag,val));
+    if (rType == null) {
+      rType=types.get(constructRuleKey(tag,null));
+    }
+    if (rType != null) {
+      if (rType.minzoom > zoom) {
+        continue;
+      }
+      rType.freq++;
+      if (rType.names != null) {
+        for (int i=0; i < rType.names.length; i++) {
+          tempList.add(rType.names[i]);
+        }
+      }
+      if (rType.additional) {
+        outaddTypes.add(rType.id);
+      }
+ else {
+        outTypes.add(rType.id);
+      }
+    }
+  }
+  for (  MapRulType mt : tempList) {
+    String val=e.getTag(mt.tag);
+    if (val != null && val.length() > 0) {
+      namesToEncode.put(mt,val);
+    }
+  }
+  return area;
+}
