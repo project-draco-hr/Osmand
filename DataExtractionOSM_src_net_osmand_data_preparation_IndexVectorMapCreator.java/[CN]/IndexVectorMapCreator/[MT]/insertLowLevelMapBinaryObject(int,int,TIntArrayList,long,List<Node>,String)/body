@@ -1,8 +1,12 @@
 {
+  lowLevelWays++;
+  List<Node> nodes=new ArrayList<Node>();
+  MapAlgorithms.simplifyDouglasPeucker(in,zoom + 8 + zoomWaySmothness,3,nodes);
   boolean first=true;
   long firstId=-1;
   long lastId=-1;
   ByteArrayOutputStream bnodes=new ByteArrayOutputStream();
+  ByteArrayOutputStream btypes=new ByteArrayOutputStream();
   try {
     for (    Node n : nodes) {
       if (n != null) {
@@ -22,12 +26,19 @@
   if (firstId == -1) {
     return;
   }
+  for (int j=0; j < types.size(); j++) {
+    try {
+      Algoritms.writeInt(btypes,types.get(j));
+    }
+ catch (    IOException e) {
+    }
+  }
   mapLowLevelBinaryStat.setLong(1,id);
   mapLowLevelBinaryStat.setLong(2,firstId);
   mapLowLevelBinaryStat.setLong(3,lastId);
   mapLowLevelBinaryStat.setString(4,name);
   mapLowLevelBinaryStat.setBytes(5,bnodes.toByteArray());
-  mapLowLevelBinaryStat.setLong(6,types);
+  mapLowLevelBinaryStat.setBytes(6,btypes.toByteArray());
   mapLowLevelBinaryStat.setShort(7,(short)level);
   addBatch(mapLowLevelBinaryStat);
 }

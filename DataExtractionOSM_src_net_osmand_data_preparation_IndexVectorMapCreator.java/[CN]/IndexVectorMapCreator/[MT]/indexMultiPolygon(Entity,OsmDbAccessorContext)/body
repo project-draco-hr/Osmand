@@ -19,9 +19,8 @@
       logMapDataWarn.warn("Probably map bug: Multipoligon id=" + e.getId() + " contains only inner ways : ");
       return;
     }
-    int mtType=renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(0).getMaxZoom(),true,typeUse);
-    if (mtType != 0) {
-      String name=renderingTypes.getEntityName(e);
+    renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(0).getMaxZoom(),typeUse,addtypeUse,namesUse,tempNameUse);
+    if (typeUse.size() > 0) {
       List<List<Way>> completedRings=new ArrayList<List<Way>>();
       List<List<Way>> incompletedRings=new ArrayList<List<Way>>();
       for (      Entity es : entities.keySet()) {
@@ -49,23 +48,54 @@
       if (nodeOut != null) {
         logMapDataWarn.warn("Map bug: Multipoligon contains 'inner' way point outside of 'outer' border.\n" + "Multipolygon id : " + e.getId() + ", inner node out id : "+ nodeOut.getId());
       }
+      List<Node> outerWay=new ArrayList<Node>();
+      List<List<Node>> innerWays=new ArrayList<List<Node>>();
+      TIntArrayList typeToSave=new TIntArrayList(typeUse);
+      long baseId=e.getId();
       for (      List<Way> l : completedRings) {
         boolean innerType="inner".equals(entities.get(l.get(0)));
-        boolean clockwise=MapAlgorithms.isClockwiseWay(l);
-        boolean inverse=clockwise != !innerType;
+        if (!innerType && !outerWay.isEmpty()) {
+          logMapDataWarn.warn("Map bug: Multipoligon contains many 'outer' borders.\n" + "Multipolygon id : " + e.getId() + ", outer way id : "+ l.get(0).getId());
+          return;
+        }
+        List<Node> toCollect;
+        if (innerType) {
+          toCollect=new ArrayList<Node>();
+          innerWays.add(toCollect);
+        }
+ else {
+          toCollect=outerWay;
+        }
         for (        Way way : l) {
-          boolean inner="inner".equals(entities.get(way));
-          if (!inner && name != null) {
-            multiPolygonsNames.put(way.getId(),name);
+          toCollect.addAll(way.getNodes());
+          if (!innerType) {
+            baseId=way.getId();
           }
-          putMultipolygonType(multiPolygonsWays[0],way.getId(),mtType,inverse);
-          for (int i=1; i < multiPolygonsWays.length; i++) {
-            int type=renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(0).getMaxZoom(),true,typeUse);
-            if (type != 0) {
-              putMultipolygonType(multiPolygonsWays[i],way.getId(),type,inverse);
+          multiPolygonsWays.put(way.getId(),typeToSave);
+        }
+      }
+      nextZoom:       for (int level=0; level < mapZooms.size(); level++) {
+        renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(level).getMaxZoom(),typeUse,addtypeUse,namesUse,tempNameUse);
+        if (typeUse.isEmpty()) {
+          continue;
+        }
+        long id=convertBaseIdToGeneratedId(baseId,level);
+        int zoomToSimplify=mapZooms.getLevel(level).getMaxZoom() - 1;
+        if (zoomToSimplify < 15) {
+          outerWay=simplifyCycleWay(outerWay,zoomToSimplify);
+          if (outerWay == null) {
+            continue nextZoom;
+          }
+          List<List<Node>> newinnerWays=new ArrayList<List<Node>>();
+          for (          List<Node> ls : innerWays) {
+            ls=simplifyCycleWay(ls,zoomToSimplify);
+            if (ls != null) {
+              newinnerWays.add(ls);
             }
           }
+          innerWays=newinnerWays;
         }
+        insertBinaryMapRenderObjectIndex(mapTree[level],outerWay,innerWays,namesUse,id,true,typeUse,addtypeUse,true);
       }
     }
   }

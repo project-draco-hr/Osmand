@@ -2,31 +2,42 @@
   if (e instanceof Way || e instanceof Node) {
     ctx.loadEntityData(e);
     for (int level=0; level < mapZooms.size(); level++) {
-      boolean area=renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(level).getMaxZoom(),false,typeUse,addtypeUse,namesUse,tempNameUse);
+      boolean area=renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(level).getMaxZoom(),typeUse,addtypeUse,namesUse,tempNameUse);
       if (typeUse.isEmpty()) {
         continue;
       }
-      Map<Long,Set<Integer>> multiPolygonsWays=this.multiPolygonsWays[level];
       boolean hasMulti=e instanceof Way && multiPolygonsWays.containsKey(e.getId());
       if (hasMulti) {
-        Set<Integer> set=multiPolygonsWays.get(e.getId());
+        TIntArrayList set=multiPolygonsWays.get(e.getId());
         typeUse.removeAll(set);
       }
       if (typeUse.isEmpty()) {
         continue;
       }
       long id=convertBaseIdToGeneratedId(e.getId(),level);
-      boolean skip=false;
-      if (e instanceof Way) {
+      List<Node> res=null;
+      if (e instanceof Node) {
+        res=Collections.singletonList((Node)e);
+      }
+ else {
         id|=1;
         int zoomToSimplify=mapZooms.getLevel(level).getMaxZoom() - 1;
         if (zoomToSimplify < 15) {
-          e=simplifyWay((Way)e,id,hasMulti,zoomToSimplify,eName,type,level);
-          skip=e == null;
+          boolean cycle=((Way)e).getNodeIds().get(0).longValue() == ((Way)e).getNodeIds().get(((Way)e).getNodeIds().size() - 1).longValue();
+          if (cycle) {
+            res=simplifyCycleWay(((Way)e).getNodes(),zoomToSimplify);
+          }
+ else {
+            String ename=namesUse.get(renderingTypes.getNameRuleType());
+            insertLowLevelMapBinaryObject(level,zoomToSimplify,typeUse,id,((Way)e).getNodes(),ename);
+          }
+        }
+ else {
+          res=((Way)e).getNodes();
         }
       }
-      if (!skip) {
-        insertBinaryMapRenderObjectIndex(rtree,e,eName,id,type,typeUse,highwayAttributes,restrictionsUse,inverse,point,true);
+      if (res != null) {
+        insertBinaryMapRenderObjectIndex(mapTree[level],res,null,namesUse,id,area,typeUse,addtypeUse,true);
       }
     }
   }
