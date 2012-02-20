@@ -1,0 +1,58 @@
+def point(self, x=None, y=None, z=None, m=None, shape=None, part=None, point=None, addr=None):
+    'Creates/updates a point shape. The arguments allows\n        you to update a specific point by shape, part, point of any\n        shape type.'
+    if (shape and part and point):
+        try:
+            self._shapes[shape]
+        except IndexError:
+            self._shapes.append([])
+        try:
+            self._shapes[shape][part]
+        except IndexError:
+            self._shapes[shape].append([])
+        try:
+            self._shapes[shape][part][point]
+        except IndexError:
+            self._shapes[shape][part].append([])
+        p = self._shapes[shape][part][point]
+        if x:
+            p[0] = x
+        if y:
+            p[1] = y
+        if z:
+            p[2] = z
+        if m:
+            p[3] = m
+        self._shapes[shape][part][point] = p
+    elif (shape and part and (not point)):
+        try:
+            self._shapes[shape]
+        except IndexError:
+            self._shapes.append([])
+        try:
+            self._shapes[shape][part]
+        except IndexError:
+            self._shapes[shape].append([])
+        points = self._shapes[shape][part]
+        for i in range(len(points)):
+            p = points[i]
+            if x:
+                p[0] = x
+            if y:
+                p[1] = y
+            if z:
+                p[2] = z
+            if m:
+                p[3] = m
+            self._shapes[shape][part][i] = p
+    elif (shape and (not part) and (not point)):
+        try:
+            self._shapes[shape]
+        except IndexError:
+            self._shapes.append([])
+    if addr:
+        (shape, part, point) = addr
+        self._shapes[shape][part][point] = [x, y, z, m]
+    else:
+        Writer.point(self, x, y, z, m)
+    if self.autoBalance:
+        self.balance()
