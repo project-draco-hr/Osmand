@@ -1,2 +1,49 @@
 {
+  for (  OsmandPreference<Boolean> b : booleanPreferences.values()) {
+    CheckBoxPreference pref=(CheckBoxPreference)screenPreferences.get(b.getId());
+    pref.setChecked(b.get());
+  }
+  for (  OsmandPreference<Integer> b : seekBarPreferences.values()) {
+    SeekBarPreference pref=(SeekBarPreference)screenPreferences.get(b.getId());
+    pref.setValue(b.get());
+  }
+  reloadVoiceListPreference(getPreferenceScreen());
+  for (  OsmandPreference<?> p : listPreferences.values()) {
+    ListPreference listPref=(ListPreference)screenPreferences.get(p.getId());
+    Map<String,?> prefValues=listPrefValues.get(p.getId());
+    String[] entryValues=new String[prefValues.size()];
+    String[] entries=new String[prefValues.size()];
+    int i=0;
+    for (    Entry<String,?> e : prefValues.entrySet()) {
+      entries[i]=e.getKey();
+      entryValues[i]=e.getValue() + "";
+      i++;
+    }
+    listPref.setEntries(entries);
+    listPref.setEntryValues(entryValues);
+    listPref.setValue(p.get() + "");
+  }
+  for (  OsmandPreference<String> s : editTextPreferences.values()) {
+    EditTextPreference pref=(EditTextPreference)screenPreferences.get(s.getId());
+    pref.setText(s.get());
+  }
+  routeServiceEnabled.setChecked(getMyApplication().getNavigationService() != null);
+  updateTileSourceSummary();
+  updateApplicationDirTextAndSummary();
+  applicationModePreference.setTitle(getString(R.string.settings_preset) + "  [" + ApplicationMode.toHumanString(osmandSettings.APPLICATION_MODE.get(),this)+ "]");
+  dayNightModePreference.setSummary(getString(R.string.daynight_descr) + "  [" + osmandSettings.DAYNIGHT_MODE.get().toHumanString(this)+ "]");
+  routerServicePreference.setSummary(getString(R.string.router_service_descr) + "  [" + osmandSettings.ROUTER_SERVICE.get()+ "]");
+  PreferenceScreen screen=getPreferenceScreen();
+  if (screen.getTitle().startsWith(getString(R.string.rendering_settings))) {
+    screen.setTitle(getString(R.string.rendering_settings) + "  [" + ApplicationMode.toHumanString(osmandSettings.APPLICATION_MODE.get(),this)+ "]");
+  }
+ else   if (screen.getTitle().startsWith(getString(R.string.appearance_settings))) {
+    screen.setTitle(getString(R.string.appearance_settings) + "  [" + ApplicationMode.toHumanString(osmandSettings.APPLICATION_MODE.get(),this)+ "]");
+  }
+ else   if (screen.getTitle().startsWith(getString(R.string.monitor_settings))) {
+    screen.setTitle(getString(R.string.monitor_settings) + "  [" + ApplicationMode.toHumanString(osmandSettings.APPLICATION_MODE.get(),this)+ "]");
+  }
+ else   if (screen.getTitle().startsWith(getString(R.string.routing_settings))) {
+    screen.setTitle(getString(R.string.routing_settings) + "  [" + ApplicationMode.toHumanString(osmandSettings.APPLICATION_MODE.get(),this)+ "]");
+  }
 }
