@@ -10,14 +10,13 @@
         final Handler h=new Handler(Looper.getMainLooper());
         notifyListenersWithDelay(rc,notifyList,h);
       }
-      final NativeOsmandLibrary.RenderingGenerationResult res=library.generateRendering(rc,searchResultHandler,bmp.getWidth(),bmp.getHeight(),bmp.hasAlpha(),useEnglishNames,render,defaultColor);
+      final NativeOsmandLibrary.RenderingGenerationResult res=library.generateRendering(rc,searchResultHandler,bmp,bmp.getWidth(),bmp.getHeight(),bmp.getRowBytes(),bmp.hasAlpha(),useEnglishNames,render,defaultColor);
       rc.ended=true;
       notifyListeners(notifyList);
       long time=System.currentTimeMillis() - now;
       rc.renderingDebugInfo=String.format("Rendering: %s ms  (%s text)\n" + "(%s points, %s points inside, %s of %s objects visible)\n" + res.debugMessage,time,rc.textRenderingTime,rc.pointCount,rc.pointInsideCount,rc.visible,rc.allObjects);
       if (res.bitmapBuffer != null) {
         bmp.copyPixelsFromBuffer(res.bitmapBuffer);
-        NativeOsmandLibrary.releaseRenderingGenerationResults(res);
       }
     }
  catch (    Exception e) {
