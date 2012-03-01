@@ -5,8 +5,16 @@ synchronized (NativeOsmandLibrary.class) {
         try {
           log.debug("Loading native stlport_shared...");
           System.loadLibrary("stlport_shared");
-          log.debug("Loading native osmand...");
-          System.loadLibrary("osmand");
+          log.debug("Loading native cpufeatures_proxy...");
+          System.loadLibrary("cpufeatures_proxy");
+          if (!cpuHasNeonSupport()) {
+            log.debug("Loading native osmand...");
+            System.loadLibrary("osmand");
+          }
+ else {
+            log.debug("Loading native osmand with NEON...");
+            System.loadLibrary("osmand_neon");
+          }
           log.debug("Creating NativeOsmandLibrary instance...");
           library=new NativeOsmandLibrary();
           log.debug("Initializing rendering rules storage...");
