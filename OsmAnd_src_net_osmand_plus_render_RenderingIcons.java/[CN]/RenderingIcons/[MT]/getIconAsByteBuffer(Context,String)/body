@@ -1,0 +1,22 @@
+{
+  Integer resId=icons.get(s);
+  if (resId == null)   return null;
+  try {
+    final AssetFileDescriptor iconAssetFd=ctx.getResources().openRawResourceFd(resId.intValue());
+    if (iconAssetFd == null)     return null;
+    final long iconAssetLen=iconAssetFd.getLength();
+    final ByteBuffer iconByteBuffer=ByteBuffer.allocate((int)iconAssetLen);
+    final InputStream inputStream=iconAssetFd.createInputStream();
+    if (inputStream == null)     return null;
+    long consumedBytes=0;
+    while (consumedBytes < iconAssetLen) {
+      consumedBytes+=inputStream.read(iconByteBuffer.array(),(int)(iconByteBuffer.arrayOffset() + consumedBytes),(int)(iconAssetLen - consumedBytes));
+    }
+    iconAssetFd.close();
+    return iconByteBuffer;
+  }
+ catch (  Throwable e) {
+    log.error("Failed to get byte stream from icon",e);
+    return null;
+  }
+}
