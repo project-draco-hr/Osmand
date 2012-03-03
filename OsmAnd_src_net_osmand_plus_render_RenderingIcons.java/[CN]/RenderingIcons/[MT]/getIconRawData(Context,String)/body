@@ -1,0 +1,21 @@
+{
+  Integer resId=icons.get(s);
+  if (resId == null)   return null;
+  try {
+    final InputStream inputStream=ctx.getResources().openRawResource(resId.intValue());
+    final ByteArrayOutputStream proxyOutputStream=new ByteArrayOutputStream(1024);
+    final byte[] ioBuffer=new byte[1024];
+    int bytesRead;
+    while ((bytesRead=inputStream.read(ioBuffer)) >= 0) {
+      proxyOutputStream.write(ioBuffer,0,bytesRead);
+    }
+    inputStream.close();
+    final byte[] bitmapData=proxyOutputStream.toByteArray();
+    log.info("Icon data length is " + bitmapData.length);
+    return bitmapData;
+  }
+ catch (  Throwable e) {
+    log.error("Failed to get byte stream from icon",e);
+    return null;
+  }
+}
