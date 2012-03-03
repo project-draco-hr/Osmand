@@ -4,14 +4,13 @@
     speed=Math.max(currentLocation.getSpeed(),speed);
   }
   if (makeUturnWhenPossible == true) {
-    if (System.currentTimeMillis() - lastTimeMakeUTwpAnnounced > 60000) {
+    if (currentStatus != STATUS_UTWP - TOLD) {
       CommandBuilder play=getNewCommandPlayerToPlay();
       if (play != null) {
         play.makeUTwp().play();
-        lastTimeMakeUTwpAnnounced=System.currentTimeMillis();
+        currentStatus=STATUS_UTWP - TOLD;
       }
     }
-    currentStatus=STATUS_UNKNOWN;
     return;
   }
   RouteDirectionInfo next=router.getNextRouteDirectionInfo();
@@ -21,7 +20,7 @@
     currentStatus=STATUS_UNKNOWN;
   }
   if (next == null || next.distance == 0) {
-    if (currentStatus == STATUS_UNKNOWN && currentDirection > 0) {
+    if (currentStatus <= STATUS_UNKNOWN && currentDirection > 0) {
       CommandBuilder play=getNewCommandPlayerToPlay();
       if (play != null) {
         play.goAhead(router.getLeftDistance()).andArriveAtDestination().play();
