@@ -1,0 +1,29 @@
+{
+  checkPeekState(CITY_INDEX_INIT);
+  codedOutStream.writeTag(CitiesIndex.BLOCKS_FIELD_NUMBER,FieldType.MESSAGE.getWireType());
+  long startMessage=getFilePointer();
+  long startCityBlock=ref.getStartPointer();
+  ref.writeReference(raf,startMessage);
+  CityBlockIndex.Builder cityInd=OsmandOdb.CityBlockIndex.newBuilder();
+  cityInd.setShiftToCityIndex((int)(startMessage - startCityBlock));
+  int cx=MapUtils.get31TileNumberX(cityOrPostcode.getLocation().getLongitude());
+  int cy=MapUtils.get31TileNumberY(cityOrPostcode.getLocation().getLatitude());
+  Map<Long,Set<Street>> mapNodeToStreet=new LinkedHashMap<Long,Set<Street>>();
+  if (wayNodes != null) {
+    for (int i=0; i < streets.size(); i++) {
+      streets.get(i).setIndexInCity(i);
+      for (      Node n : wayNodes.get(streets.get(i))) {
+        if (!mapNodeToStreet.containsKey(n.getId())) {
+          mapNodeToStreet.put(n.getId(),new LinkedHashSet<Street>(3));
+        }
+        mapNodeToStreet.get(n.getId()).add(streets.get(i));
+      }
+    }
+  }
+  String postcodeFilter=cityOrPostcode instanceof PostCode ? cityOrPostcode.getName() : null;
+  for (  Street s : streets) {
+    StreetIndex streetInd=createStreetAndBuildings(s,cx,cy,postcodeFilter,mapNodeToStreet,wayNodes);
+    cityInd.addStreets(streetInd);
+  }
+  codedOutStream.writeMessage(CitiesIndex.BLOCKS_FIELD_NUMBER,cityInd.build());
+}

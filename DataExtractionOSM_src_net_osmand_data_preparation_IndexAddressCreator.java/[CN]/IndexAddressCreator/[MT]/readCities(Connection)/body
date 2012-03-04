@@ -1,15 +1,24 @@
 {
-  List<City> cities=new ArrayList<City>();
+  Map<CityType,Collection<City>> cities=new LinkedHashMap<City.CityType,Collection<City>>();
+  for (  CityType t : CityType.values()) {
+    cities.put(t,new TreeSet<City>(new Comparator<City>(){
+      @Override public int compare(      City o1,      City o2){
+        return Collator.getInstance().compare(o1.getName(),o2.getName());
+      }
+    }
+));
+  }
   Statement stat=c.createStatement();
   ResultSet set=stat.executeQuery("select id, latitude, longitude , name , name_en , city_type from city");
   while (set.next()) {
-    City city=new City(CityType.valueFromString(set.getString(6)));
+    CityType type=CityType.valueFromString(set.getString(6));
+    City city=new City(type);
     city.setName(set.getString(4));
     city.setEnName(set.getString(5));
     city.setLocation(set.getDouble(2),set.getDouble(3));
     city.setId(set.getLong(1));
-    cities.add(city);
-    if (debugFullNames) {
+    cities.get(type).add(city);
+    if (DEBUG_FULL_NAMES) {
       Boundary cityB=cityBoundaries.get(city);
       if (cityB != null) {
         city.setName(city.getName() + " " + cityB.getAdminLevel()+ ":"+ cityB.getName());

@@ -1,0 +1,21 @@
+{
+  checkPeekState(CITY_INDEX_INIT);
+  codedOutStream.writeTag(CitiesIndex.CITIES_FIELD_NUMBER,FieldType.MESSAGE.getWireType());
+  long startMessage=getFilePointer();
+  CityIndex.Builder cityInd=OsmandOdb.CityIndex.newBuilder();
+  if (cityType >= 0) {
+    cityInd.setCityType(cityType);
+  }
+  cityInd.setId(city.getId());
+  cityInd.setName(city.getName());
+  if (checkEnNameToWrite(city)) {
+    cityInd.setNameEn(city.getEnName());
+  }
+  int cx=MapUtils.get31TileNumberX(city.getLocation().getLongitude());
+  int cy=MapUtils.get31TileNumberY(city.getLocation().getLatitude());
+  cityInd.setX(cx);
+  cityInd.setY(cy);
+  cityInd.setShiftToCityBlockIndex(0);
+  codedOutStream.writeMessageNoTag(cityInd.build());
+  return new BinaryFileReference(getFilePointer() - 4,startMessage);
+}

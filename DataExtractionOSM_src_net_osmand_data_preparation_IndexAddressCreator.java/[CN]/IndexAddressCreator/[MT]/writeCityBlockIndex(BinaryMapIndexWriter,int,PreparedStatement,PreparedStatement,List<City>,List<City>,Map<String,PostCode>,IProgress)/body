@@ -1,0 +1,62 @@
+{
+  List<BinaryFileReference> refs=new ArrayList<BinaryFileReference>();
+  writer.startCityBlockIndex(type);
+  for (  City c : cities) {
+    refs.add(writer.writeCityHeader(c,c.getType().ordinal()));
+  }
+  for (int i=0; i < cities.size(); i++) {
+    City city=cities.get(i);
+    BinaryFileReference ref=refs.get(i);
+    if (type == CITIES_TYPE) {
+      progress.progress(1);
+    }
+ else {
+      if ((cities.size() - i) % 100 == 0) {
+        progress.progress(1);
+      }
+    }
+    Map<Street,List<Node>> streetNodes=waynodesStat == null ? null : new LinkedHashMap<Street,List<Node>>();
+    List<City> listSuburbs=null;
+    if (suburbs != null) {
+      for (      City suburb : suburbs) {
+        if (suburb.getIsInValue().contains(city.getName().toLowerCase())) {
+          if (listSuburbs == null) {
+            listSuburbs=new ArrayList<City>();
+          }
+          listSuburbs.add(suburb);
+        }
+      }
+    }
+    long time=System.currentTimeMillis();
+    List<Street> streets=readStreetsBuildings(streetstat,city,waynodesStat,streetNodes,listSuburbs);
+    long f=System.currentTimeMillis() - time;
+    writer.writeCityIndex(city,streets,streetNodes,ref);
+    int bCount=0;
+    for (    Street s : streets) {
+      bCount++;
+      for (      Building b : s.getBuildings()) {
+        bCount++;
+        if (city.getPostcode() != null && b.getPostcode() == null) {
+          b.setPostcode(city.getPostcode());
+        }
+        if (b.getPostcode() != null) {
+          if (!postcodes.containsKey(b.getPostcode())) {
+            PostCode p=new PostCode(b.getPostcode());
+            p.setLocation(b.getLocation().getLatitude(),b.getLocation().getLongitude());
+            postcodes.put(b.getPostcode(),p);
+          }
+          postcodes.get(b.getPostcode()).registerStreet(s,false);
+        }
+      }
+    }
+    if (f > 500) {
+      if (logMapDataWarn != null) {
+        logMapDataWarn.info("! " + city.getName() + " ! "+ f+ " "+ bCount+ " streets "+ streets.size());
+      }
+ else {
+        log.info("! " + city.getName() + " ! "+ f+ " "+ bCount+ " streets "+ streets.size());
+      }
+    }
+  }
+  writer.endCityBlockIndex();
+}
