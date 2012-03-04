@@ -7,6 +7,7 @@
   for (int i=0; i < cities.size(); i++) {
     City city=cities.get(i);
     BinaryFileReference ref=refs.get(i);
+    putNamedMapObject(namesIndex,city,ref.getStartPointer());
     if (type == CITIES_TYPE) {
       progress.progress(1);
     }
@@ -33,7 +34,7 @@
     writer.writeCityIndex(city,streets,streetNodes,ref);
     int bCount=0;
     for (    Street s : streets) {
-      bCount++;
+      putNamedMapObject(namesIndex,s,s.getFileOffset());
       for (      Building b : s.getBuildings()) {
         bCount++;
         if (city.getPostcode() != null && b.getPostcode() == null) {
@@ -51,10 +52,10 @@
     }
     if (f > 500) {
       if (logMapDataWarn != null) {
-        logMapDataWarn.info("! " + city.getName() + " ! "+ f+ " "+ bCount+ " streets "+ streets.size());
+        logMapDataWarn.info("! " + city.getName() + " ! "+ f+ " ms "+ streets.size()+ " streets "+ bCount+ " buildings");
       }
  else {
-        log.info("! " + city.getName() + " ! "+ f+ " "+ bCount+ " streets "+ streets.size());
+        log.info("! " + city.getName() + " ! "+ f+ " ms "+ streets.size()+ " streets "+ bCount+ " buildings");
       }
     }
   }

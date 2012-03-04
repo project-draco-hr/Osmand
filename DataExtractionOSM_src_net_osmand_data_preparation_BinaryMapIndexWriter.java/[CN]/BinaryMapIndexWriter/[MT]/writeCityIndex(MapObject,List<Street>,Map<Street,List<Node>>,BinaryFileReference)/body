@@ -6,6 +6,7 @@
   ref.writeReference(raf,startMessage);
   CityBlockIndex.Builder cityInd=OsmandOdb.CityBlockIndex.newBuilder();
   cityInd.setShiftToCityIndex((int)(startMessage - startCityBlock));
+  long currentPointer=startMessage + 4;
   int cx=MapUtils.get31TileNumberX(cityOrPostcode.getLocation().getLongitude());
   int cy=MapUtils.get31TileNumberY(cityOrPostcode.getLocation().getLatitude());
   Map<Long,Set<Street>> mapNodeToStreet=new LinkedHashMap<Long,Set<Street>>();
@@ -23,7 +24,13 @@
   String postcodeFilter=cityOrPostcode instanceof PostCode ? cityOrPostcode.getName() : null;
   for (  Street s : streets) {
     StreetIndex streetInd=createStreetAndBuildings(s,cx,cy,postcodeFilter,mapNodeToStreet,wayNodes);
+    currentPointer+=CodedOutputStream.computeTagSize(CityBlockIndex.STREETS_FIELD_NUMBER);
+    if (currentPointer > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException("File offset > 2 GB.");
+    }
+    s.setFileOffset((int)currentPointer);
+    currentPointer+=CodedOutputStream.computeMessageSizeNoTag(streetInd);
     cityInd.addStreets(streetInd);
   }
-  codedOutStream.writeMessage(CitiesIndex.BLOCKS_FIELD_NUMBER,cityInd.build());
+  codedOutStream.writeMessageNoTag(cityInd.build());
 }

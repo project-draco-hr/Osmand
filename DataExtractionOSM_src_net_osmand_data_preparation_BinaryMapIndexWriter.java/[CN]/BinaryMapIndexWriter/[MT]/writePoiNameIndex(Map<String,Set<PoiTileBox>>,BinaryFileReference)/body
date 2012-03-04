@@ -1,2 +1,37 @@
 {
+  checkPeekState(POI_INDEX_INIT);
+  codedOutStream.writeTag(OsmandOdb.OsmAndPoiIndex.NAMEINDEX_FIELD_NUMBER,WireFormat.WIRETYPE_FIXED32_LENGTH_DELIMITED);
+  preserveInt32Size();
+  Map<PoiTileBox,List<BinaryFileReference>> fpToWriteSeeks=new LinkedHashMap<PoiTileBox,List<BinaryFileReference>>();
+  Map<String,BinaryFileReference> indexedTable=writeIndexedTable(OsmandOdb.OsmAndPoiNameIndex.TABLE_FIELD_NUMBER,namesIndex.keySet());
+  for (  Map.Entry<String,Set<PoiTileBox>> e : namesIndex.entrySet()) {
+    codedOutStream.writeTag(OsmandOdb.OsmAndPoiNameIndex.DATA_FIELD_NUMBER,WireFormat.WIRETYPE_FIXED32_LENGTH_DELIMITED);
+    BinaryFileReference nameTableRef=indexedTable.get(e.getKey());
+    nameTableRef.writeReference(raf,getFilePointer());
+    OsmAndPoiNameIndex.OsmAndPoiNameIndexData.Builder builder=OsmAndPoiNameIndex.OsmAndPoiNameIndexData.newBuilder();
+    List<PoiTileBox> tileBoxes=new ArrayList<PoiTileBox>(e.getValue());
+    for (    PoiTileBox box : tileBoxes) {
+      OsmandOdb.OsmAndPoiNameIndexDataAtom.Builder bs=OsmandOdb.OsmAndPoiNameIndexDataAtom.newBuilder();
+      bs.setX(box.getX());
+      bs.setY(box.getY());
+      bs.setZoom(box.getZoom());
+      bs.setShiftTo(0);
+      OsmAndPoiNameIndexDataAtom atom=bs.build();
+      builder.addAtoms(atom);
+    }
+    OsmAndPoiNameIndex.OsmAndPoiNameIndexData msg=builder.build();
+    codedOutStream.writeMessage(OsmandOdb.OsmAndPoiNameIndex.DATA_FIELD_NUMBER,msg);
+    long endPointer=getFilePointer();
+    int accumulateSize=4;
+    for (int i=tileBoxes.size() - 1; i >= 0; i--) {
+      PoiTileBox box=tileBoxes.get(i);
+      if (!fpToWriteSeeks.containsKey(box)) {
+        fpToWriteSeeks.put(box,new ArrayList<BinaryFileReference>());
+      }
+      fpToWriteSeeks.get(box).add(net.osmand.data.preparation.BinaryFileReference.createShiftReference(endPointer - accumulateSize,startPoiIndex.getStartPointer()));
+      accumulateSize+=CodedOutputStream.computeMessageSize(OsmAndPoiNameIndex.OsmAndPoiNameIndexData.ATOMS_FIELD_NUMBER,msg.getAtoms(i));
+    }
+  }
+  writeInt32Size();
+  return fpToWriteSeeks;
 }

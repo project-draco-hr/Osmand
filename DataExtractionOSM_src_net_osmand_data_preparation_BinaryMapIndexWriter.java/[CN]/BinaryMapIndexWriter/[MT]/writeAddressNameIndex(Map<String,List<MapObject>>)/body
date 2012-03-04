@@ -1,0 +1,44 @@
+{
+  checkPeekState(CITY_INDEX_INIT);
+  codedOutStream.writeTag(OsmAndAddressIndex.NAMEINDEX_FIELD_NUMBER,WireFormat.WIRETYPE_FIXED32_LENGTH_DELIMITED);
+  preserveInt32Size();
+  Map<String,BinaryFileReference> res=writeIndexedTable(OsmAndAddressNameIndexData.TABLE_FIELD_NUMBER,namesIndex.keySet());
+  for (  Entry<String,List<MapObject>> entry : namesIndex.entrySet()) {
+    BinaryFileReference ref=res.get(entry.getKey());
+    codedOutStream.writeTag(OsmAndAddressNameIndexData.ATOM_FIELD_NUMBER,FieldType.MESSAGE.getWireType());
+    long pointer=getFilePointer();
+    if (ref != null) {
+      ref.writeReference(raf,getFilePointer());
+    }
+    AddressNameIndexData.Builder builder=AddressNameIndexData.newBuilder();
+    for (    MapObject o : entry.getValue()) {
+      AddressNameIndexDataAtom.Builder atom=AddressNameIndexDataAtom.newBuilder();
+      atom.setName(o.getName());
+      if (checkEnNameToWrite(o)) {
+        atom.setNameEn(o.getEnName());
+      }
+      int type=1;
+      if (o instanceof City) {
+        CityType ct=((City)o).getType();
+        if (ct != CityType.CITY && ct != CityType.TOWN) {
+          type=3;
+        }
+      }
+ else       if (o instanceof PostCode) {
+        type=2;
+      }
+ else       if (o instanceof Street) {
+        type=4;
+      }
+      atom.setType(type);
+      atom.addShiftToIndex((int)(pointer - o.getFileOffset()));
+      if (o instanceof Street) {
+        atom.addShiftToCityIndex((int)(pointer - ((Street)o).getCity().getFileOffset()));
+      }
+      builder.addAtom(atom.build());
+    }
+    codedOutStream.writeMessageNoTag(builder.build());
+  }
+  int len=writeInt32Size();
+  log.info("ADDRESS NAME INDEX SIZE : " + len);
+}
