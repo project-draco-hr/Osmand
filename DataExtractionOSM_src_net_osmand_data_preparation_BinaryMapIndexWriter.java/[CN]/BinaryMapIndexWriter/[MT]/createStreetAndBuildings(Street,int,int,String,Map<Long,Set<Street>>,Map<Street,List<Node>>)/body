@@ -1,2 +1,78 @@
 {
+  checkPeekState(CITY_INDEX_INIT);
+  StreetIndex.Builder streetBuilder=OsmandOdb.StreetIndex.newBuilder();
+  streetBuilder.setName(street.getName());
+  if (checkEnNameToWrite(street)) {
+    streetBuilder.setNameEn(street.getEnName());
+  }
+  streetBuilder.setId(street.getId());
+  int sx=MapUtils.get31TileNumberX(street.getLocation().getLongitude());
+  int sy=MapUtils.get31TileNumberY(street.getLocation().getLatitude());
+  streetBuilder.setX((sx - cx) >> 7);
+  streetBuilder.setY((sy - cy) >> 7);
+  for (  Building b : street.getBuildings()) {
+    if (postcodeFilter != null && !postcodeFilter.equalsIgnoreCase(b.getPostcode())) {
+      continue;
+    }
+    OsmandOdb.BuildingIndex.Builder bbuilder=OsmandOdb.BuildingIndex.newBuilder();
+    int bx=MapUtils.get31TileNumberX(b.getLocation().getLongitude());
+    int by=MapUtils.get31TileNumberY(b.getLocation().getLatitude());
+    bbuilder.setX((bx - sx) >> 7);
+    bbuilder.setY((by - sy) >> 7);
+    String number2=b.getName2();
+    if (!Algoritms.isEmpty(number2)) {
+      LatLon loc=b.getLatLon2();
+      if (loc == null) {
+        bbuilder.setX((bx - sx) >> 7);
+        bbuilder.setY((by - sy) >> 7);
+      }
+ else {
+        int bcx=MapUtils.get31TileNumberX(loc.getLongitude());
+        int bcy=MapUtils.get31TileNumberY(loc.getLatitude());
+        bbuilder.setX((bcx - sx) >> 7);
+        bbuilder.setY((bcy - sy) >> 7);
+      }
+      bbuilder.setName2(number2);
+      if (b.getInterpolationType() != null) {
+        bbuilder.setInterpolation(b.getInterpolationType().getValue());
+      }
+ else       if (b.getInterpolationInterval() > 0) {
+        bbuilder.setInterpolation(b.getInterpolationInterval());
+      }
+ else {
+        bbuilder.setInterpolation(1);
+      }
+    }
+    bbuilder.setId(b.getId());
+    bbuilder.setName(b.getName());
+    if (checkEnNameToWrite(b)) {
+      bbuilder.setNameEn(b.getEnName());
+    }
+    if (postcodeFilter == null && b.getPostcode() != null) {
+      bbuilder.setPostcode(b.getPostcode());
+    }
+    streetBuilder.addBuildings(bbuilder.build());
+  }
+  if (wayNodes != null) {
+    Set<Street> checkedStreets=new TreeSet<Street>();
+    for (    Node intersection : wayNodes.get(street)) {
+      for (      Street streetJ : mapNodeToStreet.get(intersection.getId())) {
+        if (checkedStreets.contains(streetJ)) {
+          continue;
+        }
+        checkedStreets.add(streetJ);
+        StreetIntersection.Builder builder=OsmandOdb.StreetIntersection.newBuilder();
+        int ix=MapUtils.get31TileNumberX(intersection.getLongitude());
+        int iy=MapUtils.get31TileNumberY(intersection.getLatitude());
+        builder.setIntersectedX((ix - sx) >> 7);
+        builder.setIntersectedY((iy - sy) >> 7);
+        builder.setName(streetJ.getName());
+        if (checkEnNameToWrite(streetJ)) {
+          builder.setNameEn(streetJ.getEnName());
+        }
+        streetBuilder.addIntersections(builder.build());
+      }
+    }
+  }
+  return streetBuilder.build();
 }

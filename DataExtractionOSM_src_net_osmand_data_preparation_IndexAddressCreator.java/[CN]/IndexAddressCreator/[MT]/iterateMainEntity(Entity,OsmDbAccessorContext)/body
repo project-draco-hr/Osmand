@@ -1,4 +1,49 @@
 {
+  if (e instanceof Way && e.getTag(OSMTagKey.ADDR_INTERPOLATION) != null) {
+    BuildingInterpolation type=null;
+    int interpolationInterval=0;
+    if (e.getTag(OSMTagKey.ADDR_INTERPOLATION) != null) {
+      try {
+        type=BuildingInterpolation.valueOf(e.getTag(OSMTagKey.ADDR_INTERPOLATION).toUpperCase());
+      }
+ catch (      RuntimeException ex) {
+        try {
+          interpolationInterval=Integer.parseInt(e.getTag(OSMTagKey.ADDR_INTERPOLATION));
+        }
+ catch (        NumberFormatException ex2) {
+        }
+      }
+    }
+    if (type != null && interpolationInterval > 0) {
+      List<Node> nodesWithHno=new ArrayList<Node>();
+      for (      Node n : ((Way)e).getNodes()) {
+        if (n.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && n.getTag(OSMTagKey.ADDR_STREET) != null) {
+          nodesWithHno.add(n);
+        }
+      }
+      if (nodesWithHno.size() > 1) {
+        for (int i=1; i < nodesWithHno.size(); i++) {
+          Node first=nodesWithHno.get(i - 1);
+          Node second=nodesWithHno.get(i);
+          boolean exist=streetDAO.findBuilding(first);
+          if (exist) {
+            streetDAO.removeBuilding(first);
+          }
+          LatLon l=e.getLatLon();
+          Set<Long> idsOfStreet=getStreetInCity(first.getIsInNames(),first.getTag(OSMTagKey.ADDR_STREET),null,l);
+          if (!idsOfStreet.isEmpty()) {
+            Building building=new Building(first);
+            building.setInterpolationInterval(interpolationInterval);
+            building.setInterpolationType(type);
+            building.setName(first.getTag(OSMTagKey.ADDR_HOUSE_NUMBER));
+            building.setName2(second.getTag(OSMTagKey.ADDR_HOUSE_NUMBER));
+            building.setLatLon2(second.getLatLon());
+            streetDAO.writeBuilding(idsOfStreet,building);
+          }
+        }
+      }
+    }
+  }
   if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && e.getTag(OSMTagKey.ADDR_STREET) != null) {
     boolean exist=streetDAO.findBuilding(e);
     if (!exist) {
@@ -7,7 +52,28 @@
       Set<Long> idsOfStreet=getStreetInCity(e.getIsInNames(),e.getTag(OSMTagKey.ADDR_STREET),null,l);
       if (!idsOfStreet.isEmpty()) {
         Building building=new Building(e);
-        building.setName(e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER));
+        String hno=e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER);
+        int i=hno.indexOf('-');
+        if (i != -1) {
+          building.setInterpolationInterval(1);
+          if (e.getTag(OSMTagKey.ADDR_INTERPOLATION) != null) {
+            try {
+              building.setInterpolationType(BuildingInterpolation.valueOf(e.getTag(OSMTagKey.ADDR_INTERPOLATION).toUpperCase()));
+            }
+ catch (            RuntimeException ex) {
+              try {
+                building.setInterpolationInterval(Integer.parseInt(e.getTag(OSMTagKey.ADDR_INTERPOLATION)));
+              }
+ catch (              NumberFormatException ex2) {
+              }
+            }
+          }
+          building.setName(hno.substring(0,i));
+          building.setName2(hno.substring(i + 1));
+        }
+ else {
+          building.setName(hno);
+        }
         streetDAO.writeBuilding(idsOfStreet,building);
       }
     }

@@ -11,16 +11,8 @@
       rtree.Node root=rtree.getReadNode(rootIndex);
       Rect rootBounds=calcBounds(root);
       if (rootBounds != null) {
-        boolean last=nodeIsLastSubTree(rtree,rootIndex);
         writer.startWriteMapLevelIndex(mapZooms.getLevel(i).getMinZoom(),mapZooms.getLevel(i).getMaxZoom(),rootBounds.getMinX(),rootBounds.getMaxX(),rootBounds.getMinY(),rootBounds.getMaxY());
-        if (last) {
-          BinaryFileReference ref=writer.startMapTreeElement(rootBounds.getMinX(),rootBounds.getMaxX(),rootBounds.getMinY(),rootBounds.getMaxY(),true);
-          bounds.put(rootIndex,ref);
-        }
-        writeBinaryMapTree(root,rtree,writer,bounds);
-        if (last) {
-          writer.endWriteMapTreeElement();
-        }
+        writeBinaryMapTree(root,rootBounds,rtree,writer,bounds);
         writer.endWriteMapLevelIndex();
       }
     }
