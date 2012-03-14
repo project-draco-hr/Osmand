@@ -1,29 +1,24 @@
 {
-  int init=0;
   while (true) {
-    if (init == 0xf) {
-      return;
-    }
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
 switch (tag) {
 case 0:
       return;
-case OsmandOdb.MapTree.BOTTOM_FIELD_NUMBER:
+case MapDataBox.BOTTOM_FIELD_NUMBER:
     tree.bottom=codedIS.readSInt32() + abottom;
-  init|=1;
-break;
-case OsmandOdb.MapTree.LEFT_FIELD_NUMBER:
+  break;
+case MapDataBox.LEFT_FIELD_NUMBER:
 tree.left=codedIS.readSInt32() + aleft;
-init|=2;
 break;
-case OsmandOdb.MapTree.RIGHT_FIELD_NUMBER:
+case MapDataBox.RIGHT_FIELD_NUMBER:
 tree.right=codedIS.readSInt32() + aright;
-init|=4;
 break;
-case OsmandOdb.MapTree.TOP_FIELD_NUMBER:
+case MapDataBox.TOP_FIELD_NUMBER:
 tree.top=codedIS.readSInt32() + atop;
-init|=8;
+break;
+case MapDataBox.SHIFTTOMAPDATA_FIELD_NUMBER:
+tree.mapDataBlock=codedIS.readFixed32() + tree.filePointer;
 break;
 default :
 skipUnknownField(t);
