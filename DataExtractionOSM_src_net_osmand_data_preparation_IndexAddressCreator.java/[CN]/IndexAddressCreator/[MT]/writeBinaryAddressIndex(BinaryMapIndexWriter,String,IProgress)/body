@@ -29,17 +29,17 @@
   }
   progress.startTask(Messages.getString("IndexCreator.SERIALIZING_ADRESS"),cityTowns.size() + villages.size() / 100 + 1);
   Map<String,List<MapObject>> namesIndex=new TreeMap<String,List<MapObject>>(Collator.getInstance());
-  Map<String,PostCode> postcodes=new TreeMap<String,PostCode>();
+  Map<String,City> postcodes=new TreeMap<String,City>();
   writeCityBlockIndex(writer,CITIES_TYPE,streetstat,waynodesStat,suburbs,cityTowns,postcodes,namesIndex,progress);
   writeCityBlockIndex(writer,VILLAGES_TYPE,streetstat,waynodesStat,null,villages,postcodes,namesIndex,progress);
   List<BinaryFileReference> refs=new ArrayList<BinaryFileReference>();
   writer.startCityBlockIndex(POSTCODES_TYPE);
-  ArrayList<PostCode> posts=new ArrayList<PostCode>(postcodes.values());
-  for (  PostCode s : posts) {
+  ArrayList<City> posts=new ArrayList<City>(postcodes.values());
+  for (  City s : posts) {
     refs.add(writer.writeCityHeader(s,-1));
   }
   for (int i=0; i < posts.size(); i++) {
-    PostCode postCode=posts.get(i);
+    City postCode=posts.get(i);
     BinaryFileReference ref=refs.get(i);
     putNamedMapObject(namesIndex,postCode,ref.getStartPointer());
     writer.writeCityIndex(postCode,new ArrayList<Street>(postCode.getStreets()),null,ref);

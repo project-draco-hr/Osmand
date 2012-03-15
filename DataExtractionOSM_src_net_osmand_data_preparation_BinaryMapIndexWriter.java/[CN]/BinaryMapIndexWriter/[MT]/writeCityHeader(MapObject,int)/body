@@ -6,7 +6,9 @@
   if (cityType >= 0) {
     cityInd.setCityType(cityType);
   }
-  cityInd.setId(city.getId());
+  if (city.getId() != null) {
+    cityInd.setId(city.getId());
+  }
   cityInd.setName(city.getName());
   if (checkEnNameToWrite(city)) {
     cityInd.setNameEn(city.getEnName());
@@ -17,5 +19,6 @@
   cityInd.setY(cy);
   cityInd.setShiftToCityBlockIndex(0);
   codedOutStream.writeMessageNoTag(cityInd.build());
-  return new BinaryFileReference(getFilePointer() - 4,startMessage);
+  codedOutStream.flush();
+  return BinaryFileReference.createShiftReference(getFilePointer() - 4,startMessage);
 }
