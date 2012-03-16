@@ -1,7 +1,7 @@
 {
   String reg=reader.getRegionNames().get(0);
   final Map<String,Integer> streetFreq=new LinkedHashMap<String,Integer>();
-  List<City> cs=reader.getCities(reg,null);
+  List<City> cs=reader.getCities(reg,null,BinaryMapAddressReaderAdapter.CITY_TOWN_TYPE);
   for (  City c : cs) {
     int buildings=0;
     reader.preloadStreets(c,null);
@@ -12,17 +12,7 @@
     }
     println(c.getName() + " " + c.getLocation()+ " "+ c.getStreets().size()+ " "+ buildings+ " "+ c.getEnName());
   }
-  List<PostCode> postcodes=reader.getPostcodes(reg,buildAddressRequest((ResultMatcher<MapObject>)null),null);
-  for (  PostCode c : postcodes) {
-    reader.preloadStreets(c,buildAddressRequest((ResultMatcher<Street>)null));
-    println(c.getName());
-  }
-  List<City> villages=reader.getVillages(reg,buildAddressRequest((ResultMatcher<MapObject>)null),new StringMatcher(){
-    @Override public boolean matches(    String name){
-      return true;
-    }
-  }
-,true);
+  List<City> villages=reader.getCities(reg,buildAddressRequest((ResultMatcher<City>)null),BinaryMapAddressReaderAdapter.VILLAGES_TYPE);
   for (  City v : villages) {
     reader.preloadStreets(v,null);
     for (    Street s : v.getStreets()) {

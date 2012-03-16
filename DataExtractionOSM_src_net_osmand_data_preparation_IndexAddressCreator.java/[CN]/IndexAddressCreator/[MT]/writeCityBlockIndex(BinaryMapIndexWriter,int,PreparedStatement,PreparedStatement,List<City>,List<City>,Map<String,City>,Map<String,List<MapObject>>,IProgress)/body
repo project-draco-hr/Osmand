@@ -46,11 +46,17 @@
             p.setLocation(b.getLocation().getLatitude(),b.getLocation().getLongitude());
             postcodes.put(b.getPostcode(),p);
           }
-          Street newS=new Street(postcodes.get(b.getPostcode()));
-          newS.setEnName(s.getEnName());
-          newS.setName(s.getName());
-          newS.registerBuildings(s.getBuildings());
-          newS.getWayNodes().addAll(s.getWayNodes());
+          City post=postcodes.get(b.getPostcode());
+          Street newS=post.getStreet(s.getName());
+          if (newS == null) {
+            newS=new Street(post);
+            newS.setName(s.getName());
+            newS.setEnName(s.getEnName());
+            newS.setLocation(s.getLocation().getLatitude(),s.getLocation().getLongitude());
+            newS.setId(s.getId());
+            post.registerStreet(newS);
+          }
+          newS.registerBuildingCheckById(b);
         }
       }
     }
