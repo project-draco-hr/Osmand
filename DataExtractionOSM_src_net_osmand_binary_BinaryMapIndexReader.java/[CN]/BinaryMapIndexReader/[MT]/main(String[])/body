@@ -1,5 +1,5 @@
 {
-  RandomAccessFile raf=new RandomAccessFile(new File("/home/victor/projects/OsmAnd/data/osmand_index/Netherlands.obf"),"r");
+  RandomAccessFile raf=new RandomAccessFile(new File("/home/victor/projects/OsmAnd/data/osm-gen/Luxembourg.obf"),"r");
   BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
   println("VERSION " + reader.getVersion());
   long time=System.currentTimeMillis();
@@ -7,32 +7,15 @@
     testMapSearch(reader);
   }
   if (testAddressSearch) {
-    testAddressSearch(reader);
+    testAddressSearchByName(reader);
   }
   if (testTransportSearch) {
     testTransportSearch(reader);
   }
   if (testPoiSearch) {
     PoiRegion poiRegion=reader.getPoiIndexes().get(0);
-    println(poiRegion.leftLongitude + " " + poiRegion.rightLongitude+ " "+ poiRegion.bottomLatitude+ " "+ poiRegion.topLatitude);
-    for (int i=0; i < poiRegion.categories.size(); i++) {
-      println(poiRegion.categories.get(i));
-      println(" " + poiRegion.subcategories.get(i));
-    }
-    int sleft=MapUtils.get31TileNumberX(6);
-    int sright=MapUtils.get31TileNumberX(14);
-    int stop=MapUtils.get31TileNumberY(54);
-    int sbottom=MapUtils.get31TileNumberY(45);
-    SearchRequest<Amenity> req=buildSearchPoiRequest(sleft,sright,stop,sbottom,-1,new SearchPoiTypeFilter(){
-      @Override public boolean accept(      AmenityType type,      String subcategory){
-        return true;
-      }
-    }
-,null);
-    List<Amenity> results=reader.searchPoi(req);
-    for (    Amenity a : results) {
-      println(a.getType() + " " + a.getSubType()+ " "+ a.getName()+ " "+ a.getLocation());
-    }
+    testPoiSearch(reader,poiRegion);
+    testPoiSearchByName(reader);
   }
   println("MEMORY " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
   println("Time " + (System.currentTimeMillis() - time));
