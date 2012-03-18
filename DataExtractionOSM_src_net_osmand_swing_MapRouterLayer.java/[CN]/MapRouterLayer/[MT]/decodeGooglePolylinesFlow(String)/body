@@ -1,0 +1,24 @@
+{
+  final List<Double> decodedValues=new ArrayList<Double>();
+  int rawDecodedValue=0;
+  int carriage=0;
+  for (int x=0, xx=encodedData.length(); x < xx; ++x) {
+    int i=encodedData.charAt(x);
+    i-=63;
+    int _5_bits=i << (32 - 5) >>> (32 - 5);
+    rawDecodedValue|=_5_bits << carriage;
+    carriage+=5;
+    boolean isLast=(i & (1 << 5)) == 0;
+    if (isLast) {
+      boolean isNegative=(rawDecodedValue & 1) == 1;
+      rawDecodedValue>>>=1;
+      if (isNegative) {
+        rawDecodedValue=~rawDecodedValue;
+      }
+      decodedValues.add(((double)rawDecodedValue) / 1e5);
+      carriage=0;
+      rawDecodedValue=0;
+    }
+  }
+  return decodedValues.toArray(new Double[decodedValues.size()]);
+}

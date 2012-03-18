@@ -27,12 +27,12 @@
   }
 ;
   menu.add(end);
-  Action route=new AbstractAction("Calculate YOURS route"){
+  Action route_YOURS=new AbstractAction("Calculate YOURS route"){
     private static final long serialVersionUID=507156107455281238L;
     @Override public void actionPerformed(    ActionEvent e){
       new Thread(){
         @Override public void run(){
-          List<Way> ways=route(startRoute,endRoute);
+          List<Way> ways=route_YOURS(startRoute,endRoute);
           DataTileManager<Way> points=new DataTileManager<Way>();
           points.setZoom(11);
           for (          Way w : ways) {
@@ -46,13 +46,13 @@
     }
   }
 ;
-  menu.add(route);
-  Action altroute=new AbstractAction("Calculate CloudMade route"){
+  menu.add(route_YOURS);
+  Action route_CloudMate=new AbstractAction("Calculate CloudMade route"){
     private static final long serialVersionUID=507156107455281238L;
     @Override public void actionPerformed(    ActionEvent e){
       new Thread(){
         @Override public void run(){
-          List<Way> ways=alternateRoute(startRoute,endRoute);
+          List<Way> ways=route_CloudMate(startRoute,endRoute);
           DataTileManager<Way> points=new DataTileManager<Way>();
           points.setZoom(11);
           for (          Way w : ways) {
@@ -66,7 +66,27 @@
     }
   }
 ;
-  menu.add(altroute);
+  menu.add(route_CloudMate);
+  Action route_OSRM=new AbstractAction("Calculate OSRM route"){
+    private static final long serialVersionUID=2292361745482584520L;
+    @Override public void actionPerformed(    ActionEvent e){
+      new Thread(){
+        @Override public void run(){
+          List<Way> ways=route_OSRM(startRoute,endRoute);
+          DataTileManager<Way> points=new DataTileManager<Way>();
+          points.setZoom(11);
+          for (          Way w : ways) {
+            LatLon n=w.getLatLon();
+            points.registerObject(n.getLatitude(),n.getLongitude(),w);
+          }
+          map.setPoints(points);
+        }
+      }
+.start();
+    }
+  }
+;
+  menu.add(route_OSRM);
   Action selfRoute=new AbstractAction("Calculate OsmAnd route"){
     private static final long serialVersionUID=507156107455281238L;
     @Override public void actionPerformed(    ActionEvent e){
