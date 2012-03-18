@@ -3,6 +3,7 @@
   req.numberOfAcceptedObjects=0;
   req.numberOfAcceptedSubtrees=0;
   req.numberOfReadSubtrees=0;
+  List<MapTree> foundSubtrees=new ArrayList<MapTree>();
   for (  MapIndex mapIndex : mapIndexes) {
     for (    MapRoot index : mapIndex.getRoots()) {
       if (index.minZoom <= req.zoom && index.maxZoom >= req.zoom) {
@@ -22,9 +23,25 @@
           }
           codedIS.seek(tree.filePointer);
           int oldLimit=codedIS.pushLimit(tree.length);
-          searchMapTreeBounds(index.left,index.right,index.top,index.bottom,req,mapIndex);
+          searchMapTreeBounds(tree,index,req,foundSubtrees);
           codedIS.popLimit(oldLimit);
         }
+        Collections.sort(foundSubtrees,new Comparator<MapTree>(){
+          @Override public int compare(          MapTree o1,          MapTree o2){
+            return o1.mapDataBlock < o2.mapDataBlock ? -1 : (o1.mapDataBlock == o2.mapDataBlock ? 0 : 1);
+          }
+        }
+);
+        for (        MapTree tree : foundSubtrees) {
+          if (!req.isCancelled()) {
+            codedIS.seek(tree.mapDataBlock);
+            int length=codedIS.readRawVarint32();
+            int oldLimit=codedIS.pushLimit(length);
+            readMapDataBlocks(req,tree,mapIndex);
+            codedIS.popLimit(oldLimit);
+          }
+        }
+        foundSubtrees.clear();
       }
     }
   }

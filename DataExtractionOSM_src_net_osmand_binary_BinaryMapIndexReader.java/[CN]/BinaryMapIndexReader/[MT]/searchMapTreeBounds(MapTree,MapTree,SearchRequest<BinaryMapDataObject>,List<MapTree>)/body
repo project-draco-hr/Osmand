@@ -1,0 +1,63 @@
+{
+  int init=0;
+  req.numberOfReadSubtrees++;
+  while (true) {
+    if (req.isCancelled()) {
+      return;
+    }
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+    if (init == 0xf) {
+      init=0;
+      if (current.right < req.left || current.left > req.right || current.top > req.bottom || current.bottom < req.top) {
+        return;
+      }
+ else {
+        req.numberOfAcceptedSubtrees++;
+      }
+    }
+switch (tag) {
+case 0:
+      return;
+case MapDataBox.BOTTOM_FIELD_NUMBER:
+    current.bottom=codedIS.readSInt32() + parent.bottom;
+  init|=1;
+break;
+case MapDataBox.LEFT_FIELD_NUMBER:
+current.left=codedIS.readSInt32() + parent.left;
+init|=2;
+break;
+case MapDataBox.RIGHT_FIELD_NUMBER:
+current.right=codedIS.readSInt32() + parent.right;
+init|=4;
+break;
+case MapDataBox.TOP_FIELD_NUMBER:
+current.top=codedIS.readSInt32() + parent.top;
+init|=8;
+break;
+case MapDataBox.SHIFTTOMAPDATA_FIELD_NUMBER:
+req.numberOfAcceptedSubtrees++;
+current.mapDataBlock=readInt() + current.filePointer;
+foundSubtrees.add(current);
+break;
+case MapDataBox.OCEAN_FIELD_NUMBER:
+current.ocean=codedIS.readBool();
+break;
+case MapDataBox.BOXES_FIELD_NUMBER:
+MapTree child=new MapTree();
+child.length=readInt();
+child.filePointer=codedIS.getTotalBytesRead();
+int oldLimit=codedIS.pushLimit(child.length);
+if (current.ocean) {
+child.ocean=true;
+}
+searchMapTreeBounds(child,current,req,foundSubtrees);
+codedIS.popLimit(oldLimit);
+codedIS.seek(child.filePointer + child.length);
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

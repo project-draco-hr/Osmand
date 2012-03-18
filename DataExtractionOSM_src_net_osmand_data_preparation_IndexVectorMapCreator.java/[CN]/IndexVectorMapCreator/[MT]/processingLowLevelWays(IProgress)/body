@@ -12,6 +12,7 @@
   TLongHashSet visitedWays=new TLongHashSet();
   ArrayList<Float> list=new ArrayList<Float>(100);
   TIntArrayList temp=new TIntArrayList();
+  TIntArrayList tempAdd=new TIntArrayList();
   while (rs.next()) {
     if (lowLevelWays != -1) {
       progress.progress(1);
@@ -26,7 +27,8 @@
     long startNode=rs.getLong(2);
     long endNode=rs.getLong(3);
     String name=rs.getString(5);
-    parseAndSort(typeUse,rs.getBytes(6),rs.getBytes(7));
+    parseAndSort(typeUse,rs.getBytes(6));
+    parseAndSort(addtypeUse,rs.getBytes(7));
     loadNodes(rs.getBytes(4),list);
     ArrayList<Float> wayNodes=new ArrayList<Float>(list);
     boolean combined=true;
@@ -37,8 +39,9 @@
       ResultSet fs=endStat.executeQuery();
       while (fs.next() && !combined) {
         if (!visitedWays.contains(fs.getLong(1))) {
-          parseAndSort(temp,rs.getBytes(6),rs.getBytes(7));
-          if (temp.equals(namesUse)) {
+          parseAndSort(temp,rs.getBytes(6));
+          parseAndSort(tempAdd,rs.getBytes(7));
+          if (temp.equals(typeUse) && tempAdd.equals(addtypeUse)) {
             combined=true;
             long lid=fs.getLong(1);
             startNode=fs.getLong(2);
@@ -65,8 +68,9 @@
       ResultSet fs=startStat.executeQuery();
       while (fs.next() && !combined) {
         if (!visitedWays.contains(fs.getLong(1))) {
-          parseAndSort(temp,rs.getBytes(6),rs.getBytes(7));
-          if (temp.equals(namesUse)) {
+          parseAndSort(temp,rs.getBytes(6));
+          parseAndSort(tempAdd,rs.getBytes(7));
+          if (temp.equals(typeUse) && tempAdd.equals(addtypeUse)) {
             combined=true;
             long lid=fs.getLong(1);
             if (!Algoritms.objectEquals(rs.getString(5),name)) {
@@ -92,6 +96,11 @@
     boolean cycle=startNode == endNode;
     if (cycle) {
       skip=checkForSmallAreas(wNodes,zoom + Math.min(zoomWaySmothness / 2,3),3,4);
+    }
+ else {
+      if (!typeUse.contains(renderingTypes.getCoastlineRuleType().getInternalId())) {
+        skip=checkForSmallAreas(wNodes,zoom + Math.min(zoomWaySmothness / 2,3),2,8);
+      }
     }
     if (!skip) {
       List<Node> res=new ArrayList<Node>();

@@ -13,14 +13,14 @@
   }
   Collections.sort(out,new Comparator<MapRulType>(){
     @Override public int compare(    MapRulType o1,    MapRulType o2){
-      return o1.getFreq() - o2.getFreq();
+      return o2.getFreq() - o1.getFreq();
     }
   }
 );
   for (int i=0; i < out.size(); i++) {
     MapEncodingRule.Builder builder=OsmandOdb.OsmAndMapIndex.MapEncodingRule.newBuilder();
     MapRulType rule=out.get(i);
-    rule.setTargetId(i);
+    rule.setTargetId(i + 1);
     builder.setTag(rule.getTag());
     if (rule.getValue() != null) {
       builder.setValue(rule.getValue());
@@ -29,7 +29,11 @@
     if (rule.isAdditional()) {
       builder.setType(1);
     }
-    codedOutStream.writeMessage(OsmandOdb.OsmAndMapIndex.RULES_FIELD_NUMBER,builder.build());
+ else     if (rule.isOnlyNameRef()) {
+      builder.setType(2);
+    }
+    MapEncodingRule rulet=builder.build();
+    codedOutStream.writeMessage(OsmandOdb.OsmAndMapIndex.RULES_FIELD_NUMBER,rulet);
   }
   long newfp=getFilePointer();
   System.out.println("RENDERING SCHEMA takes " + (newfp - fp));

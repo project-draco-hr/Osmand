@@ -1,9 +1,67 @@
 {
   println(reader.mapIndexes.get(0).encodingRules + "");
   println("SEARCH " + sleft + " "+ sright+ " "+ stop+ " "+ sbottom);
-  for (  BinaryMapDataObject obj : reader.searchMapIndex(buildSearchRequest(sleft,sright,stop,sbottom,8,null))) {
-    if (obj.getName() != null) {
-      println(" " + obj.getName());
+  reader.searchMapIndex(buildSearchRequest(sleft,sright,stop,sbottom,szoom,null,new ResultMatcher<BinaryMapDataObject>(){
+    @Override public boolean publish(    BinaryMapDataObject obj){
+      StringBuilder b=new StringBuilder();
+      b.append(obj.area ? "Area" : (obj.getPointsLength() > 1 ? "Way" : "Point"));
+      int[] types=obj.getTypes();
+      b.append(" types [");
+      for (int j=0; j < types.length; j++) {
+        if (j > 0) {
+          b.append(", ");
+        }
+        TagValuePair pair=obj.getMapIndex().decodeType(types[j]);
+        if (pair == null) {
+          throw new NullPointerException("Type " + types[j] + "was not found");
+        }
+        b.append(pair.toSimpleString() + "(" + types[j]+ ")");
+      }
+      b.append("]");
+      if (obj.getAdditionalTypes() != null) {
+        b.append(" add_types [");
+        for (int j=0; j < obj.getAdditionalTypes().length; j++) {
+          if (j > 0) {
+            b.append(", ");
+          }
+          TagValuePair pair=obj.getMapIndex().decodeType(obj.getAdditionalTypes()[j]);
+          if (pair == null) {
+            throw new NullPointerException("Type " + obj.getAdditionalTypes()[j] + "was not found");
+          }
+          b.append(pair.toSimpleString() + "(" + obj.getAdditionalTypes()[j]+ ")");
+        }
+        b.append("]");
+      }
+      TIntObjectHashMap<String> names=obj.getObjectNames();
+      if (names != null && !names.isEmpty()) {
+        b.append(" Names [");
+        int[] keys=names.keys();
+        for (int j=0; j < keys.length; j++) {
+          if (j > 0) {
+            b.append(", ");
+          }
+          TagValuePair pair=obj.getMapIndex().decodeType(keys[j]);
+          if (pair == null) {
+            throw new NullPointerException("Type " + keys[j] + "was not found");
+          }
+          b.append(pair.toSimpleString() + "(" + keys[j]+ ")");
+          b.append(" - ").append(names.get(keys[j]));
+        }
+        b.append("]");
+      }
+      b.append(" id ").append((obj.getId() >> 1));
+      b.append(" lat/lon : ");
+      for (int i=0; i < obj.getPointsLength(); i++) {
+        float x=(float)MapUtils.get31LongitudeX(obj.getPoint31XTile(i));
+        float y=(float)MapUtils.get31LatitudeY(obj.getPoint31YTile(i));
+        b.append(x).append(" / ").append(y).append(" , ");
+      }
+      println(b.toString());
+      return false;
+    }
+    @Override public boolean isCancelled(){
+      return false;
     }
   }
+));
 }
