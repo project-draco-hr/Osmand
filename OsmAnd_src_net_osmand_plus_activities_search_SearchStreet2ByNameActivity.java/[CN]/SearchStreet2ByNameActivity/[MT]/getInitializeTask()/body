@@ -12,19 +12,12 @@
     @Override protected List<Street> doInBackground(    Object... params){
       region=((OsmandApplication)getApplication()).getResourceManager().getRegionRepository(settings.getLastSearchedRegion());
       if (region != null) {
-        postcode=region.getPostcode(settings.getLastSearchedPostcode());
-        city=region.getCityById(settings.getLastSearchedCity());
-        if (postcode != null) {
-          street1=region.getStreetByName(postcode,(settings.getLastSearchedStreet()));
-          if (street1 != null) {
-            city=street1.getCity();
-          }
+        cityOrPostcode=region.getCityById(settings.getLastSearchedCity(),settings.getLastSearchedCityName());
+        if (cityOrPostcode != null) {
+          street1=region.getStreetByName(cityOrPostcode,(settings.getLastSearchedStreet()));
         }
- else         if (city != null) {
-          street1=region.getStreetByName(city,(settings.getLastSearchedStreet()));
-        }
-        if (city != null && street1 != null) {
-          return region.getStreetsIntersectStreets(city,street1);
+        if (cityOrPostcode != null && street1 != null) {
+          return region.getStreetsIntersectStreets(street1);
         }
       }
       return null;

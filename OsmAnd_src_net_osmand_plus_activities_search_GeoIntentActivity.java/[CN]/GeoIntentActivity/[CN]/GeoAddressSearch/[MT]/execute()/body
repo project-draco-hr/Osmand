@@ -15,35 +15,33 @@
   if (foundCountries.isEmpty()) {
     countriesToSearch=resourceManager.getAddressRepositories();
   }
-  Map<RegionAddressRepository,List<MapObject>> citiesForRegion=new HashMap<RegionAddressRepository,List<MapObject>>();
+  final List<MapObject> results=new ArrayList<MapObject>();
+  final List<MapObject> connectedStreets=new ArrayList<MapObject>();
   for (  RegionAddressRepository rar : countriesToSearch) {
-    List<MapObject> citiesFound=new ArrayList<MapObject>();
-    for (    String maybeCity : elements) {
-      citiesFound.addAll(rar.fillWithSuggestedCities(maybeCity,null,null));
+    final TLongObjectHashMap<City> cityIds=new TLongObjectHashMap<City>();
+    for (    String element : elements) {
+      rar.searchMapObjectsByName(element,new ResultMatcher<MapObject>(){
+        @Override public boolean publish(        MapObject object){
+          if (object instanceof City && object.getId() != null) {
+            cityIds.put(object.getId(),(City)object);
+          }
+ else           if (object instanceof Street) {
+            City c=((Street)object).getCity();
+            if (c != null && c.getId() != null && cityIds.containsKey(c.getId().longValue())) {
+              connectedStreets.add((Street)object);
+              return false;
+            }
+          }
+          results.add(object);
+          return false;
+        }
+        @Override public boolean isCancelled(){
+          return false;
+        }
+      }
+);
     }
-    if (!citiesFound.isEmpty()) {
-      citiesForRegion.put(rar,citiesFound);
-    }
   }
-  Map<MapObject,List<Street>> streetsForCity=new HashMap<MapObject,List<Street>>();
-  if (citiesForRegion.isEmpty()) {
-    for (    RegionAddressRepository rar : countriesToSearch) {
-      List<MapObject> allcities=rar.fillWithSuggestedCities("",null,location);
-      findStreetsForCities(streetsForCity,rar,allcities);
-    }
-  }
- else {
-    for (    RegionAddressRepository rar : citiesForRegion.keySet()) {
-      findStreetsForCities(streetsForCity,rar,citiesForRegion.get(rar));
-    }
-  }
-  Set<MapObject> results=new HashSet<MapObject>();
-  for (  List<Street> streets : streetsForCity.values()) {
-    results.addAll(streets);
-  }
-  for (  List<MapObject> cities : citiesForRegion.values()) {
-    cities.removeAll(streetsForCity.keySet());
-    results.addAll(cities);
-  }
-  return results;
+  connectedStreets.addAll(results);
+  return connectedStreets;
 }

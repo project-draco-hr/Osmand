@@ -12,14 +12,11 @@
     @Override protected List<Street> doInBackground(    Object... params){
       region=((OsmandApplication)getApplication()).getResourceManager().getRegionRepository(settings.getLastSearchedRegion());
       if (region != null) {
-        postcode=region.getPostcode(settings.getLastSearchedPostcode());
-        if (postcode == null) {
-          city=region.getCityById(settings.getLastSearchedCity());
-          if (city == null) {
-            return null;
-          }
+        city=region.getCityById(settings.getLastSearchedCity(),settings.getLastSearchedCityName());
+        if (city == null) {
+          return null;
         }
-        region.preloadStreets(postcode == null ? city : postcode,new ResultMatcher<Street>(){
+        region.preloadStreets(city,new ResultMatcher<Street>(){
           @Override public boolean publish(          Street object){
             addObjectToInitialList(object);
             return true;
@@ -29,12 +26,7 @@
           }
         }
 );
-        if (postcode != null) {
-          return new ArrayList<Street>(postcode.getStreets());
-        }
- else {
-          return new ArrayList<Street>(city.getStreets());
-        }
+        return new ArrayList<Street>(city.getStreets());
       }
       return null;
     }
