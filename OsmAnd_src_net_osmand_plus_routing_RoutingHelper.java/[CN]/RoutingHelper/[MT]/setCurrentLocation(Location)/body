@@ -39,14 +39,14 @@ synchronized (this) {
         float bearing=routeNodes.get(currentRoute - 1).bearingTo(routeNodes.get(currentRoute));
         float bearingMovement=currentLocation.bearingTo(routeNodes.get(currentRoute));
         float d=Math.abs(currentLocation.distanceTo(routeNodes.get(currentRoute)) * FloatMath.sin((bearingMovement - bearing) * 3.14f / 180f));
-        if (d > 50) {
+        if (d > 60) {
           log.info("Recalculate route, because correlation  : " + d);
           calculateRoute=true;
         }
       }
       if (!calculateRoute) {
         float d=currentLocation.distanceTo(routeNodes.get(currentRoute));
-        if (d > 80) {
+        if (d > 60) {
           if (currentRoute > 0) {
             float f1=currentLocation.distanceTo(routeNodes.get(currentRoute - 1)) + d;
             float c=routeNodes.get(currentRoute - 1).distanceTo(routeNodes.get(currentRoute));
@@ -68,7 +68,7 @@ synchronized (this) {
     }
   }
   lastFixedLocation=currentLocation;
-  if (suppressTurnPrompt && (currentLocation.distanceTo(routeNodes.get(currentRoute)) > 100)) {
+  if (suppressTurnPrompt && (currentLocation.distanceTo(routeNodes.get(currentRoute)) > 60)) {
     calculateRoute=true;
   }
   if (calculateRoute) {
