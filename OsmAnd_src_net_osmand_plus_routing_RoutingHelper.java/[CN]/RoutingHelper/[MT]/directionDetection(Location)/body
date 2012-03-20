@@ -7,15 +7,14 @@
   }
   if (routeNodes.size() > 0) {
     if (currentLocation.hasBearing() || lastFixedLocation != null) {
-      float bearing=currentLocation.hasBearing() ? currentLocation.getBearing() : lastFixedLocation.bearingTo(currentLocation);
-      float bearingRoute;
-      bearingRoute=currentLocation.bearingTo(routeNodes.get(currentRoute));
-      if (Math.abs(bearing - bearingRoute) > 45f && 360 - Math.abs(bearing - bearingRoute) > 45f) {
+      float bearingMotion=currentLocation.hasBearing() ? currentLocation.getBearing() : lastFixedLocation.bearingTo(currentLocation);
+      float bearingToRoute=currentLocation.bearingTo(routeNodes.get(currentRoute));
+      if (Math.abs(bearingMotion - bearingToRoute) > 45f && 360 - Math.abs(bearingMotion - bearingToRoute) > 45f) {
         suppressTurnPrompt=true;
       }
-      if (Math.abs(bearing - bearingRoute) > 135f && 360 - Math.abs(bearing - bearingRoute) > 135f) {
+      if (Math.abs(bearingMotion - bearingToRoute) > 135f && 360 - Math.abs(bearingMotion - bearingToRoute) > 135f) {
         float d=currentLocation.distanceTo(routeNodes.get(currentRoute));
-        if (d > 60) {
+        if (d > LOCATION_TOLERANCE) {
           if (makeUTwpDetected == 0) {
             makeUTwpDetected=System.currentTimeMillis();
           }

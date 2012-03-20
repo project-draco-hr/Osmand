@@ -6,10 +6,10 @@
     if (newDist < dist) {
       if (newDist > 150) {
         if (currentRoute > 0) {
-          float bearing=routeNodes.get(currentRoute - 1).bearingTo(routeNodes.get(currentRoute));
-          float bearingMovement=currentLocation.bearingTo(routeNodes.get(currentRoute));
-          float d=Math.abs(currentLocation.distanceTo(routeNodes.get(currentRoute)) * FloatMath.sin((bearingMovement - bearing) * 3.14f / 180f));
-          if (d > 60) {
+          float bearingRoute=routeNodes.get(currentRoute - 1).bearingTo(routeNodes.get(currentRoute));
+          float bearingToRoute=currentLocation.bearingTo(routeNodes.get(currentRoute));
+          float d=Math.abs(currentLocation.distanceTo(routeNodes.get(currentRoute)) * FloatMath.sin((bearingToRoute - bearingRoute) * 3.14f / 180f));
+          if (d > LOCATION_TOLERANCE) {
             processed=true;
           }
         }
@@ -22,12 +22,12 @@
       }
  else {
         if (currentLocation.hasBearing() || lastFixedLocation != null) {
-          float bearingToPoint=currentLocation.bearingTo(routeNodes.get(currentRoute));
-          float bearingBetweenPoints=routeNodes.get(currentRoute).bearingTo(routeNodes.get(currentRoute + 1));
-          float bearing=currentLocation.hasBearing() ? currentLocation.getBearing() : lastFixedLocation.bearingTo(currentLocation);
-          if (Math.abs(bearing - bearingToPoint) > Math.abs(bearing - bearingBetweenPoints)) {
+          float bearingToRoute=currentLocation.bearingTo(routeNodes.get(currentRoute));
+          float bearingRouteNext=routeNodes.get(currentRoute).bearingTo(routeNodes.get(currentRoute + 1));
+          float bearingMotion=currentLocation.hasBearing() ? currentLocation.getBearing() : lastFixedLocation.bearingTo(currentLocation);
+          if (Math.abs(bearingMotion - bearingToRoute) > Math.abs(bearingMotion - bearingRouteNext)) {
             if (log.isDebugEnabled()) {
-              log.debug("Processed point bearing : " + Math.abs(currentLocation.getBearing() - bearingToPoint) + " "+ Math.abs(currentLocation.getBearing() - bearingBetweenPoints));
+              log.debug("Processed point bearing deltas : " + Math.abs(currentLocation.getBearing() - bearingToRoute) + " "+ Math.abs(currentLocation.getBearing() - bearingRouteNext));
             }
             processed=true;
           }
