@@ -24,12 +24,19 @@
  else {
         for (int j=0; j < o.getTypes().length; j++) {
           int wholeType=o.getTypes()[j];
-          int mask=wholeType & 3;
+          int mask=MapRenderingTypes.POINT_TYPE;
+          if (o.getPointsLength() > 1) {
+            if (o.isArea()) {
+              mask=MapRenderingTypes.POLYGON_TYPE;
+            }
+ else {
+              mask=MapRenderingTypes.POLYLINE_TYPE;
+            }
+          }
           int layer=0;
           if (mask != MapRenderingTypes.POINT_TYPE) {
-            layer=MapRenderingTypes.getNegativeWayLayer(wholeType);
           }
-          TagValuePair pair=o.getMapIndex().decodeType(MapRenderingTypes.getMainObjectType(wholeType),MapRenderingTypes.getObjectSubType(wholeType));
+          TagValuePair pair=o.getMapIndex().decodeType(wholeType);
           if (pair != null) {
             render.setTagValueZoomLayer(pair.tag,pair.value,rc.zoom,layer);
             render.setIntFilter(render.ALL.R_ORDER_TYPE,mask);

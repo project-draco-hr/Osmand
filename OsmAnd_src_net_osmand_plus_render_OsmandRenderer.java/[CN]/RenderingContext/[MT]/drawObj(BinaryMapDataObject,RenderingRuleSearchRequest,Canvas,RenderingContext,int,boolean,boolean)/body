@@ -7,24 +7,15 @@
   }
  else {
     int mainType=obj.getTypes()[l];
-    int t=mainType & 3;
-    int type=MapRenderingTypes.getMainObjectType(mainType);
-    int subtype=MapRenderingTypes.getObjectSubType(mainType);
-    TagValuePair pair=obj.getMapIndex().decodeType(type,subtype);
-    if (t == MapRenderingTypes.POINT_TYPE && !drawOnlyShadow) {
+    TagValuePair pair=obj.getMapIndex().decodeType(mainType);
+    if (obj.getPointsLength() == 1 && !drawOnlyShadow) {
       drawPoint(obj,render,canvas,rc,pair,renderText);
     }
- else     if (t == MapRenderingTypes.POLYLINE_TYPE) {
-      int layer=MapRenderingTypes.getNegativeWayLayer(mainType);
-      drawPolyline(obj,render,canvas,rc,pair,layer,drawOnlyShadow);
+ else     if (!obj.isArea()) {
+      drawPolyline(obj,render,canvas,rc,pair,0,drawOnlyShadow);
     }
- else     if (t == MapRenderingTypes.POLYGON_TYPE && !drawOnlyShadow) {
+ else     if (obj.isArea() && !drawOnlyShadow) {
       drawPolygon(obj,render,canvas,rc,pair);
-    }
- else {
-      if (t == MapRenderingTypes.MULTY_POLYGON_TYPE && !(obj instanceof MultyPolygon)) {
-        return;
-      }
     }
   }
 }
