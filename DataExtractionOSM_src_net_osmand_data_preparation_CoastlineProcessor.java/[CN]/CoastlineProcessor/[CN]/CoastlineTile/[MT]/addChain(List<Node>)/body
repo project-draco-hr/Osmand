@@ -1,0 +1,53 @@
+{
+  updateBoundaries(chain);
+  int ind=0;
+  while (ind < chain.size() - 1) {
+    List<Node> subChain=new ArrayList<Node>();
+    Node first=chain.get(ind);
+    boolean directionToRight=chain.get(ind + 1).getLongitude() > first.getLongitude();
+    int nextLonMaximum=ind + 1;
+    double lonEnd=first.getLongitude();
+    double latPeek=first.getLatitude();
+    double latLocPeek=first.getLatitude();
+    for (int j=ind + 1; j < chain.size(); j++) {
+      if (directionToRight) {
+        if (chain.get(j).getLatitude() <= latPeek) {
+          latPeek=chain.get(j).getLatitude();
+        }
+        if (chain.get(j).getLongitude() >= lonEnd) {
+          nextLonMaximum=j;
+          lonEnd=chain.get(j).getLongitude();
+          latLocPeek=latPeek;
+        }
+ else         if (chain.get(j).getLongitude() < first.getLongitude()) {
+          break;
+        }
+      }
+ else {
+        if (chain.get(j).getLatitude() >= latPeek) {
+          latPeek=chain.get(j).getLatitude();
+        }
+        if (chain.get(j).getLongitude() <= lonEnd) {
+          nextLonMaximum=j;
+          lonEnd=chain.get(j).getLongitude();
+          latLocPeek=latPeek;
+        }
+ else         if (chain.get(j).getLongitude() > first.getLongitude()) {
+          break;
+        }
+      }
+    }
+    for (int i=ind; i <= nextLonMaximum; i++) {
+      subChain.add(chain.get(i));
+    }
+    Node ned=new Node(latLocPeek,lonEnd,nodeId++);
+    subChain.add(ned);
+    if (latLocPeek != first.getLatitude()) {
+      ned=new Node(latLocPeek,first.getLongitude(),nodeId++);
+      subChain.add(ned);
+    }
+    ind=nextLonMaximum;
+    subChain.add(first);
+    chains.add(subChain);
+  }
+}
