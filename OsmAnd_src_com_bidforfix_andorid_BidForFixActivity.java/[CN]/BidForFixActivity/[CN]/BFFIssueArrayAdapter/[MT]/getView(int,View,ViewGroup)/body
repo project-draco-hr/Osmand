@@ -13,15 +13,15 @@
   ViewHolder holder=(ViewHolder)rowView.getTag();
   BFFIssue s=values.get(position);
   holder.text.setText(s.getName());
-  holder.support.setText("18 Supporters");
-  int funded=random.nextInt(100);
-  holder.funded.setText("funded: " + funded + "%");
+  holder.support.setText(context.getString(R.string.bidforfix_supporters,s.getBids_count()));
+  int funded=s.getPercent();
+  holder.funded.setText(context.getString(R.string.bidforfix_funded,funded));
   List<PieItem> PieData=new ArrayList<PieItem>();
   PieItem item=new PieItem();
   item.Count=funded;
   item.Color=0xFF72B123;
   PieItem item2=new PieItem();
-  item2.Count=100 - funded;
+  item2.Count=Math.max(100,funded) - funded;
   item2.Color=0xFFDDDDDD;
   PieData.add(item);
   PieData.add(item2);
@@ -34,7 +34,6 @@
   pieChartView.setData(PieData,100);
   pieChartView.invalidate();
   pieChartView.draw(new Canvas(mBackgroundImage));
-  pieChartView=null;
   holder.image.setImageBitmap(mBackgroundImage);
   return rowView;
 }
