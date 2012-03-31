@@ -1,0 +1,29 @@
+{
+  currentLocation=location;
+  if (autoAnnounce) {
+    final LatLon point=settings.getPointToNavigate();
+    if (point != null) {
+      if ((currentLocation != null) && currentLocation.hasBearing()) {
+        final long now=SystemClock.uptimeMillis();
+        if ((now - lastNotificationTime) >= MIN_NOTIFICATION_PERIOD) {
+          Location destination=new Location("map");
+          destination.setLatitude(point.getLatitude());
+          destination.setLongitude(point.getLongitude());
+          if (lastDirection.update(destination)) {
+            final String notification=distanceString(destination) + " " + lastDirection.getString();
+            lastNotificationTime=now;
+            uiHandler.post(new Runnable(){
+              @Override public void run(){
+                AccessibleToast.makeText(context,notification,Toast.LENGTH_LONG).show();
+              }
+            }
+);
+          }
+        }
+      }
+ else {
+        lastDirection.clear();
+      }
+    }
+  }
+}
