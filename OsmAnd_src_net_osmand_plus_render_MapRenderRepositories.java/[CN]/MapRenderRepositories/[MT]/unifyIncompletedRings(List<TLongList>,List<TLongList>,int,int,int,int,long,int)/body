@@ -1,8 +1,10 @@
 {
   int mask=0xffffffff;
+  List<TLongList> uncompletedRings=new ArrayList<TLongList>(toProcces);
+  toProcces.clear();
   Set<Integer> nonvisitedRings=new LinkedHashSet<Integer>();
-  for (int j=0; j < incompletedRings.size(); j++) {
-    TLongList i=incompletedRings.get(j);
+  for (int j=0; j < uncompletedRings.size(); j++) {
+    TLongList i=uncompletedRings.get(j);
     int x=(int)(i.get(i.size() - 1) >> 32);
     int y=(int)(i.get(i.size() - 1) & mask);
     int sx=(int)(i.get(0) >> 32);
@@ -23,13 +25,14 @@
         str=" End not found : end_x = {0}, end_y = {1}, start_x = {2}, start_y = {3} : bounds {4} {5} - {6} {7}";
         System.err.println(MessageFormat.format(dbId + str,dx,dy,dsx,dsy,leftX + "",topY + "",rightX + "",bottomY + ""));
       }
+      toProcces.add(i);
     }
  else {
       nonvisitedRings.add(j);
     }
   }
-  for (int j=0; j < incompletedRings.size(); j++) {
-    TLongList i=incompletedRings.get(j);
+  for (int j=0; j < uncompletedRings.size(); j++) {
+    TLongList i=uncompletedRings.get(j);
     if (!nonvisitedRings.contains(j)) {
       continue;
     }
@@ -55,7 +58,7 @@
       for (int h=st; h < st + 4; h++) {
         int mindiff=UNDEFINED_MIN_DIFF;
         for (        Integer ni : nonvisitedRings) {
-          TLongList cni=incompletedRings.get(ni);
+          TLongList cni=uncompletedRings.get(ni);
           int csx=(int)(cni.get(0) >> 32);
           int csy=(int)(cni.get(0) & mask);
           if (h % 4 == 0) {
@@ -122,7 +125,7 @@
         break;
       }
  else {
-        i.addAll(incompletedRings.get(nextRingIndex));
+        i.addAll(uncompletedRings.get(nextRingIndex));
         nonvisitedRings.remove(nextRingIndex);
         x=(int)(i.get(i.size() - 1) >> 32);
         y=(int)(i.get(i.size() - 1) & mask);
