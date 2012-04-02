@@ -1,0 +1,42 @@
+{
+  SimplisticQuadTree rootTree=new SimplisticQuadTree(0,0,0);
+  int baseZoom=4;
+  int tiles=1 << baseZoom;
+  ArrayList<SimplisticQuadTree> toVisit=new ArrayList<SimplisticQuadTree>();
+  int cnt=0;
+  for (int x=0; x < tiles; x++) {
+    for (int y=0; y < tiles; y++) {
+      toVisit.add(rootTree.getOrCreateSubTree(x,y,baseZoom));
+    }
+  }
+  int ntc=0;
+  for (int zoom=baseZoom; zoom <= TILE_ZOOMLEVEL && !toVisit.isEmpty(); zoom++) {
+    cnt=0;
+    ArrayList<SimplisticQuadTree> newToVisit=new ArrayList<SimplisticQuadTree>();
+    for (    SimplisticQuadTree subtree : toVisit) {
+      int x=subtree.x;
+      int y=subtree.y;
+      if (isWaterTile(x,y,zoom)) {
+        cnt++;
+        rootTree.getOrCreateSubTree(x,y,zoom).ocean=true;
+      }
+ else       if (isLandTile(x,y,zoom)) {
+        rootTree.getOrCreateSubTree(x,y,zoom).land=true;
+        cnt++;
+      }
+ else       if (zoom < TILE_ZOOMLEVEL) {
+        SimplisticQuadTree[] vis=rootTree.getOrCreateSubTree(x,y,zoom).getOrCreateSubTree(x,y,zoom).getAllChildren();
+        for (        SimplisticQuadTree t : vis) {
+          newToVisit.add(t);
+        }
+      }
+ else {
+        ntc++;
+      }
+    }
+    System.out.println(" Zoom " + zoom + " count "+ cnt);
+    toVisit=newToVisit;
+  }
+  System.out.println("Not covered " + ntc + " from "+ (float)ntc / ((1 << TILE_ZOOMLEVEL) * (1 << TILE_ZOOMLEVEL)));
+  return rootTree;
+}
