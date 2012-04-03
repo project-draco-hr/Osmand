@@ -36,9 +36,14 @@ catch (      RuntimeException e) {
         log.info("About to delete files from googlecode");
         Map<String,String> files=DownloaderIndexFromGoogleCode.getIndexFiles(new LinkedHashMap<String,String>());
         for (        String f : files.keySet()) {
-          System.out.println("File on googlecode " + f + " "+ files.get(f));
           if (deleteFileFilter.patternMatches(f)) {
             log.info("About to delete " + f);
+            try {
+              DownloaderIndexFromGoogleCode.deleteFileFromGoogleDownloads(f,((UploadToGoogleCodeCredentials)uploadCredentials).ggtokens);
+            }
+ catch (            IOException e) {
+              throw new IndexUploadException("Delete " + f + " was failed",e);
+            }
           }
         }
       }
