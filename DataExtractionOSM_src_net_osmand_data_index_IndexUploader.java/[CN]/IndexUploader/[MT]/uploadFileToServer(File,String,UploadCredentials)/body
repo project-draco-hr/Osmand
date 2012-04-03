@@ -5,30 +5,7 @@
   String size=numberFormat.format(new Object[]{originalLength});
   String date=dateFormat.format(new Object[]{new Date(toUpload.lastModified())});
   try {
-    if (credentials instanceof UploadToGoogleCodeCredentials) {
-      String descriptionFile="{" + date + " : "+ size+ " MB}";
-      summary+=" " + descriptionFile;
-      List<File> splittedFiles=Collections.emptyList();
-      try {
-        splittedFiles=splitFiles(toUpload);
-        for (        File fs : splittedFiles) {
-          uploadToGoogleCode(fs,summary,(UploadToGoogleCodeCredentials)credentials);
-        }
-      }
-  finally {
-        for (        File fs : splittedFiles) {
-          if (!fs.equals(toUpload)) {
-            fs.delete();
-          }
-        }
-      }
-    }
- else     if (credentials instanceof UploadSSHCredentials) {
-      uploadToSSH(toUpload,summary,size,date,(UploadSSHCredentials)credentials);
-    }
- else {
-      uploadToFTP(toUpload,summary,size,date,credentials);
-    }
+    credentials.upload(this,toUpload,summary,size,date);
   }
  catch (  IOException e) {
     log.error("Input/output exception uploading " + toUpload.getName(),e);
