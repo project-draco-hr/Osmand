@@ -62,14 +62,16 @@
     TYPES_SIZE+=CodedOutputStream.computeTagSize(OsmandOdb.MapData.ADDITIONALTYPES_FIELD_NUMBER);
   }
   mapDataBuf.clear();
-  for (  Entry<MapRulType,String> s : names.entrySet()) {
-    writeRawVarint32(mapDataBuf,s.getKey().getTargetId());
-    Integer ls=stringTable.get(s.getValue());
-    if (ls == null) {
-      ls=stringTable.size();
-      stringTable.put(s.getValue(),ls);
+  if (names != null) {
+    for (    Entry<MapRulType,String> s : names.entrySet()) {
+      writeRawVarint32(mapDataBuf,s.getKey().getTargetId());
+      Integer ls=stringTable.get(s.getValue());
+      if (ls == null) {
+        ls=stringTable.size();
+        stringTable.put(s.getValue(),ls);
+      }
+      writeRawVarint32(mapDataBuf,ls);
     }
-    writeRawVarint32(mapDataBuf,ls);
   }
   STRING_TABLE_SIZE+=mapDataBuf.size();
   data.setStringNames(ByteString.copyFrom(mapDataBuf.toArray()));
