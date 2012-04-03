@@ -31,6 +31,20 @@ catch (      RuntimeException e) {
         log.error(f.getName() + ": " + e.getMessage(),e);
       }
     }
+    if (deleteFileFilter != null) {
+      if (uploadCredentials instanceof UploadToGoogleCodeCredentials) {
+        Map<String,String> files=DownloaderIndexFromGoogleCode.getIndexFiles(new LinkedHashMap<String,String>());
+        for (        String f : files.keySet()) {
+          System.out.println("File on googlecode " + f + " "+ files.get(f));
+          if (deleteFileFilter.patternMatches(f)) {
+            log.info("About to delete " + f);
+          }
+        }
+      }
+ else {
+        log.error("Delete file filter is not supported with this credentions (method) " + uploadCredentials);
+      }
+    }
   }
   finally {
     uploadCredentials.disconnect();

@@ -1,12 +1,31 @@
 {
+  FileFilter fileFilter=null;
   if (args[start].startsWith("--ff=")) {
     try {
-      fileFilter=new FilePatternFileFilter(args[start].substring("--ff=".length()));
+      if (fileFilter == null) {
+        fileFilter=new FileFilter();
+      }
+      fileFilter.parseFile(args[start].substring("--ff=".length()));
     }
  catch (    IOException e) {
       throw new IndexUploadException(e.getMessage());
     }
-    return start + 1;
+    start++;
+  }
+  if (args[start].startsWith("--fp=")) {
+    if (fileFilter == null) {
+      fileFilter=new FileFilter();
+    }
+    fileFilter.parseCSV(args[start].substring("--fp=".length()));
+    start++;
+  }
+  if (args[start].startsWith("--dp=")) {
+    deleteFileFilter=new FileFilter();
+    deleteFileFilter.parseCSV(args[start].substring("--dp=".length()));
+    start++;
+  }
+  if (fileFilter != null) {
+    this.fileFilter=fileFilter;
   }
   return start;
 }
