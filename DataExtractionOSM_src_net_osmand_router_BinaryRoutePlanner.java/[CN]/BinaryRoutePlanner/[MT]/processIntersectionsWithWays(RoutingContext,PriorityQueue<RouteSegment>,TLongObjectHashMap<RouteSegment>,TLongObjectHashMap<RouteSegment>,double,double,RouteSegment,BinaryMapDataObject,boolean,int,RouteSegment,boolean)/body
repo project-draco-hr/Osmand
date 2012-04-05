@@ -61,18 +61,12 @@
           oppSegment.segmentEnd=next.segmentStart;
           return oppSegment;
         }
-        double distanceToEnd=distToFinalPoint / ctx.getRouter().getMaxDefaultSpeed();
-        if (ctx.isUseDynamicRoadPrioritising()) {
-          double priority=ctx.getRouter().getRoadPriorityToCalculateRoute(next.road);
-          distanceToEnd/=priority;
-        }
+        double distanceToEnd=h(ctx,distToFinalPoint,next);
         double speed=ctx.getRouter().defineSpeed(road);
         if (speed == 0) {
           speed=ctx.getRouter().getMinDefaultSpeed();
         }
-        double distanceFromStart=segment.distanceFromStart + distOnRoadToPass / speed;
-        distanceFromStart+=ctx.getRouter().calculateTurnTime(segment,next,segmentEnd);
-        distanceFromStart+=obstaclesTime;
+        double distanceFromStart=g(ctx,distOnRoadToPass,segment,segmentEnd,obstaclesTime,next,speed);
         if (next.parentRoute == null || ctx.roadPriorityComparator(next.distanceFromStart,next.distanceToEnd,distanceFromStart,distanceToEnd) > 0) {
           next.distanceFromStart=distanceFromStart;
           next.distanceToEnd=distanceToEnd;
