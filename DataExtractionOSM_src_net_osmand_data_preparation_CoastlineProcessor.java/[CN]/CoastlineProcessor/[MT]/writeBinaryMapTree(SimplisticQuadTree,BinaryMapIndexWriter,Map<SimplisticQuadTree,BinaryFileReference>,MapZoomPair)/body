@@ -1,0 +1,24 @@
+{
+  int xL=(quadTree.x) << (31 - quadTree.zoom);
+  int xR=((quadTree.x + 1) << (31 - quadTree.zoom)) - 1;
+  int yT=(quadTree.y) << (31 - quadTree.zoom);
+  int yB=((quadTree.y + 1) << (31 - quadTree.zoom)) - 1;
+  boolean defined=quadTree.coastlinesDefined(p);
+  boolean ocean=false;
+  boolean land=false;
+  if (!defined) {
+    ocean=quadTree.ocean || isWaterTile(quadTree.x,quadTree.y,quadTree.zoom);
+    land=quadTree.land || isLandTile(quadTree.x,quadTree.y,quadTree.zoom);
+  }
+  BinaryFileReference ref=writer.startMapTreeElement(xL,xR,yT,yB,defined,ocean,land);
+  if (ref != null) {
+    refs.put(quadTree,ref);
+  }
+  if (quadTree.areChildrenDefined()) {
+    SimplisticQuadTree[] allChildren=quadTree.getAllChildren();
+    for (    SimplisticQuadTree ch : allChildren) {
+      writeBinaryMapTree(ch,writer,refs,p);
+    }
+  }
+  writer.endWriteMapTreeElement();
+}

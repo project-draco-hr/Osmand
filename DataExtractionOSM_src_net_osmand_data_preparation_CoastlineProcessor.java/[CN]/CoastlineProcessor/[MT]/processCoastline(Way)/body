@@ -1,8 +1,9 @@
 {
   renderingTypes.getCoastlineRuleType().updateFreq();
-  MapZoomPair p=mapZooms.getLevels().get(mapZooms.getLevels().size() - 1);
-{
-    int z=(p.getMinZoom() + p.getMaxZoom()) / 2;
+  int ij=0;
+  for (  MapZoomPair p : mapZooms.getLevels()) {
+    SimplisticQuadTree quadTree=quadTrees[ij++];
+    int z=Math.min((p.getMinZoom() + p.getMaxZoom()) / 2,p.getMinZoom() + 3);
     List<Node> ns=e.getNodes();
     if (ns.size() < 2) {
       return;
@@ -45,6 +46,12 @@
           long inter=MapAlgorithms.calculateIntersection(px31,py31,nx31,ny31,leftX,rightX,bottomY,topY);
           int cy31=(int)inter;
           int cx31=(int)(inter >> 32l);
+          if (inter == -1) {
+            cx31=nx31;
+            cy31=ny31;
+            i++;
+            logMapDataWarn.warn("Can't find intersection for " + MapUtils.get31LongitudeX(px31) + ","+ MapUtils.get31LatitudeY(py31)+ " - "+ +MapUtils.get31LongitudeX(nx31)+ ","+ MapUtils.get31LatitudeY(ny31));
+          }
           prevNode=new Node(MapUtils.get31LatitudeY(cy31),MapUtils.get31LongitudeX(cx31),-1000);
           px31=cx31;
           py31=cy31;
@@ -61,7 +68,7 @@
           System.err.println("Tile " + tilex + " / "+ tiley+ " at "+ z+ " can not be found");
         }
       }
-      quad.addCoastline(w);
+      quad.addCoastline(p,w);
     }
   }
 }

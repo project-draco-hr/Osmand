@@ -1,0 +1,23 @@
+{
+  for (int zoom=baseZoom; zoom <= maxZoom && !toVisit.isEmpty(); zoom++) {
+    ArrayList<SimplisticQuadTree> newToVisit=new ArrayList<SimplisticQuadTree>();
+    for (    SimplisticQuadTree subtree : toVisit) {
+      int x=subtree.x;
+      int y=subtree.y;
+      if (isWaterTile(x,y,zoom)) {
+        rootTree.getOrCreateSubTree(x,y,zoom).ocean=true;
+      }
+ else       if (isLandTile(x,y,zoom)) {
+        rootTree.getOrCreateSubTree(x,y,zoom).land=true;
+      }
+ else       if (zoom < TILE_ZOOMLEVEL) {
+        SimplisticQuadTree[] vis=rootTree.getOrCreateSubTree(x,y,zoom).getOrCreateSubTree(x,y,zoom).getAllChildren();
+        for (        SimplisticQuadTree t : vis) {
+          newToVisit.add(t);
+        }
+      }
+    }
+    toVisit=newToVisit;
+  }
+  return toVisit;
+}

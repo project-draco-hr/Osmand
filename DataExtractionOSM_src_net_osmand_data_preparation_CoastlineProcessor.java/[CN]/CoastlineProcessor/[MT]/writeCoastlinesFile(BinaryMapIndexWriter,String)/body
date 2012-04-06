@@ -1,0 +1,15 @@
+{
+  writer.startWriteMapIndex(regionName);
+  writer.writeMapEncodingRules(renderingTypes.getEncodingRuleTypes());
+  int i=0;
+  for (  MapZoomPair p : mapZooms.getLevels()) {
+    writer.startWriteMapLevelIndex(p.getMinZoom(),p.getMaxZoom(),0,(1 << 31) - 1,0,(1 << 31) - 1);
+    Map<SimplisticQuadTree,BinaryFileReference> refs=new LinkedHashMap<CoastlineProcessor.SimplisticQuadTree,BinaryFileReference>();
+    writeBinaryMapTree(quadTrees[i],writer,refs,p);
+    writeBinaryMapBlock(quadTrees[i],writer,refs,p);
+    writer.endWriteMapLevelIndex();
+    i++;
+  }
+  writer.endWriteMapIndex();
+  writer.flush();
+}

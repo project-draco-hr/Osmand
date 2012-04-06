@@ -41,15 +41,21 @@ current.mapDataBlock=readInt() + current.filePointer;
 foundSubtrees.add(current);
 break;
 case MapDataBox.OCEAN_FIELD_NUMBER:
-current.ocean=codedIS.readBool();
+if (codedIS.readBool()) {
+current.ocean=Boolean.TRUE;
+}
+ else {
+current.ocean=Boolean.FALSE;
+}
+req.publishOceanTile(current.ocean);
 break;
 case MapDataBox.BOXES_FIELD_NUMBER:
 MapTree child=new MapTree();
 child.length=readInt();
 child.filePointer=codedIS.getTotalBytesRead();
 int oldLimit=codedIS.pushLimit(child.length);
-if (current.ocean) {
-child.ocean=true;
+if (current.ocean != null) {
+child.ocean=current.ocean;
 }
 searchMapTreeBounds(child,current,req,foundSubtrees);
 codedIS.popLimit(oldLimit);
