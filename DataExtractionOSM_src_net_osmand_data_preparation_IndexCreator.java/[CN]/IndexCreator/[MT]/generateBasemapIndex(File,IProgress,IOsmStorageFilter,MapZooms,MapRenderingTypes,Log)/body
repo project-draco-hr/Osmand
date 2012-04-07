@@ -1,0 +1,84 @@
+{
+  if (logMapDataWarn == null) {
+    logMapDataWarn=log;
+  }
+  if (logMapDataWarn == null) {
+    logMapDataWarn=log;
+  }
+  if (renderingTypes == null) {
+    renderingTypes=MapRenderingTypes.getDefault();
+  }
+  if (mapZooms == null) {
+    mapZooms=MapZooms.getDefault();
+  }
+  if (readFile != null && regionName == null) {
+    int i=readFile.getName().indexOf('.');
+    if (i > -1) {
+      regionName=Algoritms.capitalizeFirstLetterAndLowercase(readFile.getName().substring(0,i));
+    }
+  }
+  try {
+    this.accessor=new OsmDbAccessor();
+    createPlainOsmDb(progress,readFile,addFilter);
+    final BasemapProcessor processor=new BasemapProcessor(logMapDataWarn,mapZooms,renderingTypes,zoomWaySmothness);
+    progress.setGeneralProgress("[50 / 100]");
+    progress.startTask(Messages.getString("IndexCreator.PROCESS_OSM_NODES"),accessor.getAllNodes());
+    accessor.iterateOverEntities(progress,EntityType.NODE,new OsmDbVisitor(){
+      @Override public void iterateEntity(      Entity e,      OsmDbAccessorContext ctx) throws SQLException {
+        ctx.loadEntityData(e);
+        processor.processEntity(e);
+      }
+    }
+);
+    progress.setGeneralProgress("[70 / 100]");
+    progress.startTask(Messages.getString("IndexCreator.PROCESS_OSM_WAYS"),accessor.getAllWays());
+    accessor.iterateOverEntities(progress,EntityType.WAY,new OsmDbVisitor(){
+      @Override public void iterateEntity(      Entity e,      OsmDbAccessorContext ctx) throws SQLException {
+        ctx.loadEntityData(e);
+        processor.processEntity(e);
+      }
+    }
+);
+    mapFile=new File(workingDir,getMapFileName());
+    mapFile.getParentFile().mkdirs();
+    if (mapFile.exists()) {
+      mapFile.delete();
+    }
+    mapRAFile=new RandomAccessFile(mapFile,"rw");
+    BinaryMapIndexWriter writer=new BinaryMapIndexWriter(mapRAFile);
+    progress.setGeneralProgress("[95 of 100]");
+    progress.startTask("Writing map index to binary file...",-1);
+    processor.writeCoastlinesFile(writer,regionName);
+    progress.finishTask();
+    writer.close();
+    mapRAFile.close();
+    log.info("Finish writing binary file");
+  }
+ catch (  RuntimeException e) {
+    log.error("Log exception",e);
+    throw e;
+  }
+catch (  SQLException e) {
+    log.error("Log exception",e);
+    throw e;
+  }
+catch (  IOException e) {
+    log.error("Log exception",e);
+    throw e;
+  }
+catch (  SAXException e) {
+    log.error("Log exception",e);
+    throw e;
+  }
+ finally {
+    try {
+      accessor.closeReadingConnection();
+    }
+ catch (    SQLException e) {
+      e.printStackTrace();
+    }
+catch (    RuntimeException e) {
+      e.printStackTrace();
+    }
+  }
+}
