@@ -18,17 +18,17 @@
         tempNames.clear();
         decodeNames(rs.getString(6),tempNames);
         byte[] types=rs.getBytes(4);
-        typeUse.clear();
+        int[] typeUse=new int[types.length / 2];
         for (int j=0; j < types.length; j+=2) {
           int ids=Algoritms.parseSmallIntFromBytes(types,j);
-          typeUse.add(renderingTypes.getTypeByInternalId(ids).getTargetId());
+          typeUse[j / 2]=renderingTypes.getTypeByInternalId(ids).getTargetId();
         }
         byte[] addTypes=rs.getBytes(5);
-        addtypeUse.clear();
+        int[] addtypeUse=new int[addTypes.length / 2];
         if (addTypes != null) {
           for (int j=0; j < addTypes.length; j+=2) {
             int ids=Algoritms.parseSmallIntFromBytes(addTypes,j);
-            addtypeUse.add(renderingTypes.getTypeByInternalId(ids).getTargetId());
+            addtypeUse[j / 2]=renderingTypes.getTypeByInternalId(ids).getTargetId();
           }
         }
         MapData mapData=writer.writeMapData(cid - baseId,parentBounds.getMinX(),parentBounds.getMinY(),rs.getBoolean(1),rs.getBytes(2),rs.getBytes(3),typeUse,addtypeUse,tempNames,tempStringTable,dataBlock);

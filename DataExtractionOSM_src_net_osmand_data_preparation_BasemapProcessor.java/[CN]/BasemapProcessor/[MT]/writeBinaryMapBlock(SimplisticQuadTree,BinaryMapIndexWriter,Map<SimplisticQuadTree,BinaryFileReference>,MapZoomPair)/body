@@ -1,29 +1,31 @@
 {
   Iterator<Entry<SimplisticQuadTree,BinaryFileReference>> it=refs.entrySet().iterator();
-  TIntArrayList type=new TIntArrayList();
-  type.add(renderingTypes.getCoastlineRuleType().getTargetId());
   while (it.hasNext()) {
     Entry<SimplisticQuadTree,BinaryFileReference> e=it.next();
     MapDataBlock.Builder dataBlock=MapDataBlock.newBuilder();
     SimplisticQuadTree quad=e.getKey();
-    for (    Way w : quad.getCoastlines(p)) {
-      dataBlock.setBaseId(w.getId());
-      List<Node> res=new ArrayList<Node>();
-      MapAlgorithms.simplifyDouglasPeucker(w.getNodes(),p.getMaxZoom() - 1 + 8 + zoomWaySmothness,3,res);
-      ByteArrayOutputStream bcoordinates=new ByteArrayOutputStream();
-      for (      Node n : res) {
-        if (n != null) {
-          int y=MapUtils.get31TileNumberY(n.getLatitude());
-          int x=MapUtils.get31TileNumberX(n.getLongitude());
-          Algoritms.writeInt(bcoordinates,x);
-          Algoritms.writeInt(bcoordinates,y);
+    Map<String,Integer> stringTable=new LinkedHashMap<String,Integer>();
+    for (    SimplisticBinaryData w : quad.getData(p)) {
+      dataBlock.setBaseId(w.id);
+      int[] wts=null;
+      int[] wats=null;
+      if (w.types != null) {
+        wts=new int[w.types.length];
+        for (int j=0; j < w.types.length; j++) {
+          wts[j]=renderingTypes.getTypeByInternalId(w.types[j]).getTargetId();
         }
       }
-      MapData mapData=writer.writeMapData(0,quad.x << (31 - quad.zoom),quad.y << (31 - quad.zoom),false,bcoordinates.toByteArray(),null,type,null,null,null,dataBlock);
+      if (w.addTypes != null) {
+        wats=new int[w.addTypes.length];
+        for (int j=0; j < w.addTypes.length; j++) {
+          wats[j]=renderingTypes.getTypeByInternalId(w.addTypes[j]).getTargetId();
+        }
+      }
+      MapData mapData=writer.writeMapData(0,quad.x << (31 - quad.zoom),quad.y << (31 - quad.zoom),false,w.coordinates,null,wts,wats,w.names,stringTable,dataBlock);
       if (mapData != null) {
         dataBlock.addDataObjects(mapData);
       }
     }
-    writer.writeMapDataBlock(dataBlock,null,e.getValue());
+    writer.writeMapDataBlock(dataBlock,stringTable,e.getValue());
   }
 }

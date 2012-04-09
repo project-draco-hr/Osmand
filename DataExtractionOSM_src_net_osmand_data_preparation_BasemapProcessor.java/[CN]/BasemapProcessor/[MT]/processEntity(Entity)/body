@@ -1,5 +1,51 @@
 {
-  if (e instanceof Way && "coastline".equals(e.getTag(OSMTagKey.NATURAL))) {
-    processCoastline((Way)e);
+  if (e instanceof Way || e instanceof Node) {
+    for (int level=0; level < mapZooms.getLevels().size(); level++) {
+      renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(level).getMaxZoom(),typeUse,addtypeUse,namesUse,tempNameUse);
+      if (typeUse.isEmpty()) {
+        continue;
+      }
+      MapZoomPair zoomPair=mapZooms.getLevel(level);
+      if (e instanceof Way) {
+        if (((Way)e).getNodes().size() < 2) {
+          continue;
+        }
+        if ("coastline".equals(e.getTag("natural")) || !Algoritms.isEmpty(e.getTag("admin_level"))) {
+          splitContinuousWay(((Way)e).getNodes(),typeUse.toArray(),!addtypeUse.isEmpty() ? addtypeUse.toArray() : null,zoomPair,quadTrees[level]);
+        }
+ else {
+          List<Node> ns=((Way)e).getNodes();
+          int z=getViewZoom(zoomPair);
+          int tilex=0;
+          int tiley=0;
+          boolean sameTile=false;
+          while (!sameTile) {
+            tilex=(int)MapUtils.getTileNumberX(z,ns.get(0).getLongitude());
+            tiley=(int)MapUtils.getTileNumberY(z,ns.get(0).getLatitude());
+            sameTile=true;
+            for (int i=1; i < ns.size(); i++) {
+              int tx=(int)MapUtils.getTileNumberX(z,ns.get(i).getLongitude());
+              int ty=(int)MapUtils.getTileNumberY(z,ns.get(i).getLatitude());
+              if (tx != tilex || ty != tiley) {
+                sameTile=false;
+                break;
+              }
+            }
+            if (!sameTile) {
+              z--;
+            }
+          }
+          List<Node> res=new ArrayList<Node>();
+          MapAlgorithms.simplifyDouglasPeucker(ns,zoomPair.getMaxZoom() - 1 + 8 + zoomWaySmothness,3,res);
+          addSimplisticData(res,typeUse.toArray(),!addtypeUse.isEmpty() ? addtypeUse.toArray() : null,zoomPair,quadTrees[level],z,tilex,tiley,namesUse.isEmpty() ? null : new LinkedHashMap<MapRenderingTypes.MapRulType,String>(namesUse));
+        }
+      }
+ else {
+        int z=getViewZoom(zoomPair);
+        int tilex=(int)MapUtils.getTileNumberX(z,((Node)e).getLongitude());
+        int tiley=(int)MapUtils.getTileNumberY(z,((Node)e).getLatitude());
+        addSimplisticData(Collections.singletonList((Node)e),typeUse.toArray(),!addtypeUse.isEmpty() ? addtypeUse.toArray() : null,zoomPair,quadTrees[level],z,tilex,tiley,namesUse.isEmpty() ? null : new LinkedHashMap<MapRenderingTypes.MapRulType,String>(namesUse));
+      }
+    }
   }
 }

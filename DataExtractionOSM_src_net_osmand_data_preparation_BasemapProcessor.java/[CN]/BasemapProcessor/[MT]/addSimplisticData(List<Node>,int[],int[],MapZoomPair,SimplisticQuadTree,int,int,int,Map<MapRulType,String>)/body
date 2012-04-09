@@ -1,0 +1,31 @@
+{
+  SimplisticQuadTree quad=quadTree.getOrCreateSubTree(tilex,tiley,z);
+  if (quad == null) {
+    if (logMapDataWarn != null) {
+      logMapDataWarn.error("Tile " + tilex + " / "+ tiley+ " at "+ z+ " can not be found");
+    }
+ else {
+      System.err.println("Tile " + tilex + " / "+ tiley+ " at "+ z+ " can not be found");
+    }
+  }
+  ByteArrayOutputStream bcoordinates=new ByteArrayOutputStream();
+  for (  Node n : res) {
+    if (n != null) {
+      int y=MapUtils.get31TileNumberY(n.getLatitude());
+      int x=MapUtils.get31TileNumberX(n.getLongitude());
+      try {
+        Algoritms.writeInt(bcoordinates,x);
+        Algoritms.writeInt(bcoordinates,y);
+      }
+ catch (      IOException e1) {
+        throw new IllegalStateException(e1);
+      }
+    }
+  }
+  SimplisticBinaryData data=new SimplisticBinaryData();
+  data.coordinates=bcoordinates.toByteArray();
+  data.types=types;
+  data.addTypes=addTypes;
+  data.names=names;
+  quad.addQuadData(zoomPair,data);
+}
