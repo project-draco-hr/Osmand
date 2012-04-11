@@ -1,0 +1,29 @@
+{
+  String[] list;
+  try {
+    String ext=IndexItem.addVersionToExt(IndexConstants.TTSVOICE_INDEX_EXT_ZIP,IndexConstants.TTSVOICE_VERSION);
+    File voicePath=OsmandApplication.getSettings().extendOsmandPath(ResourceManager.VOICE_PATH);
+    list=amanager.list("voice");
+    String date="";
+    try {
+      ApplicationInfo appInfo=pm.getApplicationInfo(OsmandApplication.class.getPackage().getName(),0);
+      SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy");
+      Date installed=new Date(new File(appInfo.sourceDir).lastModified());
+      date=format.format(installed);
+    }
+ catch (    NameNotFoundException e) {
+    }
+    for (    String voice : list) {
+      File destFile=new File(voicePath,voice + File.separatorChar + "_ttsconfig.p");
+      String key=voice + ext;
+      IndexItem internetVoiceFile=result.getIndexFiles().get(key);
+      String assetName="voice" + File.separatorChar + voice+ File.separatorChar+ "ttsconfig.p";
+      if (internetVoiceFile == null) {
+        result.add(key,new AssetIndexItem(key,"voice",date,"0.1","",assetName,destFile.getPath()));
+      }
+    }
+  }
+ catch (  IOException e) {
+    e.printStackTrace();
+  }
+}
