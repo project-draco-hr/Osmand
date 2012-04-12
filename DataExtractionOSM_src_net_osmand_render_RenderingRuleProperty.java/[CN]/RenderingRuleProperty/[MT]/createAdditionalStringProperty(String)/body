@@ -1,0 +1,24 @@
+{
+  return new RenderingRuleProperty(name,STRING_TYPE,true){
+    @Override public boolean accept(    int ruleValue,    int renderingProperty,    RenderingRuleSearchRequest req){
+      BinaryMapDataObject obj=req.getObject();
+      if (obj == null) {
+        return true;
+      }
+      String val=req.getStorage().getStringValue(ruleValue);
+      int i=val.indexOf('=');
+      if (i != -1) {
+        String ts=val.substring(0,i);
+        String vs=val.substring(i + 1);
+        Integer ruleInd=req.getObject().getMapIndex().getRule(ts,vs);
+        if (ruleInd != null) {
+          if (req.getObject().containsAdditionalType(ruleInd)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+  }
+;
+}
