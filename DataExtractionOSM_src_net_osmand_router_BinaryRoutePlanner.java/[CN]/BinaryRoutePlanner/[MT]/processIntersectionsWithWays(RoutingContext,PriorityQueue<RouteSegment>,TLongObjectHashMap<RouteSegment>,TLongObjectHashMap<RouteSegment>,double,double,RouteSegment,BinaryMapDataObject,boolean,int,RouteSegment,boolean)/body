@@ -22,7 +22,8 @@
         processRoad=false;
       }
     }
-    if ((!visitedSegments.contains(nts) && processRoad) || oppositeConnectionFound) {
+    boolean alreadyVisited=visitedSegments.contains(nts);
+    if ((!alreadyVisited && processRoad) || oppositeConnectionFound) {
       int type=-1;
       if (!reverseWay) {
         for (int i=0; i < road.getRestrictionCount(); i++) {
@@ -61,7 +62,7 @@
           oppSegment.segmentEnd=next.segmentStart;
           return oppSegment;
         }
-        double distanceToEnd=h(ctx,distToFinalPoint,next);
+        double distanceToEnd=h(ctx,distToFinalPoint,segment,next);
         double speed=ctx.getRouter().defineSpeed(road);
         if (speed == 0) {
           speed=ctx.getRouter().getMinDefaultSpeed();
@@ -87,6 +88,26 @@
  else {
               segmentsToVisitNotForbidden.add(next);
             }
+          }
+        }
+      }
+    }
+ else     if (alreadyVisited) {
+      if (segment.distanceFromStart < next.distanceFromStart) {
+        double speed=ctx.getRouter().defineSpeed(road);
+        if (speed == 0) {
+          speed=ctx.getRouter().getMinDefaultSpeed();
+        }
+        next.distanceFromStart=g(ctx,distOnRoadToPass,segment,segmentEnd,obstaclesTime,next,speed);
+        RouteSegment findAndReplace=next.parentRoute;
+        int theend=next.parentSegmentEnd;
+        next.parentRoute=segment;
+        next.parentSegmentEnd=segment.road.getPointsLength() - 1;
+        for (        Object s : visitedSegments.values()) {
+          RouteSegment updateSegment=(RouteSegment)s;
+          if (s != null && updateSegment.parentRoute == findAndReplace && updateSegment.parentSegmentEnd == theend && s != segment) {
+            updateSegment.parentRoute=segment;
+            updateSegment.parentSegmentEnd=segment.road.getPointsLength() - 1;
           }
         }
       }
