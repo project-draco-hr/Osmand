@@ -99,17 +99,21 @@
           speed=ctx.getRouter().getMinDefaultSpeed();
         }
         next.distanceFromStart=g(ctx,distOnRoadToPass,segment,segmentEnd,obstaclesTime,next,speed);
-        RouteSegment findAndReplace=next.parentRoute;
-        int theend=next.parentSegmentEnd;
+        final RouteSegment findAndReplace=next.parentRoute;
+        final RouteSegment actual=segment;
+        final int theend=next.parentSegmentEnd;
         next.parentRoute=segment;
         next.parentSegmentEnd=segment.road.getPointsLength() - 1;
-        for (        Object s : visitedSegments.values()) {
-          RouteSegment updateSegment=(RouteSegment)s;
-          if (s != null && updateSegment.parentRoute == findAndReplace && updateSegment.parentSegmentEnd == theend && s != segment) {
-            updateSegment.parentRoute=segment;
-            updateSegment.parentSegmentEnd=segment.road.getPointsLength() - 1;
+        visitedSegments.forEachValue(new TObjectProcedure<BinaryRoutePlanner.RouteSegment>(){
+          @Override public boolean execute(          RouteSegment updateSegment){
+            if (updateSegment != null && updateSegment.parentRoute == findAndReplace && updateSegment.parentSegmentEnd == theend && updateSegment != actual) {
+              updateSegment.parentRoute=actual;
+              updateSegment.parentSegmentEnd=actual.road.getPointsLength() - 1;
+            }
+            return false;
           }
         }
+);
       }
     }
     next=next.next;
