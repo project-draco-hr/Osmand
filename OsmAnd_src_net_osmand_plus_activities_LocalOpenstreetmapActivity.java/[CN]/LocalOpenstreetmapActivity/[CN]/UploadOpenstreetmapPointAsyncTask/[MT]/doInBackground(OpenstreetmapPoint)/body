@@ -6,7 +6,9 @@
     if (OpenstreetmapUtil.Action.CREATE != p.getAction()) {
       entityInfo=remote.loadNode(p.getEntity());
     }
-    if (remote.commitNodeImpl(p.getAction(),p.getEntity(),entityInfo,p.getComment())) {
+    Node n;
+    if ((n=remote.commitNodeImpl(p.getAction(),p.getEntity(),entityInfo,p.getComment())) != null) {
+      remote.updateNodeInIndexes(LocalOpenstreetmapActivity.this,p.getAction(),n,p.getEntity());
       publishProgress(p);
       uploaded++;
     }

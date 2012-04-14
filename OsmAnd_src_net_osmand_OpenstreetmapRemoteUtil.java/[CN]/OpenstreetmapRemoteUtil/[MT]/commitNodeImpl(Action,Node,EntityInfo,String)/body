@@ -4,9 +4,10 @@
     changeSetTimeStamp=System.currentTimeMillis();
   }
   if (changeSetId < 0) {
-    return false;
+    return null;
   }
   try {
+    Node newN=n;
     StringWriter writer=new StringWriter(256);
     XmlSerializer ser=Xml.newSerializer();
     try {
@@ -37,18 +38,14 @@
           int end=res.indexOf("\"",i);
           if (end > 0) {
             newId=Long.parseLong(res.substring(i,end));
-            Node newN=new Node(n.getLatitude(),n.getLongitude(),newId);
-            for (            String t : n.getTagKeySet()) {
-              newN.putTag(t,n.getTag(t));
-            }
-            n=newN;
+            newN=new Node(n,newId);
           }
         }
       }
       changeSetTimeStamp=System.currentTimeMillis();
-      return true;
+      return newN;
     }
-    return false;
+    return null;
   }
   finally {
   }

@@ -1,7 +1,17 @@
 {
+  Node newNode=n;
+  if (n.getId() == -1) {
+    newNode=new Node(n,--nextid);
+  }
   OpenstreetmapPoint p=new OpenstreetmapPoint();
-  p.setEntity(n);
+  p.setEntity(newNode);
   p.setAction(action);
   p.setComment(comment);
-  return db.addOpenstreetmap(p);
+  if (p.getAction() == Action.DELETE && newNode.getId() < 0) {
+    db.deleteAllPOIModifications(p.getId());
+  }
+ else {
+    db.addOpenstreetmap(p);
+  }
+  return newNode;
 }
