@@ -1,0 +1,27 @@
+{
+  String name=OsmandApplication.getSettings().USER_NAME.get();
+  String pwd=OsmandApplication.getSettings().USER_PASSWORD.get();
+  if (Algoritms.isEmpty(name) || Algoritms.isEmpty(pwd)) {
+    AccessibleToast.makeText(this,R.string.validate_gpx_upload_name_pwd,Toast.LENGTH_LONG).show();
+    return false;
+  }
+  Builder bldr=new AlertDialog.Builder(this);
+  LayoutInflater inflater=(LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+  final View view=inflater.inflate(R.layout.send_gpx_osm,null);
+  final EditText descr=(EditText)view.findViewById(R.id.DescriptionText);
+  if (info.length > 0 && info[0].getFileName() != null) {
+    int dt=info[0].getFileName().indexOf('.');
+    descr.setText(info[0].getFileName().substring(0,dt));
+  }
+  final EditText tags=(EditText)view.findViewById(R.id.TagsText);
+  final EditText vis=(EditText)view.findViewById(R.id.VisibilityText);
+  bldr.setView(view);
+  bldr.setNegativeButton(R.string.default_buttons_yes,null);
+  bldr.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      new UploadGPXFilesTask(descr.getText().toString(),tags.getText().toString(),vis.getText().toString()).execute(info);
+    }
+  }
+);
+  return true;
+}
