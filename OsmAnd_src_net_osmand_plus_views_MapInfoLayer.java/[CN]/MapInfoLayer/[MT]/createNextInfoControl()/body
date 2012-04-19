@@ -1,10 +1,12 @@
 {
+  final RoutingHelper routingHelper=routeLayer.getHelper();
   final NextTurnInfoControl nextTurnInfo=new NextTurnInfoControl(map,paintText,paintSubText){
     @Override public boolean updateInfo(){
       boolean visible=false;
-      if (routeLayer != null && routeLayer.getHelper().isRouterEnabled() && routeLayer.getHelper().isFollowingMode()) {
+      if (routeLayer != null && routingHelper.isRouterEnabled() && routingHelper.isFollowingMode()) {
         int d=routeLayer.getHelper().getDistanceToNextRouteDirection();
-        if (routeLayer.getHelper().makeUturnWhenPossible() == true) {
+        makeUturnWhenPossible=routingHelper.makeUturnWhenPossible();
+        if (routingHelper.makeUturnWhenPossible() == true) {
           if (!showMiniMap) {
             visible=true;
             turnType=TurnType.valueOf(TurnType.TU);
@@ -36,6 +38,10 @@
             if (distChanged(d,nextTurnDirection)) {
               invalidate();
               nextTurnDirection=d;
+            }
+            if (turnImminent != routingHelper.turnImminent()) {
+              turnImminent=routingHelper.turnImminent();
+              invalidate();
             }
           }
         }
