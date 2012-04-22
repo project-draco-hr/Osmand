@@ -1,0 +1,46 @@
+{
+  final RoutingHelper routingHelper=routeLayer.getHelper();
+  final NextTurnInfoControl nextTurnInfo=new NextTurnInfoControl(map,paintSmallText,paintSmallSubText,true){
+    @Override public boolean updateInfo(){
+      boolean visible=false;
+      if (routeLayer != null && routingHelper.isRouterEnabled() && routingHelper.isFollowingMode()) {
+        int d=routingHelper.getDistanceToNextNextRouteDirection();
+        if (d > 0 && !showMiniMap) {
+          visible=true;
+          RouteDirectionInfo next=routingHelper.getNextNextRouteDirectionInfo();
+          if (next == null) {
+            if (turnType != null) {
+              turnType=null;
+              invalidate();
+            }
+          }
+ else           if (!Algoritms.objectEquals(turnType,next.turnType)) {
+            turnType=next.turnType;
+            TurnPathHelper.calcTurnPath(pathForTurn,turnType,pathTransform);
+            invalidate();
+          }
+          if (distChanged(d,nextTurnDirection)) {
+            invalidate();
+            nextTurnDirection=d;
+          }
+          if (turnImminent != routingHelper.getNextNextTurnImminent()) {
+            turnImminent=routingHelper.getNextNextTurnImminent();
+            invalidate();
+          }
+        }
+      }
+      updateVisibility(visible);
+      return true;
+    }
+  }
+;
+  nextTurnInfo.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      showMiniMap=true;
+      view.refreshMap();
+    }
+  }
+);
+  nextTurnInfo.setVisibility(View.GONE);
+  return nextTurnInfo;
+}

@@ -1,14 +1,10 @@
 {
-  if (settings.ROTATE_MAP.get() != OsmandSettings.ROTATE_MAP_COMPASS) {
-    previousMapRotate=settings.ROTATE_MAP.get();
-    settings.ROTATE_MAP.set(OsmandSettings.ROTATE_MAP_COMPASS);
+  int vl=(settings.ROTATE_MAP.get() + 1) % 3;
+  Location loc=getLastKnownLocation();
+  if (vl == OsmandSettings.ROTATE_MAP_BEARING && (loc == null || !loc.hasBearing())) {
+    vl=(vl + 1) % 3;
   }
- else   if (previousMapRotate != null) {
-    settings.ROTATE_MAP.set(previousMapRotate);
-  }
- else {
-    settings.ROTATE_MAP.set(settings.ROTATE_MAP.getProfileDefaultValue());
-  }
+  settings.ROTATE_MAP.set(vl);
   registerUnregisterSensor(getLastKnownLocation());
   if (settings.ROTATE_MAP.get() != OsmandSettings.ROTATE_MAP_COMPASS) {
     mapView.setRotate(0);
