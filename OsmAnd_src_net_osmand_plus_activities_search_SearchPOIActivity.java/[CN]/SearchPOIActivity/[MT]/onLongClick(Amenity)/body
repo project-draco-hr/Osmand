@@ -3,10 +3,18 @@
   if (amenity.getOpeningHours() != null) {
     AccessibleToast.makeText(this,format + "  " + getString(R.string.opening_hours)+ " : "+ amenity.getOpeningHours(),Toast.LENGTH_LONG).show();
   }
+  List<String> items=new ArrayList<String>();
+  items.add(getString(R.string.show_poi_on_map));
+  items.add(getString(R.string.navigate_to));
+  if (((OsmandApplication)getApplication()).accessibilityEnabled())   items.add(getString(R.string.show_details));
   AlertDialog.Builder builder=new AlertDialog.Builder(SearchPOIActivity.this);
   builder.setTitle(format);
-  builder.setItems(new String[]{getString(R.string.show_poi_on_map),getString(R.string.navigate_to)},new DialogInterface.OnClickListener(){
+  builder.setItems(items.toArray(new String[items.size()]),new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
+      if (which == 2) {
+        showPOIDetails(amenity,settings.usingEnglishNames());
+        return;
+      }
       if (which == 0) {
         int z=settings.getLastKnownMapZoom();
         String poiSimpleFormat=OsmAndFormatter.getPoiSimpleFormat(amenity,SearchPOIActivity.this,settings.usingEnglishNames());

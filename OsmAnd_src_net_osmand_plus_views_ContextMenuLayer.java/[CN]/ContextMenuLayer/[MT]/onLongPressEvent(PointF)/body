@@ -1,4 +1,8 @@
 {
+  if (!view.getSettings().SCROLL_MAP_BY_GESTURES.get()) {
+    if (!selectedObjects.isEmpty())     view.showMessage(activity.getNavigationHint(latLon));
+    return true;
+  }
   if (pressedInTextView(point.x,point.y)) {
     setLocation(null,"");
     view.refreshMap();
@@ -16,21 +20,14 @@
     }
   }
   LatLon latLon=view.getLatLonFromScreenPoint(point.x,point.y);
-  StringBuilder description=new StringBuilder();
+  String description=getSelectedObjectDescription();
   if (!selectedObjects.isEmpty()) {
-    if (selectedObjects.size() > 1) {
-      description.append("1. ");
-    }
-    description.append(selectedContextProvider.getObjectDescription(selectedObjects.get(0)));
-    for (int i=1; i < selectedObjects.size(); i++) {
-      description.append("\n" + (i + 1) + ". ").append(selectedContextProvider.getObjectDescription(selectedObjects.get(i)));
-    }
     LatLon l=selectedContextProvider.getObjectLocation(selectedObjects.get(0));
     if (l != null) {
       latLon=l;
     }
   }
-  setLocation(latLon,description.toString());
+  setLocation(latLon,description);
   view.refreshMap();
   return true;
 }

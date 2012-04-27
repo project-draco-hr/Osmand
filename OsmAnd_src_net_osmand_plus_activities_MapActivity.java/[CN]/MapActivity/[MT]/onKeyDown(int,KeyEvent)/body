@@ -1,6 +1,19 @@
 {
   if (keyCode == KeyEvent.KEYCODE_BACK) {
   }
+ else   if (getMyApplication().accessibilityEnabled() && (keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
+    if (!uiHandler.hasMessages(LONG_KEYPRESS_MSG_ID)) {
+      Message msg=Message.obtain(uiHandler,new Runnable(){
+        @Override public void run(){
+          emitNavigationHint();
+        }
+      }
+);
+      msg.what=LONG_KEYPRESS_MSG_ID;
+      uiHandler.sendMessageDelayed(msg,LONG_KEYPRESS_DELAY);
+    }
+    return true;
+  }
  else   if (keyCode == KeyEvent.KEYCODE_SEARCH && event.getRepeatCount() == 0) {
     Intent newIntent=new Intent(MapActivity.this,SearchActivity.class);
     LatLon loc=getMapLocation();
