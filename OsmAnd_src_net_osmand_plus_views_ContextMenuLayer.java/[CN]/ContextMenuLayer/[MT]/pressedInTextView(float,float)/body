@@ -1,13 +1,19 @@
 {
   if (latLon != null) {
     Rect bs=textView.getBackground().getBounds();
+    Rect closes=closeButton.getDrawable().getBounds();
     int x=(int)(px - view.getRotatedMapXForPoint(latLon.getLatitude(),latLon.getLongitude()));
     int y=(int)(py - view.getRotatedMapYForPoint(latLon.getLatitude(),latLon.getLongitude()));
     x+=bs.width() / 2;
     y+=bs.height() + boxLeg.getMinimumHeight() - SHADOW_OF_LEG;
-    if (bs.contains(x,y)) {
-      return true;
+    int dclosex=x - bs.width() + CLOSE_BTN + closes.width();
+    int dclosey=y + CLOSE_BTN;
+    if (closes.intersects(dclosex - CLOSE_BTN,dclosey - CLOSE_BTN,dclosex + CLOSE_BTN,dclosey + CLOSE_BTN)) {
+      return 2;
+    }
+ else     if (bs.contains(x,y)) {
+      return 1;
     }
   }
-  return false;
+  return 0;
 }
