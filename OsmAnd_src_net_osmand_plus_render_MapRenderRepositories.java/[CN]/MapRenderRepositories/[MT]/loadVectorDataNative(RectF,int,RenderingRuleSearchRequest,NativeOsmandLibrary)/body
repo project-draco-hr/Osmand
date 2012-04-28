@@ -6,16 +6,18 @@
   long now=System.currentTimeMillis();
   NativeSearchResult resultHandler=null;
   for (  String mapName : files.keySet()) {
-    BinaryMapIndexReader reader=files.get(mapName);
-    if (!reader.containsMapData(leftX,topY,rightX,bottomY,zoom)) {
-      continue;
-    }
     if (!nativeFiles.contains(mapName)) {
       nativeFiles.add(mapName);
       if (!library.initMapFile(mapName)) {
         continue;
       }
       log.debug("Native resource " + mapName + " initialized");
+    }
+  }
+  for (  String mapName : files.keySet()) {
+    BinaryMapIndexReader reader=files.get(mapName);
+    if (!reader.containsMapData(leftX,topY,rightX,bottomY,zoom)) {
+      continue;
     }
     resultHandler=library.searchObjectsForRendering(leftX,rightX,topY,bottomY,zoom,mapName,renderingReq,PerformanceFlags.checkForDuplicateObjectIds,resultHandler,this);
     if (checkWhetherInterrupted()) {

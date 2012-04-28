@@ -34,8 +34,23 @@ catch (  OutOfMemoryError oome) {
     }
     throw oome;
   }
+  long val=System.currentTimeMillis();
   if (log.isDebugEnabled()) {
-    log.debug("Initializing db " + file.getAbsolutePath() + " "+ (System.currentTimeMillis() - start)+ "ms");
+    log.debug("Initializing db " + file.getAbsolutePath() + " "+ (val - start)+ "ms");
+  }
+  NativeOsmandLibrary nativeLib=prefs.NATIVE_RENDERING.get() ? NativeOsmandLibrary.getLoadedLibrary() : null;
+  if (nativeLib != null) {
+    start=val;
+    if (!nativeLib.initMapFile(file.getAbsolutePath())) {
+      log.debug("Initializing native db " + file.getAbsolutePath() + " failed!");
+    }
+ else {
+      nativeFiles.add(file.getAbsolutePath());
+      val=System.currentTimeMillis();
+      if (log.isDebugEnabled()) {
+        log.debug("Initializing native db " + file.getAbsolutePath() + " "+ (val - start)+ "ms");
+      }
+    }
   }
   return reader;
 }
