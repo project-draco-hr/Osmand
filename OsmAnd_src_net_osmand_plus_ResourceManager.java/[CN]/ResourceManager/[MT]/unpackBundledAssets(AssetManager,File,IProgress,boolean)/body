@@ -1,0 +1,35 @@
+{
+  XmlPullParser xmlParser=XmlPullParserFactory.newInstance().newPullParser();
+  InputStream isBundledAssetsXml=assetManager.open("bundled_assets.xml");
+  xmlParser.setInput(isBundledAssetsXml,"UTF-8");
+  int next=0;
+  while ((next=xmlParser.next()) != XmlPullParser.END_DOCUMENT) {
+    if (next == XmlPullParser.START_TAG && xmlParser.getName().equals("asset")) {
+      final String source=xmlParser.getAttributeValue(null,"source");
+      final String destination=xmlParser.getAttributeValue(null,"destination");
+      final String combinedMode=xmlParser.getAttributeValue(null,"mode");
+      final String[] modes=combinedMode.split("\\|");
+      if (modes.length == 0) {
+        log.error("Mode '" + combinedMode + "' is not valid");
+        continue;
+      }
+      String installMode=null;
+      String copyMode=null;
+      for (      String mode : modes) {
+        if (ASSET_INSTALL_MODE__alwaysCopyOnFirstInstall.equals(mode))         installMode=mode;
+ else         if (ASSET_COPY_MODE__overwriteOnlyIfExists.equals(mode) || ASSET_COPY_MODE__alwaysOverwriteOrCopy.equals(mode) || ASSET_COPY_MODE__copyOnlyIfDoesNotExist.equals(mode))         copyMode=mode;
+ else         log.error("Mode '" + mode + "' is unknown");
+      }
+      final File destinationFile=new File(appDataDir,destination);
+      boolean unconditional=false;
+      if (installMode != null)       unconditional=unconditional || (ASSET_INSTALL_MODE__alwaysCopyOnFirstInstall.equals(installMode) && isFirstInstall);
+      if (copyMode == null)       log.error("No copy mode was defined for " + source);
+      unconditional=unconditional || ASSET_COPY_MODE__alwaysOverwriteOrCopy.equals(copyMode);
+      boolean shouldCopy=unconditional;
+      shouldCopy=shouldCopy || (ASSET_COPY_MODE__overwriteOnlyIfExists.equals(copyMode) && destinationFile.exists());
+      shouldCopy=shouldCopy || (ASSET_COPY_MODE__copyOnlyIfDoesNotExist.equals(copyMode) && !destinationFile.exists());
+      if (shouldCopy)       copyAssets(assetManager,source,destinationFile);
+    }
+  }
+  isBundledAssetsXml.close();
+}
