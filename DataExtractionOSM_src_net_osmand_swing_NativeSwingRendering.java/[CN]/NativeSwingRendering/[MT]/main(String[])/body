@@ -1,19 +1,17 @@
 {
-  System.out.println("Native!");
   NativeSwingRendering lib=new NativeSwingRendering();
   lib.initMapFile("/home/victor/projects/OsmAnd/data/osm-gen/Cuba2.obf");
   lib.initMapFile("/home/victor/projects/OsmAnd/data/osm-gen/basemap_2.obf");
-  RenderingContext ctx=new RenderingContext();
-  RenderingRulesStorage df=getDefault();
-  lib.initRenderingRulesStorage(df);
-  RenderingRuleSearchRequest request=new RenderingRuleSearchRequest(df);
-  double latTop=23.5;
+  double latTop=22.5;
   double lonLeft=-80;
-  double latBottom=23;
-  double lonRight=-79;
+  float tileX=2;
+  float tileY=2;
+  int zoom=11;
+  double latBottom=MapUtils.getLatitudeFromTile(zoom,MapUtils.getTileNumberY(zoom,latTop) + tileY);
+  double lonRight=MapUtils.getLongitudeFromTile(zoom,MapUtils.getTileNumberX(zoom,lonLeft) + tileX);
   int sleft=MapUtils.get31TileNumberX(lonLeft);
   int sright=MapUtils.get31TileNumberX(lonRight);
   int stop=MapUtils.get31TileNumberY(latTop);
   int sbottom=MapUtils.get31TileNumberY(latBottom);
-  NativeSearchResult res=lib.searchObjectsForRendering(sleft,sright,stop,sbottom,11,request,true,ctx,"Nothing found");
+  MapPanel.showMainWindow(512,512,lib.renderImage(sleft,sright,stop,sbottom,zoom));
 }
