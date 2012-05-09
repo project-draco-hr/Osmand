@@ -1,0 +1,18 @@
+{
+  RenderingRulesStorage storage=new RenderingRulesStorage();
+  final RenderingRulesStorageResolver resolver=new RenderingRulesStorageResolver(){
+    @Override public RenderingRulesStorage resolve(    String name,    RenderingRulesStorageResolver ref) throws SAXException {
+      RenderingRulesStorage depends=new RenderingRulesStorage();
+      try {
+        depends.parseRulesFromXmlInputStream(RenderingRulesStorage.class.getResourceAsStream(name + ".render.xml"),ref);
+      }
+ catch (      IOException e) {
+        throw new SAXException(e);
+      }
+      return depends;
+    }
+  }
+;
+  storage.parseRulesFromXmlInputStream(RenderingRulesStorage.class.getResourceAsStream("default.render.xml"),resolver);
+  return storage;
+}
