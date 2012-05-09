@@ -1,5 +1,6 @@
 {
-  RenderingContext rctx=new RenderingContext();
+  long time=-System.currentTimeMillis();
+  RenderingContext rctx=new RenderingContext(baseDirRC);
   RenderingRuleSearchRequest request=new RenderingRuleSearchRequest(storage);
   NativeSearchResult res=searchObjectsForRendering(sleft,sright,stop,sbottom,zoom,request,true,rctx,"Nothing found");
   rctx.leftX=(float)(((double)sleft) / MapUtils.getPowZoom(31 - zoom));
@@ -8,8 +9,9 @@
   rctx.height=(int)((sbottom - stop) / MapUtils.getPowZoom(31 - zoom - 8));
   rctx.shadowRenderingMode=2;
   rctx.zoom=zoom;
+  long search=time + System.currentTimeMillis();
   final RenderingGenerationResult rres=NativeSwingRendering.generateRenderingIndirect(rctx,res.nativeHandler,false,request,true);
-  System.out.println(rres.bitmapBuffer.capacity());
+  long rendering=time + System.currentTimeMillis() - search;
   InputStream inputStream=new InputStream(){
     int nextInd=0;
     @Override public int read() throws IOException {
@@ -30,5 +32,7 @@
   ImageReader reader=readers.next();
   reader.setInput(new MemoryCacheImageInputStream(inputStream),true);
   BufferedImage img=reader.read(0);
+  long last=time + System.currentTimeMillis() - rendering;
+  System.out.println(" TIMES search - " + search + " rendering - "+ rendering+ " unpack - "+ last);
   return img;
 }
