@@ -1,0 +1,108 @@
+{
+  if (e instanceof Relation && "multipolygon".equals(e.getTag(OSMTagKey.TYPE))) {
+    ctx.loadEntityData(e);
+    Map<Entity,String> entities=((Relation)e).getMemberEntities();
+    boolean outerFound=false;
+    for (    Entity es : entities.keySet()) {
+      if (es instanceof Way) {
+        boolean inner="inner".equals(entities.get(es));
+        if (!inner) {
+          outerFound=true;
+          for (          String t : es.getTagKeySet()) {
+            e.putTag(t,es.getTag(t));
+          }
+          break;
+        }
+      }
+    }
+    if (!outerFound) {
+      logMapDataWarn.warn("Probably map bug: Multipoligon id=" + e.getId() + " contains only inner ways : ");
+      return;
+    }
+    renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(0).getMaxZoom(),typeUse,addtypeUse,namesUse,tempNameUse);
+    if (typeUse.size() > 0) {
+      List<List<Way>> completedRings=new ArrayList<List<Way>>();
+      List<List<Way>> incompletedRings=new ArrayList<List<Way>>();
+      for (      Entity es : entities.keySet()) {
+        if (es instanceof Way) {
+          if (!((Way)es).getNodeIds().isEmpty()) {
+            combineMultiPolygons((Way)es,completedRings,incompletedRings);
+          }
+        }
+      }
+      if (!incompletedRings.isEmpty()) {
+        logMapDataWarn.warn("In multipolygon  " + e.getId() + " there are incompleted ways : "+ incompletedRings);
+        return;
+      }
+      for (      List<Way> l : completedRings) {
+        boolean innerType="inner".equals(entities.get(l.get(0)));
+        for (        Way way : l) {
+          boolean inner="inner".equals(entities.get(way));
+          if (innerType != inner) {
+            logMapDataWarn.warn("Probably map bug: Multipoligon contains outer and inner ways.\n" + "Way:" + way.getId() + " is strange part of completed ring. InnerType:"+ innerType+ " way inner: "+ inner+ " way inner string:"+ entities.get(way));
+            return;
+          }
+        }
+      }
+      Node nodeOut=checkOuterWaysEncloseInnerWays(completedRings,entities);
+      if (nodeOut != null) {
+        logMapDataWarn.warn("Map bug: Multipoligon contains 'inner' way point outside of 'outer' border.\n" + "Multipolygon id : " + e.getId() + ", inner node out id : "+ nodeOut.getId());
+      }
+      List<Node> outerWaySrc=new ArrayList<Node>();
+      List<List<Node>> innerWays=new ArrayList<List<Node>>();
+      TIntArrayList typeToSave=new TIntArrayList(typeUse);
+      long baseId=0;
+      for (      List<Way> l : completedRings) {
+        boolean innerType="inner".equals(entities.get(l.get(0)));
+        if (!innerType && !outerWaySrc.isEmpty()) {
+          logMapDataWarn.warn("Map bug: Multipoligon contains many 'outer' borders.\n" + "Multipolygon id : " + e.getId() + ", outer way id : "+ l.get(0).getId());
+          return;
+        }
+        List<Node> toCollect;
+        if (innerType) {
+          toCollect=new ArrayList<Node>();
+          innerWays.add(toCollect);
+        }
+ else {
+          toCollect=outerWaySrc;
+        }
+        for (        Way way : l) {
+          toCollect.addAll(way.getNodes());
+          if (!innerType) {
+            TIntArrayList out=multiPolygonsWays.put(way.getId(),typeToSave);
+            if (out == null) {
+              baseId=-way.getId();
+            }
+          }
+        }
+      }
+      if (baseId == 0) {
+        baseId=notUsedId--;
+      }
+      nextZoom:       for (int level=0; level < mapZooms.size(); level++) {
+        renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(level).getMaxZoom(),typeUse,addtypeUse,namesUse,tempNameUse);
+        if (typeUse.isEmpty()) {
+          continue;
+        }
+        long id=convertBaseIdToGeneratedId(baseId,level);
+        List<Node> outerWay=outerWaySrc;
+        int zoomToSimplify=mapZooms.getLevel(level).getMaxZoom() - 1;
+        if (zoomToSimplify < 15) {
+          outerWay=simplifyCycleWay(outerWay,zoomToSimplify,zoomWaySmothness);
+          if (outerWay == null) {
+            continue nextZoom;
+          }
+          List<List<Node>> newinnerWays=new ArrayList<List<Node>>();
+          for (          List<Node> ls : innerWays) {
+            ls=simplifyCycleWay(ls,zoomToSimplify,zoomWaySmothness);
+            if (ls != null) {
+              newinnerWays.add(ls);
+            }
+          }
+          innerWays=newinnerWays;
+        }
+        insertBinaryMapRenderObjectIndex(mapTree[level],outerWay,innerWays,namesUse,id,true,typeUse,addtypeUse,true);
+      }
+    }
+  }
+}
