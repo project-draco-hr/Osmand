@@ -1,45 +1,8 @@
 {
-  if (e instanceof Way || e instanceof Node) {
+  if (e instanceof Way) {
     ctx.loadEntityData(e);
-    for (int level=0; level < mapZooms.size(); level++) {
-      boolean area=renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(level).getMaxZoom(),typeUse,addtypeUse,namesUse,tempNameUse);
-      if (typeUse.isEmpty()) {
-        continue;
-      }
-      boolean hasMulti=e instanceof Way && multiPolygonsWays.containsKey(e.getId());
-      if (hasMulti) {
-        TIntArrayList set=multiPolygonsWays.get(e.getId());
-        typeUse.removeAll(set);
-        continue;
-      }
-      if (typeUse.isEmpty()) {
-        continue;
-      }
-      long id=convertBaseIdToGeneratedId(e.getId(),level);
-      List<Node> res=null;
-      if (e instanceof Node) {
-        res=Collections.singletonList((Node)e);
-      }
- else {
-        id|=1;
-        int zoomToSimplify=mapZooms.getLevel(level).getMaxZoom() - 1;
-        if (zoomToSimplify < 15) {
-          boolean cycle=((Way)e).getFirstNodeId() == ((Way)e).getLastNodeId();
-          if (cycle) {
-            res=simplifyCycleWay(((Way)e).getNodes(),zoomToSimplify,zoomWaySmothness);
-          }
- else {
-            String ename=namesUse.get(renderingTypes.getNameRuleType());
-            insertLowLevelMapBinaryObject(level,zoomToSimplify,typeUse,addtypeUse,id,((Way)e).getNodes(),ename);
-          }
-        }
- else {
-          res=((Way)e).getNodes();
-        }
-      }
-      if (res != null) {
-        insertBinaryMapRenderObjectIndex(mapTree[level],res,null,namesUse,id,area,typeUse,addtypeUse,true);
-      }
+    boolean encoded=routeTypes.encodeEntity((Way)e,outTypes,pointTypes);
+    if (encoded) {
     }
   }
 }
