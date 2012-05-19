@@ -7,7 +7,8 @@
         if (!fileFilter.fileCanBeUploaded(f)) {
           continue;
         }
-        if (!uploadCredentials.checkIfUploadNeededByTimestamp(f.getName(),f.lastModified())) {
+        long timestampCreated=f.lastModified();
+        if (!uploadCredentials.checkIfUploadNeededByTimestamp(f.getName(),timestampCreated)) {
           log.info("File skipped because timestamp was not changed " + f.getName());
           continue;
         }
@@ -22,7 +23,7 @@
             files.add(logFile);
           }
           File zFile=new File(f.getParentFile(),unzipped.getName() + ".zip");
-          zip(files,zFile,description,unzipped.lastModified());
+          zip(files,zFile,description,timestampCreated);
           uploadIndex(zFile,description,uploadCredentials);
         }
   finally {
