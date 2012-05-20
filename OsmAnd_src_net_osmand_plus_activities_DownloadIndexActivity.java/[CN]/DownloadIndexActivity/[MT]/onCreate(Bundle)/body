@@ -1,7 +1,8 @@
 {
   super.onCreate(savedInstanceState);
+  settings=((OsmandApplication)getApplication()).getSettings();
   if (downloadListIndexThread == null) {
-    downloadListIndexThread=new DownloadIndexListThread(getPackageManager(),getAssets(),Version.getVersionAsURLParam(this));
+    downloadListIndexThread=new DownloadIndexListThread(this);
   }
   CustomTitleBar titleBar=new CustomTitleBar(this,R.string.local_index_download,R.drawable.tab_download_screen_icon);
   setContentView(R.layout.download_index);
@@ -42,7 +43,7 @@
  else {
     downloadIndexList();
   }
-  if (getPackageName().equals(FREE_VERSION_NAME) && OsmandApplication.getSettings().checkFreeDownloadsNumberZero()) {
+  if (getPackageName().equals(FREE_VERSION_NAME) && settings.checkFreeDownloadsNumberZero()) {
     Builder msg=new AlertDialog.Builder(this);
     msg.setTitle(R.string.free_version_title);
     msg.setMessage(getString(R.string.free_version_message,MAXIMUM_AVAILABLE_FREE_DOWNLOADS + "",""));
