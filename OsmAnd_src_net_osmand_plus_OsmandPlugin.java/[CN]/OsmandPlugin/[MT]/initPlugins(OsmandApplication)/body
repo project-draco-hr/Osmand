@@ -1,10 +1,16 @@
 {
   OsmandSettings settings=app.getSettings();
+  installedPlugins.add(new OsmEditingPlugin(app));
   Set<String> enabledPlugins=settings.getEnabledPlugins();
   for (  OsmandPlugin plugin : installedPlugins) {
     if (enabledPlugins.contains(plugin.getId())) {
-      if (plugin.init(app)) {
-        activePlugins.add(plugin);
+      try {
+        if (plugin.init(app)) {
+          activePlugins.add(plugin);
+        }
+      }
+ catch (      Exception e) {
+        LOG.error("Plugin initialization failed " + plugin.getId(),e);
       }
     }
   }
