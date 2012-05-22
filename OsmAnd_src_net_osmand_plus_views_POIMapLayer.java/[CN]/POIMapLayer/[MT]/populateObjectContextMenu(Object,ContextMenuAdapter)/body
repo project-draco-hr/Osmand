@@ -1,0 +1,44 @@
+{
+  if (o instanceof Amenity) {
+    final Amenity a=(Amenity)o;
+    OnContextMenuClick listener=new ContextMenuAdapter.OnContextMenuClick(){
+      @Override public void onContextMenuClick(      int itemId,      int pos,      boolean isChecked){
+        if (itemId == R.string.poi_context_menu_call) {
+          try {
+            Intent intent=new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("tel:" + a.getPhone()));
+            view.getContext().startActivity(intent);
+          }
+ catch (          RuntimeException e) {
+            log.error("Failed to invoke call",e);
+            AccessibleToast.makeText(view.getContext(),e.getMessage(),Toast.LENGTH_SHORT).show();
+          }
+        }
+ else         if (itemId == R.string.poi_context_menu_website) {
+          try {
+            Intent intent=new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(a.getSite()));
+            view.getContext().startActivity(intent);
+          }
+ catch (          RuntimeException e) {
+            log.error("Failed to invoke call",e);
+            AccessibleToast.makeText(view.getContext(),e.getMessage(),Toast.LENGTH_SHORT).show();
+          }
+        }
+ else         if (itemId == R.string.poi_context_menu_showdescription) {
+          showDescriptionDialog(a);
+        }
+      }
+    }
+;
+    if (a.getDescription() != null) {
+      adapter.registerItem(R.string.poi_context_menu_showdescription,0,listener,-1);
+    }
+    if (a.getPhone() != null) {
+      adapter.registerItem(R.string.poi_context_menu_call,0,listener,-1);
+    }
+    if (a.getSite() != null) {
+      adapter.registerItem(R.string.poi_context_menu_website,0,listener,-1);
+    }
+  }
+}
