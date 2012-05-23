@@ -7,6 +7,7 @@
   String[] entrieValues;
   PreferenceScreen screen=getPreferenceScreen();
   osmandSettings=getMyApplication().getSettings();
+  OsmandPlugin.onSettingsActivityCreate(this,screen);
   registerBooleanPreference(osmandSettings.SHOW_VIEW_ANGLE,screen);
   registerBooleanPreference(osmandSettings.USE_TRACKBALL_FOR_MOVEMENTS,screen);
   registerBooleanPreference(osmandSettings.ZOOM_BY_TRACKBALL,screen);
@@ -18,13 +19,11 @@
   registerBooleanPreference(osmandSettings.AUTO_ZOOM_MAP,screen);
   registerBooleanPreference(osmandSettings.SAVE_TRACK_TO_GPX,screen);
   registerBooleanPreference(osmandSettings.LIVE_MONITORING,screen);
-  registerBooleanPreference(osmandSettings.DEBUG_RENDERING_INFO,screen);
   registerBooleanPreference(osmandSettings.FAST_ROUTE_MODE,screen);
   registerBooleanPreference(osmandSettings.USE_OSMAND_ROUTING_SERVICE_ALWAYS,screen);
   registerBooleanPreference(osmandSettings.USE_INTERNET_TO_DOWNLOAD_TILES,screen);
   registerBooleanPreference(osmandSettings.MAP_VECTOR_DATA,screen);
   registerBooleanPreference(osmandSettings.TRANSPARENT_MAP_THEME,screen);
-  registerBooleanPreference(osmandSettings.TEST_ANIMATE_ROUTING,screen);
   registerBooleanPreference(osmandSettings.SHOW_ALTITUDE_INFO,screen);
   registerBooleanPreference(osmandSettings.FLUORESCENT_OVERLAYS,screen);
   registerBooleanPreference(osmandSettings.SHOW_RULER,screen);
@@ -32,9 +31,6 @@
   if ((NativeOsmandLibrary.isLoaded() && !NativeOsmandLibrary.isSupported()) || osmandSettings.NATIVE_RENDERING_FAILED.get()) {
     nativeCheckbox.setEnabled(false);
   }
-  registerEditTextPreference(osmandSettings.USER_NAME,screen);
-  registerEditTextPreference(osmandSettings.USER_PASSWORD,screen);
-  registerBooleanPreference(osmandSettings.OFFLINE_POI_EDITION,screen);
   registerEditTextPreference(osmandSettings.LIVE_MONITORING_URL,screen);
   registerSeekBarPreference(osmandSettings.MAP_OVERLAY_TRANSPARENCY,screen);
   registerSeekBarPreference(osmandSettings.MAP_TRANSPARENCY,screen);
@@ -140,14 +136,10 @@
   localIndexes.setOnPreferenceClickListener(this);
   saveCurrentTrack=(Preference)screen.findPreference(OsmandSettings.SAVE_CURRENT_TRACK);
   saveCurrentTrack.setOnPreferenceClickListener(this);
-  testVoiceCommands=(Preference)screen.findPreference("test_voice_commands");
-  testVoiceCommands.setOnPreferenceClickListener(this);
   routeServiceEnabled=(CheckBoxPreference)screen.findPreference(OsmandSettings.SERVICE_OFF_ENABLED);
   routeServiceEnabled.setOnPreferenceChangeListener(this);
   applicationDir=(EditTextPreference)screen.findPreference(OsmandSettings.EXTERNAL_STORAGE_DIR);
   applicationDir.setOnPreferenceChangeListener(this);
-  localOpenstreetmapPoints=(Preference)screen.findPreference(OsmandSettings.LOCAL_OPENSTREETMAP_POINTS);
-  localOpenstreetmapPoints.setOnPreferenceClickListener(this);
   bidforfix=(Preference)screen.findPreference("bidforfix");
   bidforfix.setOnPreferenceClickListener(this);
   plugins=(Preference)screen.findPreference("plugins");
@@ -164,13 +156,13 @@
     int s=intent.getIntExtra(INTENT_KEY_SETTINGS_SCREEN,0);
     String pref=null;
     if (s == SCREEN_GENERAL_SETTINGS) {
-      pref="general_settings";
+      pref=SCREEN_ID_GENERAL_SETTINGS;
     }
  else     if (s == SCREEN_NAVIGATION_SETTINGS) {
-      pref="routing_settings";
+      pref=SCREEN_ID_NAVIGATION_SETTINGS;
     }
  else     if (s == SCREEN_MONITORING_SETTINGS) {
-      pref="monitor_settings";
+      pref=SCREEN_ID_MONITORING_SETTINGS;
     }
     if (pref != null) {
       Preference toOpen=screen.findPreference(pref);
