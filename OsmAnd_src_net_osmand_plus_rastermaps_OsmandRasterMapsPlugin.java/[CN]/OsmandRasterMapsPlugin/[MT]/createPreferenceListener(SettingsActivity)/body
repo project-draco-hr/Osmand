@@ -1,0 +1,41 @@
+{
+  return new OnPreferenceChangeListener(){
+    @Override public boolean onPreferenceChange(    Preference preference,    Object newValue){
+      if (preference == tileSourcePreference || preference == overlayPreference || preference == underlayPreference) {
+        if (SettingsActivity.MORE_VALUE.equals(newValue)) {
+          SettingsActivity.installMapLayers(activity,new ResultMatcher<TileSourceTemplate>(){
+            @Override public boolean isCancelled(){
+              return false;
+            }
+            @Override public boolean publish(            TileSourceTemplate object){
+              if (object == null) {
+                updateTileSourceSummary();
+              }
+              return true;
+            }
+          }
+);
+        }
+ else         if (preference == tileSourcePreference) {
+          settings.MAP_TILE_SOURCES.set((String)newValue);
+          updateTileSourceSummary();
+        }
+ else {
+          if (((String)newValue).length() == 0) {
+            newValue=null;
+          }
+          if (preference == underlayPreference) {
+            settings.MAP_UNDERLAY.set(((String)newValue));
+            underlayPreference.setSummary(app.getString(R.string.map_underlay_descr) + "  [" + settings.MAP_UNDERLAY.get()+ "]");
+          }
+ else           if (preference == overlayPreference) {
+            settings.MAP_OVERLAY.set(((String)newValue));
+            overlayPreference.setSummary(app.getString(R.string.map_overlay_descr) + "  [" + settings.MAP_OVERLAY.get()+ "]");
+          }
+        }
+      }
+      return true;
+    }
+  }
+;
+}

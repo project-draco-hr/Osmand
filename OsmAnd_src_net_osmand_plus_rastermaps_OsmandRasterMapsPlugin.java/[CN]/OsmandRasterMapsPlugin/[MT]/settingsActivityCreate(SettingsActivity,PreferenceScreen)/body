@@ -1,0 +1,48 @@
+{
+  PreferenceGroup general=(PreferenceGroup)screen.findPreference("global_settings");
+  PreferenceGroup grp=screen.getPreferenceManager().createPreferenceScreen(activity);
+  grp.setSummary(R.string.rendering_settings_descr);
+  grp.setTitle(R.string.rendering_settings);
+  grp.setKey("map_settings");
+  grp.setOrder(0);
+  general.addPreference(grp);
+  OnPreferenceChangeListener listener=createPreferenceListener(activity);
+  PreferenceCategory cat=new PreferenceCategory(activity);
+  cat.setTitle(R.string.pref_raster_map);
+  grp.addPreference(cat);
+  CheckBoxPreference mapVectorData=activity.createCheckBoxPreference(settings.MAP_VECTOR_DATA,R.string.map_vector_data,R.string.map_vector_data_descr);
+  cat.addPreference(mapVectorData);
+  tileSourcePreference=new ListPreference(activity);
+  tileSourcePreference.setSummary(R.string.map_tile_source_descr);
+  tileSourcePreference.setTitle(R.string.map_tile_source);
+  tileSourcePreference.setOnPreferenceChangeListener(listener);
+  cat.addPreference(tileSourcePreference);
+  cat.addPreference(activity.createCheckBoxPreference(settings.USE_INTERNET_TO_DOWNLOAD_TILES,R.string.use_internet,R.string.use_internet_to_download_tile));
+  int startZoom=1;
+  int endZoom=18;
+  String[] entries=new String[endZoom - startZoom + 1];
+  Integer[] intValues=new Integer[endZoom - startZoom + 1];
+  for (int i=startZoom; i <= endZoom; i++) {
+    entries[i - startZoom]=i + "";
+    intValues[i - startZoom]=i;
+  }
+  ListPreference lp=activity.createListPreference(settings.LEVEL_TO_SWITCH_VECTOR_RASTER,entries,intValues,R.string.level_to_switch_vector_raster,R.string.level_to_switch_vector_raster_descr);
+  cat.addPreference(lp);
+  cat=new PreferenceCategory(activity);
+  cat.setTitle(R.string.pref_overlay);
+  grp.addPreference(cat);
+  overlayPreference=new ListPreference(activity);
+  overlayPreference.setSummary(R.string.map_overlay_descr);
+  overlayPreference.setTitle(R.string.map_overlay);
+  overlayPreference.setOnPreferenceChangeListener(listener);
+  cat.addPreference(overlayPreference);
+  underlayPreference=new ListPreference(activity);
+  underlayPreference.setSummary(R.string.map_underlay_descr);
+  underlayPreference.setTitle(R.string.map_underlay);
+  underlayPreference.setOnPreferenceChangeListener(listener);
+  cat.addPreference(underlayPreference);
+  SeekBarPreference sp=activity.createSeekBarPreference(settings.MAP_OVERLAY_TRANSPARENCY,R.string.overlay_transparency,R.string.overlay_transparency_descr,R.string.modify_transparency,0,255);
+  cat.addPreference(sp);
+  sp=activity.createSeekBarPreference(settings.MAP_TRANSPARENCY,R.string.map_transparency,R.string.map_transparency_descr,R.string.modify_transparency,0,255);
+  cat.addPreference(sp);
+}
