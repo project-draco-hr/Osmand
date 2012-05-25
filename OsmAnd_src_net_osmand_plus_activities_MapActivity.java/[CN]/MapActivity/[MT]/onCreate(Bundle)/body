@@ -9,21 +9,18 @@
   startProgressDialog=new ProgressDialog(this);
   startProgressDialog.setCancelable(true);
   ((OsmandApplication)getApplication()).checkApplicationIsBeingInitialized(this,startProgressDialog);
-  startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
-    @Override public void onDismiss(    DialogInterface dialog){
-      OsmandApplication app=((OsmandApplication)getApplication());
-      if (settings.MAP_VECTOR_DATA.get() && app.getResourceManager().getRenderer().isEmpty()) {
-        AccessibleToast.makeText(MapActivity.this,getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
-      }
-    }
-  }
-);
   parseLaunchIntentLocation();
   mapView=(OsmandMapTileView)findViewById(R.id.MapView);
   mapView.setTrackBallDelegate(new OsmandMapTileView.OnTrackBallListener(){
     @Override public boolean onTrackBallEvent(    MotionEvent e){
       showAndHideMapPosition();
       return MapActivity.this.onTrackballEvent(e);
+    }
+  }
+);
+  startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
+    @Override public void onDismiss(    DialogInterface dialog){
+      mapView.refreshMap();
     }
   }
 );

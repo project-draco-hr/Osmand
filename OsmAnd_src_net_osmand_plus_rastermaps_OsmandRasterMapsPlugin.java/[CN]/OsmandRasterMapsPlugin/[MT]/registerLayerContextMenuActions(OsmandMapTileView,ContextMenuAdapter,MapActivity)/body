@@ -1,0 +1,35 @@
+{
+  final MapActivityLayers layers=mapActivity.getMapLayers();
+  OnContextMenuClick listener=new OnContextMenuClick(){
+    @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      if (itemId == R.string.layer_map) {
+        dialog.dismiss();
+        layers.selectMapLayer(mapView);
+      }
+ else       if (itemId == R.string.layer_overlay) {
+        if (overlayLayer.getMap() != null) {
+          settings.MAP_OVERLAY.set(null);
+          updateMapLayers(mapView,null,layers);
+        }
+ else {
+          dialog.dismiss();
+          selectMapOverlayLayer(mapView,settings.MAP_OVERLAY,settings.MAP_OVERLAY_TRANSPARENCY,mapActivity,overlayLayer);
+        }
+      }
+ else       if (itemId == R.string.layer_underlay) {
+        if (underlayLayer.getMap() != null) {
+          settings.MAP_UNDERLAY.set(null);
+          updateMapLayers(mapView,null,layers);
+        }
+ else {
+          dialog.dismiss();
+          selectMapOverlayLayer(mapView,settings.MAP_UNDERLAY,settings.MAP_TRANSPARENCY,mapActivity,layers.getMapTileLayer(),layers.getMapVectorLayer());
+        }
+      }
+    }
+  }
+;
+  adapter.registerSelectedItem(R.string.layer_map,-1,R.drawable.list_activities_map_src,listener,0);
+  adapter.registerSelectedItem(R.string.layer_overlay,overlayLayer.getMap() != null ? 1 : 0,R.drawable.list_activities_overlay_map,listener,-1);
+  adapter.registerSelectedItem(R.string.layer_underlay,underlayLayer.getMap() != null ? 1 : 0,R.drawable.list_activities_underlay_map,listener,-1);
+}

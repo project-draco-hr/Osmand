@@ -1,7 +1,6 @@
 {
   final OsmandSettings settings=getApplication().getSettings();
   final ContextMenuAdapter adapter=new ContextMenuAdapter(activity);
-  adapter.registerSelectedItem(R.string.layer_map,-1,R.drawable.list_activities_map_src);
   adapter.registerSelectedItem(R.string.layer_poi,settings.SHOW_POI_OVER_MAP.get() ? 1 : 0,R.drawable.list_activities_poi);
   adapter.registerSelectedItem(R.string.layer_poi_label,settings.SHOW_POI_LABEL.get() ? 1 : 0,0);
   adapter.registerSelectedItem(R.string.layer_favorites,settings.SHOW_FAVORITES.get() ? 1 : 0,R.drawable.list_activities_favorites);
@@ -13,19 +12,13 @@
   if (TransportRouteHelper.getInstance().routeIsCalculated()) {
     adapter.registerSelectedItem(R.string.layer_transport_route,routeInfoLayer.isUserDefinedVisible() ? 1 : 0,0);
   }
-  adapter.registerSelectedItem(R.string.layer_overlay,overlayLayer.getMap() != null ? 1 : 0,R.drawable.list_activities_overlay_map);
-  adapter.registerSelectedItem(R.string.layer_underlay,underlayLayer.getMap() != null ? 1 : 0,R.drawable.list_activities_underlay_map);
-  OsmandPlugin.registerLayerContextMenu(mapView,adapter);
+  OsmandPlugin.registerLayerContextMenu(mapView,adapter,activity);
   final OnMultiChoiceClickListener listener=new DialogInterface.OnMultiChoiceClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int item,    boolean isChecked){
       int itemId=adapter.getItemId(item);
       OnContextMenuClick clck=adapter.getClickAdapter(item);
       if (clck != null) {
-        clck.onContextMenuClick(itemId,item,isChecked);
-      }
- else       if (itemId == R.string.layer_map) {
-        dialog.dismiss();
-        selectMapLayer(mapView);
+        clck.onContextMenuClick(itemId,item,isChecked,dialog);
       }
  else       if (itemId == R.string.layer_poi) {
         if (isChecked) {
@@ -57,26 +50,6 @@
       }
  else       if (itemId == R.string.layer_transport) {
         settings.SHOW_TRANSPORT_OVER_MAP.set(isChecked);
-      }
- else       if (itemId == R.string.layer_overlay) {
-        if (overlayLayer.getMap() != null) {
-          settings.MAP_OVERLAY.set(null);
-          updateMapSource(mapView,null);
-        }
- else {
-          dialog.dismiss();
-          selectMapOverlayLayer(mapView,settings.MAP_OVERLAY,settings.MAP_OVERLAY_TRANSPARENCY,overlayLayer);
-        }
-      }
- else       if (itemId == R.string.layer_underlay) {
-        if (underlayLayer.getMap() != null) {
-          settings.MAP_UNDERLAY.set(null);
-          updateMapSource(mapView,null);
-        }
- else {
-          dialog.dismiss();
-          selectMapOverlayLayer(mapView,settings.MAP_UNDERLAY,settings.MAP_TRANSPARENCY,mapTileLayer,mapVectorLayer);
-        }
       }
       updateLayers(mapView);
       mapView.refreshMap();

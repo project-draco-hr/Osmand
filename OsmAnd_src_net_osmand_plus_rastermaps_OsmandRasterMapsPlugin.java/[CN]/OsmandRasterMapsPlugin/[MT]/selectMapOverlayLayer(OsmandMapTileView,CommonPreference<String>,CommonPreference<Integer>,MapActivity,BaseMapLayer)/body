@@ -1,5 +1,6 @@
 {
-  final OsmandSettings settings=getApplication().getSettings();
+  final OsmandSettings settings=app.getSettings();
+  final MapActivityLayers layers=activity.getMapLayers();
   Map<String,String> entriesMap=settings.getTileSourceEntries();
   final ArrayList<String> keys=new ArrayList<String>(entriesMap.keySet());
   Builder builder=new AlertDialog.Builder(activity);
@@ -8,7 +9,7 @@
   for (  String it : entriesMap.values()) {
     items[i++]=it;
   }
-  items[i]=getString(R.string.install_more);
+  items[i]=app.getString(R.string.install_more);
   builder.setSingleChoiceItems(items,-1,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (which == items.length - 1) {
@@ -19,11 +20,11 @@
             if (object == null) {
               if (count == 1) {
                 mapPref.set(template.getName());
-                mapControlsLayer.showAndHideTransparencyBar(transparencyPref,transparencyToChange);
-                updateMapSource(mapView,mapPref);
+                layers.getMapControlsLayer().showAndHideTransparencyBar(transparencyPref,transparencyToChange);
+                updateMapLayers(mapView,mapPref,layers);
               }
  else {
-                selectMapOverlayLayer(mapView,mapPref,transparencyPref,transparencyToChange);
+                selectMapOverlayLayer(mapView,mapPref,transparencyPref,activity,transparencyToChange);
               }
             }
  else {
@@ -40,8 +41,8 @@
       }
  else {
         mapPref.set(keys.get(which));
-        mapControlsLayer.showAndHideTransparencyBar(transparencyPref,transparencyToChange);
-        updateMapSource(mapView,mapPref);
+        layers.getMapControlsLayer().showAndHideTransparencyBar(transparencyPref,transparencyToChange);
+        updateMapLayers(mapView,mapPref,layers);
       }
       dialog.dismiss();
     }

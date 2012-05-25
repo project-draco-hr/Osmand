@@ -1,4 +1,8 @@
 {
+  if (OsmandPlugin.getEnabledPlugin(OsmandRasterMapsPlugin.class) == null) {
+    AccessibleToast.makeText(activity,R.string.map_online_plugin_is_not_installed,Toast.LENGTH_LONG).show();
+    return;
+  }
   final OsmandSettings settings=getApplication().getSettings();
   final LinkedHashMap<String,String> entriesMap=new LinkedHashMap<String,String>();
   final String layerOsmVector="LAYER_OSM_VECTOR";
@@ -10,7 +14,7 @@
   Builder builder=new AlertDialog.Builder(activity);
   String selectedTileSourceKey=settings.MAP_TILE_SOURCES.get();
   int selectedItem=-1;
-  if (settings.MAP_VECTOR_DATA.get()) {
+  if (!settings.MAP_ONLINE_DATA.get()) {
     selectedItem=0;
   }
  else {
@@ -36,14 +40,7 @@
     @Override public void onClick(    DialogInterface dialog,    int which){
       String layerKey=entriesMapList.get(which).getKey();
       if (layerKey.equals(layerOsmVector)) {
-        MapRenderRepositories r=((OsmandApplication)getApplication()).getResourceManager().getRenderer();
-        if (r.isEmpty()) {
-          AccessibleToast.makeText(activity,getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
-          return;
-        }
- else {
-          settings.MAP_VECTOR_DATA.set(true);
-        }
+        settings.MAP_ONLINE_DATA.set(false);
         updateMapSource(mapView,null);
       }
  else       if (layerKey.equals(layerInstallMore)) {
@@ -54,7 +51,7 @@
             if (object == null) {
               if (count == 1) {
                 settings.MAP_TILE_SOURCES.set(template.getName());
-                settings.MAP_VECTOR_DATA.set(false);
+                settings.MAP_ONLINE_DATA.set(true);
                 updateMapSource(mapView,settings.MAP_TILE_SOURCES);
               }
  else {
@@ -75,7 +72,7 @@
       }
  else {
         settings.MAP_TILE_SOURCES.set(layerKey);
-        settings.MAP_VECTOR_DATA.set(false);
+        settings.MAP_ONLINE_DATA.set(true);
         updateMapSource(mapView,settings.MAP_TILE_SOURCES);
       }
       dialog.dismiss();
