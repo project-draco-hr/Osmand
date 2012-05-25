@@ -5,13 +5,6 @@
   OsmandPreference<String> editPref=editTextPreferences.get(preference.getKey());
   if (boolPref != null) {
     boolPref.set((Boolean)newValue);
-    if (boolPref.getId().equals(osmandSettings.MAP_VECTOR_DATA.getId())) {
-      MapRenderRepositories r=((OsmandApplication)getApplication()).getResourceManager().getRenderer();
-      if (r.isEmpty()) {
-        AccessibleToast.makeText(this,getString(R.string.no_vector_map_loaded),Toast.LENGTH_LONG).show();
-        return false;
-      }
-    }
     if (boolPref.getId().equals(osmandSettings.NATIVE_RENDERING.getId())) {
       if (((Boolean)newValue).booleanValue()) {
         loadNativeLibrary();
@@ -58,14 +51,6 @@
  else       if (listPref.getId().equals(osmandSettings.ROUTER_SERVICE.getId())) {
         routerServicePreference.setSummary(getString(R.string.router_service_descr) + "  [" + osmandSettings.ROUTER_SERVICE.get()+ "]");
       }
- else       if (listPref.getId().equals(osmandSettings.ACCESSIBILITY_MODE.getId())) {
-        PreferenceCategory accessibilityOptions=((PreferenceCategory)(getPreferenceScreen().findPreference("accessibility_options")));
-        if (accessibilityOptions != null)         accessibilityOptions.setEnabled(getMyApplication().accessibilityEnabled());
-        accessibilityModePreference.setSummary(getString(R.string.accessibility_mode_descr) + "  [" + osmandSettings.ACCESSIBILITY_MODE.get().toHumanString(this)+ "]");
-      }
- else       if (listPref.getId().equals(osmandSettings.DIRECTION_STYLE.getId())) {
-        directionStylePreference.setSummary(getString(R.string.settings_direction_style_descr) + "  [" + osmandSettings.DIRECTION_STYLE.get().toHumanString(this)+ "]");
-      }
     }
     if (listPref.getId().equals(osmandSettings.RENDERER.getId())) {
       if (changed) {
@@ -80,53 +65,6 @@
  else   if (preference == applicationDir) {
     warnAboutChangingStorage((String)newValue);
     return false;
-  }
- else   if (preference == routeServiceEnabled) {
-    Intent serviceIntent=new Intent(this,NavigationService.class);
-    if ((Boolean)newValue) {
-      ComponentName name=startService(serviceIntent);
-      if (name == null) {
-        routeServiceEnabled.setChecked(getMyApplication().getNavigationService() != null);
-      }
-    }
- else {
-      if (!stopService(serviceIntent)) {
-        routeServiceEnabled.setChecked(getMyApplication().getNavigationService() != null);
-      }
-    }
-  }
- else   if (preference == tileSourcePreference || preference == overlayPreference || preference == underlayPreference) {
-    if (MORE_VALUE.equals(newValue)) {
-      SettingsActivity.installMapLayers(this,new ResultMatcher<TileSourceTemplate>(){
-        @Override public boolean isCancelled(){
-          return false;
-        }
-        @Override public boolean publish(        TileSourceTemplate object){
-          if (object == null) {
-            updateTileSourceSummary();
-          }
-          return true;
-        }
-      }
-);
-    }
- else     if (preference == tileSourcePreference) {
-      osmandSettings.MAP_TILE_SOURCES.set((String)newValue);
-      updateTileSourceSummary();
-    }
- else {
-      if (((String)newValue).length() == 0) {
-        newValue=null;
-      }
-      if (preference == underlayPreference) {
-        osmandSettings.MAP_UNDERLAY.set(((String)newValue));
-        underlayPreference.setSummary(getString(R.string.map_underlay_descr) + "  [" + osmandSettings.MAP_UNDERLAY.get()+ "]");
-      }
- else       if (preference == overlayPreference) {
-        osmandSettings.MAP_OVERLAY.set(((String)newValue));
-        overlayPreference.setSummary(getString(R.string.map_overlay_descr) + "  [" + osmandSettings.MAP_OVERLAY.get()+ "]");
-      }
-    }
   }
   return true;
 }

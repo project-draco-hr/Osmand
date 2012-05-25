@@ -1,27 +1,29 @@
 {
   RenderingRulesStorage renderer=getMyApplication().getRendererRegistry().getCurrentSelectedRenderer();
   PreferenceCategory cat=(PreferenceCategory)findPreference("custom_vector_rendering");
-  cat.removeAll();
-  if (renderer != null) {
-    for (    RenderingRuleProperty p : renderer.PROPS.getCustomRules()) {
-      CommonPreference<String> custom=getMyApplication().getSettings().getCustomRenderProperty(p.getAttrName());
-      ListPreference lp=new ListPreference(this);
-      lp.setOnPreferenceChangeListener(this);
-      lp.setKey(custom.getId());
-      lp.setTitle(p.getName());
-      lp.setSummary(p.getDescription());
-      cat.addPreference(lp);
-      LinkedHashMap<String,Object> vals=new LinkedHashMap<String,Object>();
-      screenPreferences.put(custom.getId(),lp);
-      listPreferences.put(custom.getId(),custom);
-      listPrefValues.put(custom.getId(),vals);
-      String[] names=p.getPossibleValues();
-      for (int i=0; i < names.length; i++) {
-        vals.put(names[i],names[i]);
+  if (cat != null) {
+    cat.removeAll();
+    if (renderer != null) {
+      for (      RenderingRuleProperty p : renderer.PROPS.getCustomRules()) {
+        CommonPreference<String> custom=getMyApplication().getSettings().getCustomRenderProperty(p.getAttrName());
+        ListPreference lp=new ListPreference(this);
+        lp.setOnPreferenceChangeListener(this);
+        lp.setKey(custom.getId());
+        lp.setTitle(p.getName());
+        lp.setSummary(p.getDescription());
+        cat.addPreference(lp);
+        LinkedHashMap<String,Object> vals=new LinkedHashMap<String,Object>();
+        screenPreferences.put(custom.getId(),lp);
+        listPreferences.put(custom.getId(),custom);
+        listPrefValues.put(custom.getId(),vals);
+        String[] names=p.getPossibleValues();
+        for (int i=0; i < names.length; i++) {
+          vals.put(names[i],names[i]);
+        }
       }
-    }
-    if (update) {
-      updateAllSettings();
+      if (update) {
+        updateAllSettings();
+      }
     }
   }
 }

@@ -1,0 +1,17 @@
+{
+  int uploaded=0;
+  for (  OpenstreetmapPoint p : points) {
+    if (interruptUploading)     break;
+    EntityInfo entityInfo=null;
+    if (OpenstreetmapUtil.Action.CREATE != p.getAction()) {
+      entityInfo=remote.loadNode(p.getEntity());
+    }
+    Node n;
+    if ((n=remote.commitNodeImpl(p.getAction(),p.getEntity(),entityInfo,p.getComment())) != null) {
+      remote.updateNodeInIndexes(LocalOpenstreetmapActivity.this,p.getAction(),n,p.getEntity());
+      publishProgress(p);
+      uploaded++;
+    }
+  }
+  return Integer.valueOf(uploaded);
+}

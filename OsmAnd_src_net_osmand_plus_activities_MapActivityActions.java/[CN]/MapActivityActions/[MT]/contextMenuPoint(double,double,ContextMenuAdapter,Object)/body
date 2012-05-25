@@ -7,18 +7,13 @@
   adapter.registerItem(R.string.context_menu_item_search);
   adapter.registerItem(R.string.context_menu_item_add_favorite);
   adapter.registerItem(R.string.context_menu_item_share_location);
-  adapter.registerItem(R.string.context_menu_item_add_waypoint);
   OsmandPlugin.registerMapContextMenu(mapActivity,latitude,longitude,adapter,selectedObj);
-  if (mapView.getMainLayer() instanceof MapTileLayer) {
-    adapter.registerItem(R.string.context_menu_item_update_map);
-    adapter.registerItem(R.string.context_menu_item_download_map);
-  }
   builder.setItems(adapter.getItemNames(),new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       int standardId=adapter.getItemId(which);
       OnContextMenuClick click=adapter.getClickAdapter(which);
       if (click != null) {
-        click.onContextMenuClick(standardId,which,false);
+        click.onContextMenuClick(standardId,which,false,dialog);
       }
  else       if (standardId == R.string.context_menu_item_navigate_point) {
         mapActivity.navigateToPoint(new LatLon(latitude,longitude));
@@ -38,16 +33,6 @@
       }
  else       if (standardId == R.string.context_menu_item_share_location) {
         shareLocation(latitude,longitude,mapView.getZoom());
-      }
- else       if (standardId == R.string.context_menu_item_add_waypoint) {
-        addWaypoint(latitude,longitude);
-      }
- else       if (standardId == R.string.context_menu_item_update_map) {
-        reloadTile(mapView.getZoom(),latitude,longitude);
-      }
- else       if (standardId == R.string.context_menu_item_download_map) {
-        DownloadTilesDialog dlg=new DownloadTilesDialog(mapActivity,(OsmandApplication)mapActivity.getApplication(),mapView);
-        dlg.openDialog();
       }
     }
   }
