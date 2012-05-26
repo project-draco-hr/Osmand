@@ -5,6 +5,12 @@
     uiActivity.runOnUiThread(new Runnable(){
       @Override public void run(){
         if (indexFiles != null) {
+          boolean basemapExists=((OsmandApplication)uiActivity.getApplication()).getResourceManager().containsBasemap();
+          if (!basemapExists && indexFiles.getBasemap() != null) {
+            uiActivity.entriesToDownload.put(indexFiles.getBasemap().getFileName(),indexFiles.getBasemap().createDownloadEntry(ctx));
+            AccessibleToast.makeText(uiActivity,R.string.basemap_was_selected_to_download,Toast.LENGTH_LONG).show();
+            uiActivity.findViewById(R.id.DownloadButton).setVisibility(View.VISIBLE);
+          }
           uiActivity.setListAdapter(uiActivity.new DownloadIndexAdapter(indexFiles.getIndexFiles()));
           if (indexFiles.isIncreasedMapVersion()) {
             uiActivity.showDialog(DownloadIndexActivity.DIALOG_MAP_VERSION_UPDATE);
