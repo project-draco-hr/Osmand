@@ -14,9 +14,9 @@
     Arrays.sort(keys);
     boolean shadowDrawn=false;
     for (int k=0; k < keys.length; k++) {
-      if (!shadowDrawn && keys[k] >= rc.shadowLevelMin && keys[k] <= rc.shadowLevelMax && rc.shadowRenderingMode > 1) {
+      if (!shadowDrawn && (keys[k] >> 2) >= rc.shadowLevelMin && (keys[k] >> 2) <= rc.shadowLevelMax && rc.shadowRenderingMode > 1) {
         for (int ki=k; ki < keys.length; ki++) {
-          if (keys[ki] > rc.shadowLevelMax || rc.interrupted) {
+          if ((keys[ki] >> 2) > rc.shadowLevelMax || rc.interrupted) {
             break;
           }
           TIntArrayList list=orderMap.get(keys[ki]);
@@ -25,7 +25,7 @@
             int ind=i >> 8;
             int l=i & 0xff;
             BinaryMapDataObject obj=objects.get(ind);
-            drawObj(obj,render,cv,rc,l,l == 0,true);
+            drawObj(obj,render,cv,rc,l,l == 0,true,(keys[ki] & 3));
             objCount++;
           }
         }
@@ -40,10 +40,10 @@
         int ind=i >> 8;
         int l=i & 0xff;
         BinaryMapDataObject obj=objects.get(ind);
-        drawObj(obj,render,cv,rc,l,l == 0,false);
+        drawObj(obj,render,cv,rc,l,l == 0,false,(keys[k] & 3));
         objCount++;
       }
-      rc.lastRenderedKey=keys[k];
+      rc.lastRenderedKey=(keys[k] >> 2);
       if (objCount > 25) {
         notifyListeners(notifyList);
         objCount=0;
