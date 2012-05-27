@@ -79,15 +79,12 @@
     }
   }
  else   if (e instanceof Way && e.getTag(OSMTagKey.HIGHWAY) != null && e.getTag(OSMTagKey.NAME) != null) {
-    boolean exist=false;
-    if (saveAddressWays) {
-      exist=streetDAO.findStreetNode(e);
-    }
+    boolean exist=streetDAO.findStreetNode(e);
     if (!exist) {
       ctx.loadEntityData(e);
       LatLon l=e.getLatLon();
       Set<Long> idsOfStreet=getStreetInCity(e.getIsInNames(),e.getTag(OSMTagKey.NAME),e.getTag(OSMTagKey.NAME_EN),l);
-      if (!idsOfStreet.isEmpty() && saveAddressWays) {
+      if (!idsOfStreet.isEmpty()) {
         streetDAO.writeStreetWayNodes(idsOfStreet,(Way)e);
       }
     }

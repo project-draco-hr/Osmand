@@ -7,23 +7,27 @@
   }
  else {
     result=district;
-    similarStreets:     for (    StreetAndDistrict ld : sameStreets) {
+    for (    StreetAndDistrict ld : sameStreets) {
       if (streetNodes != null) {
-        for (        Node n1 : streetNodes.get(street)) {
+        for (        Node n1 : thisWayNodes) {
           for (          Node n2 : streetNodes.get(ld.getStreet())) {
             if (MapUtils.getDistance(n1.getLatLon(),n2.getLatLon()) < 400) {
-              result=ld.getDistrict();
-              break similarStreets;
+              streetNodes.get(ld.getStreet()).addAll(thisWayNodes);
+              return ld;
             }
           }
         }
       }
       if (MapUtils.getDistance(ld.getStreet().getLocation(),street.getLocation()) < 400) {
-        result=ld.getDistrict();
-        break;
+        streetNodes.get(ld.getStreet()).addAll(thisWayNodes);
+        return ld;
       }
     }
   }
-  sameStreets.add(new StreetAndDistrict(street,result));
-  return result;
+  StreetAndDistrict ld=new StreetAndDistrict(street,result);
+  street.setName(streetName + result);
+  street.setEnName(streetEnName + result);
+  streetNodes.put(street,thisWayNodes);
+  sameStreets.add(ld);
+  return ld;
 }

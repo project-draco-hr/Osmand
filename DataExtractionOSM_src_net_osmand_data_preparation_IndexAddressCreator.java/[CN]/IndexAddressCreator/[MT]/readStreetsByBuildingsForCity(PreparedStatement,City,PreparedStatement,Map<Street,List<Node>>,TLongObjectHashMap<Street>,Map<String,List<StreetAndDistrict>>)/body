@@ -8,20 +8,10 @@
       String streetName=set.getString(2);
       street.setLocation(set.getDouble(4),set.getDouble(5));
       street.setId(streetId);
-      loadStreetNodes(street,waynodesStat,streetNodes);
+      List<Node> thisWayNodes=loadStreetNodes(streetId,waynodesStat);
       String defaultDistrict=set.getString(12);
-      String district=identifyBestDistrict(street,streetName," (" + defaultDistrict + ")",uniqueNames,streetNodes);
-      street.setName(streetName + district);
-      street.setEnName(set.getString(3) + district);
-      if (!streets.containsKey(street.getName())) {
-        streets.put(street.getName(),street);
-      }
- else {
-        List<Node> firstStreetNodes=streetNodes.get(streets.get(street.getName()));
-        if (firstStreetNodes != null && streetNodes.get(street) != null) {
-          firstStreetNodes.addAll(streetNodes.get(street));
-        }
-      }
+      StreetAndDistrict sandd=identifyBestDistrictAndUpdatename(street,streetName,set.getString(3),defaultDistrict == null ? "" : " (" + defaultDistrict + ")",uniqueNames,streetNodes,thisWayNodes);
+      street=sandd.getStreet();
       visitedStreets.put(streetId,street);
     }
     if (set.getObject(6) != null) {
