@@ -96,17 +96,14 @@
     boolean emptyData=zoom > BASEMAP_ZOOM && tempResult.isEmpty() && coastLines.isEmpty();
     if (!coastLines.isEmpty()) {
       long ms=System.currentTimeMillis();
-      List<BinaryMapDataObject> pcoastlines=processCoastlines(coastLines,leftX,rightX,bottomY,topY,zoom,basemapCoastLines.isEmpty());
-      addBasemapCoastlines=pcoastlines.isEmpty() || zoom <= BASEMAP_ZOOM;
-      tempResult.addAll(pcoastlines);
+      boolean coastlinesWereAdded=processCoastlines(coastLines,leftX,rightX,bottomY,topY,zoom,basemapCoastLines.isEmpty(),true,tempResult);
+      addBasemapCoastlines=!coastlinesWereAdded || zoom <= BASEMAP_ZOOM;
       coastlineTime="(coastline " + (System.currentTimeMillis() - ms) + " ms )";
     }
     if (addBasemapCoastlines) {
-      addBasemapCoastlines=false;
       long ms=System.currentTimeMillis();
-      List<BinaryMapDataObject> pcoastlines=processCoastlines(basemapCoastLines,leftX,rightX,bottomY,topY,zoom,true);
-      addBasemapCoastlines=pcoastlines.isEmpty();
-      tempResult.addAll(pcoastlines);
+      boolean coastlinesWereAdded=processCoastlines(basemapCoastLines,leftX,rightX,bottomY,topY,zoom,true,true,tempResult);
+      addBasemapCoastlines=!coastlinesWereAdded;
       coastlineTime="(coastline " + (System.currentTimeMillis() - ms) + " ms )";
     }
     if (addBasemapCoastlines && mi != null) {
