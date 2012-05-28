@@ -1,6 +1,5 @@
 {
   int sz=objects.size();
-  int init=sz / 4;
   TIntObjectHashMap<TIntArrayList> orderMap=new TIntObjectHashMap<TIntArrayList>();
   if (render != null) {
     render.clearState();
@@ -22,7 +21,10 @@
           if (render.search(RenderingRulesStorage.ORDER_RULES)) {
             int objectType=render.getIntPropertyValue(render.ALL.R_OBJECT_TYPE);
             int order=render.getIntPropertyValue(render.ALL.R_ORDER);
-            put(orderMap,(order << 2) | objectType,sh + j,init);
+            put(orderMap,(order << 2) | objectType,sh + j);
+            if (objectType == 3) {
+              put(orderMap,(128 << 2) | 1,sh + j);
+            }
             if (render.isSpecified(render.ALL.R_SHADOW_LEVEL)) {
               rc.shadowLevelMin=Math.min(rc.shadowLevelMin,order);
               rc.shadowLevelMax=Math.max(rc.shadowLevelMax,order);
