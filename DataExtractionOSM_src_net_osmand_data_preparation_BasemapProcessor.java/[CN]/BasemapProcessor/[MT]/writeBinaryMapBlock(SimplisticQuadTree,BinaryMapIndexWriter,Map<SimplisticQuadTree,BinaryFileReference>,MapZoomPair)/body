@@ -5,7 +5,7 @@
     MapDataBlock.Builder dataBlock=MapDataBlock.newBuilder();
     SimplisticQuadTree quad=e.getKey();
     Map<String,Integer> stringTable=new LinkedHashMap<String,Integer>();
-    for (    SimplisticBinaryData w : quad.getData(p)) {
+    for (    SimplisticBinaryData w : quad.getData(level)) {
       dataBlock.setBaseId(w.id);
       int[] wts=null;
       int[] wats=null;
@@ -21,7 +21,7 @@
           wats[j]=renderingTypes.getTypeByInternalId(w.addTypes[j]).getTargetId();
         }
       }
-      MapData mapData=writer.writeMapData(0,quad.x << (31 - quad.zoom),quad.y << (31 - quad.zoom),false,w.coordinates,null,wts,wats,w.names,stringTable,dataBlock);
+      MapData mapData=writer.writeMapData(0,quad.x << (31 - quad.zoom),quad.y << (31 - quad.zoom),false,w.coordinates,null,wts,wats,w.names,stringTable,dataBlock,level.getMaxZoom() > 15);
       if (mapData != null) {
         dataBlock.addDataObjects(mapData);
       }
