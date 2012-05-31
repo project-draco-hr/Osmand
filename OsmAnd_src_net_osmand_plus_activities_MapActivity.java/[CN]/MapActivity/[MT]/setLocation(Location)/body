@@ -23,6 +23,11 @@
       if (location != null && routingHelper.getLeftDistance() > 0) {
         Message msg=Message.obtain(uiHandler,new Runnable(){
           @Override public void run(){
+            long fixTime=location.getTime();
+            Location lastKnown=getLastKnownLocation();
+            if (lastKnown != null && lastKnown.getTime() - fixTime < LOST_LOCATION_CHECK_DELAY) {
+              return;
+            }
             if (routingHelper.getLeftDistance() > 0 && settings.MAP_ACTIVITY_ENABLED.get()) {
               routingHelper.getVoiceRouter().gpsLocationLost();
             }
