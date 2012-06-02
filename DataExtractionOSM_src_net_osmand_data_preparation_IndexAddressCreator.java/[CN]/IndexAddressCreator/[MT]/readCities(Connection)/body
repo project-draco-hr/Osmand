@@ -1,12 +1,7 @@
 {
-  Map<CityType,Collection<City>> cities=new LinkedHashMap<City.CityType,Collection<City>>();
+  Map<CityType,List<City>> cities=new LinkedHashMap<City.CityType,List<City>>();
   for (  CityType t : CityType.values()) {
-    cities.put(t,new TreeSet<City>(new Comparator<City>(){
-      @Override public int compare(      City o1,      City o2){
-        return Collator.getInstance().compare(o1.getName(),o2.getName());
-      }
-    }
-));
+    cities.put(t,new ArrayList<City>());
   }
   Statement stat=c.createStatement();
   ResultSet set=stat.executeQuery("select id, latitude, longitude , name , name_en , city_type from city");
@@ -27,5 +22,14 @@
   }
   set.close();
   stat.close();
+  Comparator<City> comparator=new Comparator<City>(){
+    @Override public int compare(    City o1,    City o2){
+      return Collator.getInstance().compare(o1.getName(),o2.getName());
+    }
+  }
+;
+  for (  List<City> t : cities.values()) {
+    Collections.sort(t,comparator);
+  }
   return cities;
 }
