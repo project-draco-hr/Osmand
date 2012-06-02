@@ -4,11 +4,6 @@
   double cLeftLongitude=dataBox.left;
   double cRightLongitude=dataBox.right;
   long now=System.currentTimeMillis();
-  if (files.isEmpty()) {
-    cObjectsBox=dataBox;
-    cObjects=new ArrayList<BinaryMapDataObject>();
-    return true;
-  }
   try {
     System.gc();
     int count=0;
@@ -94,6 +89,7 @@
     String coastlineTime="";
     boolean addBasemapCoastlines=true;
     boolean emptyData=zoom > BASEMAP_ZOOM && tempResult.isEmpty() && coastLines.isEmpty();
+    boolean basemapMissing=zoom <= BASEMAP_ZOOM && basemapCoastLines.isEmpty() && mi == null;
     if (!coastLines.isEmpty()) {
       long ms=System.currentTimeMillis();
       boolean coastlinesWereAdded=processCoastlines(coastLines,leftX,rightX,bottomY,topY,zoom,basemapCoastLines.isEmpty(),true,tempResult);
@@ -111,11 +107,19 @@
       o.setMapIndex(mi);
       tempResult.add(o);
     }
-    if (emptyData && tempResult.size() > 0) {
-      BinaryMapDataObject p=tempResult.get(0);
-      BinaryMapDataObject o=new BinaryMapDataObject(new int[]{leftX + (rightX - leftX) / 2,topY + (bottomY - topY) / 2},new int[]{p.getMapIndex().coastlineEncodingType},null,-1);
-      o.setMapIndex(p.getMapIndex());
-      o.putObjectName(o.getMapIndex().nameEncodingType,context.getString(R.string.switch_to_raster_map_to_see));
+    if (emptyData || basemapMissing) {
+      MapIndex mapIndex;
+      if (!tempResult.isEmpty()) {
+        mapIndex=tempResult.get(0).getMapIndex();
+      }
+ else {
+        mapIndex=new MapIndex();
+        mapIndex.initMapEncodingRule(0,1,"natural","coastline");
+        mapIndex.initMapEncodingRule(0,2,"name","");
+      }
+      BinaryMapDataObject o=new BinaryMapDataObject(new int[]{leftX + (rightX - leftX) / 2,topY + (bottomY - topY) / 2},new int[]{mapIndex.coastlineEncodingType},null,-1);
+      o.setMapIndex(mapIndex);
+      o.putObjectName(mapIndex.nameEncodingType,context.getString(R.string.switch_to_raster_map_to_see));
       tempResult.add(o);
     }
     if (zoom <= BASEMAP_ZOOM || emptyData) {
