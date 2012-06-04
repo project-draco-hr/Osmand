@@ -1,0 +1,11 @@
+def do_GET(self):
+    (_, _, _, query, _) = urlparse.urlsplit(self.path)
+    url_params = dict([KeyValuePair(key_value) for key_value in query.split('&')])
+    if (('quit' in url_params) and ('1' in url_params['quit'])):
+        self.send_response(200, 'OK')
+        self.send_header('Content-type', 'text/html')
+        self.send_header('Content-length', '0')
+        self.end_headers()
+        self.server.shutdown()
+        return
+    SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
