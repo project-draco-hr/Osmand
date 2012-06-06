@@ -1,0 +1,48 @@
+{
+  RouteData.Builder builder=RouteData.newBuilder();
+  builder.setRouteId(diffId);
+  ROUTE_ID_SIZE+=CodedOutputStream.computeInt64Size(RouteData.ROUTEID_FIELD_NUMBER,diffId);
+  mapDataBuf.clear();
+  for (int i=0; i < types.length; i++) {
+    writeRawVarint32(mapDataBuf,types[i]);
+  }
+  builder.setTypes(ByteString.copyFrom(mapDataBuf.toArray()));
+  ROUTE_TYPES_SIZE+=CodedOutputStream.computeTagSize(RouteData.TYPES_FIELD_NUMBER) + CodedOutputStream.computeRawVarint32Size(mapDataBuf.size()) + mapDataBuf.size();
+  int pcalcx=pleft >> SHIFT_COORDINATES;
+  int pcalcy=ptop >> SHIFT_COORDINATES;
+  for (int k=0; k < points.length; k++) {
+    ROUTE_COORDINATES_COUNT++;
+    RoutePoint.Builder point=RoutePoint.newBuilder();
+    mapDataBuf.clear();
+    int tx=(points[k].x >> SHIFT_COORDINATES) - pcalcx;
+    int ty=(points[k].y >> SHIFT_COORDINATES) - pcalcy;
+    writeRawVarint32(mapDataBuf,CodedOutputStream.encodeZigZag32(tx));
+    writeRawVarint32(mapDataBuf,CodedOutputStream.encodeZigZag32(ty));
+    pcalcx=pcalcx + tx;
+    pcalcy=pcalcy + ty;
+    point.setPoint(ByteString.copyFrom(mapDataBuf.toArray()));
+    ROUTE_COORDINATES_SIZE+=CodedOutputStream.computeTagSize(RoutePoint.POINT_FIELD_NUMBER) + CodedOutputStream.computeRawVarint32Size(mapDataBuf.size()) + mapDataBuf.size();
+    mapDataBuf.clear();
+    for (int ij=0; ij < points[k].types.size(); ij++) {
+      writeRawVarint32(mapDataBuf,points[k].types.get(ij));
+    }
+    point.setTypes(ByteString.copyFrom(mapDataBuf.toArray()));
+    ROUTE_TYPES_SIZE+=CodedOutputStream.computeTagSize(RoutePoint.TYPES_FIELD_NUMBER) + CodedOutputStream.computeRawVarint32Size(mapDataBuf.size()) + mapDataBuf.size();
+    builder.addPoints(point.build());
+  }
+  mapDataBuf.clear();
+  if (names != null) {
+    for (    Entry<MapRouteType,String> s : names.entrySet()) {
+      writeRawVarint32(mapDataBuf,s.getKey().getTargetId());
+      Integer ls=stringTable.get(s.getValue());
+      if (ls == null) {
+        ls=stringTable.size();
+        stringTable.put(s.getValue(),ls);
+      }
+      writeRawVarint32(mapDataBuf,ls);
+    }
+  }
+  STRING_TABLE_SIZE+=mapDataBuf.size();
+  builder.setStringNames(ByteString.copyFrom(mapDataBuf.toArray()));
+  return builder.build();
+}

@@ -1,0 +1,21 @@
+{
+  checkPeekState(ROUTE_INDEX_INIT);
+  ArrayList<MapRouteType> out=new ArrayList<MapRouteType>(types);
+  Collections.sort(out,new Comparator<MapRouteType>(){
+    @Override public int compare(    MapRouteType o1,    MapRouteType o2){
+      return o2.getFreq() - o1.getFreq();
+    }
+  }
+);
+  for (int i=0; i < out.size(); i++) {
+    RouteEncodingRule.Builder builder=OsmandOdb.OsmAndRoutingIndex.RouteEncodingRule.newBuilder();
+    MapRouteType rule=out.get(i);
+    rule.setTargetId(i + 1);
+    builder.setTag(rule.getTag());
+    if (rule.getValue() != null) {
+      builder.setValue(rule.getValue());
+    }
+    RouteEncodingRule rulet=builder.build();
+    codedOutStream.writeMessage(OsmandOdb.OsmAndRoutingIndex.RULES_FIELD_NUMBER,rulet);
+  }
+}

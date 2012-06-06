@@ -56,6 +56,19 @@ indexes.add(ind);
 }
 codedIS.seek(ind.filePointer + ind.length);
 break;
+case OsmandOdb.OsmAndStructure.ROUTINGINDEX_FIELD_NUMBER:
+RouteRegion routeReg=new RouteRegion();
+routeReg.length=readInt();
+routeReg.filePointer=codedIS.getTotalBytesRead();
+if (routeAdapter != null) {
+oldLimit=codedIS.pushLimit(routeReg.length);
+routeAdapter.readRouteIndex(routeReg);
+codedIS.popLimit(oldLimit);
+routingIndexes.add(routeReg);
+indexes.add(routeReg);
+}
+codedIS.seek(routeReg.filePointer + routeReg.length);
+break;
 case OsmandOdb.OsmAndStructure.POIINDEX_FIELD_NUMBER:
 PoiRegion poiInd=new PoiRegion();
 poiInd.length=readInt();

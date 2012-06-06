@@ -1,0 +1,64 @@
+{
+  Element[] e=parent.getAllElements();
+  RouteDataBlock.Builder dataBlock=null;
+  BinaryFileReference ref=bounds.get(parent.getNodeIndex());
+  for (int i=0; i < parent.getTotalElements(); i++) {
+    if (e[i].getElementType() == rtree.Node.LEAF_NODE) {
+      long id=((LeafElement)e[i]).getPtr();
+      selectData.setLong(1,id);
+      ResultSet rs=selectData.executeQuery();
+      if (rs.next()) {
+        long cid=id;
+        if (dataBlock == null) {
+          dataBlock=RouteDataBlock.newBuilder();
+          tempStringTable.clear();
+        }
+        tempNames.clear();
+        decodeNames(rs.getString(5),tempNames);
+        byte[] types=rs.getBytes(1);
+        int[] typeUse=new int[types.length / 2];
+        for (int j=0; j < types.length; j+=2) {
+          int ids=Algoritms.parseSmallIntFromBytes(types,j);
+          typeUse[j / 2]=routeTypes.getTypeByInternalId(ids).getTargetId();
+        }
+        byte[] pointTypes=rs.getBytes(2);
+        byte[] pointIds=rs.getBytes(3);
+        byte[] pointCoordinates=rs.getBytes(4);
+        int typeInd=0;
+        RoutePointToWrite[] points=new RoutePointToWrite[pointCoordinates.length / 8];
+        for (int j=0; j < points.length; j++) {
+          points[j]=new RoutePointToWrite();
+          points[j].x=Algoritms.parseIntFromBytes(pointCoordinates,j * 8);
+          points[j].y=Algoritms.parseIntFromBytes(pointCoordinates,j * 8 + 4);
+          points[j].id=Algoritms.parseLongFromBytes(pointIds,j * 8);
+          int type=0;
+          do {
+            type=Algoritms.parseSmallIntFromBytes(pointTypes,typeInd);
+            typeInd+=2;
+            if (type != 0) {
+              points[j].types.add(routeTypes.getTypeByInternalId(type).getTargetId());
+            }
+          }
+ while (type != 0);
+        }
+        RouteData routeData=writer.writeRouteData((int)cid,parentBounds.getMinX(),parentBounds.getMinY(),typeUse,points,names,tempStringTable,dataBlock,true);
+        if (routeData != null) {
+          dataBlock.addDataObjects(routeData);
+        }
+      }
+ else {
+        logMapDataWarn.error("Something goes wrong with id = " + id);
+      }
+    }
+  }
+  if (dataBlock != null) {
+    writer.writeRouteDataBlock(dataBlock,tempStringTable,ref);
+  }
+  for (int i=0; i < parent.getTotalElements(); i++) {
+    if (e[i].getElementType() != rtree.Node.LEAF_NODE) {
+      long ptr=((NonLeafElement)e[i]).getPtr();
+      rtree.Node ns=r.getReadNode(ptr);
+      writeBinaryMapBlock(ns,e[i].getRect(),r,writer,selectData,bounds,tempStringTable,tempNames);
+    }
+  }
+}

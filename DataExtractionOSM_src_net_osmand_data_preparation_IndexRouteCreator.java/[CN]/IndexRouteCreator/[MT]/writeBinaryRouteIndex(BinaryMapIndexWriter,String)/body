@@ -1,0 +1,23 @@
+{
+  closePreparedStatements(mapRouteInsertStat);
+  mapConnection.commit();
+  try {
+    writer.startWriteRouteIndex(regionName);
+    writer.writeRouteEncodingRules(routeTypes.getEncodingRuleTypes());
+    PreparedStatement selectData=mapConnection.prepareStatement(SELECT_STAT);
+    TLongObjectHashMap<BinaryFileReference> treeHeader=new TLongObjectHashMap<BinaryFileReference>();
+    long rootIndex=routeTree.getFileHdr().getRootIndex();
+    rtree.Node root=routeTree.getReadNode(rootIndex);
+    Rect rootBounds=calcBounds(root);
+    if (rootBounds != null) {
+      writeBinaryRouteTree(root,rootBounds,routeTree,writer,treeHeader);
+      writeBinaryMapBlock(root,rootBounds,routeTree,writer,selectData,treeHeader,new LinkedHashMap<String,Integer>(),new LinkedHashMap<MapRouteType,String>());
+    }
+    selectData.close();
+    writer.endWriteRouteIndex();
+    writer.flush();
+  }
+ catch (  RTreeException e) {
+    throw new IllegalStateException(e);
+  }
+}

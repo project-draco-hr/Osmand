@@ -1,8 +1,65 @@
 {
-  if (e instanceof Way) {
+  if (es instanceof Way) {
+    Way e=(Way)es;
     ctx.loadEntityData(e);
-    boolean encoded=routeTypes.encodeEntity((Way)e,outTypes,pointTypes);
+    boolean encoded=routeTypes.encodeEntity(e,outTypes,pointTypes,names);
     if (encoded) {
+      boolean init=false;
+      int minX=Integer.MAX_VALUE;
+      int maxX=0;
+      int minY=Integer.MAX_VALUE;
+      int maxY=0;
+      ByteArrayOutputStream bcoordinates=new ByteArrayOutputStream();
+      ByteArrayOutputStream bpointIds=new ByteArrayOutputStream();
+      ByteArrayOutputStream bpointTypes=new ByteArrayOutputStream();
+      ByteArrayOutputStream btypes=new ByteArrayOutputStream();
+      try {
+        for (int j=0; j < outTypes.size(); j++) {
+          Algoritms.writeSmallInt(btypes,outTypes.get(j));
+        }
+        for (        Node n : e.getNodes()) {
+          if (n != null) {
+            Algoritms.writeLongInt(bpointIds,n.getId());
+            TIntArrayList types=pointTypes.get(n.getId());
+            if (types != null) {
+              for (int j=0; j < types.size(); j++) {
+                Algoritms.writeSmallInt(bpointTypes,types.get(j));
+              }
+            }
+            Algoritms.writeSmallInt(bpointTypes,0);
+            int y=MapUtils.get31TileNumberY(n.getLatitude());
+            int x=MapUtils.get31TileNumberX(n.getLongitude());
+            minX=Math.min(minX,x);
+            maxX=Math.max(maxX,x);
+            minY=Math.min(minY,y);
+            maxY=Math.max(maxY,y);
+            init=true;
+            Algoritms.writeInt(bcoordinates,x);
+            Algoritms.writeInt(bcoordinates,y);
+          }
+        }
+      }
+ catch (      IOException est) {
+        throw new IllegalStateException(est);
+      }
+      if (init) {
+        mapRouteInsertStat.setLong(1,e.getId());
+        mapRouteInsertStat.setBytes(2,btypes.toByteArray());
+        mapRouteInsertStat.setBytes(3,bpointTypes.toByteArray());
+        mapRouteInsertStat.setBytes(4,bpointIds.toByteArray());
+        mapRouteInsertStat.setBytes(5,bcoordinates.toByteArray());
+        mapRouteInsertStat.setString(6,encodeNames(names));
+        addBatch(mapRouteInsertStat,false);
+        try {
+          routeTree.insert(new LeafElement(new Rect(minX,minY,maxX,maxY),e.getId()));
+        }
+ catch (        RTreeInsertException e1) {
+          throw new IllegalArgumentException(e1);
+        }
+catch (        IllegalValueException e1) {
+          throw new IllegalArgumentException(e1);
+        }
+      }
     }
   }
 }
