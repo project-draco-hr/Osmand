@@ -26,6 +26,16 @@
         byte[] pointCoordinates=rs.getBytes(4);
         int typeInd=0;
         RoutePointToWrite[] points=new RoutePointToWrite[pointCoordinates.length / 8];
+        TLongArrayList restrictions=highwayRestrictions.get(cid);
+        if (restrictions != null) {
+          Builder restriction=RestrictionData.newBuilder();
+          for (int li=0; li < restrictions.size(); li++) {
+            restriction.setFrom((int)cid);
+            restriction.setTo((int)(restrictions.get(li) >> 3));
+            restriction.setType((int)(restrictions.get(li) & 0x7));
+            dataBlock.addRestrictions(restriction.build());
+          }
+        }
         for (int j=0; j < points.length; j++) {
           points[j]=new RoutePointToWrite();
           points[j].x=Algoritms.parseIntFromBytes(pointCoordinates,j * 8);
