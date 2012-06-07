@@ -1,4 +1,5 @@
 {
+  int routeEncodingRule=1;
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
@@ -8,6 +9,27 @@ case 0:
 case OsmandOdb.OsmAndRoutingIndex.NAME_FIELD_NUMBER:
     region.name=codedIS.readString();
   break;
+case OsmandOdb.OsmAndRoutingIndex.RULES_FIELD_NUMBER:
+{
+  int len=codedIS.readInt32();
+  int oldLimit=codedIS.pushLimit(len);
+  readRouteEncodingRule(region,routeEncodingRule++);
+  codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+  codedIS.popLimit(oldLimit);
+}
+break;
+case OsmandOdb.OsmAndRoutingIndex.ROOTBOXES_FIELD_NUMBER:
+{
+RouteSubregion subregion=new RouteSubregion(region);
+subregion.length=readInt();
+subregion.filePointer=codedIS.getTotalBytesRead();
+int oldLimit=codedIS.pushLimit(subregion.length);
+readRouteTree(subregion,true);
+region.getSubregions().add(subregion);
+codedIS.popLimit(oldLimit);
+codedIS.seek(subregion.filePointer + subregion.length);
+}
+break;
 default :
 skipUnknownField(t);
 break;
