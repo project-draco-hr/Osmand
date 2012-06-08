@@ -10,6 +10,7 @@
     }
   }
 );
+  final TextView tabinfo=(TextView)findViewById(R.id.textViewADesc);
   spinner=(Spinner)findViewById(R.id.SpinnerLocation);
   spinnerAdapter=new ArrayAdapter<String>(this,R.layout.my_spinner_text,new ArrayList<String>(Arrays.asList(new String[]{getString(R.string.search_position_undefined),getString(R.string.search_position_current_location),getString(R.string.search_position_map_view),getString(R.string.search_position_favorites),getString(R.string.search_position_address)}))){
     @Override public View getDropDownView(    int position,    View convertView,    ViewGroup parent){
@@ -25,16 +26,39 @@
   TabWidget tabs=(TabWidget)findViewById(android.R.id.tabs);
   tabs.setBackgroundResource(R.drawable.tab_icon_background);
   TabHost host=getTabHost();
-  host.addTab(host.newTabSpec("Search_POI").setIndicator(getTabIndicator(R.drawable.tab_search_poi_icon,R.string.poi)).setContent(new Intent(this,SearchPoiFilterActivity.class)));
-  addressSpec=host.newTabSpec("Search_Address").setIndicator(getTabIndicator(R.drawable.tab_search_address_icon,R.string.address));
+  host.addTab(host.newTabSpec(SEARCH_POI).setIndicator(getTabIndicator(R.drawable.tab_search_poi_icon,R.string.poi)).setContent(new Intent(this,SearchPoiFilterActivity.class)));
+  addressSpec=host.newTabSpec(SEARCH_ADDRESS).setIndicator(getTabIndicator(R.drawable.tab_search_address_icon,R.string.address));
   setAddressSpecContent();
   host.addTab(addressSpec);
-  host.addTab(host.newTabSpec("Search_Location").setIndicator(getTabIndicator(R.drawable.tab_search_location_icon,R.string.search_tabs_location)).setContent(createIntent(NavigatePointActivity.class)));
-  TabSpec transportTab=host.newTabSpec("Search_Transport").setIndicator(getTabIndicator(R.drawable.tab_search_transport_icon,R.string.transport)).setContent(createIntent(SearchTransportActivity.class));
+  host.addTab(host.newTabSpec(SEARCH_LOCATION).setIndicator(getTabIndicator(R.drawable.tab_search_location_icon,R.string.search_tabs_location)).setContent(createIntent(NavigatePointActivity.class)));
+  TabSpec transportTab=host.newTabSpec(SEARCH_TRANSPORT).setIndicator(getTabIndicator(R.drawable.tab_search_transport_icon,R.string.transport)).setContent(createIntent(SearchTransportActivity.class));
   host.addTab(transportTab);
-  host.addTab(host.newTabSpec("Search_Favorites").setIndicator(getTabIndicator(R.drawable.tab_search_favorites_icon,R.string.favorite)).setContent(createIntent(FavouritesListActivity.class)));
-  host.addTab(host.newTabSpec("Search_History").setIndicator(getTabIndicator(R.drawable.tab_search_history_icon,R.string.history)).setContent(createIntent(SearchHistoryActivity.class)));
+  host.addTab(host.newTabSpec(SEARCH_FAVORITES).setIndicator(getTabIndicator(R.drawable.tab_search_favorites_icon,R.string.favorite)).setContent(createIntent(FavouritesListActivity.class)));
+  host.addTab(host.newTabSpec(SEARCH_HISTORY).setIndicator(getTabIndicator(R.drawable.tab_search_history_icon,R.string.history)).setContent(createIntent(SearchHistoryActivity.class)));
   host.setCurrentTab(POI_TAB_INDEX);
+  host.setOnTabChangedListener(new OnTabChangeListener(){
+    @Override public void onTabChanged(    String tabId){
+      if (SEARCH_POI.equals(tabId)) {
+        tabinfo.setText(R.string.poi_search_desc);
+      }
+ else       if (SEARCH_ADDRESS.equals(tabId)) {
+        tabinfo.setText(R.string.address_search_desc);
+      }
+ else       if (SEARCH_LOCATION.equals(tabId)) {
+        tabinfo.setText(R.string.navpoint_search_desc);
+      }
+ else       if (SEARCH_TRANSPORT.equals(tabId)) {
+        tabinfo.setText(R.string.transport_search_desc);
+      }
+ else       if (SEARCH_FAVORITES.equals(tabId)) {
+        tabinfo.setText(R.string.favourites_search_desc);
+      }
+ else       if (SEARCH_HISTORY.equals(tabId)) {
+        tabinfo.setText(R.string.history_search_desc);
+      }
+    }
+  }
+);
   spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
   spinner.setAdapter(spinnerAdapter);
   spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
