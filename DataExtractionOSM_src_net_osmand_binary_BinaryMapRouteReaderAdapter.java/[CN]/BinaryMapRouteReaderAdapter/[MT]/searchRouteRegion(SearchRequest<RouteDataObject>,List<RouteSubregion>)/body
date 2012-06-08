@@ -1,0 +1,28 @@
+{
+  List<RouteSubregion> toLoad=new ArrayList<BinaryMapRouteReaderAdapter.RouteSubregion>();
+  searchRouteRegion(req,list,toLoad);
+  Collections.sort(toLoad,new Comparator<RouteSubregion>(){
+    @Override public int compare(    RouteSubregion o1,    RouteSubregion o2){
+      int p1=o1.filePointer + o1.shiftToData;
+      int p2=o2.filePointer + o2.shiftToData;
+      return p1 == p2 ? 0 : (p1 < p2 ? -1 : 1);
+    }
+  }
+);
+  TLongArrayList idMap=new TLongArrayList();
+  TLongArrayList restrictionMap=new TLongArrayList();
+  for (  RouteSubregion rs : toLoad) {
+    if (rs.dataObjects == null) {
+      codedIS.seek(rs.filePointer + rs.shiftToData);
+      int limit=codedIS.readRawVarint32();
+      int oldLimit=codedIS.pushLimit(limit);
+      readRouteTreeData(rs,idMap,restrictionMap);
+      codedIS.popLimit(oldLimit);
+    }
+    for (    RouteDataObject ro : rs.dataObjects) {
+      if (ro != null) {
+        req.publish(ro);
+      }
+    }
+  }
+}

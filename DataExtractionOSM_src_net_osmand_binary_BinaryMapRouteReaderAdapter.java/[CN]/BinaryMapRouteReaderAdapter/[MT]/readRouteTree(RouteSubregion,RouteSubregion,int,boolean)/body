@@ -1,0 +1,60 @@
+{
+  boolean readChildren=depth != 0;
+  if (readChildren) {
+    thisTree.subregions=new ArrayList<BinaryMapRouteReaderAdapter.RouteSubregion>();
+  }
+  thisTree.routeReg.regionsRead++;
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      return thisTree;
+case RouteDataBox.LEFT_FIELD_NUMBER:
+    int i=codedIS.readSInt32();
+  if (readCoordinates) {
+    thisTree.left=i + (parentTree != null ? parentTree.left : 0);
+  }
+break;
+case RouteDataBox.RIGHT_FIELD_NUMBER:
+i=codedIS.readSInt32();
+if (readCoordinates) {
+thisTree.right=i + (parentTree != null ? parentTree.right : 0);
+}
+break;
+case RouteDataBox.TOP_FIELD_NUMBER:
+i=codedIS.readSInt32();
+if (readCoordinates) {
+thisTree.top=i + (parentTree != null ? parentTree.top : 0);
+}
+break;
+case RouteDataBox.BOTTOM_FIELD_NUMBER:
+i=codedIS.readSInt32();
+if (readCoordinates) {
+thisTree.bottom=i + (parentTree != null ? parentTree.bottom : 0);
+}
+break;
+case RouteDataBox.SHIFTTODATA_FIELD_NUMBER:
+thisTree.shiftToData=readInt();
+break;
+case RouteDataBox.BOXES_FIELD_NUMBER:
+if (readChildren) {
+RouteSubregion subregion=new RouteSubregion(thisTree.routeReg);
+subregion.length=readInt();
+subregion.filePointer=codedIS.getTotalBytesRead();
+int oldLimit=codedIS.pushLimit(subregion.length);
+readRouteTree(subregion,thisTree,depth - 1,true);
+thisTree.subregions.add(subregion);
+codedIS.popLimit(oldLimit);
+codedIS.seek(subregion.filePointer + subregion.length);
+}
+ else {
+skipUnknownField(t);
+}
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

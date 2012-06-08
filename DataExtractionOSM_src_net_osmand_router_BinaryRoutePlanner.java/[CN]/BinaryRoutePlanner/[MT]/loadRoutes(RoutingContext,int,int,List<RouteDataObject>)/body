@@ -1,0 +1,50 @@
+{
+  int zoomToLoad=31 - ctx.getZoomToLoadTileWithRoads();
+  int tileX=tile31X >> zoomToLoad;
+  int tileY=tile31Y >> zoomToLoad;
+  int tileC=(tileX << ctx.getZoomToLoadTileWithRoads()) + tileY;
+  if (ctx.loadedTiles.contains(tileC) && toFillIn == null) {
+    return;
+  }
+  long now=System.nanoTime();
+  ResultMatcher<RouteDataObject> matcher=new ResultMatcher<RouteDataObject>(){
+    @Override public boolean publish(    RouteDataObject o){
+      if (toFillIn != null) {
+        if (ctx.getRouter().acceptLine(o)) {
+          toFillIn.add(o);
+        }
+      }
+      RouteDataObject old=ctx.idObjects.get(o.id);
+      if ((old != null && old.pointsX.size() >= o.pointsX.size()) || (!ctx.getRouter().acceptLine(o))) {
+        return false;
+      }
+      ctx.idObjects.put(o.id,o);
+      for (int j=0; j < o.pointsX.size(); j++) {
+        long l=(((long)o.pointsX.getQuick(j)) << 31) + (long)o.pointsY.getQuick(j);
+        RouteSegment segment=new RouteSegment();
+        segment.road=o;
+        segment.segmentEnd=segment.segmentStart=j;
+        if (ctx.routes.get(l) != null) {
+          segment.next=ctx.routes.get(l);
+        }
+        ctx.routes.put(l,segment);
+      }
+      return false;
+    }
+    @Override public boolean isCancelled(){
+      return false;
+    }
+  }
+;
+  SearchRequest<RouteDataObject> request=BinaryMapIndexReader.buildSearchRouteRequest(tileX << zoomToLoad,(tileX + 1) << zoomToLoad,tileY << zoomToLoad,(tileY + 1) << zoomToLoad,matcher);
+  for (  Entry<BinaryMapIndexReader,List<RouteSubregion>> r : map.entrySet()) {
+    try {
+      r.getKey().searchRouteIndex(request,r.getValue());
+    }
+ catch (    IOException e) {
+      throw new RuntimeException("Loading data exception",e);
+    }
+  }
+  ctx.loadedTiles.add(tileC);
+  ctx.timeToLoad+=(System.nanoTime() - now);
+}

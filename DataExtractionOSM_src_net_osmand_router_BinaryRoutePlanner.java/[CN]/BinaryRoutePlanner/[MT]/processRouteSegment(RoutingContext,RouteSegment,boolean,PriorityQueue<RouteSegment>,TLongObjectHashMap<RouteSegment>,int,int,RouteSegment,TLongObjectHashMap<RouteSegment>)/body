@@ -1,5 +1,5 @@
 {
-  final BinaryMapDataObject road=segment.road;
+  final RouteDataObject road=segment.road;
   final int middle=segment.segmentStart;
   int middlex=road.getPoint31XTile(middle);
   int middley=road.getPoint31YTile(middle);
@@ -11,9 +11,17 @@
     opposite.segmentEnd=middle;
     return new RoutePair(segment,opposite);
   }
-  boolean oneway=ctx.getRouter().isOneWay(road);
-  boolean minusAllowed=!oneway || reverseWaySearch;
-  boolean plusAllowed=!oneway || !reverseWaySearch;
+  int oneway=ctx.getRouter().isOneWay(road);
+  boolean minusAllowed;
+  boolean plusAllowed;
+  if (!reverseWaySearch) {
+    minusAllowed=oneway <= 0;
+    plusAllowed=oneway >= 0;
+  }
+ else {
+    minusAllowed=oneway >= 0;
+    plusAllowed=oneway <= 0;
+  }
   int d=plusAllowed ? 1 : -1;
   while (minusAllowed || plusAllowed) {
     int segmentEnd=middle + d;
@@ -49,7 +57,7 @@
     visitedSegments.put(nts,segment);
     int x=road.getPoint31XTile(segmentEnd);
     int y=road.getPoint31YTile(segmentEnd);
-    loadRoutes(ctx,(x >> (31 - ctx.getZoomToLoadTileWithRoads())),(y >> (31 - ctx.getZoomToLoadTileWithRoads())));
+    loadRoutes(ctx,x,y,null);
     long l=(((long)x) << 31) + (long)y;
     RouteSegment next=ctx.routes.get(l);
     if (next != null) {

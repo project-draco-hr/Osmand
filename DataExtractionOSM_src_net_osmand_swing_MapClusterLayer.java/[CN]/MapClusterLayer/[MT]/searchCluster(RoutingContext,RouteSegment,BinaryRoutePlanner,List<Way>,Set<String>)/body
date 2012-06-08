@@ -2,7 +2,7 @@
   Queue<RouteSegment> queue=new LinkedList<RouteSegment>();
   TLongHashSet visitedIds=new TLongHashSet();
   queue.add(st);
-  BinaryMapDataObject startRoad=st.getRoad();
+  RouteDataObject startRoad=st.getRoad();
   long lstart=(((long)startRoad.getPoint31XTile(st.getSegmentStart())) << 31) + (long)startRoad.getPoint31YTile(st.getSegmentStart());
   RouteSegment next=ctx.getLoadedRoutes().get(lstart);
   while (next != null) {
@@ -13,7 +13,7 @@
   }
   nextSegment:   while (!queue.isEmpty()) {
     RouteSegment segment=queue.poll();
-    BinaryMapDataObject road=segment.getRoad();
+    RouteDataObject road=segment.getRoad();
     ctx.getVisitor().visitSegment(segment);
     if (visitedIds.contains(calculateId(segment,segment.getSegmentStart()))) {
       continue;
@@ -70,14 +70,14 @@
  else {
         w.addNode(new Node(MapUtils.get31LatitudeY(y),MapUtils.get31LongitudeX(x),-1),0);
       }
-      router.loadRoutes(ctx,(x >> (31 - ctx.getZoomToLoadTileWithRoads())),(y >> (31 - ctx.getZoomToLoadTileWithRoads())));
+      router.loadRoutes(ctx,x,y,null);
       long l=(((long)x) << 31) + (long)y;
       next=ctx.getLoadedRoutes().get(l);
       boolean addToQueue=true;
       ;
       while (next != null) {
-        TagValuePair pair=next.getRoad().getTagValue(0);
-        if (pair.tag.equals("highway") && roads.contains(pair.value)) {
+        String h=getHighway(next.getRoad());
+        if (roads.contains(h)) {
           if (currentD > 0) {
             plusAllowed=false;
           }

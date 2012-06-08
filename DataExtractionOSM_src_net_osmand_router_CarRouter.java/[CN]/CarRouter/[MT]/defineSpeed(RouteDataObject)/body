@@ -1,0 +1,21 @@
+{
+  String highway=null;
+  RouteRegion reg=road.region;
+  int sz=road.types.size();
+  for (int i=0; i < sz; i++) {
+    RouteTypeRule r=reg.quickGetEncodingRule(road.types.getQuick(i));
+    float maxSpeed=r.maxSpeed();
+    if (maxSpeed > 0) {
+      return maxSpeed;
+    }
+ else     if (highway == null) {
+      highway=r.highwayRoad();
+    }
+  }
+  double priority=highway != null && autoPriorityValues.containsKey(highway) ? autoPriorityValues.get(highway) : 0.5d;
+  Double value=autoNotDefinedValues.get(highway);
+  if (value == null) {
+    value=50d;
+  }
+  return value / 3.6d * priority;
+}

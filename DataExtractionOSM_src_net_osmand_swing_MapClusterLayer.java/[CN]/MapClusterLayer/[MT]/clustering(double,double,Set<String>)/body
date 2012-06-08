@@ -4,15 +4,15 @@
   BinaryMapIndexReader[] rs=new BinaryMapIndexReader[files.length];
   for (int i=0; i < files.length; i++) {
     RandomAccessFile raf=new RandomAccessFile(files[i],"r");
-    rs[i]=new BinaryMapIndexReader(raf,true);
+    rs[i]=new BinaryMapIndexReader(raf,false);
   }
   BinaryRoutePlanner router=new BinaryRoutePlanner(rs);
   RoutingContext ctx=new RoutingContext();
   RouteSegment st=router.findRouteSegment(lat,lon,ctx);
   if (st != null) {
-    BinaryMapDataObject road=st.getRoad();
-    TagValuePair pair=road.getTagValue(0);
-    log.info("ROAD TO START " + pair.tag + " "+ pair.value+ " "+ road.getName()+ " "+ (road.getId() >> 3));
+    RouteDataObject road=st.getRoad();
+    String highway=getHighway(road);
+    log.info("ROAD TO START " + highway + " "+ +road.id);
   }
   final DataTileManager<Way> points=new DataTileManager<Way>();
   points.setZoom(11);

@@ -1,7 +1,12 @@
 {
   List<Way> res=new ArrayList<Way>();
   long time=System.currentTimeMillis();
-  File[] files=new File[0];
+  List<File> files=new ArrayList<File>();
+  for (  File f : new File(DataExtractionSettings.getSettings().getBinaryFilesDir()).listFiles()) {
+    if (f.getName().endsWith(".obf")) {
+      files.add(f);
+    }
+  }
   if (files == null) {
     JOptionPane.showMessageDialog(OsmExtractionUI.MAIN_APP.getFrame(),"Please specify obf file in settings","Obf file not found",JOptionPane.ERROR_MESSAGE);
     return null;
@@ -9,25 +14,26 @@
   System.out.println("Self made route from " + start + " to "+ end);
   if (start != null && end != null) {
     try {
-      BinaryMapIndexReader[] rs=new BinaryMapIndexReader[files.length];
-      for (int i=0; i < files.length; i++) {
-        RandomAccessFile raf=new RandomAccessFile(files[i],"r");
-        rs[i]=new BinaryMapIndexReader(raf,true);
+      BinaryMapIndexReader[] rs=new BinaryMapIndexReader[files.size()];
+      int it=0;
+      for (      File f : files) {
+        RandomAccessFile raf=new RandomAccessFile(f,"r");
+        rs[it++]=new BinaryMapIndexReader(raf,false);
       }
       BinaryRoutePlanner router=new BinaryRoutePlanner(rs);
       RoutingContext ctx=new RoutingContext();
+      ctx.setRouter(this.routerMode);
+      ctx.setPlanRoadDirection(true);
       RouteSegment st=router.findRouteSegment(start.getLatitude(),start.getLongitude(),ctx);
-      if (st != null) {
-        BinaryMapDataObject road=st.getRoad();
-        TagValuePair pair=road.getTagValue(0);
-        System.out.println("ROAD TO START " + pair.tag + " "+ pair.value+ " "+ road.getName()+ " "+ (road.getId() >> 3));
+      if (st == null) {
+        throw new RuntimeException("Start point to calculate route was not found");
       }
+      System.out.println("ROAD TO START " + st.getRoad().getHighway() + " "+ st.getRoad().id);
       RouteSegment e=router.findRouteSegment(end.getLatitude(),end.getLongitude(),ctx);
-      if (e != null) {
-        BinaryMapDataObject road=e.getRoad();
-        TagValuePair pair=road.getTagValue(0);
-        System.out.println("ROAD TO END " + pair.tag + " "+ pair.value+ " "+ road.getName()+ " "+ +(road.getId() >> 3));
+      if (e == null) {
+        throw new RuntimeException("End point to calculate route was not found");
       }
+      System.out.println("ROAD TO END " + e.getRoad().getHighway() + " "+ e.getRoad().id);
       final DataTileManager<Way> points=new DataTileManager<Way>();
       points.setZoom(11);
       map.setPoints(points);
@@ -84,7 +90,7 @@ catch (          InvocationTargetException e) {
           net.osmand.osm.Node n=new net.osmand.osm.Node(MapUtils.get31LatitudeY(s.object.getPoint31YTile(i)),MapUtils.get31LongitudeX(s.object.getPoint31XTile(i)),-1);
           if (prevWayNode != null) {
             if (MapUtils.getDistance(prevWayNode,n) > 0) {
-              System.out.println("Warning not connected road " + " " + s.object.getName() + " dist "+ MapUtils.getDistance(prevWayNode,n));
+              System.out.println("Warning not connected road " + " " + s.object.getHighway() + " dist "+ MapUtils.getDistance(prevWayNode,n));
             }
             prevWayNode=null;
           }

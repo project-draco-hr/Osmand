@@ -1,0 +1,99 @@
+{
+  routeTree.dataObjects=new ArrayList<RouteDataObject>();
+  idTables.clear();
+  restrictions.clear();
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      for (int k=0; k < restrictions.size(); k++) {
+        long r=restrictions.get(k);
+        int from=(int)(r >> (RESTRICTION_SHIFT + RESTRICTION_SHIFT));
+        int to=(int)((r >> RESTRICTION_SHIFT) & RESTRICTION_MASK);
+        int type=(int)(r & RESTRICTION_SHIFT);
+        RouteDataObject i=routeTree.dataObjects.get(from);
+        long val=(idTables.get(to) << 3) | ((long)type);
+        i.restrictions.add(val);
+      }
+    for (    RouteDataObject o : routeTree.dataObjects) {
+      if (o != null) {
+        if (o.id < idTables.size()) {
+          o.id=idTables.get((int)o.id);
+        }
+      }
+    }
+  return;
+case RouteDataBlock.DATAOBJECTS_FIELD_NUMBER:
+int length=codedIS.readRawVarint32();
+int oldLimit=codedIS.pushLimit(length);
+RouteDataObject obj=readRouteDataObject(routeTree.routeReg,routeTree.left,routeTree.top);
+while (obj.id >= routeTree.dataObjects.size()) {
+routeTree.dataObjects.add(null);
+}
+routeTree.dataObjects.set((int)obj.id,obj);
+codedIS.popLimit(oldLimit);
+break;
+case RouteDataBlock.IDTABLE_FIELD_NUMBER:
+long routeId=0;
+length=codedIS.readRawVarint32();
+oldLimit=codedIS.pushLimit(length);
+idLoop: while (true) {
+int ts=codedIS.readTag();
+int tags=WireFormat.getTagFieldNumber(ts);
+switch (tags) {
+case 0:
+break idLoop;
+case IdTable.ROUTEID_FIELD_NUMBER:
+routeId+=codedIS.readSInt64();
+idTables.add(routeId);
+break;
+default :
+skipUnknownField(ts);
+break;
+}
+}
+codedIS.popLimit(oldLimit);
+break;
+case RouteDataBlock.RESTRICTIONS_FIELD_NUMBER:
+length=codedIS.readRawVarint32();
+oldLimit=codedIS.pushLimit(length);
+long restriction=0;
+idLoop: while (true) {
+int ts=codedIS.readTag();
+int tags=WireFormat.getTagFieldNumber(ts);
+switch (tags) {
+case 0:
+break idLoop;
+case RestrictionData.FROM_FIELD_NUMBER:
+long from=codedIS.readInt32();
+restriction|=(from << (RESTRICTION_SHIFT + RESTRICTION_SHIFT));
+break;
+case RestrictionData.TO_FIELD_NUMBER:
+long to=codedIS.readInt32();
+restriction|=(to << RESTRICTION_SHIFT);
+break;
+case RestrictionData.TYPE_FIELD_NUMBER:
+int type=codedIS.readInt32();
+restriction|=type;
+break;
+default :
+skipUnknownField(ts);
+break;
+}
+}
+restrictions.add(restriction);
+codedIS.popLimit(oldLimit);
+break;
+case RouteDataBlock.STRINGTABLE_FIELD_NUMBER:
+length=codedIS.readRawVarint32();
+oldLimit=codedIS.pushLimit(length);
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+codedIS.popLimit(oldLimit);
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}
