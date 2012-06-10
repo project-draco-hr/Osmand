@@ -3,13 +3,15 @@
   final int middle=segment.segmentStart;
   int middlex=road.getPoint31XTile(middle);
   int middley=road.getPoint31YTile(middle);
+  double obstaclePlusTime=0;
+  double obstacleMinusTime=0;
   long nt=(road.getId() << 8l) + middle;
   visitedSegments.put(nt,null);
   if (oppositeSegments.contains(nt) && oppositeSegments.get(nt) != null) {
     segment.segmentEnd=middle;
     RouteSegment opposite=oppositeSegments.get(nt);
     opposite.segmentEnd=middle;
-    return new RoutePair(segment,opposite);
+    return true;
   }
   int oneway=ctx.getRouter().isOneWay(road);
   boolean minusAllowed;
@@ -52,23 +54,38 @@
       segment.segmentEnd=segmentEnd;
       RouteSegment opposite=oppositeSegments.get(nts);
       opposite.segmentEnd=segmentEnd;
-      return new RoutePair(segment,opposite);
+      ctx.finalDirectRoute=segment;
+      ctx.finalReverseRoute=opposite;
     }
     visitedSegments.put(nts,segment);
     int x=road.getPoint31XTile(segmentEnd);
     int y=road.getPoint31YTile(segmentEnd);
     loadRoutes(ctx,x,y,null);
+    if (d > 0) {
+      obstaclePlusTime+=ctx.getRouter().defineObstacle(road,segmentEnd);
+    }
+ else     if (d < 0) {
+      obstacleMinusTime+=ctx.getRouter().defineObstacle(road,segmentEnd);
+    }
     long l=(((long)x) << 31) + (long)y;
     RouteSegment next=ctx.routes.get(l);
     if (next != null) {
+      if (next == segment && next.next == null) {
+        continue;
+      }
       double distOnRoadToPass=squareRootDist(x,y,middlex,middley);
+      double speed=ctx.getRouter().defineSpeed(road);
+      if (speed == 0) {
+        speed=ctx.getRouter().getMinDefaultSpeed();
+      }
+      double distanceFromStart=segment.distanceFromStart + distOnRoadToPass / speed;
+      distanceFromStart+=d > 0 ? obstaclePlusTime : obstacleMinusTime;
       double distToFinalPoint=squareRootDist(x,y,targetEndX,targetEndY);
-      RouteSegment foundIntersection=processIntersectionsWithWays(ctx,graphSegments,visitedSegments,oppositeSegments,distOnRoadToPass,distToFinalPoint,segment,road,d == 0,segmentEnd,next,reverseWaySearch);
-      if (foundIntersection != null) {
-        segment.segmentEnd=segmentEnd;
-        return new RoutePair(segment,foundIntersection);
+      boolean routeFound=processIntersections(ctx,graphSegments,visitedSegments,oppositeSegments,distanceFromStart,distToFinalPoint,segment,segmentEnd,next,reverseWaySearch);
+      if (routeFound) {
+        return routeFound;
       }
     }
   }
-  return null;
+  return false;
 }

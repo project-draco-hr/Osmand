@@ -8,14 +8,14 @@
   }
   builder.setTypes(ByteString.copyFrom(mapDataBuf.toArray()));
   ROUTE_TYPES_SIZE+=CodedOutputStream.computeTagSize(RouteData.TYPES_FIELD_NUMBER) + CodedOutputStream.computeRawVarint32Size(mapDataBuf.size()) + mapDataBuf.size();
-  int pcalcx=pleft >> SHIFT_COORDINATES;
-  int pcalcy=ptop >> SHIFT_COORDINATES;
+  int pcalcx=pleft >> ROUTE_SHIFT_COORDINATES;
+  int pcalcy=ptop >> ROUTE_SHIFT_COORDINATES;
   mapDataBuf.clear();
   typesDataBuf.clear();
   for (int k=0; k < points.length; k++) {
     ROUTE_COORDINATES_COUNT++;
-    int tx=(points[k].x >> SHIFT_COORDINATES) - pcalcx;
-    int ty=(points[k].y >> SHIFT_COORDINATES) - pcalcy;
+    int tx=(points[k].x >> ROUTE_SHIFT_COORDINATES) - pcalcx;
+    int ty=(points[k].y >> ROUTE_SHIFT_COORDINATES) - pcalcy;
     writeRawVarint32(mapDataBuf,CodedOutputStream.encodeZigZag32(tx));
     writeRawVarint32(mapDataBuf,CodedOutputStream.encodeZigZag32(ty));
     pcalcx=pcalcx + tx;

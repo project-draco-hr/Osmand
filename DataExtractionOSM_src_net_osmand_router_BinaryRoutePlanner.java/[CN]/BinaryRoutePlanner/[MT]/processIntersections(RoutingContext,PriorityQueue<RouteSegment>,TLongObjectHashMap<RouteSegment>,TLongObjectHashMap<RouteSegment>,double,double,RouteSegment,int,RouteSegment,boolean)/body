@@ -1,0 +1,54 @@
+{
+  boolean thereAreRestrictions=proccessRestrictions(ctx,segment.road,inputNext,reverseWay);
+  Iterator<RouteSegment> nextIterator=null;
+  if (thereAreRestrictions) {
+    nextIterator=ctx.segmentsToVisitPrescripted.iterator();
+  }
+  RouteSegment next=inputNext;
+  boolean hasNext=nextIterator == null || nextIterator.hasNext();
+  while (hasNext) {
+    if (nextIterator != null) {
+      next=nextIterator.next();
+    }
+    long nts=(next.road.getId() << 8l) + next.segmentStart;
+    boolean oppositeConnectionFound=oppositeSegments.containsKey(nts) && oppositeSegments.get(nts) != null;
+    if (oppositeConnectionFound) {
+      RouteSegment oppSegment=oppositeSegments.get(nts);
+      oppSegment.segmentEnd=next.segmentStart;
+      segment.segmentEnd=segmentEnd;
+      ctx.finalDirectRoute=segment;
+      ctx.finalReverseRoute=oppSegment;
+      return true;
+    }
+    double gDistFromStart=distFromStart + ctx.getRouter().calculateTurnTime(segment,next,segmentEnd);
+    boolean alreadyVisited=visitedSegments.contains(nts);
+    if (!alreadyVisited) {
+      double distanceToEnd=h(ctx,distToFinalPoint,next);
+      if (next.parentRoute == null || ctx.roadPriorityComparator(next.distanceFromStart,next.distanceToEnd,gDistFromStart,distanceToEnd) > 0) {
+        next.distanceFromStart=gDistFromStart;
+        next.distanceToEnd=distanceToEnd;
+        if (next.parentRoute != null) {
+          graphSegments.remove(next);
+        }
+        next.parentRoute=segment;
+        next.parentSegmentEnd=segmentEnd;
+      }
+      graphSegments.add(next);
+      if (ctx.visitor != null) {
+        ctx.visitor.visitSegment(next,false);
+      }
+    }
+ else {
+      if (gDistFromStart < next.distanceFromStart) {
+      }
+    }
+    if (nextIterator == null) {
+      next=next.next;
+      hasNext=next != null;
+    }
+ else {
+      hasNext=nextIterator.hasNext();
+    }
+  }
+  return false;
+}

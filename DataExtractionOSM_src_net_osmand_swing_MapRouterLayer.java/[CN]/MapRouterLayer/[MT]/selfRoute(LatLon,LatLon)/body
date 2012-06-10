@@ -7,6 +7,15 @@
       files.add(f);
     }
   }
+  final boolean animateRoutingCalculation=DataExtractionSettings.getSettings().isAnimateRouting();
+  if (animateRoutingCalculation) {
+    nextTurn.setVisible(true);
+    playPauseButton.setVisible(true);
+    stopButton.setVisible(true);
+    pause=true;
+    playPauseButton.setText("Play");
+  }
+  stop=false;
   if (files == null) {
     JOptionPane.showMessageDialog(OsmExtractionUI.MAIN_APP.getFrame(),"Please specify obf file in settings","Obf file not found",JOptionPane.ERROR_MESSAGE);
     return null;
@@ -39,24 +48,34 @@
       map.setPoints(points);
       ctx.setVisitor(new RouteSegmentVisitor(){
         private List<RouteSegment> cache=new ArrayList<RouteSegment>();
-        @Override public void visitSegment(        RouteSegment s){
-          if (!ANIMATE_CALCULATING_ROUTE) {
+        private List<RouteSegment> pollCache=new ArrayList<RouteSegment>();
+        @Override public void visitSegment(        RouteSegment s,        boolean poll){
+          if (stop) {
+            throw new RuntimeException("Interrupted");
+          }
+          if (!animateRoutingCalculation) {
+            return;
+          }
+          if (!poll && pause) {
+            pollCache.add(s);
             return;
           }
           cache.add(s);
-          if (cache.size() < SIZE_OF_ROUTES_TO_ANIMATE) {
+          if (cache.size() < steps) {
             return;
           }
-          for (          RouteSegment segment : cache) {
-            Way way=new Way(-1);
-            for (int i=0; i < segment.getRoad().getPointsLength(); i++) {
-              net.osmand.osm.Node n=new net.osmand.osm.Node(MapUtils.get31LatitudeY(segment.getRoad().getPoint31YTile(i)),MapUtils.get31LongitudeX(segment.getRoad().getPoint31XTile(i)),-1);
-              way.addNode(n);
-            }
-            LatLon n=way.getLatLon();
-            points.registerObject(n.getLatitude(),n.getLongitude(),way);
+          if (pause) {
+            registerObjects(points,poll,pollCache);
+            pollCache.clear();
           }
+          registerObjects(points,!poll,cache);
           cache.clear();
+          redraw();
+          if (pause) {
+            waitNextPress();
+          }
+        }
+        private void redraw(){
           try {
             SwingUtilities.invokeAndWait(new Runnable(){
               @Override public void run(){
@@ -71,15 +90,28 @@ catch (          InvocationTargetException e) {
             e.printStackTrace();
           }
         }
+        private void registerObjects(        final DataTileManager<Way> points,        boolean white,        List<RouteSegment> registerCache){
+          for (          RouteSegment segment : registerCache) {
+            Way way=new Way(-1);
+            way.putTag(OSMTagKey.NAME.getValue(),segment.getTestName());
+            if (white) {
+              way.putTag("color","white");
+            }
+            for (int i=0; i < segment.getRoad().getPointsLength(); i++) {
+              net.osmand.osm.Node n=new net.osmand.osm.Node(MapUtils.get31LatitudeY(segment.getRoad().getPoint31YTile(i)),MapUtils.get31LongitudeX(segment.getRoad().getPoint31XTile(i)),-1);
+              way.addNode(n);
+            }
+            LatLon n=way.getLatLon();
+            points.registerObject(n.getLatitude(),n.getLongitude(),way);
+          }
+        }
       }
 );
       List<RouteSegmentResult> searchRoute=router.searchRoute(ctx,st,e);
-      if (ANIMATE_CALCULATING_ROUTE) {
-        try {
-          Thread.sleep(2000);
-        }
- catch (        InterruptedException e1) {
-        }
+      if (pause) {
+        nextTurn.setText("FINISH");
+        waitNextPress();
+        nextTurn.setText(">>");
       }
       net.osmand.osm.Node prevWayNode=null;
       for (      RouteSegmentResult s : searchRoute) {
@@ -113,6 +145,12 @@ catch (          InvocationTargetException e) {
     }
  catch (    IOException e) {
       ExceptionHandler.handle(e);
+    }
+ finally {
+      playPauseButton.setVisible(false);
+      nextTurn.setVisible(false);
+      stopButton.setVisible(false);
+      map.getPoints().clear();
     }
     System.out.println("Finding self routes " + res.size() + " "+ (System.currentTimeMillis() - time)+ " ms");
   }

@@ -26,33 +26,22 @@
   end.distanceToEnd=start.distanceToEnd;
   visitAllStartSegments(ctx,start,graphDirectSegments,visitedDirectSegments,startX,startY);
   visitAllStartSegments(ctx,end,graphReverseSegments,visitedOppositeSegments,targetEndX,targetEndY);
-  RouteSegment finalDirectRoute=null;
-  RouteSegment finalReverseRoute=null;
   boolean inverse=false;
   PriorityQueue<RouteSegment> graphSegments=inverse ? graphReverseSegments : graphDirectSegments;
   while (!graphSegments.isEmpty()) {
     RouteSegment segment=graphSegments.poll();
     ctx.visitedSegments++;
     if (ctx.visitor != null) {
-      ctx.visitor.visitSegment(segment);
+      ctx.visitor.visitSegment(segment,true);
     }
+    boolean routeFound=false;
     if (!inverse) {
-      RoutePair pair=processRouteSegment(ctx,end,false,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments);
-      if (pair != null) {
-        finalDirectRoute=pair.a;
-        finalReverseRoute=pair.b;
-        break;
-      }
+      routeFound=processRouteSegment(ctx,end,false,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments);
     }
  else {
-      RoutePair pair=processRouteSegment(ctx,start,true,graphReverseSegments,visitedOppositeSegments,startX,startY,segment,visitedDirectSegments);
-      if (pair != null) {
-        finalReverseRoute=pair.a;
-        finalDirectRoute=pair.b;
-        break;
-      }
+      routeFound=processRouteSegment(ctx,start,true,graphReverseSegments,visitedOppositeSegments,startX,startY,segment,visitedDirectSegments);
     }
-    if (graphReverseSegments.isEmpty() || graphDirectSegments.isEmpty()) {
+    if (graphReverseSegments.isEmpty() || graphDirectSegments.isEmpty() || routeFound) {
       break;
     }
     if (ctx.planRouteIn2Directions()) {
@@ -69,5 +58,5 @@
     }
     graphSegments=inverse ? graphReverseSegments : graphDirectSegments;
   }
-  return prepareResult(ctx,start,end,startNanoTime,finalDirectRoute,finalReverseRoute);
+  return prepareResult(ctx,start,end,startNanoTime,ctx.finalDirectRoute,ctx.finalReverseRoute);
 }

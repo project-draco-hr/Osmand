@@ -47,7 +47,6 @@
   if (e.getTag(OSMTagKey.ADDR_HOUSE_NUMBER) != null && e.getTag(OSMTagKey.ADDR_STREET) != null) {
     boolean exist=streetDAO.findBuilding(e);
     if (!exist) {
-      ctx.loadEntityData(e);
       LatLon l=e.getLatLon();
       Set<Long> idsOfStreet=getStreetInCity(e.getIsInNames(),e.getTag(OSMTagKey.ADDR_STREET),null,l);
       if (!idsOfStreet.isEmpty()) {
@@ -81,7 +80,6 @@
  else   if (e instanceof Way && e.getTag(OSMTagKey.HIGHWAY) != null && e.getTag(OSMTagKey.NAME) != null) {
     boolean exist=streetDAO.findStreetNode(e);
     if (!exist) {
-      ctx.loadEntityData(e);
       LatLon l=e.getLatLon();
       Set<Long> idsOfStreet=getStreetInCity(e.getIsInNames(),e.getTag(OSMTagKey.NAME),e.getTag(OSMTagKey.NAME_EN),l);
       if (!idsOfStreet.isEmpty()) {
@@ -91,7 +89,7 @@
   }
   if (e instanceof Relation) {
     if (e.getTag(OSMTagKey.POSTAL_CODE) != null) {
-      ctx.loadEntityData(e);
+      ctx.loadEntityRelation((Relation)e);
       postalCodeRelations.add((Relation)e);
     }
   }
