@@ -11,13 +11,20 @@
       next=nextIterator.next();
     }
     long nts=(next.road.getId() << 8l) + next.segmentStart;
-    boolean oppositeConnectionFound=oppositeSegments.containsKey(nts) && oppositeSegments.get(nts) != null;
-    if (oppositeConnectionFound) {
-      RouteSegment oppSegment=oppositeSegments.get(nts);
-      oppSegment.segmentEnd=next.segmentStart;
-      segment.segmentEnd=segmentEnd;
-      ctx.finalDirectRoute=segment;
-      ctx.finalReverseRoute=oppSegment;
+    if (oppositeSegments.contains(nts) && oppositeSegments.get(nts) != null) {
+      RouteSegment opposite=oppositeSegments.get(nts);
+      if (reverseWay) {
+        ctx.finalReverseEndSegment=segmentEnd;
+        ctx.finalReverseRoute=segment;
+        ctx.finalDirectEndSegment=next.segmentStart;
+        ctx.finalDirectRoute=opposite;
+      }
+ else {
+        ctx.finalDirectEndSegment=segmentEnd;
+        ctx.finalDirectRoute=segment;
+        ctx.finalReverseEndSegment=next.segmentStart;
+        ctx.finalReverseRoute=opposite;
+      }
       return true;
     }
     double gDistFromStart=distFromStart + ctx.getRouter().calculateTurnTime(segment,next,segmentEnd);

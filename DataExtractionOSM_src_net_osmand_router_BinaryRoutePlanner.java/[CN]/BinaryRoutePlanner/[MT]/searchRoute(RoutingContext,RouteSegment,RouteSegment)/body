@@ -18,11 +18,11 @@
   PriorityQueue<RouteSegment> graphReverseSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
   TLongObjectHashMap<RouteSegment> visitedDirectSegments=new TLongObjectHashMap<RouteSegment>();
   TLongObjectHashMap<RouteSegment> visitedOppositeSegments=new TLongObjectHashMap<RouteSegment>();
-  int targetEndX=end.road.getPoint31XTile(end.segmentStart);
-  int targetEndY=end.road.getPoint31YTile(end.segmentStart);
-  int startX=start.road.getPoint31XTile(start.segmentStart);
-  int startY=start.road.getPoint31YTile(start.segmentStart);
-  start.distanceToEnd=h(ctx,targetEndX,targetEndY,startX,startY);
+  ctx.targetEndX=end.road.getPoint31XTile(end.segmentStart);
+  ctx.targetEndY=end.road.getPoint31YTile(end.segmentStart);
+  ctx.startX=start.road.getPoint31XTile(start.segmentStart);
+  ctx.startY=start.road.getPoint31YTile(start.segmentStart);
+  start.distanceToEnd=h(ctx,ctx.targetEndX,ctx.targetEndY,ctx.startX,ctx.startY);
   end.distanceToEnd=start.distanceToEnd;
   graphDirectSegments.add(start);
   graphReverseSegments.add(end);
@@ -43,10 +43,10 @@
     }
     boolean routeFound=false;
     if (!inverse) {
-      routeFound=processRouteSegment(ctx,end,false,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments);
+      routeFound=processRouteSegment(ctx,false,graphDirectSegments,visitedDirectSegments,ctx.targetEndX,ctx.targetEndY,segment,visitedOppositeSegments);
     }
  else {
-      routeFound=processRouteSegment(ctx,start,true,graphReverseSegments,visitedOppositeSegments,startX,startY,segment,visitedDirectSegments);
+      routeFound=processRouteSegment(ctx,true,graphReverseSegments,visitedOppositeSegments,ctx.startX,ctx.startY,segment,visitedDirectSegments);
     }
     if (graphReverseSegments.isEmpty() || graphDirectSegments.isEmpty() || routeFound) {
       break;
@@ -74,5 +74,5 @@
       graphSegments=graphDirectSegments;
     }
   }
-  return prepareResult(ctx,start,end,startNanoTime,ctx.finalDirectRoute,ctx.finalReverseRoute);
+  return prepareResult(ctx,startNanoTime);
 }

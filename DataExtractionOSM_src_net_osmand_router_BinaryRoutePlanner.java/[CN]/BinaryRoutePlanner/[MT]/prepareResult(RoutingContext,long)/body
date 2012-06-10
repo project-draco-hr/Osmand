@@ -1,7 +1,7 @@
 {
   List<RouteSegmentResult> result=new ArrayList<RouteSegmentResult>();
-  RouteSegment segment=finalReverseRoute;
-  int parentSegmentStart=segment == null ? 0 : segment.segmentEnd;
+  RouteSegment segment=ctx.finalReverseRoute;
+  int parentSegmentStart=ctx.finalReverseEndSegment;
   while (segment != null) {
     RouteSegmentResult res=new RouteSegmentResult();
     res.object=segment.road;
@@ -16,8 +16,8 @@
     res.endPoint=convertPoint(res.object,res.endPointIndex);
   }
   Collections.reverse(result);
-  segment=finalDirectRoute;
-  int parentSegmentEnd=segment == null ? 0 : segment.segmentEnd;
+  segment=ctx.finalDirectRoute;
+  int parentSegmentEnd=ctx.finalDirectEndSegment;
   while (segment != null) {
     RouteSegmentResult res=new RouteSegmentResult();
     res.object=segment.road;
@@ -33,10 +33,10 @@
   }
   if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
     System.out.println("ROUTE : ");
-    double startLat=MapUtils.get31LatitudeY(start.road.getPoint31YTile(start.segmentEnd));
-    double startLon=MapUtils.get31LongitudeX(start.road.getPoint31XTile(start.segmentEnd));
-    double endLat=MapUtils.get31LatitudeY(end.road.getPoint31YTile(end.segmentStart));
-    double endLon=MapUtils.get31LongitudeX(end.road.getPoint31XTile(end.segmentEnd));
+    double startLat=MapUtils.get31LatitudeY(ctx.startY);
+    double startLon=MapUtils.get31LongitudeX(ctx.startX);
+    double endLat=MapUtils.get31LatitudeY(ctx.targetEndY);
+    double endLon=MapUtils.get31LongitudeX(ctx.targetEndX);
     System.out.println(MessageFormat.format("<test regions=\"\" description=\"\" best_percent=\"\" vehicle=\"\" \n" + "    start_lat=\"{0}\" start_lon=\"{1}\" target_lat=\"{2}\" target_lon=\"{3}\">",startLat + "",startLon + "",endLat + "",endLon + ""));
     for (    RouteSegmentResult res : result) {
       String name="Unknown";
