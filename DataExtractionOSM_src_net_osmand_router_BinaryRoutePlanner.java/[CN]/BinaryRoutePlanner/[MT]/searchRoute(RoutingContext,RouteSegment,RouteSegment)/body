@@ -24,9 +24,10 @@
   int startY=start.road.getPoint31YTile(start.segmentStart);
   start.distanceToEnd=h(ctx,targetEndX,targetEndY,startX,startY);
   end.distanceToEnd=start.distanceToEnd;
-  visitAllStartSegments(ctx,start,graphDirectSegments,visitedDirectSegments,startX,startY);
-  visitAllStartSegments(ctx,end,graphReverseSegments,visitedOppositeSegments,targetEndX,targetEndY);
+  graphDirectSegments.add(start);
+  graphReverseSegments.add(end);
   boolean inverse=false;
+  boolean init=false;
   PriorityQueue<RouteSegment> graphSegments=inverse ? graphReverseSegments : graphDirectSegments;
   while (!graphSegments.isEmpty()) {
     RouteSegment segment=graphSegments.poll();
@@ -44,7 +45,11 @@
     if (graphReverseSegments.isEmpty() || graphDirectSegments.isEmpty() || routeFound) {
       break;
     }
-    if (ctx.planRouteIn2Directions()) {
+    if (!init) {
+      inverse=!inverse;
+      init=true;
+    }
+ else     if (ctx.planRouteIn2Directions()) {
       inverse=nonHeuristicSegmentsComparator.compare(graphDirectSegments.peek(),graphReverseSegments.peek()) > 0;
       if (graphDirectSegments.size() * 1.3 > graphReverseSegments.size()) {
         inverse=true;

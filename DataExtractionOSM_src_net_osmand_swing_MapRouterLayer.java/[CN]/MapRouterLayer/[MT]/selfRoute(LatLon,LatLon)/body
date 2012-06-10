@@ -32,7 +32,10 @@
       BinaryRoutePlanner router=new BinaryRoutePlanner(rs);
       RoutingContext ctx=new RoutingContext();
       ctx.setRouter(this.routerMode);
-      ctx.setPlanRoadDirection(true);
+      int dir=DataExtractionSettings.getSettings().getRouteDirection();
+      if (dir != 0) {
+        ctx.setPlanRoadDirection(dir > 0 ? true : false);
+      }
       RouteSegment st=router.findRouteSegment(start.getLatitude(),start.getLongitude(),ctx);
       if (st == null) {
         throw new RuntimeException("Start point to calculate route was not found");
@@ -43,7 +46,7 @@
         throw new RuntimeException("End point to calculate route was not found");
       }
       System.out.println("ROAD TO END " + e.getRoad().getHighway() + " "+ e.getRoad().id);
-      final DataTileManager<Way> points=new DataTileManager<Way>();
+      final DataTileManager<Entity> points=new DataTileManager<Entity>();
       points.setZoom(11);
       map.setPoints(points);
       ctx.setVisitor(new RouteSegmentVisitor(){
@@ -75,22 +78,7 @@
             waitNextPress();
           }
         }
-        private void redraw(){
-          try {
-            SwingUtilities.invokeAndWait(new Runnable(){
-              @Override public void run(){
-                map.prepareImage();
-              }
-            }
-);
-          }
- catch (          InterruptedException e1) {
-          }
-catch (          InvocationTargetException e) {
-            e.printStackTrace();
-          }
-        }
-        private void registerObjects(        final DataTileManager<Way> points,        boolean white,        List<RouteSegment> registerCache){
+        private void registerObjects(        final DataTileManager<Entity> points,        boolean white,        List<RouteSegment> registerCache){
           for (          RouteSegment segment : registerCache) {
             Way way=new Way(-1);
             way.putTag(OSMTagKey.NAME.getValue(),segment.getTestName());
@@ -98,7 +86,7 @@ catch (          InvocationTargetException e) {
               way.putTag("color","white");
             }
             for (int i=0; i < segment.getRoad().getPointsLength(); i++) {
-              net.osmand.osm.Node n=new net.osmand.osm.Node(MapUtils.get31LatitudeY(segment.getRoad().getPoint31YTile(i)),MapUtils.get31LongitudeX(segment.getRoad().getPoint31XTile(i)),-1);
+              net.osmand.osm.Node n=createNode(segment,i);
               way.addNode(n);
             }
             LatLon n=way.getLatLon();
@@ -107,8 +95,15 @@ catch (          InvocationTargetException e) {
         }
       }
 );
+      net.osmand.osm.Node ns=createNode(st,st.getSegmentStart());
+      points.registerObject(ns.getLatitude(),ns.getLongitude(),ns);
+      ns=createNode(e,e.getSegmentStart());
+      points.registerObject(ns.getLatitude(),ns.getLongitude(),ns);
+      if (pause && animateRoutingCalculation) {
+        waitNextPress();
+      }
       List<RouteSegmentResult> searchRoute=router.searchRoute(ctx,st,e);
-      if (pause) {
+      if (pause && animateRoutingCalculation) {
         nextTurn.setText("FINISH");
         waitNextPress();
         nextTurn.setText(">>");

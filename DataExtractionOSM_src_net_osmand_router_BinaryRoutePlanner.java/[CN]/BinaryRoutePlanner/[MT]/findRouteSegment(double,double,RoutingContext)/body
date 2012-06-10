@@ -9,20 +9,32 @@
     if (r.getPointsLength() > 1) {
       for (int j=1; j < r.getPointsLength(); j++) {
         double mDist=squareRootDist(r.getPoint31XTile(j),r.getPoint31YTile(j),r.getPoint31XTile(j - 1),r.getPoint31YTile(j - 1));
-        double projection=calculateProjection(r.getPoint31XTile(j - 1),r.getPoint31YTile(j - 1),r.getPoint31XTile(j),r.getPoint31YTile(j),px,py,mDist);
-        double currentsDist;
+        int prx=r.getPoint31XTile(j);
+        int pry=r.getPoint31YTile(j);
+        double projection=calculateProjection(r.getPoint31XTile(j - 1),r.getPoint31YTile(j - 1),r.getPoint31XTile(j),r.getPoint31YTile(j),px,py);
         if (projection < 0) {
-          currentsDist=squareDist(r.getPoint31XTile(j - 1),r.getPoint31YTile(j - 1),px,py);
+          prx=r.getPoint31XTile(j - 1);
+          pry=r.getPoint31YTile(j - 1);
         }
- else         if (projection > mDist) {
-          currentsDist=squareDist(r.getPoint31XTile(j),r.getPoint31YTile(j),px,py);
+ else         if (projection >= mDist * mDist) {
+          prx=r.getPoint31XTile(j);
+          pry=r.getPoint31YTile(j);
         }
  else {
-          currentsDist=calculatesquareDistance(r.getPoint31XTile(j - 1),r.getPoint31YTile(j - 1),r.getPoint31XTile(j),r.getPoint31YTile(j),px,py,mDist);
+          prx=(int)(r.getPoint31XTile(j - 1) + (r.getPoint31XTile(j) - r.getPoint31XTile(j - 1)) * (projection / (mDist * mDist)));
+          pry=(int)(r.getPoint31YTile(j - 1) + (r.getPoint31YTile(j) - r.getPoint31YTile(j - 1)) * (projection / (mDist * mDist)));
         }
+        double currentsDist=squareDist(prx,pry,px,py);
         if (road == null || currentsDist < sdist) {
-          road=new RouteSegment(r,j - 1);
+          RouteDataObject ro=new RouteDataObject(r);
+          road=new RouteSegment(ro,j);
+          ro.pointsX.insert(j,prx);
+          ro.pointsY.insert(j,pry);
+          if (ro.pointTypes.size() > j) {
+            ro.pointTypes.add(j,null);
+          }
           road.segmentEnd=j;
+          registerRouteDataObject(ctx,ro);
           sdist=currentsDist;
         }
       }
