@@ -1,0 +1,26 @@
+{
+  int before=graphSegments.size();
+  if (before > 100) {
+    double maxd=currentSegment.distanceFromStart;
+    double mine=currentSegment.distanceToEnd;
+    Iterator<RouteSegment> iterator=graphSegments.iterator();
+    while (iterator.hasNext()) {
+      RouteSegment s=iterator.next();
+      if (s.distanceToEnd < mine) {
+        maxd=s.distanceFromStart;
+        mine=s.distanceToEnd;
+      }
+    }
+    double d=maxd / 2;
+    iterator=graphSegments.iterator();
+    while (iterator.hasNext()) {
+      RouteSegment s=iterator.next();
+      if (s.distanceFromStart < d) {
+        ctx.relaxedSegments++;
+        iterator.remove();
+      }
+    }
+    int after=graphSegments.size();
+    println("Relaxing : before " + before + " after "+ after);
+  }
+}

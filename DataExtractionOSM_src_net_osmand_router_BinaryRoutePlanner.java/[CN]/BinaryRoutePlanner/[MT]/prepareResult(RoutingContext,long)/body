@@ -3,33 +3,37 @@
   RouteSegment segment=ctx.finalReverseRoute;
   int parentSegmentStart=ctx.finalReverseEndSegment;
   while (segment != null) {
-    RouteSegmentResult res=new RouteSegmentResult();
-    res.object=segment.road;
-    res.startPointIndex=segment.segmentStart;
-    res.endPointIndex=parentSegmentStart;
+    RouteSegmentResult res=new RouteSegmentResult(segment.road,parentSegmentStart,segment.segmentStart);
     parentSegmentStart=segment.parentSegmentEnd;
     segment=segment.parentRoute;
-    if (res.startPointIndex != res.endPointIndex) {
-      result.add(res);
-    }
-    res.startPoint=convertPoint(res.object,res.startPointIndex);
-    res.endPoint=convertPoint(res.object,res.endPointIndex);
+    result.add(res);
   }
   Collections.reverse(result);
   segment=ctx.finalDirectRoute;
   int parentSegmentEnd=ctx.finalDirectEndSegment;
   while (segment != null) {
-    RouteSegmentResult res=new RouteSegmentResult();
-    res.object=segment.road;
-    res.startPointIndex=parentSegmentEnd;
-    res.endPointIndex=segment.segmentStart;
+    RouteSegmentResult res=new RouteSegmentResult(segment.road,segment.segmentStart,parentSegmentEnd);
     parentSegmentEnd=segment.parentSegmentEnd;
     segment=segment.parentRoute;
-    if (res.startPointIndex != res.endPointIndex) {
-      result.add(res);
+    result.add(res);
+  }
+  Collections.reverse(result);
+  for (int i=0; i < result.size(); i++) {
+    RouteSegmentResult rr=result.get(i);
+    RouteDataObject road=rr.getObject();
+    double distOnRoadToPass=0;
+    double speed=ctx.getRouter().defineSpeed(road);
+    if (speed == 0) {
+      speed=ctx.getRouter().getMinDefaultSpeed();
     }
-    res.startPoint=convertPoint(res.object,res.startPointIndex);
-    res.endPoint=convertPoint(res.object,res.endPointIndex);
+    boolean plus=rr.getStartPointIndex() < rr.getEndPointIndex();
+    int next;
+    for (int j=rr.getStartPointIndex(); j != rr.getEndPointIndex(); j=next) {
+      next=plus ? j + 1 : j - 1;
+      double d=squareRootDist(road.getPoint31XTile(j),road.getPoint31YTile(j),road.getPoint31XTile(next),road.getPoint31YTile(next));
+      distOnRoadToPass+=d / speed + ctx.getRouter().defineObstacle(road,j);
+    }
+    rr.setSegmentTime((float)distOnRoadToPass);
   }
   if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
     System.out.println("ROUTE : ");
@@ -44,11 +48,10 @@
       if (ref != null) {
         name+=" " + ref;
       }
-      System.out.println(MessageFormat.format("\t<segment id=\"{0}\" start=\"{1}\" end=\"{2}\" name=\"{3}\"/>",(res.object.getId()) + "",res.startPointIndex,res.endPointIndex,name));
+      System.out.println(MessageFormat.format("\t<segment id=\"{0}\" start=\"{1}\" end=\"{2}\" time=\"{4}\" name=\"{3}\"/>",(res.getObject().getId()) + "",res.getStartPointIndex() + "",res.getEndPointIndex() + "",name,res.getSegmentTime()));
     }
     System.out.println("</test>");
   }
   ctx.timeToCalculate=(System.nanoTime() - startNanoTime);
-  log.info("Time to calculate : " + ctx.timeToCalculate / 1e6 + ", time to load : " + ctx.timeToLoad / 1e6 + ", loaded tiles : " + ctx.loadedTiles.size() + ", visited segments " + ctx.visitedSegments);
   return result;
 }
