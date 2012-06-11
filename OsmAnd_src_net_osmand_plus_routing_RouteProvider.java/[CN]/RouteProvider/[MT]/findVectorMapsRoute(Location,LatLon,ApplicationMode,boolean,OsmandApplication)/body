@@ -24,30 +24,9 @@
   if (en == null) {
     return new RouteCalculationResult("End point is far from allowed road.");
   }
-  List<Location> res=new ArrayList<Location>();
   try {
     List<RouteSegmentResult> result=router.searchRoute(ctx,st,en);
-    for (    RouteSegmentResult s : result) {
-      boolean plus=s.getStartPointIndex() < s.getEndPointIndex();
-      int i=s.getStartPointIndex();
-      while (true) {
-        Location n=new Location("");
-        LatLon point=s.getPoint(i);
-        n.setLatitude(point.getLatitude());
-        n.setLongitude(point.getLongitude());
-        res.add(n);
-        if (i == s.getEndPointIndex()) {
-          break;
-        }
-        if (plus) {
-          i++;
-        }
- else {
-          i--;
-        }
-      }
-    }
-    return new RouteCalculationResult(res,null,start,end,null);
+    return new RouteCalculationResult(result,start,end);
   }
  catch (  OutOfMemoryError e) {
     return new RouteCalculationResult("Not enough process memory");

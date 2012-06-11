@@ -1,0 +1,21 @@
+{
+  listDistance=new int[locations.size()];
+  if (!locations.isEmpty()) {
+    listDistance[locations.size() - 1]=0;
+    for (int i=locations.size() - 1; i > 0; i--) {
+      listDistance[i - 1]=(int)locations.get(i - 1).distanceTo(locations.get(i));
+      listDistance[i - 1]+=listDistance[i];
+    }
+  }
+  if (directions != null) {
+    int sum=0;
+    for (int i=directions.size() - 1; i >= 0; i--) {
+      directions.get(i).afterLeftTime=sum;
+      sum+=directions.get(i).expectedTime;
+      directions.get(i).distance=listDistance[directions.get(i).routePointOffset];
+      if (i < directions.size() - 1) {
+        directions.get(i).distance-=listDistance[directions.get(i + 1).routePointOffset];
+      }
+    }
+  }
+}
