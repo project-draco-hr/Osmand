@@ -31,7 +31,19 @@
       }
       BinaryRoutePlanner router=new BinaryRoutePlanner(rs);
       RoutingContext ctx=new RoutingContext();
-      ctx.setRouter(this.routerMode);
+      String m=DataExtractionSettings.getSettings().getRouteMode();
+      if ("pedestrian".equalsIgnoreCase(m)) {
+        ctx.setRouter(new PedestrianRouter());
+        log.info("Use pedestrian mode for routing");
+      }
+ else       if ("pedestrian".equalsIgnoreCase(m)) {
+        ctx.setRouter(new BicycleRouter());
+        log.info("Use bicycle mode for routing");
+      }
+ else {
+        ctx.setRouter(new CarRouter());
+        log.info("Use car mode for routing");
+      }
       int dir=DataExtractionSettings.getSettings().getRouteDirection();
       if (dir != 0) {
         ctx.setPlanRoadDirection(dir > 0 ? true : false);
