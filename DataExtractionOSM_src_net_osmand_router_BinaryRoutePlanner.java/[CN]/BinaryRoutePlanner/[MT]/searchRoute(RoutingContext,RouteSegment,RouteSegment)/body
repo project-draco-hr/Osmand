@@ -1,8 +1,8 @@
 {
-  boolean relaxingStrategy=true;
+  boolean relaxingStrategy=false;
   ctx.timeToLoad=0;
   ctx.visitedSegments=0;
-  long startNanoTime=System.nanoTime();
+  ctx.timeToCalculate=System.nanoTime();
   Comparator<RouteSegment> segmentsComparator=new Comparator<RouteSegment>(){
     @Override public int compare(    RouteSegment o1,    RouteSegment o2){
       return ctx.roadPriorityComparator(o1.distanceFromStart,o1.distanceToEnd,o2.distanceFromStart,o2.distanceToEnd);
@@ -38,9 +38,6 @@
   }
   while (!graphSegments.isEmpty()) {
     RouteSegment segment=graphSegments.poll();
-    if (relaxingStrategy) {
-      relaxNotNeededSegments(ctx,graphSegments,segment);
-    }
     ctx.visitedSegments++;
     if (ctx.visitor != null) {
       ctx.visitor.visitSegment(segment,true);
@@ -61,13 +58,11 @@
     }
  else     if (ctx.planRouteIn2Directions()) {
       inverse=nonHeuristicSegmentsComparator.compare(graphDirectSegments.peek(),graphReverseSegments.peek()) > 0;
-      if (!relaxingStrategy) {
-        if (graphDirectSegments.size() * 1.3 > graphReverseSegments.size()) {
-          inverse=true;
-        }
- else         if (graphDirectSegments.size() < 1.3 * graphReverseSegments.size()) {
-          inverse=false;
-        }
+      if (graphDirectSegments.size() * 1.3 > graphReverseSegments.size()) {
+        inverse=true;
+      }
+ else       if (graphDirectSegments.size() < 1.3 * graphReverseSegments.size()) {
+        inverse=false;
       }
     }
  else {
@@ -79,7 +74,15 @@
  else {
       graphSegments=graphDirectSegments;
     }
+    if (relaxingStrategy) {
+      ctx.relaxedIteration++;
+      if (ctx.relaxedIteration > 100) {
+        ctx.relaxedIteration=0;
+        relaxNotNeededSegments(ctx,graphDirectSegments,true);
+        relaxNotNeededSegments(ctx,graphReverseSegments,false);
+      }
+    }
   }
   printDebugMemoryInformation(ctx,graphDirectSegments,graphReverseSegments,visitedDirectSegments,visitedOppositeSegments);
-  return prepareResult(ctx,startNanoTime);
+  return prepareResult(ctx);
 }
