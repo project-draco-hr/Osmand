@@ -2,9 +2,10 @@
   int zoomToLoad=31 - ctx.getZoomToLoadTileWithRoads();
   int tileX=tile31X >> zoomToLoad;
   int tileY=tile31Y >> zoomToLoad;
-  int tileC=(tileX << ctx.getZoomToLoadTileWithRoads()) + tileY;
-  if (ctx.loadedTiles.contains(tileC) && toFillIn == null) {
-    return;
+  final RoutingTile tile=ctx.getRoutingTile(tile31X,tile31Y);
+  if (tile.isLoaded() && toFillIn == null) {
+    tile.access++;
+    return tile;
   }
   long now=System.nanoTime();
   ResultMatcher<RouteDataObject> matcher=new ResultMatcher<RouteDataObject>(){
@@ -14,7 +15,7 @@
           toFillIn.add(o);
         }
       }
-      registerRouteDataObject(ctx,o);
+      registerRouteDataObject(ctx,o,tile);
       return false;
     }
     @Override public boolean isCancelled(){
@@ -31,6 +32,11 @@
       throw new RuntimeException("Loading data exception",e);
     }
   }
-  ctx.loadedTiles.add(tileC);
+  ctx.loadedTiles++;
+  if (tile.isUnloaded()) {
+    ctx.loadedPrevUnloadedTiles++;
+  }
+  tile.setLoaded();
   ctx.timeToLoad+=(System.nanoTime() - now);
+  return tile;
 }

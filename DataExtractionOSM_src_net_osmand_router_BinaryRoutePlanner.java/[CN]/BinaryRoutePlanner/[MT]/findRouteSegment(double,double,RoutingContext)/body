@@ -2,7 +2,7 @@
   int px=MapUtils.get31TileNumberX(lon);
   int py=MapUtils.get31TileNumberY(lat);
   List<RouteDataObject> dataObjects=new ArrayList<RouteDataObject>();
-  loadRoutes(ctx,px,py,dataObjects);
+  RoutingTile tl=loadRoutes(ctx,px,py,dataObjects);
   RouteSegment road=null;
   double sdist=0;
   for (  RouteDataObject r : dataObjects) {
@@ -33,11 +33,13 @@
           if (ro.pointTypes.size() > j) {
             ro.pointTypes.add(j,null);
           }
-          registerRouteDataObject(ctx,ro);
           sdist=currentsDist;
         }
       }
     }
+  }
+  if (road != null) {
+    registerRouteDataObject(ctx,road.getRoad(),tl);
   }
   return road;
 }

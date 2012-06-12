@@ -1,5 +1,4 @@
 {
-  boolean relaxingStrategy=true;
   ctx.timeToLoad=0;
   ctx.visitedSegments=0;
   ctx.timeToCalculate=System.nanoTime();
@@ -74,13 +73,14 @@
  else {
       graphSegments=graphDirectSegments;
     }
-    if (relaxingStrategy) {
-      ctx.relaxedIteration++;
-      if (ctx.relaxedIteration > 100) {
-        ctx.relaxedIteration=0;
+    ctx.garbageCollectorIteration++;
+    if (ctx.garbageCollectorIteration > RoutingContext.ITERATIONS_TO_RUN_GC || ctx.getCurrentlyLoadedTiles() > 30) {
+      ctx.garbageCollectorIteration=0;
+      if (ctx.isUseRelaxingStrategy()) {
         relaxNotNeededSegments(ctx,graphDirectSegments,true);
         relaxNotNeededSegments(ctx,graphReverseSegments,false);
       }
+      unloadUnusedTiles(ctx,30);
     }
   }
   printDebugMemoryInformation(ctx,graphDirectSegments,graphReverseSegments,visitedDirectSegments,visitedOppositeSegments);

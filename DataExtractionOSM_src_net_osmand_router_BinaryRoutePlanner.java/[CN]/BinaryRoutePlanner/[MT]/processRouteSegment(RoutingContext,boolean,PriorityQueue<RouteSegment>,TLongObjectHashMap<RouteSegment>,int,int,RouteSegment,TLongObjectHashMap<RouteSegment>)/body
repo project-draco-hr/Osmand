@@ -47,7 +47,7 @@
     visitedSegments.put(nts,segment);
     int x=road.getPoint31XTile(segmentEnd);
     int y=road.getPoint31YTile(segmentEnd);
-    loadRoutes(ctx,x,y,null);
+    RoutingTile tile=loadRoutes(ctx,x,y,null);
     if (d > 0) {
       obstaclePlusTime+=ctx.getRouter().defineObstacle(road,segmentEnd);
     }
@@ -55,9 +55,9 @@
       obstacleMinusTime+=ctx.getRouter().defineObstacle(road,segmentEnd);
     }
     long l=(((long)x) << 31) + (long)y;
-    RouteSegment next=ctx.routes.get(l);
+    RouteSegment next=tile.routes.get(l);
     if (next != null) {
-      if (next == segment && next.next == null) {
+      if ((next == segment || next.road.id == road.id) && next.next == null) {
         continue;
       }
       double distOnRoadToPass=squareRootDist(x,y,middlex,middley);
