@@ -7,23 +7,26 @@
     int tag=WireFormat.getTagFieldNumber(t);
 switch (tag) {
 case 0:
-      for (int k=0; k < restrictions.size(); k++) {
-        long r=restrictions.get(k);
-        int from=(int)(r >> (RESTRICTION_SHIFT + RESTRICTION_SHIFT));
-        int to=(int)((r >> RESTRICTION_SHIFT) & RESTRICTION_MASK);
-        int type=(int)(r & RESTRICTION_MASK);
-        long valto=(idTables.get(to) << 3) | ((long)type);
-        RouteDataObject fromr=routeTree.dataObjects.get(from);
-        fromr.restrictions.add(valto);
-      }
-    for (    RouteDataObject o : routeTree.dataObjects) {
-      if (o != null) {
-        if (o.id < idTables.size()) {
-          o.id=idTables.get((int)o.id);
-        }
+      TLongObjectIterator<TLongArrayList> it=restrictions.iterator();
+    while (it.hasNext()) {
+      it.advance();
+      int from=(int)it.key();
+      RouteDataObject fromr=routeTree.dataObjects.get(from);
+      fromr.restrictions=new long[it.value().size()];
+      for (int k=0; k < fromr.restrictions.length; k++) {
+        int to=(int)(it.value().get(k) >> RESTRICTION_SHIFT);
+        long valto=(idTables.get(to) << RESTRICTION_SHIFT) | ((long)it.value().get(k) & RESTRICTION_MASK);
+        fromr.restrictions[k]=valto;
       }
     }
-  return;
+  for (  RouteDataObject o : routeTree.dataObjects) {
+    if (o != null) {
+      if (o.id < idTables.size()) {
+        o.id=idTables.get((int)o.id);
+      }
+    }
+  }
+return;
 case RouteDataBlock.DATAOBJECTS_FIELD_NUMBER:
 int length=codedIS.readRawVarint32();
 int oldLimit=codedIS.pushLimit(length);
@@ -58,7 +61,9 @@ break;
 case RouteDataBlock.RESTRICTIONS_FIELD_NUMBER:
 length=codedIS.readRawVarint32();
 oldLimit=codedIS.pushLimit(length);
-long restriction=0;
+long from=0;
+long to=0;
+long type=0;
 idLoop: while (true) {
 int ts=codedIS.readTag();
 int tags=WireFormat.getTagFieldNumber(ts);
@@ -66,23 +71,23 @@ switch (tags) {
 case 0:
 break idLoop;
 case RestrictionData.FROM_FIELD_NUMBER:
-long from=codedIS.readInt32();
-restriction|=(from << (RESTRICTION_SHIFT + RESTRICTION_SHIFT));
+from=codedIS.readInt32();
 break;
 case RestrictionData.TO_FIELD_NUMBER:
-long to=codedIS.readInt32();
-restriction|=(to << RESTRICTION_SHIFT);
+to=codedIS.readInt32();
 break;
 case RestrictionData.TYPE_FIELD_NUMBER:
-int type=codedIS.readInt32();
-restriction|=type;
+type=codedIS.readInt32();
 break;
 default :
 skipUnknownField(ts);
 break;
 }
 }
-restrictions.add(restriction);
+if (!restrictions.containsKey(from)) {
+restrictions.put(from,new TLongArrayList());
+}
+restrictions.get(from).add((to << RESTRICTION_SHIFT) + type);
 codedIS.popLimit(oldLimit);
 break;
 case RouteDataBlock.STRINGTABLE_FIELD_NUMBER:

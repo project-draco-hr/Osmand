@@ -3,23 +3,23 @@
   ctx.segmentsToVisitNotForbidden.clear();
   boolean exclusiveRestriction=false;
   RouteSegment next=inputNext;
-  if (!reverseWay && road.restrictions.isEmpty()) {
+  if (!reverseWay && road.getRestrictionLength() > 0) {
     return false;
   }
   while (next != null) {
     int type=-1;
     if (!reverseWay) {
-      for (int i=0; i < road.restrictions.size(); i++) {
-        if (road.restrictions.getQuick(i) >> 3 == next.road.id) {
-          type=(int)(road.restrictions.getQuick(i) & 7);
+      for (int i=0; i < road.getRestrictionLength(); i++) {
+        if (road.getRestrictionId(i) == next.road.id) {
+          type=road.getRestrictionType(i);
           break;
         }
       }
     }
  else {
-      for (int i=0; i < next.road.restrictions.size(); i++) {
-        int rt=(int)(next.road.restrictions.getQuick(i) & 7);
-        long restrictedTo=next.road.restrictions.getQuick(i) >> 3;
+      for (int i=0; i < next.road.getRestrictionLength(); i++) {
+        int rt=next.road.getRestrictionType(i);
+        long restrictedTo=next.road.getRestrictionId(i);
         if (restrictedTo == road.id) {
           type=rt;
           break;

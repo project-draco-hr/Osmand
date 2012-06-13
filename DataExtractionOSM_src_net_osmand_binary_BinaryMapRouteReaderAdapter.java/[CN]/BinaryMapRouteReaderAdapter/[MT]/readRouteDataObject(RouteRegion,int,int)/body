@@ -1,16 +1,20 @@
 {
   RouteDataObject o=new RouteDataObject(reg);
+  TIntArrayList pointsX=new TIntArrayList();
+  TIntArrayList pointsY=new TIntArrayList();
   while (true) {
     int ts=codedIS.readTag();
     int tags=WireFormat.getTagFieldNumber(ts);
 switch (tags) {
 case 0:
-      return o;
+      o.pointsX=pointsX.toArray();
+    o.pointsY=pointsY.toArray();
+  return o;
 case RouteData.TYPES_FIELD_NUMBER:
-    int len=codedIS.readRawVarint32();
-  int oldLimit=codedIS.pushLimit(len);
+int len=codedIS.readRawVarint32();
+int oldLimit=codedIS.pushLimit(len);
 while (codedIS.getBytesUntilLimit() > 0) {
-  o.types.add(codedIS.readRawVarint32());
+o.types.add(codedIS.readRawVarint32());
 }
 codedIS.popLimit(oldLimit);
 break;
@@ -22,8 +26,8 @@ int py=ptopy >> SHIFT_COORDINATES;
 while (codedIS.getBytesUntilLimit() > 0) {
 int x=(codedIS.readSInt32()) + px;
 int y=(codedIS.readSInt32()) + py;
-o.pointsX.add(x << SHIFT_COORDINATES);
-o.pointsY.add(y << SHIFT_COORDINATES);
+pointsX.add(x << SHIFT_COORDINATES);
+pointsY.add(y << SHIFT_COORDINATES);
 px=x;
 py=y;
 }
