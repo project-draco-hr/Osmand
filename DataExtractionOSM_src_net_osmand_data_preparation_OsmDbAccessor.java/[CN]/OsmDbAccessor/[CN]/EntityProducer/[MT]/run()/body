@@ -10,33 +10,29 @@
       boolean newEntity=curId != prevId;
       Entity e=prevEntity;
       if (type == EntityType.NODE) {
-        if (newEntity) {
-          e=new Node(rs.getDouble(2),rs.getDouble(3),curId);
-        }
-        e.putTag(rs.getString(4),rs.getString(5));
+        e=new Node(rs.getDouble(2),rs.getDouble(3),curId);
+        readTags(e,rs.getBytes(4));
       }
- else       if (type == EntityType.WAY) {
+ else       if (type == EntityType.WAY || type == EntityType.WAY_BOUNDARY) {
         if (newEntity) {
           e=new Way(curId);
         }
         int ord=rs.getInt(3);
-        if (ord == 0 && rs.getObject(4) != null) {
-          e.putTag(rs.getString(4),rs.getString(5));
+        if (ord == 0) {
+          readTags(e,rs.getBytes(4));
         }
-        if (newEntity || ord > 0) {
-          if (rs.getObject(6) == null) {
-            ((Way)e).addNode(rs.getLong(2));
-          }
+        if (rs.getObject(6) == null) {
+          ((Way)e).addNode(rs.getLong(2));
+        }
  else {
-            ((Way)e).addNode(new Node(rs.getDouble(6),rs.getDouble(7),rs.getLong(2)));
-          }
+          Node n=new Node(rs.getDouble(5),rs.getDouble(6),rs.getLong(2));
+          readTags(n,rs.getBytes(7));
+          ((Way)e).addNode(n);
         }
       }
  else {
-        if (newEntity) {
-          e=new Relation(curId);
-        }
-        e.putTag(rs.getString(2),rs.getString(3));
+        e=new Relation(curId);
+        readTags(e,rs.getBytes(2));
       }
       if (newEntity) {
         if (prevEntity != null) {

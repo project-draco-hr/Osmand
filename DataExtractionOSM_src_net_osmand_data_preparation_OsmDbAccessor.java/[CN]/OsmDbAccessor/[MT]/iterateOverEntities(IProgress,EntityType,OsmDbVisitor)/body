@@ -1,7 +1,4 @@
 {
-  if (dialect == DBDialect.NOSQL) {
-    return iterateOverEntitiesNoSQL(progress,type,visitor);
-  }
   Statement statement=dbConn.createStatement();
   PreparedStatement select;
   int count=0;
@@ -9,26 +6,23 @@
   statement.close();
   BlockingQueue<Entity> toProcess=new ArrayBlockingQueue<Entity>(100000);
   AbstractProducer entityProducer=null;
-  if (type == EntityType.WAY_BOUNDARY) {
+  if (type == EntityType.NODE) {
+    select=iterateNodes;
+    count=allNodes;
+  }
+ else   if (type == EntityType.WAY) {
+    select=iterateWays;
+    count=allWays;
+  }
+ else   if (type == EntityType.WAY_BOUNDARY) {
     select=iterateWayBoundaries;
     count=allBoundaries;
-    entityProducer=new BoundaryProducer(toProcess,select);
   }
  else {
-    if (type == EntityType.NODE) {
-      select=iterateNodes;
-      count=allNodes;
-    }
- else     if (type == EntityType.WAY) {
-      select=iterateWays;
-      count=allWays;
-    }
- else {
-      select=iterateRelations;
-      count=allRelations;
-    }
-    entityProducer=new EntityProducer(toProcess,type,select);
+    select=iterateRelations;
+    count=allRelations;
   }
+  entityProducer=new EntityProducer(toProcess,type,select);
   progress.startWork(count);
   entityProducer.start();
   Entity entityToProcess=null;

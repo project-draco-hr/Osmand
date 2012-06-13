@@ -18,12 +18,12 @@
   PriorityQueue<RouteSegment> graphReverseSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
   TLongObjectHashMap<RouteSegment> visitedDirectSegments=new TLongObjectHashMap<RouteSegment>();
   TLongObjectHashMap<RouteSegment> visitedOppositeSegments=new TLongObjectHashMap<RouteSegment>();
-  ctx.targetEndX=end.road.getPoint31XTile(end.segmentStart);
-  ctx.targetEndY=end.road.getPoint31YTile(end.segmentStart);
-  ctx.startX=start.road.getPoint31XTile(start.segmentStart);
-  ctx.startY=start.road.getPoint31YTile(start.segmentStart);
-  ctx.estimatedDistance=(float)h(ctx,ctx.targetEndX,ctx.targetEndY,ctx.startX,ctx.startY);
-  end.distanceToEnd=start.distanceToEnd=ctx.estimatedDistance;
+  int targetEndX=end.road.getPoint31XTile(end.segmentStart);
+  int targetEndY=end.road.getPoint31YTile(end.segmentStart);
+  int startX=start.road.getPoint31XTile(start.segmentStart);
+  int startY=start.road.getPoint31YTile(start.segmentStart);
+  float estimatedDistance=(float)h(ctx,targetEndX,targetEndY,startX,startY);
+  end.distanceToEnd=start.distanceToEnd=estimatedDistance;
   graphDirectSegments.add(start);
   graphReverseSegments.add(end);
   boolean inverse=false;
@@ -43,10 +43,10 @@
     }
     boolean routeFound=false;
     if (!inverse) {
-      routeFound=processRouteSegment(ctx,false,graphDirectSegments,visitedDirectSegments,ctx.targetEndX,ctx.targetEndY,segment,visitedOppositeSegments);
+      routeFound=processRouteSegment(ctx,false,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments);
     }
  else {
-      routeFound=processRouteSegment(ctx,true,graphReverseSegments,visitedOppositeSegments,ctx.startX,ctx.startY,segment,visitedDirectSegments);
+      routeFound=processRouteSegment(ctx,true,graphReverseSegments,visitedOppositeSegments,startX,startY,segment,visitedDirectSegments);
     }
     if (graphReverseSegments.isEmpty() || graphDirectSegments.isEmpty() || routeFound) {
       break;
@@ -73,16 +73,14 @@
  else {
       graphSegments=graphDirectSegments;
     }
-    ctx.garbageCollectorIteration++;
-    if (ctx.garbageCollectorIteration > RoutingContext.ITERATIONS_TO_RUN_GC || ctx.getCurrentlyLoadedTiles() > 30) {
-      ctx.garbageCollectorIteration=0;
-      if (ctx.isUseRelaxingStrategy()) {
-        relaxNotNeededSegments(ctx,graphDirectSegments,true);
-        relaxNotNeededSegments(ctx,graphReverseSegments,false);
-      }
-      unloadUnusedTiles(ctx,30);
+    if (ctx.runTilesGC()) {
+      unloadUnusedTiles(ctx,ctx.NUMBER_OF_DESIRABLE_TILES_IN_MEMORY);
+    }
+    if (ctx.runRelaxingStrategy()) {
+      relaxNotNeededSegments(ctx,graphDirectSegments,true);
+      relaxNotNeededSegments(ctx,graphReverseSegments,false);
     }
   }
   printDebugMemoryInformation(ctx,graphDirectSegments,graphReverseSegments,visitedDirectSegments,visitedOppositeSegments);
-  return prepareResult(ctx);
+  return prepareResult(ctx,start,end);
 }

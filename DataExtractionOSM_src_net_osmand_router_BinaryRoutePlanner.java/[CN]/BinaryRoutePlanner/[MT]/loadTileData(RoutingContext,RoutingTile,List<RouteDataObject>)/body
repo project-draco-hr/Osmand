@@ -1,0 +1,36 @@
+{
+  long now=System.nanoTime();
+  ResultMatcher<RouteDataObject> matcher=new ResultMatcher<RouteDataObject>(){
+    @Override public boolean publish(    RouteDataObject o){
+      if (toFillIn != null) {
+        if (ctx.getRouter().acceptLine(o)) {
+          toFillIn.add(o);
+        }
+      }
+      registerRouteDataObject(ctx,o,tile);
+      return false;
+    }
+    @Override public boolean isCancelled(){
+      return false;
+    }
+  }
+;
+  int zoomToLoad=31 - tile.getZoom();
+  int tileX=tile.getTileX();
+  int tileY=tile.getTileY();
+  SearchRequest<RouteDataObject> request=BinaryMapIndexReader.buildSearchRouteRequest(tileX << zoomToLoad,(tileX + 1) << zoomToLoad,tileY << zoomToLoad,(tileY + 1) << zoomToLoad,matcher);
+  for (  Entry<BinaryMapIndexReader,List<RouteSubregion>> r : map.entrySet()) {
+    try {
+      r.getKey().searchRouteIndex(request,r.getValue());
+    }
+ catch (    IOException e) {
+      throw new RuntimeException("Loading data exception",e);
+    }
+  }
+  ctx.loadedTiles++;
+  if (tile.isUnloaded()) {
+    ctx.loadedPrevUnloadedTiles++;
+  }
+  tile.setLoaded();
+  ctx.timeToLoad+=(System.nanoTime() - now);
+}

@@ -1,3 +1,23 @@
 {
-  loadEntityData(e);
+  if (e.getEntityIds().isEmpty()) {
+    pselectWay.setLong(1,e.getId());
+    if (pselectWay.execute()) {
+      ResultSet rs=pselectWay.getResultSet();
+      while (rs.next()) {
+        int ord=rs.getInt(2);
+        if (ord == 0) {
+          readTags(e,rs.getBytes(3));
+        }
+        if (rs.getObject(5) != null) {
+          Node n=new Node(rs.getDouble(4),rs.getDouble(5),rs.getLong(1));
+          ((Way)e).addNode(n);
+          readTags(n,rs.getBytes(6));
+        }
+ else {
+          ((Way)e).addNode(rs.getLong(1));
+        }
+      }
+      rs.close();
+    }
+  }
 }

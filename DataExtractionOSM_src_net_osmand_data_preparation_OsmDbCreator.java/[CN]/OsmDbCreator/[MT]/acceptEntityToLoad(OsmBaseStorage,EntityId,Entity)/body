@@ -27,6 +27,19 @@
   }
  else {
     try {
+      e.removeTags(tagsToIgnore);
+      ByteArrayOutputStream tags=new ByteArrayOutputStream();
+      try {
+        for (        Entry<String,String> i : e.getTags().entrySet()) {
+          tags.write(i.getKey().getBytes("UTF-8"));
+          tags.write(0);
+          tags.write(i.getValue().getBytes("UTF-8"));
+          tags.write(0);
+        }
+      }
+ catch (      IOException es) {
+        throw new RuntimeException(es);
+      }
       if (e instanceof Node) {
         currentCountNode++;
         if (!e.getTags().isEmpty()) {
@@ -35,6 +48,7 @@
         prepNode.setLong(1,e.getId());
         prepNode.setDouble(2,((Node)e).getLatitude());
         prepNode.setDouble(3,((Node)e).getLongitude());
+        prepNode.setBytes(4,tags.toByteArray());
         prepNode.addBatch();
         if (currentCountNode >= BATCH_SIZE_OSM) {
           prepNode.executeBatch();
@@ -46,11 +60,16 @@
         allWays++;
         short ord=0;
         TLongArrayList nodeIds=((Way)e).getNodeIds();
+        int boundary=((Way)e).getTag(OSMTagKey.BOUNDARY) != null ? 1 : 0;
         for (int j=0; j < nodeIds.size(); j++) {
           currentWaysCount++;
+          if (ord == 0) {
+            prepWays.setBytes(4,tags.toByteArray());
+          }
           prepWays.setLong(1,e.getId());
           prepWays.setLong(2,nodeIds.get(j));
           prepWays.setLong(3,ord++);
+          prepWays.setInt(5,boundary);
           prepWays.addBatch();
         }
         if (currentWaysCount >= BATCH_SIZE_OSM) {
@@ -64,6 +83,9 @@
         short ord=0;
         for (        Entry<EntityId,String> i : ((Relation)e).getMembersMap().entrySet()) {
           currentRelationsCount++;
+          if (ord == 0) {
+            prepRelations.setBytes(6,tags.toByteArray());
+          }
           prepRelations.setLong(1,e.getId());
           prepRelations.setLong(2,i.getKey().getId());
           prepRelations.setLong(3,i.getKey().getType().ordinal());
@@ -76,20 +98,6 @@
           dbConn.commit();
           currentRelationsCount=0;
         }
-      }
-      e.removeTags(tagsToIgnore);
-      for (      Entry<String,String> i : e.getTags().entrySet()) {
-        currentTagsCount++;
-        prepTags.setLong(1,e.getId());
-        prepTags.setLong(2,EntityType.valueOf(e).ordinal());
-        prepTags.setString(3,i.getKey());
-        prepTags.setString(4,i.getValue());
-        prepTags.addBatch();
-      }
-      if (currentTagsCount >= BATCH_SIZE_OSM) {
-        prepTags.executeBatch();
-        dbConn.commit();
-        currentTagsCount=0;
       }
     }
  catch (    SQLException ex) {

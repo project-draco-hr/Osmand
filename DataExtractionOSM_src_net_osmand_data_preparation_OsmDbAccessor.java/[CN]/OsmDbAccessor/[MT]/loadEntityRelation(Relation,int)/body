@@ -1,0 +1,52 @@
+{
+  if (e.isDataLoaded()) {
+    return;
+  }
+  Map<EntityId,Entity> map=new LinkedHashMap<EntityId,Entity>();
+  if (e.getMemberIds().isEmpty()) {
+    pselectRelation.setLong(1,e.getId());
+    if (pselectRelation.execute()) {
+      ResultSet rs=pselectRelation.getResultSet();
+      while (rs.next()) {
+        int ord=rs.getInt(4);
+        if (ord == 0) {
+          readTags(e,rs.getBytes(5));
+        }
+        e.addMember(rs.getLong(1),EntityType.values()[rs.getInt(2)],rs.getString(3));
+      }
+      rs.close();
+    }
+  }
+  Collection<EntityId> ids=e.getMemberIds();
+  if (level > 0) {
+    for (    EntityId i : ids) {
+      if (i.getType() == EntityType.NODE) {
+        pselectNode.setLong(1,i.getId());
+        if (pselectNode.execute()) {
+          ResultSet rs=pselectNode.getResultSet();
+          Node n=null;
+          while (rs.next()) {
+            if (n == null) {
+              n=new Node(rs.getDouble(1),rs.getDouble(2),i.getId());
+              readTags(n,rs.getBytes(3));
+            }
+          }
+          map.put(i,n);
+          rs.close();
+        }
+      }
+ else       if (i.getType() == EntityType.WAY) {
+        Way way=new Way(i.getId());
+        loadEntityWay(way);
+        map.put(i,way);
+      }
+ else       if (i.getType() == EntityType.RELATION) {
+        Relation rel=new Relation(i.getId());
+        loadEntityRelation(rel,level - 1);
+        map.put(i,rel);
+      }
+    }
+    e.initializeLinks(map);
+    e.entityDataLoaded();
+  }
+}
