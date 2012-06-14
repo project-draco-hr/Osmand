@@ -1,12 +1,16 @@
 {
-  OnContextMenuClick listener=new OnContextMenuClick(){
+  OnContextMenuClick addListener=new OnContextMenuClick(){
     @Override public void onContextMenuClick(    int resId,    int pos,    boolean isChecked,    DialogInterface dialog){
       if (resId == R.string.context_menu_item_add_parking_point) {
         settings.setParkingPosition(latitude,longitude);
         if (mapActivity.getMapView().getLayers().contains(parkingLayer))         parkingLayer.setParkingPoint(settings.getParkingPosition());
       }
+ else       if ((resId == R.string.context_menu_item_delete_parking_point)) {
+        parkingLayer.showDeleteDialog();
+      }
     }
   }
 ;
-  adapter.registerItem(R.string.context_menu_item_add_parking_point,0,listener,-1);
+  adapter.registerItem(R.string.context_menu_item_add_parking_point,0,addListener,-1);
+  if (settings.getParkingPosition() != null)   adapter.registerItem(R.string.context_menu_item_delete_parking_point,0,addListener,-1);
 }
