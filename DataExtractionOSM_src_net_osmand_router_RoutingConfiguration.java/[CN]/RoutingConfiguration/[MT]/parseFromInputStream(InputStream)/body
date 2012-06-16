@@ -1,0 +1,52 @@
+{
+  try {
+    final SAXParser parser=SAXParserFactory.newInstance().newSAXParser();
+    final RoutingConfiguration.Builder config=new RoutingConfiguration.Builder();
+    DefaultHandler handler=new DefaultHandler(){
+      String currentSelectedRouter=null;
+      GeneralRouter currentRouter=null;
+      @Override public void startElement(      String uri,      String localName,      String qName,      Attributes attributes) throws SAXException {
+        String name=parser.isNamespaceAware() ? localName : qName;
+        if ("osmand_routing_config".equals(name)) {
+          config.defaultRouter=attributes.getValue("defaultProfile");
+        }
+ else         if ("attribute".equals(name)) {
+          String key=attributes.getValue("name");
+          if (currentSelectedRouter != null) {
+            key=currentSelectedRouter + "$" + key;
+          }
+          config.attributes.put(key,attributes.getValue("value"));
+        }
+ else         if ("routingProfile".equals(name)) {
+          currentSelectedRouter=attributes.getValue("name");
+          currentRouter=new GeneralRouter();
+          currentRouter.profile=GeneralRouterProfile.valueOf(attributes.getValue("baseProfile").toUpperCase());
+          config.routers.put(currentSelectedRouter,currentRouter);
+          currentRouter.restrictionsAware=parseSilentBoolean(attributes.getValue("restrictionsAware"),currentRouter.restrictionsAware);
+          currentRouter.followSpeedLimitations=parseSilentBoolean(attributes.getValue("followSpeedLimitations"),currentRouter.followSpeedLimitations);
+          currentRouter.onewayAware=parseSilentBoolean(attributes.getValue("onewayAware"),currentRouter.onewayAware);
+          currentRouter.minDefaultSpeed=parseSilentDouble(attributes.getValue("minDefaultSpeed"),currentRouter.minDefaultSpeed);
+          currentRouter.maxDefaultSpeed=parseSilentDouble(attributes.getValue("maxDefaultSpeed"),currentRouter.maxDefaultSpeed);
+          currentRouter.leftTurn=parseSilentDouble(attributes.getValue("leftTurn"),currentRouter.leftTurn);
+          currentRouter.rightTurn=parseSilentDouble(attributes.getValue("rightTurn"),currentRouter.rightTurn);
+        }
+ else         if ("highway".equals(name)) {
+          String key=attributes.getValue("value");
+          currentRouter.highwayPriorities.put(key,parseSilentDouble(attributes.getValue("priority"),1));
+          currentRouter.highwayFuturePriorities.put(key,parseSilentDouble(attributes.getValue("dynamicPriority"),1));
+          currentRouter.highwaySpeed.put(key,parseSilentDouble(attributes.getValue("speed"),currentRouter.minDefaultSpeed));
+        }
+ else         if ("obstacle".equals(name)) {
+          String key=attributes.getValue("tag") + "$" + attributes.getValue("value");
+          currentRouter.obstacles.put(key,parseSilentDouble(attributes.getValue("penalty"),0));
+        }
+      }
+    }
+;
+    parser.parse(is,handler);
+    return config;
+  }
+ catch (  ParserConfigurationException e) {
+    throw new SAXException(e);
+  }
+}

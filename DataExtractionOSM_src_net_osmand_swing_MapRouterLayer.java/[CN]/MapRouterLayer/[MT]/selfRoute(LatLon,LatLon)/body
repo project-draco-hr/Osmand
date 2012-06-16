@@ -7,6 +7,22 @@
       files.add(f);
     }
   }
+  String xmlPath=DataExtractionSettings.getSettings().getRoutingXmlPath();
+  Builder builder;
+  if (xmlPath.equals("routing.xml")) {
+    builder=RoutingConfiguration.getDefault();
+  }
+ else {
+    try {
+      builder=RoutingConfiguration.parseFromInputStream(new FileInputStream(xmlPath));
+    }
+ catch (    IOException e) {
+      throw new IllegalArgumentException("Error parsing routing.xml file",e);
+    }
+catch (    SAXException e) {
+      throw new IllegalArgumentException("Error parsing routing.xml file",e);
+    }
+  }
   final boolean animateRoutingCalculation=DataExtractionSettings.getSettings().isAnimateRouting();
   if (animateRoutingCalculation) {
     nextTurn.setVisible(true);
@@ -29,25 +45,13 @@
         RandomAccessFile raf=new RandomAccessFile(f,"r");
         rs[it++]=new BinaryMapIndexReader(raf,false);
       }
-      BinaryRoutePlanner router=new BinaryRoutePlanner(NativeSwingRendering.getDefaultFromSettings(),rs);
-      RoutingContext ctx=new RoutingContext();
       String m=DataExtractionSettings.getSettings().getRouteMode();
-      if ("pedestrian".equalsIgnoreCase(m)) {
-        ctx.setRouter(new PedestrianRouter());
-        log.info("Use pedestrian mode for routing");
-      }
- else       if ("pedestrian".equalsIgnoreCase(m)) {
-        ctx.setRouter(new BicycleRouter());
-        log.info("Use bicycle mode for routing");
-      }
- else {
-        ctx.setRouter(new CarRouter());
-        log.info("Use car mode for routing");
-      }
+      BinaryRoutePlanner router=new BinaryRoutePlanner(NativeSwingRendering.getDefaultFromSettings(),rs);
+      RoutingConfiguration config=builder.initConfig(m,true);
+      RoutingContext ctx=new RoutingContext(config);
+      log.info("Use " + config.routerName + "mode for routing");
       int dir=DataExtractionSettings.getSettings().getRouteDirection();
-      if (dir != 0) {
-        ctx.setPlanRoadDirection(dir > 0 ? true : false);
-      }
+      ctx.setPlanRoadDirection(dir);
       RouteSegment st=router.findRouteSegment(start.getLatitude(),start.getLongitude(),ctx);
       if (st == null) {
         throw new RuntimeException("Starting point for route not found");
