@@ -2,6 +2,17 @@
   ctx.timeToLoad=0;
   ctx.visitedSegments=0;
   ctx.timeToCalculate=System.nanoTime();
+  ctx.firstRoadId=(start.getRoad().id << 8) + start.getSegmentStart();
+  if (ctx.config.initialDirection != null) {
+    double plusDir=start.directionRoute(start.segmentStart,true);
+    double diff=plusDir - ctx.config.initialDirection;
+    if (Math.abs(MapUtils.alignAngleDifference(diff)) <= Math.PI / 3) {
+      ctx.firstRoadDirection=1;
+    }
+ else     if (Math.abs(MapUtils.alignAngleDifference(diff - Math.PI)) <= Math.PI / 3) {
+      ctx.firstRoadDirection=-1;
+    }
+  }
   Comparator<RouteSegment> segmentsComparator=new Comparator<RouteSegment>(){
     @Override public int compare(    RouteSegment o1,    RouteSegment o2){
       return ctx.roadPriorityComparator(o1.distanceFromStart,o1.distanceToEnd,o2.distanceFromStart,o2.distanceToEnd);
@@ -65,7 +76,7 @@
       }
     }
  else {
-      inverse=!ctx.getPlanRoadDirection().booleanValue();
+      inverse=ctx.getPlanRoadDirection() < 0;
     }
     if (inverse) {
       graphSegments=graphReverseSegments;
@@ -74,7 +85,7 @@
       graphSegments=graphDirectSegments;
     }
     if (ctx.runTilesGC()) {
-      unloadUnusedTiles(ctx,ctx.NUMBER_OF_DESIRABLE_TILES_IN_MEMORY);
+      unloadUnusedTiles(ctx,ctx.config.NUMBER_OF_DESIRABLE_TILES_IN_MEMORY);
     }
     if (ctx.runRelaxingStrategy()) {
       relaxNotNeededSegments(ctx,graphDirectSegments,true);
