@@ -1,0 +1,21 @@
+{
+  CommandBuilder play=getNewCommandPlayerToPlay();
+  if (play != null) {
+    if (!newRoute) {
+      if (router.getCurrentGPXRoute() == null && (System.currentTimeMillis() - lastTimeRouteRecalcAnnounced > 60000)) {
+        play.routeRecalculated(router.getLeftDistance()).play();
+        currentStatus=STATUS_UNKNOWN;
+        lastTimeRouteRecalcAnnounced=System.currentTimeMillis();
+      }
+    }
+ else {
+      play.newRouteCalculated(router.getLeftDistance()).play();
+      currentStatus=STATUS_UNKNOWN;
+    }
+  }
+ else   if (player == null) {
+    pendingCommand=new VoiceCommandPending(!newRoute ? VoiceCommandPending.ROUTE_RECALCULATED : VoiceCommandPending.ROUTE_CALCULATED,this);
+    currentStatus=STATUS_UNKNOWN;
+  }
+  currentDirection=router.getRoute().currentDirectionInfo;
+}

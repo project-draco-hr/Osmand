@@ -4,10 +4,17 @@
     @Override public boolean updateInfo(){
       boolean visible=false;
       if (routeLayer != null && routingHelper.isRouterEnabled() && routingHelper.isFollowingMode()) {
-        int d=routingHelper.getDistanceToNextNextRouteDirection();
+        boolean uturnWhenPossible=routingHelper.makeUturnWhenPossible();
+        int d;
+        if (uturnWhenPossible) {
+          d=routingHelper.getDistanceToNextRouteDirection();
+        }
+ else {
+          d=routingHelper.getDistanceToNextNextRouteDirection();
+        }
         if (d > 0 && !showMiniMap) {
           visible=true;
-          RouteDirectionInfo next=routingHelper.getNextNextRouteDirectionInfo();
+          RouteDirectionInfo next=uturnWhenPossible ? routingHelper.getNextRouteDirectionInfo() : routingHelper.getNextNextRouteDirectionInfo();
           if (next == null) {
             if (turnType != null) {
               turnType=null;
@@ -23,8 +30,9 @@
             invalidate();
             nextTurnDirection=d;
           }
-          if (turnImminent != routingHelper.getNextNextTurnImminent()) {
-            turnImminent=routingHelper.getNextNextTurnImminent();
+          int imminent=uturnWhenPossible ? routingHelper.getNextTurnImminent() : routingHelper.getNextNextTurnImminent();
+          if (turnImminent != imminent) {
+            turnImminent=imminent;
             invalidate();
           }
         }

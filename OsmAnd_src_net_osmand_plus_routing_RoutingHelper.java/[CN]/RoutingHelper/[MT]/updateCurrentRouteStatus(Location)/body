@@ -1,0 +1,60 @@
+{
+  List<Location> routeNodes=route.locations;
+  int currentRoute=route.currentRoute;
+  while (currentRoute + 1 < routeNodes.size()) {
+    double dist=currentLocation.distanceTo(routeNodes.get(currentRoute));
+    if (currentRoute > 0) {
+      dist=getOrthogonalDistance(currentLocation,routeNodes.get(currentRoute - 1),routeNodes.get(currentRoute));
+    }
+    boolean processed=false;
+    boolean longDistance=dist >= 250;
+    int newCurrentRoute=lookAheadFindMinOrthogonalDistance(currentLocation,routeNodes,currentRoute,longDistance ? 10 : 3);
+    double newDist=getOrthogonalDistance(currentLocation,routeNodes.get(newCurrentRoute),routeNodes.get(newCurrentRoute + 1));
+    if (longDistance) {
+      if (newDist < dist) {
+        if (log.isDebugEnabled()) {
+          log.debug("Processed by distance : (new) " + newDist + " (old) "+ dist);
+        }
+        processed=true;
+      }
+    }
+ else     if (newDist < dist || newDist < 10) {
+      if (dist > 3 * POSITION_TOLERANCE / 2) {
+        processed=true;
+        if (log.isDebugEnabled()) {
+          log.debug("Processed by distance : " + newDist + " "+ dist);
+        }
+      }
+ else {
+        if (currentLocation.hasBearing() || lastFixedLocation != null) {
+          float bearingToRoute=currentLocation.bearingTo(routeNodes.get(currentRoute));
+          float bearingRouteNext=routeNodes.get(newCurrentRoute).bearingTo(routeNodes.get(newCurrentRoute + 1));
+          float bearingMotion=currentLocation.hasBearing() ? currentLocation.getBearing() : lastFixedLocation.bearingTo(currentLocation);
+          double diff=Math.abs(MapUtils.degreesDiff(bearingMotion,bearingToRoute));
+          double diffToNext=Math.abs(MapUtils.degreesDiff(bearingMotion,bearingRouteNext));
+          if (diff > diffToNext) {
+            if (log.isDebugEnabled()) {
+              log.debug("Processed point bearing deltas : " + diff + " "+ diffToNext);
+            }
+            processed=true;
+          }
+        }
+      }
+    }
+    if (processed) {
+      route.updateCurrentRoute(newCurrentRoute + 1);
+      currentRoute=newCurrentRoute + 1;
+    }
+ else {
+      break;
+    }
+  }
+  Location lastPoint=routeNodes.get(routeNodes.size() - 1);
+  if (currentRoute > routeNodes.size() - 3 && currentLocation.distanceTo(lastPoint) < POSITION_TOLERANCE) {
+    showMessage(context.getString(R.string.arrived_at_destination));
+    voiceRouter.arrivedDestinationPoint();
+    clearCurrentRoute(null);
+    return true;
+  }
+  return false;
+}

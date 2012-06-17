@@ -1,30 +1,32 @@
 {
-  final boolean updateRoute=!routeNodes.isEmpty();
-  routeNodes=res.getLocations();
-  directionInfo=res.getDirections();
-  listDistance=res.getListDistance();
-  currentRoute=0;
-  currentDirectionInfo=0;
+  final boolean newRoute=!res.isCalculated();
+  route=res;
   if (isFollowingMode) {
-    if (routeNodes.size() > 1) {
-      currentRoute=1;
-    }
-    directionDetection(start);
-    if (!suppressTurnPrompt) {
-      evalWaitInterval=3001;
-    }
+    boolean wrongMovementDirection=false;
+    Location prev=res.getNextRouteLocation();
+    if (prev != null) {
+      int i=1;
+      while (res.getNextRouteLocation(i) != null && prev.distanceTo(start) < POSITION_TOLERANCE) {
+        prev=res.getNextRouteLocation(i);
+        i++;
+      }
+      wrongMovementDirection=checkWrongMovementDirection(start,prev);
+      if (!wrongMovementDirection) {
+        evalWaitInterval=3000;
+      }
  else {
-      evalWaitInterval=evalWaitInterval * 4 / 3;
-      evalWaitInterval=Math.min(evalWaitInterval,120000);
+        evalWaitInterval=evalWaitInterval * 3 / 2;
+        evalWaitInterval=Math.min(evalWaitInterval,120000);
+      }
     }
-    voiceRouter.newRouteIsCalculated(updateRoute,suppressTurnPrompt);
+    if (!wrongMovementDirection || newRoute) {
+      voiceRouter.newRouteIsCalculated(newRoute);
+    }
   }
-  currentRoute=0;
-  currentDirectionInfo=0;
   uiHandler.post(new Runnable(){
     @Override public void run(){
       for (      IRouteInformationListener l : listeners) {
-        l.newRouteIsCalculated(updateRoute,suppressTurnPrompt);
+        l.newRouteIsCalculated(newRoute);
       }
     }
   }

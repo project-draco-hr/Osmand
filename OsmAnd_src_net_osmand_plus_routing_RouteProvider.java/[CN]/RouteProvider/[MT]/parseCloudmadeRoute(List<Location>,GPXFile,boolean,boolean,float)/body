@@ -1,0 +1,108 @@
+{
+  List<RouteDirectionInfo> directions=null;
+  if (!osmandRouter) {
+    for (    WptPt pt : gpxFile.points) {
+      res.add(createLocation(pt));
+    }
+  }
+ else {
+    for (    Track tr : gpxFile.tracks) {
+      for (      TrkSegment ts : tr.segments) {
+        for (        WptPt p : ts.points) {
+          res.add(createLocation(p));
+        }
+      }
+    }
+  }
+  float[] distanceToEnd=new float[res.size()];
+  for (int i=res.size() - 2; i >= 0; i--) {
+    distanceToEnd[i]=distanceToEnd[i + 1] + res.get(i).distanceTo(res.get(i + 1));
+  }
+  Route route=null;
+  if (gpxFile.routes.size() > 0) {
+    route=gpxFile.routes.get(0);
+  }
+  RouteDirectionInfo previous=null;
+  if (route != null && route.points.size() > 0) {
+    directions=new ArrayList<RouteDirectionInfo>();
+    Iterator<WptPt> iterator=route.points.iterator();
+    while (iterator.hasNext()) {
+      WptPt item=iterator.next();
+      try {
+        String stime=item.getExtensionsToRead().get("time");
+        int time=0;
+        if (stime != null) {
+          time=Integer.parseInt(stime);
+        }
+        int offset=Integer.parseInt(item.getExtensionsToRead().get("offset"));
+        if (directions.size() > 0) {
+          RouteDirectionInfo last=directions.get(directions.size() - 1);
+          last.setAverageSpeed((distanceToEnd[last.routePointOffset] - distanceToEnd[offset]) / last.getAverageSpeed());
+        }
+        float avgSpeed=time;
+        if (!iterator.hasNext() && time > 0) {
+          avgSpeed=distanceToEnd[offset] / time;
+        }
+        RouteDirectionInfo dirInfo=new RouteDirectionInfo(avgSpeed);
+        dirInfo.descriptionRoute=item.desc;
+        String stype=item.getExtensionsToRead().get("turn");
+        if (stype != null) {
+          dirInfo.turnType=TurnType.valueOf(stype.toUpperCase(),leftSide);
+        }
+ else {
+          dirInfo.turnType=TurnType.valueOf(TurnType.C,leftSide);
+        }
+        String sturn=item.getExtensionsToRead().get("turn-angle");
+        if (sturn != null) {
+          dirInfo.turnType.setTurnAngle((float)Double.parseDouble(sturn));
+        }
+        dirInfo.routePointOffset=offset;
+        if (previous != null && previous.turnType != null && !TurnType.C.equals(previous.turnType.getValue()) && !osmandRouter) {
+          if (previous.routePointOffset > 0) {
+            float paz=res.get(previous.routePointOffset - 1).bearingTo(res.get(previous.routePointOffset));
+            float caz;
+            if (previous.turnType.isRoundAbout() && dirInfo.routePointOffset < res.size() - 1) {
+              caz=res.get(dirInfo.routePointOffset).bearingTo(res.get(dirInfo.routePointOffset + 1));
+            }
+ else {
+              caz=res.get(dirInfo.routePointOffset - 1).bearingTo(res.get(dirInfo.routePointOffset));
+            }
+            float angle=caz - paz;
+            if (angle < 0) {
+              angle+=360;
+            }
+ else             if (angle > 360) {
+              angle-=360;
+            }
+            angle+=75;
+            if (previous.turnType.getTurnAngle() < 0.5f) {
+              previous.turnType.setTurnAngle(angle);
+            }
+          }
+        }
+        directions.add(dirInfo);
+        previous=dirInfo;
+      }
+ catch (      NumberFormatException e) {
+        log.info("Exception",e);
+      }
+catch (      IllegalArgumentException e) {
+        log.info("Exception",e);
+      }
+    }
+  }
+  if (previous != null && previous.turnType != null && !TurnType.C.equals(previous.turnType.getValue())) {
+    if (previous.routePointOffset > 0 && previous.routePointOffset < res.size() - 1) {
+      float paz=res.get(previous.routePointOffset - 1).bearingTo(res.get(previous.routePointOffset));
+      float caz=res.get(previous.routePointOffset).bearingTo(res.get(res.size() - 1));
+      float angle=caz - paz;
+      if (angle < 0) {
+        angle+=360;
+      }
+      if (previous.turnType.getTurnAngle() < 0.5f) {
+        previous.turnType.setTurnAngle(angle);
+      }
+    }
+  }
+  return directions;
+}

@@ -1,0 +1,55 @@
+{
+  int currentRoute=srcRoute.currentRoute;
+  List<Location> routeNodes=srcRoute.locations;
+  int currentDirectionInfo=srcRoute.currentDirectionInfo;
+  List<RouteDirectionInfo> directionInfo=srcRoute.directions;
+  GPXFile gpx=new GPXFile();
+  gpx.author=OSMAND_ROUTER;
+  Track track=new Track();
+  gpx.tracks.add(track);
+  TrkSegment trkSegment=new TrkSegment();
+  track.segments.add(trkSegment);
+  int cRoute=currentRoute;
+  int cDirInfo=currentDirectionInfo;
+  for (int i=cRoute; i < routeNodes.size(); i++) {
+    Location loc=routeNodes.get(i);
+    WptPt pt=new WptPt();
+    pt.lat=loc.getLatitude();
+    pt.lon=loc.getLongitude();
+    if (loc.hasSpeed()) {
+      pt.speed=loc.getSpeed();
+    }
+    if (loc.hasAltitude()) {
+      pt.ele=loc.getAltitude();
+    }
+    if (loc.hasAccuracy()) {
+      pt.hdop=loc.getAccuracy();
+    }
+    trkSegment.points.add(pt);
+  }
+  Route route=new Route();
+  gpx.routes.add(route);
+  for (int i=cDirInfo; i < directionInfo.size(); i++) {
+    RouteDirectionInfo dirInfo=directionInfo.get(i);
+    if (dirInfo.routePointOffset >= cRoute) {
+      Location loc=routeNodes.get(dirInfo.routePointOffset);
+      WptPt pt=new WptPt();
+      pt.lat=loc.getLatitude();
+      pt.lon=loc.getLongitude();
+      pt.desc=dirInfo.descriptionRoute;
+      Map<String,String> extensions=pt.getExtensionsToWrite();
+      extensions.put("time",dirInfo.getExpectedTime() + "");
+      String turnType=dirInfo.turnType.getValue();
+      if (dirInfo.turnType.isRoundAbout()) {
+        turnType+=dirInfo.turnType.getExitOut();
+      }
+      if (!TurnType.C.equals(turnType)) {
+        extensions.put("turn",turnType);
+        extensions.put("turn-angle",dirInfo.turnType.getTurnAngle() + "");
+      }
+      extensions.put("offset",(dirInfo.routePointOffset - cRoute) + "");
+      route.points.add(pt);
+    }
+  }
+  return gpx;
+}

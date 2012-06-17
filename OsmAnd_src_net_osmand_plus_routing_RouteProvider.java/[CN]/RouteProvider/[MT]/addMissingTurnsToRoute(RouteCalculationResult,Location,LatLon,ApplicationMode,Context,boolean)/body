@@ -17,7 +17,7 @@
   List<Location> locations=res.getLocations();
   int previousLocation=0;
   int prevBearingLocation=0;
-  RouteDirectionInfo previousInfo=new RouteDirectionInfo();
+  RouteDirectionInfo previousInfo=new RouteDirectionInfo(speed);
   previousInfo.turnType=TurnType.valueOf(TurnType.C,leftSide);
   previousInfo.routePointOffset=0;
   previousInfo.descriptionRoute=getString(ctx,R.string.route_head);
@@ -84,9 +84,8 @@
         type=TurnType.valueOf(TurnType.TSLR,leftSide);
       }
       previousInfo.distance=listDistance[previousLocation] - listDistance[i];
-      previousInfo.expectedTime=(int)(previousInfo.distance / speed);
       previousInfo.descriptionRoute+=" " + OsmAndFormatter.getFormattedDistance(previousInfo.distance,ctx);
-      previousInfo=new RouteDirectionInfo();
+      previousInfo=new RouteDirectionInfo(speed);
       previousInfo.turnType=type;
       previousInfo.turnType.setTurnAngle(360 - delta);
       previousInfo.descriptionRoute=description;
@@ -98,11 +97,9 @@
     distForTurn=0;
   }
   previousInfo.distance=listDistance[previousLocation];
-  previousInfo.expectedTime=(int)(previousInfo.distance / speed);
   previousInfo.descriptionRoute+=" " + OsmAndFormatter.getFormattedDistance(previousInfo.distance,ctx);
   if (previousInfo.distance > 80) {
-    RouteDirectionInfo info=new RouteDirectionInfo();
-    info.expectedTime=0;
+    RouteDirectionInfo info=new RouteDirectionInfo(speed);
     info.distance=0;
     info.descriptionRoute="";
     info.turnType=TurnType.valueOf(TurnType.C,leftSide);
@@ -110,7 +107,7 @@
     directions.add(info);
   }
   if (res.directions == null || res.directions.isEmpty()) {
-    res.directions=new ArrayList<RouteDirectionInfo>(directions);
+    res.setDirections(new ArrayList<RouteDirectionInfo>(directions));
   }
  else {
     int currentDirection=0;
@@ -132,15 +129,11 @@
           }
         }
         RouteDirectionInfo toAdd=directions.get(currentDirection);
-        float calcSpeed=toAdd.expectedTime == 0 ? speed : ((float)toAdd.distance / toAdd.expectedTime);
         if (i > 0) {
           RouteDirectionInfo previous=res.directions.get(i - 1);
-          calcSpeed=previous.expectedTime == 0 ? calcSpeed : ((float)previous.distance / previous.expectedTime);
-          previous.distance=listDistance[previous.routePointOffset] - listDistance[toAdd.routePointOffset];
-          previous.expectedTime=(int)((float)previous.distance / calcSpeed);
+          toAdd.setAverageSpeed(previous.getAverageSpeed());
         }
         toAdd.distance=listDistance[toAdd.routePointOffset] - distanceAfter;
-        toAdd.expectedTime=(int)((float)toAdd.distance / calcSpeed);
         if (i < res.directions.size()) {
           res.directions.add(i,toAdd);
         }
@@ -155,6 +148,6 @@
   int sum=0;
   for (int i=res.directions.size() - 1; i >= 0; i--) {
     res.directions.get(i).afterLeftTime=sum;
-    sum+=res.directions.get(i).expectedTime;
+    sum+=res.directions.get(i).getExpectedTime();
   }
 }

@@ -1,0 +1,29 @@
+{
+  if (finalLocation == null || currentLocation == null || !route.isCalculated()) {
+    this.makeUturnWhenPossible=false;
+    return makeUturnWhenPossible;
+  }
+  boolean makeUturnWhenPossible=false;
+  if (currentLocation.hasBearing() || lastFixedLocation != null) {
+    float bearingMotion=currentLocation.hasBearing() ? currentLocation.getBearing() : lastFixedLocation.bearingTo(currentLocation);
+    Location nextRoutePosition=route.getNextRouteLocation();
+    float bearingToRoute=currentLocation.bearingTo(nextRoutePosition);
+    double diff=MapUtils.degreesDiff(bearingMotion,bearingToRoute);
+    if (Math.abs(diff) > 135f) {
+      float d=currentLocation.distanceTo(nextRoutePosition);
+      if (d > POSITION_TOLERANCE) {
+        if (makeUTwpDetected == 0) {
+          makeUTwpDetected=System.currentTimeMillis();
+        }
+ else         if ((System.currentTimeMillis() - makeUTwpDetected > 5000)) {
+          makeUturnWhenPossible=true;
+        }
+      }
+    }
+ else {
+      makeUTwpDetected=0;
+    }
+  }
+  this.makeUturnWhenPossible=makeUturnWhenPossible;
+  return makeUturnWhenPossible;
+}
