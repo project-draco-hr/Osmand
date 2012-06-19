@@ -1,0 +1,86 @@
+{
+  this.directions=new ArrayList<RouteDirectionInfo>();
+  this.errorMessage=null;
+  this.locations=new ArrayList<Location>();
+  for (int routeInd=0; routeInd < list.size(); routeInd++) {
+    RouteSegmentResult s=list.get(routeInd);
+    boolean plus=s.getStartPointIndex() < s.getEndPointIndex();
+    int i=s.getStartPointIndex();
+    int prevLocationSize=locations.size();
+    while (true) {
+      Location n=new Location("");
+      LatLon point=s.getPoint(i);
+      n.setLatitude(point.getLatitude());
+      n.setLongitude(point.getLongitude());
+      if (i == s.getEndPointIndex() && routeInd != list.size() - 1) {
+        break;
+      }
+      locations.add(n);
+      if (i == s.getEndPointIndex()) {
+        break;
+      }
+      if (plus) {
+        i++;
+      }
+ else {
+        i--;
+      }
+    }
+    TurnType turn;
+    String description;
+    if (routeInd == 0) {
+      turn=TurnType.valueOf(TurnType.C,leftSide);
+      description=ctx.getString(R.string.route_head);
+    }
+ else {
+      RouteSegmentResult prev=list.get(routeInd - 1);
+      double mpi=MapUtils.degreesDiff(prev.getBearingEnd(),s.getBearingBegin());
+      turn=TurnType.valueOf(TurnType.C,leftSide);
+      description=ctx.getString(R.string.route_head);
+      if (mpi >= 50) {
+        if (mpi < 60) {
+          turn=TurnType.valueOf(TurnType.TSLL,leftSide);
+          description=ctx.getString(R.string.route_tsll);
+        }
+ else         if (mpi < 120) {
+          turn=TurnType.valueOf(TurnType.TL,leftSide);
+          description=ctx.getString(R.string.route_tl);
+        }
+ else         if (mpi < 135) {
+          turn=TurnType.valueOf(TurnType.TSHL,leftSide);
+          description=ctx.getString(R.string.route_tshl);
+        }
+ else {
+          turn=TurnType.valueOf(TurnType.TU,leftSide);
+          description=ctx.getString(R.string.route_tu);
+        }
+      }
+ else       if (mpi < -50) {
+        if (mpi > -60) {
+          turn=TurnType.valueOf(TurnType.TSLR,leftSide);
+          description=ctx.getString(R.string.route_tslr);
+        }
+ else         if (mpi > -120) {
+          turn=TurnType.valueOf(TurnType.TR,leftSide);
+          description=ctx.getString(R.string.route_tr);
+        }
+ else         if (mpi > -135) {
+          turn=TurnType.valueOf(TurnType.TSHR,leftSide);
+          description=ctx.getString(R.string.route_tshr);
+        }
+ else {
+          turn=TurnType.valueOf(TurnType.TU,leftSide);
+          description=ctx.getString(R.string.route_tu);
+        }
+      }
+    }
+    if (routeInd == 0 || !turn.getValue().equals(TurnType.C)) {
+      RouteDirectionInfo info=new RouteDirectionInfo(s.getSegmentSpeed(),turn);
+      info.setDescriptionRoute(description + " " + OsmAndFormatter.getFormattedDistance(s.getDistance(),ctx));
+      info.routePointOffset=prevLocationSize;
+      directions.add(info);
+    }
+  }
+  introduceFirstPoint(start);
+  updateListDistanceTime();
+}

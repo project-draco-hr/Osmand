@@ -29,13 +29,16 @@
     }
     boolean plus=rr.getStartPointIndex() < rr.getEndPointIndex();
     int next;
+    double distance=0;
     for (int j=rr.getStartPointIndex(); j != rr.getEndPointIndex(); j=next) {
       next=plus ? j + 1 : j - 1;
-      double d=squareRootDist(road.getPoint31XTile(j),road.getPoint31YTile(j),road.getPoint31XTile(next),road.getPoint31YTile(next));
+      double d=measuredDist(road.getPoint31XTile(j),road.getPoint31YTile(j),road.getPoint31XTile(next),road.getPoint31YTile(next));
+      distance+=d;
       distOnRoadToPass+=d / speed + ctx.getRouter().defineObstacle(road,j);
     }
     rr.setSegmentTime((float)distOnRoadToPass);
     rr.setSegmentSpeed((float)speed);
+    rr.setDistance((float)distance);
     completeTime+=distOnRoadToPass;
   }
   if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
@@ -51,7 +54,7 @@
       if (ref != null) {
         name+=" " + ref;
       }
-      println(MessageFormat.format("\t<segment id=\"{0}\" start=\"{1}\" end=\"{2}\" time=\"{4}\" name=\"{3}\"/>",(res.getObject().getId()) + "",res.getStartPointIndex() + "",res.getEndPointIndex() + "",name,res.getSegmentTime()));
+      println(MessageFormat.format("\t<segment id=\"{0}\" start=\"{1}\" end=\"{2}\" time=\"{4}\" name=\"{3}\" start_bearing=\"{5}\" end_bearing=\"{5}\" />",(res.getObject().getId()) + "",res.getStartPointIndex() + "",res.getEndPointIndex() + "",name,res.getSegmentTime(),res.getBearingBegin() + "",res.getBearingEnd() + ""));
     }
     println("</test>");
   }
