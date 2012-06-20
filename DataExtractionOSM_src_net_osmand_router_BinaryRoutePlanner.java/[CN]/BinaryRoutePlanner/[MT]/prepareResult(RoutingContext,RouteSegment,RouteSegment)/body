@@ -36,12 +36,27 @@
       double d=measuredDist(road.getPoint31XTile(j),road.getPoint31YTile(j),road.getPoint31XTile(next),road.getPoint31YTile(next));
       distance+=d;
       distOnRoadToPass+=d / speed + ctx.getRouter().defineObstacle(road,j);
+      attachRoadSegments(ctx,result,i,j);
     }
     rr.setSegmentTime((float)distOnRoadToPass);
     rr.setSegmentSpeed((float)speed);
     rr.setDistance((float)distance);
     completeTime+=distOnRoadToPass;
     completeDistance+=distance;
+  }
+  for (int i=0; i < result.size(); i++) {
+    result.get(i).setDescription(getDescription(result,i));
+  }
+  int toUpdate=0;
+  for (int i=1; i < result.size(); i++) {
+    if (result.get(i).getDescription().length() != 0) {
+      float dist=0;
+      for (int j=toUpdate; j < i; j++) {
+        dist+=result.get(j).getDistance();
+      }
+      result.get(toUpdate).setDescription(result.get(toUpdate).getDescription() + String.format(" %.2f meters",dist));
+      toUpdate=i;
+    }
   }
   if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
     println("ROUTE : ");
@@ -56,7 +71,7 @@
       if (ref != null) {
         name+=" " + ref;
       }
-      println(MessageFormat.format("\t<segment id=\"{0}\" start=\"{1}\" end=\"{2}\" time=\"{4}\" name=\"{3}\" distance=\"{5}\" start_bearing=\"{6}\" end_bearing=\"{7}\" />",(res.getObject().getId()) + "",res.getStartPointIndex() + "",res.getEndPointIndex() + "",name,res.getSegmentTime(),res.getDistance(),res.getBearingBegin() + "",res.getBearingEnd() + ""));
+      println(MessageFormat.format("\t<segment id=\"{0}\" start=\"{1}\" end=\"{2}\" time=\"{4}\" name=\"{3}\" distance=\"{5}\" start_bearing=\"{6}\" end_bearing=\"{7}\" description=\"{8}\"/>",(res.getObject().getId()) + "",res.getStartPointIndex() + "",res.getEndPointIndex() + "",name,res.getSegmentTime(),res.getDistance(),res.getBearingBegin() + "",res.getBearingEnd() + "",res.getDescription() + ""));
     }
     println("</test>");
   }

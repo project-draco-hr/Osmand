@@ -1,0 +1,88 @@
+{
+  if (i == 0) {
+    return "Go ahead ";
+  }
+  RouteSegmentResult prev=result.get(i - 1);
+  if (prev.getObject().roundabout()) {
+    return "";
+  }
+  RouteSegmentResult rr=result.get(i);
+  if (rr.getObject().roundabout()) {
+    int exit=1;
+    for (int j=i; j < result.size(); j++) {
+      RouteSegmentResult rnext=result.get(j);
+      if (rnext.getObject().roundabout()) {
+        boolean plus=rnext.getStartPointIndex() < rnext.getEndPointIndex();
+        int k=rnext.getStartPointIndex();
+        if (j == i) {
+          k=plus ? k + 1 : k - 1;
+        }
+        while (k != rnext.getEndPointIndex()) {
+          if (rnext.getAttachedRoutes(k).size() > 0) {
+            exit++;
+          }
+          k=plus ? k + 1 : k - 1;
+        }
+      }
+ else {
+        break;
+      }
+    }
+    return "Round (exit " + exit + ") and go  ";
+  }
+  String description="";
+  if (prev != null) {
+    double mpi=MapUtils.degreesDiff(prev.getBearingEnd(),rr.getBearingBegin());
+    if (mpi >= 50) {
+      if (mpi < 60) {
+        description="Turn slightly left and go";
+      }
+ else       if (mpi < 120) {
+        description="Turn left and go";
+      }
+ else       if (mpi < 135) {
+        description="Turn sharply left and go";
+      }
+ else {
+        description="Make uturn and go";
+      }
+    }
+ else     if (mpi < -50) {
+      if (mpi > -60) {
+        description="Turn slightly right and go";
+      }
+ else       if (mpi > -120) {
+        description="Turn right and go";
+      }
+ else       if (mpi > -135) {
+        description="Turn right left and go";
+      }
+ else {
+        description="Make uturn and go";
+      }
+    }
+ else {
+      boolean kl=false;
+      boolean kr=false;
+      List<RouteSegmentResult> attachedRoutes=rr.getAttachedRoutes(rr.getStartPointIndex());
+      if (attachedRoutes != null) {
+        for (        RouteSegmentResult rs : attachedRoutes) {
+          double ex=MapUtils.degreesDiff(rs.getBearingBegin(),rr.getBearingBegin());
+          if (ex < 40 && ex >= 0) {
+            kl=true;
+          }
+ else           if (ex > -40 && ex <= 0) {
+            kr=true;
+          }
+        }
+      }
+      if (kl) {
+        description="Keep left and go";
+      }
+ else       if (kr) {
+        description="Keep right and go";
+      }
+    }
+  }
+  return description;
+}

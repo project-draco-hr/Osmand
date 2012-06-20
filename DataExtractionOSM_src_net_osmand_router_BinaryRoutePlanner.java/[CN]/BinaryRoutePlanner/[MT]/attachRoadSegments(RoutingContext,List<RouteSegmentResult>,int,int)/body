@@ -1,0 +1,35 @@
+{
+  RouteSegmentResult rr=result.get(routeInd);
+  RouteDataObject road=rr.getObject();
+  RoutingTile tl=loadRoutes(ctx,road.getPoint31XTile(pointInd),road.getPoint31YTile(pointInd));
+  long l=(((long)road.getPoint31XTile(pointInd)) << 31) + (long)road.getPoint31YTile(pointInd);
+  RouteSegmentResult previousResult=null;
+  long previousRoadId=road.getId();
+  if (pointInd == rr.getStartPointIndex() && routeInd > 0) {
+    previousResult=result.get(routeInd - 1);
+    previousRoadId=previousResult.getObject().getId();
+    boolean prevPlus=previousResult.getStartPointIndex() < previousResult.getEndPointIndex();
+    if (prevPlus) {
+      if (previousResult.getStartPointIndex() < previousResult.getEndPointIndex() && previousResult.getEndPointIndex() < previousResult.getObject().getPointsLength() - 1) {
+        rr.attachRoute(pointInd,new RouteSegmentResult(previousResult.getObject(),previousResult.getEndPointIndex(),previousResult.getObject().getPointsLength() - 1));
+      }
+ else       if (previousResult.getStartPointIndex() > previousResult.getEndPointIndex() && previousResult.getEndPointIndex() > 0) {
+        rr.attachRoute(pointInd,new RouteSegmentResult(previousResult.getObject(),previousResult.getEndPointIndex(),0));
+      }
+    }
+  }
+  RouteSegment routeSegment=tl.getLoadedRoutes().get(l);
+  while (routeSegment != null) {
+    if (routeSegment.road.getId() != road.getId() && routeSegment.road.getId() != previousRoadId) {
+      RouteDataObject addRoad=routeSegment.road;
+      int oneWay=ctx.getRouter().isOneWay(addRoad);
+      if (oneWay >= 0 && routeSegment.segmentStart < addRoad.getPointsLength() - 1) {
+        rr.attachRoute(pointInd,new RouteSegmentResult(addRoad,routeSegment.segmentStart,addRoad.getPointsLength() - 1));
+      }
+      if (oneWay <= 0 && routeSegment.segmentStart > 0) {
+        rr.attachRoute(pointInd,new RouteSegmentResult(addRoad,routeSegment.segmentStart,0));
+      }
+    }
+    routeSegment=routeSegment.next;
+  }
+}
