@@ -23,6 +23,14 @@
     plusAllowed=oneway <= 0;
   }
   int d=plusAllowed ? 1 : -1;
+  if (segment.parentRoute != null) {
+    if (plusAllowed && middle < segment.getRoad().getPointsLength() - 1) {
+      obstaclePlusTime=ctx.getRouter().calculateTurnTime(segment,segment.getRoad().getPointsLength() - 1,segment.parentRoute,segment.parentSegmentEnd);
+    }
+    if (minusAllowed && middle > 0) {
+      obstacleMinusTime=ctx.getRouter().calculateTurnTime(segment,0,segment.parentRoute,segment.parentSegmentEnd);
+    }
+  }
   while (minusAllowed || plusAllowed) {
     int segmentEnd=middle + d;
     if (!minusAllowed && d > 0) {
@@ -70,10 +78,9 @@
       if (speed == 0) {
         speed=ctx.getRouter().getMinDefaultSpeed() * priority;
       }
-      double distanceFromStart=segment.distanceFromStart + distOnRoadToPass / speed;
-      distanceFromStart+=d > 0 ? obstaclePlusTime : obstacleMinusTime;
+      double distStartObstacles=segment.distanceFromStart + (d > 0 ? obstaclePlusTime : obstacleMinusTime) + distOnRoadToPass / speed;
       double distToFinalPoint=squareRootDist(x,y,targetEndX,targetEndY);
-      boolean routeFound=processIntersections(ctx,graphSegments,visitedSegments,oppositeSegments,distanceFromStart,distToFinalPoint,segment,segmentEnd,next,reverseWaySearch);
+      boolean routeFound=processIntersections(ctx,graphSegments,visitedSegments,oppositeSegments,distStartObstacles,distToFinalPoint,segment,segmentEnd,next,reverseWaySearch);
       if (routeFound) {
         return routeFound;
       }
