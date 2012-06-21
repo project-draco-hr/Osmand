@@ -1,17 +1,19 @@
 {
   if (i == 0) {
-    return "Go ahead ";
+    return TurnType.valueOf(TurnType.C,false);
   }
   RouteSegmentResult prev=result.get(i - 1);
   if (prev.getObject().roundabout()) {
-    return "";
+    return null;
   }
   RouteSegmentResult rr=result.get(i);
   if (rr.getObject().roundabout()) {
     int exit=1;
+    RouteSegmentResult last=rr;
     for (int j=i; j < result.size(); j++) {
       RouteSegmentResult rnext=result.get(j);
       if (rnext.getObject().roundabout()) {
+        last=rnext;
         boolean plus=rnext.getStartPointIndex() < rnext.getEndPointIndex();
         int k=rnext.getStartPointIndex();
         if (j == i) {
@@ -28,37 +30,39 @@
         break;
       }
     }
-    return "Round (exit " + exit + ") and go  ";
+    TurnType t=TurnType.valueOf("EXIT" + exit,leftSide);
+    t.setTurnAngle((float)MapUtils.degreesDiff(last.getBearingBegin(),prev.getBearingEnd()));
+    return t;
   }
-  String description="";
+  TurnType t=null;
   if (prev != null) {
     double mpi=MapUtils.degreesDiff(prev.getBearingEnd(),rr.getBearingBegin());
     if (mpi >= 50) {
       if (mpi < 60) {
-        description="Turn slightly left and go";
+        t=TurnType.valueOf(TurnType.TSLL,leftSide);
       }
  else       if (mpi < 120) {
-        description="Turn left and go";
+        t=TurnType.valueOf(TurnType.TL,leftSide);
       }
  else       if (mpi < 135) {
-        description="Turn sharply left and go";
+        t=TurnType.valueOf(TurnType.TSHL,leftSide);
       }
  else {
-        description="Make uturn and go";
+        t=TurnType.valueOf(TurnType.TU,leftSide);
       }
     }
  else     if (mpi < -50) {
       if (mpi > -60) {
-        description="Turn slightly right and go";
+        t=TurnType.valueOf(TurnType.TSLR,leftSide);
       }
  else       if (mpi > -120) {
-        description="Turn right and go";
+        t=TurnType.valueOf(TurnType.TR,leftSide);
       }
  else       if (mpi > -135) {
-        description="Turn right left and go";
+        t=TurnType.valueOf(TurnType.TSHR,leftSide);
       }
  else {
-        description="Make uturn and go";
+        t=TurnType.valueOf(TurnType.TU,leftSide);
       }
     }
  else {
@@ -68,21 +72,24 @@
       if (attachedRoutes != null) {
         for (        RouteSegmentResult rs : attachedRoutes) {
           double ex=MapUtils.degreesDiff(rs.getBearingBegin(),rr.getBearingBegin());
-          if (ex < 40 && ex >= 0) {
+          if (ex < 30 && ex >= 0) {
             kl=true;
           }
- else           if (ex > -40 && ex <= 0) {
+ else           if (ex > -30 && ex <= 0) {
             kr=true;
           }
         }
       }
       if (kl) {
-        description="Keep left and go";
+        t=TurnType.valueOf(TurnType.KL,leftSide);
       }
  else       if (kr) {
-        description="Keep right and go";
+        t=TurnType.valueOf(TurnType.KR,leftSide);
       }
     }
+    if (t != null) {
+      t.setTurnAngle((float)-mpi);
+    }
   }
-  return description;
+  return t;
 }

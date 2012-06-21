@@ -44,18 +44,23 @@
     completeTime+=distOnRoadToPass;
     completeDistance+=distance;
   }
-  for (int i=0; i < result.size(); i++) {
-    result.get(i).setDescription(getDescription(result,i));
-  }
-  int toUpdate=0;
-  for (int i=1; i < result.size(); i++) {
-    if (result.get(i).getDescription().length() != 0) {
-      float dist=0;
-      for (int j=toUpdate; j < i; j++) {
-        dist+=result.get(j).getDistance();
+  int toUpdate=-1;
+  float dist=0;
+  for (int i=0; i <= result.size(); i++) {
+    TurnType t=null;
+    if (i < result.size()) {
+      t=getTurnInfo(result,i,leftside);
+      result.get(i).setTurnType(t);
+    }
+    if (t != null || i == result.size()) {
+      if (toUpdate >= 0) {
+        result.get(toUpdate).setDescription(result.get(toUpdate).getTurnType().toString() + String.format(" and go %.2f meters",dist));
       }
-      result.get(toUpdate).setDescription(result.get(toUpdate).getDescription() + String.format(" %.2f meters",dist));
       toUpdate=i;
+      dist=0;
+    }
+    if (i < result.size()) {
+      dist+=result.get(i).getDistance();
     }
   }
   if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
