@@ -1,14 +1,23 @@
 {
+  final View addParking=mapActivity.getLayoutInflater().inflate(R.layout.choose_type_of_parking,null);
   Builder choose=new AlertDialog.Builder(mapActivity);
-  choose.setTitle("Add parking location");
-  choose.setItems(new String[]{"Time-limited parking position","Time-unlimited parking position"},new DialogInterface.OnClickListener(){
-    @Override public void onClick(    DialogInterface dialog,    int which){
-      if (which == 1) {
-        settings.setParkingPosition(latitude,longitude);
-        if (mapActivity.getMapView().getLayers().contains(parkingLayer))         parkingLayer.setParkingPoint(settings.getParkingPosition());
-      }
- else       if (which == 0) {
-      }
+  choose.setView(addParking);
+  choose.setTitle("Choose the type of parking");
+  ImageButton limitButton=(ImageButton)addParking.findViewById(R.id.parking_lim_button);
+  limitButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      settings.setParkingPosition(latitude,longitude);
+      settings.setParkingTimeLimit(1);
+      if (mapActivity.getMapView().getLayers().contains(parkingLayer))       parkingLayer.setParkingPoint(settings.getParkingPosition());
+    }
+  }
+);
+  ImageButton noLimitButton=(ImageButton)addParking.findViewById(R.id.parking_no_lim_button);
+  noLimitButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      settings.setParkingPosition(latitude,longitude);
+      settings.setParkingTimeLimit(-1);
+      if (mapActivity.getMapView().getLayers().contains(parkingLayer))       parkingLayer.setParkingPoint(settings.getParkingPosition());
     }
   }
 );
