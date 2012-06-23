@@ -1,0 +1,19 @@
+{
+  double mDist=(fromLat - toLat) * (fromLat - toLat) + (fromLon - toLon) * (fromLon - toLon);
+  double projection=scalarMultiplication(fromLat,fromLon,toLat,toLon,lat,lon);
+  double prlat;
+  double prlon;
+  if (projection < 0) {
+    prlat=fromLat;
+    prlon=fromLon;
+  }
+ else   if (projection >= mDist) {
+    prlat=toLat;
+    prlon=toLon;
+  }
+ else {
+    prlat=fromLat + (toLat - fromLat) * (projection / mDist);
+    prlon=fromLon + (toLon - fromLon) * (projection / mDist);
+  }
+  return new LatLon(prlat,prlon);
+}

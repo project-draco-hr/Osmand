@@ -15,15 +15,14 @@
     updateSpeedBearing(location);
   }
   registerUnregisterSensor(location);
-  mapLayers.getLocationLayer().setLastKnownLocation(location);
-  navigationInfo.setLocation(location);
   if (routingHelper.isFollowingMode()) {
     if (location == null || !location.hasAccuracy() || location.getAccuracy() < ACCURACY_FOR_GPX_AND_ROUTING) {
-      routingHelper.setCurrentLocation(location);
+      Location updatedLocation=routingHelper.setCurrentLocation(location);
+      location=updatedLocation;
       if (location != null && routingHelper.getLeftDistance() > 0) {
+        final long fixTime=location.getTime();
         Message msg=Message.obtain(uiHandler,new Runnable(){
           @Override public void run(){
-            long fixTime=location.getTime();
             Location lastKnown=getLastKnownLocation();
             if (lastKnown != null && lastKnown.getTime() - fixTime < LOST_LOCATION_CHECK_DELAY) {
               return;
@@ -40,6 +39,8 @@
       }
     }
   }
+  mapLayers.getLocationLayer().setLastKnownLocation(location);
+  navigationInfo.setLocation(location);
   if (location != null) {
     if (isMapLinkedToLocation()) {
       if (settings.AUTO_ZOOM_MAP.get() && location.hasSpeed()) {
