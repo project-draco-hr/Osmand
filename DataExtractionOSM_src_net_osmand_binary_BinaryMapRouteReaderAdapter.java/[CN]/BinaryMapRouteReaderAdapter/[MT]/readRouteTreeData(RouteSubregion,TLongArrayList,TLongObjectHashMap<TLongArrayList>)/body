@@ -2,6 +2,7 @@
   routeTree.dataObjects=new ArrayList<RouteDataObject>();
   idTables.clear();
   restrictions.clear();
+  List<String> stringTable=null;
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
@@ -23,6 +24,12 @@ case 0:
     if (o != null) {
       if (o.id < idTables.size()) {
         o.id=idTables.get((int)o.id);
+      }
+      if (o.names != null && stringTable != null) {
+        int[] keys=o.names.keys();
+        for (int j=0; j < keys.length; j++) {
+          o.names.put(keys[j],stringTable.get(o.names.get(keys[j]).charAt(0)));
+        }
       }
     }
   }
@@ -93,7 +100,7 @@ break;
 case RouteDataBlock.STRINGTABLE_FIELD_NUMBER:
 length=codedIS.readRawVarint32();
 oldLimit=codedIS.pushLimit(length);
-codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+stringTable=map.readStringTable();
 codedIS.popLimit(oldLimit);
 break;
 default :
