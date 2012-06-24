@@ -3,8 +3,24 @@
   ListView lv=new ListView(this);
   lv.setId(android.R.id.list);
   header=new TextView(this);
+  TextView linkSaveAs=new TextView(this);
   helper=((OsmandApplication)getApplication()).getRoutingHelper();
   lv.addHeaderView(header);
+  lv.addHeaderView(linkSaveAs);
+  final CharSequence link=getText(R.string.save_route_as_gpx);
+  SpannableString content=new SpannableString(link);
+  content.setSpan(new ClickableSpan(){
+    @Override public void onClick(    View widget){
+      MapActivityActions.createSaveDirections(ShowRouteInfoActivity.this).show();
+    }
+    @Override public void updateDrawState(    TextPaint ds){
+      super.updateDrawState(ds);
+      ds.setColor(Color.GREEN);
+    }
+  }
+,0,link.length(),0);
+  linkSaveAs.setText(content);
+  linkSaveAs.setMovementMethod(LinkMovementMethod.getInstance());
   setContentView(lv);
   dm=new DisplayMetrics();
   getWindowManager().getDefaultDisplay().getMetrics(dm);
