@@ -1,3 +1,19 @@
 {
-  return downloadFileHelper.downloadFile(filename,fileToSave,fileToUnzip,unzip,progress,dateModified,parts,filesToReindex,indexOfAllFiles,downloadIndexesAsyncTask,forceWifi);
+  boolean res=false;
+  if (isAsset) {
+    try {
+      ResourceManager.copyAssets(assetManager,fileToSave.getPath(),fileToUnzip);
+      fileToUnzip.setLastModified(this.dateModified);
+      res=true;
+    }
+ catch (    IOException e) {
+    }
+  }
+ else {
+    res=downloadFileHelper.downloadFile(filename,fileToSave,fileToUnzip,unzip,progress,dateModified,parts,filesToReindex,indexOfAllFiles,downloadIndexesAsyncTask,forceWifi);
+  }
+  if (res && attachedEntry != null) {
+    return attachedEntry.downloadFile(downloadFileHelper,filename,filesToReindex,progress,indexOfAllFiles,downloadIndexesAsyncTask,forceWifi,assetManager);
+  }
+  return res;
 }

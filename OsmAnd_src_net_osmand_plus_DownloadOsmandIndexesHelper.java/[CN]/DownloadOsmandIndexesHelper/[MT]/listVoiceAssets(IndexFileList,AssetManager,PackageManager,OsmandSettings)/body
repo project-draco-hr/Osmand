@@ -2,6 +2,7 @@
   String[] list;
   try {
     String ext=IndexItem.addVersionToExt(IndexConstants.TTSVOICE_INDEX_EXT_ZIP,IndexConstants.TTSVOICE_VERSION);
+    String extvoice=IndexItem.addVersionToExt(IndexConstants.VOICE_INDEX_EXT_ZIP,IndexConstants.VOICE_VERSION);
     File voicePath=settings.extendOsmandPath(ResourceManager.VOICE_PATH);
     list=amanager.list("voice");
     String date="";
@@ -21,6 +22,25 @@
         String key=voice + ext;
         String assetName="voice" + File.separatorChar + voice+ File.separatorChar+ "ttsconfig.p";
         result.add(key,new AssetIndexItem(key,"voice",date,dateModified,"0.1","",assetName,destFile.getPath()));
+      }
+ else {
+        String key=voice + extvoice;
+        IndexItem item=result.getIndexFiles().get(key);
+        if (item != null) {
+          File destFile=new File(voicePath,voice + File.separatorChar + "_config.p");
+          SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy");
+          try {
+            Date d=format.parse(item.getDate());
+            if (d.getTime() > dateModified) {
+              continue;
+            }
+          }
+ catch (          Exception es) {
+          }
+          item.date=date;
+          String assetName="voice" + File.separatorChar + voice+ File.separatorChar+ "ttsconfig.p";
+          item.attachedItem=new AssetIndexItem(key,"voice",date,dateModified,"0.1","",assetName,destFile.getPath());
+        }
       }
     }
   }
