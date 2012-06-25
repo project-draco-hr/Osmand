@@ -1,0 +1,25 @@
+{
+  final View setTimeParking=mapActivity.getLayoutInflater().inflate(R.layout.parking_set_time_limit,null);
+  Builder setTime=new AlertDialog.Builder(mapActivity);
+  setTime.setView(setTimeParking);
+  setTime.setTitle(mapActivity.getString(R.string.osmand_parking_time_limit_title));
+  setTime.setNegativeButton(R.string.default_buttons_cancel,null);
+  final TimePicker timePicker=(TimePicker)setTimeParking.findViewById(R.id.parking_time_picker);
+  timePicker.setIs24HourView(DateFormat.is24HourFormat(app));
+  timePicker.setCurrentHour(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+  setTime.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      choose.dismiss();
+      Calendar cal=Calendar.getInstance();
+      cal.set(Calendar.HOUR,timePicker.getCurrentHour());
+      cal.set(Calendar.MINUTE,timePicker.getCurrentMinute());
+      settings.setParkingTime(cal.getTimeInMillis());
+      CheckBox addCalendarEvent=(CheckBox)setTimeParking.findViewById(R.id.check_event_in_calendar);
+      if (addCalendarEvent.isChecked())       addCalendarEvent(setTimeParking);
+      settings.addParkingEvent(true);
+    }
+  }
+);
+  setTime.create();
+  setTime.show();
+}
