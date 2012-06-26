@@ -22,7 +22,7 @@
       if (unzipToDir) {
         fileToUnZip.mkdirs();
       }
-      FileInputStream fin=new FileInputStream(fileToDownload);
+      CountingInputStream fin=new CountingInputStream(new FileInputStream(fileToDownload));
       ZipInputStream zipIn=new ZipInputStream(fin);
       ZipEntry entry=null;
       boolean first=true;
@@ -56,12 +56,9 @@
         out=new FileOutputStream(fs);
         int read;
         byte[] buffer=new byte[BUFFER_SIZE];
-        int count=0;
         while ((read=zipIn.read(buffer)) != -1) {
           out.write(buffer,0,read);
-          if (count++ % 8 == 0) {
-            progress.remaining(fin.available());
-          }
+          progress.progress(fin.lastReadCount());
         }
         out.close();
         if (dateModified != null) {
