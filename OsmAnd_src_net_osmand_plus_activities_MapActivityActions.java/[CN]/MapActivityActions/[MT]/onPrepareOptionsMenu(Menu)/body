@@ -1,0 +1,41 @@
+{
+  MenuItem navigateToPointMenu=menu.findItem(R.id.map_navigate_to_point);
+  if (navigateToPointMenu != null) {
+    if (settings.getPointToNavigate() != null) {
+      navigateToPointMenu.setTitle((routingHelper.isRouteCalculated() || routingHelper.isFollowingMode() || routingHelper.isRouteBeingCalculated()) ? R.string.stop_routing : R.string.stop_navigation);
+      navigateToPointMenu.setVisible(true);
+    }
+ else {
+      navigateToPointMenu.setVisible(false);
+    }
+  }
+  MenuItem muteMenu=menu.findItem(R.id.map_mute);
+  if (muteMenu != null) {
+    if (routingHelper.getFinalLocation() != null && routingHelper.isFollowingMode()) {
+      muteMenu.setTitle(routingHelper.getVoiceRouter().isMute() ? R.string.menu_mute_on : R.string.menu_mute_off);
+      muteMenu.setVisible(true);
+    }
+ else {
+      muteMenu.setVisible(false);
+    }
+  }
+  MenuItem directions=menu.findItem(R.id.map_get_directions);
+  if (routingHelper.isRouteCalculated()) {
+    directions.setTitle(R.string.show_route);
+  }
+ else {
+    directions.setTitle(R.string.get_directions);
+  }
+  MenuItem animateMenu=menu.findItem(R.id.map_animate_route);
+  if (animateMenu != null) {
+    if (settings.TEST_ANIMATE_ROUTING.get()) {
+      animateMenu.setTitle(routeAnimation.isRouteAnimating() ? R.string.animate_route_off : R.string.animate_route);
+      animateMenu.setVisible("1".equals(Secure.getString(mapActivity.getContentResolver(),Secure.ALLOW_MOCK_LOCATION)) && settings.getPointToNavigate() != null && routingHelper.isRouteCalculated());
+      animateMenu.setVisible(true);
+    }
+ else {
+      animateMenu.setVisible(false);
+    }
+  }
+  OsmandPlugin.registerOnPrepareOptionsMenu(mapActivity,menu);
+}
