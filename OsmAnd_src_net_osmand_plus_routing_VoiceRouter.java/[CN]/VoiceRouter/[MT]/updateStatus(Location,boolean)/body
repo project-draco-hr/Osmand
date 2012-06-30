@@ -28,6 +28,20 @@
   if (dist == 0 || currentStatus == STATUS_TOLD) {
     return;
   }
+  if (currentStatus == STATUS_UNKNOWN) {
+    if (!isDistanceLess(speed,dist,TURN_IN_DISTANCE * 1.3)) {
+      playGoAhead(dist);
+    }
+    if (dist > 3 * PREPARE_LONG_DISTANCE) {
+      nextStatusAfter(STATUS_UNKNOWN);
+    }
+ else     if (dist > 1.5 * PREPARE_DISTANCE) {
+      nextStatusAfter(STATUS_LONG_PREPARE);
+    }
+ else {
+      nextStatusAfter(STATUS_PREPARE);
+    }
+  }
   RouteDirectionInfo nextNext=router.getNextNextRouteDirectionInfo();
   if (statusNotPassed(STATUS_TURN) && isDistanceLess(speed,dist,TURN_DISTANCE)) {
     if (next.distance < TURN_IN_DISTANCE_END) {
@@ -62,17 +76,6 @@
     nextStatusAfter(STATUS_LONG_PREPARE);
   }
  else   if (statusNotPassed(STATUS_UNKNOWN)) {
-    if (!isDistanceLess(speed,dist,TURN_IN_DISTANCE * 1.5)) {
-      playGoAhead(dist);
-    }
-    if (dist > 3 * PREPARE_LONG_DISTANCE) {
-      nextStatusAfter(STATUS_UNKNOWN);
-    }
- else     if (dist > 1.5 * PREPARE_DISTANCE) {
-      nextStatusAfter(STATUS_LONG_PREPARE);
-    }
- else {
-      nextStatusAfter(STATUS_PREPARE);
-    }
+    nextStatusAfter(STATUS_UNKNOWN);
   }
 }
