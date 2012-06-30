@@ -14,7 +14,8 @@
     }
     updateSpeedBearing(location);
   }
-  registerUnregisterSensor(location);
+  boolean enableSensorNavigation=routingHelper.isFollowingMode() && location != null ? location.hasBearing() : false;
+  registerUnregisterSensor(location,enableSensorNavigation);
   if (routingHelper.isFollowingMode()) {
     if (location == null || !location.hasAccuracy() || location.getAccuracy() < ACCURACY_FOR_GPX_AND_ROUTING) {
       Location updatedLocation=routingHelper.setCurrentLocation(location);
@@ -42,11 +43,11 @@
   mapLayers.getLocationLayer().setLastKnownLocation(location);
   navigationInfo.setLocation(location);
   if (location != null) {
+    long now=System.currentTimeMillis();
     if (isMapLinkedToLocation()) {
       if (settings.AUTO_ZOOM_MAP.get() && location.hasSpeed()) {
         int z=defineZoomFromSpeed(location.getSpeed(),mapView.getZoom());
         if (mapView.getZoom() != z && !mapView.mapIsAnimating()) {
-          long now=System.currentTimeMillis();
           if (Math.abs(mapView.getZoom() - z) > 1 || (now - lastTimeAutoZooming) > 6500) {
             lastTimeAutoZooming=now;
             mapView.setZoom(z);
@@ -57,7 +58,12 @@
       if (location.hasBearing() && currentMapRotation == OsmandSettings.ROTATE_MAP_BEARING) {
         mapView.setRotate(-location.getBearing());
       }
-      mapView.setLatLon(location.getLatitude(),location.getLongitude());
+ else       if (!location.hasBearing() && routingHelper.isFollowingMode() && currentMapRotation == OsmandSettings.ROTATE_MAP_BEARING) {
+        if (Math.abs(MapUtils.degreesDiff(mapView.getRotate(),-previousSensorValue)) > 15 && now - lastTimeSensorRotation > 1500) {
+          lastTimeSensorRotation=now;
+          mapView.setRotate(-previousSensorValue);
+        }
+      }
     }
  else {
       if (!mapLayers.getMapInfoLayer().getBackToLocation().isEnabled()) {

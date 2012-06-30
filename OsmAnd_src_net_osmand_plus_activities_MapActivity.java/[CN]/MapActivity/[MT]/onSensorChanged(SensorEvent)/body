@@ -3,8 +3,11 @@
   if (currentScreenOrientation == 1) {
     val+=90;
   }
+  previousSensorValue=val;
   if (settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_COMPASS) {
-    mapView.setRotate(-val);
+    if (Math.abs(MapUtils.degreesDiff(mapView.getRotate(),-val)) > 5) {
+      mapView.setRotate(-val);
+    }
   }
   if (settings.SHOW_VIEW_ANGLE.get().booleanValue()) {
     if (mapLayers.getLocationLayer().getHeading() == null || Math.abs(mapLayers.getLocationLayer().getHeading() - val) > 10) {
