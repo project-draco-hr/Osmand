@@ -1,0 +1,34 @@
+{
+  final boolean wasEventPreviouslyAdded=settings.isParkingEventAdded();
+  final View addParking=mapActivity.getLayoutInflater().inflate(R.layout.parking_set_type,null);
+  final Dialog choose=new Dialog(mapActivity);
+  choose.setContentView(addParking);
+  choose.setCancelable(true);
+  choose.setTitle(mapActivity.getString(R.string.osmand_parking_choose_type));
+  ImageButton limitButton=(ImageButton)addParking.findViewById(R.id.parking_lim_button);
+  limitButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (wasEventPreviouslyAdded) {
+        showDeleteEventWarning(mapActivity);
+      }
+      setParkingPosition(mapActivity,latitude,longitude,true);
+      showSetTimeLimitDialog(mapActivity,choose);
+      mapActivity.getMapView().refreshMap();
+    }
+  }
+);
+  ImageButton noLimitButton=(ImageButton)addParking.findViewById(R.id.parking_no_lim_button);
+  noLimitButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      choose.dismiss();
+      if (wasEventPreviouslyAdded) {
+        showDeleteEventWarning(mapActivity);
+      }
+      settings.addOrRemoveParkingEvent(false);
+      setParkingPosition(mapActivity,latitude,longitude,false);
+      mapActivity.getMapView().refreshMap();
+    }
+  }
+);
+  choose.show();
+}
