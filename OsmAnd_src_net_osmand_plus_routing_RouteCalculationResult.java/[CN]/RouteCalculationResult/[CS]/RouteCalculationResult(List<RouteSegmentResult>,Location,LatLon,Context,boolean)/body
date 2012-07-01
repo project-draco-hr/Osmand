@@ -1,56 +1,9 @@
 {
   this.directions=new ArrayList<RouteDirectionInfo>();
   this.errorMessage=null;
-  this.locations=new ArrayList<Location>();
-  float prevDirectionTime=0;
-  float prevDirectionDistance=0;
-  for (int routeInd=0; routeInd < list.size(); routeInd++) {
-    RouteSegmentResult s=list.get(routeInd);
-    boolean plus=s.getStartPointIndex() < s.getEndPointIndex();
-    int i=s.getStartPointIndex();
-    int prevLocationSize=locations.size();
-    while (true) {
-      Location n=new Location("");
-      LatLon point=s.getPoint(i);
-      n.setLatitude(point.getLatitude());
-      n.setLongitude(point.getLongitude());
-      if (i == s.getEndPointIndex() && routeInd != list.size() - 1) {
-        break;
-      }
-      locations.add(n);
-      if (i == s.getEndPointIndex()) {
-        break;
-      }
-      if (plus) {
-        i++;
-      }
- else {
-        i--;
-      }
-    }
-    TurnType turn=s.getTurnType();
-    if (turn != null) {
-      RouteDirectionInfo info=new RouteDirectionInfo(s.getSegmentSpeed(),turn);
-      String description=toString(turn,ctx);
-      info.setDescriptionRoute(description);
-      info.routePointOffset=prevLocationSize;
-      if (directions.size() > 0 && prevDirectionTime > 0 && prevDirectionDistance > 0) {
-        RouteDirectionInfo prev=directions.get(directions.size() - 1);
-        prev.setAverageSpeed(prevDirectionDistance / prevDirectionTime);
-        prev.setDescriptionRoute(prev.getDescriptionRoute() + " " + OsmAndFormatter.getFormattedDistance(prevDirectionDistance,ctx));
-        prevDirectionDistance=0;
-        prevDirectionTime=0;
-      }
-      directions.add(info);
-    }
-    prevDirectionDistance+=s.getDistance();
-    prevDirectionTime+=s.getSegmentTime();
-  }
-  if (directions.size() > 0 && prevDirectionTime > 0 && prevDirectionDistance > 0) {
-    RouteDirectionInfo prev=directions.get(directions.size() - 1);
-    prev.setAverageSpeed(prevDirectionDistance / prevDirectionTime);
-    prev.setDescriptionRoute(prev.getDescriptionRoute() + " " + OsmAndFormatter.getFormattedDistance(prevDirectionDistance,ctx));
-  }
-  introduceFirstPoint(start);
+  List<Location> locations=new ArrayList<Location>();
+  convertVectorResult(locations,list,ctx);
+  introduceFirstPoint(locations,start);
   updateListDistanceTime();
+  this.locations=Collections.unmodifiableList(locations);
 }
