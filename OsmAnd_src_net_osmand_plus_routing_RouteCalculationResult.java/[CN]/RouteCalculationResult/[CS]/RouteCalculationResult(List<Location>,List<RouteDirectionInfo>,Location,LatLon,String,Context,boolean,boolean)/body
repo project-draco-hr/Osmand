@@ -1,0 +1,18 @@
+{
+  this.errorMessage=errorMessage;
+  List<Location> locations=list == null ? new ArrayList<Location>() : new ArrayList<Location>(list);
+  List<RouteDirectionInfo> localDirections=directions == null ? new ArrayList<RouteDirectionInfo>() : new ArrayList<RouteDirectionInfo>(directions);
+  if (!locations.isEmpty()) {
+    introduceFirstPoint(locations,start);
+    checkForDuplicatePoints(locations);
+    removeUnnecessaryGoAhead();
+  }
+  this.locations=Collections.unmodifiableList(locations);
+  updateListDistanceTime();
+  if (addMissingTurns) {
+    OsmandSettings settings=((OsmandApplication)ctx.getApplicationContext()).getSettings();
+    addMissingTurnsToRoute(localDirections,start,end,settings.getApplicationMode(),ctx,leftSide);
+  }
+  this.directions=Collections.unmodifiableList(localDirections);
+  updateDirectionsTime();
+}

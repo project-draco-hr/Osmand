@@ -1,5 +1,5 @@
 {
-  if (!res.isCalculated()) {
+  if (!isCalculated()) {
     return;
   }
   float speed=1.5f;
@@ -12,15 +12,14 @@
     speed=5.5f;
     minDistanceForTurn=12;
   }
-  List<RouteDirectionInfo> directions=new ArrayList<RouteDirectionInfo>();
-  int[] listDistance=res.getListDistance();
-  List<Location> locations=res.getImmutableLocations();
+  List<RouteDirectionInfo> computeDirections=new ArrayList<RouteDirectionInfo>();
+  int[] listDistance=getListDistance();
   int previousLocation=0;
   int prevBearingLocation=0;
   RouteDirectionInfo previousInfo=new RouteDirectionInfo(speed,TurnType.valueOf(TurnType.C,leftSide));
   previousInfo.routePointOffset=0;
-  previousInfo.setDescriptionRoute(getString(ctx,R.string.route_head));
-  directions.add(previousInfo);
+  previousInfo.setDescriptionRoute(ctx.getString(R.string.route_head));
+  computeDirections.add(previousInfo);
   int distForTurn=0;
   float previousBearing=0;
   int startTurnPoint=0;
@@ -56,30 +55,30 @@
     if (delta > 45 && delta < 315) {
       if (delta < 60) {
         type=TurnType.valueOf(TurnType.TSLL,leftSide);
-        description=getString(ctx,R.string.route_tsll);
+        description=ctx.getString(R.string.route_tsll);
       }
  else       if (delta < 120) {
         type=TurnType.valueOf(TurnType.TL,leftSide);
-        description=getString(ctx,R.string.route_tl);
+        description=ctx.getString(R.string.route_tl);
       }
  else       if (delta < 150) {
         type=TurnType.valueOf(TurnType.TSHL,leftSide);
-        description=getString(ctx,R.string.route_tshl);
+        description=ctx.getString(R.string.route_tshl);
       }
  else       if (delta < 210) {
         type=TurnType.valueOf(TurnType.TU,leftSide);
-        description=getString(ctx,R.string.route_tu);
+        description=ctx.getString(R.string.route_tu);
       }
  else       if (delta < 240) {
-        description=getString(ctx,R.string.route_tshr);
+        description=ctx.getString(R.string.route_tshr);
         type=TurnType.valueOf(TurnType.TSHR,leftSide);
       }
  else       if (delta < 300) {
-        description=getString(ctx,R.string.route_tr);
+        description=ctx.getString(R.string.route_tr);
         type=TurnType.valueOf(TurnType.TR,leftSide);
       }
  else {
-        description=getString(ctx,R.string.route_tslr);
+        description=ctx.getString(R.string.route_tslr);
         type=TurnType.valueOf(TurnType.TSLR,leftSide);
       }
       previousInfo.distance=listDistance[previousLocation] - listDistance[i];
@@ -88,7 +87,7 @@
       previousInfo=new RouteDirectionInfo(speed,type);
       previousInfo.setDescriptionRoute(description);
       previousInfo.routePointOffset=startTurnPoint;
-      directions.add(previousInfo);
+      computeDirections.add(previousInfo);
       previousLocation=startTurnPoint;
       prevBearingLocation=i;
     }
@@ -100,19 +99,19 @@
     RouteDirectionInfo info=new RouteDirectionInfo(speed,TurnType.valueOf(TurnType.C,leftSide));
     info.distance=0;
     info.routePointOffset=locations.size() - 1;
-    directions.add(info);
+    computeDirections.add(info);
   }
-  if (res.directions == null || res.directions.isEmpty()) {
-    res.setDirections(new ArrayList<RouteDirectionInfo>(directions));
+  if (originalDirections.isEmpty()) {
+    originalDirections.addAll(computeDirections);
   }
  else {
     int currentDirection=0;
-    for (int i=0; i <= res.directions.size() && currentDirection < directions.size(); i++) {
-      while (currentDirection < directions.size()) {
+    for (int i=0; i <= originalDirections.size() && currentDirection < computeDirections.size(); i++) {
+      while (currentDirection < computeDirections.size()) {
         int distanceAfter=0;
-        if (i < res.directions.size()) {
-          RouteDirectionInfo resInfo=res.directions.get(i);
-          int r1=directions.get(currentDirection).routePointOffset;
+        if (i < originalDirections.size()) {
+          RouteDirectionInfo resInfo=originalDirections.get(i);
+          int r1=computeDirections.get(currentDirection).routePointOffset;
           int r2=resInfo.routePointOffset;
           distanceAfter=listDistance[resInfo.routePointOffset];
           float dist=locations.get(r1).distanceTo(locations.get(r2));
@@ -120,21 +119,21 @@
             currentDirection++;
             continue;
           }
- else           if (directions.get(currentDirection).routePointOffset > resInfo.routePointOffset) {
+ else           if (computeDirections.get(currentDirection).routePointOffset > resInfo.routePointOffset) {
             break;
           }
         }
-        RouteDirectionInfo toAdd=directions.get(currentDirection);
+        RouteDirectionInfo toAdd=computeDirections.get(currentDirection);
         if (i > 0) {
-          RouteDirectionInfo previous=res.directions.get(i - 1);
+          RouteDirectionInfo previous=originalDirections.get(i - 1);
           toAdd.setAverageSpeed(previous.getAverageSpeed());
         }
         toAdd.distance=listDistance[toAdd.routePointOffset] - distanceAfter;
-        if (i < res.directions.size()) {
-          res.directions.add(i,toAdd);
+        if (i < originalDirections.size()) {
+          originalDirections.add(i,toAdd);
         }
  else {
-          res.directions.add(toAdd);
+          originalDirections.add(toAdd);
         }
         i++;
         currentDirection++;
@@ -142,8 +141,8 @@
     }
   }
   int sum=0;
-  for (int i=res.directions.size() - 1; i >= 0; i--) {
-    res.directions.get(i).afterLeftTime=sum;
-    sum+=res.directions.get(i).getExpectedTime();
+  for (int i=originalDirections.size() - 1; i >= 0; i--) {
+    originalDirections.get(i).afterLeftTime=sum;
+    sum+=originalDirections.get(i).getExpectedTime();
   }
 }
