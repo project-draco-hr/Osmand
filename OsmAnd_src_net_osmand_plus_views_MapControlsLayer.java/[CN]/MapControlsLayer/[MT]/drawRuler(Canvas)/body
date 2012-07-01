@@ -2,14 +2,14 @@
   if (view.isZooming()) {
     cacheRulerText=null;
   }
- else   if (view.getZoom() != cacheRulerZoom || Math.abs(view.getXTile() - cacheRulerTileX) + Math.abs(view.getYTile() - cacheRulerTileY) > 1) {
-    cacheRulerZoom=view.getZoom();
+ else   if (view.getFloatZoom() != cacheRulerZoom || Math.abs(view.getXTile() - cacheRulerTileX) + Math.abs(view.getYTile() - cacheRulerTileY) > 1) {
+    cacheRulerZoom=view.getFloatZoom();
     cacheRulerTileX=view.getXTile();
     cacheRulerTileY=view.getYTile();
     double latitude=view.getLatitude();
-    double tileNumberLeft=cacheRulerTileX - ((double)view.getWidth()) / (2d * view.getTileSize());
-    double tileNumberRight=cacheRulerTileX + ((double)view.getWidth()) / (2d * view.getTileSize());
-    double dist=MapUtils.getDistance(latitude,MapUtils.getLongitudeFromTile(view.getZoom(),tileNumberLeft),latitude,MapUtils.getLongitudeFromTile(view.getZoom(),tileNumberRight));
+    double leftLon=view.calcLongitude(-view.getWidth() / 2);
+    double rightLon=view.calcLongitude(+view.getWidth() / 2);
+    double dist=MapUtils.getDistance(latitude,leftLon,latitude,rightLon);
     double pixDensity=view.getWidth() / dist;
     double roundedDist=OsmAndFormatter.calculateRoundedDist(dist * screenRulerPercent,view.getContext());
     int cacheRulerDistPix=(int)(pixDensity * roundedDist);
