@@ -1,0 +1,19 @@
+{
+  if (speed < 7f / 3.6) {
+    return 0;
+  }
+  double topLat=mapView.calcLatitude(-mapView.getCenterPointY());
+  double cLat=mapView.calcLatitude(0);
+  double visibleDist=MapUtils.getDistance(cLat,mapView.getLongitude(),topLat,mapView.getLongitude());
+  float time=75f;
+  if (speed < 83f / 3.6) {
+    time=60f;
+  }
+  double distToSee=speed * time;
+  float zoomDelta=(float)(Math.log(visibleDist / distToSee) / Math.log(2.0f));
+  zoomDelta=Math.round(zoomDelta * OsmandMapTileView.ZOOM_DELTA) * OsmandMapTileView.ZOOM_DELTA_1;
+  if (zoomDelta + mapView.getFloatZoom() > 18 - OsmandMapTileView.ZOOM_DELTA_1) {
+    return 18 - OsmandMapTileView.ZOOM_DELTA_1 - mapView.getFloatZoom();
+  }
+  return zoomDelta;
+}
