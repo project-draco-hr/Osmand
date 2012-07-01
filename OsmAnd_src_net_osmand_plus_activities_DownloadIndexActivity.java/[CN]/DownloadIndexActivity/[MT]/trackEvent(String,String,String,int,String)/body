@@ -1,0 +1,45 @@
+{
+  Map<String,String> parameters=new HashMap<String,String>();
+  try {
+    Map<String,String> customVariables=getCustomVars();
+    parameters.put("AnalyticsVersion",analyticsVersion);
+    parameters.put("utmn",randomNumber());
+    parameters.put("utmhn","http://app.osmand.net");
+    parameters.put("utmni","1");
+    parameters.put("utmt","event");
+    StringBuilder customVars=new StringBuilder();
+    Iterator<Entry<String,String>> customs=customVariables.entrySet().iterator();
+    for (int i=0; i < customVariables.size(); i++) {
+      Entry<String,String> n=customs.next();
+      if (i > 0) {
+        customVars.append("*");
+      }
+      customVars.append((i + 1) + "!").append((n.getKey() + n.getValue()));
+    }
+    parameters.put("utme",MessageFormat.format("5({0}*{1}*{2})({3})",category,action,label == null ? "" : label,value) + customVars);
+    parameters.put("utmcs","UTF-8");
+    parameters.put("utmul","en");
+    parameters.put("utmhid",randomNumber());
+    parameters.put("utmac",trackingAcount);
+    parameters.put("utmcc","");
+    StringBuilder urlString=new StringBuilder(beaconUrl + "?");
+    Iterator<Entry<String,String>> it=parameters.entrySet().iterator();
+    while (it.hasNext()) {
+      Entry<String,String> e=it.next();
+      urlString.append(e.getKey()).append("=").append(URLEncoder.encode(e.getValue(),"UTF-8"));
+      if (it.hasNext()) {
+        urlString.append("&");
+      }
+    }
+    URL url=new URL(urlString.toString());
+    HttpURLConnection conn=(HttpURLConnection)url.openConnection();
+    conn.setConnectTimeout(5000);
+    conn.setDoInput(false);
+    conn.setDoOutput(false);
+    conn.connect();
+    log.info("Response analytics is " + conn.getResponseCode() + " "+ conn.getResponseMessage());
+  }
+ catch (  IOException e) {
+    log.error(e.getMessage(),e);
+  }
+}
