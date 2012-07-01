@@ -79,7 +79,20 @@
       if (ref != null) {
         name+=" " + ref;
       }
-      println(MessageFormat.format("\t<segment id=\"{0}\" start=\"{1}\" end=\"{2}\" time=\"{4}\" name=\"{3}\" distance=\"{5}\" start_bearing=\"{6}\" end_bearing=\"{7}\" description=\"{8}\"/>",(res.getObject().getId()) + "",res.getStartPointIndex() + "",res.getEndPointIndex() + "",name,res.getSegmentTime(),res.getDistance(),res.getBearingBegin() + "",res.getBearingEnd() + "",res.getDescription() + ""));
+      StringBuilder additional=new StringBuilder();
+      additional.append("time = \"").append(res.getSegmentTime()).append("\" ");
+      additional.append("name = \"").append(name).append("\" ");
+      additional.append("distance = \"").append(res.getDistance()).append("\" ");
+      if (res.getTurnType() != null) {
+        additional.append("turn = \"").append(res.getTurnType()).append("\" ");
+        if (res.getTurnType().getLanes() != null) {
+          additional.append("lanes = \"").append(Arrays.toString(res.getTurnType().getLanes())).append("\" ");
+        }
+      }
+      additional.append("start_bearing = \"").append(res.getBearingBegin()).append("\" ");
+      additional.append("end_bearing = \"").append(res.getBearingEnd()).append("\" ");
+      additional.append("description = \"").append(res.getDescription()).append("\" ");
+      println(MessageFormat.format("\t<segment id=\"{0}\" start=\"{1}\" end=\"{2}\" {3}/>",(res.getObject().getId()) + "",res.getStartPointIndex() + "",res.getEndPointIndex() + "",additional.toString()));
     }
     println("</test>");
   }
