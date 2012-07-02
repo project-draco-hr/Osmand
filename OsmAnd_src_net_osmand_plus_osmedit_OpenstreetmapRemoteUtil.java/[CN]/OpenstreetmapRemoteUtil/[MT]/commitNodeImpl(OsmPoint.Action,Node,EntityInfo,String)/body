@@ -1,0 +1,52 @@
+{
+  if (isNewChangesetRequired()) {
+    changeSetId=openChangeSet(comment);
+    changeSetTimeStamp=System.currentTimeMillis();
+  }
+  if (changeSetId < 0) {
+    return null;
+  }
+  try {
+    Node newN=n;
+    StringWriter writer=new StringWriter(256);
+    XmlSerializer ser=Xml.newSerializer();
+    try {
+      ser.setOutput(writer);
+      ser.startDocument("UTF-8",true);
+      ser.startTag(null,"osmChange");
+      ser.attribute(null,"version","0.6");
+      ser.attribute(null,"generator",Version.getAppName(ctx));
+      ser.startTag(null,OsmPoint.stringAction.get(action));
+      ser.attribute(null,"version","0.6");
+      ser.attribute(null,"generator",Version.getAppName(ctx));
+      writeNode(n,info,ser,changeSetId,settings.USER_NAME.get());
+      ser.endTag(null,OsmPoint.stringAction.get(action));
+      ser.endTag(null,"osmChange");
+      ser.endDocument();
+    }
+ catch (    IOException e) {
+      log.error("Unhandled exception",e);
+    }
+    String res=sendRequest(SITE_API + "api/0.6/changeset/" + changeSetId+ "/upload","POST",writer.getBuffer().toString(),ctx.getString(R.string.commiting_node),true);
+    log.debug(res + "");
+    if (res != null) {
+      if (OsmPoint.Action.CREATE == action) {
+        long newId=n.getId();
+        int i=res.indexOf("new_id=\"");
+        if (i > 0) {
+          i=i + "new_id=\"".length();
+          int end=res.indexOf("\"",i);
+          if (end > 0) {
+            newId=Long.parseLong(res.substring(i,end));
+            newN=new Node(n,newId);
+          }
+        }
+      }
+      changeSetTimeStamp=System.currentTimeMillis();
+      return newN;
+    }
+    return null;
+  }
+  finally {
+  }
+}

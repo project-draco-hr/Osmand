@@ -1,0 +1,34 @@
+{
+  int uploaded=0;
+  for (  OsmPoint point : points) {
+    if (interruptUploading)     break;
+    if (point.getGroup() == OsmPoint.Group.POI) {
+      OpenstreetmapPoint p=(OpenstreetmapPoint)point;
+      EntityInfo entityInfo=null;
+      if (OsmPoint.Action.CREATE != p.getAction()) {
+        entityInfo=remotepoi.loadNode(p.getEntity());
+      }
+      Node n;
+      if ((n=remotepoi.commitNodeImpl(p.getAction(),p.getEntity(),entityInfo,p.getComment())) != null) {
+        remotepoi.updateNodeInIndexes(LocalOpenstreetmapActivity.this,p.getAction(),n,p.getEntity());
+        publishProgress(p);
+        uploaded++;
+      }
+    }
+ else     if (point.getGroup() == OsmPoint.Group.BUG) {
+      OsmbugsPoint p=(OsmbugsPoint)point;
+      if (p.getAction() == OsmPoint.Action.CREATE) {
+        remotebug.createNewBug(p.getLatitude(),p.getLongitude(),p.getText(),p.getAuthor());
+      }
+ else       if (p.getAction() == OsmPoint.Action.MODIFY) {
+        remotebug.addingComment(p.getId(),p.getText(),p.getAuthor());
+      }
+ else       if (p.getAction() == OsmPoint.Action.DELETE) {
+        remotebug.closingBug(p.getId());
+      }
+      publishProgress(p);
+      uploaded++;
+    }
+  }
+  return Integer.valueOf(uploaded);
+}

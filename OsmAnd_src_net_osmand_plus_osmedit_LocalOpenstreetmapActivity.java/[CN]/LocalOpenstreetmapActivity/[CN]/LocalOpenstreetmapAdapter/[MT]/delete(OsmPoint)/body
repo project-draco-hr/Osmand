@@ -1,0 +1,28 @@
+{
+  final AmenityIndexRepositoryOdb repo=getMyApplication().getResourceManager().getUpdatablePoiDb();
+  android.util.Log.d(LogUtil.TAG,"Delete " + i);
+  if (i.getGroup() == OsmPoint.Group.POI) {
+    dbpoi.deleteOpenstreetmap((OpenstreetmapPoint)i);
+  }
+ else   if (i.getGroup() == OsmPoint.Group.BUG) {
+    dbbug.deleteOsmbugs((OsmbugsPoint)i);
+  }
+  Long c=i.getId();
+  if (c != null) {
+    List<OsmPoint> list=data.get(c);
+    list.remove(i);
+    if (list.isEmpty()) {
+      data.remove(c);
+      category.remove(c);
+    }
+    repo.deleteAmenities(i.getId() << 1);
+    for (    OsmPoint point : list) {
+      if (point.getGroup() == OsmPoint.Group.POI) {
+        OpenstreetmapPoint p=(OpenstreetmapPoint)point;
+        remotepoi.updateNodeInIndexes(LocalOpenstreetmapActivity.this,p.getAction(),p.getEntity(),p.getEntity());
+      }
+    }
+    repo.clearCache();
+  }
+  listAdapter.notifyDataSetChanged();
+}
