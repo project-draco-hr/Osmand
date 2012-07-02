@@ -1,0 +1,77 @@
+{
+  final RoutingHelper routingHelper=routeLayer.getHelper();
+  final Path laneStraight=new Path();
+  Matrix pathTransform=new Matrix();
+  pathTransform.postScale(scaleCoefficient / miniCoeff,scaleCoefficient / miniCoeff);
+  TurnPathHelper.calcTurnPath(laneStraight,TurnType.valueOf(TurnType.C,false),pathTransform);
+  final Paint paintBlack=new Paint();
+  paintBlack.setStyle(Style.STROKE);
+  paintBlack.setColor(Color.BLACK);
+  paintBlack.setAntiAlias(true);
+  paintBlack.setStrokeWidth(2.5f);
+  final Paint paintRouteDirection=new Paint();
+  paintRouteDirection.setStyle(Style.FILL);
+  paintRouteDirection.setColor(view.getResources().getColor(R.color.nav_arrow));
+  paintRouteDirection.setAntiAlias(true);
+  final float w=72 * scaleCoefficient / miniCoeff;
+  final MapInfoControl lanesControl=new MapInfoControl(map){
+    int[] lanes=null;
+    @Override protected void onMeasure(    int widthMeasureSpec,    int heightMeasureSpec){
+      int ls=(int)(lanes == null ? 0 : lanes.length * w);
+      setWDimensions(ls,(int)(w + 3 * scaleCoefficient));
+    }
+    @Override protected void onDraw(    Canvas canvas){
+      super.onDraw(canvas);
+      if (lanes != null && lanes.length > 0) {
+        canvas.save();
+        for (int i=0; i < lanes.length; i++) {
+          if ((lanes[i] & 1) == 1) {
+            paintRouteDirection.setColor(getResources().getColor(R.color.nav_arrow));
+          }
+ else {
+            paintRouteDirection.setColor(getResources().getColor(R.color.nav_arrow_distant));
+          }
+          canvas.drawPath(laneStraight,paintBlack);
+          canvas.drawPath(laneStraight,paintRouteDirection);
+          canvas.translate(w,0);
+        }
+        canvas.restore();
+      }
+    }
+    @Override public boolean updateInfo(){
+      boolean visible=false;
+      RouteDirectionInfo next=null;
+      int dist=0;
+      if (routeLayer != null && routingHelper.isRouteCalculated()) {
+        if (routingHelper.isRouterEnabled() && routingHelper.isFollowingMode()) {
+          next=routingHelper.getNextRouteDirectionInfo();
+          dist=routingHelper.getDistanceToNextRouteDirection();
+        }
+ else {
+          dist=0;
+          int di=map.getMapLayers().getRouteInfoLayer().getDirectionInfo();
+          if (di >= 0 && map.getMapLayers().getRouteInfoLayer().isVisible()) {
+            next=routingHelper.getRouteDirections().get(di);
+          }
+        }
+      }
+      if (next == null || dist > 450 || next.getTurnType().getLanes() == null) {
+        if (lanes != null) {
+          lanes=null;
+          requestLayout();
+          invalidate();
+        }
+      }
+ else       if (lanes == null || !Arrays.equals(lanes,next.getTurnType().getLanes())) {
+        lanes=next.getTurnType().getLanes();
+        requestLayout();
+        invalidate();
+      }
+      visible=lanes != null && lanes.length > 0;
+      updateVisibility(visible);
+      return true;
+    }
+  }
+;
+  return lanesControl;
+}
