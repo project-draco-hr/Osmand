@@ -1,0 +1,33 @@
+{
+  final OsmandApplication app=(OsmandApplication)ctx.getApplication();
+  final AmenityIndexRepositoryOdb repo=app.getResourceManager().getUpdatablePoiDb();
+  ctx.runOnUiThread(new Runnable(){
+    @Override public void run(){
+      if (repo == null) {
+        AccessibleToast.makeText(app,app.getString(R.string.update_poi_no_offline_poi_index),Toast.LENGTH_LONG).show();
+      }
+ else {
+        AccessibleToast.makeText(app,app.getString(R.string.update_poi_does_not_change_indexes),Toast.LENGTH_LONG).show();
+      }
+    }
+  }
+);
+  if (repo == null) {
+    return;
+  }
+  if (oldNode != n) {
+    repo.deleteAmenities(oldNode.getId() << 1);
+    repo.clearCache();
+  }
+  if (OsmPoint.Action.DELETE == action || OsmPoint.Action.MODIFY == action) {
+    repo.deleteAmenities(n.getId() << 1);
+    repo.clearCache();
+  }
+  if (OsmPoint.Action.DELETE != action) {
+    List<Amenity> ams=Amenity.parseAmenities(MapRenderingTypes.getDefault(),n,new ArrayList<Amenity>());
+    for (    Amenity a : ams) {
+      repo.addAmenity(a);
+      repo.clearCache();
+    }
+  }
+}

@@ -3,23 +3,28 @@
   int group=ExpandableListView.getPackedPositionGroup(packedPos);
   int child=ExpandableListView.getPackedPositionChild(packedPos);
   int itemId=item.getItemId();
-  if (itemId == R.id.showpoi) {
+  if (itemId == R.id.showmod) {
     OsmandSettings settings=getMyApplication().getSettings();
-    OpenstreetmapPoint info=(OpenstreetmapPoint)listAdapter.getChild(group,child);
+    OsmPoint info=(OsmPoint)listAdapter.getChild(group,child);
     settings.setMapLocationToShow(info.getLatitude(),info.getLongitude(),settings.getLastKnownMapZoom());
     MapActivity.launchMapActivityMoveToTop(LocalOpenstreetmapActivity.this);
     return true;
   }
- else   if (itemId == R.id.deletepoimod) {
-    OpenstreetmapPoint info=(OpenstreetmapPoint)listAdapter.getChild(group,child);
-    db.deleteAllPOIModifications(info.getId());
+ else   if (itemId == R.id.deletemod) {
+    OsmPoint info=(OsmPoint)listAdapter.getChild(group,child);
+    if (info.getGroup() == OsmPoint.Group.POI) {
+      dbpoi.deleteAllPOIModifications(info.getId());
+    }
+ else     if (info.getGroup() == OsmPoint.Group.BUG) {
+      dbbug.deleteAllBugModifications(info.getId());
+    }
     listAdapter.delete(info);
     return true;
   }
- else   if (itemId == R.id.uploadpoimods) {
-    List<OpenstreetmapPoint> list=listAdapter.data.get(group);
+ else   if (itemId == R.id.uploadmods) {
+    List<OsmPoint> list=listAdapter.data.get(group);
     if (list != null) {
-      toUpload=list.toArray(new OpenstreetmapPoint[]{});
+      toUpload=list.toArray(new OsmPoint[]{});
       showDialog(DIALOG_PROGRESS_UPLOAD);
       return true;
     }
