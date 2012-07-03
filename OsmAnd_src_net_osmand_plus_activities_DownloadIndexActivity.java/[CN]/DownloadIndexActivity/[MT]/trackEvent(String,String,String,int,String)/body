@@ -1,5 +1,5 @@
 {
-  Map<String,String> parameters=new HashMap<String,String>();
+  Map<String,String> parameters=new LinkedHashMap<String,String>();
   try {
     Map<String,String> customVariables=getCustomVars();
     parameters.put("AnalyticsVersion",analyticsVersion);
@@ -16,12 +16,25 @@
       }
       customVars.append((i + 1) + "!").append((n.getKey() + n.getValue()));
     }
-    parameters.put("utme",MessageFormat.format("5({0}*{1}*{2})({3})",category,action,label == null ? "" : label,value) + customVars);
     parameters.put("utmcs","UTF-8");
     parameters.put("utmul","en");
-    parameters.put("utmhid",randomNumber());
+    parameters.put("utmhid",(System.currentTimeMillis() / 1000) + "");
     parameters.put("utmac",trackingAcount);
-    parameters.put("utmcc","");
+    String domainHash="app.osmand.net".hashCode() + "";
+    String utma=domainHash + ".";
+    File fl=getMyApplication().getSettings().extendOsmandPath(ResourceManager.APP_DIR + ".nomedia");
+    if (fl.exists()) {
+      utma+=(fl.lastModified()) + ".";
+    }
+ else {
+      utma+=(randomNumber()) + ".";
+    }
+    utma+=((System.currentTimeMillis() / 1000) + ".");
+    utma+=((System.currentTimeMillis() / 1000) + ".");
+    utma+=((System.currentTimeMillis() / 1000) + ".");
+    utma+="1";
+    parameters.put("utmcc","__utma=" + utma + ";");
+    parameters.put("utme",MessageFormat.format("5({0}*{1}*{2})({3})",category,action,label == null ? "" : label,value) + customVars);
     StringBuilder urlString=new StringBuilder(beaconUrl + "?");
     Iterator<Entry<String,String>> it=parameters.entrySet().iterator();
     while (it.hasNext()) {
@@ -31,6 +44,7 @@
         urlString.append("&");
       }
     }
+    log.debug(urlString);
     URL url=new URL(urlString.toString());
     HttpURLConnection conn=(HttpURLConnection)url.openConnection();
     conn.setConnectTimeout(5000);
