@@ -7,6 +7,7 @@
     if (currentStatus != STATUS_UTWP_TOLD) {
       if (playMakeUTwp()) {
         currentStatus=STATUS_UTWP_TOLD;
+        playGoAheadDist=0;
       }
     }
     return;
@@ -16,11 +17,13 @@
   if (currentDirection != router.getRoute().currentDirectionInfo) {
     currentDirection=router.getRoute().currentDirectionInfo;
     currentStatus=STATUS_UNKNOWN;
+    playGoAheadDist=0;
   }
   if (next == null || next.distance == 0) {
     if (currentStatus <= STATUS_UNKNOWN) {
       if (playGoAheadToDestination()) {
         currentStatus=STATUS_TOLD;
+        playGoAheadDist=0;
       }
     }
     return;
@@ -30,7 +33,7 @@
   }
   if (currentStatus == STATUS_UNKNOWN) {
     if (!isDistanceLess(speed,dist,TURN_IN_DISTANCE * 1.3)) {
-      playGoAhead(dist);
+      playGoAheadDist=dist - 80;
     }
     if (dist > PREPARE_LONG_DISTANCE + 300) {
       nextStatusAfter(STATUS_UNKNOWN);
@@ -43,7 +46,7 @@
     }
   }
   RouteDirectionInfo nextNext=router.getNextNextRouteDirectionInfo();
-  if (statusNotPassed(STATUS_TURN) && isDistanceLess(speed,dist,TURN_DISTANCE)) {
+  if (statusNotPassed(STATUS_TURN) && isDistanceLess(speed,dist,TURN_DISTANCE,TURN_DEFAULT_SPEED)) {
     if (next.distance < TURN_IN_DISTANCE_END) {
       playMakeTurn(next,nextNext);
     }
@@ -77,5 +80,9 @@
   }
  else   if (statusNotPassed(STATUS_UNKNOWN)) {
     nextStatusAfter(STATUS_UNKNOWN);
+  }
+ else   if (statusNotPassed(STATUS_TURN_IN) && dist < playGoAheadDist) {
+    playGoAheadDist=0;
+    playGoAhead(dist);
   }
 }
