@@ -1,0 +1,51 @@
+{
+  String vehicle=testCase.getAttribute("vehicle");
+  int loadedTiles=(int)parseFloat(testCase,"loadedTiles");
+  int visitedSegments=(int)parseFloat(testCase,"visitedSegments");
+  int complete_time=(int)parseFloat(testCase,"complete_time");
+  int complete_distance=(int)parseFloat(testCase,"complete_distance");
+  float percent=parseFloat(testCase,"best_percent");
+  String testDescription=testCase.getAttribute("description");
+  if (percent == 0) {
+    System.err.println("\n\n!! Skipped test case '" + testDescription + "' because 'best_percent' attribute is not specified \n\n");
+    return;
+  }
+  RoutingContext ctx=new RoutingContext(RoutingConfiguration.getDefault().build(vehicle,true));
+  String skip=testCase.getAttribute("skip_comment");
+  if (skip != null && skip.length() > 0) {
+    System.err.println("\n\n!! Skipped test case '" + testDescription + "' because '"+ skip+ "'\n\n");
+    return;
+  }
+  System.out.println("Run test " + testDescription);
+  double startLat=Double.parseDouble(testCase.getAttribute("start_lat"));
+  double startLon=Double.parseDouble(testCase.getAttribute("start_lon"));
+  RouteSegment startSegment=planner.findRouteSegment(startLat,startLon,ctx);
+  double endLat=Double.parseDouble(testCase.getAttribute("target_lat"));
+  double endLon=Double.parseDouble(testCase.getAttribute("target_lon"));
+  RouteSegment endSegment=planner.findRouteSegment(endLat,endLon,ctx);
+  if (startSegment == null) {
+    throw new IllegalArgumentException("Start segment is not found for test : " + testDescription);
+  }
+  if (endSegment == null) {
+    throw new IllegalArgumentException("End segment is not found for test : " + testDescription);
+  }
+  List<RouteSegmentResult> route=planner.searchRoute(ctx,startSegment,endSegment,false);
+  float completeTime=0;
+  float completeDistance=0;
+  for (int i=0; i < route.size(); i++) {
+    completeTime+=route.get(i).getSegmentTime();
+    completeDistance+=route.get(i).getDistance();
+  }
+  if (complete_time > 0 && !isIn(complete_time,completeTime,percent)) {
+    throw new IllegalArgumentException(String.format("Complete time (expected) %s != %s (original) : %s",complete_time,completeTime,testDescription));
+  }
+  if (complete_distance > 0 && !isIn(complete_distance,completeDistance,percent)) {
+    throw new IllegalArgumentException(String.format("Complete distance (expected) %s != %s (original) : %s",complete_distance,completeDistance,testDescription));
+  }
+  if (visitedSegments > 0 && !isIn(visitedSegments,ctx.visitedSegments,percent)) {
+    throw new IllegalArgumentException(String.format("Visited segments (expected) %s != %s (original) : %s",visitedSegments,ctx.visitedSegments,testDescription));
+  }
+  if (loadedTiles > 0 && !isIn(loadedTiles,ctx.loadedTiles,percent)) {
+    throw new IllegalArgumentException(String.format("Loaded tiles (expected) %s != %s (original) : %s",loadedTiles,ctx.loadedTiles,testDescription));
+  }
+}

@@ -1,9 +1,20 @@
 {
-  Properties properties=new Properties();
-  properties.load(RouterTestsSuite.class.getResourceAsStream("sources.properties"));
+  List<File> files=new ArrayList<File>();
+  for (  File f : new File(DataExtractionSettings.getSettings().getBinaryFilesDir()).listFiles()) {
+    if (f.getName().endsWith(".obf")) {
+      files.add(f);
+    }
+  }
+  BinaryMapIndexReader[] rs=new BinaryMapIndexReader[files.size()];
+  int it=0;
+  for (  File f : files) {
+    RandomAccessFile raf=new RandomAccessFile(f,"r");
+    rs[it++]=new BinaryMapIndexReader(raf,false);
+  }
   boolean allSuccess=true;
-  allSuccess&=test("belarus_test.xml",properties);
-  allSuccess&=test("germany_test.xml",properties);
+  for (  String a : args) {
+    allSuccess&=test(a,rs);
+  }
   if (allSuccess) {
     System.out.println("All is successfull");
   }
