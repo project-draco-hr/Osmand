@@ -10,7 +10,15 @@
     System.err.println("\n\n!! Skipped test case '" + testDescription + "' because 'best_percent' attribute is not specified \n\n");
     return;
   }
-  RoutingContext ctx=new RoutingContext(RoutingConfiguration.getDefault().build(vehicle,true));
+  String xmlPath=DataExtractionSettings.getSettings().getRoutingXmlPath();
+  Builder builder;
+  if (xmlPath.equals("routing.xml")) {
+    builder=RoutingConfiguration.getDefault();
+  }
+ else {
+    builder=RoutingConfiguration.parseFromInputStream(new FileInputStream(xmlPath));
+  }
+  RoutingContext ctx=new RoutingContext(builder.build(vehicle,true));
   String skip=testCase.getAttribute("skip_comment");
   if (skip != null && skip.length() > 0) {
     System.err.println("\n\n!! Skipped test case '" + testDescription + "' because '"+ skip+ "'\n\n");
