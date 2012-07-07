@@ -1,0 +1,44 @@
+{
+  Parameters p=new Parameters();
+  String routingXmlFile=null;
+  String obfDirectory=null;
+  BinaryRoutePlanner.PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST=false;
+  for (  String a : args) {
+    if (a.startsWith("-routingXmlPath=")) {
+      routingXmlFile=a.substring("-routingXmlPath=".length());
+    }
+ else     if (a.startsWith("-verbose")) {
+      BinaryRoutePlanner.PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST=true;
+    }
+ else     if (a.startsWith("-obfDir=")) {
+      obfDirectory=a.substring("-obfDir=".length());
+    }
+ else     if (a.startsWith("-testDir=")) {
+      String testDirectory=a.substring("-testDir=".length());
+      for (      File f : new File(testDirectory).listFiles()) {
+        if (f.getName().endsWith(".test.xml")) {
+          p.tests.add(f);
+        }
+      }
+    }
+ else     if (!a.startsWith("-")) {
+      p.tests.add(new File(a));
+    }
+  }
+  if (obfDirectory == null) {
+    obfDirectory=DataExtractionSettings.getSettings().getBinaryFilesDir();
+  }
+  if (obfDirectory != null && obfDirectory.length() > 0) {
+    p.obfDir=new File(obfDirectory);
+  }
+  if (routingXmlFile == null) {
+    routingXmlFile=DataExtractionSettings.getSettings().getRoutingXmlPath();
+  }
+  if (routingXmlFile.equals("routing.xml")) {
+    p.configBuilder=RoutingConfiguration.getDefault();
+  }
+ else {
+    p.configBuilder=RoutingConfiguration.parseFromInputStream(new FileInputStream(routingXmlFile));
+  }
+  return p;
+}
