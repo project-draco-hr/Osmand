@@ -1,4 +1,8 @@
 {
+  if (monitoringControl != null) {
+    monitoringControl.updateInfo();
+    return;
+  }
   paintText=new Paint();
   paintText.setStyle(Style.FILL_AND_STROKE);
   paintText.setColor(Color.BLACK);
@@ -10,34 +14,21 @@
   paintSubText.setColor(Color.BLACK);
   paintSubText.setTextSize(15 * MapInfoLayer.scaleCoefficient);
   paintSubText.setAntiAlias(true);
-  final Drawable monitoring_rec=mapActivity.getMapView().getResources().getDrawable(R.drawable.monitoring_rec);
-  final Drawable monitoring=mapActivity.getMapView().getResources().getDrawable(R.drawable.monitoring);
   monitoringControl=new TextInfoControl(mapActivity,0,paintText,paintSubText){
     @Override public boolean updateInfo(){
-      if (settings.SAVE_TRACK_TO_GPX.get()) {
-        setImageDrawable(monitoring);
-        return true;
-      }
-      setImageDrawable(monitoring_rec);
+      setText(getMonitoringControlTxt(),null);
+      setImageDrawable(getMonitoringControlImg(mapActivity));
       return true;
     }
   }
 ;
+  monitoringControl.updateInfo();
   monitoringControl.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      Boolean isTrackMonitored=settings.SAVE_TRACK_TO_GPX.get();
+      boolean isTrackMonitored=settings.SAVE_TRACK_TO_GPX.get();
       settings.SAVE_TRACK_TO_GPX.set(!isTrackMonitored);
-      if (isTrackMonitored) {
-        monitoringControl.setImageDrawable(monitoring);
-        monitoringControl.setText("rec",null);
-        return;
-      }
-      monitoringControl.setImageDrawable(monitoring_rec);
-      monitoringControl.setText("pause",null);
+      monitoringControl.updateInfo();
     }
   }
 );
-  monitoringControl.setText("rec",null);
-  monitoringControl.setImageDrawable(monitoring);
-  return monitoringControl;
 }
