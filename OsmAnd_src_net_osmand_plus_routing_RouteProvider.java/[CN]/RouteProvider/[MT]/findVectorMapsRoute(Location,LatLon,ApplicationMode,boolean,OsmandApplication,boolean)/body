@@ -1,7 +1,19 @@
 {
   BinaryMapIndexReader[] files=app.getResourceManager().getRoutingMapFiles();
   BinaryRoutePlanner router=new BinaryRoutePlanner(NativeOsmandLibrary.getLoadedLibrary(),files);
-  RoutingConfiguration.Builder config=RoutingConfiguration.getDefault();
+  File routingXml=app.getSettings().extendOsmandPath(ResourceManager.ROUTING_XML);
+  RoutingConfiguration.Builder config;
+  if (routingXml.exists() && routingXml.canRead()) {
+    try {
+      config=RoutingConfiguration.parseFromInputStream(new FileInputStream(routingXml));
+    }
+ catch (    SAXException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+ else {
+    config=RoutingConfiguration.getDefault();
+  }
   GeneralRouterProfile p;
   if (mode == ApplicationMode.BICYCLE) {
     p=GeneralRouterProfile.BICYCLE;
