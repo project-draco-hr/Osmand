@@ -1,5 +1,4 @@
 {
-  final RoutingHelper routingHelper=routeLayer.getHelper();
   final Path laneStraight=new Path();
   Matrix pathTransform=new Matrix();
   pathTransform.postScale(scaleCoefficient / miniCoeff,scaleCoefficient / miniCoeff);
@@ -14,8 +13,10 @@
   paintRouteDirection.setColor(view.getResources().getColor(R.color.nav_arrow));
   paintRouteDirection.setAntiAlias(true);
   final float w=72 * scaleCoefficient / miniCoeff;
+  final RoutingHelper routingHelper=routeLayer.getHelper();
   final MapInfoControl lanesControl=new MapInfoControl(map){
     int[] lanes=null;
+    boolean imminent=false;
     @Override protected void onMeasure(    int widthMeasureSpec,    int heightMeasureSpec){
       int ls=(int)(lanes == null ? 0 : lanes.length * w);
       setWDimensions(ls,(int)(w + 3 * scaleCoefficient));
@@ -26,7 +27,7 @@
         canvas.save();
         for (int i=0; i < lanes.length; i++) {
           if ((lanes[i] & 1) == 1) {
-            paintRouteDirection.setColor(getResources().getColor(R.color.nav_arrow));
+            paintRouteDirection.setColor(imminent ? getResources().getColor(R.color.nav_arrow_imminent) : getResources().getColor(R.color.nav_arrow));
           }
  else {
             paintRouteDirection.setColor(getResources().getColor(R.color.nav_arrow_distant));
@@ -40,34 +41,41 @@
     }
     @Override public boolean updateInfo(){
       boolean visible=false;
-      RouteDirectionInfo next=null;
-      int dist=0;
+      int locimminent=-1;
+      int[] loclanes=null;
       if (routeLayer != null && routingHelper.isRouteCalculated()) {
         if (routingHelper.isRouterEnabled() && routingHelper.isFollowingMode()) {
-          next=routingHelper.getNextRouteDirectionInfo();
-          dist=routingHelper.getDistanceToNextRouteDirection();
+          NextDirectionInfo r=routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(),false);
+          if (r != null && r.directionInfo != null && r.directionInfo.getTurnType() != null) {
+            loclanes=r.directionInfo.getTurnType().getLanes();
+            locimminent=r.imminent;
+            if (locimminent == 2 || locimminent < 0) {
+              loclanes=null;
+            }
+          }
         }
  else {
-          dist=0;
           int di=map.getMapLayers().getRouteInfoLayer().getDirectionInfo();
           if (di >= 0 && map.getMapLayers().getRouteInfoLayer().isVisible()) {
-            next=routingHelper.getRouteDirections().get(di);
+            RouteDirectionInfo next=routingHelper.getRouteDirections().get(di);
+            if (next != null) {
+              loclanes=next.getTurnType().getLanes();
+            }
           }
         }
       }
-      if (next == null || dist > 450 || next.getTurnType().getLanes() == null) {
-        if (lanes != null) {
-          lanes=null;
+      visible=loclanes != null && loclanes.length > 0;
+      if (visible) {
+        if (!Arrays.equals(lanes,loclanes)) {
+          lanes=loclanes;
           requestLayout();
           invalidate();
         }
+        if ((locimminent == 0) != imminent) {
+          imminent=(locimminent == 0);
+          invalidate();
+        }
       }
- else       if (lanes == null || !Arrays.equals(lanes,next.getTurnType().getLanes())) {
-        lanes=next.getTurnType().getLanes();
-        requestLayout();
-        invalidate();
-      }
-      visible=lanes != null && lanes.length > 0;
       updateVisibility(visible);
       return true;
     }

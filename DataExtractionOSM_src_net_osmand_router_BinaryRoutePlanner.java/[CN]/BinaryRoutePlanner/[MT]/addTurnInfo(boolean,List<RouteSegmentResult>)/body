@@ -1,0 +1,28 @@
+{
+  int prevSegment=-1;
+  float dist=0;
+  for (int i=0; i <= result.size(); i++) {
+    TurnType t=null;
+    if (i < result.size()) {
+      t=getTurnInfo(result,i,leftside);
+      result.get(i).setTurnType(t);
+    }
+    if (t != null || i == result.size()) {
+      if (prevSegment >= 0) {
+        String turn=result.get(prevSegment).getTurnType().toString();
+        if (result.get(prevSegment).getTurnType().getLanes() != null) {
+          turn+=Arrays.toString(result.get(prevSegment).getTurnType().getLanes());
+        }
+        result.get(prevSegment).setDescription(turn + String.format(" and go %.2f meters",dist));
+        if (result.get(prevSegment).getTurnType().isSkipToSpeak()) {
+          result.get(prevSegment).setDescription(result.get(prevSegment).getDescription() + " (*)");
+        }
+      }
+      prevSegment=i;
+      dist=0;
+    }
+    if (i < result.size()) {
+      dist+=result.get(i).getDistance();
+    }
+  }
+}

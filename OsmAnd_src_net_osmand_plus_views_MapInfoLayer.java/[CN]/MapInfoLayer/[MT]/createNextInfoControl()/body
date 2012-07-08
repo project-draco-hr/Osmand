@@ -1,32 +1,43 @@
 {
   final RoutingHelper routingHelper=routeLayer.getHelper();
   final NextTurnInfoControl nextTurnInfo=new NextTurnInfoControl(map,paintText,paintSubText,false){
+    NextDirectionInfo calc1=new NextDirectionInfo();
+    TurnType straight=TurnType.valueOf(TurnType.C,true);
     @Override public boolean updateInfo(){
       boolean visible=false;
       if (routeLayer != null && routingHelper.isRouterEnabled() && routingHelper.isFollowingMode()) {
-        int d=routeLayer.getHelper().getDistanceToNextRouteDirection();
         makeUturnWhenPossible=routingHelper.makeUturnWhenPossible();
-        if (routingHelper.makeUturnWhenPossible() == true) {
-          if (!showMiniMap) {
-            visible=true;
-            turnImminent=1;
-            turnType=TurnType.valueOf(TurnType.TU,view.getSettings().LEFT_SIDE_NAVIGATION.get());
-            TurnPathHelper.calcTurnPath(pathForTurn,turnType,pathTransform);
-            invalidate();
-          }
+        if (makeUturnWhenPossible) {
+          visible=true;
+          turnImminent=1;
+          turnType=TurnType.valueOf(TurnType.TU,view.getSettings().LEFT_SIDE_NAVIGATION.get());
+          TurnPathHelper.calcTurnPath(pathForTurn,turnType,pathTransform);
+          invalidate();
         }
  else {
-          if (d >= 0 && !showMiniMap) {
+          NextDirectionInfo r=routingHelper.getNextRouteDirectionInfo(calc1,false);
+          boolean showStraight=false;
+          if (r != null) {
+            RouteDirectionInfo toShowWithoutSpeak=r.directionInfo;
+            if (r.imminent >= 0 && r.imminent < 2) {
+            }
+ else {
+              r=routingHelper.getNextRouteDirectionInfo(calc1,true);
+              if (calc1.directionInfo != toShowWithoutSpeak) {
+                showStraight=r.imminent == -1;
+              }
+            }
+          }
+          if (r != null && r.distanceTo > 0) {
             visible=true;
-            RouteDirectionInfo next=routeLayer.getHelper().getNextRouteDirectionInfo();
-            if (next == null) {
+            if (r.directionInfo == null) {
               if (turnType != null) {
                 turnType=null;
                 invalidate();
               }
             }
- else             if (!Algoritms.objectEquals(turnType,next.getTurnType())) {
-              turnType=next.getTurnType();
+ else             if (!Algoritms.objectEquals(turnType,showStraight ? straight : r.directionInfo.getTurnType())) {
+              turnType=showStraight ? straight : r.directionInfo.getTurnType();
               TurnPathHelper.calcTurnPath(pathForTurn,turnType,pathTransform);
               if (turnType.getExitOut() > 0) {
                 exitOut=turnType.getExitOut() + "";
@@ -36,12 +47,12 @@
               }
               invalidate();
             }
-            if (distChanged(d,nextTurnDirection)) {
+            if (distChanged(r.distanceTo,nextTurnDirection)) {
               invalidate();
-              nextTurnDirection=d;
+              nextTurnDirection=r.distanceTo;
             }
-            if (turnImminent != routingHelper.getNextTurnImminent()) {
-              turnImminent=routingHelper.getNextTurnImminent();
+            if (turnImminent != r.imminent) {
+              turnImminent=r.imminent;
               invalidate();
             }
           }
@@ -54,7 +65,6 @@
 ;
   nextTurnInfo.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      showMiniMap=true;
       nextTurnInfo.requestLayout();
       view.refreshMap();
     }

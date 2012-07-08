@@ -1,0 +1,30 @@
+{
+  int dirInfo=currentDirectionInfo;
+  if (dirInfo < directions.size()) {
+    int dist=listDistance[currentRoute];
+    int nextInd=dirInfo + 1;
+    if (toSpeak) {
+      while (nextInd < directions.size()) {
+        RouteDirectionInfo i=directions.get(nextInd);
+        if (i.getTurnType() != null && !i.getTurnType().isSkipToSpeak()) {
+          break;
+        }
+        nextInd++;
+      }
+    }
+    if (fromLoc != null) {
+      dist+=fromLoc.distanceTo(locations.get(currentRoute));
+    }
+    if (nextInd < directions.size()) {
+      info.directionInfo=directions.get(nextInd);
+      dist-=listDistance[directions.get(nextInd).routePointOffset];
+    }
+    info.directionInfoInd=nextInd;
+    info.distanceTo=dist;
+    return info;
+  }
+  info.directionInfoInd=-1;
+  info.distanceTo=-1;
+  info.directionInfo=null;
+  return null;
+}

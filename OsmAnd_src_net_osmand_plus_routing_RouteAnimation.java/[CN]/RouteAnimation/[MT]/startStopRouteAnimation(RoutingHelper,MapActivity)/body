@@ -3,13 +3,19 @@
   if (!isRouteAnimating()) {
     Builder builder=new AlertDialog.Builder(ma);
     builder.setTitle("Do you want to use existing GPX file?");
+    final View view=ma.getLayoutInflater().inflate(R.layout.animate_route,null);
+    ((TextView)view.findViewById(R.id.MinSpeedup)).setText("1");
+    ((TextView)view.findViewById(R.id.MaxSpeedup)).setText("4");
+    final SeekBar speedup=(SeekBar)view.findViewById(R.id.Speedup);
+    speedup.setMax(3);
+    builder.setView(view);
     builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
       @Override public void onClick(      DialogInterface dialog,      int which){
         ma.getMapLayers().selectGPXFileLayer(new CallbackWithObject<GPXUtilities.GPXFile>(){
           @Override public boolean processResult(          GPXUtilities.GPXFile result){
             GPXRouteParams prms=new RouteProvider.GPXRouteParams(result,false,((OsmandApplication)ma.getApplication()).getSettings());
             mgr.removeUpdates(ma.getGpsListener());
-            startAnimationThread(routingHelper,ma,prms.points,true,2);
+            startAnimationThread(routingHelper,ma,prms.points,true,speedup.getProgress() + 1);
             return true;
           }
         }

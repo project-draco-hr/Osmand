@@ -12,14 +12,8 @@
     }
     return;
   }
-  RouteDirectionInfo next=router.getNextRouteDirectionInfo();
-  int dist=router.getDistanceToNextRouteDirection();
-  if (currentDirection != router.getRoute().currentDirectionInfo) {
-    currentDirection=router.getRoute().currentDirectionInfo;
-    currentStatus=STATUS_UNKNOWN;
-    playGoAheadDist=0;
-  }
-  if (next == null || next.distance == 0) {
+  NextDirectionInfo nextInfo=router.getNextRouteDirectionInfo(new NextDirectionInfo(),true);
+  if (nextInfo == null || nextInfo.directionInfo.distance == 0) {
     if (currentStatus <= STATUS_UNKNOWN) {
       if (playGoAheadToDestination()) {
         currentStatus=STATUS_TOLD;
@@ -27,6 +21,13 @@
       }
     }
     return;
+  }
+  int dist=nextInfo.distanceTo;
+  RouteDirectionInfo next=nextInfo.directionInfo;
+  if (next != nextRouteDirection) {
+    nextRouteDirection=next;
+    currentStatus=STATUS_UNKNOWN;
+    playGoAheadDist=0;
   }
   if (dist == 0 || currentStatus == STATUS_TOLD) {
     return;
@@ -45,10 +46,10 @@
       nextStatusAfter(STATUS_PREPARE);
     }
   }
-  RouteDirectionInfo nextNext=router.getNextNextRouteDirectionInfo();
+  NextDirectionInfo nextNextInfo=router.getNextRouteDirectionInfoAfter(nextInfo,new NextDirectionInfo(),false);
   if (statusNotPassed(STATUS_TURN) && isDistanceLess(speed,dist,TURN_DISTANCE,TURN_DEFAULT_SPEED)) {
-    if (next.distance < TURN_IN_DISTANCE_END) {
-      playMakeTurn(next,nextNext);
+    if (next.distance < TURN_IN_DISTANCE_END && nextNextInfo != null) {
+      playMakeTurn(next,nextNextInfo.directionInfo);
     }
  else {
       playMakeTurn(next,null);
@@ -57,8 +58,8 @@
   }
  else   if (statusNotPassed(STATUS_TURN_IN) && isDistanceLess(speed,dist,TURN_IN_DISTANCE)) {
     if (dist >= TURN_IN_DISTANCE_END) {
-      if (isDistanceLess(speed,next.distance,TURN_DISTANCE) || next.distance < TURN_IN_DISTANCE_END) {
-        playMakeTurnIn(next,dist,nextNext);
+      if ((isDistanceLess(speed,next.distance,TURN_DISTANCE) || next.distance < TURN_IN_DISTANCE_END) && nextNextInfo != null) {
+        playMakeTurnIn(next,dist,nextNextInfo.directionInfo);
       }
  else {
         playMakeTurnIn(next,dist,null);
@@ -68,7 +69,11 @@
   }
  else   if (statusNotPassed(STATUS_PREPARE) && (dist <= PREPARE_DISTANCE)) {
     if (dist >= PREPARE_DISTANCE_END) {
-      playPrepareTurn(next,dist);
+      if (next.getTurnType().keepLeft() || next.getTurnType().keepRight()) {
+      }
+ else {
+        playPrepareTurn(next,dist);
+      }
     }
     nextStatusAfter(STATUS_PREPARE);
   }
