@@ -2,14 +2,19 @@
   super.onListItemClick(l,v,position,id);
   OsmandPlugin item=getListAdapter().getItem(position);
   boolean enable=!restartPlugins.contains(item.getId());
-  boolean ok=OsmandPlugin.enablePlugin(((OsmandApplication)getApplication()),item,enable);
-  if (ok) {
-    if (!enable) {
-      restartPlugins.remove(item.getId());
-    }
+  if (!enable || clickedPlugins.contains(item.getId())) {
+    boolean ok=OsmandPlugin.enablePlugin(((OsmandApplication)getApplication()),item,enable);
+    if (ok) {
+      if (!enable) {
+        restartPlugins.remove(item.getId());
+      }
  else {
-      restartPlugins.add(item.getId());
+        restartPlugins.add(item.getId());
+      }
     }
+  }
+ else {
+    clickedPlugins.add(item.getId());
   }
   getListAdapter().notifyDataSetChanged();
 }

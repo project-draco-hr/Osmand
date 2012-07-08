@@ -4,14 +4,16 @@
     LayoutInflater inflater=getLayoutInflater();
     v=inflater.inflate(net.osmand.plus.R.layout.plugins_list_item,parent,false);
   }
-  final View row=v;
   OsmandPlugin plugin=getItem(position);
+  boolean toBeEnabled=restartPlugins.contains(plugin.getId());
+  int resourceId=toBeEnabled ? R.drawable.list_activities_dot_marker2_pressed : R.drawable.list_activities_dot_marker1_pressed;
+  final View row=v;
   TextView nameView=(TextView)row.findViewById(R.id.plugin_name);
   nameView.setText(plugin.getName());
+  nameView.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.list_activities_plugin_menu_symbol),null,getResources().getDrawable(resourceId),null);
   TextView description=(TextView)row.findViewById(R.id.plugin_descr);
   description.setText(plugin.getDescription());
-  boolean toBeEnabled=restartPlugins.contains(plugin.getId());
-  int right=toBeEnabled ? R.drawable.list_activities_dot_marker2_pressed : R.drawable.list_activities_dot_marker1_pressed;
-  nameView.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.list_activities_plugin_menu_symbol),null,getResources().getDrawable(right),null);
+  description.setVisibility(clickedPlugins.contains(plugin.getId()) ? View.VISIBLE : View.GONE);
+  description.setTextColor(toBeEnabled ? colorGreen : Color.LTGRAY);
   return row;
 }
