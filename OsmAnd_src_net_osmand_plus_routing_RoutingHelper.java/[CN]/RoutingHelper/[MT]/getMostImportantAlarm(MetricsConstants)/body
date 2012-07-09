@@ -1,0 +1,18 @@
+{
+  float mxspeed=route.getCurrentMaxSpeed();
+  AlarmInfo speedAlarm=null;
+  if (mxspeed != 0 && lastFixedLocation != null && lastFixedLocation.hasSpeed()) {
+    float delta=5f / 3.6f;
+    if (lastFixedLocation.getSpeed() > mxspeed + delta) {
+      int speed;
+      if (mc == MetricsConstants.KILOMETERS_AND_METERS) {
+        speed=Math.round(mxspeed * 3.6f);
+      }
+ else {
+        speed=Math.round(mxspeed * 3.6f / 1.6f);
+      }
+      speedAlarm=AlarmInfo.createSpeedLimit(speed);
+    }
+  }
+  return route.getMostImportantAlarm(lastFixedLocation,speedAlarm);
+}
