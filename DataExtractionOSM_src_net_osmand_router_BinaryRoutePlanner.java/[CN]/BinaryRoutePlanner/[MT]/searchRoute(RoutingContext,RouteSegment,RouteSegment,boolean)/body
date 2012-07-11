@@ -29,19 +29,18 @@
   PriorityQueue<RouteSegment> graphReverseSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
   TLongObjectHashMap<RouteSegment> visitedDirectSegments=new TLongObjectHashMap<RouteSegment>();
   TLongObjectHashMap<RouteSegment> visitedOppositeSegments=new TLongObjectHashMap<RouteSegment>();
-  if (ctx.previouslyCalculatedRoute != null && ctx.previouslyCalculatedRoute.size() > 0) {
+  boolean runRecalculation=ctx.previouslyCalculatedRoute != null && ctx.previouslyCalculatedRoute.size() > 0;
+  if (runRecalculation) {
     RouteSegment previous=null;
-    int previousSegmentEnd=0;
     for (    RouteSegmentResult rr : ctx.previouslyCalculatedRoute) {
       RouteSegment segment=new RouteSegment(rr.getObject(),rr.getEndPointIndex());
       if (previous != null) {
-        segment.parentRoute=previous;
-        segment.parentSegmentEnd=previousSegmentEnd;
+        previous.parentRoute=segment;
+        previous.parentSegmentEnd=rr.getStartPointIndex();
+        long t=(rr.getObject().getId() << ROUTE_POINTS) + segment.segmentStart;
+        visitedOppositeSegments.put(t,segment);
       }
       previous=segment;
-      previousSegmentEnd=rr.getStartPointIndex();
-      long t=rr.getObject().getId() << ROUTE_POINTS + rr.getEndPointIndex();
-      visitedOppositeSegments.put(t,segment);
     }
     end=previous;
   }
@@ -78,7 +77,8 @@
     if (graphReverseSegments.isEmpty() || graphDirectSegments.isEmpty() || routeFound) {
       break;
     }
-    if (ctx.previouslyCalculatedRoute != null) {
+    if (runRecalculation) {
+      inverse=false;
     }
  else     if (!init) {
       inverse=!inverse;
