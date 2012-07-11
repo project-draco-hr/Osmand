@@ -34,7 +34,31 @@
     @Override public void actionPerformed(    ActionEvent e){
       new Thread(){
         @Override public void run(){
-          List<Way> ways=selfRoute(startRoute,endRoute);
+          List<Way> ways=selfRoute(startRoute,endRoute,null);
+          if (ways != null) {
+            DataTileManager<Way> points=new DataTileManager<Way>();
+            points.setZoom(11);
+            for (            Way w : ways) {
+              LatLon n=w.getLatLon();
+              points.registerObject(n.getLatitude(),n.getLongitude(),w);
+            }
+            map.setPoints(points);
+          }
+        }
+      }
+.start();
+    }
+  }
+;
+  Action recalculate=new AbstractAction("Recalculate OsmAnd route"){
+    private static final long serialVersionUID=507156107455281238L;
+    @Override public boolean isEnabled(){
+      return true;
+    }
+    @Override public void actionPerformed(    ActionEvent e){
+      new Thread(){
+        @Override public void run(){
+          List<Way> ways=selfRoute(startRoute,endRoute,previousRoute);
           if (ways != null) {
             DataTileManager<Way> points=new DataTileManager<Way>();
             points.setZoom(11);
@@ -51,6 +75,7 @@
   }
 ;
   menu.add(selfRoute);
+  menu.add(recalculate);
   Action route_YOURS=new AbstractAction("Calculate YOURS route"){
     private static final long serialVersionUID=507156107455281238L;
     @Override public void actionPerformed(    ActionEvent e){

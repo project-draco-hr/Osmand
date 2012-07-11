@@ -49,6 +49,7 @@ catch (    SAXException e) {
       BinaryRoutePlanner router=new BinaryRoutePlanner(NativeSwingRendering.getDefaultFromSettings(),rs);
       RoutingConfiguration config=builder.build(m,true);
       RoutingContext ctx=new RoutingContext(config);
+      ctx.previouslyCalculatedRoute=previousRoute;
       log.info("Use " + config.routerName + "mode for routing");
       RouteSegment st=router.findRouteSegment(start.getLatitude(),start.getLongitude(),ctx);
       if (st == null) {
@@ -110,6 +111,7 @@ catch (    SAXException e) {
       }
 );
       List<RouteSegmentResult> searchRoute=router.searchRoute(ctx,st,e,false);
+      previousRoute=searchRoute;
       if (animateRoutingCalculation) {
         playPauseButton.setVisible(false);
         nextTurn.setText("FINISH");

@@ -3,7 +3,7 @@
   ctx.visitedSegments=0;
   ctx.timeToCalculate=System.nanoTime();
   if (ctx.config.initialDirection != null) {
-    ctx.firstRoadId=(start.getRoad().id << 8) + start.getSegmentStart();
+    ctx.firstRoadId=(start.getRoad().id << ROUTE_POINTS) + start.getSegmentStart();
     double plusDir=start.getRoad().directionRoute(start.segmentStart,true);
     double diff=plusDir - ctx.config.initialDirection;
     if (Math.abs(MapUtils.alignAngleDifference(diff)) <= Math.PI / 3) {
@@ -29,6 +29,22 @@
   PriorityQueue<RouteSegment> graphReverseSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
   TLongObjectHashMap<RouteSegment> visitedDirectSegments=new TLongObjectHashMap<RouteSegment>();
   TLongObjectHashMap<RouteSegment> visitedOppositeSegments=new TLongObjectHashMap<RouteSegment>();
+  if (ctx.previouslyCalculatedRoute != null && ctx.previouslyCalculatedRoute.size() > 0) {
+    RouteSegment previous=null;
+    int previousSegmentEnd=0;
+    for (    RouteSegmentResult rr : ctx.previouslyCalculatedRoute) {
+      RouteSegment segment=new RouteSegment(rr.getObject(),rr.getEndPointIndex());
+      if (previous != null) {
+        segment.parentRoute=previous;
+        segment.parentSegmentEnd=previousSegmentEnd;
+      }
+      previous=segment;
+      previousSegmentEnd=rr.getStartPointIndex();
+      long t=rr.getObject().getId() << ROUTE_POINTS + rr.getEndPointIndex();
+      visitedOppositeSegments.put(t,segment);
+    }
+    end=previous;
+  }
   int targetEndX=end.road.getPoint31XTile(end.segmentStart);
   int targetEndY=end.road.getPoint31YTile(end.segmentStart);
   int startX=start.road.getPoint31XTile(start.segmentStart);
@@ -62,7 +78,9 @@
     if (graphReverseSegments.isEmpty() || graphDirectSegments.isEmpty() || routeFound) {
       break;
     }
-    if (!init) {
+    if (ctx.previouslyCalculatedRoute != null) {
+    }
+ else     if (!init) {
       inverse=!inverse;
       init=true;
     }
