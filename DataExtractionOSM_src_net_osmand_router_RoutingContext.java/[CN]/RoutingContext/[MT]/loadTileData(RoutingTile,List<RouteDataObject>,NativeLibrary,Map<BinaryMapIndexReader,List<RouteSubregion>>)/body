@@ -1,0 +1,68 @@
+{
+  long now=System.nanoTime();
+  ResultMatcher<RouteDataObject> matcher=new ResultMatcher<RouteDataObject>(){
+    @Override public boolean publish(    RouteDataObject o){
+      if (toFillIn != null) {
+        if (getRouter().acceptLine(o)) {
+          toFillIn.add(o);
+        }
+      }
+      registerRouteDataObject(o,tile);
+      return false;
+    }
+    @Override public boolean isCancelled(){
+      return false;
+    }
+  }
+;
+  int zoomToLoad=31 - tile.getZoom();
+  int tileX=tile.getTileX();
+  int tileY=tile.getTileY();
+  boolean loadData=toFillIn != null;
+  List<NativeRouteSearchResult> nativeRouteSearchResults=new ArrayList<NativeRouteSearchResult>();
+  SearchRequest<RouteDataObject> request=BinaryMapIndexReader.buildSearchRouteRequest(tileX << zoomToLoad,(tileX + 1) << zoomToLoad,tileY << zoomToLoad,(tileY + 1) << zoomToLoad,matcher);
+  for (  Entry<BinaryMapIndexReader,List<RouteSubregion>> r : map.entrySet()) {
+    if (nativeLib != null) {
+      for (      RouteRegion reg : r.getKey().getRoutingIndexes()) {
+        NativeRouteSearchResult rs=nativeLoadRegion(request,reg,nativeLib,loadData);
+        if (rs != null) {
+          if (!loadData) {
+            if (rs.nativeHandler != 0) {
+              nativeRouteSearchResults.add(rs);
+            }
+          }
+ else {
+            if (rs.objects != null) {
+              for (              RouteDataObject ro : rs.objects) {
+                if (ro != null) {
+                  request.publish(ro);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+ else {
+      try {
+        r.getKey().searchRouteIndex(request,r.getValue());
+      }
+ catch (      IOException e) {
+        throw new RuntimeException("Loading data exception",e);
+      }
+    }
+  }
+  loadedTiles++;
+  if (tile.isUnloaded()) {
+    loadedPrevUnloadedTiles++;
+  }
+ else {
+    distinctLoadedTiles++;
+  }
+  tile.setLoaded();
+  if (nativeRouteSearchResults.size() > 0) {
+    tile.nativeLib=nativeLib;
+    tile.nativeResults=nativeRouteSearchResults;
+  }
+  timeToLoad+=(System.nanoTime() - now);
+}
