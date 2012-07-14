@@ -1,0 +1,27 @@
+{
+  int exit=1;
+  RouteSegmentResult last=rr;
+  for (int j=i; j < result.size(); j++) {
+    RouteSegmentResult rnext=result.get(j);
+    if (rnext.getObject().roundabout()) {
+      last=rnext;
+      boolean plus=rnext.getStartPointIndex() < rnext.getEndPointIndex();
+      int k=rnext.getStartPointIndex();
+      if (j == i) {
+        k=plus ? k + 1 : k - 1;
+      }
+      while (k != rnext.getEndPointIndex()) {
+        if (rnext.getAttachedRoutes(k).size() > 0) {
+          exit++;
+        }
+        k=plus ? k + 1 : k - 1;
+      }
+    }
+ else {
+      break;
+    }
+  }
+  TurnType t=TurnType.valueOf("EXIT" + exit,leftSide);
+  t.setTurnAngle((float)MapUtils.degreesDiff(last.getBearingBegin(),prev.getBearingEnd()));
+  return t;
+}

@@ -1,10 +1,29 @@
 {
   int prevSegment=-1;
   float dist=0;
-  for (int i=0; i <= result.size(); i++) {
+  int next=1;
+  for (int i=0; i <= result.size(); i=next) {
     TurnType t=null;
+    next=i + 1;
     if (i < result.size()) {
       t=getTurnInfo(result,i,leftside);
+      if (t != null && i < result.size() - 1) {
+        boolean tl=TurnType.TL.equals(t.getValue());
+        boolean tr=TurnType.TR.equals(t.getValue());
+        if (tl || tr) {
+          TurnType tnext=getTurnInfo(result,i + 1,leftside);
+          if (tnext != null && result.get(i).getDistance() < 55) {
+            if (tl && TurnType.TL.equals(t.getValue())) {
+              next=i + 2;
+              t=TurnType.valueOf(TurnType.TU,true);
+            }
+ else             if (tr && TurnType.TR.equals(t.getValue())) {
+              next=i + 2;
+              t=TurnType.valueOf(TurnType.TU,false);
+            }
+          }
+        }
+      }
       result.get(i).setTurnType(t);
     }
     if (t != null || i == result.size()) {
