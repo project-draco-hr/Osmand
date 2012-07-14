@@ -8,7 +8,11 @@
     RouteDataObject[] res=nativeLib.getDataObjects(rs,x31,y31);
     if (res != null) {
       for (      RouteDataObject ro : res) {
-        if (ro != null && !excludeDuplications.contains(ro.id)) {
+        boolean accept=ro != null && !excludeDuplications.contains(ro.id);
+        if (ctx != null && accept) {
+          accept=ctx.getRouter().acceptLine(ro);
+        }
+        if (accept) {
           excludeDuplications.add(ro.id);
           for (int i=0; i < ro.pointsX.length; i++) {
             if (ro.getPoint31XTile(i) == x31 && ro.getPoint31YTile(i) == y31) {
