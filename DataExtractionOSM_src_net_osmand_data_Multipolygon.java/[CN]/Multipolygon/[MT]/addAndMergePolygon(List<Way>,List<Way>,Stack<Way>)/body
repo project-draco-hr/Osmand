@@ -1,0 +1,46 @@
+{
+  while (!workStack.isEmpty()) {
+    Way changedWay=workStack.pop();
+    List<Node> nodes=changedWay.getNodes();
+    if (nodes.isEmpty()) {
+      continue;
+    }
+    if (isClosed(changedWay)) {
+      polygons.remove(changedWay);
+      closedPolygons.add(changedWay);
+      continue;
+    }
+    Node first=nodes.get(0);
+    Node last=nodes.get(nodes.size() - 1);
+    for (    Way anotherWay : polygons) {
+      if (anotherWay == changedWay) {
+        continue;
+      }
+      if (anotherWay.getNodes().get(0).getId() == first.getId()) {
+        Collections.reverse(changedWay.getNodes());
+        anotherWay.getNodes().addAll(0,changedWay.getNodes());
+        workStack.push(anotherWay);
+        break;
+      }
+ else       if (anotherWay.getNodes().get(0).getId() == last.getId()) {
+        anotherWay.getNodes().addAll(0,changedWay.getNodes());
+        workStack.push(anotherWay);
+        break;
+      }
+ else       if (anotherWay.getNodes().get(anotherWay.getNodes().size() - 1).getId() == first.getId()) {
+        anotherWay.getNodes().addAll(changedWay.getNodes());
+        workStack.push(anotherWay);
+        break;
+      }
+ else       if (anotherWay.getNodes().get(anotherWay.getNodes().size() - 1).getId() == last.getId()) {
+        Collections.reverse(changedWay.getNodes());
+        anotherWay.getNodes().addAll(changedWay.getNodes());
+        workStack.push(anotherWay);
+        break;
+      }
+    }
+    if (workStack.isEmpty() && !polygons.contains(changedWay)) {
+      polygons.add(changedWay);
+    }
+  }
+}

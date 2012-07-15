@@ -4,7 +4,7 @@
     if (e instanceof Relation) {
       Relation aRelation=(Relation)e;
       ctx.loadEntityRelation(aRelation);
-      boundary=new Boundary(true);
+      boundary=new Boundary();
       boundary.setName(aRelation.getTag(OSMTagKey.NAME));
       boundary.setBoundaryId(aRelation.getId());
       boundary.setAdminLevel(extractBoundaryAdminLevel(aRelation));
@@ -27,15 +27,10 @@
           boundary.setAdminCenterId(es.getId());
         }
       }
-      boundary.computeIsClosedWay();
     }
  else     if (e instanceof Way) {
       if (!visitedBoundaryWays.contains(e.getId())) {
-        boolean closed=false;
-        if (((Way)e).getNodeIds().size() > 1) {
-          closed=((Way)e).getFirstNodeId() == ((Way)e).getLastNodeId();
-        }
-        boundary=new WayBoundary(closed);
+        boundary=new WayBoundary();
         boundary.setName(e.getTag(OSMTagKey.NAME));
         boundary.setBoundaryId(e.getId());
         boundary.setAdminLevel(extractBoundaryAdminLevel(e));
