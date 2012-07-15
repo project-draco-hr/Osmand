@@ -19,13 +19,23 @@
   if (routingHelper.isFollowingMode()) {
     if (location == null || !location.hasAccuracy() || location.getAccuracy() < ACCURACY_FOR_GPX_AND_ROUTING) {
       Location updatedLocation=routingHelper.setCurrentLocation(location);
+      if (!routingHelper.isFollowingMode()) {
+        Message msg=Message.obtain(uiHandler,new Runnable(){
+          @Override public void run(){
+            settings.APPLICATION_MODE.set(settings.PREV_APPLICATION_MODE.get());
+            updateApplicationModeSettings();
+          }
+        }
+);
+        uiHandler.sendMessage(msg);
+      }
       location=updatedLocation;
       if (location != null && routingHelper.getLeftDistance() > 0) {
         final long fixTime=location.getTime();
         Message msg=Message.obtain(uiHandler,new Runnable(){
           @Override public void run(){
             Location lastKnown=getLastKnownLocation();
-            if (lastKnown != null && lastKnown.getTime() - fixTime < LOST_LOCATION_CHECK_DELAY) {
+            if (lastKnown != null && lastKnown.getTime() - fixTime < LOST_LOCATION_CHECK_DELAY / 2) {
               return;
             }
             if (routingHelper.getLeftDistance() > 0 && settings.MAP_ACTIVITY_ENABLED.get()) {

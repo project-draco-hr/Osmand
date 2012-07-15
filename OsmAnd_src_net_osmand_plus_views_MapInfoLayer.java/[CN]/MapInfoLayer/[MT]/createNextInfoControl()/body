@@ -5,8 +5,9 @@
     TurnType straight=TurnType.valueOf(TurnType.C,true);
     @Override public boolean updateInfo(){
       boolean visible=false;
-      if (routeLayer != null && routingHelper.isRouterEnabled() && routingHelper.isFollowingMode()) {
-        makeUturnWhenPossible=routingHelper.makeUturnWhenPossible();
+      if (routeLayer != null && routingHelper.isRouteCalculated()) {
+        boolean follow=routingHelper.isFollowingMode();
+        makeUturnWhenPossible=routingHelper.makeUturnWhenPossible() && follow;
         if (makeUturnWhenPossible) {
           visible=true;
           turnImminent=1;
@@ -16,7 +17,20 @@
         }
  else {
           boolean showStraight=false;
-          NextDirectionInfo r=routingHelper.getNextRouteDirectionInfo(calc1,true);
+          NextDirectionInfo r=null;
+          if (follow) {
+            r=routingHelper.getNextRouteDirectionInfo(calc1,true);
+          }
+ else {
+            int di=map.getMapLayers().getRouteInfoLayer().getDirectionInfo();
+            if (di >= 0 && map.getMapLayers().getRouteInfoLayer().isVisible()) {
+              RouteDirectionInfo next=routingHelper.getRouteDirections().get(di);
+              r=new NextDirectionInfo();
+              r.directionInfo=next;
+              r.distanceTo=0;
+              r.imminent=1;
+            }
+          }
           if (r != null && r.distanceTo > 0) {
             visible=true;
             if (r.directionInfo == null) {

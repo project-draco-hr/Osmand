@@ -1,7 +1,6 @@
 {
   final ContextMenuAdapter adapter=iadapter == null ? new ContextMenuAdapter(mapActivity) : iadapter;
   Builder builder=new AlertDialog.Builder(mapActivity);
-  final OsmandMapTileView mapView=mapActivity.getMapView();
   adapter.registerItem(R.string.context_menu_item_navigate_point,R.drawable.list_view_set_destination);
   adapter.registerItem(R.string.context_menu_item_directions,R.drawable.list_view_directions_to_here);
   adapter.registerItem(R.string.context_menu_item_show_route,R.drawable.list_view_show_route_from_here);
@@ -45,21 +44,19 @@
       }
  else       if (standardId == R.string.context_menu_item_directions) {
         Location loc=mapActivity.getLastKnownLocation();
-        if (loc != null) {
-          mapActivity.navigateToPoint(new LatLon(latitude,longitude));
-          getDirections(loc.getLatitude(),loc.getLongitude(),true);
-        }
- else {
-          AccessibleToast.makeText(mapActivity,R.string.unknown_from_location,Toast.LENGTH_LONG).show();
-        }
+        mapActivity.navigateToPoint(new LatLon(latitude,longitude));
+        getDirections(loc,true);
       }
  else       if (standardId == R.string.context_menu_item_show_route) {
         if (checkPointToNavigate()) {
-          getDirections(latitude,longitude,false);
+          Location loc=new Location("map");
+          loc.setLatitude(latitude);
+          loc.setLongitude(longitude);
+          getDirections(loc,true);
         }
       }
  else       if (standardId == R.string.context_menu_item_share_location) {
-        shareLocation(latitude,longitude,mapView.getZoom());
+        shareLocation(latitude,longitude,mapActivity.getMapView().getZoom());
       }
  else       if (standardId == R.string.context_menu_item_add_favorite) {
         addFavouritePoint(latitude,longitude);
