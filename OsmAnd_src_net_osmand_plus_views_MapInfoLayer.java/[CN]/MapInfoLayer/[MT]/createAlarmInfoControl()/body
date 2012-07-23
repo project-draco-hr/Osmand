@@ -20,8 +20,8 @@
     @Override public boolean updateInfo(){
       boolean limits=settings.SHOW_SPEED_LIMITS.get();
       boolean cams=settings.SHOW_CAMERAS.get();
-      boolean visible=limits || cams;
-      if (visible && routeLayer != null && routingHelper.isFollowingMode()) {
+      boolean visible=false;
+      if ((limits || cams) && routeLayer != null && routingHelper.isFollowingMode()) {
         AlarmInfo alarm=routingHelper.getMostImportantAlarm(view.getSettings().METRIC_SYSTEM.get());
         if (alarm != null) {
           if (alarm.getType() == AlarmInfo.SPEED_LIMIT) {
@@ -42,11 +42,13 @@
  else           if (alarm.getType() == AlarmInfo.STOP) {
           }
           visible=text.length() > 0;
-          if (alarm.getType() == AlarmInfo.SPEED_CAMERA) {
-            visible=cams;
-          }
+          if (visible) {
+            if (alarm.getType() == AlarmInfo.SPEED_CAMERA) {
+              visible=cams;
+            }
  else {
-            visible=limits;
+              visible=limits;
+            }
           }
         }
       }
