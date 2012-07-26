@@ -1,0 +1,87 @@
+{
+  final Path laneStraight=new Path();
+  Matrix pathTransform=new Matrix();
+  pathTransform.postScale(scaleCoefficient / miniCoeff,scaleCoefficient / miniCoeff);
+  TurnPathHelper.calcTurnPath(laneStraight,TurnType.valueOf(TurnType.C,false),pathTransform);
+  final Paint paintBlack=new Paint();
+  paintBlack.setStyle(Style.STROKE);
+  paintBlack.setColor(Color.BLACK);
+  paintBlack.setAntiAlias(true);
+  paintBlack.setStrokeWidth(2.5f);
+  final Paint paintRouteDirection=new Paint();
+  paintRouteDirection.setStyle(Style.FILL);
+  paintRouteDirection.setColor(view.getResources().getColor(R.color.nav_arrow));
+  paintRouteDirection.setAntiAlias(true);
+  final float w=72 * scaleCoefficient / miniCoeff;
+  final MapInfoControl lanesControl=new MapInfoControl(view.getContext()){
+    int[] lanes=null;
+    boolean imminent=false;
+    @Override protected void onMeasure(    int widthMeasureSpec,    int heightMeasureSpec){
+      int ls=(int)(lanes == null ? 0 : lanes.length * w);
+      setWDimensions(ls,(int)(w + 3 * scaleCoefficient));
+    }
+    @Override protected void onDraw(    Canvas canvas){
+      super.onDraw(canvas);
+      if (lanes != null && lanes.length > 0) {
+        canvas.save();
+        for (int i=0; i < lanes.length; i++) {
+          if ((lanes[i] & 1) == 1) {
+            paintRouteDirection.setColor(imminent ? getResources().getColor(R.color.nav_arrow_imminent) : getResources().getColor(R.color.nav_arrow));
+          }
+ else {
+            paintRouteDirection.setColor(getResources().getColor(R.color.nav_arrow_distant));
+          }
+          canvas.drawPath(laneStraight,paintBlack);
+          canvas.drawPath(laneStraight,paintRouteDirection);
+          canvas.translate(w,0);
+        }
+        canvas.restore();
+      }
+    }
+    @Override public boolean updateInfo(){
+      boolean visible=false;
+      int locimminent=-1;
+      int[] loclanes=null;
+      if (routingHelper != null && routingHelper.isRouteCalculated()) {
+        if (routingHelper.isFollowingMode()) {
+          NextDirectionInfo r=routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(),false);
+          if (r != null && r.directionInfo != null && r.directionInfo.getTurnType() != null) {
+            loclanes=r.directionInfo.getTurnType().getLanes();
+            locimminent=r.imminent;
+            if ((r.distanceTo > 700 && r.directionInfo.getTurnType().isSkipToSpeak()) || r.distanceTo > 1200) {
+              loclanes=null;
+            }
+          }
+        }
+ else {
+          RouteInfoLayer ls=view.getLayerByClass(RouteInfoLayer.class);
+          if (ls != null) {
+            int di=ls.getDirectionInfo();
+            if (di >= 0 && ls.isVisible()) {
+              RouteDirectionInfo next=routingHelper.getRouteDirections().get(di);
+              if (next != null) {
+                loclanes=next.getTurnType().getLanes();
+              }
+            }
+          }
+        }
+      }
+      visible=loclanes != null && loclanes.length > 0;
+      if (visible) {
+        if (!Arrays.equals(lanes,loclanes)) {
+          lanes=loclanes;
+          requestLayout();
+          invalidate();
+        }
+        if ((locimminent == 0) != imminent) {
+          imminent=(locimminent == 0);
+          invalidate();
+        }
+      }
+      updateVisibility(visible);
+      return true;
+    }
+  }
+;
+  return lanesControl;
+}

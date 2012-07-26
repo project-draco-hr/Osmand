@@ -1,0 +1,27 @@
+{
+  statusBar=createStatusBar();
+  RouteInfoControls ric=new RouteInfoControls(scaleCoefficient);
+  lanesControl=ric.createLanesControl(view.getApplication().getRoutingHelper(),view);
+  lanesControl.setBackgroundDrawable(view.getResources().getDrawable(R.drawable.box_free));
+  alarmControl=ric.createAlarmInfoControl(view.getApplication().getRoutingHelper(),view.getContext(),view.getSettings());
+  EnumSet<ApplicationMode> all=EnumSet.allOf(ApplicationMode.class);
+  EnumSet<ApplicationMode> bicyclePedestrian=EnumSet.of(ApplicationMode.BICYCLE,ApplicationMode.PEDESTRIAN);
+  EnumSet<ApplicationMode> none=EnumSet.noneOf(ApplicationMode.class);
+  RoutingHelper routingHelper=view.getApplication().getRoutingHelper();
+  NextTurnInfoControl bigInfoControl=ric.createNextInfoControl(routingHelper,view.getApplication(),view.getSettings(),paintText,paintSubText,false);
+  mapInfoControls.registerSideWidget(bigInfoControl,0,R.string.map_widget_next_turn,"next_turn",true,all,none,5);
+  NextTurnInfoControl smallInfoControl=ric.createNextInfoControl(routingHelper,view.getApplication(),view.getSettings(),paintSmallText,paintSmallSubText,true);
+  mapInfoControls.registerSideWidget(smallInfoControl,0,R.string.map_widget_next_turn_small,"next_turn_small",true,bicyclePedestrian,none,10);
+  NextTurnInfoControl nextNextInfoControl=ric.createNextNextInfoControl(routingHelper,view.getApplication(),view.getSettings(),paintSmallText,paintSmallSubText,true);
+  mapInfoControls.registerSideWidget(nextNextInfoControl,0,R.string.map_widget_next_next_turn,"next_next_turn",true,all,none,15);
+  MiniMapControl miniMap=ric.createMiniMapControl(routingHelper,view);
+  mapInfoControls.registerSideWidget(miniMap,0,R.string.map_widget_mini_route,"mini_route",true,none,none,20);
+  TextInfoControl dist=ric.createDistanceControl(map,paintText,paintSubText);
+  mapInfoControls.registerSideWidget(dist,R.drawable.info_target,R.string.map_widget_distance,"distance",false,all,none,5);
+  TextInfoControl time=ric.createTimeControl(map,paintText,paintSubText);
+  mapInfoControls.registerSideWidget(time,R.drawable.info_time,R.string.map_widget_time,"time",false,all,none,10);
+  TextInfoControl speed=ric.createSpeedControl(map,paintText,paintSubText);
+  mapInfoControls.registerSideWidget(speed,R.drawable.info_speed,R.string.map_widget_speed,"speed",false,all,none,15);
+  TextInfoControl alt=ric.createAltitudeControl(map,paintText,paintSubText);
+  mapInfoControls.registerSideWidget(alt,R.drawable.ic_altitude,R.string.map_widget_altitude,"altitude",false,EnumSet.of(ApplicationMode.PEDESTRIAN),none,20);
+}

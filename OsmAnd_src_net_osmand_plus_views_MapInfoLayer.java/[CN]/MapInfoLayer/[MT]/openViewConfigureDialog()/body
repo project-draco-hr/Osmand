@@ -1,0 +1,82 @@
+{
+  final OsmandSettings settings=view.getSettings();
+  final ArrayList<Object> list=new ArrayList<Object>();
+  list.add(map.getString(R.string.map_widget_reset));
+  list.add(map.getString(R.string.map_widget_right_stack));
+  list.addAll(mapInfoControls.getRight());
+  list.add(map.getString(R.string.map_widget_left_stack));
+  list.addAll(mapInfoControls.getLeft());
+  Builder b=new AlertDialog.Builder(map);
+  final ApplicationMode mode=settings.getApplicationMode();
+  ListAdapter listAdapter=new ArrayAdapter<Object>(map,R.layout.layers_list_activity_item,R.id.title,list){
+    @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
+      View v=convertView;
+      if (v == null) {
+        v=map.getLayoutInflater().inflate(R.layout.layers_list_activity_item,null);
+      }
+      TextView tv=(TextView)v.findViewById(R.id.title);
+      final CheckBox ch=((CheckBox)v.findViewById(R.id.check_item));
+      Object o=list.get(position);
+      if (o instanceof MapInfoControlRegInfo) {
+        final MapInfoControlRegInfo mi=(MapInfoControlRegInfo)o;
+        tv.setText(map.getString(mi.messageId));
+        if (mi.drawable != 0) {
+          tv.setPadding((int)(12 * scaleCoefficient),0,0,0);
+          tv.setCompoundDrawablesWithIntrinsicBounds(mi.drawable,0,0,0);
+        }
+ else {
+          tv.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0);
+          tv.setPadding((int)(27 * scaleCoefficient),0,0,0);
+        }
+        boolean check=mi.visibleCollapsed(mode) || mi.visible(mode);
+        ch.setOnCheckedChangeListener(null);
+        ch.setChecked(check);
+        ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+          @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
+            if (!isChecked) {
+              mapInfoControls.changeVisibility(mi,false,false);
+            }
+ else {
+              mapInfoControls.changeVisibility(mi,true,false);
+            }
+            recreateControls();
+          }
+        }
+);
+        ch.setVisibility(View.VISIBLE);
+      }
+ else {
+        tv.setText(o.toString());
+        tv.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0);
+        tv.setPadding((int)(5 * scaleCoefficient),0,0,0);
+        ch.setVisibility(View.INVISIBLE);
+      }
+      return v;
+    }
+  }
+;
+  b.setAdapter(listAdapter,new OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int position){
+      Object o=list.get(position);
+      if (o instanceof MapInfoControlRegInfo) {
+        final MapInfoControlRegInfo mi=(MapInfoControlRegInfo)o;
+        boolean check=mi.visibleCollapsed(mode) || mi.visible(mode);
+        if (check) {
+          mapInfoControls.changeVisibility(mi,false,false);
+        }
+ else {
+          mapInfoControls.changeVisibility(mi,true,false);
+        }
+        recreateControls();
+      }
+ else       if (o.toString().equals(map.getString(R.string.map_widget_reset))) {
+        mapInfoControls.resetToDefault();
+        recreateControls();
+      }
+    }
+  }
+);
+  final AlertDialog dlg=b.create();
+  dlg.setCanceledOnTouchOutside(true);
+  dlg.show();
+}
