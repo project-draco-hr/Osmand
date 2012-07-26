@@ -1,0 +1,32 @@
+{
+  final Drawable compass=map.getResources().getDrawable(R.drawable.compass);
+  final int mw=(int)compass.getMinimumWidth();
+  final int mh=(int)compass.getMinimumHeight();
+  final OsmandMapTileView view=map.getMapView();
+  ImageViewControl compassView=new ImageViewControl(map){
+    private float cachedRotate=0;
+    @Override protected void onDraw(    Canvas canvas){
+      canvas.save();
+      canvas.rotate(view.getRotate(),mw / 2,mh / 2);
+      compass.draw(canvas);
+      canvas.restore();
+    }
+    @Override public boolean updateInfo(){
+      if (view.getRotate() != cachedRotate) {
+        cachedRotate=view.getRotate();
+        invalidate();
+        return true;
+      }
+      return false;
+    }
+  }
+;
+  compassView.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      map.switchRotateMapMode();
+    }
+  }
+);
+  compassView.setImageDrawable(compass);
+  return compassView;
+}

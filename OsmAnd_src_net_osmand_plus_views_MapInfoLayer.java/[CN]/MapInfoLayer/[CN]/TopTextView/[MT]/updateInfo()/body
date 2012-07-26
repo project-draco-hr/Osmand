@@ -1,27 +1,26 @@
 {
   String text=null;
-  RoutingHelper helper=routeLayer.getHelper();
-  if (routeLayer != null && helper.isRouteCalculated()) {
-    if (helper.isFollowingMode()) {
-      text=helper.getCurrentName();
+  if (routingHelper != null && routingHelper.isRouteCalculated()) {
+    if (routingHelper.isFollowingMode()) {
+      text=routingHelper.getCurrentName();
     }
  else {
       int di=map.getMapLayers().getRouteInfoLayer().getDirectionInfo();
       if (di >= 0 && map.getMapLayers().getRouteInfoLayer().isVisible()) {
-        RouteDirectionInfo next=helper.getRouteDirections().get(di);
-        text=helper.formatStreetName(next.getStreetName(),next.getRef());
+        RouteDirectionInfo next=routingHelper.getRouteDirections().get(di);
+        text=routingHelper.formatStreetName(next.getStreetName(),next.getRef());
       }
     }
   }
   if (text == null) {
     text="";
   }
-  if (!text.equals(topText.getText().toString())) {
-    TextPaint pp=new TextPaint(topText.getPaint());
+  if (!text.equals(getText().toString())) {
+    TextPaint pp=new TextPaint(getPaint());
     if (!text.equals("")) {
       pp.setTextSize(25 * scaleCoefficient);
       float ts=pp.measureText(text);
-      int wth=topText.getWidth();
+      int wth=getWidth();
       while (ts > wth && pp.getTextSize() > (14 * scaleCoefficient)) {
         pp.setTextSize(pp.getTextSize() - 1);
         ts=pp.measureText(text);
@@ -35,12 +34,14 @@
       if (dots) {
         text+="..";
       }
-      topText.setTextSize(TypedValue.COMPLEX_UNIT_PX,pp.getTextSize());
+      setTextSize(TypedValue.COMPLEX_UNIT_PX,pp.getTextSize());
     }
  else {
-      topText.setTextSize(TypedValue.COMPLEX_UNIT_PX,7);
+      setTextSize(TypedValue.COMPLEX_UNIT_PX,7);
     }
-    topText.setText(text);
-    topText.invalidate();
+    setText(text);
+    invalidate();
+    return true;
   }
+  return false;
 }

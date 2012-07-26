@@ -2,6 +2,9 @@
   final OsmandSettings settings=view.getSettings();
   final ArrayList<Object> list=new ArrayList<Object>();
   list.add(map.getString(R.string.map_widget_reset));
+  list.add(map.getString(R.string.map_widget_top_stack));
+  list.addAll(mapInfoControls.getTopLeft());
+  list.addAll(mapInfoControls.getTopRight());
   list.add(map.getString(R.string.map_widget_right_stack));
   list.addAll(mapInfoControls.getRight());
   list.add(map.getString(R.string.map_widget_left_stack));
@@ -14,19 +17,20 @@
       if (v == null) {
         v=map.getLayoutInflater().inflate(R.layout.layers_list_activity_item,null);
       }
-      TextView tv=(TextView)v.findViewById(R.id.title);
+      final TextView tv=(TextView)v.findViewById(R.id.title);
       final CheckBox ch=((CheckBox)v.findViewById(R.id.check_item));
       Object o=list.get(position);
       if (o instanceof MapInfoControlRegInfo) {
         final MapInfoControlRegInfo mi=(MapInfoControlRegInfo)o;
-        tv.setText(map.getString(mi.messageId));
+        String s=mi.visibleCollapsed(mode) ? " - " : "  ";
+        tv.setText(s + map.getString(mi.messageId) + s);
         if (mi.drawable != 0) {
           tv.setPadding((int)(12 * scaleCoefficient),0,0,0);
           tv.setCompoundDrawablesWithIntrinsicBounds(mi.drawable,0,0,0);
         }
  else {
           tv.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0);
-          tv.setPadding((int)(27 * scaleCoefficient),0,0,0);
+          tv.setPadding((int)(30 * scaleCoefficient),0,0,0);
         }
         boolean check=mi.visibleCollapsed(mode) || mi.visible(mode);
         ch.setOnCheckedChangeListener(null);
@@ -34,11 +38,19 @@
         ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
           @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
             if (!isChecked) {
-              mapInfoControls.changeVisibility(mi,false,false);
+              if (mi.visible(mode) && mi.collapseEnabled(mode)) {
+                mapInfoControls.changeVisibility(mi,true,true);
+                ch.setChecked(true);
+              }
+ else {
+                mapInfoControls.changeVisibility(mi,false,false);
+              }
             }
  else {
               mapInfoControls.changeVisibility(mi,true,false);
             }
+            String s=mi.visibleCollapsed(mode) ? " - " : "  ";
+            tv.setText(s + map.getString(mi.messageId) + s);
             recreateControls();
           }
         }
