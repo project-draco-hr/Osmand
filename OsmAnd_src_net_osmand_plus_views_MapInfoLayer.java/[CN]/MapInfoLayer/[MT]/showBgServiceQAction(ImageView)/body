@@ -1,0 +1,61 @@
+{
+  final QuickAction bgAction=new QuickAction(lockView);
+  final View transparentLockView=map.getLayoutInflater().inflate(R.layout.background_service,null);
+  final FrameLayout parent=(FrameLayout)view.getParent();
+  FrameLayout.LayoutParams fparams=new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT,Gravity.CENTER);
+  transparentLockView.setLayoutParams(fparams);
+  final ActionItem lockScreenAction=new ActionItem();
+  lockScreenAction.setTitle(view.getResources().getString(R.string.bg_service_screen_lock));
+  lockScreenAction.setIcon(view.getResources().getDrawable(R.drawable.default_mode_small));
+  lockScreenAction.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (!isScreenLocked) {
+        parent.addView(transparentLockView);
+        transparentLockView.setOnTouchListener(new View.OnTouchListener(){
+          @Override public boolean onTouch(          View v,          MotionEvent event){
+            return true;
+          }
+        }
+);
+      }
+ else {
+        parent.removeView(transparentLockView);
+      }
+      isScreenLocked=!isScreenLocked;
+      bgAction.dismiss();
+    }
+  }
+);
+  bgAction.addActionItem(lockScreenAction);
+  final ActionItem bgServiceAction=new ActionItem();
+  bgServiceAction.setTitle(view.getResources().getString(R.string.bg_service_sleep_mode));
+  bgServiceAction.setIcon(view.getResources().getDrawable(R.drawable.car_small));
+  bgServiceAction.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      Intent serviceIntent=new Intent(map,NavigationService.class);
+      if (!isBgServiceStarted) {
+        map.startService(serviceIntent);
+      }
+ else {
+        map.stopService(serviceIntent);
+      }
+      isBgServiceStarted=!isBgServiceStarted;
+      bgAction.dismiss();
+    }
+  }
+);
+  bgAction.addActionItem(bgServiceAction);
+  final ActionItem bgServiceIntAction=new ActionItem();
+  bgServiceIntAction.setTitle(view.getResources().getString(R.string.bg_service_interval));
+  bgServiceIntAction.setIcon(view.getResources().getDrawable(R.drawable.bicycle_small));
+  bgServiceIntAction.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      createIntervalRadioGrp(bgAction);
+      bgAction.dismiss();
+    }
+  }
+);
+  bgAction.addActionItem(bgServiceIntAction);
+  bgAction.setAnimStyle(QuickAction.ANIM_AUTO);
+  bgAction.show();
+}

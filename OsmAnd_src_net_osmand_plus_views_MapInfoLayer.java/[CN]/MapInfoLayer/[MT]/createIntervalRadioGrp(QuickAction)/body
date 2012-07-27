@@ -1,0 +1,38 @@
+{
+  final OsmandSettings settings=((OsmandApplication)map.getApplication()).getSettings();
+  final View bgServiceView=map.getLayoutInflater().inflate(R.layout.background_service_int,null);
+  final FrameLayout parent=(FrameLayout)view.getParent();
+  FrameLayout.LayoutParams fparams=new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT,Gravity.CENTER);
+  fparams.setMargins(0,30,0,30);
+  bgServiceView.setLayoutParams(fparams);
+  bgServiceView.setPadding(20,5,20,5);
+  parent.addView(bgServiceView);
+  RadioGroup intRadioGrp=(RadioGroup)bgServiceView.findViewById(R.id.wake_up_int_grp);
+  final int secondsLength=OsmandBackgroundServicePlugin.SECONDS.length;
+  final int minutesLength=OsmandBackgroundServicePlugin.MINUTES.length;
+  final int[] SECONDS=OsmandBackgroundServicePlugin.SECONDS;
+  final int[] MINUTES=OsmandBackgroundServicePlugin.MINUTES;
+  final RadioButton[] intButtons=new RadioButton[minutesLength + secondsLength];
+  for (int i=0; i < secondsLength; i++) {
+    intButtons[i]=new RadioButton(map);
+    intButtons[i].setText(SECONDS[i] + " " + map.getString(R.string.int_seconds));
+    intButtons[i].setTextColor(Color.BLACK);
+    intButtons[i].setId(SECONDS[i] * 1000);
+    intRadioGrp.addView(intButtons[i]);
+  }
+  for (int i=secondsLength; i < secondsLength + minutesLength; i++) {
+    intButtons[i]=new RadioButton(map);
+    intButtons[i].setText(MINUTES[i - secondsLength] + " " + map.getString(R.string.int_min));
+    intButtons[i].setTextColor(Color.BLACK);
+    intButtons[i].setId(MINUTES[i - secondsLength] * 60 * 1000);
+    intRadioGrp.addView(intButtons[i]);
+  }
+  intRadioGrp.check(settings.SERVICE_OFF_INTERVAL.get());
+  intRadioGrp.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    RadioGroup group,    int checkedId){
+      settings.SERVICE_OFF_INTERVAL.set(checkedId);
+      parent.removeView(bgServiceView);
+    }
+  }
+);
+}
