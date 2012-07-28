@@ -1,0 +1,62 @@
+{
+  final QuickAction bgAction=new QuickAction(lockView);
+  if (transparentLockView == null) {
+    transparentLockView=new FrameLayout(view.getContext());
+    FrameLayout.LayoutParams fparams=new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT,Gravity.CENTER);
+    transparentLockView.setLayoutParams(fparams);
+  }
+  final FrameLayout parent=(FrameLayout)view.getParent();
+  final ActionItem lockScreenAction=new ActionItem();
+  lockScreenAction.setTitle(view.getResources().getString(isScreenLocked ? R.string.bg_service_screen_unlock : R.string.bg_service_screen_lock));
+  lockScreenAction.setIcon(view.getResources().getDrawable(R.drawable.default_mode_small));
+  lockScreenAction.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (!isScreenLocked) {
+        parent.addView(transparentLockView);
+        transparentLockView.setOnTouchListener(new View.OnTouchListener(){
+          @Override public boolean onTouch(          View v,          MotionEvent event){
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+              Rect r=new Rect();
+              lockView.getGlobalVisibleRect(r);
+              if (r.contains((int)event.getX(),(int)event.getY())) {
+                showBgServiceQAction(lockView,view);
+                return true;
+              }
+              AccessibleToast.makeText(transparentLockView.getContext(),R.string.screen_is_locked,Toast.LENGTH_LONG).show();
+              return true;
+            }
+            return true;
+          }
+        }
+);
+      }
+ else {
+        parent.removeView(transparentLockView);
+      }
+      isScreenLocked=!isScreenLocked;
+      bgAction.dismiss();
+      updateLockIcon(view,lockView);
+    }
+  }
+);
+  bgAction.addActionItem(lockScreenAction);
+  final ActionItem bgServiceAction=new ActionItem();
+  final boolean off=view.getApplication().getNavigationService() == null;
+  bgServiceAction.setTitle(view.getResources().getString(off ? R.string.bg_service_sleep_mode_on : R.string.bg_service_sleep_mode_off));
+  bgServiceAction.setIcon(view.getResources().getDrawable(R.drawable.car_small));
+  bgServiceAction.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      Intent serviceIntent=new Intent(view.getContext(),NavigationService.class);
+      if (view.getApplication().getNavigationService() == null) {
+        view.getContext().startService(serviceIntent);
+      }
+ else {
+        view.getContext().stopService(serviceIntent);
+      }
+      bgAction.dismiss();
+    }
+  }
+);
+  bgAction.addActionItem(bgServiceAction);
+  bgAction.show();
+}
