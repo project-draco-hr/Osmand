@@ -1,12 +1,25 @@
 {
   final OsmandMapTileView view=map.getMapView();
+  FrameLayout fl=new FrameLayout(view.getContext());
+  FrameLayout.LayoutParams fparams=new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
   ImageView configuration=new ImageView(map);
-  configuration.setBackgroundDrawable(view.getResources().getDrawable(R.drawable.globus));
+  Drawable drawable=view.getResources().getDrawable(R.drawable.widget_config);
+  configuration.setBackgroundDrawable(drawable);
   configuration.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       openViewConfigureDialog();
     }
   }
 );
-  return configuration;
+  fl.addView(configuration,fparams);
+  fparams=new FrameLayout.LayoutParams(drawable.getMinimumWidth(),drawable.getMinimumHeight());
+  progressBar=new View(view.getContext());
+  progressBar.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      map.getMapLayers().selectMapLayer(view);
+    }
+  }
+);
+  fl.addView(progressBar,fparams);
+  return fl;
 }

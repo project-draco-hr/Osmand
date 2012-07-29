@@ -8,7 +8,7 @@
   final FrameLayout parent=(FrameLayout)view.getParent();
   final ActionItem lockScreenAction=new ActionItem();
   lockScreenAction.setTitle(view.getResources().getString(isScreenLocked ? R.string.bg_service_screen_unlock : R.string.bg_service_screen_lock));
-  lockScreenAction.setIcon(view.getResources().getDrawable(R.drawable.default_mode_small));
+  lockScreenAction.setIcon(view.getResources().getDrawable(isScreenLocked ? R.drawable.lock_enabled : R.drawable.lock_disabled));
   lockScreenAction.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       if (!isScreenLocked) {
@@ -22,10 +22,20 @@
                 showBgServiceQAction(lockView,view);
                 return true;
               }
+              blinkIcon();
               AccessibleToast.makeText(transparentLockView.getContext(),R.string.screen_is_locked,Toast.LENGTH_LONG).show();
               return true;
             }
             return true;
+          }
+          private void blinkIcon(){
+            lockView.setBackgroundDrawable(lockDisabled);
+            view.postDelayed(new Runnable(){
+              @Override public void run(){
+                lockView.setBackgroundDrawable(lockEnabled);
+              }
+            }
+,300);
           }
         }
 );
