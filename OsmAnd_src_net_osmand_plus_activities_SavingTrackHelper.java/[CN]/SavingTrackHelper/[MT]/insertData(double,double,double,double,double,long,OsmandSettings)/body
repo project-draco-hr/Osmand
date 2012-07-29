@@ -1,19 +1,21 @@
 {
-  if ((time - lastTimeUpdated > settings.SAVE_TRACK_INTERVAL.get() * 1000) && isOnPause) {
+  if ((time - lastTimeUpdated > settings.SAVE_TRACK_INTERVAL.get() * 1000)) {
     execWithClose(updateScript,new Object[]{lat,lon,alt,speed,hdop,time});
-    if (lastPoint == null || (time - lastTimeUpdated) > 180000) {
+    boolean newSegment=false;
+    if (lastPoint == null || (time - lastTimeUpdated) > 180 * 1000) {
       lastPoint=new LatLon(lat,lon);
+      newSegment=true;
     }
-    lastTimeUpdated=time;
-    if ((lastPoint.getLatitude() != lat) || (lastPoint.getLongitude() != lon)) {
+ else {
       float[] lastInterval=new float[1];
       Location.distanceBetween(lat,lon,lastPoint.getLatitude(),lastPoint.getLongitude(),lastInterval);
       distance+=lastInterval[0];
       lastPoint=new LatLon(lat,lon);
     }
+    lastTimeUpdated=time;
     if (settings.SHOW_CURRENT_GPX_TRACK.get()) {
       WptPt pt=new GPXUtilities.WptPt(lat,lon,time,alt,speed,hdop);
-      addTrackPoint(pt);
+      addTrackPoint(pt,newSegment);
     }
   }
 }

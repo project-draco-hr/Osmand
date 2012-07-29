@@ -15,19 +15,24 @@
       long time=query.getLong(5);
       pt.time=time;
       long currentInterval=Math.abs(time - previousTime);
-      if (track != null && (currentInterval < 6 * 60 * 1000 || currentInterval < 10 * previousInterval)) {
+      boolean newInterval=pt.lat == 0 && pt.lon == 0;
+      if (track != null && !newInterval && (currentInterval < 6 * 60 * 1000 || currentInterval < 10 * previousInterval)) {
         segment.points.add(pt);
       }
  else       if (track != null && currentInterval < 2 * 60 * 60* 1000) {
         segment=new TrkSegment();
-        segment.points.add(pt);
+        if (!newInterval) {
+          segment.points.add(pt);
+        }
         track.segments.add(segment);
       }
  else {
         track=new Track();
         segment=new TrkSegment();
         track.segments.add(segment);
-        segment.points.add(pt);
+        if (!newInterval) {
+          segment.points.add(pt);
+        }
         String date=DateFormat.format("yyyy-MM-dd",time).toString();
         if (dataTracks.containsKey(date)) {
           GPXFile gpx=dataTracks.get(date);
