@@ -1,5 +1,5 @@
 {
-  final QuickAction bgAction=new QuickAction(lockView);
+  final QuickAction qa=new QuickAction(lockView);
   if (transparentLockView == null) {
     transparentLockView=new FrameLayout(view.getContext());
     FrameLayout.LayoutParams fparams=new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT,Gravity.CENTER);
@@ -49,28 +49,14 @@
         parent.removeView(transparentLockView);
       }
       isScreenLocked=!isScreenLocked;
-      bgAction.dismiss();
+      qa.dismiss();
       updateLockIcon(view,lockView);
     }
   }
 );
-  bgAction.addActionItem(lockScreenAction);
-  final ActionItem bgServiceAction=new ActionItem();
-  final boolean off=view.getApplication().getNavigationService() == null;
-  bgServiceAction.setTitle(view.getResources().getString(off ? R.string.bg_service_sleep_mode_on : R.string.bg_service_sleep_mode_off));
-  bgServiceAction.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      Intent serviceIntent=new Intent(view.getContext(),NavigationService.class);
-      if (view.getApplication().getNavigationService() == null) {
-        startBgService(serviceIntent,view);
-      }
- else {
-        view.getContext().stopService(serviceIntent);
-      }
-      bgAction.dismiss();
-    }
+  qa.addActionItem(lockScreenAction);
+  for (  LockInfoControlActions la : lockActions) {
+    la.addLockActions(qa,this,view);
   }
-);
-  bgAction.addActionItem(bgServiceAction);
-  bgAction.show();
+  qa.show();
 }

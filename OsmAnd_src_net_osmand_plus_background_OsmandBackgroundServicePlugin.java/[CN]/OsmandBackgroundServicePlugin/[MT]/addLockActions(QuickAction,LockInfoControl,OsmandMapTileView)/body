@@ -1,0 +1,27 @@
+{
+  final ActionItem bgServiceAction=new ActionItem();
+  final boolean off=view.getApplication().getNavigationService() == null;
+  bgServiceAction.setTitle(view.getResources().getString(!off ? R.string.bg_service_sleep_mode_on : R.string.bg_service_sleep_mode_off));
+  bgServiceAction.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      final Intent serviceIntent=new Intent(view.getContext(),NavigationService.class);
+      if (view.getApplication().getNavigationService() == null) {
+        final ValueHolder<Integer> vs=new ValueHolder<Integer>();
+        vs.value=view.getSettings().SERVICE_OFF_INTERVAL.get();
+        li.showIntervalChooseDialog(view,view.getContext().getString(R.string.gps_wakeup_interval),view.getContext().getString(R.string.background_router_service),OsmandBackgroundServicePlugin.SECONDS,OsmandBackgroundServicePlugin.MINUTES,vs,new OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            view.getSettings().SERVICE_OFF_INTERVAL.set(vs.value);
+            view.getContext().startService(serviceIntent);
+          }
+        }
+);
+      }
+ else {
+        view.getContext().stopService(serviceIntent);
+      }
+      qa.dismiss();
+    }
+  }
+);
+  qa.addActionItem(bgServiceAction);
+}
