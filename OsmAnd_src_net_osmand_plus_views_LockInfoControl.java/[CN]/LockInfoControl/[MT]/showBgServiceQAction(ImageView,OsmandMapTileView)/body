@@ -4,6 +4,37 @@
     transparentLockView=new FrameLayout(view.getContext());
     FrameLayout.LayoutParams fparams=new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT,Gravity.CENTER);
     transparentLockView.setLayoutParams(fparams);
+    transparentLockView.setOnTouchListener(new View.OnTouchListener(){
+      @Override public boolean onTouch(      View v,      MotionEvent event){
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+          int[] locs=new int[2];
+          lockView.getLocationOnScreen(locs);
+          int x=(int)event.getX() - locs[0];
+          int y=(int)event.getY() - locs[1];
+          transparentLockView.getLocationOnScreen(locs);
+          x+=locs[0];
+          y+=locs[1];
+          if (lockView.getWidth() >= x && x >= 0 && lockView.getHeight() >= y && y >= 0) {
+            showBgServiceQAction(lockView,view);
+            return true;
+          }
+          blinkIcon();
+          AccessibleToast.makeText(transparentLockView.getContext(),R.string.screen_is_locked,Toast.LENGTH_LONG).show();
+          return true;
+        }
+        return true;
+      }
+      private void blinkIcon(){
+        lockView.setBackgroundDrawable(lockDisabled);
+        view.postDelayed(new Runnable(){
+          @Override public void run(){
+            lockView.setBackgroundDrawable(lockEnabled);
+          }
+        }
+,300);
+      }
+    }
+);
   }
   final FrameLayout parent=(FrameLayout)view.getParent();
   final ActionItem lockScreenAction=new ActionItem();
@@ -13,37 +44,6 @@
     @Override public void onClick(    View v){
       if (!isScreenLocked) {
         parent.addView(transparentLockView);
-        transparentLockView.setOnTouchListener(new View.OnTouchListener(){
-          @Override public boolean onTouch(          View v,          MotionEvent event){
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-              int[] locs=new int[2];
-              lockView.getLocationOnScreen(locs);
-              int x=(int)event.getX() - locs[0];
-              int y=(int)event.getY() - locs[1];
-              transparentLockView.getLocationOnScreen(locs);
-              x+=locs[0];
-              y+=locs[1];
-              if (lockView.getWidth() >= x && x >= 0 && lockView.getHeight() >= y && y >= 0) {
-                showBgServiceQAction(lockView,view);
-                return true;
-              }
-              blinkIcon();
-              AccessibleToast.makeText(transparentLockView.getContext(),R.string.screen_is_locked,Toast.LENGTH_LONG).show();
-              return true;
-            }
-            return true;
-          }
-          private void blinkIcon(){
-            lockView.setBackgroundDrawable(lockDisabled);
-            view.postDelayed(new Runnable(){
-              @Override public void run(){
-                lockView.setBackgroundDrawable(lockEnabled);
-              }
-            }
-,300);
-          }
-        }
-);
       }
  else {
         parent.removeView(transparentLockView);
@@ -62,7 +62,7 @@
     @Override public void onClick(    View v){
       Intent serviceIntent=new Intent(view.getContext(),NavigationService.class);
       if (view.getApplication().getNavigationService() == null) {
-        view.getContext().startService(serviceIntent);
+        startBgService(serviceIntent,view);
       }
  else {
         view.getContext().stopService(serviceIntent);
