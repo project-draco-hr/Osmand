@@ -1,0 +1,27 @@
+{
+  final ActionItem bgServiceAction=new ActionItem();
+  final boolean off=!view.getSettings().SAVE_TRACK_TO_GPX.get();
+  bgServiceAction.setTitle(view.getResources().getString(off ? R.string.monitoring_mode_off : R.string.monitoring_mode_on));
+  bgServiceAction.setIcon(view.getResources().getDrawable(!off ? R.drawable.monitoring_rec_big : R.drawable.monitoring_rec_inactive));
+  bgServiceAction.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (off) {
+        final ValueHolder<Integer> vs=new ValueHolder<Integer>();
+        vs.value=view.getSettings().SAVE_TRACK_INTERVAL.get();
+        li.showIntervalChooseDialog(view,view.getContext().getString(R.string.save_track_interval) + " : %s",view.getContext().getString(R.string.save_track_to_gpx),OsmandBackgroundServicePlugin.SECONDS,OsmandBackgroundServicePlugin.MINUTES,vs,new OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            view.getSettings().SAVE_TRACK_INTERVAL.set(vs.value);
+            view.getSettings().SAVE_TRACK_TO_GPX.set(true);
+          }
+        }
+);
+      }
+ else {
+        view.getSettings().SAVE_TRACK_TO_GPX.set(false);
+      }
+      qa.dismiss();
+    }
+  }
+);
+  qa.addActionItem(bgServiceAction);
+}
