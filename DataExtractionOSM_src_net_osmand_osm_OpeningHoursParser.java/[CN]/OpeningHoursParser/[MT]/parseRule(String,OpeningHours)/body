@@ -1,4 +1,7 @@
 {
+  r=r.replaceAll("sunset",sunset);
+  r=r.replaceAll("sunrise",sunrise);
+  r=r.replaceAll("\\+","-" + endOfDay);
   int startDay=-1;
   int previousDay=-1;
   int k=0;
@@ -42,6 +45,14 @@
           for (int j=startDay; j <= i; j++) {
             days[j]=true;
           }
+          if (startDay > i) {
+            for (int j=startDay; j <= 6; j++) {
+              days[j]=true;
+            }
+            for (int j=0; j <= i; j++) {
+              days[j]=true;
+            }
+          }
           startDay=-1;
         }
  else {
@@ -55,7 +66,9 @@
     }
   }
   if (previousDay == -1) {
-    return false;
+    for (int i=0; i < 7; i++) {
+      days[i]=true;
+    }
   }
   String timeSubstr=r.substring(k);
   String[] times=timeSubstr.split(",");
@@ -92,12 +105,12 @@
         startMin=Integer.parseInt(stEnd[0].substring(i1 + 1).trim());
       }
       if (i2 == -1) {
-        endHour=Integer.parseInt(stEnd[0].trim());
+        endHour=Integer.parseInt(stEnd[1].trim());
         endMin=0;
       }
  else {
-        endHour=Integer.parseInt(stEnd[0].substring(0,i1).trim());
-        endMin=Integer.parseInt(stEnd[0].substring(i1 + 1).trim());
+        endHour=Integer.parseInt(stEnd[1].substring(0,i2).trim());
+        endMin=Integer.parseInt(stEnd[1].substring(i2 + 1).trim());
       }
       st=startHour * 60 + startMin;
       end=endHour * 60 + endMin;
