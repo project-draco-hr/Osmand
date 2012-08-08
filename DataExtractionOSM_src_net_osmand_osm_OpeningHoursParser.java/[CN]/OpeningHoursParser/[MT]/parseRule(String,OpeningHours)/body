@@ -68,6 +68,10 @@
     if (time.equals("off")) {
       break;
     }
+    if (time.equals("24/7")) {
+      basic.addTimeRange(0,24 * 60);
+      break;
+    }
     String[] stEnd=time.split("-");
     if (stEnd.length != 2) {
       continue;
@@ -78,11 +82,25 @@
     try {
       int i1=stEnd[0].indexOf(':');
       int i2=stEnd[1].indexOf(':');
-      if (i1 == -1 || i2 == -1) {
-        return false;
+      int startHour, startMin, endHour, endMin;
+      if (i1 == -1) {
+        startHour=Integer.parseInt(stEnd[0].trim());
+        startMin=0;
       }
-      st=Integer.parseInt(stEnd[0].substring(0,i1).trim()) * 60 + Integer.parseInt(stEnd[0].substring(i1 + 1).trim());
-      end=Integer.parseInt(stEnd[1].substring(0,i2).trim()) * 60 + Integer.parseInt(stEnd[1].substring(i2 + 1).trim());
+ else {
+        startHour=Integer.parseInt(stEnd[0].substring(0,i1).trim());
+        startMin=Integer.parseInt(stEnd[0].substring(i1 + 1).trim());
+      }
+      if (i2 == -1) {
+        endHour=Integer.parseInt(stEnd[0].trim());
+        endMin=0;
+      }
+ else {
+        endHour=Integer.parseInt(stEnd[0].substring(0,i1).trim());
+        endMin=Integer.parseInt(stEnd[0].substring(i1 + 1).trim());
+      }
+      st=startHour * 60 + startMin;
+      end=endHour * 60 + endMin;
     }
  catch (    NumberFormatException e) {
       return false;
