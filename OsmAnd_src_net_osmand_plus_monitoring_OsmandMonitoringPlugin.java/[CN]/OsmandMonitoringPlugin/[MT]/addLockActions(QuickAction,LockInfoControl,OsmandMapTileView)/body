@@ -2,13 +2,13 @@
   final ActionItem bgServiceAction=new ActionItem();
   final boolean off=!view.getSettings().SAVE_TRACK_TO_GPX.get();
   bgServiceAction.setTitle(view.getResources().getString(off ? R.string.monitoring_mode_off : R.string.monitoring_mode_on));
-  bgServiceAction.setIcon(view.getResources().getDrawable(!off ? R.drawable.monitoring_rec_big : R.drawable.monitoring_rec_inactive));
+  bgServiceAction.setIcon(view.getResources().getDrawable(off ? R.drawable.monitoring_rec_big : R.drawable.monitoring_rec_inactive));
   bgServiceAction.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       if (off) {
         final ValueHolder<Integer> vs=new ValueHolder<Integer>();
         vs.value=view.getSettings().SAVE_TRACK_INTERVAL.get();
-        li.showIntervalChooseDialog(view,view.getContext().getString(R.string.save_track_interval) + " : %s",view.getContext().getString(R.string.save_track_to_gpx),OsmandBackgroundServicePlugin.SECONDS,OsmandBackgroundServicePlugin.MINUTES,vs,new OnClickListener(){
+        li.showIntervalChooseDialog(view,view.getContext().getString(R.string.save_track_interval) + " : %s",view.getContext().getString(R.string.save_track_to_gpx),SECONDS,MINUTES,vs,new OnClickListener(){
           @Override public void onClick(          DialogInterface dialog,          int which){
             view.getSettings().SAVE_TRACK_INTERVAL.set(vs.value);
             view.getSettings().SAVE_TRACK_TO_GPX.set(true);
@@ -24,4 +24,29 @@
   }
 );
   qa.addActionItem(bgServiceAction);
+  final ActionItem liveAction=new ActionItem();
+  final boolean liveoff=!view.getSettings().LIVE_MONITORING.get();
+  liveAction.setTitle(view.getResources().getString(liveoff ? R.string.live_monitoring_mode_off : R.string.live_monitoring_mode_on));
+  liveAction.setIcon(view.getResources().getDrawable(liveoff ? R.drawable.monitoring_rec_big : R.drawable.monitoring_rec_inactive));
+  liveAction.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (liveoff) {
+        final ValueHolder<Integer> vs=new ValueHolder<Integer>();
+        vs.value=view.getSettings().LIVE_MONITORING_INTERVAL.get();
+        li.showIntervalChooseDialog(view,view.getContext().getString(R.string.live_monitoring_interval) + " : %s",view.getContext().getString(R.string.live_monitoring),SECONDS,MINUTES,vs,new OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            view.getSettings().LIVE_MONITORING_INTERVAL.set(vs.value);
+            view.getSettings().LIVE_MONITORING.set(true);
+          }
+        }
+);
+      }
+ else {
+        view.getSettings().LIVE_MONITORING.set(false);
+      }
+      qa.dismiss();
+    }
+  }
+);
+  qa.addActionItem(liveAction);
 }
