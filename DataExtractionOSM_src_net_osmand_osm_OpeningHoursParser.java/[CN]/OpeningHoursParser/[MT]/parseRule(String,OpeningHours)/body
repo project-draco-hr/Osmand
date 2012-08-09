@@ -1,4 +1,7 @@
 {
+  r=r.replaceAll("sunset",sunset);
+  r=r.replaceAll("sunrise",sunrise);
+  r=r.replaceAll("\\+","-" + endOfDay);
   int startDay=-1;
   int previousDay=-1;
   int k=0;
@@ -6,13 +9,16 @@
   boolean[] days=basic.getDays();
   if ("24/7".equals(r)) {
     Arrays.fill(days,true);
-    basic.setStartEndTime(0,24 * 60);
-    rs.add(basic);
-    return basic;
+    basic.addTimeRange(0,24 * 60);
+    rs.addRule(basic);
+    return true;
   }
   for (; k < r.length(); k++) {
     char ch=r.charAt(k);
     if (Character.isDigit(ch)) {
+      break;
+    }
+    if (ch == 'o' && r.charAt(k + 1) == 'f' && r.charAt(k + 1) == 'f') {
       break;
     }
     if (Character.isWhitespace(ch) || ch == ',') {
@@ -23,7 +29,7 @@
         startDay=previousDay;
       }
  else {
-        return null;
+        return false;
       }
     }
  else     if (k < r.length() - 1) {
@@ -39,6 +45,14 @@
           for (int j=startDay; j <= i; j++) {
             days[j]=true;
           }
+          if (startDay > i) {
+            for (int j=startDay; j <= 6; j++) {
+              days[j]=true;
+            }
+            for (int j=0; j <= i; j++) {
+              days[j]=true;
+            }
+          }
           startDay=-1;
         }
  else {
@@ -48,11 +62,13 @@
       }
     }
  else {
-      return null;
+      return false;
     }
   }
   if (previousDay == -1) {
-    return null;
+    for (int i=0; i < 7; i++) {
+      days[i]=true;
+    }
   }
   String timeSubstr=r.substring(k);
   String[] times=timeSubstr.split(",");
@@ -61,6 +77,13 @@
     time=time.trim();
     if (time.length() == 0) {
       continue;
+    }
+    if (time.equals("off")) {
+      break;
+    }
+    if (time.equals("24/7")) {
+      basic.addTimeRange(0,24 * 60);
+      break;
     }
     String[] stEnd=time.split("-");
     if (stEnd.length != 2) {
@@ -72,23 +95,34 @@
     try {
       int i1=stEnd[0].indexOf(':');
       int i2=stEnd[1].indexOf(':');
-      if (i1 == -1 || i2 == -1) {
-        return null;
+      int startHour, startMin, endHour, endMin;
+      if (i1 == -1) {
+        startHour=Integer.parseInt(stEnd[0].trim());
+        startMin=0;
       }
-      st=Integer.parseInt(stEnd[0].substring(0,i1).trim()) * 60 + Integer.parseInt(stEnd[0].substring(i1 + 1).trim());
-      end=Integer.parseInt(stEnd[1].substring(0,i2).trim()) * 60 + Integer.parseInt(stEnd[1].substring(i2 + 1).trim());
+ else {
+        startHour=Integer.parseInt(stEnd[0].substring(0,i1).trim());
+        startMin=Integer.parseInt(stEnd[0].substring(i1 + 1).trim());
+      }
+      if (i2 == -1) {
+        endHour=Integer.parseInt(stEnd[1].trim());
+        endMin=0;
+      }
+ else {
+        endHour=Integer.parseInt(stEnd[1].substring(0,i2).trim());
+        endMin=Integer.parseInt(stEnd[1].substring(i2 + 1).trim());
+      }
+      st=startHour * 60 + startMin;
+      end=endHour * 60 + endMin;
     }
  catch (    NumberFormatException e) {
-      return null;
+      return false;
     }
-    basic.setStartEndTime(st,end);
-    rs.add(basic);
-    BasicDayOpeningHourRule nbasic=new BasicDayOpeningHourRule();
-    nbasic.days=basic.days;
-    basic=nbasic;
+    basic.addTimeRange(st,end);
   }
+  rs.addRule(basic);
   if (!timesExist) {
-    return null;
+    return false;
   }
-  return basic;
+  return true;
 }
