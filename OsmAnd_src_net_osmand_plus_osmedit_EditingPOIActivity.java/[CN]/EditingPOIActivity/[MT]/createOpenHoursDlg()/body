@@ -1,5 +1,5 @@
 {
-  List<OpeningHoursRule> time=OpeningHoursParser.parseOpenedHours(openingHours.getText().toString());
+  OpeningHours time=OpeningHoursParser.parseOpenedHours(openingHours.getText().toString());
   if (time == null) {
     AccessibleToast.makeText(ctx,ctx.getString(R.string.opening_hours_not_supported),Toast.LENGTH_LONG).show();
     return null;
@@ -7,7 +7,7 @@
   List<BasicDayOpeningHourRule> simple=null;
   if (time != null) {
     simple=new ArrayList<BasicDayOpeningHourRule>();
-    for (    OpeningHoursRule r : time) {
+    for (    OpeningHoursRule r : time.getRules()) {
       if (r instanceof BasicDayOpeningHourRule) {
         simple.add((BasicDayOpeningHourRule)r);
       }
@@ -22,7 +22,8 @@
   builder.setView(v.createOpeningHoursEditView(simple));
   builder.setPositiveButton(ctx.getString(R.string.default_buttons_apply),new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      openingHours.setText(OpeningHoursParser.toStringOpenedHours(v.getTime()));
+      OpeningHours oh=new OpeningHours((ArrayList<OpeningHoursRule>)v.getTime());
+      openingHours.setText(oh.toString());
       ctx.removeDialog(DIALOG_OPENING_HOURS);
     }
   }
