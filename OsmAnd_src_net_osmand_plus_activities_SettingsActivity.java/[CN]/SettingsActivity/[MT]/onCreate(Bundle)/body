@@ -8,16 +8,26 @@
   String[] entrieValues;
   PreferenceScreen screen=getPreferenceScreen();
   osmandSettings=getMyApplication().getSettings();
+  PreferenceCategory cat=(PreferenceCategory)screen.findPreference("global_app_settings");
+  if (!Version.isBlackberry(this)) {
+    CheckBoxPreference nativeCheckbox=createCheckBoxPreference(osmandSettings.NATIVE_RENDERING,R.string.native_rendering,R.string.vector_maps_may_display_faster_on_some_devices);
+    if ((NativeOsmandLibrary.isLoaded() && !NativeOsmandLibrary.isSupported()) || osmandSettings.NATIVE_RENDERING_FAILED.get()) {
+      nativeCheckbox.setEnabled(false);
+    }
+    cat.addPreference(nativeCheckbox);
+    applicationDir=new EditTextPreference(this);
+    applicationDir.setTitle(R.string.application_dir);
+    applicationDir.setKey("external_storage_dir");
+    applicationDir.setDialogTitle(R.string.application_dir);
+    applicationDir.setOnPreferenceChangeListener(this);
+    cat.addPreference(applicationDir);
+  }
   OsmandPlugin.onSettingsActivityCreate(this,screen);
   registerBooleanPreference(osmandSettings.USE_ENGLISH_NAMES,screen);
   registerBooleanPreference(osmandSettings.AUTO_ZOOM_MAP,screen);
   registerBooleanPreference(osmandSettings.FAST_ROUTE_MODE,screen);
   registerBooleanPreference(osmandSettings.USE_COMPASS_IN_NAVIGATION,screen);
   registerBooleanPreference(osmandSettings.LEFT_SIDE_NAVIGATION,screen);
-  CheckBoxPreference nativeCheckbox=registerBooleanPreference(osmandSettings.NATIVE_RENDERING,screen);
-  if ((NativeOsmandLibrary.isLoaded() && !NativeOsmandLibrary.isSupported()) || osmandSettings.NATIVE_RENDERING_FAILED.get()) {
-    nativeCheckbox.setEnabled(false);
-  }
   registerListPreference(osmandSettings.ROTATE_MAP,screen,new String[]{getString(R.string.rotate_map_none_opt),getString(R.string.rotate_map_bearing_opt),getString(R.string.rotate_map_compass_opt)},new Integer[]{OsmandSettings.ROTATE_MAP_NONE,OsmandSettings.ROTATE_MAP_BEARING,OsmandSettings.ROTATE_MAP_COMPASS});
   registerListPreference(osmandSettings.MAP_SCREEN_ORIENTATION,screen,new String[]{getString(R.string.map_orientation_portrait),getString(R.string.map_orientation_landscape),getString(R.string.map_orientation_default)},new Integer[]{ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE,ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED});
   entries=new String[DayNightMode.values().length];
@@ -69,8 +79,6 @@
   routerServicePreference.setOnPreferenceChangeListener(this);
   Preference localIndexes=(Preference)screen.findPreference(OsmandSettings.LOCAL_INDEXES);
   localIndexes.setOnPreferenceClickListener(this);
-  applicationDir=(EditTextPreference)screen.findPreference(OsmandSettings.EXTERNAL_STORAGE_DIR);
-  applicationDir.setOnPreferenceChangeListener(this);
   bidforfix=(Preference)screen.findPreference("bidforfix");
   bidforfix.setOnPreferenceClickListener(this);
   plugins=(Preference)screen.findPreference("plugins");
