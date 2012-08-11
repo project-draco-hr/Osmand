@@ -38,7 +38,7 @@
     }
   }
 );
-  View closeButton=window.findViewById(R.id.CloseButton);
+  final View closeButton=window.findViewById(R.id.CloseButton);
   closeButton.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       getMyApplication().closeApplication();
@@ -47,6 +47,24 @@
         System.runFinalizersOnExit(true);
         System.exit(0);
       }
+    }
+  }
+);
+  closeButton.setOnTouchListener(new OnTouchListener(){
+    @Override public boolean onTouch(    View v,    MotionEvent event){
+      closeButton.performClick();
+      return true;
+    }
+  }
+);
+  final View parent=(View)closeButton.getParent();
+  parent.post(new Runnable(){
+    @Override public void run(){
+      Rect r=new Rect();
+      closeButton.getHitRect(r);
+      r.right+=r.width() * 3;
+      r.bottom+=r.height() * 3;
+      parent.setTouchDelegate(new TouchDelegate(r,closeButton));
     }
   }
 );
