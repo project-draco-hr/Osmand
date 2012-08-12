@@ -3,16 +3,18 @@
   if (bmp != null && bmpLoc != null) {
     float rot=bmpLoc.getRotate();
     float mult=(float)MapUtils.getPowZoom(view.getZoom() - bmpLoc.getZoom());
-    float tx=view.getXTile();
-    float ty=view.getYTile();
-    float dleftX1=(bmpLoc.getLeftTileX() * mult - tx);
-    float dtopY1=(bmpLoc.getTopTileY() * mult - ty);
+    float fmult=(float)MapUtils.getPowZoom(view.getFloatZoom() - bmpLoc.getZoom());
+    float tx=view.getXTile() / mult;
+    float ty=view.getYTile() / mult;
+    float dleftX1=bmpLoc.getLeftTileX() - tx;
+    float dtopY1=bmpLoc.getTopTileY() - ty;
+    float ts=view.getSourceTileSize() * fmult;
     float cos=bmpLoc.getRotateCos();
     float sin=bmpLoc.getRotateSin();
-    float x1=MapUtils.calcDiffPixelX(sin,cos,dleftX1,dtopY1,view.getTileSize()) + view.getCenterPointX();
-    float y1=MapUtils.calcDiffPixelY(sin,cos,dleftX1,dtopY1,view.getTileSize()) + view.getCenterPointY();
+    float x1=MapUtils.calcDiffPixelX(sin,cos,dleftX1,dtopY1,ts) + view.getCenterPointX();
+    float y1=MapUtils.calcDiffPixelY(sin,cos,dleftX1,dtopY1,ts) + view.getCenterPointY();
     canvas.rotate(-rot,view.getCenterPointX(),view.getCenterPointY());
-    destImage.set(x1,y1,x1 + bmpLoc.getTileWidth() * mult * view.getTileSize(),y1 + bmpLoc.getTileHeight() * mult * view.getTileSize());
+    destImage.set(x1,y1,x1 + bmpLoc.getTileWidth() * ts,y1 + bmpLoc.getTileHeight() * ts);
     if (!bmp.isRecycled()) {
       canvas.drawBitmap(bmp,null,destImage,paintImg);
       shown=true;
