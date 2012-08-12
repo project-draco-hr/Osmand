@@ -10,7 +10,11 @@ synchronized (this) {
       calculateRoute=true;
     }
  else {
-      boolean finished=updateCurrentRouteStatus(currentLocation);
+      float posTolerance=POSITION_TOLERANCE;
+      if (currentLocation.hasAccuracy()) {
+        posTolerance=POSITION_TOLERANCE / 3 + currentLocation.getAccuracy();
+      }
+      boolean finished=updateCurrentRouteStatus(currentLocation,posTolerance);
       if (finished) {
         return null;
       }
@@ -18,24 +22,28 @@ synchronized (this) {
       int currentRoute=route.currentRoute;
       if (currentRoute > 0) {
         double dist=getOrthogonalDistance(currentLocation,routeNodes.get(currentRoute - 1),routeNodes.get(currentRoute));
-        if (dist > 2 * POSITION_TOLERANCE) {
+        if (dist > 1.7 * posTolerance) {
           log.info("Recalculate route, because correlation  : " + dist);
           calculateRoute=true;
         }
       }
       Location next=route.getNextRouteLocation();
       boolean wrongMovementDirection=checkWrongMovementDirection(currentLocation,next);
-      if (wrongMovementDirection && currentLocation.distanceTo(routeNodes.get(currentRoute)) > 2 * POSITION_TOLERANCE) {
+      if (wrongMovementDirection && currentLocation.distanceTo(routeNodes.get(currentRoute)) > posTolerance) {
         log.info("Recalculate route, because wrong movement direction: " + currentLocation.distanceTo(routeNodes.get(currentRoute)));
         calculateRoute=true;
       }
-      boolean uTurnIsNeeded=identifyUTurnIsNeeded(currentLocation);
-      if (calculateRoute == false || uTurnIsNeeded == true) {
-        voiceRouter.updateStatus(currentLocation,uTurnIsNeeded);
+      boolean uTurnIsNeeded=identifyUTurnIsNeeded(currentLocation,posTolerance);
+      boolean inRecalc=calculateRoute || isRouteBeingCalculated();
+      if (!inRecalc && !uTurnIsNeeded) {
+        voiceRouter.updateStatus(currentLocation);
+      }
+ else       if (uTurnIsNeeded) {
+        voiceRouter.makeUTStatus();
       }
       if (currentRoute > 0) {
         double dist=getOrthogonalDistance(currentLocation,routeNodes.get(currentRoute - 1),routeNodes.get(currentRoute));
-        double projectDist=mode == ApplicationMode.CAR ? POSITION_TOLERANCE : POSITION_TOLERANCE / 2;
+        double projectDist=mode == ApplicationMode.CAR ? posTolerance : posTolerance / 2;
         locationProjection=new Location(locationProjection);
         if (dist < projectDist) {
           Location nextLocation=routeNodes.get(currentRoute);
