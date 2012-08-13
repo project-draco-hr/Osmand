@@ -10,7 +10,8 @@
   if (attachedRoutes != null) {
     for (    RouteSegmentResult rs : attachedRoutes) {
       double ex=MapUtils.degreesDiff(rs.getBearingBegin(),rr.getBearingBegin());
-      if (ex < 45 && ex >= 0) {
+      double mpi=Math.abs(MapUtils.degreesDiff(prev.getBearingEnd(),rs.getBearingBegin()));
+      if ((ex < TURN_DEGREE_MIN || mpi < TURN_DEGREE_MIN) && ex >= 0) {
         kl=true;
         int lns=rs.getObject().getLanes();
         if (lns > 0) {
@@ -18,7 +19,7 @@
         }
         speak=speak || !highwayLowEnd(rs.getObject().getHighway());
       }
- else       if (ex > -45 && ex <= 0) {
+ else       if ((ex > -TURN_DEGREE_MIN || mpi < TURN_DEGREE_MIN) && ex <= 0) {
         kr=true;
         int lns=rs.getObject().getLanes();
         if (lns > 0) {
