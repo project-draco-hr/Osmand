@@ -1,4 +1,6 @@
 {
+  int length;
+  int oldLimit;
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
@@ -9,21 +11,20 @@ case OsmandOdb.OsmAndPoiIndex.NAME_FIELD_NUMBER:
     region.name=codedIS.readString();
   break;
 case OsmandOdb.OsmAndPoiIndex.BOUNDARIES_FIELD_NUMBER:
-{
-  int length=codedIS.readRawVarint32();
-  int oldLimit=codedIS.pushLimit(length);
-  readPoiBoundariesIndex(region);
-  codedIS.popLimit(oldLimit);
-}
+length=codedIS.readRawVarint32();
+oldLimit=codedIS.pushLimit(length);
+readPoiBoundariesIndex(region);
+codedIS.popLimit(oldLimit);
 break;
 case OsmandOdb.OsmAndPoiIndex.CATEGORIESTABLE_FIELD_NUMBER:
-{
-int length=codedIS.readRawVarint32();
-int oldLimit=codedIS.pushLimit(length);
+if (!readCategories) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return;
+}
+length=codedIS.readRawVarint32();
+oldLimit=codedIS.pushLimit(length);
 readCategory(region);
 codedIS.popLimit(oldLimit);
-}
-break;
 case OsmandOdb.OsmAndPoiIndex.BOXES_FIELD_NUMBER:
 codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
 return;

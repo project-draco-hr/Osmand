@@ -7,6 +7,9 @@
     skipTiles=new TLongHashSet();
     zoomToSkip=req.zoom + ZOOM_TO_SKIP_FILTER;
   }
+  int length;
+  int oldLimit;
+  boolean readCategories=region.categories.isEmpty();
   TIntLongHashMap offsetsMap=new TIntLongHashMap();
   while (true) {
     if (req.isCancelled()) {
@@ -17,9 +20,19 @@
 switch (tag) {
 case 0:
       return;
+case OsmandOdb.OsmAndPoiIndex.CATEGORIESTABLE_FIELD_NUMBER:
+    if (!readCategories) {
+      skipUnknownField(t);
+    }
+ else {
+      length=codedIS.readRawVarint32();
+      oldLimit=codedIS.pushLimit(length);
+      readCategory(region);
+      codedIS.popLimit(oldLimit);
+    }
 case OsmandOdb.OsmAndPoiIndex.BOXES_FIELD_NUMBER:
-    int length=readInt();
-  int oldLimit=codedIS.pushLimit(length);
+  length=readInt();
+oldLimit=codedIS.pushLimit(length);
 readBoxField(left31,right31,top31,bottom31,0,0,0,offsetsMap,skipTiles,req,region);
 codedIS.popLimit(oldLimit);
 break;

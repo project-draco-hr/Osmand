@@ -1,33 +1,40 @@
 {
   int defaultId=1;
+  int oldLimit;
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
 switch (tag) {
 case 0:
-      if (index.encodingRules.isEmpty()) {
-        throw new IllegalStateException("Encoding rules are not defined for the map index");
+      if (onlyInitEncodingRules) {
+        index.finishInitializingTags();
       }
-    index.finishInitializingTags();
-  return;
+    return;
 case OsmandOdb.OsmAndMapIndex.NAME_FIELD_NUMBER:
-index.setName(codedIS.readString());
+  index.setName(codedIS.readString());
 break;
 case OsmandOdb.OsmAndMapIndex.RULES_FIELD_NUMBER:
+if (onlyInitEncodingRules) {
 int len=codedIS.readInt32();
-int oldLimit=codedIS.pushLimit(len);
+oldLimit=codedIS.pushLimit(len);
 readMapEncodingRule(index,defaultId++);
 codedIS.popLimit(oldLimit);
+}
+ else {
+skipUnknownField(t);
+}
 break;
 case OsmandOdb.OsmAndMapIndex.LEVELS_FIELD_NUMBER:
 int length=readInt();
 int filePointer=codedIS.getTotalBytesRead();
+if (!onlyInitEncodingRules) {
 oldLimit=codedIS.pushLimit(length);
 MapRoot mapRoot=readMapLevel(new MapRoot());
 mapRoot.length=length;
 mapRoot.filePointer=filePointer;
 index.getRoots().add(mapRoot);
 codedIS.popLimit(oldLimit);
+}
 codedIS.seek(filePointer + length);
 break;
 default :

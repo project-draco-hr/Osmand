@@ -10,6 +10,12 @@
         if (index.right < req.left || index.left > req.right || index.top > req.bottom || index.bottom < req.top) {
           continue;
         }
+        if (mapIndex.encodingRules.isEmpty()) {
+          codedIS.seek(mapIndex.filePointer);
+          int oldLimit=codedIS.pushLimit(mapIndex.length);
+          readMapIndex(mapIndex,true);
+          codedIS.popLimit(oldLimit);
+        }
         if (index.trees == null) {
           index.trees=new ArrayList<MapTree>();
           codedIS.seek(index.filePointer);
