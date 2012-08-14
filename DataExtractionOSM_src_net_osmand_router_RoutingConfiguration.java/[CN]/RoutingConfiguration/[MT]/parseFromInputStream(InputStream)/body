@@ -19,23 +19,18 @@
         }
  else         if ("routingProfile".equals(name)) {
           currentSelectedRouter=attributes.getValue("name");
-          currentRouter=new GeneralRouter();
-          currentRouter.profile=GeneralRouterProfile.valueOf(attributes.getValue("baseProfile").toUpperCase());
+          Map<String,String> attrs=new LinkedHashMap<String,String>();
+          for (int i=0; i < attributes.getLength(); i++) {
+            attrs.put(parser.isNamespaceAware() ? attributes.getLocalName(i) : attributes.getQName(i),attributes.getValue(i));
+          }
+          currentRouter=new GeneralRouter(GeneralRouterProfile.valueOf(attributes.getValue("baseProfile").toUpperCase()),attrs);
           config.routers.put(currentSelectedRouter,currentRouter);
-          currentRouter.restrictionsAware=parseSilentBoolean(attributes.getValue("restrictionsAware"),currentRouter.restrictionsAware);
-          currentRouter.followSpeedLimitations=parseSilentBoolean(attributes.getValue("followSpeedLimitations"),currentRouter.followSpeedLimitations);
-          currentRouter.onewayAware=parseSilentBoolean(attributes.getValue("onewayAware"),currentRouter.onewayAware);
-          currentRouter.minDefaultSpeed=parseSilentDouble(attributes.getValue("minDefaultSpeed"),currentRouter.minDefaultSpeed);
-          currentRouter.maxDefaultSpeed=parseSilentDouble(attributes.getValue("maxDefaultSpeed"),currentRouter.maxDefaultSpeed);
-          currentRouter.leftTurn=parseSilentDouble(attributes.getValue("leftTurn"),currentRouter.leftTurn);
-          currentRouter.roundaboutTurn=parseSilentDouble(attributes.getValue("roundaboutTurn"),currentRouter.roundaboutTurn);
-          currentRouter.rightTurn=parseSilentDouble(attributes.getValue("rightTurn"),currentRouter.rightTurn);
         }
- else         if ("highway".equals(name)) {
-          String key=attributes.getValue("value");
+ else         if ("road".equals(name)) {
+          String key=attributes.getValue("tag") + "$" + attributes.getValue("value");
           currentRouter.highwayPriorities.put(key,parseSilentDouble(attributes.getValue("priority"),1));
           currentRouter.highwayFuturePriorities.put(key,parseSilentDouble(attributes.getValue("dynamicPriority"),1));
-          currentRouter.highwaySpeed.put(key,parseSilentDouble(attributes.getValue("speed"),currentRouter.minDefaultSpeed));
+          currentRouter.highwaySpeed.put(key,parseSilentDouble(attributes.getValue("speed"),10));
         }
  else         if ("obstacle".equals(name)) {
           String key=attributes.getValue("tag") + "$" + attributes.getValue("value");
