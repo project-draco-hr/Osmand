@@ -5,7 +5,6 @@
   CollatorStringMatcher matcher=new CollatorStringMatcher(instance,req.nameQuery,StringMatcherMode.CHECK_STARTS_FROM_SPACE);
   long time=System.currentTimeMillis();
   int indexOffset=codedIS.getTotalBytesRead();
-  boolean readCategories=region.categories.isEmpty();
   while (true) {
     if (req.isCancelled()) {
       return;
@@ -21,16 +20,6 @@ case OsmandOdb.OsmAndPoiIndex.NAMEINDEX_FIELD_NUMBER:
 offsets=readPoiNameIndex(instance,req.nameQuery,req);
 codedIS.popLimit(oldLimit);
 break;
-case OsmandOdb.OsmAndPoiIndex.CATEGORIESTABLE_FIELD_NUMBER:
-if (!readCategories) {
-skipUnknownField(t);
-}
- else {
-length=codedIS.readRawVarint32();
-oldLimit=codedIS.pushLimit(length);
-readCategory(region);
-codedIS.popLimit(oldLimit);
-}
 case OsmandOdb.OsmAndPoiIndex.POIDATA_FIELD_NUMBER:
 Integer[] offKeys=new Integer[offsets.size()];
 if (offsets.size() > 0) {
@@ -66,7 +55,7 @@ int len=readInt();
 int oldLim=codedIS.pushLimit(len);
 readPoiData(matcher,req,region);
 codedIS.popLimit(oldLim);
-if (req.isCancelled()) {
+if (req.isCancelled() || req.limitExceeded()) {
 return;
 }
 }
