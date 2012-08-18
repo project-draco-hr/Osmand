@@ -24,7 +24,21 @@
  else {
     p=GeneralRouterProfile.CAR;
   }
-  RoutingContext ctx=new RoutingContext(config.build(p.name().toLowerCase(),!fast,start.hasBearing() ? start.getBearing() / 180d * Math.PI : null));
+  List<String> specs=new ArrayList<String>();
+  if (!app.getSettings().FAST_ROUTE_MODE.get()) {
+    specs.add(GeneralRouter.USE_SHORTEST_WAY);
+  }
+  if (app.getSettings().AVOID_FERRIES.get()) {
+    specs.add(GeneralRouter.AVOID_FERRIES);
+  }
+  if (app.getSettings().AVOID_TOLL_ROADS.get()) {
+    specs.add(GeneralRouter.AVOID_TOLL);
+  }
+  if (app.getSettings().AVOID_UNPAVED_ROADS.get()) {
+    specs.add(GeneralRouter.AVOID_UNPAVED);
+  }
+  String[] specialization=specs.toArray(new String[specs.size()]);
+  RoutingContext ctx=new RoutingContext(config.build(p.name().toLowerCase(),start.hasBearing() ? start.getBearing() / 180d * Math.PI : null,specialization));
   ctx.interruptable=interruptable;
   ctx.previouslyCalculatedRoute=previousRoute;
   RouteSegment st=router.findRouteSegment(start.getLatitude(),start.getLongitude(),ctx);
