@@ -3,10 +3,41 @@
   final OsmandMapTileView view=activity.getMapView();
   final MapInfoLayer mapInfoLayer=activity.getMapLayers().getMapInfoLayer();
   final MapInfoControls mapInfoControls=mapInfoLayer.getMapInfoControls();
+  final OsmandPreference<Float> textSizePref=view.getSettings().MAP_TEXT_SIZE;
+  final MapInfoControlRegInfo textSize=mapInfoControls.registerAppearanceWidget(0,R.string.map_text_size,"text_size",textSizePref);
+  textSize.setStateChangeListener(new Runnable(){
+    @Override public void run(){
+      final Float[] floatValues=new Float[]{0.6f,0.8f,1.0f,1.2f,1.5f};
+      String[] entries=new String[floatValues.length];
+      for (int i=0; i < floatValues.length; i++) {
+        entries[i]=(int)(floatValues[i] * 100) + " %";
+      }
+      Builder b=new AlertDialog.Builder(view.getContext());
+      int i=Arrays.binarySearch(floatValues,textSizePref.get());
+      b.setSingleChoiceItems(entries,i,new OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          textSizePref.set(floatValues[which]);
+          app.getResourceManager().getRenderer().clearCache();
+          view.refreshMap(true);
+          dialog.dismiss();
+        }
+      }
+);
+      b.show();
+    }
+  }
+);
+  final MapInfoControlRegInfo showRuler=mapInfoControls.registerAppearanceWidget(0,R.string.map_widget_show_ruler,"showRuler",view.getSettings().SHOW_RULER);
+  showRuler.setStateChangeListener(new Runnable(){
+    @Override public void run(){
+      view.getSettings().SHOW_RULER.set(!view.getSettings().SHOW_RULER.get());
+      view.refreshMap();
+    }
+  }
+);
   final MapInfoControlRegInfo transparent=mapInfoControls.registerAppearanceWidget(0,R.string.map_widget_transparent,"transparent",view.getSettings().TRANSPARENT_MAP_THEME);
   transparent.setStateChangeListener(new Runnable(){
     @Override public void run(){
-      ApplicationMode am=view.getSettings().getApplicationMode();
       view.getSettings().TRANSPARENT_MAP_THEME.set(!view.getSettings().TRANSPARENT_MAP_THEME.get());
       mapInfoLayer.recreateControls();
     }
@@ -15,9 +46,29 @@
   final MapInfoControlRegInfo fluorescent=mapInfoControls.registerAppearanceWidget(0,R.string.map_widget_fluorescent,"fluorescent",view.getSettings().FLUORESCENT_OVERLAYS);
   fluorescent.setStateChangeListener(new Runnable(){
     @Override public void run(){
-      ApplicationMode am=view.getSettings().getApplicationMode();
       view.getSettings().FLUORESCENT_OVERLAYS.set(!view.getSettings().FLUORESCENT_OVERLAYS.get());
       view.refreshMap();
+    }
+  }
+);
+  final CommonPreference<Integer> posPref=view.getSettings().POSITION_ON_MAP;
+  final MapInfoControlRegInfo posMap=mapInfoControls.registerAppearanceWidget(0,R.string.position_on_map,"position_on_map",textSizePref);
+  posMap.setStateChangeListener(new Runnable(){
+    @Override public void run(){
+      String[] entries=new String[]{activity.getString(R.string.position_on_map_center),activity.getString(R.string.position_on_map_bottom)};
+      final Integer[] vals=new Integer[]{OsmandSettings.CENTER_CONSTANT,OsmandSettings.BOTTOM_CONSTANT};
+      Builder b=new AlertDialog.Builder(view.getContext());
+      int i=Arrays.binarySearch(vals,posPref.get());
+      b.setSingleChoiceItems(entries,i,new OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          posPref.set(vals[which]);
+          activity.updateApplicationModeSettings();
+          view.refreshMap(true);
+          dialog.dismiss();
+        }
+      }
+);
+      b.show();
     }
   }
 );

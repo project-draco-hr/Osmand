@@ -1,20 +1,40 @@
 {
-  final MapInfoControlRegInfo showRuler=mapInfoControls.registerAppearanceWidget(0,R.string.map_widget_show_ruler,"showRuler",view.getSettings().SHOW_RULER);
-  showRuler.setStateChangeListener(new Runnable(){
+  final MapInfoControlRegInfo vectorRenderer=mapInfoControls.registerAppearanceWidget(0,R.string.map_widget_renderer,"renderer",view.getSettings().RENDERER);
+  final OsmandApplication app=view.getApplication();
+  vectorRenderer.setStateChangeListener(new Runnable(){
     @Override public void run(){
-      ApplicationMode am=view.getSettings().getApplicationMode();
-      view.getSettings().SHOW_RULER.set(!view.getSettings().SHOW_RULER.get());
-      view.refreshMap();
+      Builder bld=new AlertDialog.Builder(view.getContext());
+      bld.setTitle(R.string.renderers);
+      Collection<String> rendererNames=app.getRendererRegistry().getRendererNames();
+      final String[] items=rendererNames.toArray(new String[rendererNames.size()]);
+      bld.setItems(items,new OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          String renderer=items[which];
+          RenderingRulesStorage loaded=app.getRendererRegistry().getRenderer(renderer);
+          if (loaded != null) {
+            view.getSettings().RENDERER.set(renderer);
+            app.getRendererRegistry().setCurrentSelectedRender(loaded);
+            app.getResourceManager().getRenderer().clearCache();
+            view.refreshMap(true);
+          }
+ else {
+            AccessibleToast.makeText(app,R.string.renderer_load_exception,Toast.LENGTH_SHORT).show();
+          }
+          createCustomRenderingProperties(loaded);
+        }
+      }
+);
+      bld.show();
     }
   }
 );
   final MapInfoControlRegInfo displayViewDirections=mapInfoControls.registerAppearanceWidget(0,R.string.map_widget_view_direction,"viewDirection",view.getSettings().SHOW_VIEW_ANGLE);
   displayViewDirections.setStateChangeListener(new Runnable(){
     @Override public void run(){
-      ApplicationMode am=view.getSettings().getApplicationMode();
       view.getSettings().SHOW_VIEW_ANGLE.set(!view.getSettings().SHOW_VIEW_ANGLE.get());
       map.updateApplicationModeSettings();
     }
   }
 );
+  createCustomRenderingProperties(app.getRendererRegistry().getCurrentSelectedRenderer());
 }
