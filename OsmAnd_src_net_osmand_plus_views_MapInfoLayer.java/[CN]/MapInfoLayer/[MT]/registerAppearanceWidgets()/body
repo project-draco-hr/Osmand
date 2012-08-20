@@ -7,7 +7,14 @@
       bld.setTitle(R.string.renderers);
       Collection<String> rendererNames=app.getRendererRegistry().getRendererNames();
       final String[] items=rendererNames.toArray(new String[rendererNames.size()]);
-      bld.setItems(items,new OnClickListener(){
+      int i=-1;
+      for (int j=0; j < items.length; j++) {
+        if (items[j].equals(app.getRendererRegistry().getCurrentSelectedRenderer().getName())) {
+          i=j;
+          break;
+        }
+      }
+      bld.setSingleChoiceItems(items,i,new OnClickListener(){
         @Override public void onClick(        DialogInterface dialog,        int which){
           String renderer=items[which];
           RenderingRulesStorage loaded=app.getRendererRegistry().getRenderer(renderer);
@@ -21,6 +28,30 @@
             AccessibleToast.makeText(app,R.string.renderer_load_exception,Toast.LENGTH_SHORT).show();
           }
           createCustomRenderingProperties(loaded);
+          dialog.dismiss();
+        }
+      }
+);
+      bld.show();
+    }
+  }
+);
+  final MapInfoControlRegInfo dayNight=mapInfoControls.registerAppearanceWidget(0,R.string.map_widget_day_night,"dayNight",view.getSettings().DAYNIGHT_MODE);
+  dayNight.setStateChangeListener(new Runnable(){
+    @Override public void run(){
+      Builder bld=new AlertDialog.Builder(view.getContext());
+      bld.setTitle(R.string.daynight);
+      final String[] items=new String[OsmandSettings.DayNightMode.values().length];
+      for (int i=0; i < items.length; i++) {
+        items[i]=OsmandSettings.DayNightMode.values()[i].toHumanString(map);
+      }
+      int i=view.getSettings().DAYNIGHT_MODE.get().ordinal();
+      bld.setSingleChoiceItems(items,i,new OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          view.getSettings().DAYNIGHT_MODE.set(OsmandSettings.DayNightMode.values()[which]);
+          app.getResourceManager().getRenderer().clearCache();
+          view.refreshMap(true);
+          dialog.dismiss();
         }
       }
 );
