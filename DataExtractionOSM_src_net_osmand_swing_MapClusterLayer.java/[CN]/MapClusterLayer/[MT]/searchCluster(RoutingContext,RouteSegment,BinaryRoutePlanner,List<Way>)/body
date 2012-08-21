@@ -4,6 +4,10 @@
   queue.add(st);
   RouteDataObject startRoad=st.getRoad();
   long lstart=(((long)startRoad.getPoint31XTile(st.getSegmentStart())) << 31) + (long)startRoad.getPoint31YTile(st.getSegmentStart());
+  int zlimit=13;
+  int zm=31 - zlimit;
+  int tileX=startRoad.getPoint31XTile(st.getSegmentStart()) >> zm;
+  int tileY=startRoad.getPoint31YTile(st.getSegmentStart()) >> zm;
   RouteSegment next=ctx.getRoutingTile((int)lstart >> 31,(int)(lstart - (lstart >> 31) << 31)).getSegment(lstart,ctx);
   while (next != null) {
     if (next.getRoad().getId() != st.getRoad().getId()) {
@@ -11,12 +15,19 @@
     }
     next=next.getNext();
   }
+  int outOfTile=0;
+  int segmentsProcessed=0;
+  float minRatio=1f;
+  TLongHashSet onTheMap=new TLongHashSet();
   nextSegment:   while (!queue.isEmpty()) {
     RouteSegment segment=queue.poll();
     RouteDataObject road=segment.getRoad();
-    ctx.getVisitor().visitSegment(segment,true);
+    segmentsProcessed++;
     if (visitedIds.contains(calculateId(segment,segment.getSegmentStart()))) {
       continue;
+    }
+    if (segmentsProcessed > 50) {
+      minRatio=Math.min(minRatio,(float)(queue.size() + outOfTile) / segmentsProcessed);
     }
     visitedIds.add(calculateId(segment,segment.getSegmentStart()));
     Way w=new Way(-1);
@@ -73,32 +84,34 @@
       router.loadRoutes(ctx,x,y);
       long l=(((long)x) << 31) + (long)y;
       next=ctx.getRoutingTile(x,y).getSegment(l,ctx);
-      boolean addToQueue=true;
-      ;
+      RouteSegment toAdd=segment;
+      if (!onTheMap.contains(toAdd.getRoad().getId())) {
+        onTheMap.add(toAdd.getRoad().getId());
+        ctx.getVisitor().visitSegment(toAdd,true);
+      }
       while (next != null) {
-        String h=getHighway(next.getRoad());
-        if (roads.contains(h)) {
-          if (currentD > 0) {
-            plusAllowed=false;
+        if (!visitedIds.contains(calculateId(next,next.getSegmentStart()))) {
+          int tX=next.getRoad().getPoint31XTile(next.getSegmentStart()) >> zm;
+          int tY=next.getRoad().getPoint31YTile(next.getSegmentStart()) >> zm;
+          String highway=next.getRoad().getHighway();
+          if (tX == tileX && tY == tileY) {
+            queue.add(next);
           }
  else {
-            minusAllowed=false;
+            double r=1;
+            if (!isMajorHighway(highway) && Math.abs(tX - tileX) < (2 * r) && Math.abs(tY - tileY) < (2 * r)) {
+              queue.add(next);
+            }
+ else {
+              outOfTile++;
+            }
           }
-          addToQueue=false;
-          break;
         }
         next=next.getNext();
       }
-      if (addToQueue) {
-        next=ctx.getRoutingTile(x,y).getSegment(l,ctx);
-        while (next != null) {
-          if (!visitedIds.contains(calculateId(next,next.getSegmentStart()))) {
-            queue.add(next);
-          }
-          next=next.getNext();
-        }
-      }
     }
   }
+  System.out.println("Current ratio " + ((float)outOfTile / segmentsProcessed) + " min ratio "+ minRatio);
+  System.out.println("Processed " + segmentsProcessed + " and borders are "+ outOfTile);
   return null;
 }
