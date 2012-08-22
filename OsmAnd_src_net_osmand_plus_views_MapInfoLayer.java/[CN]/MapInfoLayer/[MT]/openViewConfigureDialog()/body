@@ -1,7 +1,8 @@
 {
   final OsmandSettings settings=view.getSettings();
   final ArrayList<Object> list=new ArrayList<Object>();
-  list.add(map.getString(R.string.map_widget_reset));
+  String appMode=settings.getApplicationMode().toHumanString(view.getContext());
+  list.add(map.getString(R.string.map_widget_reset) + " (" + appMode+ ") ");
   list.add(map.getString(R.string.map_widget_top_stack));
   list.addAll(mapInfoControls.getTop());
   list.add(map.getString(R.string.map_widget_right_stack));
@@ -16,7 +17,6 @@
     list.add(cat);
     fillAppearanceWidgets(widgets,cat,list);
   }
-  Builder b=new AlertDialog.Builder(map);
   final ApplicationMode mode=settings.getApplicationMode();
   ListAdapter listAdapter=new ArrayAdapter<Object>(map,R.layout.layers_list_activity_item,R.id.title,list){
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
@@ -82,9 +82,10 @@
     }
   }
 ;
-  b.setAdapter(listAdapter,new DialogInterface.OnClickListener(){
-    @Override public void onClick(    DialogInterface dialog,    int position){
-      Object o=list.get(position);
+  Builder b=new AlertDialog.Builder(map);
+  b.setAdapter(listAdapter,new OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      Object o=list.get(which);
       if (o instanceof MapInfoControlRegInfo) {
         final MapInfoControlRegInfo mi=(MapInfoControlRegInfo)o;
         final boolean selecteable=mi.selecteable();
