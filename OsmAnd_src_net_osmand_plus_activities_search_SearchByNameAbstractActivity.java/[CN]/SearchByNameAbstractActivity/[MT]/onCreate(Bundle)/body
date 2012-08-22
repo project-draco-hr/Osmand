@@ -1,16 +1,30 @@
 {
   super.onCreate(savedInstanceState);
   settings=((OsmandApplication)getApplication()).getSettings();
-  requestWindowFeature(Window.FEATURE_NO_TITLE);
+  CustomTitleBar titleBar=new CustomTitleBar(this,R.string.search_activity,R.drawable.tab_search_address_icon);
   setContentView(R.layout.search_by_name);
+  titleBar.afterSetContentView();
   initializeTask=getInitializeTask();
   uiHandler=new UIUpdateHandler();
   namesFilter=new NamesFilter();
-  NamesAdapter namesAdapter=new NamesAdapter(new ArrayList<T>(),createComparator());
+  final NamesAdapter namesAdapter=new NamesAdapter(new ArrayList<T>(),createComparator());
   setListAdapter(namesAdapter);
   collator=Collator.getInstance(Locale.US);
   collator.setStrength(Collator.PRIMARY);
   progress=(ProgressBar)findViewById(R.id.ProgressBar);
+  endingButton=(Button)findViewById(R.id.EndingButton);
+  endingButton.setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      T obj=endingObject;
+      LatLon loc=getLocation(obj);
+      if (obj != null && loc != null) {
+        QuickAction qa=new QuickAction(v);
+        MapActivityActions.createDirectionsActions(qa,loc,obj,getText(obj),getZoomToDisplay(endingObject),SearchByNameAbstractActivity.this,true,null);
+        qa.show();
+      }
+    }
+  }
+);
   searchText=(EditText)findViewById(R.id.SearchText);
   searchText.addTextChangedListener(new TextWatcher(){
     @Override public void afterTextChanged(    Editable s){
