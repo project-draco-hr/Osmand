@@ -1,8 +1,45 @@
 {
-  int z=settings.getLastKnownMapZoom();
-  Amenity amenity=((AmenityAdapter)getListAdapter()).getItem(position);
-  String poiSimpleFormat=OsmAndFormatter.getPoiSimpleFormat(amenity,this,settings.usingEnglishNames());
+  final Amenity amenity=((AmenityAdapter)getListAdapter()).getItem(position);
+  QuickAction qa=new QuickAction(v);
+  String poiSimpleFormat=OsmAndFormatter.getPoiSimpleFormat(amenity,SearchPOIActivity.this,settings.usingEnglishNames());
   String name=getString(R.string.poi) + " : " + poiSimpleFormat;
-  settings.setMapLocationToShow(amenity.getLocation().getLatitude(),amenity.getLocation().getLongitude(),Math.max(16,z),name,name,amenity);
-  MapActivity.launchMapActivityMoveToTop(SearchPOIActivity.this);
+  int z=Math.max(16,settings.getLastKnownMapZoom());
+  MapActivityActions.createDirectionsActions(qa,amenity.getLocation(),amenity,name,z,this,true,null);
+  ActionItem poiDescription=new ActionItem();
+  poiDescription.setTitle(getString(R.string.poi_context_menu_showdescription));
+  poiDescription.setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      Builder bs=new AlertDialog.Builder(v.getContext());
+      bs.setTitle(OsmAndFormatter.getPoiSimpleFormat(amenity,v.getContext(),settings.USE_ENGLISH_NAMES.get()));
+      StringBuilder d=new StringBuilder();
+      if (amenity.getOpeningHours() != null) {
+        d.append(getString(R.string.opening_hours) + " : ").append(amenity.getOpeningHours()).append("\n");
+      }
+      if (amenity.getPhone() != null) {
+        d.append(getString(R.string.phone) + " : ").append(amenity.getPhone()).append("\n");
+      }
+      if (amenity.getSite() != null) {
+        d.append(getString(R.string.website) + " : ").append(amenity.getSite()).append("\n");
+      }
+      if (amenity.getDescription() != null) {
+        d.append(amenity.getDescription());
+      }
+      bs.setMessage(d.toString());
+      bs.show();
+    }
+  }
+);
+  qa.addActionItem(poiDescription,2);
+  if (((OsmandApplication)getApplication()).accessibilityEnabled()) {
+    ActionItem showDetails=new ActionItem();
+    showDetails.setTitle(getString(R.string.show_details));
+    showDetails.setOnClickListener(new OnClickListener(){
+      @Override public void onClick(      View v){
+        showPOIDetails(amenity,settings.usingEnglishNames());
+      }
+    }
+);
+    qa.addActionItem(showDetails);
+  }
+  qa.show();
 }

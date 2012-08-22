@@ -11,11 +11,39 @@
     }
   }
  else {
-    FavouritePoint point=(FavouritePoint)favouritesAdapter.getChild(groupPosition,childPosition);
-    OsmandSettings settings=getMyApplication().getSettings();
-    settings.SHOW_FAVORITES.set(true);
-    settings.setMapLocationToShow(point.getLatitude(),point.getLongitude(),Math.max(12,settings.getLastKnownMapZoom()),null,getString(R.string.favorite) + ":\n " + point.getName(),point);
-    MapActivity.launchMapActivityMoveToTop(FavouritesActivity.this);
+    QuickAction qa=new QuickAction(v);
+    final OsmandSettings settings=getMyApplication().getSettings();
+    final FavouritePoint point=(FavouritePoint)favouritesAdapter.getChild(groupPosition,childPosition);
+    String name=getString(R.string.favorite) + ": " + point.getName();
+    LatLon location=new LatLon(point.getLatitude(),point.getLongitude());
+    OnClickListener onshow=new OnClickListener(){
+      @Override public void onClick(      View v){
+        settings.SHOW_FAVORITES.set(true);
+      }
+    }
+;
+    MapActivityActions.createDirectionsActions(qa,location,point,name,settings.getLastKnownMapZoom(),this,true,onshow);
+    if (point.isStored()) {
+      ActionItem edit=new ActionItem();
+      edit.setTitle(getString(R.string.favourites_context_menu_edit));
+      edit.setOnClickListener(new OnClickListener(){
+        @Override public void onClick(        View v){
+          editPoint(point);
+        }
+      }
+);
+      qa.addActionItem(edit);
+      ActionItem delete=new ActionItem();
+      delete.setTitle(getString(R.string.favourites_context_menu_delete));
+      delete.setOnClickListener(new OnClickListener(){
+        @Override public void onClick(        View v){
+          deletePoint(point);
+        }
+      }
+);
+      qa.addActionItem(delete);
+    }
+    qa.show();
   }
   return true;
 }

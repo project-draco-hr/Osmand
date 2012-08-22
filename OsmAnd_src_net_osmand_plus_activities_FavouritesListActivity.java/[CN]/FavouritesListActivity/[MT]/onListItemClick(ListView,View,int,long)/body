@@ -1,9 +1,17 @@
 {
   if (!isSelectFavoriteMode()) {
+    QuickAction qa=new QuickAction(v);
     FavouritePoint point=favouritesAdapter.getItem(position);
-    settings.SHOW_FAVORITES.set(true);
-    settings.setMapLocationToShow(point.getLatitude(),point.getLongitude(),settings.getLastKnownMapZoom(),null,getString(R.string.favorite) + ": \n " + point.getName(),point);
-    MapActivity.launchMapActivityMoveToTop(FavouritesListActivity.this);
+    String name=getString(R.string.favorite) + ": " + point.getName();
+    LatLon location=new LatLon(point.getLatitude(),point.getLongitude());
+    View.OnClickListener onshow=new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        settings.SHOW_FAVORITES.set(true);
+      }
+    }
+;
+    MapActivityActions.createDirectionsActions(qa,location,point,name,settings.getLastKnownMapZoom(),this,true,onshow);
+    qa.show();
   }
  else {
     Intent intent=getIntent();
