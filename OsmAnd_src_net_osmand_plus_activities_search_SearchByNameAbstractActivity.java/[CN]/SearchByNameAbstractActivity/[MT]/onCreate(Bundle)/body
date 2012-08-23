@@ -1,7 +1,7 @@
 {
   super.onCreate(savedInstanceState);
   settings=((OsmandApplication)getApplication()).getSettings();
-  CustomTitleBar titleBar=new CustomTitleBar(this,R.string.search_activity,R.drawable.tab_search_address_icon);
+  titleBar=new CustomTitleBar(this,R.string.search_activity,R.drawable.tab_search_address_icon);
   setContentView(R.layout.search_by_name);
   titleBar.afterSetContentView();
   initializeTask=getInitializeTask();
@@ -12,19 +12,6 @@
   collator=Collator.getInstance(Locale.US);
   collator.setStrength(Collator.PRIMARY);
   progress=(ProgressBar)findViewById(R.id.ProgressBar);
-  endingButton=(Button)findViewById(R.id.EndingButton);
-  endingButton.setOnClickListener(new OnClickListener(){
-    @Override public void onClick(    View v){
-      T obj=endingObject;
-      LatLon loc=getLocation(obj);
-      if (obj != null && loc != null) {
-        QuickAction qa=new QuickAction(v);
-        MapActivityActions.createDirectionsActions(qa,loc,obj,getText(obj),getZoomToDisplay(endingObject),SearchByNameAbstractActivity.this,true,null);
-        qa.show();
-      }
-    }
-  }
-);
   searchText=(EditText)findViewById(R.id.SearchText);
   searchText.addTextChangedListener(new TextWatcher(){
     @Override public void afterTextChanged(    Editable s){
@@ -36,7 +23,30 @@
     }
   }
 );
+  searchText.setOnClickListener(new OnClickListener(){
+    String previousSelect="";
+    @Override public void onClick(    View v){
+      if (!previousSelect.equals(endingText) && endingText.length() > 0) {
+        previousSelect=endingText;
+        itemSelectedBase(endingObject,v);
+      }
+    }
+  }
+);
+  searchText.setImeOptions(EditorInfo.IME_ACTION_DONE);
   searchText.requestFocus();
+  searchText.setOnEditorActionListener(new OnEditorActionListener(){
+    @Override public boolean onEditorAction(    TextView v,    int actionId,    KeyEvent event){
+      if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+        if (endingObject != null) {
+          itemSelectedBase(endingObject,v);
+        }
+        return true;
+      }
+      return false;
+    }
+  }
+);
   progress.setVisibility(View.INVISIBLE);
   findViewById(R.id.ResetButton).setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){

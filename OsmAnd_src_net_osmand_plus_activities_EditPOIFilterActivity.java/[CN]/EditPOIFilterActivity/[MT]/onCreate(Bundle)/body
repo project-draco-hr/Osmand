@@ -1,6 +1,8 @@
 {
   super.onCreate(icicle);
+  titleBar=new CustomTitleBar(this,R.string.searchpoi_activity,R.drawable.tab_search_poi_icon);
   setContentView(R.layout.editing_poi_filter);
+  titleBar.afterSetContentView();
   filterLevel=(Button)findViewById(R.id.filter_currentButton);
   filterLevel.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
@@ -40,9 +42,16 @@
     }
   }
 );
+  ((ImageButton)findViewById(R.id.SaveButton)).setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      savePoiFilter();
+    }
+  }
+);
   Bundle bundle=this.getIntent().getExtras();
   String filterId=bundle.getString(AMENITY_FILTER);
   helper=((OsmandApplication)getApplication()).getPoiFilters();
   filter=helper.getFilterById(filterId);
+  titleBar.getTitleView().setText(getString(R.string.filterpoi_activity) + " - " + filter.getName());
   setListAdapter(new AmenityAdapter(AmenityType.getCategories()));
 }

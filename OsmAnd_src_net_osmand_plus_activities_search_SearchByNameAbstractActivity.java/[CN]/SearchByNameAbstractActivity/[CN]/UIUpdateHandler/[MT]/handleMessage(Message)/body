@@ -1,8 +1,40 @@
 {
   if (msg.what == MESSAGE_CLEAR_LIST) {
+    add=true;
     getListAdapter().clear();
+    endingObject=null;
+    if (currentFilter.length() == 0) {
+      endingSet.clear();
+    }
+    String etext=endingText;
+    endingText="";
+    searchText.getText().replace(currentFilter.length(),currentFilter.length() + etext.length(),"");
+    searchText.setSelection(currentFilter.length());
   }
  else   if (msg.what == MESSAGE_ADD_ENTITY) {
     getListAdapter().add((T)msg.obj);
+    if (add && currentFilter.length() > 0) {
+      String text=getShortText((T)msg.obj);
+      boolean newEntry=endingSet.add(text);
+      if (text.toLowerCase().startsWith(currentFilter.toLowerCase())) {
+        text=text.substring(currentFilter.length());
+      }
+ else {
+        text=" - " + text;
+      }
+      if (text.length() > MAX_VISIBLE_NAME) {
+        text=text.substring(0,MAX_VISIBLE_NAME) + "..";
+      }
+      String etext=endingText;
+      endingText=text;
+      searchText.getText().replace(currentFilter.length(),currentFilter.length() + etext.length(),text);
+      searchText.getText().clearSpans();
+      searchText.getText().setSpan(new StyleSpan(Typeface.BOLD_ITALIC),currentFilter.length(),currentFilter.length() + text.length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      if (searchText.getSelectionEnd() > currentFilter.length()) {
+        searchText.setSelection(currentFilter.length());
+      }
+      add=!newEntry;
+      endingObject=(T)msg.obj;
+    }
   }
 }
