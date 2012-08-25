@@ -1,0 +1,105 @@
+{
+  hasChanged=true;
+  if (storedIndexBuilder == null) {
+    storedIndexBuilder=OsmandIndex.OsmAndStoredIndex.newBuilder();
+    storedIndexBuilder.setVersion(VERSION);
+    storedIndexBuilder.setDateCreated(System.currentTimeMillis());
+  }
+  FileIndex.Builder fileIndex=OsmandIndex.FileIndex.newBuilder();
+  fileIndex.setDateModified(f.lastModified());
+  fileIndex.setSize(f.length());
+  fileIndex.setVersion(reader.getVersion());
+  fileIndex.setFileName(f.getName());
+  for (  MapIndex index : reader.getMapIndexes()) {
+    MapPart.Builder map=OsmandIndex.MapPart.newBuilder();
+    map.setSize(index.getLength());
+    map.setOffset(index.getFilePointer());
+    if (index.getName() != null) {
+      map.setName(index.getName());
+    }
+    for (    MapRoot mr : index.getRoots()) {
+      MapLevel.Builder lev=OsmandIndex.MapLevel.newBuilder();
+      lev.setSize(mr.length);
+      lev.setOffset(mr.filePointer);
+      lev.setLeft(mr.left);
+      lev.setRight(mr.right);
+      lev.setTop(mr.top);
+      lev.setBottom(mr.bottom);
+      lev.setMinzoom(mr.minZoom);
+      lev.setMaxzoom(mr.maxZoom);
+      map.addLevels(lev);
+    }
+    fileIndex.addMapIndex(map);
+  }
+  for (  AddressRegion index : reader.getAddressIndexes()) {
+    AddressPart.Builder addr=OsmandIndex.AddressPart.newBuilder();
+    addr.setSize(index.getLength());
+    addr.setOffset(index.getFilePointer());
+    if (index.getName() != null) {
+      addr.setName(index.getName());
+    }
+    if (index.getEnName() != null) {
+      addr.setNameEn(index.getEnName());
+    }
+    addr.setIndexNameOffset(index.getIndexNameOffset());
+    for (    CitiesBlock mr : index.getCities()) {
+      CityBlock.Builder cblock=OsmandIndex.CityBlock.newBuilder();
+      cblock.setSize(mr.length);
+      cblock.setOffset(mr.filePointer);
+      cblock.setType(mr.type);
+      addr.addCities(cblock);
+    }
+    fileIndex.addAddressIndex(addr);
+  }
+  for (  PoiRegion index : reader.getPoiIndexes()) {
+    PoiPart.Builder poi=OsmandIndex.PoiPart.newBuilder();
+    poi.setSize(index.getLength());
+    poi.setOffset(index.getFilePointer());
+    if (index.getName() != null) {
+      poi.setName(index.getName());
+    }
+    poi.setLeft(MapUtils.get31TileNumberX(index.getLeftLongitude()));
+    poi.setRight(MapUtils.get31TileNumberX(index.getRightLongitude()));
+    poi.setTop(MapUtils.get31TileNumberY(index.getTopLatitude()));
+    poi.setBottom(MapUtils.get31TileNumberY(index.getBottomLatitude()));
+    fileIndex.addPoiIndex(poi.build());
+  }
+  for (  TransportIndex index : reader.getTransportIndexes()) {
+    TransportPart.Builder transport=OsmandIndex.TransportPart.newBuilder();
+    transport.setSize(index.getLength());
+    transport.setOffset(index.getFilePointer());
+    if (index.getName() != null) {
+      transport.setName(index.getName());
+    }
+    transport.setLeft(index.getLeft());
+    transport.setRight(index.getRight());
+    transport.setTop(index.getTop());
+    transport.setBottom(index.getBottom());
+    transport.setStopsTableLength(index.stopsFileLength);
+    transport.setStopsTableOffset(index.stopsFileOffset);
+    transport.setStringTableLength(index.stringTable.length);
+    transport.setStringTableOffset(index.stringTable.fileOffset);
+    fileIndex.addTransportIndex(transport);
+  }
+  for (  RouteRegion index : reader.getRoutingIndexes()) {
+    RoutingPart.Builder routing=OsmandIndex.RoutingPart.newBuilder();
+    routing.setSize(index.getLength());
+    routing.setOffset(index.getFilePointer());
+    if (index.getName() != null) {
+      routing.setName(index.getName());
+    }
+    for (    RouteSubregion sub : index.getSubregions()) {
+      OsmandIndex.RoutingSubregion.Builder rpart=OsmandIndex.RoutingSubregion.newBuilder();
+      rpart.setSize(sub.length);
+      rpart.setOffset(sub.filePointer);
+      rpart.setLeft(sub.left);
+      rpart.setRight(sub.right);
+      rpart.setTop(sub.top);
+      rpart.setBottom(sub.bottom);
+      rpart.setShifToData(sub.shiftToData);
+      routing.addSubregions(rpart);
+    }
+    fileIndex.addRoutingIndex(routing);
+  }
+  storedIndexBuilder.addFileIndex(fileIndex);
+}

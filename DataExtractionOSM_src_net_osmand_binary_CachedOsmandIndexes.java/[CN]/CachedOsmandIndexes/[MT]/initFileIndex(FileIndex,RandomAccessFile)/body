@@ -1,0 +1,92 @@
+{
+  BinaryMapIndexReader reader=new BinaryMapIndexReader(mf,false);
+  reader.version=found.getVersion();
+  reader.dateCreated=found.getDateModified();
+  for (  MapPart index : found.getMapIndexList()) {
+    MapIndex mi=new MapIndex();
+    mi.length=(int)index.getSize();
+    mi.filePointer=(int)index.getOffset();
+    mi.name=index.getName();
+    for (    MapLevel mr : index.getLevelsList()) {
+      MapRoot root=new MapRoot();
+      root.length=(int)mr.getSize();
+      root.filePointer=(int)mr.getOffset();
+      root.left=mr.getLeft();
+      root.right=mr.getRight();
+      root.top=mr.getTop();
+      root.bottom=mr.getBottom();
+      root.minZoom=mr.getMinzoom();
+      root.maxZoom=mr.getMaxzoom();
+      mi.roots.add(root);
+    }
+    reader.mapIndexes.add(mi);
+    reader.indexes.add(mi);
+    reader.basemap=reader.basemap || mi.isBaseMap();
+  }
+  for (  AddressPart index : found.getAddressIndexList()) {
+    AddressRegion mi=new AddressRegion();
+    mi.length=(int)index.getSize();
+    mi.filePointer=(int)index.getOffset();
+    mi.name=index.getName();
+    mi.enName=index.getNameEn();
+    mi.indexNameOffset=index.getIndexNameOffset();
+    for (    CityBlock mr : index.getCitiesList()) {
+      CitiesBlock cblock=new CitiesBlock();
+      cblock.length=(int)mr.getSize();
+      cblock.filePointer=(int)mr.getOffset();
+      cblock.type=mr.getType();
+      mi.cities.add(cblock);
+    }
+    reader.addressIndexes.add(mi);
+    reader.indexes.add(mi);
+  }
+  for (  PoiPart index : found.getPoiIndexList()) {
+    PoiRegion mi=new PoiRegion();
+    mi.length=(int)index.getSize();
+    mi.filePointer=(int)index.getOffset();
+    mi.name=index.getName();
+    mi.leftLongitude=MapUtils.get31LongitudeX(index.getLeft());
+    mi.rightLongitude=MapUtils.get31LongitudeX(index.getRight());
+    mi.topLatitude=MapUtils.get31LatitudeY(index.getTop());
+    mi.bottomLatitude=MapUtils.get31LatitudeY(index.getBottom());
+    reader.poiIndexes.add(mi);
+    reader.indexes.add(mi);
+  }
+  for (  TransportPart index : found.getTransportIndexList()) {
+    TransportIndex mi=new TransportIndex();
+    mi.length=(int)index.getSize();
+    mi.filePointer=(int)index.getOffset();
+    mi.name=index.getName();
+    mi.left=index.getLeft();
+    mi.right=index.getRight();
+    mi.top=index.getTop();
+    mi.bottom=index.getBottom();
+    mi.stopsFileLength=index.getStopsTableLength();
+    mi.stopsFileOffset=index.getStopsTableOffset();
+    mi.stringTable=new IndexStringTable();
+    mi.stringTable.fileOffset=index.getStringTableOffset();
+    mi.stringTable.length=index.getStringTableLength();
+    reader.transportIndexes.add(mi);
+    reader.indexes.add(mi);
+  }
+  for (  RoutingPart index : found.getRoutingIndexList()) {
+    RouteRegion mi=new RouteRegion();
+    mi.length=(int)index.getSize();
+    mi.filePointer=(int)index.getOffset();
+    mi.name=index.getName();
+    for (    RoutingSubregion mr : index.getSubregionsList()) {
+      RouteSubregion sub=new RouteSubregion(mi);
+      sub.length=(int)mr.getSize();
+      sub.filePointer=(int)mr.getOffset();
+      sub.left=mr.getLeft();
+      sub.right=mr.getRight();
+      sub.top=mr.getTop();
+      sub.bottom=mr.getBottom();
+      sub.shiftToData=mr.getShifToData();
+      mi.subregions.add(sub);
+    }
+    reader.routingIndexes.add(mi);
+    reader.indexes.add(mi);
+  }
+  return reader;
+}
