@@ -1,0 +1,52 @@
+{
+  try {
+    ArabicShaping as=new ArabicShaping(ArabicShaping.LETTERS_SHAPE | ArabicShaping.LENGTH_GROW_SHRINK);
+    try {
+      s=as.shape(s);
+    }
+ catch (    ArabicShapingException e) {
+      LOG.error(e.getMessage(),e);
+    }
+    Bidi line=new Bidi(s.length(),s.length());
+    line.setPara(s,Bidi.LEVEL_DEFAULT_LTR,null);
+    byte direction=line.getDirection();
+    if (direction != Bidi.MIXED) {
+      if (line.isLeftToRight()) {
+        return s;
+      }
+ else {
+        char[] chs=new char[s.length()];
+        for (int i=0; i < chs.length; i++) {
+          chs[i]=s.charAt(chs.length - i - 1);
+        }
+        return new String(chs);
+      }
+    }
+ else {
+      int count=line.countRuns();
+      StringBuilder res=new StringBuilder();
+      for (int i=0; i < count; ++i) {
+        BidiRun run=line.getVisualRun(i);
+        int st=run.getStart();
+        int e=run.getLimit();
+        int j=run.getDirection() == Bidi.LTR ? st : e - 1;
+        int l=run.getDirection() == Bidi.LTR ? e : st - 1;
+        boolean plus=run.getDirection() == Bidi.LTR;
+        while (j != l) {
+          res.append(s.charAt(j));
+          if (plus) {
+            j++;
+          }
+ else {
+            j--;
+          }
+        }
+      }
+      return res.toString();
+    }
+  }
+ catch (  RuntimeException e) {
+    LOG.error(e.getMessage(),e);
+    return s;
+  }
+}
