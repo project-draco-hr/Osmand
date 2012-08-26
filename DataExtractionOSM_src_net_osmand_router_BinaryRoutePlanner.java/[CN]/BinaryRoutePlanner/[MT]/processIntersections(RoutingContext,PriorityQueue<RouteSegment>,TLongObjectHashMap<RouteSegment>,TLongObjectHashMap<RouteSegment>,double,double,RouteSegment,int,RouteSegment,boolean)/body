@@ -31,11 +31,14 @@
     if (!alreadyVisited) {
       double distanceToEnd=h(ctx,distToFinalPoint,next);
       if (next.parentRoute == null || ctx.roadPriorityComparator(next.distanceFromStart,next.distanceToEnd,distFromStart,distanceToEnd) > 0) {
+        if (next.parentRoute != null) {
+          if (!graphSegments.remove(next)) {
+            RouteSegment cpy=new RouteSegment(next.getRoad(),next.segmentStart);
+            next=cpy;
+          }
+        }
         next.distanceFromStart=distFromStart;
         next.distanceToEnd=distanceToEnd;
-        if (next.parentRoute != null) {
-          graphSegments.remove(next);
-        }
         next.parentRoute=segment;
         next.parentSegmentEnd=segmentEnd;
         graphSegments.add(next);

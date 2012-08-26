@@ -47,12 +47,10 @@
       double d=measuredDist(road.getPoint31XTile(j),road.getPoint31YTile(j),road.getPoint31XTile(next),road.getPoint31YTile(next));
       distance+=d;
       double obstacle=ctx.getRouter().defineObstacle(road,j);
-      if (obstacle >= 0) {
-        distOnRoadToPass+=d / speed + obstacle;
+      if (obstacle < 0) {
+        obstacle=30;
       }
- else {
-        System.err.println("Something completely wrong if we pass obstacle < 0 " + Arrays.toString(road.getPointTypes(j)));
-      }
+      distOnRoadToPass+=d / speed + obstacle;
       List<RouteSegmentResult> attachedRoutes=rr.getAttachedRoutes(next);
       if (next != rr.getEndPointIndex() && !rr.getObject().roundabout() && attachedRoutes != null) {
         float before=rr.getBearing(next,!plus);

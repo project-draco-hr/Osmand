@@ -3,7 +3,7 @@
   final int middle=segment.segmentStart;
   double obstaclePlusTime=0;
   double obstacleMinusTime=0;
-  long nt=(road.getId() << 11l) + middle;
+  long nt=(road.getId() << ROUTE_POINTS) + middle;
   visitedSegments.put(nt,null);
   int oneway=ctx.getRouter().isOneWay(road);
   boolean minusAllowed;
@@ -70,16 +70,26 @@
     if (positive) {
       double obstacle=ctx.getRouter().defineObstacle(road,segmentEnd);
       if (obstacle < 0) {
-        plusAllowed=false;
-        continue;
+        if (obstacle == -1) {
+          plusAllowed=false;
+          continue;
+        }
+ else {
+          obstacle=-obstacle;
+        }
       }
       obstaclePlusTime+=obstacle;
     }
  else {
       double obstacle=ctx.getRouter().defineObstacle(road,segmentEnd);
       if (obstacle < 0) {
-        minusAllowed=false;
-        continue;
+        if (obstacle == -1) {
+          minusAllowed=false;
+          continue;
+        }
+ else {
+          obstacle=-obstacle;
+        }
       }
       obstacleMinusTime+=obstacle;
     }
