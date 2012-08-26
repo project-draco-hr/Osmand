@@ -1,0 +1,19 @@
+{
+  for (  RouteRegion r : map.getRoutingIndexes()) {
+    if (r.routeEncodingRules.isEmpty()) {
+      boolean intersect=false;
+      for (      RouteSubregion rs : r.subregions) {
+        if (req.intersects(rs.left,rs.top,rs.right,rs.bottom)) {
+          intersect=true;
+          break;
+        }
+      }
+      if (intersect) {
+        codedIS.seek(r.filePointer);
+        int oldLimit=codedIS.pushLimit(r.length);
+        readRouteIndex(r);
+        codedIS.popLimit(oldLimit);
+      }
+    }
+  }
+}
