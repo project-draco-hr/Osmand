@@ -6,9 +6,24 @@
   final double longitude=MapUtils.getLongitudeFromTile(map.getZoom(),map.getXTile() + fx);
   new Thread(new Runnable(){
     @Override public void run(){
-      List<Way> ways;
       try {
-        ways=clustering(latitude,longitude);
+        List<RouteSegment> ways=clustering(latitude,longitude);
+        if (!ANIMATE_CLUSTERING) {
+          DataTileManager<Way> points=new DataTileManager<Way>();
+          points.setZoom(11);
+          for (          RouteSegment s : ways) {
+            Way w=new Way(-1);
+            for (int i=0; i < s.getRoad().getPointsLength(); i++) {
+              double lat=MapUtils.get31LatitudeY(s.getRoad().getPoint31YTile(i));
+              double lon=MapUtils.get31LongitudeX(s.getRoad().getPoint31XTile(i));
+              w.addNode(new Node(lat,lon,-1));
+            }
+            LatLon n=w.getLatLon();
+            points.registerObject(n.getLatitude(),n.getLongitude(),w);
+          }
+          map.setPoints(points);
+          map.repaint();
+        }
       }
  catch (      IOException e) {
         e.printStackTrace();
