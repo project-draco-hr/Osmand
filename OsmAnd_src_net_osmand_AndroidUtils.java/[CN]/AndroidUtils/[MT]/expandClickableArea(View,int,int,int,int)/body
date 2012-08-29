@@ -1,0 +1,27 @@
+{
+  closeButton.setOnTouchListener(new OnTouchListener(){
+    @Override public boolean onTouch(    View v,    MotionEvent event){
+      v.post(new Runnable(){
+        @Override public void run(){
+          closeButton.performClick();
+        }
+      }
+);
+      return true;
+    }
+  }
+);
+  final View parent=(View)closeButton.getParent();
+  parent.post(new Runnable(){
+    @Override public void run(){
+      Rect r=new Rect();
+      closeButton.getHitRect(r);
+      r.left-=r.width() * left;
+      r.top-=r.height() * top;
+      r.right+=r.width() * right;
+      r.bottom+=r.height() * bottom;
+      parent.setTouchDelegate(new TouchDelegate(r,closeButton));
+    }
+  }
+);
+}
