@@ -7,11 +7,13 @@
   queue.add(start);
   RouteDataObject startRoad=st.getRoad();
   int ZOOM_LIMIT=13;
-  int TILE_BOUNDARIES=3;
+  int TILE_BOUNDARIES=10;
+  int LOCAL_TILE_BOUNDARIES=2;
   int zm=31 - ZOOM_LIMIT;
   int tileX=startRoad.getPoint31XTile(st.getSegmentStart()) >> zm;
   int tileY=startRoad.getPoint31YTile(st.getSegmentStart()) >> zm;
   int outOfTile=0;
+  int outOfDistance=0;
   int segmentsProcessed=0;
   float minRatio=1f;
   int segmentsMinProcessed=0;
@@ -29,7 +31,7 @@
     }
     segmentsProcessed++;
     if (segmentsProcessed > 50) {
-      float ratio=(float)(queue.size() + outOfTile) / segmentsProcessed;
+      float ratio=(float)(queue.size() + outOfTile + outOfDistance) / segmentsProcessed;
       if (ratio < minRatio) {
         minRatio=ratio;
         segmentsMinProcessed=segmentsProcessed;
@@ -86,6 +88,7 @@
       }
       List<RouteSegment> nextSegments=new ArrayList<BinaryRoutePlanner.RouteSegment>();
       boolean out=false;
+      boolean outDistance=false;
       while (next != null) {
         if (!visitedIds.contains(calculateId(next,next.getSegmentStart()))) {
           int tX=next.getRoad().getPoint31XTile(next.getSegmentStart()) >> zm;
@@ -94,7 +97,7 @@
           if (notClusterAtAll(next.getRoad())) {
             out=true;
           }
- else           if (tX == tileX && tY == tileY) {
+ else           if (Math.abs(tX - tileX) < LOCAL_TILE_BOUNDARIES && Math.abs(tY - tileY) < LOCAL_TILE_BOUNDARIES) {
             nextSegments.add(next);
           }
  else {
@@ -102,7 +105,7 @@
               nextSegments.add(next);
             }
  else {
-              out=true;
+              outDistance=true;
             }
           }
         }
@@ -112,12 +115,18 @@
         outOfTile++;
         result.add(segment);
       }
+ else       if (outDistance) {
+        outOfDistance++;
+        result.add(segment);
+      }
  else       if (nextSegments.size() > 0) {
         queue.add(nextSegments);
       }
     }
   }
-  log.info("Current ratio " + ((float)(queue.size() + outOfTile) / segmentsProcessed) + " min ratio "+ minRatio+ " min segments procesed "+ segmentsMinProcessed);
-  log.info("Processed " + segmentsProcessed + " and borders are "+ outOfTile);
+  log.info("Current ratio " + ((float)(queue.size() + outOfTile + outOfDistance) / segmentsProcessed) + " min ratio "+ minRatio+ " min segments procesed "+ segmentsMinProcessed);
+  String res="Processed " + segmentsProcessed + " and borders are "+ outOfTile+ " out because of distance "+ outOfDistance;
+  log.info(res);
+  System.out.println(res);
   return result;
 }
