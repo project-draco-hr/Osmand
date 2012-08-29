@@ -1,3 +1,25 @@
 {
   indexMultiPolygon(e,ctx);
+  if (e instanceof Relation) {
+    Map<String,String> ts=((Relation)e).getTags();
+    Map<String,String> propogated=null;
+    Iterator<Entry<String,String>> its=ts.entrySet().iterator();
+    while (its.hasNext()) {
+      Entry<String,String> ev=its.next();
+      if (renderingTypes.isRelationalTagValuePropogated(ev.getKey(),ev.getValue())) {
+        if (propogated == null) {
+          propogated=new LinkedHashMap<String,String>();
+        }
+        propogated.put(ev.getKey(),ev.getValue());
+      }
+    }
+    if (propogated != null) {
+      for (      EntityId id : ((Relation)e).getMembersMap().keySet()) {
+        if (!propogatedTags.containsKey(id)) {
+          propogatedTags.put(id,new LinkedHashMap<String,String>());
+        }
+        propogatedTags.get(id).putAll(propogated);
+      }
+    }
+  }
 }

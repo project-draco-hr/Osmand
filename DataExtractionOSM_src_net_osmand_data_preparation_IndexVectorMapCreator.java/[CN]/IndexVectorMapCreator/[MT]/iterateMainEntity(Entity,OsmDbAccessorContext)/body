@@ -1,5 +1,16 @@
 {
   if (e instanceof Way || e instanceof Node) {
+    EntityId eid=EntityId.valueOf(e);
+    Map<String,String> tags=propogatedTags.get(eid);
+    if (tags != null) {
+      Iterator<Entry<String,String>> iterator=tags.entrySet().iterator();
+      while (iterator.hasNext()) {
+        Entry<String,String> ts=iterator.next();
+        if (e.getTag(ts.getKey()) == null) {
+          e.putTag(ts.getKey(),ts.getValue());
+        }
+      }
+    }
     for (int level=0; level < mapZooms.size(); level++) {
       boolean area=renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(level).getMaxZoom(),typeUse,addtypeUse,namesUse,tempNameUse);
       if (typeUse.isEmpty()) {
