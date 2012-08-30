@@ -4,16 +4,16 @@
     makeUturnWhenPossible=false;
     return locationProjection;
   }
+  float posTolerance=POSITION_TOLERANCE;
+  if (currentLocation.hasAccuracy()) {
+    posTolerance=POSITION_TOLERANCE / 2 + currentLocation.getAccuracy();
+  }
   boolean calculateRoute=false;
 synchronized (this) {
     if (route.isEmpty()) {
       calculateRoute=true;
     }
  else {
-      float posTolerance=POSITION_TOLERANCE;
-      if (currentLocation.hasAccuracy()) {
-        posTolerance=POSITION_TOLERANCE / 2 + currentLocation.getAccuracy();
-      }
       boolean finished=updateCurrentRouteStatus(currentLocation,posTolerance);
       if (finished) {
         return null;
@@ -42,25 +42,28 @@ synchronized (this) {
         voiceRouter.makeUTStatus();
       }
       if (currentRoute > 0) {
-        double dist=getOrthogonalDistance(currentLocation,routeNodes.get(currentRoute - 1),routeNodes.get(currentRoute));
-        double projectDist=mode == ApplicationMode.CAR ? posTolerance : posTolerance / 2;
-        locationProjection=new Location(locationProjection);
-        if (dist < projectDist) {
-          Location nextLocation=routeNodes.get(currentRoute);
-          LatLon project=getProject(currentLocation,routeNodes.get(currentRoute - 1),routeNodes.get(currentRoute));
-          locationProjection.setLatitude(project.getLatitude());
-          locationProjection.setLongitude(project.getLongitude());
-          if (locationProjection.hasBearing()) {
-            float bearingTo=locationProjection.bearingTo(nextLocation);
-            locationProjection.setBearing(bearingTo);
-          }
+        locationProjection=new Location(currentLocation);
+        Location nextLocation=routeNodes.get(currentRoute);
+        LatLon project=getProject(currentLocation,routeNodes.get(currentRoute - 1),routeNodes.get(currentRoute));
+        locationProjection.setLatitude(project.getLatitude());
+        locationProjection.setLongitude(project.getLongitude());
+        if (locationProjection.hasBearing()) {
+          float bearingTo=locationProjection.bearingTo(nextLocation);
+          locationProjection.setBearing(bearingTo);
         }
       }
     }
-    lastFixedLocation=locationProjection;
+    lastFixedLocation=currentLocation;
+    lastProjection=locationProjection;
   }
   if (calculateRoute) {
-    recalculateRouteInBackground(lastFixedLocation,finalLocation,currentGPXRoute,route.isCalculated() ? route : null);
+    recalculateRouteInBackground(currentLocation,finalLocation,currentGPXRoute,route.isCalculated() ? route : null);
   }
-  return locationProjection;
+  double projectDist=mode == ApplicationMode.CAR ? posTolerance : posTolerance / 2;
+  if (returnUpdatedLocation && currentLocation.distanceTo(locationProjection) < projectDist) {
+    return locationProjection;
+  }
+ else {
+    return currentLocation;
+  }
 }

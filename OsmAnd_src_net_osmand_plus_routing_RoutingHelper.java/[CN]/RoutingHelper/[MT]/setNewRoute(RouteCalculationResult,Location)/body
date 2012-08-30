@@ -2,21 +2,22 @@
   final boolean newRoute=!this.route.isCalculated();
   route=res;
   if (isFollowingMode) {
+    if (lastFixedLocation != null) {
+      start=lastFixedLocation;
+    }
     boolean wrongMovementDirection=false;
-    Location prev=res.getNextRouteLocation();
-    if (prev != null) {
-      int i=1;
-      while (res.getNextRouteLocation(i) != null && prev.distanceTo(start) < POSITION_TOLERANCE) {
-        prev=res.getNextRouteLocation(i);
-        i++;
-      }
-      wrongMovementDirection=checkWrongMovementDirection(start,prev);
-      if (!wrongMovementDirection) {
-        evalWaitInterval=3000;
-      }
+    List<Location> routeNodes=res.getImmutableLocations();
+    if (routeNodes != null && !routeNodes.isEmpty()) {
+      int newCurrentRoute=lookAheadFindMinOrthogonalDistance(start,routeNodes,res.currentRoute,15);
+      if (newCurrentRoute + 1 < routeNodes.size()) {
+        wrongMovementDirection=checkWrongMovementDirection(start,routeNodes.get(newCurrentRoute + 1));
+        if (!wrongMovementDirection) {
+          evalWaitInterval=3000;
+        }
  else {
-        evalWaitInterval=evalWaitInterval * 3 / 2;
-        evalWaitInterval=Math.min(evalWaitInterval,120000);
+          evalWaitInterval=evalWaitInterval * 3 / 2;
+          evalWaitInterval=Math.min(evalWaitInterval,120000);
+        }
       }
     }
     if (!wrongMovementDirection || newRoute) {
