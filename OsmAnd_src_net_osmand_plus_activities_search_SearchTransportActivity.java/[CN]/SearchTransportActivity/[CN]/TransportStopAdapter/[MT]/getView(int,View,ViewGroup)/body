@@ -7,7 +7,6 @@
   LatLon locationToGo=getLocationToGo();
   LatLon locationToStart=getLocationToStart();
   TextView label=(TextView)row.findViewById(R.id.label);
-  TextView distanceLabel=(TextView)row.findViewById(R.id.distance);
   ImageView icon=(ImageView)row.findViewById(R.id.search_icon);
   RouteInfoLocation stop=getItem(position);
   TransportRoute route=stop.getRoute();
@@ -21,7 +20,6 @@
     labelW.append(getString(R.string.transport_search_none));
   }
   labelW.append("]\n").append(route.getName(settings.usingEnglishNames()));
-  label.setText(labelW.toString());
   if (locationToGo != null && stop.getDistToLocation() < 400) {
     icon.setImageResource(R.drawable.opened_poi);
   }
@@ -29,6 +27,8 @@
     icon.setImageResource(R.drawable.poi);
   }
   int dist=locationToStart == null ? 0 : (int)(MapUtils.getDistance(stop.getStart().getLocation(),locationToStart));
-  distanceLabel.setText(" " + OsmAndFormatter.getFormattedDistance(dist,SearchTransportActivity.this));
+  String distance=OsmAndFormatter.getFormattedDistance(dist,SearchTransportActivity.this) + " ";
+  label.setText(distance + labelW.toString(),TextView.BufferType.SPANNABLE);
+  ((Spannable)label.getText()).setSpan(new ForegroundColorSpan(R.color.color_distance),0,distance.length() - 1,0);
   return (row);
 }
