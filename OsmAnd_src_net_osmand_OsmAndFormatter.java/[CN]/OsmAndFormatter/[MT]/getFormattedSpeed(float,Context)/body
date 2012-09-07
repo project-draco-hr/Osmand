@@ -1,9 +1,14 @@
 {
   OsmandSettings settings=((OsmandApplication)ctx.getApplicationContext()).getSettings();
   MetricsConstants mc=settings.METRIC_SYSTEM.get();
+  ApplicationMode am=settings.getApplicationMode();
   float kmh=metersperseconds * 3.6f;
   if (mc == MetricsConstants.KILOMETERS_AND_METERS) {
-    return ((int)kmh) + " " + ctx.getString(R.string.km_h);
+    if (kmh >= 15 || (am == ApplicationMode.CAR)) {
+      return ((int)kmh) + " " + ctx.getString(R.string.km_h);
+    }
+    kmh=((int)kmh * 10f) / 10f;
+    return kmh + " " + ctx.getString(R.string.km_h);
   }
  else {
     float mph=kmh * METERS_IN_KILOMETER / METERS_IN_ONE_MILE;
