@@ -39,7 +39,7 @@
           if (part != null) {
             taskName+=part;
           }
-          progress.startTask(taskName,length);
+          progress.startTask(taskName,length / 1024);
         }
         first=false;
         while ((read=is.read(buffer)) != -1) {
@@ -47,8 +47,8 @@
             throw new InterruptedException();
           }
           out.write(buffer,0,read);
-          progress.progress(read);
           fileread+=read;
+          progress.remaining((length - fileread) / 1024);
         }
         if (length <= fileread) {
           triesDownload=0;
