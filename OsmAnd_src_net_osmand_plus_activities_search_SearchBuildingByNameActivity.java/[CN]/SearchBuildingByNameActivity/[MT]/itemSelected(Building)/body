@@ -1,4 +1,20 @@
 {
-  settings.setLastSearchedBuilding(obj.getName(region.useEnglishNames()),obj.getLocation());
+  String text=getText(obj);
+  LatLon loc=obj.getLocation();
+  if (obj.getInterpolationInterval() > 0 || obj.getInterpolationType() != null) {
+    String hno=getFilter().toString();
+    float interpolation=obj.interpolation(hno);
+    if (interpolation >= 0) {
+      text=hno;
+      if (interpolation > 0 && obj.getLatLon2() != null) {
+        double lat1=loc.getLatitude();
+        double lat2=obj.getLatLon2().getLatitude();
+        double lon1=loc.getLongitude();
+        double lon2=obj.getLatLon2().getLongitude();
+        loc=new LatLon(interpolation * (lat2 - lat1) + lat1,interpolation * (lon2 - lon1) + lon1);
+      }
+    }
+  }
+  settings.setLastSearchedBuilding(text,loc);
   finish();
 }
