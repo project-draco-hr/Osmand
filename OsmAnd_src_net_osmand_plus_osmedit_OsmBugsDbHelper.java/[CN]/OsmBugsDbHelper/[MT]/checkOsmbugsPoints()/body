@@ -1,8 +1,8 @@
 {
   SQLiteDatabase db=getWritableDatabase();
+  List<OsmbugsPoint> cachedOsmbugsPoints=new ArrayList<OsmbugsPoint>();
   if (db != null) {
     Cursor query=db.rawQuery("SELECT " + OSMBUGS_COL_ID + ", "+ OSMBUGS_COL_TEXT+ ", "+ OSMBUGS_COL_LAT+ ","+ OSMBUGS_COL_LON+ ","+ OSMBUGS_COL_ACTION+ ","+ OSMBUGS_COL_AUTHOR+ " FROM "+ OSMBUGS_TABLE_NAME,null);
-    cachedOsmbugsPoints.clear();
     if (query.moveToFirst()) {
       do {
         OsmbugsPoint p=new OsmbugsPoint();
@@ -12,11 +12,11 @@
         p.setLongitude(query.getDouble(3));
         p.setAction(query.getString(4));
         p.setAuthor(query.getString(5));
-        p.setStored(true);
         cachedOsmbugsPoints.add(p);
       }
  while (query.moveToNext());
     }
     query.close();
   }
+  return cachedOsmbugsPoints;
 }

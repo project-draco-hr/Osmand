@@ -14,7 +14,7 @@
           listAdapter.categoryIdChanged(point.getId(),n.getId());
         }
         remotepoi.updateNodeInIndexes(LocalOpenstreetmapActivity.this,p.getAction(),n,p.getEntity());
-        dbpoi.deleteOpenstreetmap(p);
+        dbpoi.deletePOI(p);
         publishProgress(p);
         uploaded++;
       }
@@ -23,16 +23,14 @@
       OsmbugsPoint p=(OsmbugsPoint)point;
       if (p.getAction() == OsmPoint.Action.CREATE) {
         remotebug.createNewBug(p.getLatitude(),p.getLongitude(),p.getText(),p.getAuthor());
-        dbbug.deleteOsmbugs(p);
       }
  else       if (p.getAction() == OsmPoint.Action.MODIFY) {
         remotebug.addingComment(p.getId(),p.getText(),p.getAuthor());
-        dbbug.deleteOsmbugs(p);
       }
  else       if (p.getAction() == OsmPoint.Action.DELETE) {
         remotebug.closingBug(p.getId());
-        dbbug.deleteOsmbugs(p);
       }
+      dbbug.deleteAllBugModifications(p);
       publishProgress(p);
       uploaded++;
     }

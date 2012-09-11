@@ -2,9 +2,16 @@
   checkOpenstreetmapPoints();
   SQLiteDatabase db=getWritableDatabase();
   if (db != null) {
-    db.execSQL("INSERT INTO " + OPENSTREETMAP_TABLE_NAME + " ("+ OPENSTREETMAP_COL_ID+ ", "+ OPENSTREETMAP_COL_NAME+ ", "+ OPENSTREETMAP_COL_TYPE+ ", "+ OPENSTREETMAP_COL_SUBTYPE+ ", "+ OPENSTREETMAP_COL_LAT+ ","+ OPENSTREETMAP_COL_LON+ ","+ OPENSTREETMAP_COL_ACTION+ ","+ OPENSTREETMAP_COL_COMMENT+ ","+ OPENSTREETMAP_COL_OPENINGHOURS+ ")"+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",new Object[]{p.getId(),p.getName(),p.getType(),p.getSubtype(),p.getLatitude(),p.getLongitude(),OsmPoint.stringAction.get(p.getAction()),p.getComment(),p.getOpeninghours()});
-    cachedOpenstreetmapPoints.add(p);
-    p.setStored(true);
+    StringBuilder tags=new StringBuilder();
+    Iterator<Entry<String,String>> eit=p.getEntity().getTags().entrySet().iterator();
+    while (eit.hasNext()) {
+      Entry<String,String> e=eit.next();
+      tags.append(e.getKey()).append("$$$").append(e.getValue());
+      if (eit.hasNext()) {
+        tags.append("$$$");
+      }
+    }
+    db.execSQL("INSERT INTO " + OPENSTREETMAP_TABLE_NAME + " ("+ OPENSTREETMAP_COL_ID+ ", "+ OPENSTREETMAP_COL_LAT+ ", "+ OPENSTREETMAP_COL_LON+ ", "+ OPENSTREETMAP_COL_TAGS+ ", "+ OPENSTREETMAP_COL_ACTION+ ","+ OPENSTREETMAP_COL_COMMENT+ ")"+ " VALUES (?, ?, ?, ?, ?, ?)",new Object[]{p.getId(),p.getLatitude(),p.getLongitude(),tags.toString(),OsmPoint.stringAction.get(p.getAction()),p.getComment()});
     return true;
   }
   return false;
