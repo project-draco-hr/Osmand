@@ -1,13 +1,14 @@
 {
   View v=convertView;
-  final OsmPoint child=(OsmPoint)getChild(groupPosition,childPosition);
+  final OsmPoint child=getItem(position);
   if (v == null) {
     LayoutInflater inflater=getLayoutInflater();
     v=inflater.inflate(net.osmand.plus.R.layout.local_openstreetmap_list_item,parent,false);
   }
   TextView viewName=((TextView)v.findViewById(R.id.local_openstreetmap_name));
-  if (child.getGroup() == OsmPoint.Group.POI)   viewName.setText("(" + ((OpenstreetmapPoint)child).getSubtype() + ") "+ ((OpenstreetmapPoint)child).getName());
- else   if (child.getGroup() == OsmPoint.Group.BUG)   viewName.setText("(" + ((OsmbugsPoint)child).getAuthor() + ") "+ ((OsmbugsPoint)child).getText());
+  String idPrefix=(child.getGroup() == OsmPoint.Group.POI ? "POI " : "Bug ") + " id: " + child.getId();
+  if (child.getGroup() == OsmPoint.Group.POI)   viewName.setText(idPrefix + " (" + ((OpenstreetmapPoint)child).getSubtype()+ ") "+ ((OpenstreetmapPoint)child).getName());
+ else   if (child.getGroup() == OsmPoint.Group.BUG)   viewName.setText(idPrefix + " (" + ((OsmbugsPoint)child).getAuthor()+ ") "+ ((OsmbugsPoint)child).getText());
   if (child.getAction() == OsmPoint.Action.CREATE) {
     viewName.setTextColor(getResources().getColor(R.color.osm_create));
   }

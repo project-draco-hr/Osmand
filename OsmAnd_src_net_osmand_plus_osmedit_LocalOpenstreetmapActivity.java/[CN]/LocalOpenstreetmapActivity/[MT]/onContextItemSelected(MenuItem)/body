@@ -1,19 +1,22 @@
 {
-  long packedPos=((ExpandableListContextMenuInfo)item.getMenuInfo()).packedPosition;
-  int group=ExpandableListView.getPackedPositionGroup(packedPos);
-  int child=ExpandableListView.getPackedPositionChild(packedPos);
+  int pos=((AdapterContextMenuInfo)item.getMenuInfo()).position;
   int itemId=item.getItemId();
   if (itemId == R.id.showmod) {
     OsmandSettings settings=getMyApplication().getSettings();
-    OsmPoint info=(OsmPoint)listAdapter.getChild(group,child);
+    OsmPoint info=(OsmPoint)listAdapter.getItem(pos);
     settings.setMapLocationToShow(info.getLatitude(),info.getLongitude(),settings.getLastKnownMapZoom());
     MapActivity.launchMapActivityMoveToTop(LocalOpenstreetmapActivity.this);
     return true;
   }
  else   if (itemId == R.id.deletemod) {
-    OsmPoint info=(OsmPoint)listAdapter.getChild(group,child);
+    OsmPoint info=(OsmPoint)listAdapter.getItem(pos);
     if (info.getGroup() == OsmPoint.Group.POI) {
       dbpoi.deletePOI((OpenstreetmapPoint)info);
+      if (info.getAction() == Action.CREATE) {
+        AmenityIndexRepositoryOdb repo=getMyApplication().getResourceManager().getUpdatablePoiDb();
+        repo.deleteAmenities(info.getId() << 1);
+        repo.clearCache();
+      }
     }
  else     if (info.getGroup() == OsmPoint.Group.BUG) {
       dbbug.deleteAllBugModifications((OsmbugsPoint)info);
@@ -22,12 +25,9 @@
     return true;
   }
  else   if (itemId == R.id.uploadmods) {
-    List<OsmPoint> list=listAdapter.data.get(listAdapter.category.get(group));
-    if (list != null) {
-      toUpload=list.toArray(new OsmPoint[]{});
-      showDialog(DIALOG_PROGRESS_UPLOAD);
-      return true;
-    }
+    toUpload=new OsmPoint[]{listAdapter.getItem(pos)};
+    showDialog(DIALOG_PROGRESS_UPLOAD);
+    return true;
   }
   return super.onContextItemSelected(item);
 }
