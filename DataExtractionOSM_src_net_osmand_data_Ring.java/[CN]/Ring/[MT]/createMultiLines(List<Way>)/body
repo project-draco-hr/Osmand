@@ -1,0 +1,69 @@
+{
+  ArrayList<ArrayList<Way>> multiLines=new ArrayList<ArrayList<Way>>();
+  for (  Way toAdd : ways) {
+    if (toAdd.getNodeIds().size() < 2)     continue;
+    long toAddBeginPt=toAdd.getFirstNodeId();
+    long toAddEndPt=toAdd.getLastNodeId();
+    int addedTo=0;
+    ArrayList<Way> firstMultiLine=new ArrayList<Way>();
+    ArrayList<Way> secondMultiLine=new ArrayList<Way>();
+    for (    ArrayList<Way> multiLine : multiLines) {
+      int previousAddedTo=addedTo;
+      Way firstWay=multiLine.get(0);
+      Way lastWay=multiLine.get(multiLine.size() - 1);
+      if (toAddBeginPt == firstWay.getFirstNodeId() || toAddBeginPt == firstWay.getLastNodeId() || toAddEndPt == firstWay.getFirstNodeId() || toAddEndPt == firstWay.getLastNodeId()) {
+        multiLine.add(0,toAdd);
+        addedTo++;
+      }
+ else       if (toAddBeginPt == lastWay.getFirstNodeId() || toAddBeginPt == lastWay.getLastNodeId() || toAddEndPt == lastWay.getFirstNodeId() || toAddEndPt == lastWay.getLastNodeId()) {
+        multiLine.add(toAdd);
+        addedTo++;
+      }
+      if (previousAddedTo != addedTo) {
+        if (addedTo == 1) {
+          firstMultiLine=multiLine;
+        }
+        if (addedTo == 2) {
+          secondMultiLine=multiLine;
+        }
+      }
+    }
+    if (addedTo == 0) {
+      ArrayList<Way> multiLine=new ArrayList<Way>();
+      multiLine.add(toAdd);
+      multiLines.add(multiLine);
+      continue;
+    }
+    if (addedTo == 1)     continue;
+    if (firstMultiLine.get(firstMultiLine.size() - 1) == secondMultiLine.get(0)) {
+      secondMultiLine.remove(0);
+      for (      Way w : secondMultiLine) {
+        firstMultiLine.add(w);
+      }
+      multiLines.remove(secondMultiLine);
+    }
+ else     if (secondMultiLine.get(secondMultiLine.size() - 1) == firstMultiLine.get(0)) {
+      firstMultiLine.remove(0);
+      for (      Way w : firstMultiLine) {
+        secondMultiLine.add(w);
+      }
+      multiLines.remove(firstMultiLine);
+    }
+ else     if (firstMultiLine.get(0) == secondMultiLine.get(0)) {
+      firstMultiLine.remove(toAdd);
+      for (      Way w : firstMultiLine) {
+        secondMultiLine.add(0,w);
+      }
+      multiLines.remove(firstMultiLine);
+    }
+ else {
+      firstMultiLine.remove(toAdd);
+      int index=secondMultiLine.size();
+      for (      Way w : firstMultiLine) {
+        secondMultiLine.add(index,w);
+      }
+      multiLines.remove(firstMultiLine);
+    }
+  }
+  return multiLines;
+}

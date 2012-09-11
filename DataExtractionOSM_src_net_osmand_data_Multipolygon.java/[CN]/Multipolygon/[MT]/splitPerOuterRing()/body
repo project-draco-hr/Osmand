@@ -1,0 +1,17 @@
+{
+  SortedSet<Ring> inners=new TreeSet<Ring>(getInnerRings());
+  SortedSet<Ring> outers=getOuterRings();
+  ArrayList<Multipolygon> multipolygons=new ArrayList<Multipolygon>();
+  for (  Ring outer : outers) {
+    SortedSet<Ring> innersInsideOuter=new TreeSet<Ring>();
+    for (    Ring inner : inners) {
+      if (inner.isIn(outer)) {
+        innersInsideOuter.add(inner);
+      }
+    }
+    SortedSet<Ring> thisOuter=new TreeSet<Ring>();
+    Multipolygon m=new Multipolygon(thisOuter,innersInsideOuter);
+    multipolygons.add(m);
+  }
+  return multipolygons;
+}
