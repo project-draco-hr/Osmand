@@ -1,9 +1,12 @@
 {
-  LayoutInflater inflater=getLayoutInflater();
-  View row=inflater.inflate(R.layout.searchpoifolder_list,parent,false);
+  View row=convertView;
+  if (row == null) {
+    LayoutInflater inflater=getLayoutInflater();
+    row=inflater.inflate(R.layout.searchpoifolder_list,parent,false);
+  }
   TextView label=(TextView)row.findViewById(R.id.folder_label);
   ImageView icon=(ImageView)row.findViewById(R.id.folder_icon);
-  PoiFilter model=getItem(position);
+  final PoiFilter model=getItem(position);
   label.setText(model.getName());
   if (model.getFilterId().equals(PoiFilter.CUSTOM_FILTER_ID)) {
     icon.setImageResource(android.R.drawable.ic_input_get);
@@ -14,5 +17,18 @@
  else {
     icon.setImageResource(model.isStandardFilter() ? R.drawable.folder : R.drawable.tab_icon_favourite_menu);
   }
+  ImageView editIcon=(ImageView)row.findViewById(R.id.folder_edit_icon);
+  if (model.isStandardFilter()) {
+    editIcon.setVisibility(View.GONE);
+  }
+ else {
+    editIcon.setVisibility(View.VISIBLE);
+  }
+  editIcon.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      showEditActivity(model);
+    }
+  }
+);
   return (row);
 }
