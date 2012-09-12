@@ -1,18 +1,20 @@
 {
   SortedSet<Ring> inners=new TreeSet<Ring>(getInnerRings());
-  SortedSet<Ring> outers=getOuterRings();
+  SortedSet<Ring> outers=new TreeSet<Ring>(getOuterRings());
   ArrayList<Multipolygon> multipolygons=new ArrayList<Multipolygon>();
   for (  Ring outer : outers) {
+    Multipolygon m=new Multipolygon();
+    m.addOuterWays(outer.getWays());
     SortedSet<Ring> innersInsideOuter=new TreeSet<Ring>();
     for (    Ring inner : inners) {
       if (inner.isIn(outer)) {
         innersInsideOuter.add(inner);
+        for (        Way w : inner.getWays()) {
+          m.addInnerWay(w);
+        }
       }
     }
     inners.removeAll(innersInsideOuter);
-    SortedSet<Ring> thisOuter=new TreeSet<Ring>();
-    thisOuter.add(outer);
-    Multipolygon m=new Multipolygon(thisOuter,innersInsideOuter);
     multipolygons.add(m);
   }
   if (inners.size() != 0 && log != null)   log.warn("Multipolygon " + getId() + " has a mismatch in outer and inner rings");
