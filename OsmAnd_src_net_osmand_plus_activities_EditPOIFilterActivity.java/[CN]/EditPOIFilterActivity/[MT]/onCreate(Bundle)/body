@@ -48,10 +48,22 @@
     }
   }
 );
+  ((ImageButton)findViewById(R.id.DeleteButton)).setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      removePoiFilter();
+    }
+  }
+);
   Bundle bundle=this.getIntent().getExtras();
   String filterId=bundle.getString(AMENITY_FILTER);
   helper=((OsmandApplication)getApplication()).getPoiFilters();
   filter=helper.getFilterById(filterId);
+  if (filter.isStandardFilter()) {
+    ((ImageButton)findViewById(R.id.DeleteButton)).setVisibility(View.GONE);
+  }
+ else {
+    ((ImageButton)findViewById(R.id.DeleteButton)).setVisibility(View.VISIBLE);
+  }
   titleBar.getTitleView().setText(getString(R.string.filterpoi_activity) + " - " + filter.getName());
   setListAdapter(new AmenityAdapter(AmenityType.getCategories()));
 }
