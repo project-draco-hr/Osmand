@@ -1,54 +1,17 @@
 {
-  while (!filesToPlay.isEmpty() && playNext) {
-    String f=filesToPlay.remove(0);
-    if (f != null && voiceDir != null) {
-      boolean exists=false;
-      File file=new File(voiceDir,f);
-      exists=file.exists();
-      if (exists) {
-        log.debug("Playing file : " + f);
-        playNext=false;
-        try {
-          mediaPlayer.setDataSource(file.getAbsolutePath());
-          mediaPlayer.prepare();
-          mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener(){
-            @Override public void onCompletion(            MediaPlayer mp){
-              mp.release();
-              mediaPlayer=new MediaPlayer();
-              mediaPlayer.setAudioStreamType(streamType);
-              int sleep=60;
-              boolean delay=true;
-              while (!filesToPlay.isEmpty() && delay) {
-                delay=filesToPlay.get(0).startsWith(DELAY_CONST);
-                if (delay) {
-                  String s=filesToPlay.remove(0).substring(DELAY_CONST.length());
-                  try {
-                    sleep+=Integer.parseInt(s);
-                  }
- catch (                  NumberFormatException e) {
-                  }
-                }
-              }
-              try {
-                Thread.sleep(sleep);
-              }
- catch (              InterruptedException e) {
-              }
-              playNext=true;
-              playQueue();
-            }
-          }
-);
-          mediaPlayer.start();
-        }
- catch (        Exception e) {
-          log.error("Error while playing voice command",e);
-          playNext=true;
-        }
-      }
+  if (mediaPlayer == null) {
+    mediaPlayer=new MediaPlayer();
+  }
+  performDelays();
+  File file=getNextFileToPlay();
+  if (file != null) {
+    playFile(file);
+  }
  else {
-        log.info("Play file not found : " + f);
-      }
+    if (mediaPlayer != null) {
+      mediaPlayer.release();
+      mediaPlayer=null;
+      abandonAudioFocus();
     }
   }
 }
