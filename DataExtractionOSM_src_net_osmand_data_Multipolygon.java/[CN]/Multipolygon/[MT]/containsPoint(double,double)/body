@@ -1,3 +1,19 @@
 {
-  return containsPointInPolygons(closedOuterWays,latitude,longitude) || containsPointInPolygons(outerWays,latitude,longitude);
+  TreeSet<Ring> outers=new TreeSet<Ring>();
+  TreeSet<Ring> inners=new TreeSet<Ring>();
+  for (  Ring outer : getOuterRings()) {
+    if (outer.containsPoint(latitude,longitude)) {
+      outers.add(outer);
+    }
+  }
+  for (  Ring inner : getInnerRings()) {
+    if (inner.containsPoint(latitude,longitude)) {
+      inners.add(inner);
+    }
+  }
+  if (outers.size() == 0)   return false;
+  if (inners.size() == 0)   return true;
+  Ring smallestOuter=outers.first();
+  Ring smallestInner=inners.first();
+  return smallestOuter.isIn(smallestInner);
 }

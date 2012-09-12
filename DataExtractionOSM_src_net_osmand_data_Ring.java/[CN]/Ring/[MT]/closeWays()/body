@@ -1,0 +1,43 @@
+{
+  if (closedWays != null)   return;
+  if (ways.size() == 0) {
+    closedWays=new ArrayList<Way>();
+    return;
+  }
+  ArrayList<ArrayList<Way>> multiLines=createMultiLines(ways);
+  if (multiLines.size() != 1)   return;
+  ArrayList<Way> multiLine=multiLines.get(0);
+  closedWays=multiLine;
+  long[] endNodes=getMultiLineEndNodes(multiLine);
+  if (endNodes[0] != endNodes[1]) {
+    if (multiLine.get(0).getNodes() == null) {
+      Way w=new Way(0L);
+      w.addNode(endNodes[0]);
+      w.addNode(endNodes[1]);
+      closedWays.add(w);
+    }
+ else {
+      Node n1=null, n2=null;
+      if (multiLine.get(0).getFirstNodeId() == endNodes[0]) {
+        n1=multiLine.get(0).getNodes().get(0);
+      }
+ else {
+        int index=multiLine.get(0).getNodes().size() - 1;
+        n1=multiLine.get(0).getNodes().get(index);
+      }
+      int lastML=multiLine.size() - 1;
+      if (multiLine.get(lastML).getFirstNodeId() == endNodes[0]) {
+        n2=multiLine.get(lastML).getNodes().get(0);
+      }
+ else {
+        int index=multiLine.get(lastML).getNodes().size() - 1;
+        n2=multiLine.get(lastML).getNodes().get(index);
+      }
+      Way w=new Way(0L);
+      w.addNode(n1);
+      w.addNode(n2);
+      closedWays.add(w);
+    }
+  }
+  return;
+}
