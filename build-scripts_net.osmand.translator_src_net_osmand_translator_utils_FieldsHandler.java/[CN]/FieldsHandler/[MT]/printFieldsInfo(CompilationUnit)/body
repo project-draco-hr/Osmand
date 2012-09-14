@@ -1,0 +1,21 @@
+{
+  FieldVisitor fVisitor=new FieldVisitor();
+  parse.accept(fVisitor);
+  for (  FieldDeclaration field : fVisitor.getFields()) {
+    VariableDeclarationFragment fragment=(VariableDeclarationFragment)field.fragments().get(0);
+    IVariableBinding binding=fragment.resolveBinding();
+    Expression initializer=fragment.getInitializer();
+    StringBuffer buffer=new StringBuffer();
+    applyModifiers(field.getModifiers(),buffer);
+    applyType(field.getType(),buffer);
+    buffer.append(binding.getJavaElement().getElementName());
+    if (binding.getType().isArray()) {
+      buffer.append("[]");
+    }
+    if (initializer != null) {
+      buffer.append(" = ").append(initializer);
+    }
+    buffer.append(";");
+    System.out.println(buffer);
+  }
+}
