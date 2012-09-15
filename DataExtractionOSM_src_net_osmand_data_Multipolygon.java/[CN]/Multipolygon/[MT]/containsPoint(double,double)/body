@@ -1,19 +1,18 @@
 {
-  TreeSet<Ring> outers=new TreeSet<Ring>();
-  TreeSet<Ring> inners=new TreeSet<Ring>();
+  boolean outerContain=false;
   for (  Ring outer : getOuterRings()) {
     if (outer.containsPoint(latitude,longitude)) {
-      outers.add(outer);
+      outerContain=true;
+      break;
     }
+  }
+  if (!outerContain) {
+    return false;
   }
   for (  Ring inner : getInnerRings()) {
     if (inner.containsPoint(latitude,longitude)) {
-      inners.add(inner);
+      return false;
     }
   }
-  if (outers.size() == 0)   return false;
-  if (inners.size() == 0)   return true;
-  Ring smallestOuter=outers.first();
-  Ring smallestInner=inners.first();
-  return smallestOuter.isIn(smallestInner);
+  return true;
 }
