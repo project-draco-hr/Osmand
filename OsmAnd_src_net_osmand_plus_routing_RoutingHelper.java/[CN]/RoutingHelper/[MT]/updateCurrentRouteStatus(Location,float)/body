@@ -49,11 +49,23 @@
       break;
     }
   }
+  if (getLeftDistanceNextIntermediate() < posTolerance * 1.5f) {
+    showMessage(context.getString(R.string.arrived_at_intermediate_point));
+    voiceRouter.arrivedIntermediatePoint();
+  }
+  if (intermediatePoints != null && intermediatePoints.size() > 0) {
+    while (route.getIntermediatePointsToPass() > settings.getIntermediatePoints().size()) {
+      settings.deleteIntermediatePoint(0);
+    }
+    while (route.getIntermediatePointsToPass() > intermediatePoints.size()) {
+      intermediatePoints.remove(0);
+    }
+  }
   Location lastPoint=routeNodes.get(routeNodes.size() - 1);
   if (currentRoute > routeNodes.size() - 3 && currentLocation.distanceTo(lastPoint) < posTolerance * 1.5) {
     showMessage(context.getString(R.string.arrived_at_destination));
     voiceRouter.arrivedDestinationPoint();
-    clearCurrentRoute(null);
+    clearCurrentRoute(null,null);
     return true;
   }
   return false;

@@ -1,8 +1,25 @@
 {
-  if (pointToNavigate == null) {
-    return;
+  int index=0;
+  if (routingHelper != null && routingHelper.isFollowingMode() && routingHelper.isRouteCalculated()) {
+    List<LatLon> ip=routingHelper.getIntermediatePoints();
+    int sz=ip == null ? 0 : ip.size();
+    while (sz > intermediatePoints.size()) {
+      intermediatePoints.remove(0);
+    }
   }
-  if (isLocationVisible()) {
+  for (  LatLon ip : intermediatePoints) {
+    index++;
+    if (isLocationVisible(ip)) {
+      int marginX=intermediatePoint.getWidth() / 3;
+      int marginY=2 * intermediatePoint.getHeight() / 3;
+      int locationX=view.getMapXForPoint(ip.getLongitude());
+      int locationY=view.getMapYForPoint(ip.getLatitude());
+      canvas.rotate(-view.getRotate(),locationX,locationY);
+      canvas.drawBitmap(intermediatePoint,locationX - marginX,locationY - marginY,bitmapPaint);
+      canvas.drawText(index + "",locationX + marginX,locationY,textPaint);
+    }
+  }
+  if (isLocationVisible(pointToNavigate)) {
     int marginX=targetPoint.getWidth() / 3;
     int marginY=2 * targetPoint.getHeight() / 3;
     int locationX=view.getMapXForPoint(pointToNavigate.getLongitude());
@@ -10,7 +27,7 @@
     canvas.rotate(-view.getRotate(),locationX,locationY);
     canvas.drawBitmap(targetPoint,locationX - marginX,locationY - marginY,bitmapPaint);
   }
- else {
+ else   if (pointToNavigate != null) {
     Location.distanceBetween(view.getLatitude(),view.getLongitude(),pointToNavigate.getLatitude(),pointToNavigate.getLongitude(),calculations);
     float bearing=calculations[1] - 90;
     float radiusBearing=DIST_TO_SHOW * dm.density;

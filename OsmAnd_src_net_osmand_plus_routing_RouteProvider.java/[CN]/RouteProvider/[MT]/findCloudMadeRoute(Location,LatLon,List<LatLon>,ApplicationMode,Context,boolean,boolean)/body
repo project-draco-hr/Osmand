@@ -1,0 +1,49 @@
+{
+  List<Location> res=new ArrayList<Location>();
+  List<RouteDirectionInfo> directions=null;
+  StringBuilder uri=new StringBuilder();
+  uri.append("http://routes.cloudmade.com/A6421860EBB04234AB5EF2D049F2CD8F/api/0.3/");
+  uri.append(start.getLatitude() + "").append(",");
+  uri.append(start.getLongitude() + "").append(",");
+  if (intermediates != null && intermediates.size() > 0) {
+    uri.append("[");
+    boolean first=true;
+    for (    LatLon il : intermediates) {
+      if (!first) {
+        uri.append(",");
+      }
+ else {
+        first=false;
+      }
+      uri.append(il.getLatitude() + "").append(",");
+      uri.append(il.getLongitude() + "");
+    }
+    uri.append("],");
+  }
+  uri.append(end.getLatitude() + "").append(",");
+  uri.append(end.getLongitude() + "").append("/");
+  float speed=1.5f;
+  if (ApplicationMode.PEDESTRIAN == mode) {
+    uri.append("foot.gpx");
+  }
+ else   if (ApplicationMode.BICYCLE == mode) {
+    speed=5.5f;
+    uri.append("bicycle.gpx");
+  }
+ else {
+    speed=15.3f;
+    if (fast) {
+      uri.append("car.gpx");
+    }
+ else {
+      uri.append("car/shortest.gpx");
+    }
+  }
+  uri.append("?lang=").append(Locale.getDefault().getLanguage());
+  log.info("URL route " + uri);
+  URL url=new URL(uri.toString());
+  URLConnection connection=url.openConnection();
+  GPXFile gpxFile=GPXUtilities.loadGPXFile(ctx,connection.getInputStream(),false);
+  directions=parseCloudmadeRoute(res,gpxFile,false,leftSide,speed);
+  return new RouteCalculationResult(res,directions,start,end,intermediates,null,ctx,leftSide,true);
+}

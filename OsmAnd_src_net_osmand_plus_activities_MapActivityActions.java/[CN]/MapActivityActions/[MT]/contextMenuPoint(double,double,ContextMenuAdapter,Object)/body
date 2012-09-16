@@ -7,6 +7,7 @@
   adapter.registerItem(R.string.context_menu_item_search,R.drawable.list_view_search_near_here);
   adapter.registerItem(R.string.context_menu_item_share_location,R.drawable.list_view_share_location);
   adapter.registerItem(R.string.context_menu_item_add_favorite,R.drawable.list_activities_favorites);
+  adapter.registerItem(R.string.context_menu_item_intermediate_point,R.drawable.list_view_set_intermediate);
   OsmandPlugin.registerMapContextMenu(mapActivity,latitude,longitude,adapter,selectedObj);
   ListAdapter listadapter=new ArrayAdapter<String>(mapActivity,R.layout.layers_list_activity_item,R.id.title,adapter.getItemNames()){
     @Override public View getView(    int position,    View convertView,    ViewGroup parent){
@@ -40,11 +41,11 @@
         mapActivity.startActivity(intent);
       }
  else       if (standardId == R.string.context_menu_item_navigate_point) {
-        mapActivity.navigateToPoint(new LatLon(latitude,longitude),true);
+        mapActivity.navigateToPoint(new LatLon(latitude,longitude),true,false);
       }
  else       if (standardId == R.string.context_menu_item_directions) {
         Location loc=mapActivity.getLastKnownLocation();
-        mapActivity.navigateToPoint(new LatLon(latitude,longitude),false);
+        mapActivity.navigateToPoint(new LatLon(latitude,longitude),false,false);
         getDirections(loc,true);
       }
  else       if (standardId == R.string.context_menu_item_show_route) {
@@ -54,6 +55,9 @@
           loc.setLongitude(longitude);
           getDirections(loc,true);
         }
+      }
+ else       if (standardId == R.string.context_menu_item_intermediate_point) {
+        mapActivity.navigateToPoint(new LatLon(latitude,longitude),true,true);
       }
  else       if (standardId == R.string.context_menu_item_share_location) {
         shareLocation(latitude,longitude,mapActivity.getMapView().getZoom());
