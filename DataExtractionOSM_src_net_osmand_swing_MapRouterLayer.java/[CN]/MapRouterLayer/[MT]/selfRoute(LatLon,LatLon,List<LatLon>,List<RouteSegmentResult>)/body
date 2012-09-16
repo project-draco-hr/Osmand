@@ -62,6 +62,18 @@ catch (    SAXException e) {
         throw new RuntimeException("End point to calculate route was not found");
       }
       System.out.println("ROAD TO END " + e.getRoad().getHighway() + " "+ e.getRoad().id);
+      List<RouteSegment> inters=new ArrayList<BinaryRoutePlanner.RouteSegment>();
+      if (intermediates != null) {
+        int ind=1;
+        for (        LatLon il : intermediates) {
+          RouteSegment is=router.findRouteSegment(il.getLatitude(),il.getLongitude(),ctx);
+          if (is == null) {
+            throw new RuntimeException("Intremediate point " + ind + " was not found.");
+          }
+          inters.add(is);
+          ind++;
+        }
+      }
       final DataTileManager<Entity> points=new DataTileManager<Entity>();
       points.setZoom(11);
       map.setPoints(points);
@@ -111,7 +123,7 @@ catch (    SAXException e) {
         }
       }
 );
-      List<RouteSegmentResult> searchRoute=router.searchRoute(ctx,st,e,false);
+      List<RouteSegmentResult> searchRoute=router.searchRoute(ctx,st,e,inters,false);
       this.previousRoute=searchRoute;
       if (animateRoutingCalculation) {
         playPauseButton.setVisible(false);
