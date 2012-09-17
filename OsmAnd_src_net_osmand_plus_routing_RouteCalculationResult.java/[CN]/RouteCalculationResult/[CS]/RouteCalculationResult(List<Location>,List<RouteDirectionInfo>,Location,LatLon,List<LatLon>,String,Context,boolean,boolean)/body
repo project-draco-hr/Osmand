@@ -1,0 +1,23 @@
+{
+  this.errorMessage=errorMessage;
+  this.intermediatePoints=new int[intermediates == null ? 0 : intermediates.size()];
+  List<Location> locations=list == null ? new ArrayList<Location>() : new ArrayList<Location>(list);
+  List<RouteDirectionInfo> localDirections=directions == null ? new ArrayList<RouteDirectionInfo>() : new ArrayList<RouteDirectionInfo>(directions);
+  if (!locations.isEmpty()) {
+    checkForDuplicatePoints(locations,localDirections);
+  }
+  if (addMissingTurns) {
+    removeUnnecessaryGoAhead(localDirections);
+    OsmandSettings settings=((OsmandApplication)ctx.getApplicationContext()).getSettings();
+    addMissingTurnsToRoute(locations,localDirections,start,end,settings.getApplicationMode(),ctx,leftSide);
+    introduceFirstPointAndLastPoint(locations,localDirections,null,start,end);
+  }
+  this.locations=Collections.unmodifiableList(locations);
+  this.segments=new ArrayList<RouteSegmentResult>();
+  this.listDistance=new int[locations.size()];
+  updateListDistanceTime();
+  this.alarmInfo=new ArrayList<AlarmInfo>();
+  calculateIntermediateIndexes(ctx,intermediates,localDirections);
+  this.directions=Collections.unmodifiableList(localDirections);
+  updateDirectionsTime();
+}

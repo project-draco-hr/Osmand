@@ -4,9 +4,18 @@
     speed=Math.max(currentLocation.getSpeed(),speed);
   }
   NextDirectionInfo nextInfo=router.getNextRouteDirectionInfo(new NextDirectionInfo(),true);
-  if (nextInfo == null || nextInfo.directionInfo.distance == 0) {
+  if (nextInfo == null || nextInfo.directionInfo == null || nextInfo.directionInfo.distance == 0) {
     if (currentStatus <= STATUS_UNKNOWN) {
       if (playGoAheadToDestination()) {
+        currentStatus=STATUS_TOLD;
+        playGoAheadDist=0;
+      }
+    }
+    return;
+  }
+  if (nextInfo.intermediatePoint) {
+    if (currentStatus <= STATUS_UNKNOWN) {
+      if (playGoAheadToIntermediate()) {
         currentStatus=STATUS_TOLD;
         playGoAheadDist=0;
       }

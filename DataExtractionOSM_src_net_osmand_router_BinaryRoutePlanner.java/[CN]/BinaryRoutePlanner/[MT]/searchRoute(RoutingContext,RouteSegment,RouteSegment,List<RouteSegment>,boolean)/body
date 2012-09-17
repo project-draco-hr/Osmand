@@ -1,0 +1,24 @@
+{
+  if (intermediate != null && intermediate.size() > 0) {
+    ArrayList<RouteSegment> ps=new ArrayList<RouteSegment>(intermediate);
+    ps.add(end);
+    ps.add(0,start);
+    List<RouteSegmentResult> results=new ArrayList<RouteSegmentResult>();
+    for (int i=0; i < ps.size() - 1; i++) {
+      RoutingContext local=new RoutingContext(ctx.config);
+      local.visitor=ctx.visitor;
+      List<RouteSegmentResult> res=searchRouteInternal(local,ps.get(i),ps.get(i + 1),leftSideNavigation);
+      results.addAll(res);
+      ctx.distinctLoadedTiles+=local.distinctLoadedTiles;
+      ctx.distinctUnloadedTiles.addAll(local.distinctUnloadedTiles);
+      ctx.loadedTiles+=local.loadedTiles;
+      ctx.loadedPrevUnloadedTiles+=local.loadedPrevUnloadedTiles;
+      ctx.timeToCalculate+=local.timeToCalculate;
+      ctx.timeToLoad+=local.timeToLoad;
+      ctx.relaxedSegments+=local.relaxedSegments;
+    }
+    printResults(ctx,start,end,results);
+    return results;
+  }
+  return searchRoute(ctx,start,end,leftSideNavigation);
+}
