@@ -1,39 +1,78 @@
 {
   if (border != null)   return;
-  List<Way> closedWays=closeWays();
-  border=new Way(randId());
-  Long previousConnection=getMultiLineEndNodes(closedWays)[0];
-  for (  Way w : closedWays) {
-    boolean firstNode=true;
-    TLongArrayList nodeIds=w.getNodeIds();
-    List<Node> nodes=w.getNodes();
-    if (w.getFirstNodeId() == previousConnection) {
-      for (int i=0; i < nodeIds.size(); i++) {
-        if (!firstNode) {
-          if (nodes == null || i >= nodes.size()) {
-            border.addNode(nodeIds.get(i));
-          }
- else {
-            border.addNode(nodes.get(i));
-          }
-        }
-        firstNode=false;
-      }
-      previousConnection=w.getLastNodeId();
-    }
- else {
-      for (int i=nodeIds.size() - 1; i >= 0; i--) {
-        if (!firstNode) {
-          if (nodes == null || i >= nodes.size()) {
-            border.addNode(nodeIds.get(i));
-          }
- else {
-            border.addNode(nodes.get(i));
-          }
-        }
-        firstNode=false;
-      }
-      previousConnection=w.getFirstNodeId();
+  List<Way> ways=new ArrayList<Way>(getWays());
+  boolean unInitializedNodes=true;
+  for (  Way w : ways) {
+    if (w.getNodes() != null && w.getNodes().size() != 0) {
+      unInitializedNodes=false;
+      break;
     }
   }
+  List<Way> borderWays=new ArrayList<Way>();
+  for (  Way w : ways) {
+    if ((w.getNodes() == null || w.getNodes().size() == 0) && !unInitializedNodes)     continue;
+    Way newWay=null;
+    Way addedTo=null;
+    for (    Way borderWay : borderWays) {
+      if (w.getFirstNodeId() == borderWay.getFirstNodeId()) {
+        newWay=combineTwoWays(w,borderWay,true,true);
+        addedTo=borderWay;
+        break;
+      }
+ else       if (w.getFirstNodeId() == borderWay.getLastNodeId()) {
+        newWay=combineTwoWays(w,borderWay,true,false);
+        addedTo=borderWay;
+        break;
+      }
+ else       if (w.getLastNodeId() == borderWay.getLastNodeId()) {
+        newWay=combineTwoWays(w,borderWay,false,false);
+        addedTo=borderWay;
+        break;
+      }
+ else       if (w.getLastNodeId() == borderWay.getFirstNodeId()) {
+        newWay=combineTwoWays(w,borderWay,false,true);
+        addedTo=borderWay;
+        break;
+      }
+    }
+    if (newWay == null) {
+      borderWays.add(w);
+    }
+ else {
+      borderWays.remove(addedTo);
+      addedTo=null;
+      for (      Way borderWay : borderWays) {
+        if (newWay.getFirstNodeId() == borderWay.getFirstNodeId()) {
+          newWay=combineTwoWays(newWay,borderWay,true,true);
+          addedTo=borderWay;
+          break;
+        }
+ else         if (newWay.getFirstNodeId() == borderWay.getLastNodeId()) {
+          newWay=combineTwoWays(newWay,borderWay,true,false);
+          addedTo=borderWay;
+          break;
+        }
+ else         if (newWay.getLastNodeId() == borderWay.getLastNodeId()) {
+          newWay=combineTwoWays(newWay,borderWay,false,false);
+          addedTo=borderWay;
+          break;
+        }
+ else         if (newWay.getLastNodeId() == borderWay.getFirstNodeId()) {
+          newWay=combineTwoWays(newWay,borderWay,false,true);
+          addedTo=borderWay;
+          break;
+        }
+      }
+      if (addedTo != null) {
+        borderWays.remove(addedTo);
+      }
+      borderWays.add(newWay);
+    }
+  }
+  if (borderWays.size() != 1) {
+    border=new Way(randId());
+    return;
+  }
+  border=borderWays.get(0);
+  return;
 }

@@ -1,18 +1,23 @@
 {
-  boolean outerContain=false;
-  for (  Ring outer : getOuterRings()) {
+  Ring containedInOuter=null;
+  SortedSet<Ring> outers=new TreeSet<Ring>(getOuterRings());
+  for (  Ring outer : outers) {
     if (outer.containsPoint(latitude,longitude)) {
-      outerContain=true;
+      containedInOuter=outer;
       break;
     }
   }
-  if (!outerContain) {
+  if (containedInOuter == null) {
     return false;
   }
-  for (  Ring inner : getInnerRings()) {
+  SortedSet<Ring> inners=new TreeSet<Ring>(getInnerRings());
+  Ring containedInInner=null;
+  for (  Ring inner : inners) {
     if (inner.containsPoint(latitude,longitude)) {
-      return false;
+      containedInInner=inner;
+      break;
     }
   }
-  return true;
+  if (containedInInner == null)   return true;
+  return !containedInInner.isIn(containedInOuter);
 }
