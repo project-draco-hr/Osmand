@@ -1,0 +1,28 @@
+{
+  final OsmandApplication app=((OsmandApplication)activity.getApplicationContext());
+  if (app.getSettings().getPointToNavigate() != null) {
+    Builder builder=new AlertDialog.Builder(activity);
+    builder.setTitle(R.string.new_destination_point_dialog);
+    builder.setItems(new String[]{activity.getString(R.string.replace_destination_point),activity.getString(R.string.add_as_first_destination_point),activity.getString(R.string.add_as_last_destination_point)},new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        if (which == 0) {
+          app.getSettings().setPointToNavigate(lat,lon,true,name);
+        }
+ else         if (which == 2) {
+          int sz=app.getSettings().getIntermediatePoints().size();
+          app.getSettings().insertIntermediatePoint(lat,lon,name,sz);
+        }
+ else {
+          app.getSettings().insertIntermediatePoint(lat,lon,name,0);
+        }
+        MapActivity.launchMapActivityMoveToTop(activity);
+      }
+    }
+);
+    builder.show();
+  }
+ else {
+    app.getSettings().setPointToNavigate(lat,lon,true,name);
+    MapActivity.launchMapActivityMoveToTop(activity);
+  }
+}
