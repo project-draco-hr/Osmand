@@ -1,0 +1,17 @@
+{
+  for (  String resourceName : Options.getMappingFiles()) {
+    Properties mappings=new Properties();
+    try {
+      mappings.load(J2ObjC.class.getResourceAsStream(resourceName));
+    }
+ catch (    IOException e) {
+      throw new AssertionError(e);
+    }
+    Enumeration<?> keyIterator=mappings.propertyNames();
+    while (keyIterator.hasMoreElements()) {
+      String javaMethod=(String)keyIterator.nextElement();
+      String iosMethod=mappings.getProperty(javaMethod);
+      Options.getMethodMappings().put(javaMethod,iosMethod);
+    }
+  }
+}
