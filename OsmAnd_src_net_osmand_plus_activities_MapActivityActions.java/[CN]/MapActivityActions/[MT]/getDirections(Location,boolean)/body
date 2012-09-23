@@ -55,9 +55,6 @@
         return;
       }
       ApplicationMode mode=getAppMode(buttons,settings);
-      if (!routingHelper.isFollowingMode()) {
-        settings.PREV_APPLICATION_MODE.set(settings.APPLICATION_MODE.get());
-      }
       routingHelper.setAppMode(mode);
       settings.FOLLOW_THE_ROUTE.set(false);
       settings.FOLLOW_THE_GPX_ROUTE.set(null);
@@ -85,21 +82,8 @@
         AccessibleToast.makeText(mapActivity,R.string.route_updated_loc_found,Toast.LENGTH_LONG).show();
       }
       ApplicationMode mode=getAppMode(buttons,settings);
-      if (!routingHelper.isFollowingMode()) {
-        settings.PREV_APPLICATION_MODE.set(settings.APPLICATION_MODE.get());
-      }
-      boolean changed=settings.APPLICATION_MODE.set(mode);
-      if (changed) {
-        mapActivity.updateApplicationModeSettings();
-        mapActivity.getMapView().refreshMap(true);
-      }
-      routingHelper.setAppMode(mode);
-      settings.FOLLOW_THE_ROUTE.set(true);
-      settings.FOLLOW_THE_GPX_ROUTE.set(null);
-      routingHelper.setFollowingMode(true);
-      routingHelper.setFinalAndCurrentLocation(mapActivity.getPointToNavigate(),mapActivity.getIntermediatePoints(),current,null);
       dialog.dismiss();
-      getMyApplication().showDialogInitializingCommandPlayer(mapActivity);
+      mapActivity.followRoute(mode,mapActivity.getPointToNavigate(),mapActivity.getIntermediatePoints(),current,null);
     }
   }
 ;
@@ -112,15 +96,13 @@
 ;
   builder.setView(view);
   builder.setTitle(R.string.get_directions);
+  builder.setPositiveButton(R.string.follow,followCall);
+  builder.setNeutralButton(R.string.only_show,onlyShowCall);
   if (gpxRouteEnabled) {
-    builder.setPositiveButton(R.string.follow,followCall);
-    builder.setNeutralButton(R.string.gpx_navigation,useGpxNavigation);
-    builder.setNegativeButton(R.string.only_show,onlyShowCall);
+    builder.setNegativeButton(R.string.gpx_navigation,useGpxNavigation);
   }
  else {
-    builder.setPositiveButton(R.string.follow,followCall);
-    builder.setNeutralButton(R.string.only_show,onlyShowCall);
-    builder.setNegativeButton(R.string.default_buttons_cancel,null);
+    builder.setNegativeButton(R.string.no_route,null);
   }
   builder.show();
 }
