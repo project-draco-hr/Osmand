@@ -1,0 +1,31 @@
+{
+  for (int i=0; i <= intermediatePoints.size(); i++) {
+    LatLon latLon;
+    boolean target=i == intermediatePoints.size();
+    if (target) {
+      latLon=pointToNavigate;
+    }
+ else {
+      latLon=intermediatePoints.get(i);
+    }
+    if (latLon != null) {
+      int ex=(int)point.x;
+      int ey=(int)point.y;
+      int x=view.getRotatedMapXForPoint(latLon.getLatitude(),latLon.getLongitude());
+      int y=view.getRotatedMapYForPoint(latLon.getLatitude(),latLon.getLongitude());
+      if (Math.abs(x - ex) <= 12 && Math.abs(y - ey) <= 12) {
+        TargetPoint tp=new TargetPoint();
+        tp.location=latLon;
+        tp.intermediate=!target;
+        if (target) {
+          tp.name=view.getContext().getString(R.string.target_point,"");
+        }
+ else {
+          tp.name=(i + 1) + ". " + view.getContext().getString(R.string.intermediate_point,"");
+        }
+        tp.index=i;
+        o.add(tp);
+      }
+    }
+  }
+}

@@ -8,25 +8,25 @@
     view.refreshMap();
     return true;
   }
-  selectedContextProvider=null;
   selectedObjects.clear();
+  List<Object> s=new ArrayList<Object>();
+  LatLon latLon=null;
   for (  OsmandMapLayer l : view.getLayers()) {
     if (l instanceof ContextMenuLayer.IContextMenuProvider) {
-      ((ContextMenuLayer.IContextMenuProvider)l).collectObjectsFromPoint(point,selectedObjects);
-      if (!selectedObjects.isEmpty()) {
-        selectedContextProvider=(IContextMenuProvider)l;
-        break;
+      s.clear();
+      ((ContextMenuLayer.IContextMenuProvider)l).collectObjectsFromPoint(point,s);
+      for (      Object o : s) {
+        selectedObjects.put(o,((ContextMenuLayer.IContextMenuProvider)l));
+        if (latLon == null) {
+          latLon=((ContextMenuLayer.IContextMenuProvider)l).getObjectLocation(o);
+        }
       }
     }
   }
-  LatLon latLon=view.getLatLonFromScreenPoint(point.x,point.y);
-  String description=getSelectedObjectDescription();
-  if (!selectedObjects.isEmpty()) {
-    LatLon l=selectedContextProvider.getObjectLocation(selectedObjects.get(0));
-    if (l != null) {
-      latLon=l;
-    }
+  if (latLon == null) {
+    latLon=view.getLatLonFromScreenPoint(point.x,point.y);
   }
+  String description=getSelectedObjectDescription();
   setLocation(latLon,description);
   view.refreshMap();
   return true;

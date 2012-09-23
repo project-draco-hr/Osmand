@@ -3,13 +3,17 @@
   if (selectedObjects.size() > 1) {
     Builder builder=new AlertDialog.Builder(view.getContext());
     String[] d=new String[selectedObjects.size()];
+    final List<Object> s=new ArrayList<Object>();
     int i=0;
-    for (    Object o : selectedObjects) {
-      d[i++]=selectedContextProvider.getObjectDescription(o);
+    Iterator<Entry<Object,IContextMenuProvider>> it=selectedObjects.entrySet().iterator();
+    while (it.hasNext()) {
+      Entry<Object,IContextMenuProvider> e=it.next();
+      d[i++]=e.getValue().getObjectDescription(e.getKey());
+      s.add(e.getKey());
     }
     builder.setItems(d,new OnClickListener(){
       @Override public void onClick(      DialogInterface dialog,      int which){
-        Object selectedObj=selectedObjects.get(which);
+        Object selectedObj=s.get(which);
         for (        OsmandMapLayer layer : view.getLayers()) {
           layer.populateObjectContextMenu(selectedObj,menuAdapter);
         }
@@ -20,7 +24,7 @@
     builder.show();
   }
  else {
-    Object selectedObj=selectedObjects.get(0);
+    Object selectedObj=selectedObjects.keySet().iterator().next();
     for (    OsmandMapLayer layer : view.getLayers()) {
       layer.populateObjectContextMenu(selectedObj,menuAdapter);
     }

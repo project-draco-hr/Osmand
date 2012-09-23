@@ -1,23 +1,29 @@
 {
   PointF point=new PointF(event.getX(),event.getY());
-  List<Object> newSelections=new ArrayList<Object>();
-  for (  OsmandMapLayer layer : mapView.getLayers())   if (layer instanceof IContextMenuProvider) {
-    ((IContextMenuProvider)layer).collectObjectsFromPoint(point,newSelections);
-    if (!newSelections.isEmpty()) {
-      contextProvider=(IContextMenuProvider)layer;
-      break;
+  List<Object> ns=new ArrayList<Object>();
+  Map<Object,IContextMenuProvider> newSelectedObjects=new LinkedHashMap<Object,ContextMenuLayer.IContextMenuProvider>();
+  for (  OsmandMapLayer layer : mapView.getLayers()) {
+    if (layer instanceof IContextMenuProvider) {
+      ns.clear();
+      ((IContextMenuProvider)layer).collectObjectsFromPoint(point,ns);
+      for (      Object o : ns) {
+        newSelectedObjects.put(o,(IContextMenuProvider)layer);
+      }
     }
   }
-  if (newSelections.isEmpty()) {
-    collectObjectsFromPoint(point,newSelections);
-    contextProvider=this;
+  if (newSelectedObjects.isEmpty()) {
+    ns.clear();
+    collectObjectsFromPoint(point,ns);
+    for (    Object o : ns) {
+      newSelectedObjects.put(o,this);
+    }
   }
-  if (different(newSelections,selectedObjects)) {
+  if (different(newSelectedObjects,selectedObjects)) {
     ContextMenuLayer contextMenuLayer=mapView.getLayerByClass(ContextMenuLayer.class);
     if (contextMenuLayer != null) {
-      contextMenuLayer.setSelections(newSelections,contextProvider);
-      if (!newSelections.isEmpty())       mapView.showMessage(mapView.getSettings().USE_SHORT_OBJECT_NAMES.get() ? contextMenuLayer.getSelectedObjectName() : contextMenuLayer.getSelectedObjectDescription());
+      contextMenuLayer.setSelections(newSelectedObjects);
+      if (!ns.isEmpty())       mapView.showMessage(mapView.getSettings().USE_SHORT_OBJECT_NAMES.get() ? contextMenuLayer.getSelectedObjectName() : contextMenuLayer.getSelectedObjectDescription());
     }
-    selectedObjects=newSelections;
+    selectedObjects=newSelectedObjects;
   }
 }
