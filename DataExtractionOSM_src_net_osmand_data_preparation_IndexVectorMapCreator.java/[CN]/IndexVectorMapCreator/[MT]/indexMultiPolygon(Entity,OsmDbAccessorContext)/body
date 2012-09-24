@@ -14,9 +14,6 @@
       }
     }
   }
-  if (!original.hasOpenedPolygons()) {
-    logMapDataWarn.warn("Multipolygon has unclosed parts: Multipoligon id=" + e.getId());
-  }
   renderingTypes.encodeEntityWithType(e,mapZooms.getLevel(0).getMaxZoom(),typeUse,addtypeUse,namesUse,tempNameUse);
   if (typeUse.size() == 0)   return;
   if (!original.areRingsComplete()) {
@@ -24,9 +21,13 @@
   }
   List<Multipolygon> multipolygons=original.splitPerOuterRing(logMapDataWarn);
   for (  Multipolygon m : multipolygons) {
+    if (m.getOuterNodes().size() == 0) {
+      logMapDataWarn.warn("Multipolygon has an outer ring that can't be formed: " + e.getId());
+      continue;
+    }
     List<List<Node>> innerWays=new ArrayList<List<Node>>();
     for (    Ring r : m.getInnerRings()) {
-      innerWays.add(r.getBorder().getNodes());
+      innerWays.add(r.getBorder());
     }
     long baseId=notUsedId--;
     nextZoom:     for (int level=0; level < mapZooms.size(); level++) {
