@@ -1,0 +1,50 @@
+{
+  boolean combine=true;
+  boolean firstReverse=false;
+  boolean secondReverse=false;
+  if (w1.getFirstNodeId() == w2.getFirstNodeId()) {
+    firstReverse=true;
+    secondReverse=false;
+  }
+ else   if (w1.getLastNodeId() == w2.getFirstNodeId()) {
+    firstReverse=false;
+    secondReverse=false;
+  }
+ else   if (w1.getLastNodeId() == w2.getLastNodeId()) {
+    firstReverse=false;
+    secondReverse=true;
+  }
+ else   if (w1.getFirstNodeId() == w2.getLastNodeId()) {
+    firstReverse=true;
+    secondReverse=true;
+  }
+ else {
+    combine=false;
+  }
+  if (combine) {
+    Way newWay=new Way(nextRandId());
+    boolean nodePresent=w1.getNodes() != null || w1.getNodes().size() != 0;
+    int w1size=nodePresent ? w1.getNodes().size() : w1.getNodeIds().size();
+    for (int i=0; i < w1size; i++) {
+      int ind=firstReverse ? (w1size - 1 - i) : i;
+      if (nodePresent) {
+        newWay.addNode(w1.getNodes().get(ind));
+      }
+ else {
+        newWay.addNode(w1.getNodeIds().get(ind));
+      }
+    }
+    int w2size=nodePresent ? w2.getNodes().size() : w2.getNodeIds().size();
+    for (int i=1; i < w2size; i++) {
+      int ind=secondReverse ? (w2size - 1 - i) : i;
+      if (nodePresent) {
+        newWay.addNode(w2.getNodes().get(ind));
+      }
+ else {
+        newWay.addNode(w2.getNodeIds().get(ind));
+      }
+    }
+    return newWay;
+  }
+  return null;
+}
