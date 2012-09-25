@@ -3,14 +3,13 @@
   final int zoomToLoad=31 - tile.getZoom();
   final int tileX=tile.getTileX();
   final int tileY=tile.getTileY();
+  final TileStatistics ts=new TileStatistics();
   ResultMatcher<RouteDataObject> matcher=new ResultMatcher<RouteDataObject>(){
-    int intersectionObjects=0, all=0, allout=0;
     @Override public boolean publish(    RouteDataObject o){
       if (o.getPointsLength() == 0) {
         return false;
       }
-      all++;
-      boolean out=false;
+      ts.allRoutes++;
       int minx, maxx, miny, maxy;
       minx=maxx=o.getPoint31XTile(0);
       miny=maxy=o.getPoint31YTile(0);
@@ -19,21 +18,15 @@
         maxx=Math.max(o.getPoint31XTile(ti),maxx);
         miny=Math.min(o.getPoint31YTile(ti),miny);
         maxy=Math.max(o.getPoint31YTile(ti),maxy);
-        if (!tile.checkContains(o.getPoint31XTile(ti),o.getPoint31YTile(ti))) {
-          out=true;
-        }
       }
       minx=minx >> zoomToLoad;
       maxx=maxx >> zoomToLoad;
       miny=miny >> zoomToLoad;
       maxy=maxy >> zoomToLoad;
       if (minx > tileX || maxx < tileX || miny > tileY || maxy < tileY) {
-        allout++;
         return false;
       }
-      if (out) {
-        intersectionObjects++;
-      }
+      ts.addObject(o);
       if (toFillIn != null) {
         if (getRouter().acceptLine(o)) {
           toFillIn.add(o);
@@ -43,7 +36,7 @@
       return false;
     }
     @Override public String toString(){
-      return "Tile " + tileX + "/"+ tileY+ " boundaries "+ intersectionObjects+ " of "+ all+ " out "+ allout;
+      return "Tile " + tileX + "/"+ tileY+ " : "+ ts;
     }
     @Override public boolean isCancelled(){
       return false;
@@ -95,8 +88,14 @@
     loadedPrevUnloadedTiles++;
   }
  else {
+    if (global != null) {
+      global.allRoutes+=ts.allRoutes;
+      global.coordinates+=ts.coordinates;
+    }
     distinctLoadedTiles++;
   }
+  tile.tileStatistics=ts;
+  global.size+=ts.size;
   tile.setLoaded();
   if (nativeRouteSearchResults.size() > 0) {
     tile.nativeLib=nativeLib;

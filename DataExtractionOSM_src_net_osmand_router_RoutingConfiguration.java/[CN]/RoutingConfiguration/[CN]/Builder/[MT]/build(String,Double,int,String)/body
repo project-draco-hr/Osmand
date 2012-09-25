@@ -6,8 +6,16 @@
   i.initialDirection=direction;
   i.heuristicCoefficient=parseSilentDouble(getAttribute(router,"heuristicCoefficient"),i.heuristicCoefficient);
   i.ZOOM_TO_LOAD_TILES=parseSilentInt(getAttribute(router,"zoomToLoadTiles"),i.ZOOM_TO_LOAD_TILES);
-  i.ITERATIONS_TO_RUN_GC=parseSilentInt(getAttribute(router,"iterationsToRunGC"),i.ITERATIONS_TO_RUN_GC);
-  i.NUMBER_OF_DESIRABLE_TILES_IN_MEMORY=parseSilentInt(getAttribute(router,"desirableTilesInMemory"),i.NUMBER_OF_DESIRABLE_TILES_IN_MEMORY);
+  int desirable=parseSilentInt(getAttribute(router,"memoryLimitInMB"),0);
+  if (desirable != 0) {
+    i.memoryLimitation=desirable * (1 << 20);
+  }
+ else {
+    if (memoryLimitMB == 0) {
+      memoryLimitMB=DEFAULT_MEMORY_LIMIT;
+    }
+    i.memoryLimitation=memoryLimitMB * (1 << 20);
+  }
   i.useDynamicRoadPrioritising=parseSilentBoolean(getAttribute(router,"useDynamicRoadPrioritising"),i.useDynamicRoadPrioritising);
   i.useRelaxingStrategy=parseSilentBoolean(getAttribute(router,"useRelaxingStrategy"),i.useRelaxingStrategy);
   i.dynamicRoadPriorityDistance=parseSilentInt(getAttribute(router,"dynamicRoadPriorityDistance"),i.dynamicRoadPriorityDistance);
