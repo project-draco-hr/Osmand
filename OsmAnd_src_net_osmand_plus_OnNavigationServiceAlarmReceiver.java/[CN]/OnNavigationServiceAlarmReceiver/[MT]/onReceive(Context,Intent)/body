@@ -6,16 +6,21 @@
   }
   lock.acquire();
   final LocationManager locationManager=(LocationManager)service.getSystemService(Context.LOCATION_SERVICE);
-  locationManager.requestLocationUpdates(service.getServiceOffProvider(),0,0,service);
-  if (service.getServiceOffInterval() > service.getServiceError()) {
-    service.getHandler().postDelayed(new Runnable(){
-      @Override public void run(){
-        if (lock.isHeld()) {
-          lock.release();
-          locationManager.removeUpdates(service);
+  try {
+    locationManager.requestLocationUpdates(service.getServiceOffProvider(),0,0,service);
+    if (service.getServiceOffInterval() > service.getServiceError()) {
+      service.getHandler().postDelayed(new Runnable(){
+        @Override public void run(){
+          if (lock.isHeld()) {
+            lock.release();
+            locationManager.removeUpdates(service);
+          }
         }
       }
-    }
 ,service.getServiceError());
+    }
+  }
+ catch (  RuntimeException e) {
+    e.printStackTrace();
   }
 }

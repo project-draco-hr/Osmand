@@ -19,7 +19,13 @@
   ((OsmandApplication)getApplication()).setNavigationService(this);
   if (isContinuous()) {
     LocationManager locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
-    locationManager.requestLocationUpdates(serviceOffProvider,0,0,NavigationService.this);
+    try {
+      locationManager.requestLocationUpdates(serviceOffProvider,0,0,NavigationService.this);
+    }
+ catch (    IllegalArgumentException e) {
+      Toast.makeText(this,R.string.gps_not_available,Toast.LENGTH_LONG).show();
+      Log.d(LogUtil.TAG,"GPS location provider not available");
+    }
   }
  else {
     AlarmManager alarmManager=(AlarmManager)getSystemService(ALARM_SERVICE);
