@@ -11,31 +11,21 @@
   List<Way> borderWays=new ArrayList<Way>();
   for (  Way w : ways) {
     if ((w.getNodes() == null || w.getNodes().size() == 0) && !unInitializedNodes)     continue;
-    Way newWay=null;
-    Way addedTo=null;
-    for (    Way borderWay : borderWays) {
-      newWay=combineTwoWaysIfHasPoints(w,borderWay);
-      if (newWay != null) {
-        addedTo=borderWay;
-      }
-    }
-    if (newWay == null) {
-      borderWays.add(w);
-    }
- else {
-      borderWays.remove(addedTo);
-      addedTo=null;
+    Way wayToMerge=w;
+    Way newWay;
+    do {
+      newWay=null;
       for (      Way borderWay : borderWays) {
-        newWay=combineTwoWaysIfHasPoints(newWay,borderWay);
+        newWay=combineTwoWaysIfHasPoints(wayToMerge,borderWay);
         if (newWay != null) {
-          addedTo=borderWay;
+          wayToMerge=newWay;
+          borderWays.remove(borderWay);
+          break;
         }
       }
-      if (addedTo != null) {
-        borderWays.remove(addedTo);
-      }
-      borderWays.add(newWay);
     }
+ while (newWay != null);
+    borderWays.add(wayToMerge);
   }
   if (borderWays.size() != 1) {
     border=new Way(nextRandId());
