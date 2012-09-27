@@ -1,0 +1,39 @@
+{
+  final int zoomToLoad=31 - tile.getZoom();
+  final int tileX=tile.getTileX();
+  final int tileY=tile.getTileY();
+  SearchRequest<RouteDataObject> request=BinaryMapIndexReader.buildSearchRouteRequest(tileX << zoomToLoad,(tileX + 1) << zoomToLoad,tileY << zoomToLoad,(tileY + 1) << zoomToLoad,null);
+  for (  Entry<BinaryMapIndexReader,List<RouteSubregion>> r : map.entrySet()) {
+    if (nativeLib == null) {
+      try {
+        if (r.getValue().size() > 0) {
+          long now=System.nanoTime();
+          List<RouteSubregion> subregs=r.getKey().searchRouteIndexTree(request,r.getValue());
+          for (          RouteSubregion sr : subregs) {
+            List<RoutingTile> tiles=getRoutingTiles(sr.left,sr.top,sr.right,sr.bottom);
+            int ind=searchSubregionTile(sr);
+            RoutingSubregionTile found;
+            if (ind < 0) {
+              found=new RoutingSubregionTile(sr);
+              subregionTiles.add(-(ind + 1),found);
+            }
+ else {
+              found=subregionTiles.get(ind);
+            }
+            for (            RoutingTile t : tiles) {
+              t.searchSubregionAndAdd(sr,found);
+            }
+          }
+          timeToLoadHeaders+=(System.nanoTime() - now);
+        }
+      }
+ catch (      IOException e) {
+        throw new RuntimeException("Loading data exception",e);
+      }
+    }
+ else {
+      throw new UnsupportedOperationException();
+    }
+  }
+  tile.setHeadersLoaded();
+}

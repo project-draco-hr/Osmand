@@ -1,0 +1,130 @@
+{
+  Queue<List<RouteSegment>> queue=new LinkedList<List<RouteSegment>>();
+  List<RouteSegment> result=new ArrayList<BinaryRoutePlanner.RouteSegment>();
+  TLongHashSet visitedIds=new TLongHashSet();
+  ArrayList<RouteSegment> start=new ArrayList<RouteSegment>();
+  start.add(st);
+  queue.add(start);
+  RouteDataObject startRoad=st.getRoad();
+  int ZOOM_LIMIT=13;
+  int TILE_BOUNDARIES=10;
+  int LOCAL_TILE_BOUNDARIES=2;
+  int zm=31 - ZOOM_LIMIT;
+  int tileX=startRoad.getPoint31XTile(st.getSegmentStart()) >> zm;
+  int tileY=startRoad.getPoint31YTile(st.getSegmentStart()) >> zm;
+  int outOfTile=0;
+  int outOfDistance=0;
+  int segmentsProcessed=0;
+  float minRatio=1f;
+  int segmentsMinProcessed=0;
+  TLongHashSet onTheMap=new TLongHashSet();
+  while (!queue.isEmpty()) {
+    List<RouteSegment> segments=queue.peek();
+    if (segments.size() == 0) {
+      queue.poll();
+      continue;
+    }
+    RouteSegment segment=segments.remove(segments.size() - 1);
+    RouteDataObject road=segment.getRoad();
+    if (visitedIds.contains(calculateId(segment,segment.getSegmentStart()))) {
+      continue;
+    }
+    segmentsProcessed++;
+    if (segmentsProcessed > 50) {
+      float ratio=(float)(queue.size() + outOfTile + outOfDistance) / segmentsProcessed;
+      if (ratio < minRatio) {
+        minRatio=ratio;
+        segmentsMinProcessed=segmentsProcessed;
+      }
+    }
+    visitedIds.add(calculateId(segment,segment.getSegmentStart()));
+    boolean minusAllowed=true;
+    boolean plusAllowed=true;
+    int d=1;
+    while (minusAllowed || plusAllowed) {
+      int segmentEnd=segment.getSegmentStart() + d;
+      int currentD=d;
+      if (!minusAllowed && d > 0) {
+        d++;
+      }
+ else       if (!plusAllowed && d < 0) {
+        d--;
+      }
+ else {
+        if (d <= 0) {
+          d=-d + 1;
+        }
+ else {
+          d=-d;
+        }
+      }
+      if (segmentEnd < 0) {
+        minusAllowed=false;
+        continue;
+      }
+      if (segmentEnd >= road.getPointsLength()) {
+        plusAllowed=false;
+        continue;
+      }
+      if (visitedIds.contains(calculateId(segment,segmentEnd))) {
+        if (currentD > 0) {
+          plusAllowed=false;
+        }
+ else {
+          minusAllowed=false;
+        }
+        continue;
+      }
+      visitedIds.add(calculateId(segment,segmentEnd));
+      int x=road.getPoint31XTile(segmentEnd);
+      int y=road.getPoint31YTile(segmentEnd);
+      RouteSegment next=ctx.loadRouteSegment(x,y);
+      RouteSegment toAdd=segment;
+      if (!onTheMap.contains(toAdd.getRoad().getId())) {
+        onTheMap.add(toAdd.getRoad().getId());
+        ctx.getVisitor().visitSegment(toAdd,true);
+      }
+      List<RouteSegment> nextSegments=new ArrayList<BinaryRoutePlanner.RouteSegment>();
+      boolean out=false;
+      boolean outDistance=false;
+      while (next != null) {
+        if (!visitedIds.contains(calculateId(next,next.getSegmentStart()))) {
+          int tX=next.getRoad().getPoint31XTile(next.getSegmentStart()) >> zm;
+          int tY=next.getRoad().getPoint31YTile(next.getSegmentStart()) >> zm;
+          String highway=next.getRoad().getHighway();
+          if (notClusterAtAll(next.getRoad())) {
+            out=true;
+          }
+ else           if (Math.abs(tX - tileX) < LOCAL_TILE_BOUNDARIES && Math.abs(tY - tileY) < LOCAL_TILE_BOUNDARIES) {
+            nextSegments.add(next);
+          }
+ else {
+            if (!isMajorHighway(highway) && Math.abs(tX - tileX) < TILE_BOUNDARIES && Math.abs(tY - tileY) < TILE_BOUNDARIES) {
+              nextSegments.add(next);
+            }
+ else {
+              outDistance=true;
+            }
+          }
+        }
+        next=next.getNext();
+      }
+      if (out) {
+        outOfTile++;
+        result.add(segment);
+      }
+ else       if (outDistance) {
+        outOfDistance++;
+        result.add(segment);
+      }
+ else       if (nextSegments.size() > 0) {
+        queue.add(nextSegments);
+      }
+    }
+  }
+  log.info("Current ratio " + ((float)(queue.size() + outOfTile + outOfDistance) / segmentsProcessed) + " min ratio "+ minRatio+ " min segments procesed "+ segmentsMinProcessed);
+  String res="Processed " + segmentsProcessed + " and borders are "+ outOfTile+ " out because of distance "+ outOfDistance;
+  log.info(res);
+  System.out.println(res);
+  return result;
+}

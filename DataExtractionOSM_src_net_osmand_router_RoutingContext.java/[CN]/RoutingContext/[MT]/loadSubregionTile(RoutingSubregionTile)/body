@@ -1,0 +1,35 @@
+{
+  boolean wasUnloaded=ts.isUnloaded();
+  if (nativeLib == null) {
+    long now=System.nanoTime();
+    try {
+      BinaryMapIndexReader reader=reverseMap.get(ts.subregion.routeReg);
+      ts.setLoadedNonNative();
+      List<RouteDataObject> res=reader.loadRouteIndexData(ts.subregion);
+      for (      RouteDataObject ro : res) {
+        if (ro != null && config.router.acceptLine(ro)) {
+          ts.add(ro);
+        }
+      }
+    }
+ catch (    IOException e) {
+      throw new RuntimeException("Loading data exception",e);
+    }
+    timeToLoad+=(System.nanoTime() - now);
+  }
+ else {
+    throw new UnsupportedOperationException();
+  }
+  loadedTiles++;
+  if (wasUnloaded) {
+    loadedPrevUnloadedTiles++;
+  }
+ else {
+    if (global != null) {
+      global.allRoutes+=ts.tileStatistics.allRoutes;
+      global.coordinates+=ts.tileStatistics.coordinates;
+    }
+    distinctLoadedTiles++;
+  }
+  global.size+=ts.tileStatistics.size;
+}

@@ -6,10 +6,10 @@
       rs.add(new BinaryMapIndexReader(raf));
     }
   }
-  BinaryRoutePlanner router=new BinaryRoutePlanner(NativeSwingRendering.getDefaultFromSettings(),rs.toArray(new BinaryMapIndexReader[rs.size()]));
+  BinaryRoutePlanner router=new BinaryRoutePlanner();
   Builder builder=RoutingConfiguration.getDefault();
   RoutingConfiguration config=builder.build("car",RoutingConfiguration.DEFAULT_MEMORY_LIMIT * 3);
-  RoutingContext ctx=new RoutingContext(config);
+  RoutingContext ctx=new RoutingContext(config,NativeSwingRendering.getDefaultFromSettings(),rs.toArray(new BinaryMapIndexReader[rs.size()]));
   RouteSegment st=router.findRouteSegment(lat,lon,ctx);
   if (st != null) {
     RouteDataObject road=st.getRoad();
@@ -55,6 +55,6 @@ catch (      InvocationTargetException e) {
     }
   }
 );
-  List<RouteSegment> results=searchCluster(ctx,st,router);
+  List<RouteSegment> results=searchCluster(ctx,st);
   return results;
 }

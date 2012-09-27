@@ -1,0 +1,41 @@
+{
+  int xloc=x31 >> (31 - config.ZOOM_TO_LOAD_TILES);
+  int yloc=y31 >> (31 - config.ZOOM_TO_LOAD_TILES);
+  int l=(xloc << config.ZOOM_TO_LOAD_TILES) + yloc;
+  RoutingTile tile=tiles.get(l);
+  if (tile == null) {
+    tile=new RoutingTile(xloc,yloc,config.ZOOM_TO_LOAD_TILES);
+    tiles.put(l,tile);
+  }
+  if (load) {
+    if (getCurrentEstimatedSize() > 0.95 * config.memoryLimitation) {
+      int sz1=getCurrentEstimatedSize();
+      long h1=0;
+      if (SHOW_GC_SIZE && sz1 > 0.7 * config.memoryLimitation) {
+        runGCUsedMemory();
+        h1=runGCUsedMemory();
+      }
+      int clt=getCurrentlyLoadedTiles();
+      unloadUnusedTiles();
+      if (h1 != 0 && getCurrentlyLoadedTiles() != clt) {
+        int sz2=getCurrentEstimatedSize();
+        runGCUsedMemory();
+        long h2=runGCUsedMemory();
+        float mb=(1 << 20);
+        log.warn("Unload tiles :  estimated " + (sz1 - sz2) / mb + " ?= " + (h1 - h2) / mb + " actual");
+        log.warn("Used after " + h2 / mb + " of " + Runtime.getRuntime().totalMemory() / mb + " max " + Runtime.getRuntime().maxMemory() / mb);
+      }
+ else {
+      }
+    }
+    if (!tile.isHeadersLoaded()) {
+      loadTileHeaders(tile);
+    }
+    for (    RoutingSubregionTile ts : tile.subregions) {
+      if (!ts.isLoaded()) {
+        loadSubregionTile(ts);
+      }
+    }
+  }
+  return tile;
+}
