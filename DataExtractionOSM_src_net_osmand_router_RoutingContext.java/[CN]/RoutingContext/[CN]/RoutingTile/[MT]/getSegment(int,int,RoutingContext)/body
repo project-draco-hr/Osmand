@@ -1,11 +1,11 @@
 {
-  ctx.excludeDuplications.clear();
+  TLongObjectHashMap<RouteDataObject> excludeDuplications=new TLongObjectHashMap<RouteDataObject>();
   RouteSegment original=null;
   if (routes != null) {
     for (    RouteDataObject ro : routes) {
       for (int i=0; i < ro.pointsX.length; i++) {
         if (ro.getPoint31XTile(i) == x31 && ro.getPoint31YTile(i) == y31) {
-          ctx.excludeDuplications.put(ro.id,ro);
+          excludeDuplications.put(ro.id,ro);
           RouteSegment segment=new RouteSegment(ro,i);
           segment.next=original;
           original=segment;
@@ -14,7 +14,7 @@
     }
   }
   for (  RoutingSubregionTile rs : subregions) {
-    original=rs.loadRouteSegment(x31,y31,ctx,ctx.excludeDuplications,original);
+    original=rs.loadRouteSegment(x31,y31,ctx,excludeDuplications,original);
   }
   return original;
 }

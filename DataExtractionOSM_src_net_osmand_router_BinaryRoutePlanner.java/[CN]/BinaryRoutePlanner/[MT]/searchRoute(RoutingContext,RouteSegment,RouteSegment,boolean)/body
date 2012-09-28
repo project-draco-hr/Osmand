@@ -1,8 +1,18 @@
 {
-  List<RouteSegmentResult> result=searchRouteInternal(ctx,start,end,leftSideNavigation);
+  List<RouteSegmentResult> result=searchRouteInternalPrepare(ctx,start,end,leftSideNavigation);
   if (result != null) {
     printResults(ctx,start,end,result);
   }
-  ctx.unloadAllData();
+  if (RoutingContext.SHOW_GC_SIZE) {
+    int sz=ctx.global.size;
+    System.out.println("Subregion size " + ctx.subregionTiles.size() + " "+ " tiles "+ ctx.tiles.size());
+    ctx.runGCUsedMemory();
+    long h1=ctx.runGCUsedMemory();
+    ctx.unloadAllData();
+    ctx.runGCUsedMemory();
+    long h2=ctx.runGCUsedMemory();
+    float mb=(1 << 20);
+    log.warn("Unload context :  estimated " + sz / mb + " ?= " + (h1 - h2) / mb + " actual");
+  }
   return result;
 }
