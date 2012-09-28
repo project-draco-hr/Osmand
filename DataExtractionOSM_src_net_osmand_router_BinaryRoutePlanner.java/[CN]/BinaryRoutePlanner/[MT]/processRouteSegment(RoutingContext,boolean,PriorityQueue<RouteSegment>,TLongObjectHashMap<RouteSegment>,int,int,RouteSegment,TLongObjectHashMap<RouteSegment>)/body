@@ -82,7 +82,11 @@
       }
       obstacleMinusTime+=obstacle;
     }
-    RouteSegment next=ctx.loadRouteSegment(x,y);
+    int overhead=(ctx.visitedSegments - ctx.relaxedSegments) * STANDARD_ROAD_IN_QUEUE_OVERHEAD;
+    while (overhead > ctx.config.memoryLimitation * 1.5) {
+      overhead/=2;
+    }
+    RouteSegment next=ctx.loadRouteSegment(x,y,ctx.config.memoryLimitation - overhead);
     if (next != null) {
       if ((next == segment || next.road.id == road.id) && next.next == null) {
         continue;
