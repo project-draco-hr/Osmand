@@ -1,8 +1,9 @@
 {
-  final int zoomToLoad=31 - tile.getZoom();
-  final int tileX=tile.getTileX();
-  final int tileY=tile.getTileY();
+  final int zoomToLoad=31 - config.ZOOM_TO_LOAD_TILES;
+  int tileX=x31 >> zoomToLoad;
+  int tileY=y31 >> zoomToLoad;
   SearchRequest<RouteDataObject> request=BinaryMapIndexReader.buildSearchRouteRequest(tileX << zoomToLoad,(tileX + 1) << zoomToLoad,tileY << zoomToLoad,(tileY + 1) << zoomToLoad,null);
+  List<RoutingSubregionTile> collection=null;
   for (  Entry<BinaryMapIndexReader,List<RouteSubregion>> r : map.entrySet()) {
     if (nativeLib == null) {
       try {
@@ -19,7 +20,10 @@
  else {
               found=subregionTiles.get(ind);
             }
-            tile.searchSubregionAndAdd(sr,found);
+            if (collection == null) {
+              collection=new ArrayList<RoutingContext.RoutingSubregionTile>(4);
+            }
+            collection.add(found);
           }
           timeToLoadHeaders+=(System.nanoTime() - now);
         }
@@ -32,5 +36,5 @@
       throw new UnsupportedOperationException();
     }
   }
-  tile.setHeadersLoaded();
+  return collection;
 }

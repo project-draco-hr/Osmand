@@ -1,12 +1,7 @@
 {
-  int xloc=x31 >> (31 - config.ZOOM_TO_LOAD_TILES);
-  int yloc=y31 >> (31 - config.ZOOM_TO_LOAD_TILES);
-  int l=(xloc << config.ZOOM_TO_LOAD_TILES) + yloc;
-  RoutingTile tile=tiles.get(l);
-  if (tile == null) {
-    tile=new RoutingTile(xloc,yloc,config.ZOOM_TO_LOAD_TILES);
-    tiles.put(l,tile);
-  }
+  long xloc=x31 >> (31 - config.ZOOM_TO_LOAD_TILES);
+  long yloc=y31 >> (31 - config.ZOOM_TO_LOAD_TILES);
+  long tileId=(xloc << config.ZOOM_TO_LOAD_TILES) + yloc;
   if (load) {
     if (getCurrentEstimatedSize() > 0.95 * config.memoryLimitation) {
       int sz1=getCurrentEstimatedSize();
@@ -28,14 +23,18 @@
  else {
       }
     }
-    if (!tile.isHeadersLoaded()) {
-      loadTileHeaders(tile);
+    if (!indexedSubregions.containsKey(tileId)) {
+      List<RoutingSubregionTile> collection=loadTileHeaders(x31,y31);
+      indexedSubregions.put(tileId,collection);
     }
-    for (    RoutingSubregionTile ts : tile.subregions) {
-      if (!ts.isLoaded()) {
-        loadSubregionTile(ts);
+    List<RoutingSubregionTile> subregions=indexedSubregions.get(tileId);
+    if (subregions != null) {
+      for (      RoutingSubregionTile ts : subregions) {
+        if (!ts.isLoaded()) {
+          loadSubregionTile(ts);
+        }
       }
     }
   }
-  return tile;
+  return tileId;
 }

@@ -1,19 +1,14 @@
 {
   int coordinatesShift=(1 << (31 - zoomAround));
-  TIntObjectHashMap<RoutingTile> ts=new TIntObjectHashMap<RoutingContext.RoutingTile>();
+  TLongHashSet ts=new TLongHashSet();
   long now=System.nanoTime();
-  RoutingTile rt=getRoutingTile(x31 - coordinatesShift,y31 - coordinatesShift,true);
-  ts.put(rt.getId(),rt);
-  rt=getRoutingTile(x31 + coordinatesShift,y31 - coordinatesShift,true);
-  ts.put(rt.getId(),rt);
-  rt=getRoutingTile(x31 - coordinatesShift,y31 + coordinatesShift,true);
-  ts.put(rt.getId(),rt);
-  rt=getRoutingTile(x31 + coordinatesShift,y31 + coordinatesShift,true);
-  ts.put(rt.getId(),rt);
-  Iterator<RoutingTile> it=ts.valueCollection().iterator();
+  ts.add(getRoutingTile(x31 - coordinatesShift,y31 - coordinatesShift,true));
+  ts.add(getRoutingTile(x31 + coordinatesShift,y31 - coordinatesShift,true));
+  ts.add(getRoutingTile(x31 - coordinatesShift,y31 + coordinatesShift,true));
+  ts.add(getRoutingTile(x31 + coordinatesShift,y31 + coordinatesShift,true));
+  TLongIterator it=ts.iterator();
   while (it.hasNext()) {
-    RoutingTile tl=it.next();
-    tl.getAllObjects(toFillIn,this);
+    getAllObjects(it.next(),toFillIn);
   }
   timeToFindInitialSegments+=(System.nanoTime() - now);
 }
