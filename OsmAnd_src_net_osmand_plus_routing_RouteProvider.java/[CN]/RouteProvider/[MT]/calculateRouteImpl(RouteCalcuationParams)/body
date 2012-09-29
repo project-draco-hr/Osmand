@@ -1,0 +1,40 @@
+{
+  long time=System.currentTimeMillis();
+  if (params.start != null && params.end != null) {
+    if (log.isInfoEnabled()) {
+      log.info("Start finding route from " + params.start + " to "+ params.end+ " using "+ params.type.getName());
+    }
+    try {
+      RouteCalculationResult res;
+      if (params.gpxRoute != null && !params.gpxRoute.points.isEmpty()) {
+        res=calculateGpxRoute(params);
+      }
+ else       if (params.type == RouteService.YOURS) {
+        res=findYOURSRoute(params);
+      }
+ else       if (params.type == RouteService.ORS) {
+        res=findORSRoute(params);
+      }
+ else       if (params.type == RouteService.OSMAND) {
+        res=findVectorMapsRoute(params);
+      }
+ else {
+        res=findCloudMadeRoute(params);
+      }
+      if (log.isInfoEnabled()) {
+        log.info("Finding route contained " + res.getImmutableLocations().size() + " points for "+ (System.currentTimeMillis() - time)+ " ms");
+      }
+      return res;
+    }
+ catch (    IOException e) {
+      log.error("Failed to find route ",e);
+    }
+catch (    ParserConfigurationException e) {
+      log.error("Failed to find route ",e);
+    }
+catch (    SAXException e) {
+      log.error("Failed to find route ",e);
+    }
+  }
+  return new RouteCalculationResult(null);
+}
