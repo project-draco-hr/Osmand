@@ -1,0 +1,17 @@
+{
+  RenderingRulesStorage rrs=view.getApplication().getRendererRegistry().getCurrentSelectedRenderer();
+  boolean n=nightMode != null && nightMode.isNightMode();
+  if (rrs != cachedRrs || cachedNightMode != n) {
+    cachedRrs=rrs;
+    cachedNightMode=n;
+    cachedColor=view.getResources().getColor(cachedNightMode ? R.color.nav_track_fluorescent : R.color.nav_track);
+    if (cachedRrs != null) {
+      RenderingRuleSearchRequest req=new RenderingRuleSearchRequest(rrs);
+      req.setBooleanFilter(rrs.PROPS.R_NIGHT_MODE,cachedNightMode);
+      if (req.searchRenderingAttribute("routeColor")) {
+        cachedColor=req.getIntPropertyValue(rrs.PROPS.R_ATTR_COLOR_VALUE);
+      }
+    }
+  }
+  return cachedColor;
+}
