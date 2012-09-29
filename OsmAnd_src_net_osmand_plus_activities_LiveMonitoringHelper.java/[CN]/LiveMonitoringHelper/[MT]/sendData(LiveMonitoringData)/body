@@ -1,39 +1,72 @@
 {
-  String url=MessageFormat.format(settings.LIVE_MONITORING_URL.get(),data.lat + "",data.lon + "",data.time + "",data.hdop + "",data.alt + "",data.speed + "");
-  try {
-    HttpParams params=new BasicHttpParams();
-    HttpConnectionParams.setConnectionTimeout(params,15000);
-    DefaultHttpClient httpclient=new DefaultHttpClient(params);
-    HttpRequestBase method=new HttpGet(url);
-    log.info("Monitor " + url);
-    HttpResponse response=httpclient.execute(method);
-    if (response.getStatusLine() == null || response.getStatusLine().getStatusCode() != 200) {
-      String msg;
-      if (response.getStatusLine() != null) {
-        msg=ctx.getString(R.string.failed_op);
-      }
- else {
-        msg=response.getStatusLine().getStatusCode() + " : " + response.getStatusLine().getReasonPhrase();
-      }
-      log.error("Error sending monitor request request : " + msg);
-    }
- else {
-      InputStream is=response.getEntity().getContent();
-      StringBuilder responseBody=new StringBuilder();
-      if (is != null) {
-        BufferedReader in=new BufferedReader(new InputStreamReader(is,"UTF-8"));
-        String s;
-        while ((s=in.readLine()) != null) {
-          responseBody.append(s);
-          responseBody.append("\n");
-        }
-        is.close();
-      }
-      httpclient.getConnectionManager().shutdown();
-      log.info("Montior response : " + responseBody.toString());
+  String st=settings.LIVE_MONITORING_URL.get();
+  List<String> prm=new ArrayList<String>();
+  int maxLen=0;
+  for (int i=0; i < 6; i++) {
+    boolean b=st.contains("{" + i + "}");
+    if (b) {
+      maxLen=i;
     }
   }
- catch (  Exception e) {
-    log.error("Failed connect to " + url,e);
-  }
+  for (int i=0; i < maxLen + 1; i++) {
+switch (i) {
+case 0:
+      prm.add(data.lat + "");
+    break;
+case 1:
+  prm.add(data.lon + "");
+break;
+case 2:
+prm.add(data.time + "");
+break;
+case 3:
+prm.add(data.hdop + "");
+break;
+case 4:
+prm.add(data.alt + "");
+break;
+case 5:
+prm.add(data.speed + "");
+break;
+default :
+break;
+}
+}
+String url=MessageFormat.format(st,prm.toArray());
+try {
+HttpParams params=new BasicHttpParams();
+HttpConnectionParams.setConnectionTimeout(params,15000);
+DefaultHttpClient httpclient=new DefaultHttpClient(params);
+HttpRequestBase method=new HttpGet(url);
+log.info("Monitor " + url);
+HttpResponse response=httpclient.execute(method);
+if (response.getStatusLine() == null || response.getStatusLine().getStatusCode() != 200) {
+String msg;
+if (response.getStatusLine() != null) {
+msg=ctx.getString(R.string.failed_op);
+}
+ else {
+msg=response.getStatusLine().getStatusCode() + " : " + response.getStatusLine().getReasonPhrase();
+}
+log.error("Error sending monitor request request : " + msg);
+}
+ else {
+InputStream is=response.getEntity().getContent();
+StringBuilder responseBody=new StringBuilder();
+if (is != null) {
+BufferedReader in=new BufferedReader(new InputStreamReader(is,"UTF-8"));
+String s;
+while ((s=in.readLine()) != null) {
+responseBody.append(s);
+responseBody.append("\n");
+}
+is.close();
+}
+httpclient.getConnectionManager().shutdown();
+log.info("Montior response : " + responseBody.toString());
+}
+}
+ catch (Exception e) {
+log.error("Failed connect to " + url,e);
+}
 }
