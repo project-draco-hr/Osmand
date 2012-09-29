@@ -1,7 +1,14 @@
 {
   log.debug("requestAudioFocus");
   if (android.os.Build.VERSION.SDK_INT >= 8) {
-    mAudioFocusHelper=new AudioFocusHelper(ctx);
+    try {
+      mAudioFocusHelper=(AudioFocusHelper)Class.forName("net.osmand.plus.voice.AudioFocusHelperImpl").newInstance();
+    }
+ catch (    Exception e) {
+      log.error(e.getMessage(),e);
+    }
   }
-  if (mAudioFocusHelper != null)   mAudioFocusHelper.requestFocus();
+  if (mAudioFocusHelper != null) {
+    mAudioFocusHelper.requestFocus(ctx,streamType);
+  }
 }
