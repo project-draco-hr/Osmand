@@ -4,8 +4,20 @@
   }
   if (currentRunningJob == null) {
     if (System.currentTimeMillis() - lastTimeEvaluatedRoute > evalWaitInterval) {
+      RouteCalcuationParams params=new RouteCalcuationParams();
+      params.start=start;
+      params.end=end;
+      params.intermediates=intermediates;
+      params.gpxRoute=gpxRoute;
+      params.previousToRecalculate=previousRoute;
+      params.leftSide=settings.LEFT_SIDE_NAVIGATION.get();
+      params.optimal=settings.OPTIMAL_ROUTE_MODE.get();
+      params.fast=settings.FAST_ROUTE_MODE.get();
+      params.type=settings.ROUTER_SERVICE.getModeValue(mode);
+      params.mode=mode;
+      params.ctx=app;
 synchronized (this) {
-        currentRunningJob=new RouteRecalculationThread("Calculating route",start,end,intermediates,gpxRoute,previousRoute);
+        currentRunningJob=new RouteRecalculationThread("Calculating route",params);
         currentRunningJob.start();
       }
     }

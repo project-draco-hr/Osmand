@@ -1,0 +1,43 @@
+{
+  if (searchResult == null && routes == null) {
+    return original;
+  }
+  access++;
+  if (searchResult == null) {
+    long l=(((long)x31) << 31) + (long)y31;
+    RouteSegment segment=routes.get(l);
+    while (segment != null) {
+      RouteDataObject ro=segment.road;
+      RouteDataObject toCmp=excludeDuplications.get(ro.id);
+      if (toCmp == null || toCmp.getPointsLength() < ro.getPointsLength()) {
+        excludeDuplications.put(ro.id,ro);
+        RouteSegment s=new RouteSegment(ro,segment.getSegmentStart());
+        s.next=original;
+        original=s;
+      }
+      segment=segment.next;
+    }
+    return original;
+  }
+  RouteDataObject[] res=ctx.nativeLib.getDataObjects(searchResult,x31,y31);
+  if (res != null) {
+    for (    RouteDataObject ro : res) {
+      RouteDataObject toCmp=excludeDuplications.get(ro.id);
+      boolean accept=ro != null && (toCmp == null || toCmp.getPointsLength() < ro.getPointsLength());
+      if (ctx != null && accept) {
+        accept=ctx.getRouter().acceptLine(ro);
+      }
+      if (accept) {
+        excludeDuplications.put(ro.id,ro);
+        for (int i=0; i < ro.pointsX.length; i++) {
+          if (ro.getPoint31XTile(i) == x31 && ro.getPoint31YTile(i) == y31) {
+            RouteSegment segment=new RouteSegment(ro,i);
+            segment.next=original;
+            original=segment;
+          }
+        }
+      }
+    }
+  }
+  return original;
+}

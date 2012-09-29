@@ -1,14 +1,12 @@
 {
-  boolean leftSide=settings.LEFT_SIDE_NAVIGATION.get();
-  boolean fastRoute=settings.FAST_ROUTE_MODE.get();
-  RouteCalculationResult res=provider.calculateRouteImpl(start,end,intermediates,mode,service,app,gpxRoute,previousRoute,fastRoute,leftSide,this);
+  RouteCalculationResult res=provider.calculateRouteImpl(params);
   if (interrupted) {
     currentRunningJob=null;
     return;
   }
 synchronized (RoutingHelper.this) {
     if (res.isCalculated()) {
-      setNewRoute(res,start);
+      setNewRoute(res,params.start);
     }
  else {
       evalWaitInterval=evalWaitInterval * 3 / 2;
@@ -19,7 +17,7 @@ synchronized (RoutingHelper.this) {
   if (res.isCalculated()) {
     showMessage(app.getString(R.string.new_route_calculated_dist) + ": " + OsmAndFormatter.getFormattedDistance(res.getWholeDistance(),app));
   }
- else   if (service != RouteService.OSMAND && !settings.isInternetConnectionAvailable()) {
+ else   if (params.type != RouteService.OSMAND && !settings.isInternetConnectionAvailable()) {
     showMessage(app.getString(R.string.error_calculating_route) + ":\n" + app.getString(R.string.internet_connection_required_for_online_route),Toast.LENGTH_LONG);
   }
  else {

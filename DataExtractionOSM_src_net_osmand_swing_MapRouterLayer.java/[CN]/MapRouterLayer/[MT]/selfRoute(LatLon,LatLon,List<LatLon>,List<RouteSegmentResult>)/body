@@ -47,21 +47,21 @@ catch (    SAXException e) {
       }
       String m=DataExtractionSettings.getSettings().getRouteMode();
       String[] props=m.split("\\,");
-      BinaryRoutePlanner router=new BinaryRoutePlanner(NativeSwingRendering.getDefaultFromSettings(),rs);
-      RoutingConfiguration config=builder.build(props[0],props);
-      RoutingContext ctx=new RoutingContext(config);
+      BinaryRoutePlanner router=new BinaryRoutePlanner();
+      RoutingConfiguration config=builder.build(props[0],RoutingConfiguration.DEFAULT_MEMORY_LIMIT / 2,props);
+      RoutingContext ctx=new RoutingContext(config,NativeSwingRendering.getDefaultFromSettings(),rs);
       ctx.previouslyCalculatedRoute=previousRoute;
       log.info("Use " + config.routerName + "mode for routing");
       RouteSegment st=router.findRouteSegment(start.getLatitude(),start.getLongitude(),ctx);
       if (st == null) {
         throw new RuntimeException("Starting point for route not found");
       }
-      System.out.println("ROAD TO START " + st.getRoad().getHighway() + " "+ st.getRoad().id);
+      log.info("Start road " + st.getRoad().getHighway() + " "+ st.getRoad().id);
       RouteSegment e=router.findRouteSegment(end.getLatitude(),end.getLongitude(),ctx);
       if (e == null) {
         throw new RuntimeException("End point to calculate route was not found");
       }
-      System.out.println("ROAD TO END " + e.getRoad().getHighway() + " "+ e.getRoad().id);
+      log.info("End road " + e.getRoad().getHighway() + " "+ e.getRoad().id);
       List<RouteSegment> inters=new ArrayList<BinaryRoutePlanner.RouteSegment>();
       if (intermediates != null) {
         int ind=1;
@@ -168,6 +168,9 @@ catch (    SAXException e) {
       }
     }
  catch (    IOException e) {
+      ExceptionHandler.handle(e);
+    }
+catch (    InterruptedException e) {
       ExceptionHandler.handle(e);
     }
  finally {
