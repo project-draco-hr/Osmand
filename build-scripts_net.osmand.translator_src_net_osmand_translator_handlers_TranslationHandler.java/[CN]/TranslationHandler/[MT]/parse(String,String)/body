@@ -1,0 +1,17 @@
+{
+  System.out.println("parsing " + filename);
+  ASTParser parser=ASTParser.newParser(AST.JLS3);
+  Map<String,String> compilerOptions=Options.getCompilerOptions();
+  parser.setCompilerOptions(compilerOptions);
+  parser.setSource(source.toCharArray());
+  parser.setResolveBindings(true);
+  setPaths(parser);
+  parser.setUnitName(filename);
+  CompilationUnit unit=(CompilationUnit)parser.createAST(null);
+  for (  IProblem problem : getCompilationErrors(unit)) {
+    if (problem.isError()) {
+      System.out.println(String.format("%s:%s: %s",filename,problem.getSourceLineNumber(),problem.getMessage()));
+    }
+  }
+  return unit;
+}

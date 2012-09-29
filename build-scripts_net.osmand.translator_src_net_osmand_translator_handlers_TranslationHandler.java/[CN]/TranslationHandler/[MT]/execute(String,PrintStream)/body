@@ -1,13 +1,37 @@
 {
-  BufferedReader fr=new BufferedReader(new FileReader(new File(inFile)));
-  String readLine;
-  String buf="";
-  while ((readLine=fr.readLine()) != null) {
-    buf+=readLine;
+  String source=Files.toString(new File(inFile),Charset.defaultCharset());
+  CompilationUnit unit=parse(inFile,source);
+  try {
+    unit.recordModifications();
+    NameTable.initialize(unit);
+    Types.initialize(unit);
+    Symbols.initialize(unit);
+    String newSource=J2ObjC.translate(unit,source);
+    if (unit.types().isEmpty()) {
+      System.out.println("skipping dead file " + inFile);
+    }
+ else {
+      if (Options.printConvertedSources()) {
+        try {
+          File outputFile=new File(Options.getOutputDirectory(),inFile);
+          outputFile.getParentFile().mkdirs();
+          Files.write(newSource,outputFile,Charset.defaultCharset());
+        }
+ catch (        IOException e) {
+          e.printStackTrace();
+        }
+      }
+      System.out.println("writing output file(s) to " + Options.getOutputDirectory().getAbsolutePath());
+      ObjectiveCHeaderGenerator.generate(inFile,source,unit);
+      ObjectiveCImplementationGenerator.generate(inFile,Options.getLanguage(),unit,source);
+    }
   }
-  fr.close();
-  CompilationUnit parse=parse(buf);
-  FieldsHandler.printFieldsInfo(parse,out);
-  out.println();
-  MethodHandler.printMethodsInfo(parse,out);
+ catch (  ASTNodeException e) {
+    e.printStackTrace();
+  }
+ finally {
+    NameTable.cleanup();
+    Symbols.cleanup();
+    Types.cleanup();
+  }
 }

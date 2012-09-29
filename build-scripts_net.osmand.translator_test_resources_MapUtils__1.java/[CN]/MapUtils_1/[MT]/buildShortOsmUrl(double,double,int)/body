@@ -1,0 +1,15 @@
+{
+  long lat=(long)(((latitude + 90d) / 180d) * (1l << 32));
+  long lon=(long)(((longitude + 180d) / 360d) * (1l << 32));
+  long code=interleaveBits(lon,lat);
+  StringBuilder str=new StringBuilder(10);
+  str.append(BASE_SHORT_OSM_URL);
+  for (int i=0; i < Math.ceil((zoom + 8) / 3d); i++) {
+    str.append(intToBase64[(int)((code >> (58 - 6 * i)) & 0x3f)]);
+  }
+  for (int j=0; j < (zoom + 8) % 3; j++) {
+    str.append('-');
+  }
+  str.append("?m");
+  return str.toString();
+}
