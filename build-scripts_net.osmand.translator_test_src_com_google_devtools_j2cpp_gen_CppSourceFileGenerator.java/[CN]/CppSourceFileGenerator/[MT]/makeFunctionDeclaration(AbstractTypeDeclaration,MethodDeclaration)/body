@@ -1,0 +1,28 @@
+{
+  StringBuffer sb=new StringBuffer();
+  Type returnType=method.getReturnType2();
+  ITypeBinding binding=Types.getTypeBinding(returnType);
+  if (binding.isEnum()) {
+    sb.append(NameTable.javaTypeToCpp(returnType,true));
+  }
+ else {
+    sb.append(NameTable.javaRefToCpp(returnType));
+  }
+  sb.append(' ');
+  sb.append(NameTable.makeFunctionName(cls,method));
+  sb.append('(');
+  for (Iterator<?> iterator=method.parameters().iterator(); iterator.hasNext(); ) {
+    Object o=iterator.next();
+    if (o instanceof SingleVariableDeclaration) {
+      SingleVariableDeclaration param=(SingleVariableDeclaration)o;
+      String fieldType=NameTable.javaRefToCpp(param.getType());
+      String fieldName=param.getName().getIdentifier();
+      sb.append(String.format("%s %s",fieldType,fieldName));
+      if (iterator.hasNext()) {
+        sb.append(", ");
+      }
+    }
+  }
+  sb.append(')');
+  return sb.toString();
+}

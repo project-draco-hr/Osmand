@@ -1,0 +1,27 @@
+{
+  StringBuffer sb=new StringBuffer();
+  boolean isStatic=(method.getModifiers() & Modifier.STATIC) > 0;
+  String baseDeclaration;
+  if (mappedMethod.getName().equals("hash")) {
+    baseDeclaration="- (NSUInteger)hash";
+  }
+ else {
+    baseDeclaration=String.format("%s (%s)%s",isStatic ? "static" : "",NameTable.javaRefToCpp(method.getReturnType2()),mappedMethod.getName());
+  }
+  sb.append(baseDeclaration);
+  Iterator<IOSParameter> iosParameters=mappedMethod.getParameters().iterator();
+  if (iosParameters.hasNext()) {
+    @SuppressWarnings("unchecked") List<SingleVariableDeclaration> parameters=method.parameters();
+    IOSParameter first=iosParameters.next();
+    SingleVariableDeclaration var=parameters.get(first.getIndex());
+    addTypeAndName(first,var,sb);
+    if (iosParameters.hasNext()) {
+      sb.append(mappedMethod.isVarArgs() ? ", " : " ");
+      IOSParameter next=iosParameters.next();
+      sb.append(next.getParameterName());
+      var=parameters.get(next.getIndex());
+      addTypeAndName(next,var,sb);
+    }
+  }
+  return sb.toString();
+}

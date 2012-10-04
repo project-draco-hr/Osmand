@@ -1,0 +1,19 @@
+{
+  ITypeBinding superClazzBinding=Types.getTypeBinding(declaringClass.getSuperclassType());
+  TypeDeclaration superClazz=Types.getTypeDeclaration(superClazzBinding,getUnit().types());
+  if (superClazz == null) {
+    return false;
+  }
+  for (  FieldDeclaration field : superClazz.getFields()) {
+    @SuppressWarnings("unchecked") List<VariableDeclarationFragment> vars=field.fragments();
+    for (    VariableDeclarationFragment var : vars) {
+      if (var.getName().getIdentifier().equals(name)) {
+        ITypeBinding varType=Types.getTypeBinding(var);
+        if (varType.isEqualTo(type)) {
+          return true;
+        }
+      }
+    }
+  }
+  return superDefinesVariable(superClazz,name,type);
+}

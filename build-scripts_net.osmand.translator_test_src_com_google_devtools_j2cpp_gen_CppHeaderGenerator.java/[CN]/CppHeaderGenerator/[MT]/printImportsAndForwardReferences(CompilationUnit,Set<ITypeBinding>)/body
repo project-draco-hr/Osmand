@@ -1,0 +1,42 @@
+{
+  HeaderImportCollector collector=new HeaderImportCollector();
+  collector.collect(unit,getSourceFileName());
+  Set<ImportCollector.Import> imports=collector.getImports();
+  Set<ImportCollector.Import> superTypes=collector.getSuperTypes();
+  Set<String> forwardStmts=Sets.newTreeSet();
+  for (  ImportCollector.Import imp : imports) {
+    forwardStmts.add(createForwardDeclaration(imp.getTypeName(),imp.isInterface()));
+  }
+  for (  ITypeBinding forward : forwards) {
+    forwardStmts.add(createForwardDeclaration(NameTable.getFullName(forward),forward.isInterface()));
+  }
+  if (!forwardStmts.isEmpty()) {
+    for (    String stmt : forwardStmts) {
+      println(stmt);
+    }
+    newline();
+  }
+  int endOfImportText=unit.types().isEmpty() ? unit.getLength() : ((ASTNode)unit.types().get(0)).getStartPosition();
+  @SuppressWarnings("unchecked") List<Comment> comments=unit.getCommentList();
+  for (  Comment c : comments) {
+    int start=c.getStartPosition();
+    if (start >= endOfImportText) {
+      break;
+    }
+    if (c instanceof BlockComment) {
+      String nativeImport=extractNativeCode(start,c.getLength());
+      if (nativeImport != null) {
+        println(nativeImport.trim());
+      }
+    }
+  }
+  if (!superTypes.isEmpty()) {
+    Set<String> importStmts=Sets.newTreeSet();
+    for (    ImportCollector.Import imp : superTypes) {
+      importStmts.add(createImport(imp));
+    }
+    for (    String stmt : importStmts) {
+      println(stmt);
+    }
+  }
+}

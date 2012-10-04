@@ -1,0 +1,39 @@
+{
+  String typeName=NameTable.getFullName(node);
+  String superName=NameTable.getSuperClassName(node);
+  if ((superName != null) && (!superName.equals("NSObject"))) {
+    printf(": public %s",superName);
+  }
+  printConstantDefines(node);
+  printf("class %s",typeName);
+  println(" {");
+  printInstanceVariables(node.getFields());
+  MethodDeclaration[] allMethods=node.getMethods();
+  List<MethodDeclaration> publicMethods=new ArrayList<MethodDeclaration>();
+  List<MethodDeclaration> protectedMethods=new ArrayList<MethodDeclaration>();
+  List<MethodDeclaration> privateMethods=new ArrayList<MethodDeclaration>();
+  for (  MethodDeclaration m : allMethods) {
+    if (Modifier.isPublic(m.getModifiers())) {
+      publicMethods.add(m);
+    }
+ else     if (Modifier.isProtected(m.getModifiers())) {
+      protectedMethods.add(m);
+    }
+ else     if (Modifier.isPrivate(m.getModifiers())) {
+      privateMethods.add(m);
+    }
+  }
+  if (publicMethods.size() > 0) {
+    println("\npublic: ");
+    printMethods(publicMethods);
+  }
+  if (protectedMethods.size() > 0) {
+    println("\nprotected: ");
+    printMethods(protectedMethods);
+  }
+  if (privateMethods.size() > 0) {
+    println("\nprivate: ");
+    printMethods(privateMethods);
+  }
+  println("};\n");
+}

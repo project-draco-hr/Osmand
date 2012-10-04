@@ -1,0 +1,19 @@
+{
+  for (  MethodDeclaration m : methods) {
+    syncLineNumbers(m.getName());
+    IMethodBinding binding=Types.getMethodBinding(m);
+    IOSMethod iosMethod=Types.getMappedMethod(binding);
+    if (iosMethod != null) {
+      print(mappedMethodDeclaration(m,iosMethod));
+    }
+ else     if (m.isConstructor()) {
+      print(constructorDeclaration(m));
+    }
+ else     if (Modifier.isStatic(m.getModifiers()) && NameTable.CLINIT_NAME.equals(m.getName().getIdentifier())) {
+      printStaticConstructorDeclaration(m);
+    }
+ else     if (!isMainMethod(m) && !isInterfaceConstantAccessor(binding)) {
+      printMethod(m);
+    }
+  }
+}

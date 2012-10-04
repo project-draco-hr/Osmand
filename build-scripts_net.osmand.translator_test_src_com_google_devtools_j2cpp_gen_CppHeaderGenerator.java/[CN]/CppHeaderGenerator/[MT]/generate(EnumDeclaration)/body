@@ -1,0 +1,46 @@
+{
+  printConstantDefines(node);
+  String typeName=NameTable.getFullName(node);
+  @SuppressWarnings("unchecked") List<EnumConstantDeclaration> constants=node.enumConstants();
+  if (!constants.isEmpty()) {
+    println("typedef enum {");
+    String bareTypeName=typeName.endsWith("Enum") ? typeName.substring(0,typeName.length() - 4) : typeName;
+    indent();
+    int ordinal=0;
+    for (    EnumConstantDeclaration constant : constants) {
+      printIndent();
+      printf("%s_%s = %d,\n",bareTypeName,constant.getName().getIdentifier(),ordinal++);
+    }
+    unindent();
+    printf("} %s;\n\n",bareTypeName);
+  }
+  List<FieldDeclaration> fields=Lists.newArrayList();
+  List<MethodDeclaration> methods=Lists.newArrayList();
+  for (  Object decl : node.bodyDeclarations()) {
+    if (decl instanceof FieldDeclaration) {
+      fields.add((FieldDeclaration)decl);
+    }
+ else     if (decl instanceof MethodDeclaration) {
+      methods.add((MethodDeclaration)decl);
+    }
+  }
+  printf("@interface %s : JavaLangEnum < NSCopying",typeName);
+  ITypeBinding enumType=Types.getTypeBinding(node);
+  for (  ITypeBinding intrface : enumType.getInterfaces()) {
+    if (!intrface.getName().equals(("Cloneable"))) {
+      printf(", %s",NameTable.getFullName(intrface));
+    }
+  }
+  println(" > {");
+  FieldDeclaration[] fieldDeclarations=fields.toArray(new FieldDeclaration[0]);
+  printInstanceVariables(fieldDeclarations);
+  println("}");
+  for (  EnumConstantDeclaration constant : constants) {
+    printf("+ (%s *)%s;\n",typeName,NameTable.getName(constant.getName()));
+  }
+  println("+ (IOSObjectArray *)values;");
+  printf("+ (%s *)valueOfWithNSString:(NSString *)name;\n",typeName);
+  println("- (id)copyWithZone:(NSZone *)zone;");
+  printMethods(methods);
+  println("@end");
+}

@@ -1,0 +1,37 @@
+{
+  int nPrinted=0;
+  for (  FieldDeclaration field : fields) {
+    if ((field.getModifiers() & Modifier.STATIC) == 0) {
+      ITypeBinding type=Types.getTypeBinding(field.getType());
+      @SuppressWarnings("unchecked") List<VariableDeclarationFragment> vars=field.fragments();
+      for (      VariableDeclarationFragment var : vars) {
+        if (var.getName().getIdentifier().startsWith("this$") && superDefinesVariable(var)) {
+          continue;
+        }
+        print("@property (nonatomic, ");
+        IVariableBinding varBinding=Types.getVariableBinding(var);
+        if (type.isPrimitive()) {
+          print("assign");
+        }
+ else         if (Types.isWeakReference(varBinding) || (varBinding.getName().startsWith("this$") && Types.hasWeakAnnotation(varBinding.getDeclaringClass()))) {
+          print(Options.useARC() ? "weak" : "assign");
+        }
+ else         if (type.isEqualTo(Types.getNSString())) {
+          print("copy");
+        }
+ else {
+          print(Options.useARC() ? "strong" : "retain");
+        }
+        String typeString=NameTable.javaRefToObjC(type);
+        if (!typeString.endsWith("*")) {
+          typeString+=" ";
+        }
+        println(String.format(") %s%s;",typeString,NameTable.getName(var.getName())));
+        nPrinted++;
+      }
+    }
+  }
+  if (nPrinted > 0) {
+    newline();
+  }
+}
