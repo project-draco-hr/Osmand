@@ -1,0 +1,28 @@
+{
+  if (typeName.equals("long long int") || typeName.equals("long")) {
+    typeName="LongInt";
+  }
+ else   if (typeName.equals("short int") || typeName.equals("short")) {
+    typeName="ShortInt";
+  }
+ else   if (typeBinding.isArray()) {
+    ITypeBinding elementType=typeBinding.getElementType();
+    if (elementType.isPrimitive()) {
+      elementType=Types.getWrapperType(elementType);
+    }
+    if (elementType.isParameterizedType()) {
+      elementType=elementType.getErasure();
+    }
+    if (elementType.isCapture()) {
+      elementType=elementType.getWildcard();
+    }
+    if (elementType.isWildcardType()) {
+      ITypeBinding bound=elementType.getBound();
+      if (bound != null) {
+        elementType=bound;
+      }
+    }
+    typeName=getFullName(elementType) + "Array";
+  }
+  return typeName;
+}
