@@ -1,0 +1,52 @@
+{
+  InputStream is=getInputStream(name);
+  try {
+    final SAXParser saxParser=SAXParserFactory.newInstance().newSAXParser();
+    saxParser.parse(is,new DefaultHandler(){
+      @Override public void startElement(      String uri,      String localName,      String qName,      Attributes attributes) throws SAXException {
+        String tagName=saxParser.isNamespaceAware() ? localName : qName;
+        if ("renderingConstant".equals(tagName)) {
+          if (!renderingConstants.containsKey(attributes.getValue("name"))) {
+            renderingConstants.put(attributes.getValue("name"),attributes.getValue("value"));
+          }
+        }
+      }
+    }
+);
+  }
+ catch (  ParserConfigurationException e1) {
+    throw new IllegalStateException(e1);
+  }
+ finally {
+    is.close();
+  }
+  is=getInputStream(name);
+  final RenderingRulesStorage main=new RenderingRulesStorage(name,renderingConstants);
+  loadedRenderers.put(name,main);
+  try {
+    main.parseRulesFromXmlInputStream(is,new RenderingRulesStorageResolver(){
+      @Override public RenderingRulesStorage resolve(      String name,      RenderingRulesStorageResolver ref) throws SAXException {
+        if (loadedRenderers.containsKey(name)) {
+          log.warn("Circular dependencies found " + name);
+        }
+        RenderingRulesStorage dep=null;
+        try {
+          dep=loadRenderer(name,loadedRenderers,renderingConstants);
+        }
+ catch (        IOException e) {
+          log.warn("Dependent renderer not found : " + e.getMessage(),e);
+        }
+        if (dep == null) {
+          log.warn("Dependent renderer not found : " + name);
+        }
+        return dep;
+      }
+    }
+);
+  }
+  finally {
+    is.close();
+  }
+  renderers.put(name,main);
+  return main;
+}
