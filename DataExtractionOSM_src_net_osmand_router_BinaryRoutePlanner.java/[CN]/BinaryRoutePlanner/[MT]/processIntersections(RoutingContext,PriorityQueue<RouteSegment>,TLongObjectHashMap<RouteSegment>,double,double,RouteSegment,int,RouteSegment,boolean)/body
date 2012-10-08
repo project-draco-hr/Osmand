@@ -13,8 +13,9 @@
     }
     boolean nextPlusNotAllowed=(next.segmentStart == next.road.getPointsLength() - 1) || visitedSegments.containsKey(calculateRoutePointId(next.road,next.segmentStart,true));
     boolean nextMinusNotAllowed=(next.segmentStart == 0) || visitedSegments.containsKey(calculateRoutePointId(next.road,next.segmentStart - 1,false));
+    boolean skipSameDirection=next.road.id == segment.road.id && next.segmentStart == segmentEnd;
     boolean alreadyVisited=nextPlusNotAllowed && nextMinusNotAllowed;
-    if (!alreadyVisited) {
+    if (!alreadyVisited && !skipSameDirection) {
       double distanceToEnd=h(ctx,distToFinalPoint,next);
       if (next.directionAssigned == -direction) {
         next=new RouteSegment(next.getRoad(),next.segmentStart);
@@ -36,7 +37,7 @@
         ctx.visitor.visitSegment(next,false);
       }
     }
- else {
+ else     if (!skipSameDirection) {
       if (next.directionAssigned == direction && distFromStart < next.distanceFromStart && next.road.id != segment.road.id) {
         next.distanceFromStart=distFromStart;
         next.parentRoute=segment;
