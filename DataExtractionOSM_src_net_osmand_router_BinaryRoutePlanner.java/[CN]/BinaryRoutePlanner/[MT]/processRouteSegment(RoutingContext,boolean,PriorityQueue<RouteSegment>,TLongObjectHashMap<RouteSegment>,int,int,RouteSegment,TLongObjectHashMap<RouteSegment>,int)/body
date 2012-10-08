@@ -3,12 +3,10 @@
   final int middle=segment.segmentStart;
   double obstaclePlusTime=0;
   double obstacleMinusTime=0;
-  long nt=(road.getId() << ROUTE_POINTS) + middle;
-  visitedSegments.put(nt,null);
   int oneway=ctx.getRouter().isOneWay(road);
   boolean minusAllowed;
   boolean plusAllowed;
-  if (ctx.firstRoadId == nt) {
+  if (ctx.firstRoadId == calculateRoutePointId(road,middle,true)) {
     minusAllowed=ctx.firstRoadDirection <= 0;
     plusAllowed=ctx.firstRoadDirection >= 0;
   }
@@ -19,6 +17,12 @@
  else {
     minusAllowed=oneway >= 0;
     plusAllowed=oneway <= 0;
+  }
+  if (middle == road.getPointsLength() - 1 || visitedSegments.containsKey(calculateRoutePointId(road,middle,true))) {
+    plusAllowed=false;
+  }
+  if (middle == 0 || visitedSegments.containsKey(calculateRoutePointId(road,middle - 1,false))) {
+    minusAllowed=false;
   }
   int d=plusAllowed ? 1 : -1;
   if (segment.parentRoute != null) {
@@ -56,8 +60,17 @@
       plusAllowed=false;
       continue;
     }
-    long nts=(road.getId() << ROUTE_POINTS) + segmentEnd;
-    visitedSegments.put(nts,segment);
+    int intervalId=positive ? segmentEnd - 1 : segmentEnd;
+    long nds=calculateRoutePointId(road,intervalId,positive);
+    visitedSegments.put(nds,segment);
+    RouteSegment opposite=null;
+    long opp=calculateRoutePointId(road,intervalId,!positive);
+    if (oppositeSegments.containsKey(opp)) {
+      opposite=oppositeSegments.get(opp);
+      if (opposite.segmentStart != segmentEnd) {
+        opposite=null;
+      }
+    }
     int x=road.getPoint31XTile(segmentEnd);
     int y=road.getPoint31YTile(segmentEnd);
     if (positive) {
@@ -82,15 +95,8 @@
       }
       obstacleMinusTime+=obstacle;
     }
-    int overhead=(ctx.visitedSegments - ctx.relaxedSegments) * STANDARD_ROAD_IN_QUEUE_OVERHEAD;
-    if (overhead > ctx.config.memoryLimitation * 0.95) {
-      throw new OutOfMemoryError("There is no enough memory " + ctx.config.memoryLimitation / (1 << 20) + " Mb");
-    }
-    RouteSegment next=ctx.loadRouteSegment(x,y,ctx.config.memoryLimitation - overhead);
-    if (next != null) {
-      if ((next == segment || next.road.id == road.id) && next.next == null) {
-        continue;
-      }
+    RouteSegment next=ctx.loadRouteSegment(x,y,ctx.config.memoryLimitation - memOverhead);
+    if (next != null || opposite != null) {
       double priority=ctx.getRouter().defineSpeedPriority(road);
       double speed=ctx.getRouter().defineSpeed(road) * priority;
       if (speed == 0) {
@@ -98,12 +104,32 @@
       }
       double distOnRoadToPass=positive ? posSegmentDist : negSegmentDist;
       double distStartObstacles=segment.distanceFromStart + (positive ? obstaclePlusTime : obstacleMinusTime) + distOnRoadToPass / speed;
-      double distToFinalPoint=squareRootDist(x,y,targetEndX,targetEndY);
-      boolean routeFound=processIntersections(ctx,graphSegments,visitedSegments,oppositeSegments,distStartObstacles,distToFinalPoint,segment,segmentEnd,next,reverseWaySearch);
-      if (routeFound) {
-        return routeFound;
+      if (opposite != null) {
+        FinalRouteSegment frs=new FinalRouteSegment(road,segment.segmentStart);
+        frs.parentRoute=segment.parentRoute;
+        frs.parentSegmentEnd=segment.parentSegmentEnd;
+        frs.reverseWaySearch=reverseWaySearch;
+        frs.finalSegmentEnd=segmentEnd;
+        frs.distanceFromStart=opposite.distanceFromStart + distStartObstacles;
+        frs.distanceToEnd=0;
+        frs.opposite=opposite;
+        graphSegments.add(frs);
+        if (positive) {
+          plusAllowed=false;
+        }
+ else {
+          minusAllowed=false;
+        }
+        continue;
       }
+      if (next == null) {
+        continue;
+      }
+      if ((next == segment || next.road.id == road.id) && next.next == null) {
+        continue;
+      }
+      double distToFinalPoint=squareRootDist(x,y,targetEndX,targetEndY);
+      processIntersections(ctx,graphSegments,visitedSegments,distStartObstacles,distToFinalPoint,segment,segmentEnd,next,reverseWaySearch);
     }
   }
-  return false;
 }

@@ -1,27 +1,33 @@
 {
   List<RouteSegmentResult> result=new ArrayList<RouteSegmentResult>();
-  RouteSegment segment=ctx.finalReverseRoute;
-  int parentSegmentStart=ctx.finalReverseEndSegment;
-  while (segment != null) {
-    RouteSegmentResult res=new RouteSegmentResult(segment.road,parentSegmentStart,segment.segmentStart);
-    parentSegmentStart=segment.parentSegmentEnd;
-    segment=segment.parentRoute;
-    if (res.getStartPointIndex() != res.getEndPointIndex()) {
-      result.add(res);
+  if (finalSegment != null) {
+    RouteSegment segment=finalSegment.reverseWaySearch ? finalSegment : finalSegment.opposite.parentRoute;
+    int parentSegmentStart=finalSegment.reverseWaySearch ? finalSegment.opposite.segmentStart : finalSegment.opposite.parentSegmentEnd;
+    if (segment != null) {
     }
-  }
-  Collections.reverse(result);
-  segment=ctx.finalDirectRoute;
-  int parentSegmentEnd=ctx.finalDirectEndSegment;
-  while (segment != null) {
-    RouteSegmentResult res=new RouteSegmentResult(segment.road,segment.segmentStart,parentSegmentEnd);
-    parentSegmentEnd=segment.parentSegmentEnd;
-    segment=segment.parentRoute;
-    if (res.getStartPointIndex() != res.getEndPointIndex()) {
-      result.add(res);
+    while (segment != null) {
+      RouteSegmentResult res=new RouteSegmentResult(segment.road,parentSegmentStart,segment.segmentStart);
+      parentSegmentStart=segment.parentSegmentEnd;
+      segment=segment.parentRoute;
+      if (res.getStartPointIndex() != res.getEndPointIndex()) {
+        result.add(res);
+      }
     }
+    Collections.reverse(result);
+    segment=finalSegment.reverseWaySearch ? finalSegment.opposite.parentRoute : finalSegment;
+    int parentSegmentEnd=finalSegment.reverseWaySearch ? finalSegment.opposite.parentSegmentEnd : finalSegment.opposite.segmentStart;
+    if (segment != null) {
+    }
+    while (segment != null) {
+      RouteSegmentResult res=new RouteSegmentResult(segment.road,segment.segmentStart,parentSegmentEnd);
+      parentSegmentEnd=segment.parentSegmentEnd;
+      segment=segment.parentRoute;
+      if (res.getStartPointIndex() != res.getEndPointIndex()) {
+        result.add(res);
+      }
+    }
+    Collections.reverse(result);
   }
-  Collections.reverse(result);
   for (int i=0; i < result.size(); i++) {
     if (ctx.checkIfMemoryLimitCritical(ctx.config.memoryLimitation)) {
       ctx.unloadUnusedTiles(ctx.config.memoryLimitation);
