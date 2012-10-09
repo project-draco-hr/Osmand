@@ -1,27 +1,28 @@
 {
   List<RouteSegmentResult> result=new ArrayList<RouteSegmentResult>();
   if (finalSegment != null) {
-    RouteSegment segment=finalSegment.reverseWaySearch ? finalSegment : finalSegment.opposite.parentRoute;
-    int parentSegmentStart=finalSegment.reverseWaySearch ? finalSegment.opposite.segmentStart : finalSegment.opposite.parentSegmentEnd;
+    println("Routing calculated time distance " + finalSegment.distanceFromStart);
+    RouteSegment segment=finalSegment.reverseWaySearch ? finalSegment : finalSegment.opposite.getParentRoute();
+    int parentSegmentStart=finalSegment.reverseWaySearch ? finalSegment.opposite.getSegmentStart() : finalSegment.opposite.getParentSegmentEnd();
     if (segment != null) {
     }
     while (segment != null) {
-      RouteSegmentResult res=new RouteSegmentResult(segment.road,parentSegmentStart,segment.segmentStart);
-      parentSegmentStart=segment.parentSegmentEnd;
-      segment=segment.parentRoute;
+      RouteSegmentResult res=new RouteSegmentResult(segment.road,parentSegmentStart,segment.getSegmentStart());
+      parentSegmentStart=segment.getParentSegmentEnd();
+      segment=segment.getParentRoute();
       if (res.getStartPointIndex() != res.getEndPointIndex()) {
         result.add(res);
       }
     }
     Collections.reverse(result);
-    segment=finalSegment.reverseWaySearch ? finalSegment.opposite.parentRoute : finalSegment;
-    int parentSegmentEnd=finalSegment.reverseWaySearch ? finalSegment.opposite.parentSegmentEnd : finalSegment.opposite.segmentStart;
+    segment=finalSegment.reverseWaySearch ? finalSegment.opposite.getParentRoute() : finalSegment;
+    int parentSegmentEnd=finalSegment.reverseWaySearch ? finalSegment.opposite.getParentSegmentEnd() : finalSegment.opposite.getSegmentStart();
     if (segment != null) {
     }
     while (segment != null) {
-      RouteSegmentResult res=new RouteSegmentResult(segment.road,segment.segmentStart,parentSegmentEnd);
-      parentSegmentEnd=segment.parentSegmentEnd;
-      segment=segment.parentRoute;
+      RouteSegmentResult res=new RouteSegmentResult(segment.road,segment.getSegmentStart(),parentSegmentEnd);
+      parentSegmentEnd=segment.getParentSegmentEnd();
+      segment=segment.getParentRoute();
       if (res.getStartPointIndex() != res.getEndPointIndex()) {
         result.add(res);
       }
