@@ -1,0 +1,38 @@
+{
+  long loc=gw.getLocation(ind);
+  Object o=cluster.map.get(loc);
+  GeneralizedWay res=null;
+  if (o instanceof GeneralizedWay) {
+    if (o != gw) {
+      GeneralizedWay m=(GeneralizedWay)o;
+      if (m.id != gw.id && m.mainType == gw.mainType && compareRefs(gw,m)) {
+        return m;
+      }
+    }
+  }
+ else   if (o instanceof LinkedList) {
+    LinkedList<GeneralizedWay> l=(LinkedList<GeneralizedWay>)o;
+    double bestDiff=Math.PI / 2;
+    for (    GeneralizedWay m : l) {
+      if (m.id != gw.id && m.mainType == gw.mainType && compareRefs(gw,m)) {
+        double init=gw.directionRoute(ind,ind == 0);
+        double dir;
+        if (m.getLocation(0) == loc) {
+          dir=m.directionRoute(0,true);
+        }
+ else         if (m.getLocation(m.size() - 1) == loc) {
+          dir=m.directionRoute(m.size() - 1,false);
+        }
+ else {
+          return null;
+        }
+        double angleDiff=Math.abs(MapUtils.alignAngleDifference(Math.PI + dir - init));
+        if (angleDiff < bestDiff) {
+          bestDiff=angleDiff;
+          res=m;
+        }
+      }
+    }
+  }
+  return res;
+}

@@ -1,19 +1,14 @@
 {
   closePreparedStatements(mapRouteInsertStat);
+  closePreparedStatements(basemapRouteInsertStat);
   mapConnection.commit();
   try {
     writer.startWriteRouteIndex(regionName);
     writer.writeRouteEncodingRules(routeTypes.getEncodingRuleTypes());
-    PreparedStatement selectData=mapConnection.prepareStatement(SELECT_STAT);
-    TLongObjectHashMap<BinaryFileReference> treeHeader=new TLongObjectHashMap<BinaryFileReference>();
-    long rootIndex=routeTree.getFileHdr().getRootIndex();
-    rtree.Node root=routeTree.getReadNode(rootIndex);
-    Rect rootBounds=calcBounds(root);
-    if (rootBounds != null) {
-      writeBinaryRouteTree(root,rootBounds,routeTree,writer,treeHeader);
-      writeBinaryMapBlock(root,rootBounds,routeTree,writer,selectData,treeHeader,new LinkedHashMap<String,Integer>(),new LinkedHashMap<MapRouteType,String>());
-    }
-    selectData.close();
+    TLongObjectHashMap<BinaryFileReference> route=writeBinaryRouteIndexHeader(writer,routeTree,false);
+    TLongObjectHashMap<BinaryFileReference> base=writeBinaryRouteIndexHeader(writer,baserouteTree,true);
+    writeBinaryRouteIndexBlocks(writer,routeTree,false,route);
+    writeBinaryRouteIndexBlocks(writer,baserouteTree,true,base);
     writer.endWriteRouteIndex();
     writer.flush();
   }

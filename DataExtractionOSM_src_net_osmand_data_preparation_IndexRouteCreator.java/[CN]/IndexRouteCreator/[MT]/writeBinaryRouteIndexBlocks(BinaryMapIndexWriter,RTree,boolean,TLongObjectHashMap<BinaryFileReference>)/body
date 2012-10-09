@@ -1,0 +1,10 @@
+{
+  long rootIndex=rte.getFileHdr().getRootIndex();
+  rtree.Node root=rte.getReadNode(rootIndex);
+  Rect rootBounds=calcBounds(root);
+  if (rootBounds != null) {
+    PreparedStatement selectData=mapConnection.prepareStatement(basemap ? SELECT_BASE_STAT : SELECT_STAT);
+    writeBinaryMapBlock(root,rootBounds,rte,writer,selectData,treeHeader,new LinkedHashMap<String,Integer>(),new LinkedHashMap<MapRouteType,String>());
+    selectData.close();
+  }
+}

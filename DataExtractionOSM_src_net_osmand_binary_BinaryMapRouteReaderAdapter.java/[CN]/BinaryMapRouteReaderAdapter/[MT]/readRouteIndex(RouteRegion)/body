@@ -19,18 +19,28 @@ case OsmandOdb.OsmAndRoutingIndex.RULES_FIELD_NUMBER:
 }
 break;
 case OsmandOdb.OsmAndRoutingIndex.ROOTBOXES_FIELD_NUMBER:
+case OsmandOdb.OsmAndRoutingIndex.BASEMAPBOXES_FIELD_NUMBER:
 {
 RouteSubregion subregion=new RouteSubregion(region);
 subregion.length=readInt();
 subregion.filePointer=codedIS.getTotalBytesRead();
 int oldLimit=codedIS.pushLimit(subregion.length);
 readRouteTree(subregion,null,0,true);
-region.getSubregions().add(subregion);
+if (tag == OsmandOdb.OsmAndRoutingIndex.ROOTBOXES_FIELD_NUMBER) {
+region.subregions.add(subregion);
+}
+ else {
+region.basesubregions.add(subregion);
+}
 codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
 codedIS.popLimit(oldLimit);
-codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
-}
 break;
+}
+case OsmandOdb.OsmAndRoutingIndex.BLOCKS_FIELD_NUMBER:
+{
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+break;
+}
 default :
 skipUnknownField(t);
 break;

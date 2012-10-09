@@ -1,0 +1,55 @@
+{
+  pointTypes.clear();
+  Collection<GeneralizedCluster> clusters=new ArrayList<IndexRouteCreator.GeneralizedCluster>(generalClusters.valueCollection());
+  processRoundabouts(clusters);
+  for (  GeneralizedCluster cluster : clusters) {
+    ArrayList<GeneralizedWay> copy=new ArrayList<GeneralizedWay>(cluster.ways);
+    for (    GeneralizedWay gw : copy) {
+      if (!cluster.ways.contains(gw)) {
+        continue;
+      }
+      attachWays(gw,true);
+      attachWays(gw,false);
+    }
+  }
+  douglasPeukerSimplificationStep(clusters);
+  removeSmall2RoadsConnectors(clusters);
+  TLongHashSet ids=new TLongHashSet();
+  for (  GeneralizedCluster cluster : clusters) {
+    for (    GeneralizedWay gw : cluster.ways) {
+      if (ids.contains(gw.id)) {
+        continue;
+      }
+      ids.add(gw.id);
+      names.clear();
+      Iterator<Entry<MapRouteType,String>> its=gw.names.entrySet().iterator();
+      while (its.hasNext()) {
+        Entry<MapRouteType,String> e=its.next();
+        if (e.getValue() != null) {
+          names.put(e.getKey(),e.getValue());
+        }
+      }
+      ArrayList<Node> nodes=new ArrayList<Node>();
+      if (gw.size() == 0) {
+        System.err.println(gw.id + " empty ? ");
+        continue;
+      }
+      Node prev=convertBaseToNode(gw.getLocation(0));
+      nodes.add(prev);
+      for (int i=0; i < gw.size(); i++) {
+        Node c=convertBaseToNode(gw.getLocation(i));
+        prev=c;
+        nodes.add(c);
+      }
+      outTypes.clear();
+      outTypes.add(gw.mainType);
+      outTypes.addAll(gw.addtypes);
+      try {
+        addWayToIndex(gw.id,nodes,basemapRouteInsertStat,baserouteTree);
+      }
+ catch (      SQLException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  }
+}
