@@ -1,0 +1,25 @@
+{
+  boolean hadStaticVar=false;
+  for (  FieldDeclaration f : fields) {
+    if (Modifier.isStatic(f.getModifiers())) {
+      @SuppressWarnings("unchecked") List<VariableDeclarationFragment> fragments=f.fragments();
+      for (      VariableDeclarationFragment var : fragments) {
+        IVariableBinding binding=Types.getVariableBinding(var);
+        if (!Types.isPrimitiveConstant(binding)) {
+          String name=NameTable.getName(binding);
+          Expression initializer=var.getInitializer();
+          if (initializer != null) {
+            printConstant(name,initializer);
+          }
+ else {
+            printf("static %s %s;\n",NameTable.javaRefToObjC(f.getType()),name);
+          }
+          hadStaticVar=true;
+        }
+      }
+    }
+  }
+  if (hadStaticVar) {
+    newline();
+  }
+}

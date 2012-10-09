@@ -1,0 +1,15 @@
+{
+  printMethods(Lists.newArrayList(node.getMethods()));
+  ITypeBinding binding=Types.getTypeBinding(node);
+  for (  ITypeBinding interfaze : binding.getInterfaces()) {
+    if (interfaze.getQualifiedName().equals("java.lang.CharSequence")) {
+      println("- (NSString *)description {\n  return [self sequenceDescription];\n}\n");
+    }
+  }
+  if (Types.isJavaNumberType(binding)) {
+    ITypeBinding primitiveType=Types.getPrimitiveType(binding);
+    if (primitiveType != null) {
+      printf("- (void)getValue:(void *)buffer {\n  *((%s *) buffer) = value_;\n}\n\n",NameTable.getFullName(primitiveType));
+    }
+  }
+}

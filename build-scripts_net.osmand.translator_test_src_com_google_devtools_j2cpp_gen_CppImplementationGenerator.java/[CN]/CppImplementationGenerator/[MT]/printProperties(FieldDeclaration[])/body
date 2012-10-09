@@ -1,0 +1,49 @@
+{
+  int nPrinted=0;
+  for (  FieldDeclaration field : fields) {
+    if ((field.getModifiers() & Modifier.STATIC) == 0) {
+      @SuppressWarnings("unchecked") List<VariableDeclarationFragment> vars=field.fragments();
+      for (      VariableDeclarationFragment var : vars) {
+        if (var.getName().getIdentifier().startsWith("this$") && superDefinesVariable(var)) {
+          continue;
+        }
+        String name=NameTable.getName(var.getName());
+        ITypeBinding type=Types.getTypeBinding(field.getType());
+        String typeString=NameTable.javaRefToObjC(type);
+        if (!typeString.endsWith("*")) {
+          typeString+=" ";
+        }
+        boolean noGetter=false;
+        ITypeBinding declaringClass=Types.getTypeBinding(field.getParent());
+        if (declaringClass != null) {
+          IMethodBinding[] methods=declaringClass.getDeclaredMethods();
+          for (          IMethodBinding method : methods) {
+            if (method.getName().equals(name) && method.getParameterTypes().length == 0) {
+              noGetter=true;
+              break;
+            }
+          }
+        }
+        String objCFieldName=NameTable.javaFieldToObjC(name);
+        if (!noGetter) {
+          printf(String.format("- (%s)%s {\n  return %s;\n}\n\n",typeString.trim(),name,objCFieldName));
+        }
+        printf(String.format("- (void)set%s:(%s)new%s {\n",NameTable.capitalize(name),typeString.trim(),NameTable.capitalize(name)));
+        if (type.isPrimitive()) {
+          printf(String.format("  %s = new%s;\n}\n\n",objCFieldName,NameTable.capitalize(name)));
+        }
+ else         if (Options.useReferenceCounting() && !Types.isWeakReference(Types.getVariableBinding(var))) {
+          String retentionMethod=type.isEqualTo(Types.getNSString()) ? "copy" : "retain";
+          printf(String.format("  [%s autorelease];\n  %s = [new%s %s];\n}\n\n",objCFieldName,objCFieldName,NameTable.capitalize(name),retentionMethod));
+        }
+ else {
+          printf(String.format("  %s = new%s;\n}\n\n",objCFieldName,NameTable.capitalize(name)));
+        }
+        nPrinted++;
+      }
+    }
+  }
+  if (nPrinted > 0) {
+    newline();
+  }
+}

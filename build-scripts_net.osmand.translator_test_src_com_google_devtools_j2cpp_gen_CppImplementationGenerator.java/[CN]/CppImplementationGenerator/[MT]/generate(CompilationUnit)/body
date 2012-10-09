@@ -1,0 +1,25 @@
+{
+  println(J2ObjC.getFileHeader(getSourceFileName()));
+  if (needsPrinting(unit)) {
+    printStart(getSourceFileName());
+    printImports(unit);
+    unit.accept(new ErrorReportingASTVisitor(){
+      @Override public boolean visit(      TypeDeclaration node){
+        generate(node);
+        return true;
+      }
+      @Override public boolean visit(      EnumDeclaration node){
+        generate(node);
+        return true;
+      }
+    }
+);
+  }
+ else {
+    @SuppressWarnings("unchecked") List<AbstractTypeDeclaration> types=unit.types();
+    if (!types.isEmpty()) {
+      printf("void %s_unused() {}\n",NameTable.getFullName(types.get(0)));
+    }
+  }
+  save(unit);
+}

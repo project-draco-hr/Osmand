@@ -1,0 +1,90 @@
+{
+  @SuppressWarnings("unchecked") List<EnumConstantDeclaration> constants=node.enumConstants();
+  List<MethodDeclaration> methods=Lists.newArrayList();
+  List<FieldDeclaration> fields=Lists.newArrayList();
+  MethodDeclaration initializeMethod=null;
+  @SuppressWarnings("unchecked") List<BodyDeclaration> declarations=node.bodyDeclarations();
+  for (  BodyDeclaration decl : declarations) {
+    if (decl instanceof FieldDeclaration) {
+      fields.add((FieldDeclaration)decl);
+    }
+ else     if (decl instanceof MethodDeclaration) {
+      MethodDeclaration md=(MethodDeclaration)decl;
+      if (md.getName().getIdentifier().equals("initialize")) {
+        initializeMethod=md;
+      }
+ else {
+        methods.add(md);
+      }
+    }
+  }
+  syncLineNumbers(node.getName());
+  String typeName=NameTable.getFullName(node);
+  for (  EnumConstantDeclaration constant : constants) {
+    printf("static %s *%s_%s;\n",typeName,typeName,NameTable.getName(constant.getName()));
+  }
+  printf("IOSObjectArray *%s_values;\n",typeName);
+  newline();
+  printf("@implementation %s\n\n",typeName);
+  printStaticVars(fields);
+  for (  EnumConstantDeclaration constant : constants) {
+    String name=NameTable.getName(constant.getName());
+    printf("+ (%s *)%s {\n",typeName,name);
+    printf("  return %s_%s;\n",typeName,name);
+    println("}");
+  }
+  newline();
+  String selfString=Options.useReferenceCounting() ? "[self retain]" : "self";
+  printf("- (id)copyWithZone:(NSZone *)zone {\n  return %s;\n}\n\n",selfString);
+  printProperties(fields.toArray(new FieldDeclaration[0]));
+  printMethods(methods);
+  printf("+ (void)initialize {\n  if (self == [%s class]) {\n",typeName);
+  for (int i=0; i < constants.size(); i++) {
+    EnumConstantDeclaration constant=constants.get(i);
+    @SuppressWarnings("unchecked") List<Expression> args=constant.arguments();
+    String name=NameTable.getName(constant.getName());
+    String constantTypeName=NameTable.getFullName(Types.getMethodBinding(constant).getDeclaringClass());
+    printf("    %s_%s = [[%s alloc] init",typeName,name,constantTypeName);
+    boolean isSimpleEnum=constantTypeName.equals(typeName);
+    if (args.isEmpty() && isSimpleEnum) {
+      printf("WithNSString:@\"%s_%s\" withInt:%d];\n",typeName.replace("Enum",""),name,i);
+    }
+ else {
+      String argString=StatementGenerator.generateArguments(Types.getMethodBinding(constant),args,fieldHiders,getBuilder().getCurrentLine());
+      print(argString);
+      if (args.isEmpty()) {
+        print("With");
+      }
+ else {
+        print(" with");
+      }
+      printf("NSString:@\"%s_%s\" withInt:%d];\n",typeName.replace("Enum",""),name,i);
+    }
+  }
+  printf("    %s_values = [[IOSObjectArray alloc] initWithObjects:(id[]){ ",typeName);
+  for (  EnumConstantDeclaration constant : constants) {
+    printf("%s_%s, ",typeName,NameTable.getName(constant.getName()));
+  }
+  printf("nil } count:%d type:[IOSClass classWithClass:[%s class]]];\n",constants.size(),typeName);
+  if (initializeMethod != null) {
+    @SuppressWarnings("unchecked") List<Statement> stmts=initializeMethod.getBody().statements();
+    for (    Statement s : stmts) {
+      printf("    %s",StatementGenerator.generate(s,fieldHiders,false,getBuilder().getCurrentLine()));
+    }
+  }
+  println("  }\n}\n");
+  println("+ (IOSObjectArray *)values {");
+  printf("  return [IOSObjectArray arrayWithArray:%s_values];\n",typeName);
+  println("}\n");
+  printf("+ (%s *)valueOfWithNSString:(NSString *)name {\n",typeName);
+  printf("  for (int i = 0; i < [%s_values count]; i++) {\n",typeName);
+  printf("    %s *e = [%s_values objectAtIndex:i];\n",typeName,typeName);
+  printf("    if ([name isEqual:[e name]]) {\n");
+  printf("      return e;\n");
+  printf("    }\n");
+  printf("  }\n");
+  printf("  @throw [[JavaLangIllegalArgumentException alloc] initWithNSString:name];\n");
+  printf("  return nil;\n");
+  println("}\n");
+  println("@end");
+}

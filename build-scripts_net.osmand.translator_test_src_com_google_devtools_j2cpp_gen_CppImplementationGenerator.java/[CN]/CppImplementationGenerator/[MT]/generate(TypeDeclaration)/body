@@ -1,0 +1,31 @@
+{
+  List<IMethodBinding> testMethods=null;
+  if (Types.isJUnitTest(Types.getTypeBinding(node))) {
+    testMethods=findTestMethods(node);
+  }
+  syncLineNumbers(node.getName());
+  fieldHiders=HiddenFieldDetector.getFieldNameConflicts(node);
+  if (node.isInterface()) {
+    printStaticInterface(node);
+  }
+ else {
+    String typeName=NameTable.getFullName(node);
+    printf("class %s {\n\n",typeName);
+    printStaticVars(Lists.newArrayList(node.getFields()));
+    printProperties(node.getFields());
+    printMethods(node);
+    printObjCTypeMethod(node);
+    println("}\n");
+    MethodDeclaration main=null;
+    for (    MethodDeclaration m : node.getMethods()) {
+      if (isMainMethod(m)) {
+        main=m;
+        break;
+      }
+    }
+    newline();
+    if (main != null || (testMethods != null && Options.generateTestMain())) {
+      printMainMethod(main,typeName,testMethods);
+    }
+  }
+}

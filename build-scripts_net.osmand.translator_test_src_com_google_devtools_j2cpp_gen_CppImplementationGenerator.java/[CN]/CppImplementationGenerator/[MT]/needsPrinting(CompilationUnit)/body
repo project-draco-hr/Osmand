@@ -1,0 +1,26 @@
+{
+  final boolean[] result={false};
+  unit.accept(new ErrorReportingASTVisitor(){
+    @Override public boolean visit(    TypeDeclaration node){
+      if (!node.isInterface()) {
+        result[0]=true;
+        return false;
+      }
+      return true;
+    }
+    @Override public boolean visit(    EnumDeclaration node){
+      result[0]=true;
+      return false;
+    }
+    @Override public boolean visit(    AnnotationTypeDeclaration node){
+      return false;
+    }
+    @Override public void endVisit(    MethodDeclaration node){
+      if (isInterfaceConstantAccessor(Types.getMethodBinding(node))) {
+        result[0]=true;
+      }
+    }
+  }
+);
+  return result[0];
+}
