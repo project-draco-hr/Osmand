@@ -1,0 +1,15 @@
+{
+  boolean needClosingParen=false;
+  if (Options.inlineFieldAccess()) {
+    IVariableBinding var=Types.getVariableBinding(lhs);
+    ITypeBinding type=Types.getTypeBinding(lhs);
+    if (Options.useReferenceCounting() && !type.isPrimitive() && lhs instanceof SimpleName&& isProperty((SimpleName)lhs)&& !isNewAssignment(lhs.getParent())&& !Types.hasWeakAnnotation(var.getDeclaringClass())) {
+      String name=NameTable.getName((SimpleName)lhs);
+      String nativeName=NameTable.javaFieldToObjC(name);
+      buffer.append(String.format("([%s autorelease], ",nativeName));
+      needClosingParen=true;
+    }
+  }
+  lhs.accept(this);
+  return needClosingParen;
+}

@@ -1,0 +1,24 @@
+{
+  ASTNode parent=e.getParent();
+  while (parent != null) {
+    if (parent instanceof IfStatement) {
+      Expression condition=((IfStatement)parent).getExpression();
+      if (condition instanceof InfixExpression) {
+        InfixExpression infix=(InfixExpression)condition;
+        IBinding lhs=Types.getBinding(infix.getLeftOperand());
+        if (lhs != null && infix.getRightOperand() instanceof NullLiteral) {
+          return sym.isEqualTo(lhs);
+        }
+        IBinding rhs=Types.getBinding(infix.getRightOperand());
+        if (rhs != null && infix.getLeftOperand() instanceof NullLiteral) {
+          return sym.isEqualTo(rhs);
+        }
+      }
+    }
+    parent=parent.getParent();
+    if (parent instanceof MethodDeclaration) {
+      break;
+    }
+  }
+  return false;
+}

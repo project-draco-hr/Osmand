@@ -1,0 +1,40 @@
+{
+  IBinding binding=Types.getBinding(node);
+  if (binding instanceof IVariableBinding) {
+    IVariableBinding var=(IVariableBinding)binding;
+    if (Types.isPrimitiveConstant(var)) {
+      buffer.append(NameTable.getPrimitiveConstantName(var));
+    }
+ else     if (Types.isStaticVariable(var)) {
+      printStaticVarReference(node);
+    }
+ else {
+      String name=NameTable.getName(node);
+      if (Options.inlineFieldAccess() && isProperty(node)) {
+        buffer.append(NameTable.javaFieldToObjC(name));
+      }
+ else {
+        if (isProperty(node)) {
+          buffer.append("self.");
+        }
+        buffer.append(name);
+        if (!var.isField() && (fieldHiders.contains(var) || NameTable.isReservedName(name))) {
+          buffer.append("Arg");
+        }
+      }
+    }
+    return false;
+  }
+  if (binding instanceof ITypeBinding) {
+    if (binding instanceof IOSTypeBinding) {
+      buffer.append(binding.getName());
+    }
+ else {
+      buffer.append(NameTableCpp.javaTypeToCpp(((ITypeBinding)binding),false));
+    }
+  }
+ else {
+    buffer.append(node.getIdentifier());
+  }
+  return false;
+}

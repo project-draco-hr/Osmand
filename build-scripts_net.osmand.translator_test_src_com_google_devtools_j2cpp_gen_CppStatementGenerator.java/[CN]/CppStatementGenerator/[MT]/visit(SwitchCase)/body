@@ -1,0 +1,25 @@
+{
+  if (node.isDefault()) {
+    buffer.append("  default:");
+  }
+ else {
+    buffer.append("  case ");
+    Expression expr=node.getExpression();
+    boolean isEnumConstant=Types.getTypeBinding(expr).isEnum();
+    if (isEnumConstant) {
+      String bareTypeName=NameTable.getFullName(Types.getTypeBinding(expr)).replace("Enum","");
+      buffer.append(bareTypeName).append("_");
+    }
+    if (isEnumConstant && expr instanceof SimpleName) {
+      buffer.append(((SimpleName)expr).getIdentifier());
+    }
+ else     if (isEnumConstant && expr instanceof QualifiedName) {
+      buffer.append(((QualifiedName)expr).getName().getIdentifier());
+    }
+ else {
+      expr.accept(this);
+    }
+    buffer.append(":");
+  }
+  return false;
+}

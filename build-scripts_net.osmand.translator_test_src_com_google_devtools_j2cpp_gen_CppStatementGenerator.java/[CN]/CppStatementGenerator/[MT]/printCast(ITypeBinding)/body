@@ -1,0 +1,31 @@
+{
+  if (type == null || type.isPrimitive() || type.isTypeVariable() || Types.isVoidType(type) || Types.isJavaObjectType(type)) {
+    return false;
+  }
+  if (type.isCapture()) {
+    type=type.getWildcard();
+  }
+  if (type.isWildcardType()) {
+    ITypeBinding bound=type.getBound();
+    if (bound == null) {
+      return false;
+    }
+    type=bound;
+  }
+  buffer.append("((");
+  if (type.isInterface()) {
+    buffer.append("id<");
+    buffer.append(NameTable.getFullName(type));
+    buffer.append('>');
+  }
+ else {
+    if (type.getName().equals("NSObject")) {
+      buffer.append("NSObject *");
+    }
+ else {
+      buffer.append(NameTableCpp.javaRefToCpp(type));
+    }
+  }
+  buffer.append(") ");
+  return true;
+}

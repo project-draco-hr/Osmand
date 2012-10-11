@@ -1,0 +1,23 @@
+{
+  boolean addAutorelease=useReferenceCounting && !isNewAssignment(node);
+  buffer.append(addAutorelease ? "[[[" : "[[");
+  ITypeBinding type=Types.getTypeBinding(node.getType());
+  ITypeBinding outerType=type.getDeclaringClass();
+  buffer.append(NameTable.getFullName(type));
+  buffer.append(" alloc] init");
+  IMethodBinding method=Types.getMethodBinding(node);
+  List<Expression> arguments=node.arguments();
+  if (node.getExpression() != null && type.isMember() && arguments.size() > 0 && !Types.getTypeBinding(arguments.get(0)).isEqualTo(outerType)) {
+    GeneratedMethodBinding newBinding=new GeneratedMethodBinding(method);
+    newBinding.addParameter(0,outerType);
+    method=newBinding;
+    arguments=Lists.newArrayList(node.arguments());
+    arguments.add(0,node.getExpression());
+  }
+  printArguments(method,arguments);
+  buffer.append(']');
+  if (addAutorelease) {
+    buffer.append(" autorelease]");
+  }
+  return false;
+}

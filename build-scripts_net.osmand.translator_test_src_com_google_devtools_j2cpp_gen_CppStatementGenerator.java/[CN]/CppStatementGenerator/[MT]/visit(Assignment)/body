@@ -1,0 +1,89 @@
+{
+  Operator op=node.getOperator();
+  Expression lhs=node.getLeftHandSide();
+  Expression rhs=node.getRightHandSide();
+  if (op == Operator.PLUS_ASSIGN && Types.isJavaStringType(lhs.resolveTypeBinding())) {
+    boolean needClosingParen=printAssignmentLhs(lhs);
+    buffer.append(" = ");
+    printStringConcatenation(lhs,rhs,Collections.<Expression>emptyList(),needClosingParen);
+    if (needClosingParen) {
+      buffer.append(")");
+    }
+  }
+ else   if (op == Operator.REMAINDER_ASSIGN && (isFloatingPoint(lhs) || isFloatingPoint(rhs))) {
+    lhs.accept(this);
+    buffer.append(" = fmod(");
+    lhs.accept(this);
+    buffer.append(", ");
+    rhs.accept(this);
+    buffer.append(")");
+  }
+ else   if (lhs instanceof ArrayAccess) {
+    printArrayElementAssignment(lhs,rhs,op);
+  }
+ else   if (op == Operator.RIGHT_SHIFT_UNSIGNED_ASSIGN) {
+    lhs.accept(this);
+    buffer.append(" = ");
+    printUnsignedRightShift(lhs,rhs);
+  }
+ else {
+    IVariableBinding var=Types.getVariableBinding(lhs);
+    boolean useWriter=false;
+    if (var != null && var.getDeclaringClass() != null) {
+      String declaringClassName=var.getDeclaringClass().toString();
+      String methodsClassName=Types.getTypeBinding(getOwningType(node)).toString();
+      useWriter=Types.isStaticVariable(var) && !declaringClassName.equals(methodsClassName);
+    }
+    if (useWriter) {
+      buffer.append('[');
+      if (lhs instanceof QualifiedName) {
+        QualifiedName qn=(QualifiedName)lhs;
+        qn.getQualifier().accept(this);
+      }
+ else {
+        buffer.append(NameTable.getFullName(var.getDeclaringClass()));
+      }
+      buffer.append(" set");
+      buffer.append(NameTable.capitalize(var.getName()));
+      String typeName=NameTableCpp.javaTypeToCpp(var.getType(),false);
+      String param=CppSourceFileGenerator.parameterKeyword(typeName,var.getType());
+      buffer.append(NameTable.capitalize(param));
+      buffer.append(':');
+      rhs.accept(this);
+      buffer.append(']');
+      return false;
+    }
+ else {
+      boolean needClosingParen=printAssignmentLhs(lhs);
+      buffer.append(' ');
+      buffer.append(op.toString());
+      buffer.append(' ');
+      if (Types.isJavaObjectType(Types.getTypeBinding(lhs)) && Types.getTypeBinding(rhs).isInterface()) {
+        buffer.append("(NSObject *) ");
+      }
+      if (useReferenceCounting && !isNewAssignment(node) && var != null && Types.isStaticVariable(var) && !var.getType().isPrimitive() && !Types.isWeakReference(var) && rhs.getNodeType() != ASTNode.NULL_LITERAL) {
+        buffer.append('[');
+        rhs.accept(this);
+        buffer.append(" retain]");
+      }
+ else {
+        boolean needRetainRhs=needClosingParen && !isNewAssignment(node) && !Types.isWeakReference(var);
+        if (rhs instanceof NullLiteral) {
+          needRetainRhs=false;
+        }
+        if (needRetainRhs) {
+          buffer.append("[");
+        }
+        rhs.accept(this);
+        if (needRetainRhs) {
+          buffer.append(" retain]");
+        }
+        if (needClosingParen) {
+          buffer.append(")");
+        }
+      }
+      return false;
+    }
+  }
+  return false;
+}

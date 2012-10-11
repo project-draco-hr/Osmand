@@ -1,0 +1,30 @@
+{
+  IVariableBinding var=Types.getVariableBinding(expression);
+  AbstractTypeDeclaration owner=getOwningType(expression);
+  ITypeBinding owningType=owner != null ? Types.getTypeBinding(owner).getTypeDeclaration() : null;
+  boolean isPublic=owningType != null ? useStaticPublicAccessor(expression,owningType) : true;
+  if (isPublic) {
+    buffer.append('[');
+    ITypeBinding declaringClass=var.getDeclaringClass();
+    String receiver=NameTableCpp.javaTypeToCpp(declaringClass,true);
+    buffer.append(receiver);
+    buffer.append(' ');
+  }
+  String name=NameTable.getName(var);
+  if (isPublic) {
+    if (!var.isEnumConstant()) {
+      name=NameTable.getStaticAccessorName(var.getName());
+    }
+  }
+ else   if (var.isEnumConstant()) {
+    buffer.append(NameTableCpp.javaTypeToCpp(var.getDeclaringClass(),false));
+    buffer.append("_");
+  }
+ else   if (!name.endsWith("_")) {
+    name=NameTable.getStaticVarQualifiedName(owningType,name);
+  }
+  buffer.append(name);
+  if (isPublic) {
+    buffer.append(']');
+  }
+}

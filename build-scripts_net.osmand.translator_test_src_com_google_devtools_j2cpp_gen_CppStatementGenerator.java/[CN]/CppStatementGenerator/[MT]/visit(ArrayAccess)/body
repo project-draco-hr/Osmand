@@ -1,0 +1,22 @@
+{
+  buffer.append('[');
+  printNilCheck(node.getArray(),true);
+  buffer.append(' ');
+  ITypeBinding binding=node.resolveTypeBinding();
+  if (binding == null) {
+    binding=Types.getTypeBinding(node);
+  }
+  IOSTypeBinding arrayBinding=Types.resolveArrayType(binding);
+  if (arrayBinding == null) {
+    J2ObjC.error(node,"No IOSArrayBinding for " + binding.getName());
+  }
+ else {
+    assert(arrayBinding instanceof IOSArrayTypeBinding);
+    IOSArrayTypeBinding primitiveArray=(IOSArrayTypeBinding)arrayBinding;
+    buffer.append(primitiveArray.getAccessMethod());
+  }
+  buffer.append(':');
+  node.getIndex().accept(this);
+  buffer.append(']');
+  return false;
+}

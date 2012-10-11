@@ -1,0 +1,80 @@
+{
+  SingleVariableDeclaration var=node.getParameter();
+  boolean emitAutoreleasePool=Types.hasAutoreleasePoolAnnotation(Types.getBinding(var));
+  String varName=NameTable.getName(var.getName());
+  if (NameTable.isReservedName(varName)) {
+    varName+="__";
+    NameTable.rename(Types.getBinding(var.getName()),varName);
+  }
+  String arrayExpr=generate(node.getExpression(),fieldHiders,asFunction,buffer.getCurrentLine());
+  ITypeBinding arrayType=Types.getTypeBinding(node.getExpression());
+  if (arrayType.isArray()) {
+    buffer.append("{\nint n__ = [");
+    buffer.append(arrayExpr);
+    buffer.append(" count];\n");
+    buffer.append("for (int i__ = 0; i__ < n__; i__++) {\n");
+    if (emitAutoreleasePool) {
+      buffer.append("NSAutoreleasePool *pool__ = [[NSAutoreleasePool alloc] init];\n");
+    }
+    buffer.append(NameTableCpp.javaRefToCpp(var.getType()));
+    buffer.append(' ');
+    buffer.append(varName);
+    buffer.append(" = [");
+    buffer.append(arrayExpr);
+    buffer.append(' ');
+    if (arrayType.getComponentType().isPrimitive()) {
+      buffer.append(var.getType().toString());
+    }
+ else {
+      buffer.append("object");
+    }
+    buffer.append("AtIndex:i__];\n");
+    Statement body=node.getBody();
+    if (body instanceof Block) {
+      printStatements(((Block)body).statements());
+    }
+ else {
+      body.accept(this);
+    }
+    if (emitAutoreleasePool) {
+      buffer.append("[pool__ release];\n");
+    }
+    buffer.append("}\n}\n");
+  }
+ else {
+    String objcType=NameTableCpp.javaRefToCpp(var.getType());
+    buffer.append("{\nid<JavaLangIterable> array__ = (id<JavaLangIterable>) ");
+    buffer.append(arrayExpr);
+    buffer.append(";\n");
+    buffer.append("if (!array__) {\n");
+    if (useReferenceCounting) {
+      buffer.append("@throw [[[JavaLangNullPointerException alloc] init] autorelease];\n}\n");
+    }
+ else {
+      buffer.append("@throw [[JavaLangNullPointerException alloc] init];\n}\n");
+    }
+    buffer.append("id<JavaUtilIterator> iter__ = [array__ iterator];\n");
+    buffer.append("while ([iter__ hasNext]) {\n");
+    if (emitAutoreleasePool) {
+      buffer.append("NSAutoreleasePool *pool__ = [[NSAutoreleasePool alloc] init];\n");
+    }
+    buffer.append(objcType);
+    buffer.append(' ');
+    buffer.append(varName);
+    buffer.append(" = (");
+    buffer.append(objcType);
+    buffer.append(") [iter__ next];\n");
+    Statement body=node.getBody();
+    if (body instanceof Block) {
+      printStatements(((Block)body).statements());
+    }
+ else {
+      body.accept(this);
+    }
+    if (emitAutoreleasePool) {
+      buffer.append("[pool__ release];\n");
+    }
+    buffer.append("}\n}\n");
+  }
+  return false;
+}

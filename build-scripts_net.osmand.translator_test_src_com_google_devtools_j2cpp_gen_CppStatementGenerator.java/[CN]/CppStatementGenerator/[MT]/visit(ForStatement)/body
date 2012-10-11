@@ -1,0 +1,37 @@
+{
+  boolean emitAutoreleasePool=false;
+  buffer.append("for (");
+  for (Iterator<Expression> it=node.initializers().iterator(); it.hasNext(); ) {
+    Expression next=it.next();
+    if (next instanceof VariableDeclarationExpression) {
+      List<VariableDeclarationFragment> vars=((VariableDeclarationExpression)next).fragments();
+      for (      VariableDeclarationFragment fragment : vars) {
+        emitAutoreleasePool|=Types.hasAutoreleasePoolAnnotation(Types.getBinding(fragment));
+      }
+    }
+    next.accept(this);
+    if (it.hasNext()) {
+      buffer.append(", ");
+    }
+  }
+  buffer.append("; ");
+  if (node.getExpression() != null) {
+    node.getExpression().accept(this);
+  }
+  buffer.append("; ");
+  for (Iterator<Expression> it=node.updaters().iterator(); it.hasNext(); ) {
+    it.next().accept(this);
+    if (it.hasNext()) {
+      buffer.append(", ");
+    }
+  }
+  buffer.append(") ");
+  if (emitAutoreleasePool) {
+    buffer.append("{\nNSAutoreleasePool *pool__ = [[NSAutoreleasePool alloc] init];\n");
+  }
+  node.getBody().accept(this);
+  if (emitAutoreleasePool) {
+    buffer.append("[pool__ release];\n}\n");
+  }
+  return false;
+}

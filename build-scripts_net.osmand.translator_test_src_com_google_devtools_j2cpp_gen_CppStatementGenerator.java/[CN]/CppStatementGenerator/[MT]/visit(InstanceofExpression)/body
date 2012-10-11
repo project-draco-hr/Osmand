@@ -1,0 +1,29 @@
+{
+  ITypeBinding leftBinding=Types.getTypeBinding(node.getLeftOperand());
+  ITypeBinding rightBinding=Types.getTypeBinding(node.getRightOperand());
+  if (rightBinding.isArray()) {
+    buffer.append("[[(IOSArray *) ");
+    node.getLeftOperand().accept(this);
+    buffer.append(" elementType] isEqual:[");
+    buffer.append(NameTable.getFullName(rightBinding.getElementType()));
+    buffer.append(" class]]");
+    return false;
+  }
+  buffer.append('[');
+  if (leftBinding.isInterface()) {
+    buffer.append("(id) ");
+  }
+  node.getLeftOperand().accept(this);
+  if (rightBinding.isInterface()) {
+    buffer.append(" conformsToProtocol: @protocol(");
+    node.getRightOperand().accept(this);
+    buffer.append(")");
+  }
+ else {
+    buffer.append(" isKindOfClass:[");
+    node.getRightOperand().accept(this);
+    buffer.append(" class]");
+  }
+  buffer.append(']');
+  return false;
+}

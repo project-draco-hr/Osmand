@@ -1,0 +1,28 @@
+{
+  IVariableBinding sym=Types.getVariableBinding(e);
+  if (sym != null && !sym.getName().startsWith("this$") && !hasNilCheckParent(e,sym)) {
+    ITypeBinding symType=Types.mapType(sym.getType());
+    if (needsCast && (Types.getNSObject().isEqualTo(symType) || Types.getIOSClass().isEqualTo(symType) || Types.getNSString().isEqualTo(symType))) {
+      needsCast=false;
+    }
+    if (nilCheckDepth == 0) {
+      if (needsCast) {
+        needsCast=printCast(symType);
+      }
+      buffer.append("NIL_CHK(");
+    }
+    ++nilCheckDepth;
+    e.accept(this);
+    if (--nilCheckDepth == 0) {
+      if (needsCast) {
+        buffer.append("))");
+      }
+ else {
+        buffer.append(')');
+      }
+    }
+  }
+ else {
+    e.accept(this);
+  }
+}

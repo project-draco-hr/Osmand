@@ -1,0 +1,38 @@
+{
+  buffer.append("return");
+  Expression expr=node.getExpression();
+  if (expr != null) {
+    buffer.append(' ');
+    boolean needsCast=false;
+    ITypeBinding expressionType=Types.getTypeBinding(expr);
+    IBinding binding=Types.getBinding(expr);
+    if (expr instanceof SuperMethodInvocation) {
+      needsCast=true;
+    }
+ else     if (expressionType.isParameterizedType()) {
+      if (binding instanceof IVariableBinding && ((IVariableBinding)binding).isField()) {
+        IVariableBinding var=(IVariableBinding)binding;
+        ITypeBinding remoteC=var.getDeclaringClass();
+        ITypeBinding localC=Types.getMethodBinding(getOwningMethod(node)).getDeclaringClass();
+        needsCast=!localC.isEqualTo(remoteC) && var.getVariableDeclaration().getType().isTypeVariable();
+      }
+ else       if (binding instanceof IMethodBinding) {
+        IMethodBinding method=(IMethodBinding)binding;
+        ITypeBinding remoteC=method.getDeclaringClass();
+        ITypeBinding localC=Types.getMethodBinding(getOwningMethod(node)).getDeclaringClass();
+        needsCast=!localC.isEqualTo(remoteC) && method.getMethodDeclaration().getReturnType().isTypeVariable();
+      }
+    }
+    if (needsCast) {
+      buffer.append('(');
+      buffer.append(NameTableCpp.javaRefToCpp(expressionType));
+      buffer.append(") ");
+    }
+    expr.accept(this);
+  }
+ else   if (Types.getMethodBinding(getOwningMethod(node)).isConstructor()) {
+    buffer.append(" self");
+  }
+  buffer.append(";\n");
+  return false;
+}

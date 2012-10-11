@@ -1,0 +1,17 @@
+{
+  if (type instanceof PrimitiveType) {
+    return primitiveTypeToCpp((PrimitiveType)type);
+  }
+  if (type instanceof ParameterizedType) {
+    type=((ParameterizedType)type).getType();
+  }
+  if (type instanceof ArrayType) {
+    ITypeBinding arrayBinding=Types.getTypeBinding(type);
+    if (arrayBinding != null) {
+      ITypeBinding elementType=arrayBinding.getElementType();
+      return Types.resolveArrayType(elementType).getName();
+    }
+  }
+  ITypeBinding binding=Types.getTypeBinding(type);
+  return javaTypeToCpp(binding,includeInterfaces);
+}

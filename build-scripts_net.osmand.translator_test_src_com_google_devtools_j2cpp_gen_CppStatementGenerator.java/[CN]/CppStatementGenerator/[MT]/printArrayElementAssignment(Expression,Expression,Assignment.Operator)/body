@@ -1,0 +1,50 @@
+{
+  ArrayAccess aa=(ArrayAccess)lhs;
+  String kind=getArrayAccessKind(aa);
+  buffer.append('[');
+  if (aa.getArray() instanceof ArrayAccess) {
+    buffer.append(String.format("(IOS%sArray *) ",kind));
+  }
+  printNilCheck(aa.getArray(),true);
+  buffer.append(" replace");
+  buffer.append(kind);
+  buffer.append("AtIndex:");
+  aa.getIndex().accept(this);
+  buffer.append(" with");
+  buffer.append(kind);
+  buffer.append(':');
+  if (op == Operator.ASSIGN) {
+    rhs.accept(this);
+  }
+ else {
+    String type=kind.toLowerCase();
+    if (op == Operator.RIGHT_SHIFT_UNSIGNED_ASSIGN) {
+      buffer.append("(");
+      buffer.append(type);
+      buffer.append(") (((unsigned ");
+      buffer.append(type);
+      buffer.append(") ");
+    }
+    buffer.append('[');
+    aa.getArray().accept(this);
+    buffer.append(' ');
+    buffer.append(type);
+    buffer.append("AtIndex:");
+    aa.getIndex().accept(this);
+    buffer.append(']');
+    if (op == Operator.RIGHT_SHIFT_UNSIGNED_ASSIGN) {
+      buffer.append(") >>");
+    }
+ else {
+      buffer.append(' ');
+      String s=op.toString();
+      buffer.append(s.substring(0,s.length() - 1));
+    }
+    buffer.append(' ');
+    rhs.accept(this);
+    if (op == Operator.RIGHT_SHIFT_UNSIGNED_ASSIGN) {
+      buffer.append(')');
+    }
+  }
+  buffer.append(']');
+}
