@@ -79,6 +79,10 @@
   while (!graphSegments.isEmpty()) {
     RouteSegment segment=graphSegments.poll();
     ctx.memoryOverhead=(visitedDirectSegments.size() + visitedOppositeSegments.size()) * STANDARD_ROAD_VISITED_OVERHEAD + (graphDirectSegments.size() + graphReverseSegments.size()) * STANDARD_ROAD_IN_QUEUE_OVERHEAD;
+    if (TRACE_ROUTING) {
+      System.out.print(">");
+      printRoad(segment);
+    }
     if (segment instanceof FinalRouteSegment) {
       if (RoutingContext.SHOW_GC_SIZE) {
         log.warn("Estimated overhead " + (ctx.memoryOverhead / (1 << 20)) + " mb");
@@ -94,14 +98,13 @@
       throw new IllegalStateException("There is no enough memory " + ctx.config.memoryLimitation / (1 << 20) + " Mb");
     }
     ctx.visitedSegments++;
-    if (ctx.visitor != null) {
-      ctx.visitor.visitSegment(segment,true);
-    }
     if (!inverse) {
-      processRouteSegment(ctx,false,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments);
+      processRouteSegment(ctx,false,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments,true);
+      processRouteSegment(ctx,false,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments,false);
     }
  else {
-      processRouteSegment(ctx,true,graphReverseSegments,visitedOppositeSegments,startX,startY,segment,visitedDirectSegments);
+      processRouteSegment(ctx,true,graphReverseSegments,visitedOppositeSegments,startX,startY,segment,visitedDirectSegments,true);
+      processRouteSegment(ctx,true,graphReverseSegments,visitedOppositeSegments,startX,startY,segment,visitedDirectSegments,false);
     }
     if (graphReverseSegments.isEmpty()) {
       throw new IllegalArgumentException("Route is not found to selected target point.");

@@ -4,6 +4,9 @@
   Iterator<RouteSegment> nextIterator=null;
   if (thereAreRestrictions) {
     nextIterator=ctx.segmentsToVisitPrescripted.iterator();
+    if (TRACE_ROUTING) {
+      System.out.println("  >> There are restrictions");
+    }
   }
   RouteSegment next=inputNext;
   boolean hasNext=nextIterator == null || nextIterator.hasNext();
@@ -33,12 +36,15 @@
         if (sameRoadFutureDirection) {
           next.setAllowedDirection((byte)(segment.getSegmentStart() < next.getSegmentStart() ? 1 : -1));
         }
+        if (TRACE_ROUTING) {
+          System.out.print("  >>");
+          printRoad(next);
+        }
         next.setParentRoute(segment);
         next.setParentSegmentEnd(segmentEnd);
         graphSegments.add(next);
       }
       if (ctx.visitor != null) {
-        ctx.visitor.visitSegment(next,false);
       }
     }
  else     if (!sameRoadFutureDirection) {
@@ -50,7 +56,6 @@
         next.setParentRoute(segment);
         next.setParentSegmentEnd(segmentEnd);
         if (ctx.visitor != null) {
-          ctx.visitor.visitSegment(next,false);
         }
       }
     }

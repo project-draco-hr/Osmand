@@ -1,0 +1,40 @@
+{
+  boolean directionAllowed;
+  final int middle=segment.getSegmentStart();
+  int oneway=ctx.getRouter().isOneWay(road);
+  if (ctx.firstRoadId == calculateRoutePointId(road,middle,true)) {
+    if (direction) {
+      directionAllowed=ctx.firstRoadDirection >= 0;
+    }
+ else {
+      directionAllowed=ctx.firstRoadDirection <= 0;
+    }
+  }
+ else   if (!reverseWaySearch) {
+    if (direction) {
+      directionAllowed=oneway >= 0;
+    }
+ else {
+      directionAllowed=oneway <= 0;
+    }
+  }
+ else {
+    if (direction) {
+      directionAllowed=oneway <= 0;
+    }
+ else {
+      directionAllowed=oneway >= 0;
+    }
+  }
+  if (direction) {
+    if (middle == road.getPointsLength() - 1 || visitedSegments.containsKey(calculateRoutePointId(road,middle,true)) || segment.getAllowedDirection() == -1) {
+      directionAllowed=false;
+    }
+  }
+ else {
+    if (middle == 0 || visitedSegments.containsKey(calculateRoutePointId(road,middle - 1,false)) || segment.getAllowedDirection() == 1) {
+      directionAllowed=false;
+    }
+  }
+  return directionAllowed;
+}
