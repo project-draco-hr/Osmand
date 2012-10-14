@@ -1,0 +1,48 @@
+{
+  float completeTime=0;
+  float completeDistance=0;
+  for (  RouteSegmentResult r : result) {
+    completeTime+=r.getSegmentTime();
+    completeDistance+=r.getDistance();
+  }
+  println("ROUTE : ");
+  double startLat=MapUtils.get31LatitudeY(start.road.getPoint31YTile(start.getSegmentStart()));
+  double startLon=MapUtils.get31LongitudeX(start.road.getPoint31XTile(start.getSegmentStart()));
+  double endLat=MapUtils.get31LatitudeY(end.road.getPoint31YTile(end.getSegmentStart()));
+  double endLon=MapUtils.get31LongitudeX(end.road.getPoint31XTile(end.getSegmentStart()));
+  StringBuilder add=new StringBuilder();
+  add.append("loadedTiles = \"").append(ctx.loadedTiles).append("\" ");
+  add.append("visitedSegments = \"").append(ctx.visitedSegments).append("\" ");
+  add.append("complete_distance = \"").append(completeDistance).append("\" ");
+  add.append("complete_time = \"").append(completeTime).append("\" ");
+  add.append("routing_time = \"").append(ctx.routingTime).append("\" ");
+  println(MessageFormat.format("<test regions=\"\" description=\"\" best_percent=\"\" vehicle=\"{4}\" \n" + "    start_lat=\"{0}\" start_lon=\"{1}\" target_lat=\"{2}\" target_lon=\"{3}\" {5} >",startLat + "",startLon + "",endLat + "",endLon + "",ctx.config.routerName,add.toString()));
+  if (PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST) {
+    for (    RouteSegmentResult res : result) {
+      String name=res.getObject().getName();
+      String ref=res.getObject().getRef();
+      if (name == null) {
+        name="";
+      }
+      if (ref != null) {
+        name+=" (" + ref + ") ";
+      }
+      StringBuilder additional=new StringBuilder();
+      additional.append("time = \"").append(res.getSegmentTime()).append("\" ");
+      additional.append("name = \"").append(name).append("\" ");
+      additional.append("distance = \"").append(res.getDistance()).append("\" ");
+      if (res.getTurnType() != null) {
+        additional.append("turn = \"").append(res.getTurnType()).append("\" ");
+        additional.append("turn_angle = \"").append(res.getTurnType().getTurnAngle()).append("\" ");
+        if (res.getTurnType().getLanes() != null) {
+          additional.append("lanes = \"").append(Arrays.toString(res.getTurnType().getLanes())).append("\" ");
+        }
+      }
+      additional.append("start_bearing = \"").append(res.getBearingBegin()).append("\" ");
+      additional.append("end_bearing = \"").append(res.getBearingEnd()).append("\" ");
+      additional.append("description = \"").append(res.getDescription()).append("\" ");
+      println(MessageFormat.format("\t<segment id=\"{0}\" start=\"{1}\" end=\"{2}\" {3}/>",(res.getObject().getId()) + "",res.getStartPointIndex() + "",res.getEndPointIndex() + "",additional.toString()));
+    }
+  }
+  println("</test>");
+}
