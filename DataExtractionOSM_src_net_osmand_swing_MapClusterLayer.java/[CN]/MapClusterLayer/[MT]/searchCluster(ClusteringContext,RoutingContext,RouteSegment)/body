@@ -1,0 +1,34 @@
+{
+  Queue<RouteSegment> queue=new LinkedList<RouteSegment>();
+  List<RouteSegment> result=new ArrayList<BinaryRoutePlanner.RouteSegment>();
+  TLongHashSet visitedIds=new TLongHashSet();
+  queue.add(st);
+  RouteDataObject startRoad=st.getRoad();
+  int tileX=startRoad.getPoint31XTile(st.getSegmentStart()) >> cCtx.zm;
+  int tileY=startRoad.getPoint31YTile(st.getSegmentStart()) >> cCtx.zm;
+  while (!queue.isEmpty()) {
+    RouteSegment segment=queue.poll();
+    if (visitedIds.contains(calculateId(segment))) {
+      continue;
+    }
+    visitedIds.add(calculateId(segment));
+    if (ctx.getVisitor() != null) {
+      ctx.getVisitor().visitSegment(segment,-1,true);
+    }
+    cCtx.roadProcessed++;
+    if (cCtx.roadProcessed > 50) {
+      float ratio=(float)(queue.size() + cCtx.outOfTile + cCtx.outOfDistance) / cCtx.roadProcessed;
+      if (ratio < cCtx.minRatio) {
+        cCtx.minRatio=ratio;
+        cCtx.roadMinProcessed=cCtx.roadProcessed;
+      }
+    }
+    processSegment(cCtx,ctx,segment,queue,result,tileX,tileY,true);
+    processSegment(cCtx,ctx,segment,queue,result,tileX,tileY,false);
+  }
+  log.info("Current ratio " + ((float)(queue.size() + cCtx.outOfTile + cCtx.outOfDistance) / cCtx.roadProcessed) + " min ratio "+ cCtx.minRatio+ " min segments procesed "+ cCtx.roadMinProcessed);
+  String res="Processed " + cCtx.roadProcessed + " / "+ cCtx.segmentsProcessed+ " and borders are "+ cCtx.outOfTile+ " out because of distance "+ cCtx.outOfDistance;
+  log.info(res);
+  System.out.println(res);
+  return result;
+}

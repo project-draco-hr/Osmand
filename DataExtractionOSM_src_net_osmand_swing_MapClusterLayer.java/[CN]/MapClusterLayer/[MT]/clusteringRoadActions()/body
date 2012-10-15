@@ -4,26 +4,24 @@
   double fx=(popupMenuPoint.x - map.getCenterPointX()) / map.getTileSize();
   final double latitude=MapUtils.getLatitudeFromTile(map.getZoom(),map.getYTile() + fy);
   final double longitude=MapUtils.getLongitudeFromTile(map.getZoom(),map.getXTile() + fx);
+  final ClusteringContext clusterCtx=new ClusteringContext();
   new Thread(new Runnable(){
     @Override public void run(){
       try {
-        List<RouteSegment> ways=clustering(latitude,longitude);
-        if (!ANIMATE_CLUSTERING) {
-          DataTileManager<Way> points=new DataTileManager<Way>();
-          points.setZoom(11);
-          for (          RouteSegment s : ways) {
-            Way w=new Way(-1);
-            for (int i=0; i < s.getRoad().getPointsLength(); i++) {
-              double lat=MapUtils.get31LatitudeY(s.getRoad().getPoint31YTile(i));
-              double lon=MapUtils.get31LongitudeX(s.getRoad().getPoint31XTile(i));
-              w.addNode(new Node(lat,lon,-1));
-            }
-            LatLon n=w.getLatLon();
-            points.registerObject(n.getLatitude(),n.getLongitude(),w);
+        final DataTileManager<Way> points=new DataTileManager<Way>(11);
+        List<RouteSegment> ways=clustering(clusterCtx,latitude,longitude,points);
+        for (        RouteSegment s : ways) {
+          Way w=new Way(-1);
+          for (int i=0; i < s.getRoad().getPointsLength(); i++) {
+            double lat=MapUtils.get31LatitudeY(s.getRoad().getPoint31YTile(i));
+            double lon=MapUtils.get31LongitudeX(s.getRoad().getPoint31XTile(i));
+            w.addNode(new Node(lat,lon,-1));
           }
-          map.setPoints(points);
-          map.repaint();
+          LatLon n=w.getLatLon();
+          points.registerObject(n.getLatitude(),n.getLongitude(),w);
         }
+        map.setPoints(points);
+        map.repaint();
       }
  catch (      IOException e) {
         e.printStackTrace();
