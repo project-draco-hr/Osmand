@@ -12,10 +12,16 @@
         List<RouteSegment> ways=clustering(clusterCtx,latitude,longitude,points);
         for (        RouteSegment s : ways) {
           Way w=new Way(-1);
-          for (int i=0; i < s.getRoad().getPointsLength(); i++) {
-            double lat=MapUtils.get31LatitudeY(s.getRoad().getPoint31YTile(i));
-            double lon=MapUtils.get31LongitudeX(s.getRoad().getPoint31XTile(i));
-            w.addNode(new Node(lat,lon,-1));
+          int st=s.getSegmentStart();
+          int end=s.getParentSegmentEnd();
+          if (st > end) {
+            int t=st;
+            st=end;
+            end=t;
+          }
+          for (int i=st; i <= end; i++) {
+            net.osmand.osm.Node n=new net.osmand.osm.Node(MapUtils.get31LatitudeY(s.getRoad().getPoint31YTile(i)),MapUtils.get31LongitudeX(s.getRoad().getPoint31XTile(i)),-1);
+            w.addNode(n);
           }
           LatLon n=w.getLatLon();
           points.registerObject(n.getLatitude(),n.getLongitude(),w);
