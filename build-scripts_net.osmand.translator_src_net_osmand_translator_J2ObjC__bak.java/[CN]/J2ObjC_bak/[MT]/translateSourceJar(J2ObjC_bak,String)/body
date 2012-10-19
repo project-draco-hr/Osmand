@@ -1,0 +1,24 @@
+{
+  File f=new File(jarPath);
+  if (f.exists() && f.isFile()) {
+    ZipFile zfile=new ZipFile(f);
+    try {
+      Enumeration<? extends ZipEntry> enumerator=zfile.entries();
+      while (enumerator.hasMoreElements()) {
+        ZipEntry entry=enumerator.nextElement();
+        String path=entry.getName();
+        if (path.endsWith(".java")) {
+          printInfo("translating " + path);
+          compiler.translate(path);
+          nFiles++;
+        }
+      }
+    }
+ catch (    ZipException e) {
+      return;
+    }
+ finally {
+      zfile.close();
+    }
+  }
+}

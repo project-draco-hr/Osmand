@@ -1,0 +1,17 @@
+{
+  ITypeBinding binding=node.resolveBinding();
+  List<BodyDeclaration> body=node.bodyDeclarations();
+  eliminateDeadCode(node.resolveBinding(),node.bodyDeclarations());
+  if (!node.isInterface() && !Modifier.isAbstract(node.getModifiers())) {
+    generateMissingMethods(node.getAST(),binding,body);
+  }
+  ITypeBinding clazz=node.resolveBinding();
+  ITypeBinding superClass=clazz.getSuperclass();
+  if (!clazz.isInterface() && !clazz.isAnonymous() && superClass != null && !getConstructors(clazz).hasNext()) {
+    Iterator<IMethodBinding> superConstructors=getVisible(getConstructors(superClass));
+    if (superConstructors.hasNext() && !getWithArity(0,superConstructors).hasNext()) {
+      generateConstructor(node);
+    }
+  }
+  finishElimination();
+}

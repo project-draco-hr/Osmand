@@ -1,0 +1,21 @@
+{
+  if (Types.isJavaStringType(Types.getTypeBinding(node))) {
+    boolean needsImport=false;
+    if (Types.isBooleanType(Types.getTypeBinding(node.getLeftOperand())) || Types.isBooleanType(Types.getTypeBinding(node.getRightOperand()))) {
+      needsImport=true;
+    }
+ else {
+      @SuppressWarnings("unchecked") List<Expression> extendedExpressions=node.extendedOperands();
+      for (      Expression extendedExpression : extendedExpressions) {
+        if (Types.isBooleanType(Types.getTypeBinding(extendedExpression))) {
+          needsImport=true;
+          break;
+        }
+      }
+    }
+    if (needsImport) {
+      addReference(node.getAST().resolveWellKnownType("java.lang.Boolean"));
+    }
+  }
+  return super.visit(node);
+}

@@ -1,0 +1,18 @@
+{
+  if (binding == null) {
+    return null;
+  }
+  binding=binding.getMethodDeclaration();
+  MethodSymbol symbol=(MethodSymbol)instance.symbolTable.get(binding);
+  if (symbol == null) {
+    TypeSymbol declaringType=resolve(binding.getDeclaringClass());
+    if (declaringType != null) {
+      symbol=new MethodSymbol(method,binding,declaringType.getScope());
+    }
+    instance.symbolTable.put(binding,symbol);
+  }
+  if (method != null) {
+    scanAST(method);
+  }
+  return symbol;
+}

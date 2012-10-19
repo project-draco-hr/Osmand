@@ -1,0 +1,43 @@
+{
+  long startTime=System.currentTimeMillis();
+  int beginningErrorLevel=getCurrentErrorLevel();
+  logger.finest("reading " + filename);
+  currentFileName=filename;
+  String source=getSource(filename);
+  if (source == null) {
+    error("no such file: " + filename);
+    return;
+  }
+  long readTime=System.currentTimeMillis();
+  currentUnit=parse(filename,source);
+  long compileTime=System.currentTimeMillis();
+  if (getCurrentErrorLevel() > beginningErrorLevel) {
+    return;
+  }
+  logger.finest("translating " + filename);
+  long translateTime=0L;
+  initializeTranslation(currentUnit);
+  try {
+    String newSource=translate(currentUnit,source);
+    translateTime=System.currentTimeMillis();
+    if (currentUnit.types().isEmpty()) {
+      logger.finest("skipping dead file " + filename);
+    }
+ else {
+      if (Options.printConvertedSources()) {
+        saveConvertedSource(filename,newSource);
+      }
+      logger.finest("writing output file(s) to " + Options.getOutputDirectory().getAbsolutePath());
+      CppHeaderGenerator.generate(filename,source,currentUnit);
+      CppImplementationGenerator.generate(filename,currentUnit,source);
+    }
+  }
+ catch (  ASTNodeException e) {
+    error(e);
+  }
+ finally {
+    cleanup();
+  }
+  long endTime=System.currentTimeMillis();
+  printTimingInfo(readTime - startTime,compileTime - readTime,translateTime - compileTime,endTime - translateTime,endTime - startTime);
+}

@@ -1,0 +1,15 @@
+{
+  IMethodBinding binding=Types.getMethodBinding(node);
+  String name=binding.getName();
+  renameReservedNames(name,binding);
+  @SuppressWarnings("unchecked") List<SingleVariableDeclaration> params=node.parameters();
+  for (int i=0; i < params.size(); i++) {
+    SingleVariableDeclaration param=params.get(i);
+    name=param.getName().getIdentifier();
+    if (typeQualifierKeywords.contains(name)) {
+      IVariableBinding varBinding=param.resolveBinding();
+      NameTable.rename(varBinding,name + "Arg");
+    }
+  }
+  return true;
+}

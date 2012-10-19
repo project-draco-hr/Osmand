@@ -1,0 +1,20 @@
+{
+  FieldDeclaration field=(FieldDeclaration)member;
+  @SuppressWarnings("unchecked") List<VariableDeclarationFragment> fragments=field.fragments();
+  for (  VariableDeclarationFragment frag : fragments) {
+    if (frag.getInitializer() != null) {
+      Statement assignStmt=makeAssignmentStatement(frag);
+      if (Modifier.isStatic(field.getModifiers())) {
+        IVariableBinding binding=Types.getVariableBinding(frag);
+        if (binding.getConstantValue() == null) {
+          classInitStatements.add(assignStmt);
+          frag.setInitializer(null);
+        }
+      }
+ else {
+        initStatements.add(assignStmt);
+        frag.setInitializer(null);
+      }
+    }
+  }
+}

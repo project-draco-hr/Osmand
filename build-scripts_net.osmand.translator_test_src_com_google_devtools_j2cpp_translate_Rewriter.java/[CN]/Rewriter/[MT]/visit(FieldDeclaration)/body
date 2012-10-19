@@ -1,0 +1,48 @@
+{
+  int mods=node.getModifiers();
+  if (Modifier.isStatic(mods)) {
+    ASTNode parent=node.getParent();
+    @SuppressWarnings("unchecked") List<BodyDeclaration> classMembers=parent instanceof AbstractTypeDeclaration ? ((AbstractTypeDeclaration)parent).bodyDeclarations() : ((AnonymousClassDeclaration)parent).bodyDeclarations();
+    int indexOfNewMember=classMembers.indexOf(node) + 1;
+    @SuppressWarnings("unchecked") List<VariableDeclarationFragment> fragments=node.fragments();
+    for (    VariableDeclarationFragment var : fragments) {
+      IVariableBinding binding=Types.getVariableBinding(var);
+      if (Types.isPrimitiveConstant(binding) && Modifier.isPrivate(binding.getModifiers())) {
+        continue;
+      }
+      SimpleName oldName=var.getName();
+      ITypeBinding type=((AbstractTypeDeclaration)node.getParent()).resolveBinding();
+      String varName=NameTable.getStaticVarQualifiedName(type,oldName.getIdentifier());
+      NameTable.rename(binding,varName);
+      ITypeBinding typeBinding=binding.getType();
+      var.setExtraDimensions(0);
+      if (needsReader(var,classMembers)) {
+        classMembers.add(indexOfNewMember++,makeStaticReader(var,mods));
+      }
+      if (!Modifier.isFinal(node.getModifiers()) && needsWriter(var,classMembers)) {
+        classMembers.add(indexOfNewMember++,makeStaticWriter(var,oldName.getIdentifier(),node.getType(),mods));
+      }
+      Expression initializer=var.getInitializer();
+      if (initializer != null && initializer.resolveConstantExpressionValue() == null) {
+        var.setInitializer(null);
+        AST ast=var.getAST();
+        SimpleName newName=ast.newSimpleName(varName);
+        Types.addBinding(newName,binding);
+        Assignment assign=ast.newAssignment();
+        assign.setLeftHandSide(newName);
+        Expression newInit=NodeCopier.copySubtree(ast,initializer);
+        assign.setRightHandSide(newInit);
+        Types.addBinding(assign,typeBinding);
+        Block initBlock=ast.newBlock();
+        @SuppressWarnings("unchecked") List<Statement> stmts=initBlock.statements();
+        stmts.add(ast.newExpressionStatement(assign));
+        Initializer staticInitializer=ast.newInitializer();
+        staticInitializer.setBody(initBlock);
+        @SuppressWarnings("unchecked") List<IExtendedModifier> initMods=staticInitializer.modifiers();
+        initMods.add(ast.newModifier(ModifierKeyword.STATIC_KEYWORD));
+        classMembers.add(indexOfNewMember++,staticInitializer);
+      }
+    }
+  }
+  return true;
+}

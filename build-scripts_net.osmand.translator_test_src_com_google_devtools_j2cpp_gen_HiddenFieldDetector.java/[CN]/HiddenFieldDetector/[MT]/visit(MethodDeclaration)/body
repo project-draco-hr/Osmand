@@ -1,0 +1,17 @@
+{
+  IMethodBinding binding=node.resolveBinding();
+  if (binding != null) {
+    Set<String> fieldNames=fieldNameMap.get(binding.getDeclaringClass().getBinaryName());
+    if (fieldNames == null) {
+      fieldNames=NO_FIELDS;
+    }
+    @SuppressWarnings("unchecked") List<SingleVariableDeclaration> parameters=node.parameters();
+    for (    SingleVariableDeclaration param : parameters) {
+      IVariableBinding varBinding=param.resolveBinding();
+      if (varBinding != null && fieldNames.contains(varBinding.getName())) {
+        fieldNameConflicts.add(varBinding);
+      }
+    }
+  }
+  return super.visit(node);
+}

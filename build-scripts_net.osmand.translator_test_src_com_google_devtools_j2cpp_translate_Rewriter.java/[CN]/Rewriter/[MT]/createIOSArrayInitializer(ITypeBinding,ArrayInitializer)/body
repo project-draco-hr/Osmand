@@ -1,0 +1,53 @@
+{
+  AST ast=arrayInit.getAST();
+  int dimensions=arrayType.getDimensions();
+  ITypeBinding componentType;
+  IOSArrayTypeBinding iosArrayBinding;
+  if (dimensions > 2) {
+    componentType=iosArrayBinding=Types.resolveArrayType(arrayType);
+  }
+ else   if (dimensions == 2) {
+    componentType=Types.resolveArrayType(arrayType.getElementType());
+    iosArrayBinding=Types.resolveArrayType(componentType);
+  }
+ else {
+    componentType=Types.getTypeBinding(arrayInit).getComponentType();
+    iosArrayBinding=Types.resolveArrayType(componentType);
+  }
+  MethodInvocation message=ast.newMethodInvocation();
+  SimpleName receiver=ast.newSimpleName(iosArrayBinding.getName());
+  Types.addBinding(receiver,iosArrayBinding);
+  message.setExpression(receiver);
+  String methodName=iosArrayBinding.getInitMethod();
+  SimpleName messageName=ast.newSimpleName(methodName);
+  GeneratedMethodBinding methodBinding=new GeneratedMethodBinding(methodName,Modifier.PUBLIC | Modifier.STATIC,iosArrayBinding,iosArrayBinding,false,false,true);
+  Types.addBinding(messageName,methodBinding);
+  message.setName(messageName);
+  Types.addBinding(message,methodBinding);
+  @SuppressWarnings("unchecked") List<Expression> args=message.arguments();
+  ArrayInitializer newArrayInit=NodeCopier.copySubtree(ast,arrayInit);
+  @SuppressWarnings("unchecked") List<Expression> exprs=newArrayInit.expressions();
+  for (int i=0; i < exprs.size(); i++) {
+    Expression expr=exprs.get(i);
+    if (expr instanceof ArrayInitializer) {
+      exprs.set(i,createIOSArrayInitializer(componentType,(ArrayInitializer)expr));
+    }
+  }
+  args.add(newArrayInit);
+  GeneratedVariableBinding argBinding=new GeneratedVariableBinding(arrayType,false,true,null,methodBinding);
+  methodBinding.addParameter(argBinding);
+  NumberLiteral arraySize=ast.newNumberLiteral(Integer.toString(arrayInit.expressions().size()));
+  Types.addBinding(arraySize,ast.resolveWellKnownType("int"));
+  args.add(arraySize);
+  argBinding=new GeneratedVariableBinding(ast.resolveWellKnownType("int"),false,true,null,methodBinding);
+  methodBinding.addParameter(argBinding);
+  if (iosArrayBinding.getName().equals("IOSObjectArray")) {
+    TypeLiteral typeLiteral=ast.newTypeLiteral();
+    typeLiteral.setType(Types.makeType(componentType));
+    Types.addBinding(typeLiteral,Types.getIOSClass());
+    args.add(typeLiteral);
+    argBinding=new GeneratedVariableBinding("type",0,Types.getIOSClass(),false,true,null,methodBinding);
+    methodBinding.addParameter(argBinding);
+  }
+  return message;
+}

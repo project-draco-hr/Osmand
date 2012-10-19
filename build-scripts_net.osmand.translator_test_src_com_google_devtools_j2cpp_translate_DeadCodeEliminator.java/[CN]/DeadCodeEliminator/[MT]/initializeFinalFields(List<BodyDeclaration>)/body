@@ -1,0 +1,28 @@
+{
+  Set<VariableDeclarationFragment> finalVars=Sets.newHashSet();
+  for (  BodyDeclaration declaration : body) {
+    if (declaration instanceof MethodDeclaration) {
+      MethodDeclaration method=(MethodDeclaration)declaration;
+      if (!generatedMethods.contains(method) && method.isConstructor()) {
+        return;
+      }
+    }
+    if (declaration instanceof FieldDeclaration) {
+      FieldDeclaration field=(FieldDeclaration)declaration;
+      int modifiers=field.getModifiers();
+      if (!Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
+        @SuppressWarnings("unchecked") List<VariableDeclarationFragment> fragments=field.fragments();
+        for (        VariableDeclarationFragment fragment : fragments) {
+          if (fragment.getInitializer() == null) {
+            finalVars.add(fragment);
+          }
+        }
+      }
+    }
+  }
+  for (  VariableDeclarationFragment var : finalVars) {
+    if (var.getInitializer() == null) {
+      addFieldInitializer(var);
+    }
+  }
+}

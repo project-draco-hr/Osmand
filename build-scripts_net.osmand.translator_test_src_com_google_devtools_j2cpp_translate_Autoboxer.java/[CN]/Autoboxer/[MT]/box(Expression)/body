@@ -1,0 +1,21 @@
+{
+  ITypeBinding binding=getBoxType(expr);
+  ITypeBinding wrapperBinding=Types.getWrapperType(binding);
+  if (wrapperBinding != null) {
+    MethodInvocation invocation=ast.newMethodInvocation();
+    SimpleName wrapperClass=ast.newSimpleName(wrapperBinding.getName());
+    Types.addBinding(wrapperClass,wrapperBinding);
+    invocation.setExpression(wrapperClass);
+    IMethodBinding wrapperMethod=getWrapperMethod(wrapperBinding,binding);
+    SimpleName methodName=ast.newSimpleName(VALUEOF_METHOD);
+    Types.addBinding(methodName,wrapperMethod);
+    invocation.setName(methodName);
+    Types.addBinding(invocation,wrapperMethod);
+    @SuppressWarnings("unchecked") List<Expression> args=invocation.arguments();
+    args.add(NodeCopier.copySubtree(ast,expr));
+    return invocation;
+  }
+ else {
+    return NodeCopier.copySubtree(ast,expr);
+  }
+}

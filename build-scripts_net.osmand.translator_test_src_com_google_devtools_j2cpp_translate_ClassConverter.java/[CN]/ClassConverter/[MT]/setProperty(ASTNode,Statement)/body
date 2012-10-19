@@ -1,0 +1,21 @@
+{
+  ASTNode parent=node.getParent();
+  StructuralPropertyDescriptor locator=node.getLocationInParent();
+  if (locator instanceof ChildPropertyDescriptor) {
+    parent.setStructuralProperty(locator,stmt);
+  }
+ else {
+    List<Statement> args;
+    if (parent instanceof Block) {
+      args=((Block)parent).statements();
+    }
+ else {
+      throw new AssertionError("unknown parent node type: " + parent.getClass().getSimpleName());
+    }
+    for (int i=0; i < args.size(); i++) {
+      if (node.equals(args.get(i))) {
+        args.set(i,stmt);
+      }
+    }
+  }
+}

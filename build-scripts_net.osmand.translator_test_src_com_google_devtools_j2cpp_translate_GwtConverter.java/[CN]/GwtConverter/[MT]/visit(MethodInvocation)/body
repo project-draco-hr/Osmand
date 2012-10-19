@@ -1,0 +1,19 @@
+{
+  IMethodBinding method=Types.getMethodBinding(node);
+  @SuppressWarnings("unchecked") List<Expression> args=node.arguments();
+  if (method.getName().equals("create") && method.getDeclaringClass().getQualifiedName().equals(GWT_CLASS) && args.size() == 1) {
+    AST ast=node.getAST();
+    SimpleName name=ast.newSimpleName("newInstance");
+    node.setName(name);
+    Expression clazz=NodeCopier.copySubtree(ast,args.get(0));
+    args.remove(0);
+    node.setExpression(clazz);
+    GeneratedMethodBinding newBinding=new GeneratedMethodBinding("newInstance",0,ast.resolveWellKnownType("java.lang.Object"),ast.resolveWellKnownType("java.lang.Class"),false,false,false);
+    Types.addBinding(name,newBinding);
+    Types.addBinding(node,newBinding);
+  }
+ else   if (isGwtTest(node)) {
+    J2ObjC.error(node,"GWT.isScript() detected in boolean expression, which is not supported");
+  }
+  return true;
+}

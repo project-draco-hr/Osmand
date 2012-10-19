@@ -1,0 +1,34 @@
+{
+  Type newType;
+  if (type.isArray()) {
+    newType=ast.newArrayType(createType(ast,scope,type.getElementType()),type.getDimensions());
+  }
+ else   if (type.isPrimitive()) {
+    newType=ast.newPrimitiveType(PrimitiveType.toCode(type.getName()));
+  }
+ else   if (type.isWildcardType()) {
+    WildcardType wildType=ast.newWildcardType();
+    ITypeBinding bound=type.getBound();
+    if (bound != null) {
+      wildType.setBound(createType(ast,scope,bound),type.isUpperbound());
+    }
+    newType=wildType;
+  }
+ else   if (!type.isParameterizedType()) {
+    String name=inScope(type,scope) ? type.getName() : type.getQualifiedName();
+    newType=ast.newSimpleType(ast.newName(name));
+  }
+ else {
+    ITypeBinding erasure=type.getErasure();
+    String name=inScope(type,scope) ? erasure.getName() : erasure.getQualifiedName();
+    Type rawType=ast.newSimpleType(ast.newName(name));
+    ParameterizedType paramType=ast.newParameterizedType(rawType);
+    ITypeBinding[] typeArgs=type.getTypeArguments();
+    for (    ITypeBinding param : typeArgs) {
+      paramType.typeArguments().add(createType(ast,scope,param));
+    }
+    newType=paramType;
+  }
+  generatedTypes.put(newType,type);
+  return newType;
+}

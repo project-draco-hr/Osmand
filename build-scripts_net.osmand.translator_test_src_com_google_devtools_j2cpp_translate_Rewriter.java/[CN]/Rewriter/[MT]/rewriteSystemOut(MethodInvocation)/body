@@ -1,0 +1,64 @@
+{
+  Expression expression=node.getExpression();
+  if (expression instanceof Name) {
+    Name expr=(Name)node.getExpression();
+    IBinding binding=expr.resolveBinding();
+    if (binding instanceof IVariableBinding) {
+      IVariableBinding varBinding=(IVariableBinding)binding;
+      ITypeBinding type=varBinding.getDeclaringClass();
+      if (type == null) {
+        return false;
+      }
+      String clsName=type.getQualifiedName();
+      String varName=varBinding.getName();
+      if (clsName.equals("java.lang.System") && (varName.equals("out") || varName.equals("err"))) {
+        AST ast=node.getAST();
+        MethodInvocation newInvocation=ast.newMethodInvocation();
+        IMethodBinding methodBinding=new IOSMethodBinding("NSLog",Types.getMethodBinding(node),null);
+        Types.addBinding(newInvocation,methodBinding);
+        Types.addFunction(methodBinding);
+        newInvocation.setName(ast.newSimpleName("NSLog"));
+        Types.addBinding(newInvocation.getName(),methodBinding);
+        newInvocation.setExpression(null);
+        List<Expression> args=node.arguments();
+        if (args.size() == 1) {
+          Expression arg=args.get(0);
+          arg.accept(this);
+          String format=getFormatArgument(arg);
+          StringLiteral literal=ast.newStringLiteral();
+          literal.setLiteralValue(format);
+          Types.addBinding(literal,ast.resolveWellKnownType("java.lang.String"));
+          newInvocation.arguments().add(literal);
+          ASTNode newArg=NodeCopier.copySubtree(ast,arg);
+          if (arg instanceof MethodInvocation) {
+            IMethodBinding argBinding=((MethodInvocation)arg).resolveMethodBinding();
+            if (!argBinding.getReturnType().isPrimitive()) {
+              IOSMethodBinding newBinding=new IOSMethodBinding("format",argBinding,Types.getNSString());
+              Types.addMappedInvocation((MethodInvocation)newArg,newBinding);
+            }
+          }
+          newInvocation.arguments().add(newArg);
+        }
+ else         if (args.size() > 1 && node.getName().getIdentifier().equals("printf")) {
+          newInvocation.arguments().addAll(NodeCopier.copySubtrees(ast,args));
+        }
+ else         if (args.size() == 0) {
+          StringLiteral literal=ast.newStringLiteral();
+          literal.setLiteralValue("");
+          Types.addBinding(literal,ast.resolveWellKnownType("java.lang.String"));
+          newInvocation.arguments().add(literal);
+        }
+        ASTNode parent=node.getParent();
+        if (parent instanceof ExpressionStatement) {
+          ExpressionStatement stmt=(ExpressionStatement)parent;
+          stmt.setExpression(newInvocation);
+        }
+ else {
+          throw new AssertionError("unknown parent type: " + parent.getClass().getSimpleName());
+        }
+        return true;
+      }
+    }
+  }
+  return false;
+}

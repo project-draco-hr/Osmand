@@ -1,0 +1,63 @@
+{
+  IMethodBinding binding=Types.getMethodBinding(node);
+  if (binding != null && binding.isVarargs()) {
+    addReference(Types.resolveIOSType("IOSObjectArray"));
+  }
+ else   if (binding != null) {
+    ITypeBinding[] parameterTypes=binding.getParameterTypes();
+    for (int i=0; i < parameterTypes.length; i++) {
+      ITypeBinding parameterType=parameterTypes[i];
+      ITypeBinding actualType=Types.getTypeBinding(node.arguments().get(i));
+      if (!parameterType.equals(actualType) && actualType.isAssignmentCompatible(parameterType)) {
+        addReference(actualType);
+      }
+    }
+  }
+  Expression expr=node.getExpression();
+  if (expr == null) {
+    if (binding != null) {
+      ITypeBinding typeBinding=binding.getDeclaringClass();
+      if (typeBinding != null) {
+        addReference(typeBinding);
+      }
+    }
+  }
+ else {
+    IMethodBinding receiver=Types.getMethodBinding(expr);
+    if (receiver != null && !receiver.isConstructor()) {
+      addReference(receiver.getReturnType());
+    }
+    if (receiver == null) {
+      IVariableBinding var=Types.getVariableBinding(expr);
+      if (var == null || var.isEnumConstant()) {
+        addReference(Types.getTypeBinding(expr));
+      }
+    }
+  }
+  while (expr != null && expr instanceof Name) {
+    IMethodBinding methodBinding=Types.getMethodBinding(node);
+    if (methodBinding instanceof IOSMethodBinding) {
+      IMethodBinding resolvedBinding=Types.resolveInvocationBinding(node);
+      if (resolvedBinding != null) {
+        addReference(resolvedBinding.getDeclaringClass());
+        break;
+      }
+    }
+    addReference(methodBinding.getReturnType());
+    ITypeBinding typeBinding=Types.getTypeBinding(expr);
+    if (typeBinding != null && typeBinding.isClass()) {
+      addReference(typeBinding);
+      break;
+    }
+    if (expr instanceof QualifiedName) {
+      expr=((QualifiedName)expr).getQualifier();
+      if (expr.resolveTypeBinding() == null) {
+        break;
+      }
+    }
+ else {
+      break;
+    }
+  }
+  return super.visit(node);
+}

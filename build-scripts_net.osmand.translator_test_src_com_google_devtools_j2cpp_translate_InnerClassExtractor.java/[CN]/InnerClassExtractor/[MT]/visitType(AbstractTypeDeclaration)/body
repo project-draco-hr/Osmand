@@ -1,0 +1,35 @@
+{
+  ASTNode parentNode=node.getParent();
+  if (!(parentNode instanceof CompilationUnit)) {
+    ITypeBinding type=Types.getTypeBinding(node);
+    if (!type.isInterface() && !type.isAnnotation() && !Modifier.isStatic(type.getModifiers())) {
+      addOuterFields(node);
+    }
+    if (parentNode instanceof AbstractTypeDeclaration) {
+      AbstractTypeDeclaration parent=(AbstractTypeDeclaration)node.getParent();
+      @SuppressWarnings("unchecked") List<AbstractTypeDeclaration> parentTypes=parent.bodyDeclarations();
+      boolean success=parentTypes.remove(node);
+      assert success;
+    }
+ else {
+      TypeDeclarationStatement typeStatement=(TypeDeclarationStatement)parentNode;
+      node=NodeCopier.copySubtree(node.getAST(),typeStatement.getDeclaration());
+      Block body=(Block)typeStatement.getParent();
+      @SuppressWarnings("unchecked") List<Statement> stmts=body.statements();
+      boolean success=stmts.remove(typeStatement);
+      assert success;
+    }
+    @SuppressWarnings("unchecked") List<IExtendedModifier> modifiers=node.modifiers();
+    for (    IExtendedModifier iem : modifiers) {
+      if (iem instanceof Modifier) {
+        Modifier mod=(Modifier)iem;
+        if (mod.getKeyword().equals(ModifierKeyword.PRIVATE_KEYWORD)) {
+          modifiers.remove(mod);
+          break;
+        }
+      }
+    }
+    unitTypes.add(node);
+  }
+  return true;
+}

@@ -1,0 +1,17 @@
+{
+  Iterator<BodyDeclaration> declarationsIter=declarations.iterator();
+  while (declarationsIter.hasNext()) {
+    BodyDeclaration declaration=declarationsIter.next();
+    if (declaration instanceof MethodDeclaration) {
+      MethodDeclaration method=(MethodDeclaration)declaration;
+      if (!generatedMethods.contains(method)) {
+        IMethodBinding binding=method.resolveBinding();
+        String name=getProGuardName(binding);
+        String signature=Types.getSignature(binding);
+        if (deadCodeMap.isDeadMethod(clazz,name,signature)) {
+          declarationsIter.remove();
+        }
+      }
+    }
+  }
+}

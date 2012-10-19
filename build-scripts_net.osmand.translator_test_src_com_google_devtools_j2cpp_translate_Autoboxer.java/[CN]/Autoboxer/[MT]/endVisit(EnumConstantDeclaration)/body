@@ -1,0 +1,19 @@
+{
+  @SuppressWarnings("unchecked") List<Expression> args=node.arguments();
+  if (!args.isEmpty()) {
+    IMethodBinding constructor=Types.getMethodBinding(node);
+    int n=args.size();
+    for (int i=0; i < n; i++) {
+      Expression arg=args.get(i);
+      ITypeBinding parameterType=constructor.getParameterTypes()[i];
+      boolean argumentIsPrimitive=getBoxType(arg).isPrimitive();
+      boolean parameterIsPrimitive=parameterType.isPrimitive();
+      if (argumentIsPrimitive && !parameterIsPrimitive) {
+        args.set(i,box(arg));
+      }
+ else       if (parameterIsPrimitive && !argumentIsPrimitive) {
+        args.set(i,unbox(arg));
+      }
+    }
+  }
+}

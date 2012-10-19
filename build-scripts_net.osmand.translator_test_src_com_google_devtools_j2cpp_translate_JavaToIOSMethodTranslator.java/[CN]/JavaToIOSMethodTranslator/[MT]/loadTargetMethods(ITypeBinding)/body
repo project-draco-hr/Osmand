@@ -1,0 +1,18 @@
+{
+  for (  IMethodBinding method : clazz.getDeclaredMethods()) {
+    if (method.isConstructor() && Types.isJavaObjectType(method.getDeclaringClass())) {
+      continue;
+    }
+    if (method.getName().equals("clone")) {
+      continue;
+    }
+    int mods=method.getModifiers();
+    if (!Modifier.isPrivate(mods)) {
+      if (!Modifier.isFinal(mods)) {
+        overridableMethods.add(method);
+      }
+      mappedMethods.add(method);
+      addDescription(method);
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  String annotationName=annotation.getSimpleName();
+  for (  IExtendedModifier mod : modifiers) {
+    if (mod.isAnnotation()) {
+      Annotation annotationNode=(Annotation)mod;
+      String modName=annotationNode.getTypeName().getFullyQualifiedName();
+      if (modName.equals(annotationName)) {
+        if (annotationName.equals("GwtIncompatible") && annotationNode.isSingleMemberAnnotation()) {
+          Expression value=((SingleMemberAnnotation)annotationNode).getValue();
+          if (value instanceof StringLiteral) {
+            if (compatibleAPIs.contains(((StringLiteral)value).getLiteralValue())) {
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+    }
+  }
+  return false;
+}

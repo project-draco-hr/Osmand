@@ -1,0 +1,25 @@
+{
+  long startTime=System.currentTimeMillis();
+  int beginningErrorLevel=getCurrentErrorLevel();
+  CompilationUnit unit=parse(path,source);
+  if (getCurrentErrorLevel() > beginningErrorLevel) {
+    return path;
+  }
+  initializeTranslation(unit);
+  String newSource=removeDeadCode(unit,source);
+  if (!newSource.equals(source)) {
+    String pkg=unit.getPackage().getName().getFullyQualifiedName();
+    File packageDir=new File(Options.getTemporaryDirectory(),pkg.replace('.',File.separatorChar));
+    packageDir.mkdirs();
+    int index=path.lastIndexOf(File.separatorChar);
+    String outputName=index >= 0 ? path.substring(index + 1) : path;
+    File outFile=new File(packageDir,outputName);
+    Files.write(newSource,outFile,Charsets.UTF_8);
+    path=outFile.getAbsolutePath();
+  }
+  long elapsedTime=System.currentTimeMillis() - startTime;
+  if (logger.getLevel().intValue() <= Level.FINE.intValue()) {
+    System.out.println(String.format("dead-code elimination time: %.3f",inSeconds(elapsedTime)));
+  }
+  return path;
+}

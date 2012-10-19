@@ -1,0 +1,44 @@
+{
+  List<Statement> initStatements=Lists.newArrayList();
+  List<Statement> classInitStatements=Lists.newArrayList();
+  List<MethodDeclaration> methods=Lists.newArrayList();
+  ITypeBinding binding=Types.getTypeBinding(node);
+  @SuppressWarnings("unchecked") List<BodyDeclaration> members=node.bodyDeclarations();
+  Iterator<BodyDeclaration> iterator=members.iterator();
+  while (iterator.hasNext()) {
+    BodyDeclaration member=iterator.next();
+switch (member.getNodeType()) {
+case ASTNode.ENUM_DECLARATION:
+case ASTNode.TYPE_DECLARATION:
+      normalizeMembers((AbstractTypeDeclaration)member);
+    break;
+case ASTNode.METHOD_DECLARATION:
+  methods.add((MethodDeclaration)member);
+break;
+case ASTNode.INITIALIZER:
+addInitializer(member,initStatements,classInitStatements);
+iterator.remove();
+break;
+case ASTNode.FIELD_DECLARATION:
+if (!binding.isInterface()) {
+addFieldInitializer(member,initStatements,classInitStatements);
+}
+break;
+}
+}
+if (!initStatements.isEmpty() || binding.isEnum()) {
+boolean needsConstructor=true;
+for (MethodDeclaration md : methods) {
+if (md.isConstructor()) {
+needsConstructor=false;
+}
+normalizeMethod(md,initStatements);
+}
+if (needsConstructor) {
+addDefaultConstructor(binding,members,initStatements,node.getAST());
+}
+}
+if (!classInitStatements.isEmpty()) {
+addClassInitializer(binding,members,classInitStatements,node.getAST());
+}
+}

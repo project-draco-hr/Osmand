@@ -1,0 +1,26 @@
+{
+  for (  IVariableBinding field : type.getDeclaredFields()) {
+    if (!fields.containsValue(field)) {
+      int mods=field.getModifiers();
+      if (!Modifier.isStatic(mods)) {
+        if (includePrivate) {
+          fields.put(field.getName(),field);
+        }
+ else         if (Modifier.isPublic(mods) || Modifier.isProtected(mods)) {
+          fields.put(field.getName(),field);
+        }
+ else {
+          IPackageBinding typePackage=type.getPackage();
+          IPackageBinding fieldPackage=field.getDeclaringClass().getPackage();
+          if (typePackage.isEqualTo(fieldPackage)) {
+            fields.put(field.getName(),field);
+          }
+        }
+      }
+    }
+  }
+  ITypeBinding superclass=type.getSuperclass();
+  if (includeSuperclasses && superclass != null) {
+    addFields(superclass,false,true,fields);
+  }
+}

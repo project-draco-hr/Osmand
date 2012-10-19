@@ -1,0 +1,29 @@
+{
+  if (node.getParent() instanceof FieldAccess) {
+    return false;
+  }
+  TypeSymbol currentType=Symbols.resolve(getCurrentType());
+  IBinding binding=Types.getBinding(node);
+  if (binding instanceof IVariableBinding) {
+    IVariableBinding varBinding=(IVariableBinding)binding;
+    if (varBinding.isEnumConstant() || currentType.isEnum()) {
+      return true;
+    }
+    if (Modifier.isStatic(varBinding.getModifiers()) || !varBinding.isField()) {
+      return true;
+    }
+    if (varBinding.getName().startsWith("this$")) {
+      return true;
+    }
+    VariableSymbol sym=Symbols.resolve(varBinding);
+    Scope scope=Symbols.getScope(node);
+    if (scope.contains(sym)) {
+      return true;
+    }
+    AST ast=node.getAST();
+    Name newName=makeQualifiedName(node,sym,currentType,ast);
+    Types.addBinding(newName,binding);
+    setProperty(node,newName);
+  }
+  return true;
+}

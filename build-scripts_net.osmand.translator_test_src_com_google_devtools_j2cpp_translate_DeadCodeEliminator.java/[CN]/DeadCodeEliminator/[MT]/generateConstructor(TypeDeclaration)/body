@@ -1,0 +1,22 @@
+{
+  ITypeBinding clazz=node.resolveBinding();
+  IMethodBinding superConstructor=getVisible(getConstructors(clazz.getSuperclass())).next();
+  AST ast=node.getAST();
+  MethodDeclaration constructor=ast.newMethodDeclaration();
+  constructor.setConstructor(true);
+  constructor.setName(ast.newSimpleName(node.getName().getIdentifier()));
+  constructor.modifiers().add(ast.newModifier(ModifierKeyword.PROTECTED_KEYWORD));
+  node.bodyDeclarations().add(constructor);
+  Block block=ast.newBlock();
+  constructor.setBody(block);
+  SuperConstructorInvocation invocation=ast.newSuperConstructorInvocation();
+  block.statements().add(invocation);
+  addAssertionError(block);
+  for (  ITypeBinding type : superConstructor.getParameterTypes()) {
+    Expression value=getDefaultValue(ast,type);
+    CastExpression cast=ast.newCastExpression();
+    cast.setExpression(value);
+    cast.setType(createType(ast,clazz,type));
+    invocation.arguments().add(cast);
+  }
+}

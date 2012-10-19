@@ -1,0 +1,27 @@
+{
+  List<IVariableBinding> innerVars=Lists.newArrayList();
+  outer:   for (  ReferenceDescription desc : references) {
+    ITypeBinding declaringClass=desc.declaringClass;
+    if (declaringClass == null) {
+      declaringClass=desc.binding.getType();
+    }
+    declaringClass=declaringClass.getTypeDeclaration();
+    if (desc.binding.isField()) {
+      for (int i=0; i < innerVars.size(); i++) {
+        IVariableBinding var=innerVars.get(i);
+        ITypeBinding varType=var.getDeclaringClass();
+        if (varType != null && varType.isAssignmentCompatible(declaringClass)) {
+          desc.declaringClass=varType;
+          continue outer;
+        }
+ else         if (varType == null) {
+          desc.declaringMethod=var.getDeclaringMethod();
+        }
+      }
+    }
+    if (!innerVars.contains(desc.binding)) {
+      innerVars.add(desc.binding);
+    }
+  }
+  return innerVars;
+}

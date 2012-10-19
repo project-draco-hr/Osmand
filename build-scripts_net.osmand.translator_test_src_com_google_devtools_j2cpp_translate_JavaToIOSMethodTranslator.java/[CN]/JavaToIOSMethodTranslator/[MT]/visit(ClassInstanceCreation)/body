@@ -1,0 +1,33 @@
+{
+  if (node.getExpression() != null) {
+    node.getExpression().accept(this);
+  }
+  @SuppressWarnings("unchecked") List<Expression> args=node.arguments();
+  for (  Expression e : args) {
+    e.accept(this);
+  }
+  if (node.getAnonymousClassDeclaration() != null) {
+    node.getAnonymousClassDeclaration().accept(this);
+  }
+  IMethodBinding binding=Types.getMethodBinding(node);
+  JavaMethod md=descriptions.get(binding);
+  if (md != null) {
+    String key=md.getKey();
+    String value=methodMappings.get(key);
+    if (value != null) {
+      IOSMethod iosMethod=new IOSMethod(value,binding,binding.getDeclaringClass(),ast);
+      IMethodBinding methodBinding=iosMethod.resolveBinding();
+      MethodInvocation newInvocation=createMappedInvocation(iosMethod,binding,methodBinding);
+      @SuppressWarnings("unchecked") List<Expression> oldArgs=node.arguments();
+      @SuppressWarnings("unchecked") List<Expression> newArgs=newInvocation.arguments();
+      copyInvocationArguments(null,oldArgs,newArgs);
+      Types.substitute(node,newInvocation);
+      Types.addMappedIOSMethod(binding,iosMethod);
+      Types.addMappedInvocation(node,iosMethod.resolveBinding());
+    }
+ else {
+      J2ObjC.error(node,createMissingMethodMessage(binding));
+    }
+  }
+  return false;
+}

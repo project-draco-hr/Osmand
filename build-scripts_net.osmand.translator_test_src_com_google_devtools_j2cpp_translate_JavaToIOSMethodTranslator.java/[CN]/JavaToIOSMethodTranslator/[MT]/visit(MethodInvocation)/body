@@ -1,0 +1,57 @@
+{
+  if (node.getExpression() != null) {
+    node.getExpression().accept(this);
+  }
+  @SuppressWarnings("unchecked") List<Expression> args=node.arguments();
+  for (  Expression e : args) {
+    e.accept(this);
+  }
+  IMethodBinding binding=Types.getMethodBinding(node);
+  JavaMethod md=descriptions.get(binding);
+  if (md == null && !binding.getName().equals("clone")) {
+    IVariableBinding receiver=node.getExpression() != null ? Types.getVariableBinding(node.getExpression()) : null;
+    ITypeBinding clazz=receiver != null ? receiver.getType() : binding.getDeclaringClass();
+    if (clazz != null && !clazz.isArray()) {
+      for (      IMethodBinding method : descriptions.keySet()) {
+        if (binding.isSubsignature(method) && clazz.isAssignmentCompatible(method.getDeclaringClass())) {
+          md=descriptions.get(method);
+          break;
+        }
+      }
+    }
+  }
+  if (md != null) {
+    String key=md.getKey();
+    String value=methodMappings.get(key);
+    if (value == null) {
+      J2ObjC.error(node,createMissingMethodMessage(binding));
+      return true;
+    }
+    IOSMethod iosMethod=new IOSMethod(value,binding,ast);
+    NameTable.rename(binding,iosMethod.getName());
+    if (node.getExpression() instanceof SimpleName) {
+      SimpleName expr=(SimpleName)node.getExpression();
+      if (expr.getIdentifier().equals(binding.getDeclaringClass().getName()) || expr.getIdentifier().equals(binding.getDeclaringClass().getQualifiedName())) {
+        NameTable.rename(binding.getDeclaringClass(),iosMethod.getDeclaringClass());
+      }
+    }
+    Types.addMappedIOSMethod(binding,iosMethod);
+    Types.addMappedInvocation(node,iosMethod.resolveBinding());
+  }
+ else {
+    for (    IMethodBinding methodBinding : mappedMethods) {
+      if (binding.overrides(methodBinding)) {
+        JavaMethod desc=getDescription(methodBinding);
+        String value=methodMappings.get(desc.getKey());
+        if (value != null) {
+          IOSMethod iosMethod=new IOSMethod(value,binding,ast);
+          NameTable.rename(methodBinding,iosMethod.getName());
+          Types.addMappedIOSMethod(binding,iosMethod);
+          Types.addMappedInvocation(node,iosMethod.resolveBinding());
+          break;
+        }
+      }
+    }
+  }
+  return false;
+}

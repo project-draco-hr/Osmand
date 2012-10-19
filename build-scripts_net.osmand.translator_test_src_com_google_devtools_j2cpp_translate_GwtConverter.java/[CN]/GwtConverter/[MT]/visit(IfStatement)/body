@@ -1,0 +1,19 @@
+{
+  if (isGwtTest(node.getExpression())) {
+    if (node.getElseStatement() != null) {
+      ClassConverter.setProperty(node,NodeCopier.copySubtree(node.getAST(),node.getElseStatement()));
+      node.getElseStatement().accept(this);
+    }
+ else {
+      ASTNode parent=node.getParent();
+      if (parent instanceof Block) {
+        @SuppressWarnings("unchecked") List<Statement> stmts=((Block)parent).statements();
+        stmts.remove(node);
+      }
+ else {
+        ClassConverter.setProperty(node,node.getAST().newEmptyStatement());
+      }
+    }
+  }
+  return false;
+}

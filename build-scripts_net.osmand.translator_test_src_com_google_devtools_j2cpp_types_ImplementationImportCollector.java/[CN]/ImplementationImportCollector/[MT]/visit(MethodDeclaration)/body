@@ -1,0 +1,16 @@
+{
+  addReference(node.getReturnType2());
+  if (node.resolveBinding() != null && node.resolveBinding().isVarargs()) {
+    addReference(Types.resolveIOSType("IOSObjectArray"));
+  }
+  for (Iterator<?> iterator=node.parameters().iterator(); iterator.hasNext(); ) {
+    Object o=iterator.next();
+    if (o instanceof SingleVariableDeclaration) {
+      addReference(((SingleVariableDeclaration)o).getType());
+    }
+ else {
+      throw new AssertionError("unknown AST type: " + o.getClass());
+    }
+  }
+  return super.visit(node);
+}

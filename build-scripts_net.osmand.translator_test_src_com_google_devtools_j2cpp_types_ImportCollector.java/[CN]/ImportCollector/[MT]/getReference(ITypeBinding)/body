@@ -1,0 +1,18 @@
+{
+  if (!binding.isTypeVariable() && !binding.isPrimitive() && !binding.isAnnotation()&& (binding instanceof IOSArrayTypeBinding || !(binding instanceof IOSTypeBinding))) {
+    binding=Types.mapType(binding);
+    String typeName=NameTable.getFullName(binding);
+    boolean isInterface=binding.isInterface();
+    while (!binding.isTopLevel()) {
+      binding=binding.getDeclaringClass();
+    }
+    return getReference(typeName,binding.getErasure().getQualifiedName(),isInterface);
+  }
+ else   if (binding.isTypeVariable()) {
+    ITypeBinding[] typeBounds=binding.getTypeBounds();
+    if (typeBounds.length > 0 && !Types.isJavaObjectType(typeBounds[0])) {
+      return getReference(typeBounds[0]);
+    }
+  }
+  return NULL_IMPORT;
+}

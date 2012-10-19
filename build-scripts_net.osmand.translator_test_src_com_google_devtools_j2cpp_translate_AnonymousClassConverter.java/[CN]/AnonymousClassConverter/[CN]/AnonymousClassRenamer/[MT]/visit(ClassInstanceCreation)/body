@@ -1,0 +1,18 @@
+{
+  if (node.getAnonymousClassDeclaration() != null) {
+    AnonymousClassDeclaration anonDecl=node.getAnonymousClassDeclaration();
+    Frame parentFrame=classIndex.peek();
+    String className="$" + ++parentFrame.classCount;
+    ITypeBinding innerType=renameClass(className,Types.getTypeBinding(anonDecl));
+    Types.addBinding(anonDecl,innerType);
+    node.setType(Types.makeType(innerType));
+    IMethodBinding oldBinding=Types.getMethodBinding(node);
+    GeneratedMethodBinding newConstructorBinding=new GeneratedMethodBinding("init",0,node.getAST().resolveWellKnownType("void"),innerType,true,false,true);
+    for (    ITypeBinding paramType : oldBinding.getParameterTypes()) {
+      newConstructorBinding.addParameter(paramType);
+    }
+    Types.addBinding(node,newConstructorBinding);
+    classIndex.push(new Frame());
+  }
+  return true;
+}

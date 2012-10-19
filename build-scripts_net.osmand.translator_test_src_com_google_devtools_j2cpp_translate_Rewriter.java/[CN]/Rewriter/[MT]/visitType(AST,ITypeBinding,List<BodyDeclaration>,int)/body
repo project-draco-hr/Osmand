@@ -1,0 +1,27 @@
+{
+  ITypeBinding[] interfaces=typeBinding.getInterfaces();
+  if (interfaces.length > 0) {
+    if (Modifier.isAbstract(modifiers)) {
+      for (      ITypeBinding intrface : interfaces) {
+        Queue<ITypeBinding> interfaceQueue=new LinkedList<ITypeBinding>();
+        Set<IMethodBinding> interfaceMethods=new LinkedHashSet<IMethodBinding>();
+        interfaceQueue.add(intrface);
+        while ((intrface=interfaceQueue.poll()) != null) {
+          interfaceMethods.addAll(Arrays.asList(intrface.getDeclaredMethods()));
+          interfaceQueue.addAll(Arrays.asList(intrface.getInterfaces()));
+        }
+        addMissingMethods(ast,typeBinding,interfaceMethods,members);
+      }
+    }
+ else     if (!typeBinding.isInterface()) {
+      Set<IMethodBinding> interfaceMethods=new LinkedHashSet<IMethodBinding>();
+      for (      ITypeBinding intrface : interfaces) {
+        interfaceMethods.addAll(Arrays.asList(intrface.getDeclaredMethods()));
+      }
+      addForwardingMethods(ast,typeBinding,interfaceMethods,members);
+    }
+  }
+  removeSerialization(members);
+  renameDuplicateMembers(typeBinding);
+  return true;
+}

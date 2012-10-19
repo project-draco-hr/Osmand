@@ -1,0 +1,33 @@
+{
+  IMethodBinding binding=node.resolveMethodBinding();
+  if (binding == null) {
+    return false;
+  }
+  ITypeBinding typeBinding=binding.getDeclaringClass();
+  AST ast=node.getAST();
+  if (typeBinding.equals(ast.resolveWellKnownType("java.lang.String")) && binding.getName().equals("format")) {
+    @SuppressWarnings("unchecked") List<Expression> args=node.arguments();
+    if (args.isEmpty()) {
+      return false;
+    }
+    Expression first=args.get(0);
+    typeBinding=first.resolveTypeBinding();
+    if (typeBinding.getQualifiedName().equals("java.util.Locale")) {
+      args.remove(0);
+      first=args.get(0);
+      typeBinding=first.resolveTypeBinding();
+    }
+    if (first instanceof StringLiteral) {
+      String format=((StringLiteral)first).getLiteralValue();
+      String convertedFormat=convertStringFormatString(format);
+      if (!format.equals(convertedFormat)) {
+        StringLiteral newLiteral=ast.newStringLiteral();
+        newLiteral.setLiteralValue(convertedFormat);
+        Types.addBinding(newLiteral,ast.resolveWellKnownType("java.lang.String"));
+        args.set(0,newLiteral);
+      }
+      return true;
+    }
+  }
+  return false;
+}

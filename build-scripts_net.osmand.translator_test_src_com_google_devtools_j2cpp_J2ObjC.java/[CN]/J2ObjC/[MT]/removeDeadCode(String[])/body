@@ -1,0 +1,41 @@
+{
+  loadDeadCodeMap();
+  if (Options.getDeadCodeMap() != null) {
+    for (int i=0; i < files.length; i++) {
+      String filename=files[i];
+      logger.finest("reading " + filename);
+      if (filename.endsWith(".java")) {
+        String source=getSource(filename);
+        if (source == null) {
+          error("no such file: " + filename);
+          return files;
+        }
+        String newPath=removeDeadCode(filename,source);
+        if (!filename.equals(newPath)) {
+          files[i]=newPath;
+        }
+      }
+ else       if (filename.endsWith(".jar")) {
+        File f=new File(filename);
+        if (f.exists() && f.isFile()) {
+          ZipFile zfile=new ZipFile(f);
+          try {
+            Enumeration<? extends ZipEntry> enumerator=zfile.entries();
+            while (enumerator.hasMoreElements()) {
+              ZipEntry entry=enumerator.nextElement();
+              String path=entry.getName();
+              if (path.endsWith(".java")) {
+                removeDeadCode(path,getSource(path));
+              }
+            }
+          }
+  finally {
+            zfile.close();
+          }
+        }
+      }
+    }
+  }
+  Options.insertSourcePath(0,Options.getTemporaryDirectory());
+  return files;
+}

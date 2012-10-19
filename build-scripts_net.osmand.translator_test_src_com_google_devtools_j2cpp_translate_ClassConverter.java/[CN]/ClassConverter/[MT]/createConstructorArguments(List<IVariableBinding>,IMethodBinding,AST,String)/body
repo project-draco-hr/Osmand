@@ -1,0 +1,18 @@
+{
+  int nameOffset=constructor.getParameterTypes().length;
+  List<SingleVariableDeclaration> args=Lists.newArrayList();
+  for (int i=0; i < innerFields.size(); i++) {
+    IVariableBinding field=innerFields.get(i);
+    String argName=prefix + (i + nameOffset);
+    SimpleName name=ast.newSimpleName(argName);
+    GeneratedVariableBinding binding=new GeneratedVariableBinding(argName,Modifier.FINAL,field.getType(),false,true,constructor.getDeclaringClass(),constructor);
+    Types.addBinding(name,binding);
+    SingleVariableDeclaration newArg=ast.newSingleVariableDeclaration();
+    newArg.setName(name);
+    newArg.setType(Types.makeType(field.getType()));
+    newArg.modifiers().add(ast.newModifier(ModifierKeyword.FINAL_KEYWORD));
+    Types.addBinding(newArg,binding);
+    args.add(newArg);
+  }
+  return args;
+}

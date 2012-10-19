@@ -1,0 +1,26 @@
+{
+  List<String> fullClasspath=Lists.newArrayList();
+  String[] classpathEntries=Options.getClassPathEntries();
+  for (int i=0; i < classpathEntries.length; i++) {
+    fullClasspath.add(classpathEntries[i]);
+  }
+  String bootclasspath=Options.getBootClasspath();
+  for (  String path : bootclasspath.split(":")) {
+    File f=new File(path);
+    if (f.exists() && (f.isDirectory() || path.endsWith(".jar"))) {
+      fullClasspath.add(path);
+    }
+  }
+  parser.setEnvironment(fullClasspath.toArray(new String[0]),Options.getSourcePathEntries(),null,true);
+  try {
+    Field field=parser.getClass().getDeclaredField("bits");
+    field.setAccessible(true);
+    int bits=field.getInt(parser);
+    bits&=~0x20;
+    field.setInt(parser,bits);
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    System.exit(1);
+  }
+}

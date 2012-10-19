@@ -1,0 +1,19 @@
+{
+  if (Options.getDeadCodeMap() == null) {
+    return source;
+  }
+  logger.finest("removing dead code");
+  new DeadCodeEliminator(Options.getDeadCodeMap()).run(unit);
+  Document doc=new Document(source);
+  TextEdit edit=unit.rewrite(doc,Options.getCompilerOptions());
+  try {
+    edit.apply(doc);
+  }
+ catch (  MalformedTreeException e) {
+    throw new AssertionError(e);
+  }
+catch (  BadLocationException e) {
+    throw new AssertionError(e);
+  }
+  return doc.get();
+}

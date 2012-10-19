@@ -1,0 +1,39 @@
+{
+  final List<IVariableBinding> releaseableFields=Lists.newArrayList();
+  for (  final FieldDeclaration field : node.getFields()) {
+    if (!field.getType().isPrimitiveType() && !isStatic(field)) {
+      ErrorReportingASTVisitor varFinder=new ErrorReportingASTVisitor(){
+        @Override public boolean visit(        VariableDeclarationFragment node){
+          IVariableBinding binding=Types.getVariableBinding(node);
+          if (!Modifier.isStatic(field.getModifiers()) && !Types.isConstantVariable(binding)) {
+            releaseableFields.add(binding);
+          }
+          return true;
+        }
+      }
+;
+      varFinder.run(field);
+    }
+  }
+  if (!releaseableFields.isEmpty()) {
+    Types.addReleaseableFields(releaseableFields);
+    boolean foundDestructor=false;
+    for (    MethodDeclaration method : node.getMethods()) {
+      if (FINALIZE_METHOD.equals(method.getName().getIdentifier())) {
+        addReleaseStatements(method,releaseableFields);
+        foundDestructor=true;
+      }
+    }
+    if (!foundDestructor && !Options.useARC()) {
+      MethodDeclaration finalizeMethod=buildFinalizeMethod(node.getAST(),Types.getTypeBinding(node),releaseableFields);
+      @SuppressWarnings("unchecked") List<BodyDeclaration> declarations=node.bodyDeclarations();
+      declarations.add(finalizeMethod);
+    }
+  }
+  for (  MethodDeclaration method : node.getMethods()) {
+    if (needsRenaming(method.getName())) {
+      NameTable.rename(Types.getBinding(method),destructorName);
+    }
+  }
+  return super.visit(node);
+}

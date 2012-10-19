@@ -1,0 +1,14 @@
+{
+  Expression lhs=node.getLeftOperand();
+  ITypeBinding lhBinding=getBoxType(lhs);
+  Expression rhs=node.getRightOperand();
+  ITypeBinding rhBinding=getBoxType(rhs);
+  InfixExpression.Operator op=node.getOperator();
+  boolean needsPrimitive=op != InfixExpression.Operator.EQUALS && op != InfixExpression.Operator.NOT_EQUALS;
+  if (!lhBinding.isPrimitive() && (rhBinding.isPrimitive() || needsPrimitive)) {
+    node.setLeftOperand(unbox(lhs));
+  }
+  if ((lhBinding.isPrimitive() || needsPrimitive) && !rhBinding.isPrimitive()) {
+    node.setRightOperand(unbox(rhs));
+  }
+}

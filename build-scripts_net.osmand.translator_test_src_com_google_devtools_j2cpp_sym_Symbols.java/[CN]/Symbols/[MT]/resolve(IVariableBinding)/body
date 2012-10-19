@@ -1,0 +1,24 @@
+{
+  if (binding == null) {
+    return null;
+  }
+  binding=binding.getVariableDeclaration();
+  VariableSymbol symbol=(VariableSymbol)instance.symbolTable.get(binding);
+  if (symbol == null) {
+    resolve(binding.getType());
+    IMethodBinding declaringMethod=binding.getDeclaringMethod();
+    if (declaringMethod != null) {
+      MethodSymbol method=resolve(declaringMethod);
+      symbol=new VariableSymbol(binding,method.getScope());
+    }
+ else {
+      ITypeBinding declaringClass=binding.getDeclaringClass();
+      if (declaringClass != null) {
+        TypeSymbol type=resolve(declaringClass);
+        symbol=new VariableSymbol(binding,type.getScope());
+      }
+    }
+    instance.symbolTable.put(binding,symbol);
+  }
+  return symbol;
+}

@@ -1,0 +1,16 @@
+{
+  ITypeBinding binding=getBoxType(expr);
+  if (Types.getPrimitiveType(binding) != null) {
+    IMethodBinding valueMethod=getValueMethod(binding);
+    MethodInvocation invocation=ast.newMethodInvocation();
+    invocation.setExpression(NodeCopier.copySubtree(ast,expr));
+    SimpleName methodName=ast.newSimpleName(valueMethod.getName());
+    Types.addBinding(methodName,valueMethod);
+    invocation.setName(methodName);
+    Types.addBinding(invocation,valueMethod);
+    return invocation;
+  }
+ else {
+    return NodeCopier.copySubtree(ast,expr);
+  }
+}

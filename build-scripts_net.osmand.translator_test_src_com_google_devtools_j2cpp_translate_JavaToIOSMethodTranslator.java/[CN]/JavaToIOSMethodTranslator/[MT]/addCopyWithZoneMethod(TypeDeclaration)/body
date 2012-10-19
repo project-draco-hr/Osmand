@@ -1,0 +1,25 @@
+{
+  ITypeBinding type=Types.getTypeBinding(node).getTypeDeclaration();
+  SimpleName methodName=newCloneMethodName(type,true);
+  GeneratedMethodBinding binding=(GeneratedMethodBinding)Types.getMethodBinding(methodName);
+  IOSMethod iosMethod=Types.getMappedMethod(binding);
+  MethodDeclaration cloneMethod=ast.newMethodDeclaration();
+  Types.addBinding(cloneMethod,binding);
+  cloneMethod.setName(methodName);
+  cloneMethod.setReturnType2(Types.makeType(binding.getReturnType()));
+  IOSTypeBinding nsZoneType=new IOSTypeBinding("NSZone",false);
+  GeneratedVariableBinding zoneBinding=new GeneratedVariableBinding("zone",0,nsZoneType,false,true,binding.getDeclaringClass(),binding);
+  binding.addParameter(zoneBinding);
+  @SuppressWarnings("unchecked") List<SingleVariableDeclaration> parameters=cloneMethod.parameters();
+  parameters.add(makeZoneParameter(zoneBinding));
+  Types.addMappedIOSMethod(binding,iosMethod);
+  Block block=ast.newBlock();
+  cloneMethod.setBody(block);
+  MethodInvocation cloneInvocation=makeCloneInvocation(type,zoneBinding);
+  ReturnStatement returnStmt=ast.newReturnStatement();
+  returnStmt.setExpression(cloneInvocation);
+  @SuppressWarnings("unchecked") List<Statement> stmts=block.statements();
+  stmts.add(returnStmt);
+  @SuppressWarnings("unchecked") List<BodyDeclaration> members=node.bodyDeclarations();
+  members.add(cloneMethod);
+}
