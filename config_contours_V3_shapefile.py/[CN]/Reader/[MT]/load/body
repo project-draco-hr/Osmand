@@ -1,0 +1,21 @@
+def load(self, shapefile=None):
+    'Opens a shapefile from a filename or file-like\n        object. Normally this method would be called by the\n        constructor with the file object or file name as an\n        argument.'
+    if shapefile:
+        (shapeName, ext) = os.path.splitext(shapefile)
+        self.shapeName = shapeName
+        try:
+            self.shp = open(('%s.shp' % shapeName), 'rb')
+        except IOError:
+            raise ShapefileException(('Unable to open %s.shp' % shapeName))
+        try:
+            self.shx = open(('%s.shx' % shapeName), 'rb')
+        except IOError:
+            raise ShapefileException(('Unable to open %s.shx' % shapeName))
+        try:
+            self.dbf = open(('%s.dbf' % shapeName), 'rb')
+        except IOError:
+            raise ShapefileException(('Unable to open %s.dbf' % shapeName))
+    if self.shp:
+        self.__shpHeader()
+    if self.dbf:
+        self.__dbfHeader()

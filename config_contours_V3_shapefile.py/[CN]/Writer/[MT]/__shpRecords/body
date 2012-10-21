@@ -1,0 +1,70 @@
+def __shpRecords(self):
+    'Write the shp records'
+    f = self.__getFileObj(self.shp)
+    f.seek(100)
+    recNum = 1
+    for s in self._shapes:
+        self._offsets.append(f.tell())
+        f.write(pack('>2i', recNum, 0))
+        recNum += 1
+        start = f.tell()
+        f.write(pack('<i', s.shapeType))
+        if (s.shapeType in (3, 5, 8, 13, 15, 18, 23, 25, 28, 31)):
+            try:
+                f.write(pack('<4d', *self.__bbox([s])))
+            except error:
+                raise ShapefileException(('Falied to write bounding box for record %s. Expected floats.' % recNum))
+        if (s.shapeType in (3, 5, 13, 15, 23, 25, 31)):
+            f.write(pack('<i', len(s.parts)))
+        if (s.shapeType in (3, 5, 8, 13, 15, 23, 25, 31)):
+            f.write(pack('<i', len(s.points)))
+        if (s.shapeType in (3, 5, 13, 15, 23, 25, 31)):
+            for p in s.parts:
+                f.write(pack('<i', p))
+        if (s.shapeType == 31):
+            for pt in s.partTypes:
+                f.write(pack('<i', pt))
+        if (s.shapeType in (3, 5, 8, 13, 15, 23, 25, 31)):
+            try:
+                [f.write(pack('<2d', *p[:2])) for p in s.points]
+            except error:
+                raise ShapefileException(('Failed to write points for record %s. Expected floats.' % recNum))
+        if (s.shapeType in (13, 15, 18, 31)):
+            try:
+                f.write(pack('<2d', *self.__zbox([s])))
+            except error:
+                raise ShapefileException(('Failed to write elevation extremes for record %s. Expected floats.' % recNum))
+            try:
+                [f.write(pack('<d', p[2])) for p in s.points]
+            except error:
+                raise ShapefileException(('Failed to write elevation values for record %s. Expected floats.' % recNum))
+        if (s.shapeType in (23, 25, 31)):
+            try:
+                f.write(pack('<2d', *self.__mbox([s])))
+            except error:
+                raise ShapefileException(('Failed to write measure extremes for record %s. Expected floats' % recNum))
+            try:
+                [f.write(pack('<d', p[3])) for p in s.points]
+            except error:
+                raise ShapefileException(('Failed to write measure values for record %s. Expected floats' % recNum))
+        if (s.shapeType in (1, 11, 21)):
+            try:
+                f.write(pack('<2d', s.points[0][0], s.points[0][1]))
+            except error:
+                raise ShapefileException(('Failed to write point for record %s. Expected floats.' % recNum))
+        if (s.shapeType == 11):
+            try:
+                f.write(pack('<1d', s.points[0][2]))
+            except error:
+                raise ShapefileException(('Failed to write elevation value for record %s. Expected floats.' % recNum))
+        if (s.shapeType in (11, 21)):
+            try:
+                f.write(pack('<1d', s.points[0][3]))
+            except error:
+                raise ShapefileException(('Failed to write measure value for record %s. Expected floats.' % recNum))
+        finish = f.tell()
+        length = ((finish - start) // 2)
+        self._lengths.append(length)
+        f.seek((start - 4))
+        f.write(pack('>i', length))
+        f.seek(finish)

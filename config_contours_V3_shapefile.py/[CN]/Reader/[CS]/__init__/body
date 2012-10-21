@@ -1,0 +1,33 @@
+def __init__(self, *args, **kwargs):
+    self.shp = None
+    self.shx = None
+    self.dbf = None
+    self.shapeName = 'Not specified'
+    self._offsets = []
+    self.shpLength = None
+    self.numRecords = None
+    self.fields = []
+    self.__dbfHdrLength = 0
+    if (len(args) > 0):
+        if (type(args[0]) is type('stringTest')):
+            self.load(args[0])
+            return
+    if ('shp' in kwargs.keys()):
+        if hasattr(kwargs['shp'], 'read'):
+            self.shp = kwargs['shp']
+            if hasattr(self.shp, 'seek'):
+                self.shp.seek(0)
+        if ('shx' in kwargs.keys()):
+            if hasattr(kwargs['shx'], 'read'):
+                self.shx = kwargs['shx']
+                if hasattr(self.shx, 'seek'):
+                    self.shx.seek(0)
+    if ('dbf' in kwargs.keys()):
+        if hasattr(kwargs['dbf'], 'read'):
+            self.dbf = kwargs['dbf']
+            if hasattr(self.dbf, 'seek'):
+                self.dbf.seek(0)
+    if (self.shp or self.dbf):
+        self.load()
+    else:
+        raise ShapefileException('Shapefile Reader requires a shapefile or file-like object.')

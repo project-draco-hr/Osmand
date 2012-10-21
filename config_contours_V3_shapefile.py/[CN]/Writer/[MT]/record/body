@@ -1,0 +1,18 @@
+def record(self, *recordList, **recordDict):
+    "Creates a dbf attribute record. You can submit either a sequence of\n        field values or keyword arguments of field names and values. Before\n        adding records you must add fields for the record values using the\n        fields() method. If the record values exceed the number of fields the\n        extra ones won't be added. In the case of using keyword arguments to specify\n        field/value pairs only fields matching the already registered fields\n        will be added."
+    record = []
+    fieldCount = len(self.fields)
+    if self.fields[0][0].startswith('Deletion'):
+        fieldCount -= 1
+    if recordList:
+        [record.append(recordList[i]) for i in range(fieldCount)]
+    elif recordDict:
+        for field in self.fields:
+            if (field[0] in recordDict):
+                val = recordDict[field[0]]
+                if val:
+                    record.append(val)
+                else:
+                    record.append('')
+    if record:
+        self.records.append(record)
