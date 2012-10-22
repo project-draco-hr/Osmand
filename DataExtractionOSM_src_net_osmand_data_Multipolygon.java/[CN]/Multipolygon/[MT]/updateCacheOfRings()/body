@@ -13,8 +13,19 @@
         minLon=(float)Math.min(minLon,n.getLongitude());
       }
     }
+    Collections.sort(outerRings);
   }
   if (innerRings == null) {
     innerRings=Ring.combineToRings(getInnerWays());
+    for (    Ring inner : innerRings) {
+      HashSet<Ring> outContainingRings=new HashSet<Ring>();
+      for (      Ring out : outerRings) {
+        if (inner.isIn(out)) {
+          outContainingRings.add(out);
+        }
+      }
+      cacheContainedInnerInOuter.put(inner,outContainingRings);
+    }
+    Collections.sort(innerRings);
   }
 }
