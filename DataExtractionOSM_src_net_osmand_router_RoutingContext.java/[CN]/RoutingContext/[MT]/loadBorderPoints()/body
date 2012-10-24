@@ -1,0 +1,35 @@
+{
+  Iterator<Entry<RouteRegion,BinaryMapIndexReader>> it=reverseMap.entrySet().iterator();
+  int sleft=Math.min(startX,targetX);
+  int sright=Math.max(startX,targetX);
+  int stop=Math.min(startY,targetY);
+  int sbottom=Math.max(startY,targetY);
+  int zoomAround=10;
+  int distAround=1 << (31 - zoomAround);
+  SearchRequest<RouteDataBorderLinePoint> req=BinaryMapIndexReader.buildSearchRouteBorderRequest(sleft,sright,stop,sbottom);
+  while (it.hasNext()) {
+    Entry<RouteRegion,BinaryMapIndexReader> entry=it.next();
+    entry.getValue().searchBorderPoints(req,entry.getKey());
+  }
+  TIntObjectHashMap<RouteDataBorderLine> lines=new TIntObjectHashMap<RoutingContext.RouteDataBorderLine>();
+  for (  RouteDataBorderLinePoint p : req.getSearchResults()) {
+    if (config.router.acceptLine(p.types,p.region) && p.x > sleft - distAround && p.x < sright + distAround) {
+      if (!lines.containsKey(p.y)) {
+        lines.put(p.y,new RouteDataBorderLine(p.y));
+      }
+      lines.get(p.y).borderPoints.add(p);
+    }
+  }
+  borderLines=lines.values(new RouteDataBorderLine[lines.size()]);
+  Arrays.sort(borderLines);
+  borderLineCoordinates=new int[borderLines.length];
+  for (int i=0; i < borderLineCoordinates.length; i++) {
+    borderLineCoordinates[i]=borderLines[i].borderLine;
+    if (i > 0 && borderLineCoordinates[i - 1] >> 17 == borderLineCoordinates[i] >> 17) {
+      throw new IllegalStateException();
+    }
+    System.out.println("Line " + (borderLineCoordinates[i] >> 17) + " points "+ borderLines[i].borderPoints.size());
+  }
+  updateDistanceForBorderPoints(startX,startY,true);
+  updateDistanceForBorderPoints(targetX,targetY,false);
+}

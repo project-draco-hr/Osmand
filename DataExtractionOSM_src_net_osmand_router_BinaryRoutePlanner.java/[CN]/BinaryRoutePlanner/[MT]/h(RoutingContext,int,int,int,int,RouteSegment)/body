@@ -1,0 +1,55 @@
+{
+  double distToFinalPoint=squareRootDist(begX,begY,endX,endY);
+  if (RoutingContext.USE_BORDER_LINES) {
+    int begBorder=ctx.searchBorderLineIndex(begY);
+    int endBorder=ctx.searchBorderLineIndex(endY);
+    if (begBorder != endBorder) {
+      double res=0;
+      boolean plus=begBorder < endBorder;
+      boolean beginEqStart=begX == ctx.startX && begY == ctx.startY;
+      boolean beginEqTarget=begX == ctx.targetX && begY == ctx.targetY;
+      boolean endEqStart=endX == ctx.startX && endY == ctx.startY;
+      boolean endEqTarget=endX == ctx.targetX && endY == ctx.targetY;
+      if (endEqStart || endEqTarget) {
+        List<RouteDataBorderLinePoint> pnts=ctx.borderLines[plus ? begBorder : begBorder - 1].borderPoints;
+        for (        RouteDataBorderLinePoint p : pnts) {
+          double f=(endEqTarget ? p.distanceToEndPoint : p.distanceToStartPoint) + squareRootDist(p.x,p.y,begX,begY);
+          if (res > f || res <= 0) {
+            res=f;
+          }
+        }
+      }
+ else       if (beginEqStart || beginEqTarget) {
+        List<RouteDataBorderLinePoint> pnts=ctx.borderLines[plus ? endBorder - 1 : endBorder].borderPoints;
+        for (        RouteDataBorderLinePoint p : pnts) {
+          double f=(beginEqTarget ? p.distanceToEndPoint : p.distanceToStartPoint) + squareRootDist(p.x,p.y,endX,endY);
+          if (res > f || res <= 0) {
+            res=f;
+          }
+        }
+      }
+ else {
+        throw new IllegalStateException();
+      }
+      if (res > 0) {
+        if (res > distToFinalPoint) {
+        }
+        distToFinalPoint=res;
+      }
+ else {
+        System.out.println("&" + distToFinalPoint);
+        distToFinalPoint=distToFinalPoint * 5;
+      }
+    }
+  }
+  double result=distToFinalPoint / ctx.getRouter().getMaxDefaultSpeed();
+  if (ctx.isUseDynamicRoadPrioritising() && next != null) {
+    double priority=ctx.getRouter().getFutureRoadPriority(next.road);
+    result/=priority;
+    int dist=ctx.getDynamicRoadPriorityDistance();
+    if (distToFinalPoint > dist && dist != 0) {
+      result=(distToFinalPoint - dist) / ctx.getRouter().getMaxDefaultSpeed() + dist / (ctx.getRouter().getMaxDefaultSpeed() * priority);
+    }
+  }
+  return (float)result;
+}

@@ -29,6 +29,21 @@
     if (x == prevx && y == prevy) {
       continue;
     }
+    if (RoutingContext.USE_BORDER_LINES) {
+      int st=ctx.searchBorderLineIndex(y);
+      int tt=ctx.searchBorderLineIndex(prevy);
+      if (st != tt) {
+        for (int i=Math.min(st,tt); i < Math.max(st,tt) & i < ctx.borderLines.length; i++) {
+          Iterator<RouteDataBorderLinePoint> pnts=ctx.borderLines[i].borderPoints.iterator();
+          while (pnts.hasNext()) {
+            RouteDataBorderLinePoint o=pnts.next();
+            if (o.id == road.id) {
+              pnts.remove();
+            }
+          }
+        }
+      }
+    }
     segmentDist+=squareRootDist(x,y,prevx,prevy);
     double obstacle=ctx.getRouter().defineRoutingObstacle(road,segmentEnd);
     if (obstacle < 0) {
@@ -54,9 +69,8 @@
       if (outgoingConnections) {
         directionAllowed=false;
       }
-      float distToFinalPoint=(float)squareRootDist(x,y,targetEndX,targetEndY);
       float distStartObstacles=segment.distanceFromStart + calculateTimeWithObstacles(ctx,road,segmentDist,obstaclesTime);
-      processIntersections(ctx,graphSegments,visitedSegments,distStartObstacles,distToFinalPoint,segment,segmentEnd,roadNext,reverseWaySearch,outgoingConnections);
+      processIntersections(ctx,graphSegments,visitedSegments,distStartObstacles,segment,segmentEnd,targetEndX,targetEndY,roadNext,reverseWaySearch,outgoingConnections);
     }
   }
   if (initDirectionAllowed && ctx.visitor != null) {
