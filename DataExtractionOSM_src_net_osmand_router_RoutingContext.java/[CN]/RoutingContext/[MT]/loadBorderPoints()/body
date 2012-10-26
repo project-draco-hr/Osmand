@@ -6,6 +6,8 @@
   int sbottom=Math.max(startY,targetY);
   int zoomAround=10;
   int distAround=1 << (31 - zoomAround);
+  leftBorderBoundary=sleft - distAround;
+  rightBorderBoundary=sright + distAround;
   SearchRequest<RouteDataBorderLinePoint> req=BinaryMapIndexReader.buildSearchRouteBorderRequest(sleft,sright,stop,sbottom);
   while (it.hasNext()) {
     Entry<RouteRegion,BinaryMapIndexReader> entry=it.next();
@@ -13,9 +15,20 @@
   }
   TIntObjectHashMap<RouteDataBorderLine> lines=new TIntObjectHashMap<RoutingContext.RouteDataBorderLine>();
   for (  RouteDataBorderLinePoint p : req.getSearchResults()) {
-    if (config.router.acceptLine(p.types,p.region) && p.x > sleft - distAround && p.x < sright + distAround) {
+    if (config.router.acceptLine(p.types,p.region) && p.x > leftBorderBoundary && p.x < rightBorderBoundary) {
       if (!lines.containsKey(p.y)) {
-        lines.put(p.y,new RouteDataBorderLine(p.y));
+        RouteDataBorderLine line=new RouteDataBorderLine(p.y);
+        lines.put(p.y,line);
+        RouteDataBorderLinePoint lft=new RouteDataBorderLinePoint(p.region);
+        lft.y=p.y;
+        lft.id=Long.MIN_VALUE;
+        lft.x=leftBorderBoundary;
+        line.borderPoints.add(lft);
+        RouteDataBorderLinePoint rht=new RouteDataBorderLinePoint(p.region);
+        rht.y=p.y;
+        rht.id=Long.MIN_VALUE;
+        rht.x=rightBorderBoundary;
+        line.borderPoints.add(rht);
       }
       lines.get(p.y).borderPoints.add(p);
     }
