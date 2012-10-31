@@ -1,0 +1,25 @@
+{
+  long pxc=0;
+  long pyc=0;
+  for (int i=0; i < gw.size(); i++) {
+    pxc+=gw.px.get(i);
+    pyc+=gw.py.get(i);
+  }
+  pxc/=gw.size();
+  pyc/=gw.size();
+  for (int i=0; i < gw.size(); i++) {
+    gcluster=getCluster(gw,i,gcluster);
+    Object o=gcluster.map.get(gw.getLocation(i));
+    if (o instanceof LinkedList) {
+      Iterator it=((LinkedList)o).iterator();
+      while (it.hasNext()) {
+        GeneralizedWay next=(GeneralizedWay)it.next();
+        replacePointWithAnotherPoint(gcluster,gw,(int)pxc,(int)pyc,i,next);
+      }
+    }
+ else     if (o instanceof GeneralizedWay) {
+      replacePointWithAnotherPoint(gcluster,gw,(int)pxc,(int)pyc,i,(GeneralizedWay)o);
+    }
+  }
+  removeGeneratedWay(gw,gcluster);
+}

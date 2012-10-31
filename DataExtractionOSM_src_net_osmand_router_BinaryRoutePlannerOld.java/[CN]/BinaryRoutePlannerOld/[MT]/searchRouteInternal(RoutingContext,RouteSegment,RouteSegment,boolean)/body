@@ -4,7 +4,7 @@
   ctx.timeToCalculate=System.nanoTime();
   if (ctx.config.initialDirection != null) {
     ctx.firstRoadId=(start.getRoad().id << ROUTE_POINTS) + start.getSegmentStart();
-    double plusDir=start.getRoad().directionRoute(start.segmentStart,true);
+    double plusDir=start.getRoad().directionRoute(start.getSegmentStart(),true);
     double diff=plusDir - ctx.config.initialDirection;
     if (Math.abs(MapUtils.alignAngleDifference(diff)) <= Math.PI / 3) {
       ctx.firstRoadDirection=1;
@@ -46,9 +46,9 @@
       for (      RouteSegmentResult rr : rlist) {
         RouteSegment segment=new RouteSegment(rr.getObject(),rr.getEndPointIndex());
         if (previous != null) {
-          previous.parentRoute=segment;
-          previous.parentSegmentEnd=rr.getStartPointIndex();
-          long t=(rr.getObject().getId() << ROUTE_POINTS) + segment.segmentStart;
+          previous.setParentRoute(segment);
+          previous.setParentSegmentEnd(rr.getStartPointIndex());
+          long t=(rr.getObject().getId() << ROUTE_POINTS) + segment.getSegmentStart();
           visitedOppositeSegments.put(t,segment);
         }
         previous=segment;
@@ -56,10 +56,10 @@
       end=previous;
     }
   }
-  int targetEndX=end.road.getPoint31XTile(end.segmentStart);
-  int targetEndY=end.road.getPoint31YTile(end.segmentStart);
-  int startX=start.road.getPoint31XTile(start.segmentStart);
-  int startY=start.road.getPoint31YTile(start.segmentStart);
+  int targetEndX=end.road.getPoint31XTile(end.getSegmentStart());
+  int targetEndY=end.road.getPoint31YTile(end.getSegmentStart());
+  int startX=start.road.getPoint31XTile(start.getSegmentStart());
+  int startY=start.road.getPoint31YTile(start.getSegmentStart());
   float estimatedDistance=(float)h(ctx,targetEndX,targetEndY,startX,startY);
   end.distanceToEnd=start.distanceToEnd=estimatedDistance;
   graphDirectSegments.add(start);
@@ -77,7 +77,6 @@
     RouteSegment segment=graphSegments.poll();
     ctx.visitedSegments++;
     if (ctx.visitor != null) {
-      ctx.visitor.visitSegment(segment,true);
     }
     boolean routeFound=false;
     if (!inverse) {

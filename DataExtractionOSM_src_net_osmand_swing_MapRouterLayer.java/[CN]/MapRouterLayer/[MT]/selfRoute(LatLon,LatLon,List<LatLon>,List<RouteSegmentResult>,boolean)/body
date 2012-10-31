@@ -1,0 +1,199 @@
+{
+  List<Way> res=new ArrayList<Way>();
+  long time=System.currentTimeMillis();
+  List<File> files=new ArrayList<File>();
+  for (  File f : new File(DataExtractionSettings.getSettings().getBinaryFilesDir()).listFiles()) {
+    if (f.getName().endsWith(".obf")) {
+      files.add(f);
+    }
+  }
+  String xmlPath=DataExtractionSettings.getSettings().getRoutingXmlPath();
+  Builder builder;
+  if (xmlPath.equals("routing.xml")) {
+    builder=RoutingConfiguration.getDefault();
+  }
+ else {
+    try {
+      builder=RoutingConfiguration.parseFromInputStream(new FileInputStream(xmlPath));
+    }
+ catch (    IOException e) {
+      throw new IllegalArgumentException("Error parsing routing.xml file",e);
+    }
+catch (    SAXException e) {
+      throw new IllegalArgumentException("Error parsing routing.xml file",e);
+    }
+  }
+  final boolean animateRoutingCalculation=DataExtractionSettings.getSettings().isAnimateRouting();
+  if (animateRoutingCalculation) {
+    nextTurn.setVisible(true);
+    playPauseButton.setVisible(true);
+    stopButton.setVisible(true);
+    pause=true;
+    playPauseButton.setText("Play");
+  }
+  stop=false;
+  if (files.isEmpty()) {
+    JOptionPane.showMessageDialog(OsmExtractionUI.MAIN_APP.getFrame(),"Please specify obf file in settings","Obf file not found",JOptionPane.ERROR_MESSAGE);
+    return null;
+  }
+  System.out.println("Self made route from " + start + " to "+ end);
+  if (start != null && end != null) {
+    try {
+      BinaryMapIndexReader[] rs=new BinaryMapIndexReader[files.size()];
+      int it=0;
+      for (      File f : files) {
+        RandomAccessFile raf=new RandomAccessFile(f,"r");
+        rs[it++]=new BinaryMapIndexReader(raf);
+      }
+      String m=DataExtractionSettings.getSettings().getRouteMode();
+      String[] props=m.split("\\,");
+      BinaryRoutePlannerOld router=new BinaryRoutePlannerOld();
+      RoutingConfiguration config=builder.build(props[0],RoutingConfiguration.DEFAULT_MEMORY_LIMIT,props);
+      RoutingContext ctx=new RoutingContext(config,NativeSwingRendering.getDefaultFromSettings(),rs,useBasemap);
+      ctx.previouslyCalculatedRoute=previousRoute;
+      log.info("Use " + config.routerName + "mode for routing");
+      RouteSegment st=router.findRouteSegment(start.getLatitude(),start.getLongitude(),ctx);
+      if (st == null) {
+        throw new RuntimeException("Starting point for route not found");
+      }
+      log.info("Start road " + st.getRoad().getHighway() + " "+ st.getRoad().id);
+      RouteSegment e=router.findRouteSegment(end.getLatitude(),end.getLongitude(),ctx);
+      if (e == null) {
+        throw new RuntimeException("End point to calculate route was not found");
+      }
+      log.info("End road " + e.getRoad().getHighway() + " "+ e.getRoad().id);
+      List<RouteSegment> inters=new ArrayList<BinaryRoutePlanner.RouteSegment>();
+      if (intermediates != null) {
+        int ind=1;
+        for (        LatLon il : intermediates) {
+          RouteSegment is=router.findRouteSegment(il.getLatitude(),il.getLongitude(),ctx);
+          if (is == null) {
+            throw new RuntimeException("Intremediate point " + ind + " was not found.");
+          }
+          inters.add(is);
+          ind++;
+        }
+      }
+      final DataTileManager<Entity> points=new DataTileManager<Entity>(11);
+      map.setPoints(points);
+      ctx.setVisitor(new RouteSegmentVisitor(){
+        private List<RouteSegment> cache=new ArrayList<RouteSegment>();
+        private List<RouteSegment> pollCache=new ArrayList<RouteSegment>();
+        private List<Integer> cacheInt=new ArrayList<Integer>();
+        @Override public void visitSegment(        RouteSegment s,        int endSegment,        boolean poll){
+          if (stop) {
+            throw new RuntimeException("Interrupted");
+          }
+          if (!animateRoutingCalculation) {
+            return;
+          }
+          if (!poll && pause) {
+            pollCache.add(s);
+            return;
+          }
+          cache.add(s);
+          cacheInt.add(endSegment);
+          if (cache.size() < steps) {
+            return;
+          }
+          if (pause) {
+            registerObjects(points,poll,pollCache,null);
+            pollCache.clear();
+          }
+          registerObjects(points,!poll,cache,cacheInt);
+          cache.clear();
+          cacheInt.clear();
+          redraw();
+          if (pause) {
+            waitNextPress();
+          }
+        }
+        private void registerObjects(        final DataTileManager<Entity> points,        boolean white,        List<RouteSegment> registerCache,        List<Integer> cacheInt){
+          for (int l=0; l < registerCache.size(); l++) {
+            RouteSegment segment=registerCache.get(l);
+            Way way=new Way(-1);
+            way.putTag(OSMTagKey.NAME.getValue(),segment.getTestName());
+            if (white) {
+              way.putTag("color","white");
+            }
+            int from=cacheInt != null ? segment.getSegmentStart() : segment.getSegmentStart() - 2;
+            int to=cacheInt != null ? cacheInt.get(l) : segment.getSegmentStart() + 2;
+            if (from > to) {
+              int x=from;
+              from=to;
+              to=x;
+            }
+            for (int i=from; i <= to; i++) {
+              if (i >= 0 && i < segment.getRoad().getPointsLength()) {
+                net.osmand.osm.Node n=createNode(segment,i);
+                way.addNode(n);
+              }
+            }
+            LatLon n=way.getLatLon();
+            points.registerObject(n.getLatitude(),n.getLongitude(),way);
+          }
+        }
+      }
+);
+      List<RouteSegmentResult> searchRoute=router.searchRoute(ctx,st,e,inters,false);
+      this.previousRoute=searchRoute;
+      if (animateRoutingCalculation) {
+        playPauseButton.setVisible(false);
+        nextTurn.setText("FINISH");
+        waitNextPress();
+        nextTurn.setText(">>");
+      }
+      net.osmand.osm.Node prevWayNode=null;
+      for (      RouteSegmentResult s : searchRoute) {
+        Way way=new Way(-1);
+        String name=s.getDescription();
+        if (s.getTurnType() != null) {
+          name+=" (TA " + s.getTurnType().getTurnAngle() + ") ";
+        }
+        way.putTag(OSMTagKey.NAME.getValue(),name);
+        boolean plus=s.getStartPointIndex() < s.getEndPointIndex();
+        int i=s.getStartPointIndex();
+        while (true) {
+          LatLon l=s.getPoint(i);
+          net.osmand.osm.Node n=new net.osmand.osm.Node(l.getLatitude(),l.getLongitude(),-1);
+          if (prevWayNode != null) {
+            if (MapUtils.getDistance(prevWayNode,n) > 0) {
+              System.out.println("Warning not connected road " + " " + s.getObject().getHighway() + " dist "+ MapUtils.getDistance(prevWayNode,n));
+            }
+            prevWayNode=null;
+          }
+          way.addNode(n);
+          if (i == s.getEndPointIndex()) {
+            break;
+          }
+          if (plus) {
+            i++;
+          }
+ else {
+            i--;
+          }
+        }
+        if (way.getNodes().size() > 0) {
+          prevWayNode=way.getNodes().get(way.getNodes().size() - 1);
+        }
+        res.add(way);
+      }
+    }
+ catch (    IOException e) {
+      ExceptionHandler.handle(e);
+    }
+catch (    InterruptedException e) {
+      ExceptionHandler.handle(e);
+    }
+ finally {
+      playPauseButton.setVisible(false);
+      nextTurn.setVisible(false);
+      stopButton.setVisible(false);
+      if (map.getPoints() != null) {
+        map.getPoints().clear();
+      }
+    }
+    System.out.println("Finding self routes " + res.size() + " "+ (System.currentTimeMillis() - time)+ " ms");
+  }
+  return res;
+}

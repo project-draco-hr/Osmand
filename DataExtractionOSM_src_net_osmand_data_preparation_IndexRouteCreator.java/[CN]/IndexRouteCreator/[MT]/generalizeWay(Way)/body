@@ -1,0 +1,30 @@
+{
+  List<Node> ns=e.getNodes();
+  GeneralizedWay w=new GeneralizedWay(e.getId());
+  TIntArrayList px=w.px;
+  TIntArrayList py=w.py;
+  GeneralizedCluster cluster=null;
+  for (  Node n : ns) {
+    if (n != null) {
+      int x31=MapUtils.get31TileNumberX(n.getLongitude());
+      int y31=MapUtils.get31TileNumberY(n.getLatitude());
+      px.add(x31);
+      py.add(y31);
+    }
+  }
+  if (w.size() < 2) {
+    return;
+  }
+  for (int i=0; i < w.size(); i++) {
+    GeneralizedCluster ncluster=getCluster(w,i,cluster);
+    if (ncluster != cluster) {
+      cluster=ncluster;
+    }
+    ncluster.addWayFromLocation(w,i);
+  }
+  int mt=getMainType(outTypes);
+  outTypes.remove(mt);
+  w.mainType=mt;
+  w.addtypes.addAll(outTypes);
+  w.names.putAll(names);
+}

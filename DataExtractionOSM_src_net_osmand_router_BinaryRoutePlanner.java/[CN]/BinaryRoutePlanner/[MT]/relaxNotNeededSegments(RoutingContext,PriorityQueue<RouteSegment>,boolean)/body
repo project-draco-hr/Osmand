@@ -1,20 +1,22 @@
 {
   RouteSegment next=graphSegments.peek();
-  double mine=next.distanceToEnd;
+  double mine=next.distanceFromStart;
   Iterator<RouteSegment> iterator=graphSegments.iterator();
   while (iterator.hasNext()) {
     RouteSegment s=iterator.next();
-    if (s.distanceToEnd < mine) {
-      mine=s.distanceToEnd;
+    if (s.distanceFromStart > mine) {
+      mine=s.distanceFromStart;
     }
   }
-  double d=mine * ctx.config.RELAX_NODES_IF_START_DIST_COEF;
-  iterator=graphSegments.iterator();
-  while (iterator.hasNext()) {
-    RouteSegment s=iterator.next();
-    if (s.distanceToEnd > d) {
-      ctx.relaxedSegments++;
-      iterator.remove();
+  double d=mine - 50000;
+  if (d > 0) {
+    iterator=graphSegments.iterator();
+    while (iterator.hasNext()) {
+      RouteSegment s=iterator.next();
+      if (s.distanceFromStart < d) {
+        ctx.relaxedSegments++;
+        iterator.remove();
+      }
     }
   }
 }

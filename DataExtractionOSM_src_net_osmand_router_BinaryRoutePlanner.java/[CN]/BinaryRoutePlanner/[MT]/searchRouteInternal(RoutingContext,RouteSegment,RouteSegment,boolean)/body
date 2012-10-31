@@ -1,10 +1,11 @@
 {
   ctx.timeToLoad=0;
   ctx.visitedSegments=0;
+  ctx.memoryOverhead=1000;
   ctx.timeToCalculate=System.nanoTime();
   if (ctx.config.initialDirection != null) {
-    ctx.firstRoadId=(start.getRoad().id << ROUTE_POINTS) + start.getSegmentStart();
-    double plusDir=start.getRoad().directionRoute(start.segmentStart,true);
+    ctx.firstRoadId=calculateRoutePointId(start.getRoad(),start.getSegmentStart(),true);
+    double plusDir=start.getRoad().directionRoute(start.getSegmentStart(),true);
     double diff=plusDir - ctx.config.initialDirection;
     if (Math.abs(MapUtils.alignAngleDifference(diff)) <= Math.PI / 3) {
       ctx.firstRoadDirection=1;
@@ -13,54 +14,22 @@
       ctx.firstRoadDirection=-1;
     }
   }
-  Comparator<RouteSegment> segmentsComparator=new Comparator<RouteSegment>(){
-    @Override public int compare(    RouteSegment o1,    RouteSegment o2){
-      return ctx.roadPriorityComparator(o1.distanceFromStart,o1.distanceToEnd,o2.distanceFromStart,o2.distanceToEnd);
-    }
-  }
-;
-  Comparator<RouteSegment> nonHeuristicSegmentsComparator=new Comparator<RouteSegment>(){
-    @Override public int compare(    RouteSegment o1,    RouteSegment o2){
-      return roadPriorityComparator(o1.distanceFromStart,o1.distanceToEnd,o2.distanceFromStart,o2.distanceToEnd,0.5);
-    }
-  }
-;
-  PriorityQueue<RouteSegment> graphDirectSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
-  PriorityQueue<RouteSegment> graphReverseSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
+  Comparator<RouteSegment> nonHeuristicSegmentsComparator=new NonHeuristicSegmentsComparator();
+  PriorityQueue<RouteSegment> graphDirectSegments=new PriorityQueue<RouteSegment>(50,new SegmentsComparator(ctx));
+  PriorityQueue<RouteSegment> graphReverseSegments=new PriorityQueue<RouteSegment>(50,new SegmentsComparator(ctx));
   TLongObjectHashMap<RouteSegment> visitedDirectSegments=new TLongObjectHashMap<RouteSegment>();
   TLongObjectHashMap<RouteSegment> visitedOppositeSegments=new TLongObjectHashMap<RouteSegment>();
-  boolean runRecalculation=ctx.previouslyCalculatedRoute != null && ctx.previouslyCalculatedRoute.size() > 0;
-  if (runRecalculation) {
-    RouteSegment previous=null;
-    List<RouteSegmentResult> rlist=new ArrayList<RouteSegmentResult>();
-    int distanceThreshold=7000;
-    float threshold=0;
-    for (    RouteSegmentResult rr : ctx.previouslyCalculatedRoute) {
-      threshold+=rr.getDistance();
-      if (threshold > distanceThreshold) {
-        rlist.add(rr);
-      }
-    }
-    runRecalculation=rlist.size() > 0;
-    if (rlist.size() > 0) {
-      for (      RouteSegmentResult rr : rlist) {
-        RouteSegment segment=new RouteSegment(rr.getObject(),rr.getEndPointIndex());
-        if (previous != null) {
-          previous.parentRoute=segment;
-          previous.parentSegmentEnd=rr.getStartPointIndex();
-          long t=(rr.getObject().getId() << ROUTE_POINTS) + segment.segmentStart;
-          visitedOppositeSegments.put(t,segment);
-        }
-        previous=segment;
-      }
-      end=previous;
-    }
+  RouteSegment recalcEndSegment=smartRecalculationEnabled(ctx,visitedOppositeSegments);
+  boolean runRecalculation=false;
+  if (recalcEndSegment != null) {
+    runRecalculation=true;
+    end=recalcEndSegment;
   }
-  int targetEndX=end.road.getPoint31XTile(end.segmentStart);
-  int targetEndY=end.road.getPoint31YTile(end.segmentStart);
-  int startX=start.road.getPoint31XTile(start.segmentStart);
-  int startY=start.road.getPoint31YTile(start.segmentStart);
-  float estimatedDistance=(float)h(ctx,targetEndX,targetEndY,startX,startY);
+  ctx.targetX=end.road.getPoint31XTile(end.getSegmentStart());
+  ctx.targetY=end.road.getPoint31YTile(end.getSegmentStart());
+  ctx.startX=start.road.getPoint31XTile(start.getSegmentStart());
+  ctx.startY=start.road.getPoint31YTile(start.getSegmentStart());
+  float estimatedDistance=(float)estimatedDistance(ctx,ctx.targetX,ctx.targetY,ctx.startX,ctx.startY);
   end.distanceToEnd=start.distanceToEnd=estimatedDistance;
   graphDirectSegments.add(start);
   graphReverseSegments.add(end);
@@ -73,21 +42,42 @@
  else {
     graphSegments=graphDirectSegments;
   }
+  ctx.loadBorderPoints();
+  FinalRouteSegment finalSegment=null;
   while (!graphSegments.isEmpty()) {
     RouteSegment segment=graphSegments.poll();
-    ctx.visitedSegments++;
-    if (ctx.visitor != null) {
-      ctx.visitor.visitSegment(segment,true);
+    ctx.memoryOverhead=(visitedDirectSegments.size() + visitedOppositeSegments.size()) * STANDARD_ROAD_VISITED_OVERHEAD + (graphDirectSegments.size() + graphReverseSegments.size()) * STANDARD_ROAD_IN_QUEUE_OVERHEAD;
+    if (TRACE_ROUTING) {
+      printRoad(">",segment);
     }
-    boolean routeFound=false;
+    if (segment instanceof FinalRouteSegment) {
+      if (RoutingContext.SHOW_GC_SIZE) {
+        log.warn("Estimated overhead " + (ctx.memoryOverhead / (1 << 20)) + " mb");
+        printMemoryConsumption("Memory occupied after calculation : ");
+      }
+      finalSegment=(FinalRouteSegment)segment;
+      break;
+    }
+    if (ctx.memoryOverhead > ctx.config.memoryLimitation * 0.95 && RoutingContext.SHOW_GC_SIZE) {
+      printMemoryConsumption("Memory occupied before exception : ");
+    }
+    if (ctx.memoryOverhead > ctx.config.memoryLimitation * 0.95) {
+      throw new IllegalStateException("There is no enough memory " + ctx.config.memoryLimitation / (1 << 20) + " Mb");
+    }
+    ctx.visitedSegments++;
     if (!inverse) {
-      routeFound=processRouteSegment(ctx,false,graphDirectSegments,visitedDirectSegments,targetEndX,targetEndY,segment,visitedOppositeSegments);
+      processRouteSegment(ctx,false,graphDirectSegments,visitedDirectSegments,ctx.targetX,ctx.targetY,segment,visitedOppositeSegments,true);
+      processRouteSegment(ctx,false,graphDirectSegments,visitedDirectSegments,ctx.targetX,ctx.targetY,segment,visitedOppositeSegments,false);
     }
  else {
-      routeFound=processRouteSegment(ctx,true,graphReverseSegments,visitedOppositeSegments,startX,startY,segment,visitedDirectSegments);
+      processRouteSegment(ctx,true,graphReverseSegments,visitedOppositeSegments,ctx.startX,ctx.startY,segment,visitedDirectSegments,true);
+      processRouteSegment(ctx,true,graphReverseSegments,visitedOppositeSegments,ctx.startX,ctx.startY,segment,visitedDirectSegments,false);
     }
-    if (graphReverseSegments.isEmpty() || graphDirectSegments.isEmpty() || routeFound) {
-      break;
+    if (graphReverseSegments.isEmpty()) {
+      throw new IllegalArgumentException("Route is not found to selected target point.");
+    }
+    if (graphDirectSegments.isEmpty()) {
+      throw new IllegalArgumentException("Route is not found from selected start point.");
     }
     if (runRecalculation) {
       inverse=false;
@@ -122,6 +112,6 @@
       throw new InterruptedException("Route calculation interrupted");
     }
   }
-  println("Result is found");
   printDebugMemoryInformation(ctx,graphDirectSegments,graphReverseSegments,visitedDirectSegments,visitedOppositeSegments);
+  return finalSegment;
 }

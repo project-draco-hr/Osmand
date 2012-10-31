@@ -1,0 +1,46 @@
+{
+  GeneralizedCluster cluster=null;
+  while (true) {
+    int ind=first ? 0 : gw.size() - 1;
+    cluster=getCluster(gw,ind,cluster);
+    GeneralizedWay prev=selectBestWay(cluster,gw,ind);
+    if (prev == null) {
+      break;
+    }
+    for (int i=0; i < prev.size(); i++) {
+      cluster=getCluster(prev,i,cluster);
+      cluster.replaceWayFromLocation(prev,i,gw);
+    }
+    mergeAddTypes(prev,gw);
+    for (    MapRouteType rt : new ArrayList<MapRouteType>(gw.names.keySet())) {
+      mergeName(rt,prev,gw);
+    }
+    for (    MapRouteType rt : new ArrayList<MapRouteType>(prev.names.keySet())) {
+      if (!gw.names.containsKey(rt)) {
+        mergeName(rt,prev,gw);
+      }
+    }
+    TIntArrayList ax=first ? prev.px : gw.px;
+    TIntArrayList ay=first ? prev.py : gw.py;
+    TIntArrayList bx=!first ? prev.px : gw.px;
+    TIntArrayList by=!first ? prev.py : gw.py;
+    if (first) {
+      if (gw.getLocation(0) == prev.getLocation(0)) {
+        ax.reverse();
+        ay.reverse();
+      }
+    }
+ else {
+      if (gw.getLocation(ind) == prev.getLocation(prev.size() - 1)) {
+        bx.reverse();
+        by.reverse();
+      }
+    }
+    bx.removeAt(0);
+    by.removeAt(0);
+    ax.addAll(bx);
+    ay.addAll(by);
+    gw.px=ax;
+    gw.py=ay;
+  }
+}
