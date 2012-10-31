@@ -1,0 +1,71 @@
+{
+  boolean thereAreRestrictions=proccessRestrictions(ctx,segment.road,inputNext,reverseWay);
+  Iterator<RouteSegment> nextIterator=null;
+  if (thereAreRestrictions) {
+    nextIterator=ctx.segmentsToVisitPrescripted.iterator();
+  }
+  RouteSegment next=inputNext;
+  boolean hasNext=nextIterator == null || nextIterator.hasNext();
+  while (hasNext) {
+    if (nextIterator != null) {
+      next=nextIterator.next();
+    }
+    long nts=(next.road.getId() << ROUTE_POINTS) + next.segmentStart;
+    if (oppositeSegments.contains(nts) && oppositeSegments.get(nts) != null) {
+      RouteSegment opposite=oppositeSegments.get(nts);
+      if (next.segmentStart != segmentEnd || opposite.getRoad().getId() != segment.getRoad().getId()) {
+        if (reverseWay) {
+          ctx.finalReverseEndSegment=segmentEnd;
+          ctx.finalReverseRoute=segment;
+          ctx.finalDirectEndSegment=next.segmentStart;
+          ctx.finalDirectRoute=opposite;
+        }
+ else {
+          ctx.finalDirectEndSegment=segmentEnd;
+          ctx.finalDirectRoute=segment;
+          ctx.finalReverseEndSegment=next.segmentStart;
+          ctx.finalReverseRoute=opposite;
+        }
+        return true;
+      }
+    }
+    boolean alreadyVisited=visitedSegments.contains(nts);
+    if (!alreadyVisited) {
+      double distanceToEnd=h(ctx,distToFinalPoint,next);
+      if (next.parentRoute == null || ctx.roadPriorityComparator(next.distanceFromStart,next.distanceToEnd,distFromStart,distanceToEnd) > 0) {
+        if (next.parentRoute != null) {
+          if (!graphSegments.remove(next)) {
+            RouteSegment cpy=new RouteSegment(next.getRoad(),next.segmentStart);
+            next=cpy;
+          }
+        }
+        next.distanceFromStart=distFromStart;
+        next.distanceToEnd=distanceToEnd;
+        next.parentRoute=segment;
+        next.parentSegmentEnd=segmentEnd;
+        graphSegments.add(next);
+      }
+      if (ctx.visitor != null) {
+        ctx.visitor.visitSegment(next,false);
+      }
+    }
+ else {
+      if (distFromStart < next.distanceFromStart && next.road.id != segment.road.id) {
+        next.distanceFromStart=distFromStart;
+        next.parentRoute=segment;
+        next.parentSegmentEnd=segmentEnd;
+        if (ctx.visitor != null) {
+          ctx.visitor.visitSegment(next,false);
+        }
+      }
+    }
+    if (nextIterator == null) {
+      next=next.next;
+      hasNext=next != null;
+    }
+ else {
+      hasNext=nextIterator.hasNext();
+    }
+  }
+  return false;
+}
