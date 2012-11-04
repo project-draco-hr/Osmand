@@ -9,16 +9,17 @@
       String previousTag=null;
       @Override public void startElement(      String uri,      String localName,      String qName,      Attributes attributes) throws SAXException {
         String name=parser.isNamespaceAware() ? localName : qName;
+        previousTag=name;
         if ("osmand_routing_config".equals(name)) {
           config.defaultRouter=attributes.getValue("defaultProfile");
         }
  else         if ("attribute".equals(name)) {
-          previousKey=attributes.getValue("name");
-          previousTag=name;
-          if (currentSelectedRouter != null) {
-            previousKey=currentSelectedRouter + "$" + previousKey;
+          if (currentRouter != null) {
+            currentRouter.addAttribute(attributes.getValue("name"),attributes.getValue("value"));
           }
-          config.attributes.put(previousKey,attributes.getValue("value"));
+ else {
+            config.attributes.put(attributes.getValue("name"),attributes.getValue("value"));
+          }
         }
  else         if ("routingProfile".equals(name)) {
           currentSelectedRouter=attributes.getValue("name");
@@ -42,11 +43,11 @@
             if (attributes.getValue("priority") != null) {
               currentRouter.highwayPriorities.put(k,parseSilentFloat(attributes.getValue("priority"),0));
             }
-            if (attributes.getValue("dynamicPriority") != null) {
-              currentRouter.highwayFuturePriorities.put(k,parseSilentFloat(attributes.getValue("dynamicPriority"),0));
-            }
             if (attributes.getValue("speed") != null) {
               currentRouter.highwaySpeed.put(k,parseSilentFloat(attributes.getValue("speed"),0));
+            }
+            if ("attribute".equals(previousTag)) {
+              currentRouter.attributes.put(k,attributes.getValue("value"));
             }
             if ("avoid".equals(previousTag)) {
               float priority=parseSilentFloat(attributes.getValue("decreasedPriority"),0);
@@ -60,14 +61,11 @@
           }
         }
  else         if ("road".equals(name)) {
-          previousTag=name;
           previousKey=attributes.getValue("tag") + "$" + attributes.getValue("value");
           currentRouter.highwayPriorities.put(previousKey,parseSilentFloat(attributes.getValue("priority"),1));
-          currentRouter.highwayFuturePriorities.put(previousKey,parseSilentFloat(attributes.getValue("dynamicPriority"),1));
           currentRouter.highwaySpeed.put(previousKey,parseSilentFloat(attributes.getValue("speed"),10));
         }
  else         if ("obstacle".equals(name)) {
-          previousTag=name;
           previousKey=attributes.getValue("tag") + "$" + attributes.getValue("value");
           float penalty=parseSilentFloat(attributes.getValue("penalty"),0);
           currentRouter.obstacles.put(previousKey,penalty);
@@ -75,7 +73,6 @@
           currentRouter.routingObstacles.put(previousKey,routingPenalty);
         }
  else         if ("avoid".equals(name)) {
-          previousTag=name;
           previousKey=attributes.getValue("tag") + "$" + attributes.getValue("value");
           float priority=parseSilentFloat(attributes.getValue("decreasedPriority"),0);
           if (priority == 0) {

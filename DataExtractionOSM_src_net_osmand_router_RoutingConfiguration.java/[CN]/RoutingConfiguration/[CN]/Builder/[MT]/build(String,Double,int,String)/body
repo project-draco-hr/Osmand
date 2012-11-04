@@ -3,10 +3,21 @@
     router=defaultRouter;
   }
   RoutingConfiguration i=new RoutingConfiguration();
+  if (routers.containsKey(router)) {
+    i.router=routers.get(router);
+    if (specialization != null) {
+      for (      String s : specialization) {
+        i.router=i.router.specialization(s);
+      }
+    }
+    i.routerName=router;
+  }
+  attributes.put("routerName",router);
+  i.attributes.putAll(attributes);
   i.initialDirection=direction;
-  i.heuristicCoefficient=parseSilentFloat(getAttribute(router,"heuristicCoefficient"),i.heuristicCoefficient);
-  i.ZOOM_TO_LOAD_TILES=parseSilentInt(getAttribute(router,"zoomToLoadTiles"),i.ZOOM_TO_LOAD_TILES);
-  int desirable=parseSilentInt(getAttribute(router,"memoryLimitInMB"),0);
+  i.heuristicCoefficient=parseSilentFloat(getAttribute(i.router,"heuristicCoefficient"),i.heuristicCoefficient);
+  i.ZOOM_TO_LOAD_TILES=parseSilentInt(getAttribute(i.router,"zoomToLoadTiles"),i.ZOOM_TO_LOAD_TILES);
+  int desirable=parseSilentInt(getAttribute(i.router,"memoryLimitInMB"),0);
   if (desirable != 0) {
     i.memoryLimitation=desirable * (1 << 20);
   }
@@ -16,21 +27,6 @@
     }
     i.memoryLimitation=memoryLimitMB * (1 << 20);
   }
-  i.useDynamicRoadPrioritising=parseSilentBoolean(getAttribute(router,"useDynamicRoadPrioritising"),i.useDynamicRoadPrioritising);
-  i.useRelaxingStrategy=parseSilentBoolean(getAttribute(router,"useRelaxingStrategy"),i.useRelaxingStrategy);
-  i.dynamicRoadPriorityDistance=parseSilentInt(getAttribute(router,"dynamicRoadPriorityDistance"),i.dynamicRoadPriorityDistance);
-  i.ITERATIONS_TO_RELAX_NODES=parseSilentInt(getAttribute(router,"iterationsToRelaxRoutes"),i.ITERATIONS_TO_RELAX_NODES);
-  i.RELAX_NODES_IF_START_DIST_COEF=parseSilentFloat(getAttribute(router,"relaxNodesIfStartDistSmallCoeff"),i.RELAX_NODES_IF_START_DIST_COEF);
   i.planRoadDirection=parseSilentInt(getAttribute(router,"planRoadDirection"),i.planRoadDirection);
-  if (!routers.containsKey(router)) {
-    return i;
-  }
-  i.router=routers.get(router);
-  if (specialization != null) {
-    for (    String s : specialization) {
-      i.router=i.router.specialization(s);
-    }
-  }
-  i.routerName=router;
   return i;
 }
