@@ -29,11 +29,11 @@
   PriorityQueue<RouteSegment> graphReverseSegments=new PriorityQueue<RouteSegment>(50,segmentsComparator);
   TLongObjectHashMap<RouteSegment> visitedDirectSegments=new TLongObjectHashMap<RouteSegment>();
   TLongObjectHashMap<RouteSegment> visitedOppositeSegments=new TLongObjectHashMap<RouteSegment>();
-  boolean runRecalculation=ctx.previouslyCalculatedRoute != null && ctx.previouslyCalculatedRoute.size() > 0;
+  boolean runRecalculation=ctx.previouslyCalculatedRoute != null && ctx.previouslyCalculatedRoute.size() > 0 && ctx.config.recalculateDistance != 0;
   if (runRecalculation) {
     RouteSegment previous=null;
     List<RouteSegmentResult> rlist=new ArrayList<RouteSegmentResult>();
-    int distanceThreshold=7000;
+    float distanceThreshold=ctx.config.recalculateDistance;
     float threshold=0;
     for (    RouteSegmentResult rr : ctx.previouslyCalculatedRoute) {
       threshold+=rr.getDistance();
@@ -112,10 +112,6 @@
     }
  else {
       graphSegments=graphDirectSegments;
-    }
-    if (ctx.runRelaxingStrategy()) {
-      relaxNotNeededSegments(ctx,graphDirectSegments,true);
-      relaxNotNeededSegments(ctx,graphReverseSegments,false);
     }
     if (ctx.interruptable != null && ctx.interruptable.isCancelled()) {
       throw new InterruptedException("Route calculation interrupted");

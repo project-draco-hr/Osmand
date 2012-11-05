@@ -17,8 +17,29 @@
       }
     }
   }
-  RouteSegment routeSegment=ctx.loadRouteSegment(road.getPoint31XTile(pointInd),road.getPoint31YTile(pointInd),ctx.config.memoryLimitation);
-  while (routeSegment != null) {
+  Iterator<RouteSegment> it;
+  if (rr.getPreAttachedRoutes(pointInd) != null) {
+    final RouteSegmentResult[] list=rr.getPreAttachedRoutes(pointInd);
+    it=new Iterator<BinaryRoutePlanner.RouteSegment>(){
+      int i=0;
+      @Override public boolean hasNext(){
+        return i < list.length;
+      }
+      @Override public RouteSegment next(){
+        RouteSegmentResult r=list[i++];
+        return new RouteSegment(r.getObject(),r.getStartPointIndex());
+      }
+      @Override public void remove(){
+      }
+    }
+;
+  }
+ else {
+    RouteSegment rt=ctx.loadRouteSegment(road.getPoint31XTile(pointInd),road.getPoint31YTile(pointInd),ctx.config.memoryLimitation);
+    it=rt.getIterator();
+  }
+  while (it.hasNext()) {
+    RouteSegment routeSegment=it.next();
     if (routeSegment.road.getId() != road.getId() && routeSegment.road.getId() != previousRoadId) {
       RouteDataObject addRoad=routeSegment.road;
       int oneWay=ctx.getRouter().isOneWay(addRoad);
@@ -35,6 +56,5 @@
         }
       }
     }
-    routeSegment=routeSegment.next;
   }
 }
