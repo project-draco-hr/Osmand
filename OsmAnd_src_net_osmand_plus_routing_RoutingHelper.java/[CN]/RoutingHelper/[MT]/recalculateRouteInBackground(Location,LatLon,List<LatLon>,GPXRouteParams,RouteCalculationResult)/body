@@ -4,7 +4,7 @@
   }
   if (currentRunningJob == null) {
     if (System.currentTimeMillis() - lastTimeEvaluatedRoute > evalWaitInterval) {
-      RouteCalcuationParams params=new RouteCalcuationParams();
+      RouteCalculationParams params=new RouteCalculationParams();
       params.start=start;
       params.end=end;
       params.intermediates=intermediates;
@@ -16,6 +16,10 @@
       params.type=settings.ROUTER_SERVICE.getModeValue(mode);
       params.mode=mode;
       params.ctx=app;
+      if (previousRoute == null && params.type == RouteService.OSMAND) {
+        params.calculationProgress=new RouteCalculationProgress();
+        updateProgress(params.calculationProgress);
+      }
 synchronized (this) {
         currentRunningJob=new RouteRecalculationThread("Calculating route",params);
         currentRunningJob.start();
