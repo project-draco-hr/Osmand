@@ -1,36 +1,44 @@
 {
   FileFilter fileFilter=null;
-  if (args[start].startsWith("--ff=")) {
-    try {
+  int p;
+  do {
+    p=start;
+    if (args[start].startsWith("--ff=")) {
+      try {
+        if (fileFilter == null) {
+          fileFilter=new FileFilter();
+        }
+        fileFilter.parseFile(args[start].substring("--ff=".length()));
+      }
+ catch (      IOException e) {
+        throw new IndexUploadException(e.getMessage());
+      }
+      start++;
+    }
+ else     if (args[start].startsWith("--fp=")) {
       if (fileFilter == null) {
         fileFilter=new FileFilter();
       }
-      fileFilter.parseFile(args[start].substring("--ff=".length()));
+      fileFilter.parseCSV(args[start].substring("--fp=".length()));
+      start++;
     }
- catch (    IOException e) {
-      throw new IndexUploadException(e.getMessage());
+ else     if (args[start].startsWith("--ep=")) {
+      if (fileFilter == null) {
+        throw new NullPointerException();
+      }
+      fileFilter.parseExcludeCSV(args[start].substring("--ep=".length()));
+      start++;
     }
-    start++;
-  }
-  if (args[start].startsWith("--fp=")) {
-    if (fileFilter == null) {
-      fileFilter=new FileFilter();
+ else     if (args[start].startsWith("--dp=")) {
+      deleteFileFilter=new FileFilter();
+      deleteFileFilter.parseCSV(args[start].substring("--dp=".length()));
+      start++;
     }
-    fileFilter.parseCSV(args[start].substring("--fp=".length()));
-    start++;
-  }
-  if (args[start].startsWith("--ep=")) {
-    if (fileFilter == null) {
-      throw new NullPointerException();
+ else     if (args[start].startsWith("--roads")) {
+      roadProcess=true;
     }
-    fileFilter.parseExcludeCSV(args[start].substring("--ep=".length()));
-    start++;
   }
-  if (args[start].startsWith("--dp=")) {
-    deleteFileFilter=new FileFilter();
-    deleteFileFilter.parseCSV(args[start].substring("--dp=".length()));
-    start++;
-  }
+ while (p != start);
   if (fileFilter != null) {
     this.fileFilter=fileFilter;
   }

@@ -1,6 +1,5 @@
 {
   String fileName=f.getName();
-  String summary=null;
   if (fileName.endsWith(IndexConstants.BINARY_MAP_INDEX_EXT) || fileName.endsWith(IndexConstants.BINARY_MAP_INDEX_EXT_ZIP)) {
     RandomAccessFile raf=null;
     try {
@@ -9,25 +8,13 @@
       if (reader.getVersion() != IndexConstants.BINARY_MAP_VERSION) {
         throw new OneFileException("Uploader version is not compatible " + reader.getVersion() + " to current "+ IndexConstants.BINARY_MAP_VERSION);
       }
-      summary=" index for ";
-      boolean fir=true;
-      if (reader.containsAddressData()) {
-        summary="Address" + (fir ? "" : ", ") + summary;
-        fir=false;
+      boolean roadFile=reader.containsRouteData() && !reader.containsMapData();
+      if (roadFile != this.roadProcess) {
+        return null;
       }
-      if (reader.hasTransportData()) {
-        summary="Transport" + (fir ? "" : ", ") + summary;
-        fir=false;
-      }
-      if (reader.containsPoiData()) {
-        summary="POI" + (fir ? "" : ", ") + summary;
-        fir=false;
-      }
-      if (reader.containsMapData()) {
-        summary="Map" + (fir ? "" : ", ") + summary;
-        fir=false;
-      }
+      String summary=getDescription(reader,fileName);
       reader.close();
+      return summary;
     }
  catch (    IOException e) {
       if (raf != null) {
@@ -43,12 +30,4 @@
  else {
     throw new OneFileException("Not supported file format " + fileName);
   }
-  int last=fileName.lastIndexOf('_',fileName.indexOf('.'));
-  if (last == -1) {
-    last=fileName.indexOf('.');
-  }
-  String regionName=fileName.substring(0,last);
-  summary+=regionName;
-  summary=summary.replace('_',' ');
-  return summary;
 }
