@@ -1,0 +1,59 @@
+{
+  View v=convertView;
+  if (v == null) {
+    LayoutInflater inflater=downloadActivity.getLayoutInflater();
+    v=inflater.inflate(net.osmand.plus.R.layout.download_index_list_item,parent,false);
+  }
+  final View row=v;
+  TextView item=(TextView)row.findViewById(R.id.download_item);
+  TextView description=(TextView)row.findViewById(R.id.download_descr);
+  IndexItem e=(IndexItem)getChild(groupPosition,childPosition);
+  item.setText((e.getVisibleDescription(downloadActivity,downloadActivity.getType()) + "\n" + e.getVisibleName()).trim());
+  description.setText(e.getDate() + "\n" + e.getSize()+ " MB");
+  CheckBox ch=(CheckBox)row.findViewById(R.id.check_download_item);
+  ch.setChecked(downloadActivity.getEntriesToDownload().containsKey(e.getFileName()));
+  ch.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      final CheckBox ch=(CheckBox)v.findViewById(R.id.check_download_item);
+      ch.setChecked(!ch.isChecked());
+      downloadActivity.onChildClick(downloadActivity.getListView(),row,groupPosition,childPosition,getChildId(groupPosition,childPosition));
+    }
+  }
+);
+  if (indexFileNames != null) {
+    String sfName=e.convertServerFileNameToLocal();
+    if (!indexFileNames.containsKey(sfName)) {
+      item.setTextColor(downloadActivity.getResources().getColor(R.color.index_unknown));
+      item.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+    }
+ else {
+      if (e.getDate() != null) {
+        if (e.getDate().equals(indexActivatedFileNames.get(sfName))) {
+          item.setText(item.getText() + "\n" + downloadActivity.getResources().getString(R.string.local_index_installed)+ " : "+ indexActivatedFileNames.get(sfName));
+          item.setTextColor(downloadActivity.getResources().getColor(R.color.act_index_uptodate));
+          item.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+        }
+ else         if (e.getDate().equals(indexFileNames.get(sfName))) {
+          item.setText(item.getText() + "\n" + downloadActivity.getResources().getString(R.string.local_index_installed)+ " : "+ indexFileNames.get(sfName));
+          item.setTextColor(downloadActivity.getResources().getColor(R.color.act_index_uptodate));
+          item.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
+        }
+ else         if (indexActivatedFileNames.containsKey(sfName)) {
+          item.setText(item.getText() + "\n" + downloadActivity.getResources().getString(R.string.local_index_installed)+ " : "+ indexActivatedFileNames.get(sfName));
+          item.setTextColor(downloadActivity.getResources().getColor(R.color.act_index_updateable));
+          item.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+        }
+ else {
+          item.setText(item.getText() + "\n" + downloadActivity.getResources().getString(R.string.local_index_installed)+ " : "+ indexFileNames.get(sfName));
+          item.setTextColor(downloadActivity.getResources().getColor(R.color.act_index_updateable));
+          item.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
+        }
+      }
+ else {
+        item.setTextColor(downloadActivity.getResources().getColor(R.color.act_index_uptodate));
+        item.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+      }
+    }
+  }
+  return row;
+}

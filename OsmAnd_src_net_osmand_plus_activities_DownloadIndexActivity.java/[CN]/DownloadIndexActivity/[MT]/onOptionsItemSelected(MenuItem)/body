@@ -7,11 +7,13 @@
     final DownloadIndexAdapter listAdapter=(DownloadIndexAdapter)getExpandableListAdapter();
     if (item.getItemId() == SELECT_ALL_ID) {
       int selected=0;
-      for (int i=0; i < listAdapter.getChildrenCount(0); i++) {
-        IndexItem es=listAdapter.getChild(0,i);
-        if (!entriesToDownload.containsKey(es.getFileName())) {
-          selected++;
-          entriesToDownload.put(es.getFileName(),es.createDownloadEntry(DownloadIndexActivity.this));
+      for (int j=0; j < listAdapter.getGroupCount(); j++) {
+        for (int i=0; i < listAdapter.getChildrenCount(j); i++) {
+          IndexItem es=listAdapter.getChild(j,i);
+          if (!entriesToDownload.containsKey(es.getFileName())) {
+            selected++;
+            entriesToDownload.put(es.getFileName(),es.createDownloadEntry(DownloadIndexActivity.this,type));
+          }
         }
       }
       AccessibleToast.makeText(this,MessageFormat.format(getString(R.string.items_were_selected),selected),Toast.LENGTH_SHORT).show();
@@ -21,15 +23,22 @@
       }
     }
  else     if (item.getItemId() == FILTER_EXISTING_REGIONS) {
-      final Collection<String> listAlreadyDownloaded=listAlreadyDownloadedWithAlternatives();
+      final Set<String> listAlreadyDownloaded=listAlreadyDownloadedWithAlternatives();
       final List<IndexItem> filtered=new ArrayList<IndexItem>();
-      for (      String file : listAlreadyDownloaded) {
-        IndexItem fileItem=listAdapter.getIndexFiles().get(file);
-        if (fileItem != null) {
+      for (      IndexItem fileItem : listAdapter.getIndexFiles()) {
+        if (listAlreadyDownloaded.contains(fileItem.convertServerFileNameToLocal())) {
           filtered.add(fileItem);
         }
       }
       listAdapter.setIndexFiles(filtered);
+    }
+ else     if (item.getItemId() == DOWNLOAD_FILES_TYPE) {
+      if (type == DownloadActivityType.ROADS_FILE) {
+        changeType(DownloadActivityType.NORMAL_FILE);
+      }
+ else {
+        changeType(DownloadActivityType.ROADS_FILE);
+      }
     }
  else     if (item.getItemId() == DESELECT_ALL_ID) {
       entriesToDownload.clear();

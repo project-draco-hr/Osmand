@@ -1,0 +1,52 @@
+{
+  String[] list;
+  try {
+    String ext=IndexItem.addVersionToExt(IndexConstants.TTSVOICE_INDEX_EXT_ZIP,IndexConstants.TTSVOICE_VERSION);
+    String extvoice=IndexItem.addVersionToExt(IndexConstants.VOICE_INDEX_EXT_ZIP,IndexConstants.VOICE_VERSION);
+    File voicePath=settings.extendOsmandPath(ResourceManager.VOICE_PATH);
+    list=amanager.list("voice");
+    String date="";
+    long dateModified=System.currentTimeMillis();
+    try {
+      ApplicationInfo appInfo=pm.getApplicationInfo(OsmandApplication.class.getPackage().getName(),0);
+      SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy");
+      dateModified=new File(appInfo.sourceDir).lastModified();
+      Date installed=new Date(dateModified);
+      date=format.format(installed);
+    }
+ catch (    NameNotFoundException e) {
+    }
+    for (    String voice : list) {
+      if (voice.endsWith("tts")) {
+        File destFile=new File(voicePath,voice + File.separatorChar + "_ttsconfig.p");
+        String key=voice + ext;
+        String assetName="voice" + File.separatorChar + voice+ File.separatorChar+ "ttsconfig.p";
+        result.add(new AssetIndexItem(key,"voice",date,dateModified,"0.1","",assetName,destFile.getPath()));
+      }
+ else {
+        String key=voice + extvoice;
+        IndexItem item=result.getIndexFilesByName(key);
+        if (item != null) {
+          File destFile=new File(voicePath,voice + File.separatorChar + "_config.p");
+          SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy");
+          try {
+            Date d=format.parse(item.getDate());
+            if (d.getTime() > dateModified) {
+              continue;
+            }
+          }
+ catch (          Exception es) {
+            log.error("Parse exception",es);
+          }
+          item.date=date;
+          String assetName="voice" + File.separatorChar + voice+ File.separatorChar+ "config.p";
+          item.attachedItem=new AssetIndexItem(key,"voice",date,dateModified,"0.1","",assetName,destFile.getPath());
+        }
+      }
+    }
+    result.sort();
+  }
+ catch (  IOException e) {
+    log.error("Error while loading tts files from assets",e);
+  }
+}

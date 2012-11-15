@@ -1,0 +1,55 @@
+{
+  if (de.fileToSave.getName().endsWith(".zip")) {
+    if (de.unzip) {
+      de.fileToUnzip.mkdirs();
+    }
+    CountingInputStream fin=new CountingInputStream(new FileInputStream(de.fileToSave));
+    ZipInputStream zipIn=new ZipInputStream(fin);
+    ZipEntry entry=null;
+    boolean first=true;
+    int len=(int)de.fileToSave.length();
+    progress.startTask(ctx.getString(R.string.unzipping_file),len / 1024);
+    while ((entry=zipIn.getNextEntry()) != null) {
+      if (entry.isDirectory() || entry.getName().endsWith(IndexConstants.GEN_LOG_EXT)) {
+        continue;
+      }
+      File fs;
+      if (!de.unzip) {
+        if (first) {
+          fs=de.fileToUnzip;
+          first=false;
+        }
+ else {
+          String name=entry.getName();
+          int ind=name.lastIndexOf('_');
+          if (ind > 0) {
+            int i=name.indexOf('.',ind);
+            if (i > 0) {
+              name=name.substring(0,ind) + name.substring(i,name.length());
+            }
+          }
+          fs=new File(de.fileToUnzip.getParent(),name);
+        }
+      }
+ else {
+        fs=new File(de.fileToUnzip,entry.getName());
+      }
+      FileOutputStream out=new FileOutputStream(fs);
+      int read;
+      byte[] buffer=new byte[BUFFER_SIZE];
+      int remaining=len;
+      while ((read=zipIn.read(buffer)) != -1) {
+        out.write(buffer,0,read);
+        remaining-=fin.lastReadCount();
+        progress.remaining(remaining / 1024);
+      }
+      out.close();
+      if (de.dateModified != null) {
+        fs.setLastModified(de.dateModified);
+      }
+      toReIndex.add(fs);
+    }
+    zipIn.close();
+    de.fileToSave.delete();
+  }
+}

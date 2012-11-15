@@ -1,15 +1,15 @@
 {
   try {
     List<File> filesToReindex=new ArrayList<File>();
-    boolean forceWifi=downloadFileHelper.isWifiConnected();
+    boolean forceWifi=DownloadIndexActivity.this.downloadFileHelper.isWifiConnected();
     for (int i=0; i < filesToDownload.length; i++) {
       String filename=filesToDownload[i];
-      DownloadEntry entry=entriesToDownload.get(filename);
+      DownloadEntry entry=DownloadIndexActivity.this.entriesToDownload.get(filename);
       if (entry != null) {
         String indexOfAllFiles=filesToDownload.length <= 1 ? "" : (" [" + (i + 1) + "/"+ filesToDownload.length+ "]");
-        boolean result=entry.downloadFile(downloadFileHelper,filename,filesToReindex,progress,indexOfAllFiles,this,forceWifi,getAssets());
+        boolean result=downloadFile(entry,filename,filesToReindex,indexOfAllFiles,forceWifi);
         if (result) {
-          entriesToDownload.remove(filename);
+          DownloadIndexActivity.this.entriesToDownload.remove(filename);
           downloads.set(downloads.get() + 1);
           if (entry.existingBackupFile != null) {
             Algoritms.removeAllFiles(entry.existingBackupFile);
@@ -37,9 +37,9 @@
  catch (  InterruptedException e) {
   }
  finally {
-    if (progressFileDlg != null) {
-      removeDialog(DIALOG_PROGRESS_FILE);
-      progressFileDlg=null;
+    if (DownloadIndexActivity.this.progressFileDlg != null) {
+      removeDialog(DownloadIndexActivity.DIALOG_PROGRESS_FILE);
+      DownloadIndexActivity.this.progressFileDlg=null;
     }
   }
   return null;

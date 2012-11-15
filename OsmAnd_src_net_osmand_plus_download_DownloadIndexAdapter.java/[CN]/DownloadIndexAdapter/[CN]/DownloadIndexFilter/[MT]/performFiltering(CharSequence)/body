@@ -1,0 +1,30 @@
+{
+  FilterResults results=new FilterResults();
+  if (constraint == null || constraint.length() == 0) {
+    results.values=indexFiles;
+    results.count=indexFiles.size();
+  }
+ else {
+    String[] vars=constraint.toString().split("\\s");
+    for (int i=0; i < vars.length; i++) {
+      vars[i]=vars[i].trim().toLowerCase();
+    }
+    List<IndexItem> filter=new ArrayList<IndexItem>();
+    for (    IndexItem item : indexFiles) {
+      boolean add=true;
+      for (      String var : vars) {
+        if (var.length() > 0) {
+          if (!item.getVisibleName().toLowerCase().contains(var) && !item.getDescription().toLowerCase().contains(var)) {
+            add=false;
+          }
+        }
+      }
+      if (add) {
+        filter.add(item);
+      }
+    }
+    results.values=filter;
+    results.count=filter.size();
+  }
+  return results;
+}
