@@ -1,12 +1,12 @@
 {
-  boolean loadFromExistingFile=dbFile != null && dialect.databaseFileExists(dbFile) && !deletePrevious;
+  boolean loadFromExistingFile=dbFile != null && osmDBdialect.databaseFileExists(dbFile) && !deletePrevious;
   if (dbFile == null || deletePrevious) {
     dbFile=new File(workingDir,TEMP_NODES_DB);
-    if (dialect.databaseFileExists(dbFile)) {
-      dialect.removeDatabase(dbFile);
+    if (osmDBdialect.databaseFileExists(dbFile)) {
+      osmDBdialect.removeDatabase(dbFile);
     }
   }
-  dbConn=getDatabaseConnection(dbFile.getAbsolutePath(),dialect);
+  dbConn=getDatabaseConnection(dbFile.getAbsolutePath(),osmDBdialect);
   int allRelations=100000;
   int allWays=1000000;
   int allNodes=10000000;
@@ -19,7 +19,7 @@
     }
   }
  else {
-    if (DBDialect.NOSQL != dialect) {
+    if (DBDialect.NOSQL != osmDBdialect) {
       Connection dbc=(Connection)dbConn;
       final Statement stmt=dbc.createStatement();
       accessor.computeRealCounts(stmt);
@@ -29,6 +29,6 @@
       stmt.close();
     }
   }
-  accessor.initDatabase(dbConn,dialect,allNodes,allWays,allRelations);
+  accessor.initDatabase(dbConn,osmDBdialect,allNodes,allWays,allRelations);
   return loadFromExistingFile;
 }
