@@ -16,8 +16,16 @@
   searchText=(EditText)findViewById(R.id.SearchText);
   searchText.addTextChangedListener(new TextWatcher(){
     @Override public void afterTextChanged(    Editable s){
-      querySearch(s.toString());
-      updateSpan(currentFilter,endingText);
+      String newFilter=s.toString();
+      String newEndingText=endingText;
+      if (newEndingText.length() > 0) {
+        while (!newFilter.endsWith(newEndingText) && newEndingText.length() > 0) {
+          newEndingText=newEndingText.substring(1);
+        }
+        newFilter=newFilter.substring(0,newFilter.length() - newEndingText.length());
+      }
+      updateTextBox(newFilter,newEndingText,endingObject,false);
+      querySearch(newFilter);
     }
     @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
     }
