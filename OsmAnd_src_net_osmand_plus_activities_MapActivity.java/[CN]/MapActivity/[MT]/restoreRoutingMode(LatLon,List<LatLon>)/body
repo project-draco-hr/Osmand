@@ -4,9 +4,9 @@
     notRestoreRoutingMode();
   }
  else {
+    quitRouteRestoreDialog=false;
     Runnable encapsulate=new Runnable(){
       int delay=7;
-      boolean quit=false;
       Runnable delayDisplay=null;
       @Override public void run(){
         Builder builder=new AccessibleAlertBuilder(MapActivity.this);
@@ -16,14 +16,14 @@
         builder.setView(tv);
         builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
           @Override public void onClick(          DialogInterface dialog,          int which){
-            quit=true;
+            quitRouteRestoreDialog=true;
             restoreRoutingModeInner();
           }
         }
 );
         builder.setNegativeButton(R.string.default_buttons_no,new DialogInterface.OnClickListener(){
           @Override public void onClick(          DialogInterface dialog,          int which){
-            quit=true;
+            quitRouteRestoreDialog=true;
             notRestoreRoutingMode();
           }
         }
@@ -31,26 +31,26 @@
         final AlertDialog dlg=builder.show();
         dlg.setOnDismissListener(new OnDismissListener(){
           @Override public void onDismiss(          DialogInterface dialog){
-            quit=true;
+            quitRouteRestoreDialog=true;
           }
         }
 );
         dlg.setOnCancelListener(new OnCancelListener(){
           @Override public void onCancel(          DialogInterface dialog){
-            quit=true;
+            quitRouteRestoreDialog=true;
           }
         }
 );
         delayDisplay=new Runnable(){
           @Override public void run(){
-            if (!quit) {
+            if (!quitRouteRestoreDialog) {
               delay--;
               tv.setText(getString(R.string.continue_follow_previous_route_auto,delay + ""));
               if (delay <= 0) {
-                if (dlg.isShowing()) {
+                if (dlg.isShowing() && !quitRouteRestoreDialog) {
                   dlg.dismiss();
                 }
-                quit=true;
+                quitRouteRestoreDialog=true;
                 restoreRoutingModeInner();
               }
  else {
