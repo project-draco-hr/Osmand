@@ -1,16 +1,29 @@
 {
   Builder builder=new AlertDialog.Builder(mapActivity);
   final ArrayList<LatLon> intermediates=new ArrayList<LatLon>(mapActivity.getIntermediatePoints());
+  final ArrayList<String> names=new ArrayList<String>(settings.getIntermediatePointDescriptions(intermediates.size()));
   final int targetPointInd=mapActivity.getPointToNavigate() == null ? -1 : intermediates.size();
   if (mapActivity.getPointToNavigate() != null) {
     intermediates.add(mapActivity.getPointToNavigate());
+    if (settings.getPointNavigateDescription() != null) {
+      names.add(settings.getPointNavigateDescription());
+    }
+ else {
+      names.add("");
+    }
   }
   final List<String> intermediateNames=new ArrayList<String>();
   double lat=mapActivity.getMapView().getLatitude();
   double lon=mapActivity.getMapView().getLongitude();
   for (int i=0; i < intermediates.size(); i++) {
     double meters=MapUtils.getDistance(intermediates.get(i),lat,lon);
-    intermediateNames.add((i + 1) + ". " + mapActivity.getString(R.string.target_point,OsmAndFormatter.getFormattedDistance((float)meters,mapActivity))+ "");
+    String distString=OsmAndFormatter.getFormattedDistance((float)meters,mapActivity);
+    String nm=(i + 1) + ". " + mapActivity.getString(R.string.target_point,distString);
+    String descr=names.get(i);
+    if (names.get(i) != null && descr.trim().length() > 0) {
+      nm+="\n" + descr;
+    }
+    intermediateNames.add(nm);
   }
   final boolean[] checkedIntermediates=new boolean[intermediateNames.size()];
   ListAdapter listadapter=new ArrayAdapter<String>(mapActivity,R.layout.layers_list_activity_item,R.id.title,intermediateNames){
