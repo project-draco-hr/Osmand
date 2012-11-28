@@ -1,6 +1,5 @@
 {
-  IndexItem item=this;
-  String fileName=item.getFileName();
+  String fileName=this.fileName;
   File parent=null;
   String toSavePostfix=null;
   String toCheckPostfix=null;
@@ -16,6 +15,11 @@
     parent=settings.extendOsmandPath(ResourceManager.APP_DIR);
     toSavePostfix=BINARY_MAP_INDEX_EXT_ZIP;
     toCheckPostfix=BINARY_MAP_INDEX_EXT;
+  }
+ else   if (fileName.endsWith(IndexConstants.EXTRA_ZIP_EXT)) {
+    parent=settings.extendOsmandPath(ResourceManager.APP_DIR);
+    toSavePostfix=IndexConstants.EXTRA_ZIP_EXT;
+    toCheckPostfix=IndexConstants.EXTRA_EXT;
   }
  else   if (fileName.endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
     parent=settings.extendOsmandPath(ResourceManager.VOICE_PATH);
@@ -52,28 +56,27 @@
   }
  else {
     entry=new DownloadEntry();
-    int ls=fileName.lastIndexOf('_');
     entry.isRoadMap=type == DownloadActivityType.ROADS_FILE;
-    entry.baseName=fileName.substring(0,ls);
+    entry.baseName=getBasename();
     entry.fileToSave=new File(parent,entry.baseName + toSavePostfix);
     entry.unzip=unzipDir;
     SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy");
     try {
-      Date d=format.parse(item.getDate());
+      Date d=format.parse(date);
       entry.dateModified=d.getTime();
     }
  catch (    ParseException e1) {
       log.error("ParseException",e1);
     }
     try {
-      entry.sizeMB=Double.parseDouble(item.getSize());
+      entry.sizeMB=Double.parseDouble(size);
     }
  catch (    NumberFormatException e1) {
       log.error("ParseException",e1);
     }
     entry.parts=1;
-    if (item.getParts() != null) {
-      entry.parts=Integer.parseInt(item.getParts());
+    if (parts != null) {
+      entry.parts=Integer.parseInt(parts);
     }
     entry.fileToUnzip=new File(parent,entry.baseName + toCheckPostfix);
     File backup=settings.extendOsmandPath(ResourceManager.BACKUP_PATH + entry.fileToUnzip.getName());
