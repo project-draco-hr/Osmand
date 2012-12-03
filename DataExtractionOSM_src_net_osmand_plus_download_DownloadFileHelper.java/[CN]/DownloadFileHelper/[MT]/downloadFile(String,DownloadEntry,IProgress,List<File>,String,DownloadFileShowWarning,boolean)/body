@@ -1,0 +1,57 @@
+{
+  try {
+    String urlSuffix="&" + ctx.getVersionAsURLParam();
+    if (de.type == DownloadActivityType.SRTM_FILE) {
+      String urlPrefix="http://" + IndexConstants.INDEX_DOWNLOAD_DOMAIN + "/download_srtm?event=2&file=";
+      List<String> list=de.srtmFilesToDownload;
+      if (list != null) {
+        int i=1;
+        for (        String fname : list) {
+          URL url=new URL(urlPrefix + fname + urlSuffix);
+          FileOutputStream out=new FileOutputStream(new File(de.fileToSave,fname));
+          try {
+            downloadFile(fname,out,url,null," [" + i + "/"+ list.size()+ "]",progress,forceWifi);
+          }
+  finally {
+            out.close();
+          }
+        }
+      }
+    }
+ else {
+      FileOutputStream out=new FileOutputStream(de.fileToSave);
+      try {
+        String urlPrefix="http://" + IndexConstants.INDEX_DOWNLOAD_DOMAIN + "/download?event=2&file=";
+        if (de.type == DownloadActivityType.ROADS_FILE) {
+          urlSuffix+="&road=yes";
+        }
+        if (de.parts == 1) {
+          URL url=new URL(urlPrefix + fileName + urlSuffix);
+          downloadFile(fileName,out,url,null,indexOfAllFiles,progress,forceWifi);
+        }
+ else {
+          for (int i=1; i <= de.parts; i++) {
+            URL url=new URL(urlPrefix + fileName + "-"+ i+ urlSuffix);
+            downloadFile(fileName,out,url," [" + i + "/"+ de.parts+ "]",indexOfAllFiles,progress,forceWifi);
+          }
+        }
+      }
+  finally {
+        out.close();
+      }
+      unzipFile(de,progress,toReIndex);
+    }
+    showWarningCallback.showWarning(ctx.getString(R.string.download_index_success));
+    return true;
+  }
+ catch (  IOException e) {
+    log.error("Exception ocurred",e);
+    showWarningCallback.showWarning(ctx.getString(R.string.error_io_error));
+    de.fileToSave.delete();
+    return false;
+  }
+catch (  InterruptedException e) {
+    de.fileToSave.delete();
+    throw e;
+  }
+}

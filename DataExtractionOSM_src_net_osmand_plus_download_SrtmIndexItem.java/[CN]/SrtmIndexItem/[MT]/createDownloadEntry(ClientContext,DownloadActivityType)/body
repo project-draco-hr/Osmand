@@ -1,0 +1,32 @@
+{
+  File parent=ctx.getAppDir();
+  final DownloadEntry entry;
+  if (parent == null || !parent.exists()) {
+    ctx.showToastMessage(R.string.sd_dir_not_accessible);
+    entry=null;
+  }
+ else {
+    entry=new DownloadEntry();
+    entry.type=type;
+    entry.baseName=getBasename();
+    SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy");
+    try {
+      Date d=format.parse(date);
+      entry.dateModified=d.getTime();
+    }
+ catch (    ParseException e1) {
+      log.error("ParseException",e1);
+    }
+    try {
+      entry.sizeMB=Double.parseDouble(size);
+    }
+ catch (    NumberFormatException e1) {
+      log.error("ParseException",e1);
+    }
+    entry.parts=1;
+    if (parts != null) {
+      entry.parts=Integer.parseInt(parts);
+    }
+  }
+  return entry;
+}
