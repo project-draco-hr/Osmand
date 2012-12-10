@@ -8,9 +8,9 @@
       IndexItem filename=filesToDownload[i];
       List<DownloadEntry> list=DownloadIndexActivity.this.entriesToDownload.get(filename);
       if (list != null) {
-        String indexOfAllFiles=filesToDownload.length <= 1 ? "" : (" [" + counter + "/"+ all+ "]");
-        counter++;
         for (        DownloadEntry entry : list) {
+          String indexOfAllFiles=all <= 1 ? "" : (" [" + counter + "/"+ all+ "]");
+          counter++;
           boolean result=downloadFile(entry,filesToReindex,indexOfAllFiles,forceWifi);
           if (result) {
             DownloadIndexActivity.this.entriesToDownload.remove(filename);
@@ -20,6 +20,7 @@
             if (entry.existingBackupFile != null) {
               Algoritms.removeAllFiles(entry.existingBackupFile);
             }
+            trackEvent(entry);
             publishProgress(entry);
           }
         }
