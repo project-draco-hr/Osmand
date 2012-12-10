@@ -1,17 +1,10 @@
 {
   final List<IndexItem> filtered=new ArrayList<IndexItem>();
   if (type == DownloadActivityType.SRTM_FILE) {
+    List<SrtmIndexItem> cached=downloadListIndexThread.getCachedSRTMFiles();
     Map<String,String> indexFileNames=getMyApplication().getResourceManager().getIndexFileNames();
-    List<RegionCountry> countries=RegionRegistry.getRegionRegistry().getCountries();
-    for (    RegionCountry rc : countries) {
-      if (rc.tiles.size() > 50) {
-        for (        RegionCountry ch : rc.getSubRegions()) {
-          filtered.add(new SrtmIndexItem(ch,indexFileNames));
-        }
-      }
- else {
-        filtered.add(new SrtmIndexItem(rc,indexFileNames));
-      }
+    for (    SrtmIndexItem s : cached) {
+      s.updateExistingTiles(indexFileNames);
     }
   }
   for (  IndexItem file : downloadListIndexThread.getCachedIndexFiles()) {
