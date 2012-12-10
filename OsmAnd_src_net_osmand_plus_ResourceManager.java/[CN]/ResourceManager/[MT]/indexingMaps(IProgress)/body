@@ -1,6 +1,8 @@
 {
-  File file=context.getSettings().extendOsmandPath(MAPS_PATH);
-  file.mkdirs();
+  long val=System.currentTimeMillis();
+  ArrayList<File> files=new ArrayList<File>();
+  collectFiles(context.getSettings().extendOsmandPath(MAPS_PATH),IndexConstants.BINARY_MAP_INDEX_EXT,files);
+  collectFiles(context.getSettings().extendOsmandPath(SRTM_PATH),IndexConstants.BINARY_MAP_INDEX_EXT,files);
   List<String> warnings=new ArrayList<String>();
   renderer.clearAllResources();
   CachedOsmandIndexes cachedOsmandIndexes=new CachedOsmandIndexes();
@@ -17,93 +19,81 @@
       log.error(e.getMessage(),e);
     }
   }
-  if (file.exists() && file.canRead()) {
-    long val=System.currentTimeMillis();
-    File[] lf=file.listFiles();
-    if (lf == null) {
-      lf=new File[0];
-    }
-    for (    File f : lf) {
-      if (f.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
-        progress.startTask(context.getString(R.string.indexing_map) + " " + f.getName(),-1);
-        try {
-          BinaryMapIndexReader index=null;
+  for (  File f : files) {
+    progress.startTask(context.getString(R.string.indexing_map) + " " + f.getName(),-1);
+    try {
+      BinaryMapIndexReader index=null;
+      try {
+        index=cachedOsmandIndexes.getReader(f);
+        if (index.getVersion() != IndexConstants.BINARY_MAP_VERSION) {
+          index=null;
+        }
+        if (index != null) {
+          renderer.initializeNewResource(progress,f,index);
+        }
+      }
+ catch (      IOException e) {
+        log.error(String.format("File %s could not be read",f.getName()),e);
+      }
+      if (index == null || (Version.isFreeVersion(context) && f.getName().contains("_wiki"))) {
+        warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
+      }
+ else {
+        if (index.isBasemap()) {
+          basemapFileNames.add(f.getName());
+        }
+        long dateCreated=index.getDateCreated();
+        if (dateCreated == 0) {
+          dateCreated=f.lastModified();
+        }
+        indexFileNames.put(f.getName(),MessageFormat.format("{0,date,dd.MM.yyyy}",new Date(dateCreated)));
+        for (        String rName : index.getRegionNames()) {
+          RegionAddressRepositoryBinary rarb=new RegionAddressRepositoryBinary(index,rName);
+          addressMap.put(rName,rarb);
+        }
+        if (index.hasTransportData()) {
           try {
-            index=cachedOsmandIndexes.getReader(f);
-            if (index.getVersion() != IndexConstants.BINARY_MAP_VERSION) {
-              index=null;
-            }
-            if (index != null) {
-              renderer.initializeNewResource(progress,f,index);
-            }
+            RandomAccessFile raf=new RandomAccessFile(f,"r");
+            transportRepositories.add(new TransportIndexRepositoryBinary(new BinaryMapIndexReader(raf,index)));
           }
  catch (          IOException e) {
-            log.error(String.format("File %s could not be read",f.getName()),e);
-          }
-          if (index == null || (Version.isFreeVersion(context) && f.getName().contains("_wiki"))) {
+            log.error("Exception reading " + f.getAbsolutePath(),e);
             warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
           }
- else {
-            if (index.isBasemap()) {
-              basemapFileNames.add(f.getName());
-            }
-            long dateCreated=index.getDateCreated();
-            if (dateCreated == 0) {
-              dateCreated=f.lastModified();
-            }
-            indexFileNames.put(f.getName(),MessageFormat.format("{0,date,dd.MM.yyyy}",new Date(dateCreated)));
-            for (            String rName : index.getRegionNames()) {
-              RegionAddressRepositoryBinary rarb=new RegionAddressRepositoryBinary(index,rName);
-              addressMap.put(rName,rarb);
-            }
-            if (index.hasTransportData()) {
-              try {
-                RandomAccessFile raf=new RandomAccessFile(f,"r");
-                transportRepositories.add(new TransportIndexRepositoryBinary(new BinaryMapIndexReader(raf,index)));
-              }
- catch (              IOException e) {
-                log.error("Exception reading " + f.getAbsolutePath(),e);
-                warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
-              }
-            }
-            if (index.containsRouteData()) {
-              try {
-                RandomAccessFile raf=new RandomAccessFile(f,"r");
-                routingMapFiles.put(f.getAbsolutePath(),new BinaryMapIndexReader(raf,index));
-              }
- catch (              IOException e) {
-                log.error("Exception reading " + f.getAbsolutePath(),e);
-                warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
-              }
-            }
-            if (index.containsPoiData()) {
-              try {
-                RandomAccessFile raf=new RandomAccessFile(f,"r");
-                amenityRepositories.add(new AmenityIndexRepositoryBinary(new BinaryMapIndexReader(raf,index)));
-              }
- catch (              IOException e) {
-                log.error("Exception reading " + f.getAbsolutePath(),e);
-                warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
-              }
-            }
+        }
+        if (index.containsRouteData()) {
+          try {
+            RandomAccessFile raf=new RandomAccessFile(f,"r");
+            routingMapFiles.put(f.getAbsolutePath(),new BinaryMapIndexReader(raf,index));
+          }
+ catch (          IOException e) {
+            log.error("Exception reading " + f.getAbsolutePath(),e);
+            warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
           }
         }
- catch (        SQLiteException e) {
-          log.error("Exception reading " + f.getAbsolutePath(),e);
-          warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
+        if (index.containsPoiData()) {
+          try {
+            RandomAccessFile raf=new RandomAccessFile(f,"r");
+            amenityRepositories.add(new AmenityIndexRepositoryBinary(new BinaryMapIndexReader(raf,index)));
+          }
+ catch (          IOException e) {
+            log.error("Exception reading " + f.getAbsolutePath(),e);
+            warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
+          }
         }
-catch (        OutOfMemoryError oome) {
-          log.error("Exception reading " + f.getAbsolutePath(),oome);
-          warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_big_for_memory),f.getName()));
-        }
-      }
- else       if (f.getName().endsWith(".map.odb")) {
-        warnings.add(MessageFormat.format(context.getString(R.string.old_map_index_is_not_supported),f.getName()));
       }
     }
-    log.debug("All map files initialized " + (System.currentTimeMillis() - val) + " ms");
+ catch (    SQLiteException e) {
+      log.error("Exception reading " + f.getAbsolutePath(),e);
+      warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
+    }
+catch (    OutOfMemoryError oome) {
+      log.error("Exception reading " + f.getAbsolutePath(),oome);
+      warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_big_for_memory),f.getName()));
+    }
   }
-  if (!indCache.exists() || indCache.canWrite()) {
+  log.debug("All map files initialized " + (System.currentTimeMillis() - val) + " ms");
+  if (files.size() > 0 && (!indCache.exists() || indCache.canWrite())) {
     try {
       cachedOsmandIndexes.writeToFile(indCache);
     }

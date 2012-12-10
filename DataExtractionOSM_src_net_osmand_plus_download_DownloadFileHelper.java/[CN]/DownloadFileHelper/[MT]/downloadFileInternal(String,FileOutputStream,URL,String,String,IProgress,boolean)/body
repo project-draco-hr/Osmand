@@ -1,0 +1,79 @@
+{
+  InputStream is=null;
+  byte[] buffer=new byte[BUFFER_SIZE];
+  int read=0;
+  int length=0;
+  int fileread=0;
+  int triesDownload=TRIES_TO_DOWNLOAD;
+  boolean notFound=false;
+  boolean first=true;
+  try {
+    while (triesDownload > 0) {
+      try {
+        if (!first) {
+          log.info("Reconnecting");
+          try {
+            Thread.sleep(TIMEOUT_BETWEEN_DOWNLOADS);
+          }
+ catch (          InterruptedException e) {
+          }
+        }
+        HttpURLConnection conn=(HttpURLConnection)url.openConnection();
+        conn.setRequestProperty("User-Agent",ctx.getFullVersion());
+        conn.setReadTimeout(30000);
+        if (fileread > 0) {
+          String range="bytes=" + fileread + "-"+ (length - 1);
+          conn.setRequestProperty("Range",range);
+        }
+        conn.setConnectTimeout(30000);
+        log.info(conn.getResponseMessage() + " " + conn.getResponseCode());
+        boolean wifiConnectionBroken=forceWifi && !isWifiConnected();
+        if (conn.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+          notFound=true;
+          break;
+        }
+        if ((conn.getResponseCode() != HttpURLConnection.HTTP_PARTIAL && conn.getResponseCode() != HttpURLConnection.HTTP_OK) || wifiConnectionBroken) {
+          conn.disconnect();
+          triesDownload--;
+          continue;
+        }
+        is=conn.getInputStream();
+        if (first) {
+          length=conn.getContentLength();
+          String taskName=ctx.getString(R.string.downloading_file) + indexOfAllFiles + " "+ fileName;
+          if (part != null) {
+            taskName+=part;
+          }
+          progress.startTask(taskName,length / 1024);
+        }
+        first=false;
+        while ((read=is.read(buffer)) != -1) {
+          if (interruptDownloading) {
+            throw new InterruptedException();
+          }
+          out.write(buffer,0,read);
+          fileread+=read;
+          progress.remaining((length - fileread) / 1024);
+        }
+        if (length <= fileread) {
+          triesDownload=0;
+        }
+      }
+ catch (      IOException e) {
+        log.error("IOException",e);
+        triesDownload--;
+      }
+    }
+  }
+  finally {
+    if (is != null) {
+      is.close();
+    }
+  }
+  if (notFound) {
+    throw new IOException("File not found " + fileName);
+  }
+ else   if (length != fileread || length == 0) {
+    throw new IOException("File was not fully read");
+  }
+}

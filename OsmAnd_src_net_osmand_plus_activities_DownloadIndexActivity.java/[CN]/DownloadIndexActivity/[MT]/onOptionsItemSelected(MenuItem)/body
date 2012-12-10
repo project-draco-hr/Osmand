@@ -12,7 +12,7 @@
           IndexItem es=listAdapter.getChild(j,i);
           if (!entriesToDownload.containsKey(es.getFileName())) {
             selected++;
-            entriesToDownload.put(es.getFileName(),es.createDownloadEntry(getClientContext(),type));
+            entriesToDownload.put(es,es.createDownloadEntry(getClientContext(),type,new ArrayList<DownloadEntry>(1)));
           }
         }
       }
@@ -23,10 +23,10 @@
       }
     }
  else     if (item.getItemId() == FILTER_EXISTING_REGIONS) {
-      final Set<String> listAlreadyDownloaded=listAlreadyDownloadedWithAlternatives();
+      final Map<String,String> listAlreadyDownloaded=listAlreadyDownloadedWithAlternatives();
       final List<IndexItem> filtered=new ArrayList<IndexItem>();
       for (      IndexItem fileItem : listAdapter.getIndexFiles()) {
-        if (listAlreadyDownloaded.contains(fileItem.convertServerFileNameToLocal())) {
+        if (listAlreadyDownloaded.containsKey(fileItem.getTargetFileName())) {
           filtered.add(fileItem);
         }
       }
