@@ -1,0 +1,20 @@
+{
+  TLongObjectHashMap<RouteDataObject> excludeDuplications=new TLongObjectHashMap<RouteDataObject>();
+  if (tileRoutes.containsKey(tileId)) {
+    List<RouteDataObject> routes=tileRoutes.get(tileId);
+    if (routes != null) {
+      for (      RouteDataObject ro : routes) {
+        if (!excludeDuplications.contains(ro.id)) {
+          excludeDuplications.put(ro.id,ro);
+          toFillIn.add(ro);
+        }
+      }
+    }
+  }
+  List<RoutingSubregionTile> subregions=indexedSubregions.get(tileId);
+  if (subregions != null) {
+    for (    RoutingSubregionTile rs : subregions) {
+      rs.loadAllObjects(toFillIn,this,excludeDuplications);
+    }
+  }
+}

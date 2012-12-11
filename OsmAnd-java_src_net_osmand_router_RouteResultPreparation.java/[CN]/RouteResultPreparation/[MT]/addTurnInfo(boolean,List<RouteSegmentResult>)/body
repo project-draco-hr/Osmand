@@ -1,0 +1,47 @@
+{
+  int prevSegment=-1;
+  float dist=0;
+  int next=1;
+  for (int i=0; i <= result.size(); i=next) {
+    TurnType t=null;
+    next=i + 1;
+    if (i < result.size()) {
+      t=getTurnInfo(result,i,leftside);
+      if (t != null && i < result.size() - 1) {
+        boolean tl=TurnType.TL.equals(t.getValue());
+        boolean tr=TurnType.TR.equals(t.getValue());
+        if (tl || tr) {
+          TurnType tnext=getTurnInfo(result,i + 1,leftside);
+          if (tnext != null && result.get(i).getDistance() < 35) {
+            if (tl && TurnType.TL.equals(tnext.getValue())) {
+              next=i + 2;
+              t=TurnType.valueOf(TurnType.TU,false);
+            }
+ else             if (tr && TurnType.TR.equals(tnext.getValue())) {
+              next=i + 2;
+              t=TurnType.valueOf(TurnType.TU,true);
+            }
+          }
+        }
+      }
+      result.get(i).setTurnType(t);
+    }
+    if (t != null || i == result.size()) {
+      if (prevSegment >= 0) {
+        String turn=result.get(prevSegment).getTurnType().toString();
+        if (result.get(prevSegment).getTurnType().getLanes() != null) {
+          turn+=Arrays.toString(result.get(prevSegment).getTurnType().getLanes());
+        }
+        result.get(prevSegment).setDescription(turn + String.format(" and go %.2f meters",dist));
+        if (result.get(prevSegment).getTurnType().isSkipToSpeak()) {
+          result.get(prevSegment).setDescription("-*" + result.get(prevSegment).getDescription());
+        }
+      }
+      prevSegment=i;
+      dist=0;
+    }
+    if (i < result.size()) {
+      dist+=result.get(i).getDistance();
+    }
+  }
+}

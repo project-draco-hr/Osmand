@@ -1,0 +1,15 @@
+{
+  for (int i=0; i < attributes.getLength(); i++) {
+    String name=parser.isNamespaceAware() ? attributes.getLocalName(i) : attributes.getQName(i);
+    String vl=attributes.getValue(i);
+    if (vl != null && vl.startsWith("$")) {
+      String cv=vl.substring(1);
+      if (!renderingConstants.containsKey(cv)) {
+        throw new IllegalStateException("Rendering constant '" + cv + "' was not specified.");
+      }
+      vl=renderingConstants.get(cv);
+    }
+    m.put(name,vl);
+  }
+  return m;
+}

@@ -1,0 +1,70 @@
+{
+  final Stat stat=new Stat();
+  final Map<TagValuePair,Integer> map=new LinkedHashMap<TagValuePair,Integer>();
+  SearchFilter sf=new SearchFilter(){
+    @Override public boolean accept(    TIntArrayList types,    MapIndex index){
+      boolean polygon=false;
+      boolean polyline=false;
+      for (int j=0; j < types.size(); j++) {
+        int wholeType=types.get(j);
+        TagValuePair pair=index.decodeType(wholeType);
+        if (pair != null) {
+          int t=wholeType & 3;
+          if (t == MapRenderingTypes.POINT_TYPE) {
+            stat.pointCount++;
+          }
+ else           if (t == MapRenderingTypes.POLYLINE_TYPE) {
+            stat.wayCount++;
+            polyline=true;
+          }
+ else {
+            polygon=true;
+            stat.polygonCount++;
+            if (!map.containsKey(pair)) {
+              map.put(pair,0);
+            }
+            map.put(pair,map.get(pair) + 1);
+          }
+        }
+      }
+      stat.totalCount++;
+      return polyline;
+    }
+  }
+;
+  ResultMatcher<BinaryMapDataObject> matcher=new ResultMatcher<BinaryMapDataObject>(){
+    TIntHashSet set=new TIntHashSet();
+    @Override public boolean isCancelled(){
+      return false;
+    }
+    @Override public boolean publish(    BinaryMapDataObject object){
+      double len=calculateLength(object,zoom);
+      if (len > 100) {
+        stat.polygonBigSize++;
+        if (stat.polygonBigSize % 10000 == 0) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+;
+  SearchRequest<BinaryMapDataObject> req=BinaryMapIndexReader.buildSearchRequest(0,Integer.MAX_VALUE,0,Integer.MAX_VALUE,zoom,sf,matcher);
+  List<BinaryMapDataObject> result=reader.searchMapIndex(req);
+  ArrayList<TagValuePair> list=new ArrayList<TagValuePair>(map.keySet());
+  Collections.sort(list,new Comparator<TagValuePair>(){
+    @Override public int compare(    TagValuePair o1,    TagValuePair o2){
+      return -map.get(o1) + map.get(o2);
+    }
+  }
+);
+  for (  TagValuePair tp : list) {
+    Integer i=map.get(tp);
+    if (i > 10) {
+    }
+  }
+  for (  BinaryMapDataObject obj : result) {
+    System.out.println("id " + (obj.getId() >> 3) + " "+ calculateArea(obj,zoom));
+  }
+  return stat;
+}

@@ -13,7 +13,7 @@
  else   if (readFile.getName().endsWith(".pbf")) {
     pbfFile=true;
   }
-  OsmBaseStorage storage=new OsmBaseStorage();
+  OsmBaseStorage storage=pbfFile ? new OsmBaseStoragePbf() : new OsmBaseStorage();
   storage.setSupressWarnings(DataExtractionSettings.getSettings().isSupressWarningsForDuplicatedId());
   if (addFilter != null) {
     storage.getFilters().add(addFilter);
@@ -34,7 +34,7 @@
     dbCreator.initDatabase(osmDBdialect,dbConn);
     storage.getFilters().add(dbCreator);
     if (pbfFile) {
-      storage.parseOSMPbf(stream,progress,false);
+      ((OsmBaseStoragePbf)storage).parseOSMPbf(stream,progress,false);
     }
  else {
       storage.parseOSM(stream,progress,streamFile,false);

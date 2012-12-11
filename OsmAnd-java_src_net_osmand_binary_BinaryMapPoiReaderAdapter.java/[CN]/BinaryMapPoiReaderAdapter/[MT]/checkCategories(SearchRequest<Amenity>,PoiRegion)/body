@@ -1,0 +1,34 @@
+{
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      return false;
+case OsmandOdb.OsmAndPoiCategories.CATEGORIES_FIELD_NUMBER:
+    AmenityType type=AmenityType.OTHER;
+  String subcat="";
+int cat=codedIS.readUInt32();
+int subcatId=cat >> SHIFT_BITS_CATEGORY;
+int catId=cat & CATEGORY_MASK;
+if (catId < region.categoriesType.size()) {
+type=region.categoriesType.get(catId);
+List<String> subcats=region.subcategories.get(catId);
+if (subcatId < subcats.size()) {
+subcat=subcats.get(subcatId);
+}
+}
+ else {
+type=AmenityType.OTHER;
+}
+if (req.poiTypeFilter.accept(type,subcat)) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+return true;
+}
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

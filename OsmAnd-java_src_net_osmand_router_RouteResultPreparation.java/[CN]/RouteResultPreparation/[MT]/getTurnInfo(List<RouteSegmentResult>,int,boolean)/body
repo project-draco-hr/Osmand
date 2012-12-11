@@ -1,0 +1,55 @@
+{
+  if (i == 0) {
+    return TurnType.valueOf(TurnType.C,false);
+  }
+  RouteSegmentResult prev=result.get(i - 1);
+  if (prev.getObject().roundabout()) {
+    return null;
+  }
+  RouteSegmentResult rr=result.get(i);
+  if (rr.getObject().roundabout()) {
+    return processRoundaboutTurn(result,i,leftSide,prev,rr);
+  }
+  TurnType t=null;
+  if (prev != null) {
+    boolean noAttachedRoads=rr.getAttachedRoutes(rr.getStartPointIndex()).size() == 0;
+    double mpi=MapUtils.degreesDiff(prev.getBearingEnd(),rr.getBearingBegin());
+    if (noAttachedRoads) {
+    }
+    if (mpi >= TURN_DEGREE_MIN) {
+      if (mpi < 60) {
+        t=TurnType.valueOf(TurnType.TSLL,leftSide);
+      }
+ else       if (mpi < 120) {
+        t=TurnType.valueOf(TurnType.TL,leftSide);
+      }
+ else       if (mpi < 135 || leftSide) {
+        t=TurnType.valueOf(TurnType.TSHL,leftSide);
+      }
+ else {
+        t=TurnType.valueOf(TurnType.TU,leftSide);
+      }
+    }
+ else     if (mpi < -TURN_DEGREE_MIN) {
+      if (mpi > -60) {
+        t=TurnType.valueOf(TurnType.TSLR,leftSide);
+      }
+ else       if (mpi > -120) {
+        t=TurnType.valueOf(TurnType.TR,leftSide);
+      }
+ else       if (mpi > -135 || !leftSide) {
+        t=TurnType.valueOf(TurnType.TSHR,leftSide);
+      }
+ else {
+        t=TurnType.valueOf(TurnType.TU,leftSide);
+      }
+    }
+ else {
+      t=attachKeepLeftInfoAndLanes(leftSide,prev,rr,t);
+    }
+    if (t != null) {
+      t.setTurnAngle((float)-mpi);
+    }
+  }
+  return t;
+}

@@ -1,0 +1,67 @@
+{
+  for (int i=0; i < result.size(); i++) {
+    if (ctx.checkIfMemoryLimitCritical(ctx.config.memoryLimitation)) {
+      ctx.unloadUnusedTiles(ctx.config.memoryLimitation);
+    }
+    RouteSegmentResult rr=result.get(i);
+    RouteDataObject road=rr.getObject();
+    checkAndInitRouteRegion(ctx,road);
+    double distOnRoadToPass=0;
+    double speed=ctx.getRouter().defineSpeed(road);
+    if (speed == 0) {
+      speed=ctx.getRouter().getMinDefaultSpeed();
+    }
+    boolean plus=rr.getStartPointIndex() < rr.getEndPointIndex();
+    int next;
+    double distance=0;
+    for (int j=rr.getStartPointIndex(); j != rr.getEndPointIndex(); j=next) {
+      next=plus ? j + 1 : j - 1;
+      if (j == rr.getStartPointIndex()) {
+        attachRoadSegments(ctx,result,i,j,plus);
+      }
+      if (next != rr.getEndPointIndex()) {
+        attachRoadSegments(ctx,result,i,next,plus);
+      }
+      double d=measuredDist(road.getPoint31XTile(j),road.getPoint31YTile(j),road.getPoint31XTile(next),road.getPoint31YTile(next));
+      distance+=d;
+      double obstacle=ctx.getRouter().defineObstacle(road,j);
+      if (obstacle < 0) {
+        obstacle=0;
+      }
+      distOnRoadToPass+=d / speed + obstacle;
+      List<RouteSegmentResult> attachedRoutes=rr.getAttachedRoutes(next);
+      if (next != rr.getEndPointIndex() && !rr.getObject().roundabout() && attachedRoutes != null) {
+        float before=rr.getBearing(next,!plus);
+        float after=rr.getBearing(next,plus);
+        boolean straight=Math.abs(MapUtils.degreesDiff(before + 180,after)) < TURN_DEGREE_MIN;
+        boolean isSplit=false;
+        for (        RouteSegmentResult rs : attachedRoutes) {
+          double diff=MapUtils.degreesDiff(before + 180,rs.getBearingBegin());
+          if (Math.abs(diff) <= TURN_DEGREE_MIN) {
+            isSplit=true;
+          }
+ else           if (!straight && Math.abs(diff) < 100) {
+            isSplit=true;
+          }
+        }
+        if (isSplit) {
+          int endPointIndex=rr.getEndPointIndex();
+          RouteSegmentResult split=new RouteSegmentResult(rr.getObject(),next,endPointIndex);
+          split.copyPreattachedRoutes(rr,Math.abs(next - rr.getStartPointIndex()));
+          rr.setSegmentTime((float)distOnRoadToPass);
+          rr.setSegmentSpeed((float)speed);
+          rr.setDistance((float)distance);
+          rr.setEndPointIndex(next);
+          result.add(i + 1,split);
+          i++;
+          rr=split;
+          distOnRoadToPass=0;
+          distance=0;
+        }
+      }
+    }
+    rr.setSegmentTime((float)distOnRoadToPass);
+    rr.setSegmentSpeed((float)speed);
+    rr.setDistance((float)distance);
+  }
+}

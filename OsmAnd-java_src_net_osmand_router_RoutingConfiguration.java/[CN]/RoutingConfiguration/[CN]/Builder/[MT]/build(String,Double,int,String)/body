@@ -1,0 +1,33 @@
+{
+  if (!routers.containsKey(router)) {
+    router=defaultRouter;
+  }
+  RoutingConfiguration i=new RoutingConfiguration();
+  if (routers.containsKey(router)) {
+    i.router=routers.get(router);
+    if (specialization != null) {
+      for (      String s : specialization) {
+        i.router=i.router.specialization(s);
+      }
+    }
+    i.routerName=router;
+  }
+  attributes.put("routerName",router);
+  i.attributes.putAll(attributes);
+  i.initialDirection=direction;
+  i.recalculateDistance=parseSilentFloat(getAttribute(i.router,"recalculateDistanceHelp"),i.recalculateDistance);
+  i.heuristicCoefficient=parseSilentFloat(getAttribute(i.router,"heuristicCoefficient"),i.heuristicCoefficient);
+  i.ZOOM_TO_LOAD_TILES=parseSilentInt(getAttribute(i.router,"zoomToLoadTiles"),i.ZOOM_TO_LOAD_TILES);
+  int desirable=parseSilentInt(getAttribute(i.router,"memoryLimitInMB"),0);
+  if (desirable != 0) {
+    i.memoryLimitation=desirable * (1 << 20);
+  }
+ else {
+    if (memoryLimitMB == 0) {
+      memoryLimitMB=DEFAULT_MEMORY_LIMIT;
+    }
+    i.memoryLimitation=memoryLimitMB * (1 << 20);
+  }
+  i.planRoadDirection=parseSilentInt(getAttribute(i.router,"planRoadDirection"),i.planRoadDirection);
+  return i;
+}

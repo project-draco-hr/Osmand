@@ -1,0 +1,23 @@
+{
+  String name=e.getTag(OSMTagKey.NAME);
+  if (name == null) {
+    name=e.getTag(OSMTagKey.NAME_EN);
+  }
+  if (name != null) {
+    names.put(nameRuleType,name);
+  }
+  Map<String,MapRulType> rules=getEncodingRuleTypes();
+  for (int i=0; i < 2; i++) {
+    for (    Entry<String,String> tag : e.getTags().entrySet()) {
+      MapRulType rt=rules.get(constructRuleKey(tag.getKey(),i == 0 ? tag.getValue() : null));
+      if (rt != null && rt.names != null) {
+        for (        MapRulType rtname : rt.names) {
+          String tg=e.getTag(rtname.tag);
+          if (tg != null) {
+            names.put(rtname,name);
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  List<BinaryMapDataObject> tempResults=null;
+  long baseId=0;
+  while (true) {
+    if (req.isCancelled()) {
+      return;
+    }
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      if (tempResults != null) {
+        for (        BinaryMapDataObject obj : tempResults) {
+          req.publish(obj);
+        }
+      }
+    return;
+case MapDataBlock.BASEID_FIELD_NUMBER:
+  baseId=codedIS.readUInt64();
+break;
+case MapDataBlock.DATAOBJECTS_FIELD_NUMBER:
+int length=codedIS.readRawVarint32();
+int oldLimit=codedIS.pushLimit(length);
+BinaryMapDataObject mapObject=readMapDataObject(tree,req,root);
+if (mapObject != null) {
+mapObject.setId(mapObject.getId() + baseId);
+if (tempResults == null) {
+tempResults=new ArrayList<BinaryMapDataObject>();
+}
+tempResults.add(mapObject);
+}
+codedIS.popLimit(oldLimit);
+break;
+case MapDataBlock.STRINGTABLE_FIELD_NUMBER:
+length=codedIS.readRawVarint32();
+oldLimit=codedIS.pushLimit(length);
+if (tempResults != null) {
+List<String> stringTable=readStringTable();
+for (int i=0; i < tempResults.size(); i++) {
+BinaryMapDataObject rs=tempResults.get(i);
+if (rs.objectNames != null) {
+int[] keys=rs.objectNames.keys();
+for (int j=0; j < keys.length; j++) {
+rs.objectNames.put(keys[j],stringTable.get(rs.objectNames.get(keys[j]).charAt(0)));
+}
+}
+}
+}
+ else {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+}
+codedIS.popLimit(oldLimit);
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

@@ -1,0 +1,94 @@
+{
+  boolean initCorrectly=false;
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      if (!initCorrectly) {
+        throw new IOException("Corrupted file. It should be ended as it starts with version");
+      }
+    return;
+case OsmandOdb.OsmAndStructure.VERSION_FIELD_NUMBER:
+  version=codedIS.readUInt32();
+break;
+case OsmandOdb.OsmAndStructure.DATECREATED_FIELD_NUMBER:
+dateCreated=codedIS.readInt64();
+break;
+case OsmandOdb.OsmAndStructure.MAPINDEX_FIELD_NUMBER:
+MapIndex mapIndex=new MapIndex();
+mapIndex.length=readInt();
+mapIndex.filePointer=codedIS.getTotalBytesRead();
+int oldLimit=codedIS.pushLimit(mapIndex.length);
+readMapIndex(mapIndex,false);
+basemap=basemap || mapIndex.isBaseMap();
+codedIS.popLimit(oldLimit);
+codedIS.seek(mapIndex.filePointer + mapIndex.length);
+mapIndexes.add(mapIndex);
+indexes.add(mapIndex);
+break;
+case OsmandOdb.OsmAndStructure.ADDRESSINDEX_FIELD_NUMBER:
+AddressRegion region=new AddressRegion();
+region.length=readInt();
+region.filePointer=codedIS.getTotalBytesRead();
+if (addressAdapter != null) {
+oldLimit=codedIS.pushLimit(region.length);
+addressAdapter.readAddressIndex(region);
+if (region.name != null) {
+addressIndexes.add(region);
+indexes.add(region);
+}
+codedIS.popLimit(oldLimit);
+}
+codedIS.seek(region.filePointer + region.length);
+break;
+case OsmandOdb.OsmAndStructure.TRANSPORTINDEX_FIELD_NUMBER:
+TransportIndex ind=new TransportIndex();
+ind.length=readInt();
+ind.filePointer=codedIS.getTotalBytesRead();
+if (transportAdapter != null) {
+oldLimit=codedIS.pushLimit(ind.length);
+transportAdapter.readTransportIndex(ind);
+codedIS.popLimit(oldLimit);
+transportIndexes.add(ind);
+indexes.add(ind);
+}
+codedIS.seek(ind.filePointer + ind.length);
+break;
+case OsmandOdb.OsmAndStructure.ROUTINGINDEX_FIELD_NUMBER:
+RouteRegion routeReg=new RouteRegion();
+routeReg.length=readInt();
+routeReg.filePointer=codedIS.getTotalBytesRead();
+if (routeAdapter != null) {
+oldLimit=codedIS.pushLimit(routeReg.length);
+routeAdapter.readRouteIndex(routeReg);
+codedIS.popLimit(oldLimit);
+routingIndexes.add(routeReg);
+indexes.add(routeReg);
+}
+codedIS.seek(routeReg.filePointer + routeReg.length);
+break;
+case OsmandOdb.OsmAndStructure.POIINDEX_FIELD_NUMBER:
+PoiRegion poiInd=new PoiRegion();
+poiInd.length=readInt();
+poiInd.filePointer=codedIS.getTotalBytesRead();
+if (poiAdapter != null) {
+oldLimit=codedIS.pushLimit(poiInd.length);
+poiAdapter.readPoiIndex(poiInd,false);
+codedIS.popLimit(oldLimit);
+poiIndexes.add(poiInd);
+indexes.add(poiInd);
+}
+codedIS.seek(poiInd.filePointer + poiInd.length);
+break;
+case OsmandOdb.OsmAndStructure.VERSIONCONFIRM_FIELD_NUMBER:
+int cversion=codedIS.readUInt32();
+calculateCenterPointForRegions();
+initCorrectly=cversion == version;
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

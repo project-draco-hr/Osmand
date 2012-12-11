@@ -1,0 +1,36 @@
+{
+  if (bufferPos < bufferSize) {
+    throw new IllegalStateException("refillBuffer() called when buffer wasn't empty.");
+  }
+  if (totalBytesRetired + bufferSize == currentLimit) {
+    if (mustSucceed) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+ else {
+      return false;
+    }
+  }
+  totalBytesRetired+=bufferSize;
+  bufferPos=0;
+  bufferSize=raf.read(buffer);
+  if (bufferSize == 0 || bufferSize < -1) {
+    throw new IllegalStateException("InputStream#read(byte[]) returned invalid result: " + bufferSize + "\nThe InputStream implementation is buggy.");
+  }
+  if (bufferSize == -1) {
+    bufferSize=0;
+    if (mustSucceed) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+ else {
+      return false;
+    }
+  }
+ else {
+    recomputeBufferSizeAfterLimit();
+    final int totalBytesRead=totalBytesRetired + bufferSize + bufferSizeAfterLimit;
+    if (totalBytesRead > sizeLimit || totalBytesRead < 0) {
+      throw InvalidProtocolBufferException.sizeLimitExceeded();
+    }
+    return true;
+  }
+}

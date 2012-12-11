@@ -1,0 +1,60 @@
+{
+  name=saxParser.isNamespaceAware() ? localName : name;
+  if (!parseStarted) {
+    initRootElement(uri,localName,name,attributes);
+  }
+  if (currentParsedEntity == null) {
+    progressEntity++;
+    if (progress != null && ((progressEntity % moduleProgress) == 0) && !progress.isIndeterminate() && streamForProgress != null) {
+      try {
+        progress.remaining(streamForProgress.available());
+      }
+ catch (      IOException e) {
+        progress.startWork(-1);
+      }
+    }
+    if (ELEM_NODE.equals(name)) {
+      currentParsedEntity=new Node(parseDouble(attributes,ATTR_LAT,0),parseDouble(attributes,ATTR_LON,0),parseId(attributes,ATTR_ID,-1));
+    }
+ else     if (ELEM_WAY.equals(name)) {
+      currentParsedEntity=new Way(parseId(attributes,ATTR_ID,-1));
+    }
+ else     if (ELEM_RELATION.equals(name)) {
+      currentParsedEntity=new Relation(parseId(attributes,ATTR_ID,-1));
+    }
+ else {
+    }
+    if (parseEntityInfo && currentParsedEntity != null) {
+      currentParsedEntityInfo=new EntityInfo();
+      currentParsedEntityInfo.setChangeset(attributes.getValue(ATTR_CHANGESET));
+      currentParsedEntityInfo.setTimestamp(attributes.getValue(ATTR_TIMESTAMP));
+      currentParsedEntityInfo.setUser(attributes.getValue(ATTR_USER));
+      currentParsedEntityInfo.setVersion(attributes.getValue(ATTR_VERSION));
+      currentParsedEntityInfo.setVisible(attributes.getValue(ATTR_VISIBLE));
+      currentParsedEntityInfo.setUid(attributes.getValue(ATTR_UID));
+    }
+  }
+ else {
+    if (ELEM_TAG.equals(name)) {
+      String key=attributes.getValue(ATTR_K);
+      if (key != null) {
+        currentParsedEntity.putTag(key,attributes.getValue(ATTR_V));
+      }
+    }
+ else     if (ELEM_ND.equals(name)) {
+      Long id=parseId(attributes,ATTR_REF,-1);
+      if (id != -1 && currentParsedEntity instanceof Way) {
+        ((Way)currentParsedEntity).addNode(id);
+      }
+    }
+ else     if (ELEM_MEMBER.equals(name)) {
+      Long id=parseId(attributes,ATTR_REF,-1);
+      if (id != -1 && currentParsedEntity instanceof Relation) {
+        EntityType type=EntityType.valueOf(attributes.getValue(ATTR_TYPE).toUpperCase());
+        ((Relation)currentParsedEntity).addMember(id,type,attributes.getValue(ATTR_ROLE));
+      }
+    }
+ else {
+    }
+  }
+}
