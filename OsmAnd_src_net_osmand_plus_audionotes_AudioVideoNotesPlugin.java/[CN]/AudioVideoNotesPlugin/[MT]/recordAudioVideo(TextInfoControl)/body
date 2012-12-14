@@ -1,0 +1,35 @@
+{
+  Location loc=mapActivity.getLastKnownLocation();
+  if (loc == null) {
+    AccessibleToast.makeText(app,R.string.audionotes_location_not_defined,Toast.LENGTH_LONG).show();
+  }
+  String basename=MapUtils.createShortLocString(loc.getLatitude(),loc.getLongitude(),15);
+  File f=app.getSettings().extendOsmandPath(ResourceManager.AV_PATH);
+  f.mkdirs();
+  final MediaRecorder mr=new MediaRecorder();
+  mr.setAudioSource(MediaRecorder.AudioSource.MIC);
+  int k=1;
+  File fl;
+  do {
+    fl=new File(f,basename + "_" + (k++)+ ".3gpp");
+  }
+ while (fl.exists());
+  mr.setOutputFile(fl.getAbsolutePath());
+  mr.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+  recordPlaceControl.setText("",app.getString(R.string.monitoring_control_stop));
+  try {
+    mr.prepare();
+    mr.start();
+    recordPlaceControl.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        mr.stop();
+        mr.release();
+        setRecordListener(recordPlaceControl);
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    AccessibleToast.makeText(app,app.getString(R.string.error_io_error) + " : " + e.getMessage(),Toast.LENGTH_LONG).show();
+  }
+}
