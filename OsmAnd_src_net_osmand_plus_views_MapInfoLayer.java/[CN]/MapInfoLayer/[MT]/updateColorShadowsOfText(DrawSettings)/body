@@ -1,0 +1,61 @@
+{
+  boolean transparent=view.getSettings().TRANSPARENT_MAP_THEME.get();
+  boolean nightMode=drawSettings == null ? false : drawSettings.isNightMode();
+  boolean following=routeLayer.getHelper().isFollowingMode();
+  int calcThemeId=(transparent ? 4 : 0) | (nightMode ? 2 : 0) | (following ? 1 : 0);
+  if (themeId != calcThemeId) {
+    themeId=calcThemeId;
+    boolean textBold=following;
+    int textColor=!nightMode ? Color.BLACK : 0xffC8C8C8;
+    int textShadowColor=!transparent ? Color.TRANSPARENT : Color.WHITE;
+    int boxTop;
+    int boxTopStack;
+    int boxTopR;
+    int boxTopL;
+    int expand;
+    if (nightMode) {
+      boxTop=R.drawable.box_top_n;
+      boxTopStack=R.drawable.box_top_n_stack;
+      boxTopR=R.drawable.box_top_rn;
+      boxTopL=R.drawable.box_top_ln;
+      expand=R.drawable.box_expand_t;
+    }
+ else     if (transparent) {
+      boxTop=R.drawable.box_top_t;
+      boxTopStack=R.drawable.box_top_t_stack;
+      boxTopR=R.drawable.box_top_rt;
+      boxTopL=R.drawable.box_top_lt;
+      expand=R.drawable.box_expand_t;
+    }
+ else {
+      boxTop=R.drawable.box_top;
+      boxTopStack=R.drawable.box_top_stack;
+      boxTopR=R.drawable.box_top_r;
+      boxTopL=R.drawable.box_top_l;
+      expand=R.drawable.box_expand;
+    }
+    rightStack.setTopDrawable(view.getResources().getDrawable(boxTopR));
+    rightStack.setStackDrawable(boxTopStack);
+    leftStack.setTopDrawable(view.getResources().getDrawable(boxTopL));
+    leftStack.setStackDrawable(boxTopStack);
+    leftStack.setExpandImageDrawable(view.getResources().getDrawable(expand));
+    rightStack.setExpandImageDrawable(view.getResources().getDrawable(expand));
+    statusBar.setBackgroundDrawable(view.getResources().getDrawable(boxTop));
+    paintText.setColor(textColor);
+    topText.setTextColor(textColor);
+    paintSubText.setColor(textColor);
+    paintSmallText.setColor(textColor);
+    paintSmallSubText.setColor(textColor);
+    topText.setShadowColor(textShadowColor);
+    leftStack.setShadowColor(textShadowColor);
+    rightStack.setShadowColor(textShadowColor);
+    paintText.setFakeBoldText(textBold);
+    topText.getPaint().setFakeBoldText(textBold);
+    paintSubText.setFakeBoldText(textBold);
+    paintSmallText.setFakeBoldText(textBold);
+    paintSmallSubText.setFakeBoldText(textBold);
+    rightStack.invalidate();
+    leftStack.invalidate();
+    statusBar.invalidate();
+  }
+}
