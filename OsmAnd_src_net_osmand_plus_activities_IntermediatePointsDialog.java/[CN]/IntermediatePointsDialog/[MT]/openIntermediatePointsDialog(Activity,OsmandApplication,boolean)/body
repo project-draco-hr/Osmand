@@ -9,11 +9,11 @@
       TextView tv=(TextView)v.findViewById(R.id.title);
       String nm=(position + 1) + ". ";
       String distString="";
-      if (mapActivity != null) {
-        double lat=mapActivity.getMapView().getLatitude();
-        double lon=mapActivity.getMapView().getLongitude();
+      if (activity instanceof MapActivity) {
+        double lat=((MapActivity)activity).getMapView().getLatitude();
+        double lon=((MapActivity)activity).getMapView().getLongitude();
         double meters=MapUtils.getDistance(intermediates.get(position),lat,lon);
-        distString=OsmAndFormatter.getFormattedDistance((float)meters,mapActivity);
+        distString=OsmAndFormatter.getFormattedDistance((float)meters,activity);
       }
       nm+=app.getString(R.string.target_point,distString);
       String descr=names.get(position);
@@ -69,31 +69,31 @@
     }
   }
 ;
-  ListView lv=new ListView(app);
+  ListView lv=new ListView(activity);
   lv.setAdapter(listadapter);
   lv.setBackgroundColor(Color.WHITE);
   lv.setOnItemClickListener(new OnItemClickListener(){
     @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
-      if (mapActivity != null) {
+      if (activity instanceof MapActivity) {
         LatLon pointToNavigate=intermediates.get(position);
-        float fZoom=mapActivity.getMapView().getFloatZoom() < 15 ? 15 : mapActivity.getMapView().getFloatZoom();
-        mapActivity.getMapView().setZoom(fZoom);
-        mapActivity.getMapView().setLatLon(pointToNavigate.getLatitude(),pointToNavigate.getLongitude());
+        float fZoom=((MapActivity)activity).getMapView().getFloatZoom() < 15 ? 15 : ((MapActivity)activity).getMapView().getFloatZoom();
+        ((MapActivity)activity).getMapView().setZoom(fZoom);
+        ((MapActivity)activity).getMapView().setLatLon(pointToNavigate.getLatitude(),pointToNavigate.getLongitude());
         listadapter.notifyDataSetInvalidated();
       }
     }
   }
 );
-  Builder builder=new AccessibleAlertBuilder(app);
+  Builder builder=new AccessibleAlertBuilder(activity);
   builder.setView(lv);
   builder.setInverseBackgroundForced(true);
   builder.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (changeOrder) {
-        commitChangePointsOrder(app,mapActivity,intermediates,names);
+        commitChangePointsOrder(app,activity,intermediates,names);
       }
  else {
-        commitPointsRemoval(app,mapActivity,checkedIntermediates);
+        commitPointsRemoval(app,activity,checkedIntermediates);
       }
     }
   }
@@ -101,7 +101,7 @@
   if (!changeOrder) {
     builder.setNeutralButton("Change order",new DialogInterface.OnClickListener(){
       @Override public void onClick(      DialogInterface dialog,      int which){
-        openIntermediatePointsDialog(mapActivity,app,true);
+        openIntermediatePointsDialog(activity,app,true);
       }
     }
 );
