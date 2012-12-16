@@ -1,6 +1,6 @@
 {
-  final RoutingHelper routingHelper=mapActivity.getRoutingHelper();
   Builder builder=new AlertDialog.Builder(mapActivity);
+  final TargetPointsHelper targets=mapActivity.getTargetPoints();
   View view=mapActivity.getLayoutInflater().inflate(R.layout.calculate_route,null);
   final CheckBox nonoptimal=(CheckBox)view.findViewById(R.id.OptimalCheckox);
   final ToggleButton[] buttons=new ToggleButton[ApplicationMode.values().length];
@@ -56,9 +56,9 @@
   DialogInterface.OnClickListener onlyShowCall=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (to != null) {
-        mapActivity.navigateToPoint(to,false,-1);
+        targets.navigateToPoint(mapActivity,to,false,-1);
       }
-      if (!checkPointToNavigate()) {
+      if (!targets.checkPointToNavigate(mapActivity)) {
         return;
       }
       Location from=fromOrCurrent;
@@ -78,16 +78,16 @@
       settings.FOLLOW_THE_ROUTE.set(false);
       settings.FOLLOW_THE_GPX_ROUTE.set(null);
       routingHelper.setFollowingMode(false);
-      routingHelper.setFinalAndCurrentLocation(mapActivity.getPointToNavigate(),mapActivity.getIntermediatePoints(),from,null);
+      routingHelper.setFinalAndCurrentLocation(targets.getPointToNavigate(),targets.getIntermediatePoints(),from,null);
     }
   }
 ;
   DialogInterface.OnClickListener followCall=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (to != null) {
-        mapActivity.navigateToPoint(to,false,-1);
+        targets.navigateToPoint(mapActivity,to,false,-1);
       }
-      if (!checkPointToNavigate()) {
+      if (!targets.checkPointToNavigate(mapActivity)) {
         return;
       }
       boolean msg=true;
@@ -109,14 +109,14 @@
       ApplicationMode mode=getAppMode(buttons,settings);
       settings.OPTIMAL_ROUTE_MODE.setModeValue(mode,!nonoptimal.isChecked());
       dialog.dismiss();
-      mapActivity.followRoute(mode,mapActivity.getPointToNavigate(),mapActivity.getIntermediatePoints(),current,null);
+      mapActivity.followRoute(mode,targets.getPointToNavigate(),targets.getIntermediatePoints(),current,null);
     }
   }
 ;
   DialogInterface.OnClickListener useGpxNavigation=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (to != null) {
-        mapActivity.navigateToPoint(to,false,-1);
+        targets.navigateToPoint(mapActivity,to,false,-1);
       }
       ApplicationMode mode=getAppMode(buttons,settings);
       navigateUsingGPX(mode);

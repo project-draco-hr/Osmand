@@ -1,0 +1,30 @@
+{
+  if (pointToNavigate != null) {
+    Builder builder=new AlertDialog.Builder(ctx);
+    builder.setTitle(R.string.new_destination_point_dialog);
+    builder.setItems(new String[]{ctx.getString(R.string.replace_destination_point),ctx.getString(R.string.add_as_first_destination_point),ctx.getString(R.string.add_as_last_destination_point)},new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        if (which == 0) {
+          settings.setPointToNavigate(lat,lon,true,name);
+        }
+ else         if (which == 2) {
+          int sz=intermediatePoints.size();
+          LatLon pt=pointToNavigate;
+          settings.insertIntermediatePoint(pt.getLatitude(),pt.getLongitude(),settings.getPointNavigateDescription(),sz,true);
+          settings.setPointToNavigate(lat,lon,true,name);
+        }
+ else {
+          settings.insertIntermediatePoint(lat,lon,name,0,true);
+        }
+        readFromSettings(settings);
+        MapActivity.launchMapActivityMoveToTop(ctx);
+      }
+    }
+);
+    builder.show();
+  }
+ else {
+    settings.setPointToNavigate(lat,lon,true,name);
+    MapActivity.launchMapActivityMoveToTop(ctx);
+  }
+}

@@ -4,7 +4,6 @@
   if (settings.MAP_SCREEN_ORIENTATION.get() != getRequestedOrientation()) {
     setRequestedOrientation(settings.MAP_SCREEN_ORIENTATION.get());
   }
-  mapLayers.getNavigationLayer().setPointToNavigate(settings.getPointToNavigate(),settings.getIntermediatePoints());
   Location loc=getLastKnownLocation();
   if (loc != null && (System.currentTimeMillis() - loc.getTime()) > 30 * 1000) {
     setLocation(null);
@@ -19,8 +18,9 @@
   updateApplicationModeSettings();
   mapLayers.getPoiMapLayer().setFilter(settings.getPoiFilterForMap((OsmandApplication)getApplication()));
   mapLayers.getMapInfoLayer().getBackToLocation().setEnabled(false);
-  if (routingHelper.isFollowingMode() && (!Algoritms.objectEquals(settings.getPointToNavigate(),routingHelper.getFinalLocation()) || !Algoritms.objectEquals(settings.getIntermediatePoints(),routingHelper.getIntermediatePoints()))) {
-    routingHelper.setFinalAndCurrentLocation(settings.getPointToNavigate(),settings.getIntermediatePoints(),getLastKnownLocation(),routingHelper.getCurrentGPXRoute());
+  TargetPointsHelper targets=getTargetPoints();
+  if (routingHelper.isFollowingMode() && (!Algoritms.objectEquals(targets.getPointToNavigate(),routingHelper.getFinalLocation()) || !Algoritms.objectEquals(targets.getIntermediatePoints(),routingHelper.getIntermediatePoints()))) {
+    routingHelper.setFinalAndCurrentLocation(targets.getPointToNavigate(),targets.getIntermediatePoints(),getLastKnownLocation(),routingHelper.getCurrentGPXRoute());
   }
   startLocationRequests();
   if (settings != null && settings.isLastKnownMapLocation()) {
