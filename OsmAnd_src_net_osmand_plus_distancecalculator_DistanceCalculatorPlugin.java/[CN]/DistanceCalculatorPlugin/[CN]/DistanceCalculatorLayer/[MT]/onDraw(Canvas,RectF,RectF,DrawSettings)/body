@@ -1,0 +1,25 @@
+{
+  if (distanceMeasurementMode != 0) {
+    path.reset();
+    for (int i=0; i < measurementPoints.size(); i++) {
+      LatLon point=measurementPoints.get(i);
+      double lat=point.getLatitude();
+      double lon=point.getLongitude();
+      int locationX=view.getMapXForPoint(lon);
+      int locationY=view.getMapYForPoint(lat);
+      if (view.isPointOnTheRotatedMap(lat,lon)) {
+        int marginY=originIcon.getHeight();
+        canvas.rotate(-view.getRotate(),locationX,locationY);
+        canvas.drawBitmap(distanceMeasurementMode == 1 ? originIcon : destinationIcon,locationX,locationY - marginY,bitmapPaint);
+        canvas.rotate(view.getRotate(),locationX,locationY);
+      }
+      if (i == 0) {
+        path.moveTo(locationX,locationY);
+      }
+ else {
+        path.lineTo(locationX,locationY);
+      }
+    }
+    canvas.drawPath(path,paint);
+  }
+}
