@@ -1,0 +1,53 @@
+{
+  Dialog dlg=new Dialog(mapActivity);
+  SurfaceView view=new SurfaceView(dlg.getContext());
+  view.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+  view.getHolder().addCallback(new Callback(){
+    @Override public void surfaceDestroyed(    SurfaceHolder holder){
+    }
+    @Override public void surfaceCreated(    SurfaceHolder holder){
+      MediaRecorder mr=new MediaRecorder();
+      String ext=MPEG4_EXTENSION;
+      if (app.getSettings().AV_VIDEO_FORMAT.get() == OsmandSettings.VIDEO_OUTPUT_3GP) {
+        ext=THREEGP_EXTENSION;
+      }
+      final File f=getBaseFileName(lat,lon,app,ext);
+      mr.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
+      mr.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+      if (app.getSettings().AV_VIDEO_FORMAT.get() == OsmandSettings.VIDEO_OUTPUT_3GP) {
+        mr.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+      }
+ else {
+        mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+      }
+      giveMediaRecorderHintRotatedScreen(mapActivity,mr);
+      mr.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+      mr.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
+      mr.setOutputFile(f.getAbsolutePath());
+      try {
+        mr.prepare();
+        mr.start();
+        mediaRec=mr;
+        AccessibleToast.makeText(mapActivity,R.string.recording_is_recorded,Toast.LENGTH_LONG).show();
+        recordControl.setText(app.getString(R.string.av_control_stop),"");
+        recordControl.setOnClickListener(new View.OnClickListener(){
+          @Override public void onClick(          View v){
+            stopRecording(mapActivity);
+            indexFile(f);
+            mapActivity.getMapView().refreshMap();
+          }
+        }
+);
+      }
+ catch (      Exception e) {
+        logErr(e);
+        return;
+      }
+    }
+    @Override public void surfaceChanged(    SurfaceHolder holder,    int format,    int width,    int height){
+    }
+  }
+);
+  dlg.setContentView(view);
+  dlg.show();
+}

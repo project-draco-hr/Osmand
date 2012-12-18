@@ -1,0 +1,27 @@
+{
+  MediaRecorder mr=new MediaRecorder();
+  final File f=getBaseFileName(lat,lon,app,THREEGP_EXTENSION);
+  mr.setAudioSource(MediaRecorder.AudioSource.MIC);
+  mr.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+  mr.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+  mr.setOutputFile(f.getAbsolutePath());
+  try {
+    mr.prepare();
+    mr.start();
+    mediaRec=mr;
+    recordControl.setText(app.getString(R.string.av_control_stop),"");
+    AccessibleToast.makeText(mapActivity,R.string.recording_is_recorded,Toast.LENGTH_LONG).show();
+    recordControl.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        stopRecording(mapActivity);
+        indexFile(f);
+        mapActivity.getMapView().refreshMap();
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    log.error("Error starting audio recorder ",e);
+    AccessibleToast.makeText(app,app.getString(R.string.recording_error) + " : " + e.getMessage(),Toast.LENGTH_LONG).show();
+  }
+}
