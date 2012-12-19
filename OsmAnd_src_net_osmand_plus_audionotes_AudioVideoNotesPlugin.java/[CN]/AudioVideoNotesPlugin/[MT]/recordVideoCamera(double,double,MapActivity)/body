@@ -1,5 +1,5 @@
 {
-  Dialog dlg=new Dialog(mapActivity);
+  final Dialog dlg=new Dialog(mapActivity);
   SurfaceView view=new SurfaceView(dlg.getContext());
   view.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
   view.getHolder().addCallback(new Callback(){
@@ -21,6 +21,7 @@
         mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
       }
       giveMediaRecorderHintRotatedScreen(mapActivity,mr);
+      mr.setPreviewDisplay(holder.getSurface());
       mr.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
       mr.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
       mr.setOutputFile(f.getAbsolutePath());
@@ -29,6 +30,7 @@
         mr.start();
         mediaRec=mr;
         AccessibleToast.makeText(mapActivity,R.string.recording_is_recorded,Toast.LENGTH_LONG).show();
+        dlg.dismiss();
         recordControl.setText(app.getString(R.string.av_control_stop),"");
         recordControl.setOnClickListener(new View.OnClickListener(){
           @Override public void onClick(          View v){
