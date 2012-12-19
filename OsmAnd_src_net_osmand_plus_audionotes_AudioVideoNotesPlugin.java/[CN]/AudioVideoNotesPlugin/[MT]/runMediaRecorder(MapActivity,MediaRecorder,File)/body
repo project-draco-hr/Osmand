@@ -1,0 +1,24 @@
+{
+  mr.prepare();
+  mr.start();
+  mediaRec=mr;
+  recordControl.setText(app.getString(R.string.av_control_stop),"");
+  final MapInfoLayer mil=mapActivity.getMapLayers().getMapInfoLayer();
+  final MapStackControl par=mil.getRightStack();
+  final boolean contains=par.getAllViews().contains(recordControl);
+  if (!contains) {
+    par.addStackView(recordControl);
+  }
+  AccessibleToast.makeText(mapActivity,R.string.recording_is_recorded,Toast.LENGTH_LONG).show();
+  recordControl.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (!contains) {
+        par.removeView(recordControl);
+      }
+      stopRecording(mapActivity);
+      indexFile(f);
+      mapActivity.getMapView().refreshMap();
+    }
+  }
+);
+}
