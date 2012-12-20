@@ -1,6 +1,13 @@
 {
   final FavouritesDbHelper helper=getMyApplication().getFavorites();
-  final Collection<FavouritePoint> points=helper.getFavouritePoints();
+  final List<FavouritePoint> points=new ArrayList<FavouritePoint>(helper.getFavouritePoints());
+  final Collator ci=Collator.getInstance();
+  Collections.sort(points,new Comparator<FavouritePoint>(){
+    @Override public int compare(    FavouritePoint object1,    FavouritePoint object2){
+      return ci.compare(object1.getName(),object2.getName());
+    }
+  }
+);
   final String[] names=new String[points.size()];
   if (names.length == 0) {
     AccessibleToast.makeText(mapActivity,getString(R.string.fav_points_not_exist),Toast.LENGTH_SHORT).show();
