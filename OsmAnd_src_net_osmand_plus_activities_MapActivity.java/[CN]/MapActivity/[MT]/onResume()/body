@@ -4,7 +4,7 @@
   if (settings.MAP_SCREEN_ORIENTATION.get() != getRequestedOrientation()) {
     setRequestedOrientation(settings.MAP_SCREEN_ORIENTATION.get());
   }
-  Location loc=getLastKnownLocation();
+  net.osmand.Location loc=getLastKnownLocation();
   if (loc != null && (System.currentTimeMillis() - loc.getTime()) > 30 * 1000) {
     setLocation(null);
   }
@@ -16,7 +16,12 @@
     setVolumeControlStream(AudioManager.STREAM_MUSIC);
   }
   updateApplicationModeSettings();
-  mapLayers.getPoiMapLayer().setFilter(settings.getPoiFilterForMap((OsmandApplication)getApplication()));
+  String filterId=settings.getPoiFilterForMap();
+  PoiFilter poiFilter=getMyApplication().getPoiFilters().getFilterById(filterId);
+  if (poiFilter == null) {
+    poiFilter=new PoiFilter(null,getMyApplication());
+  }
+  mapLayers.getPoiMapLayer().setFilter(poiFilter);
   mapLayers.getMapInfoLayer().getBackToLocation().setEnabled(false);
   TargetPointsHelper targets=getTargetPoints();
   if (routingHelper.isFollowingMode() && (!Algoritms.objectEquals(targets.getPointToNavigate(),routingHelper.getFinalLocation()) || !Algoritms.objectEquals(targets.getIntermediatePoints(),routingHelper.getIntermediatePoints()))) {

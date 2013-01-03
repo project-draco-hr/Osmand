@@ -1,7 +1,7 @@
 {
   final Amenity amenity=((AmenityAdapter)getListAdapter()).getItem(position);
   final QuickAction qa=new QuickAction(v);
-  String poiSimpleFormat=OsmAndFormatter.getPoiSimpleFormat(amenity,SearchPOIActivity.this,settings.usingEnglishNames());
+  String poiSimpleFormat=OsmAndFormatter.getPoiSimpleFormat(amenity,getMyApplication(),settings.usingEnglishNames());
   String name=getString(R.string.poi) + " : " + poiSimpleFormat;
   int z=Math.max(16,settings.getLastKnownMapZoom());
   MapActivityActions.createDirectionsActions(qa,amenity.getLocation(),amenity,name,z,this,true,null);
@@ -11,7 +11,7 @@
   poiDescription.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       Builder bs=new AlertDialog.Builder(v.getContext());
-      bs.setTitle(OsmAndFormatter.getPoiSimpleFormat(amenity,v.getContext(),settings.USE_ENGLISH_NAMES.get()));
+      bs.setTitle(OsmAndFormatter.getPoiSimpleFormat(amenity,getMyApplication(),settings.USE_ENGLISH_NAMES.get()));
       StringBuilder d=new StringBuilder();
       if (amenity.getOpeningHours() != null) {
         d.append(getString(R.string.opening_hours) + " : ").append(amenity.getOpeningHours()).append("\n");
@@ -31,7 +31,7 @@
   }
 );
   qa.addActionItem(poiDescription);
-  if (((OsmandApplication)getApplication()).accessibilityEnabled()) {
+  if (((OsmandApplication)getApplication()).getInternalAPI().accessibilityEnabled()) {
     ActionItem showDetails=new ActionItem();
     showDetails.setTitle(getString(R.string.show_details));
     showDetails.setOnClickListener(new OnClickListener(){
