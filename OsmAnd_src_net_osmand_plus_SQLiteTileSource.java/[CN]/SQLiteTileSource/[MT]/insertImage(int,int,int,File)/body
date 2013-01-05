@@ -1,5 +1,5 @@
 {
-  SQLiteDatabase db=getDatabase();
+  SQLiteConnection db=getDatabase();
   if (db == null || db.isReadOnly()) {
     return;
   }
@@ -13,7 +13,7 @@
   while ((i=is.read(b,0,BUF_SIZE)) > -1) {
     buf.put(b,0,i);
   }
-  SQLiteStatement statement=db.compileStatement("INSERT INTO tiles VALUES(?, ?, ?, ?, ?)");
+  net.osmand.plus.api.SQLiteAPI.SQLiteStatement statement=db.compileStatement("INSERT INTO tiles VALUES(?, ?, ?, ?, ?)");
   statement.bindLong(1,x);
   statement.bindLong(2,y);
   statement.bindLong(3,17 - zoom);
@@ -21,4 +21,5 @@
   statement.bindBlob(5,buf.array());
   statement.execute();
   statement.close();
+  is.close();
 }
