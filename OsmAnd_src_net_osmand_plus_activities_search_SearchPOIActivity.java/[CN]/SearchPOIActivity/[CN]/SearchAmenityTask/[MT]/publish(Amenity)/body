@@ -1,11 +1,16 @@
 {
-  if (request.type == SearchAmenityRequest.NEW_SEARCH_INIT) {
-    publishProgress(object);
-  }
- else   if (request.type == SearchAmenityRequest.SEARCH_FURTHER) {
-    if (existingObjects != null && !existingObjects.contains(object.getId())) {
+  long id=getAmenityId(object);
+  if (existingObjects != null && !existingObjects.contains(id)) {
+    existingObjects.add(id);
+    if (request.type == SearchAmenityRequest.NEW_SEARCH_INIT) {
       publishProgress(object);
     }
+ else     if (request.type == SearchAmenityRequest.SEARCH_FURTHER) {
+      if (!updateExisting.contains(id)) {
+        publishProgress(object);
+      }
+    }
+    return true;
   }
-  return true;
+  return false;
 }
