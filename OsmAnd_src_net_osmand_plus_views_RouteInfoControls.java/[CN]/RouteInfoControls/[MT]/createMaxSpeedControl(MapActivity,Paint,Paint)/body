@@ -3,7 +3,16 @@
   final TextInfoControl speedControl=new TextInfoControl(map,3,paintText,paintSubText){
     private float cachedSpeed=0;
     @Override public boolean updateInfo(){
-      float mx=rh == null ? 0 : rh.getCurrentMaxSpeed();
+      float mx=0;
+      if ((rh == null || !rh.isFollowingMode()) && map.isMapLinkedToLocation()) {
+        RouteDataObject ro=map.getLastRouteDataObject();
+        if (ro != null) {
+          mx=ro.getMaximumSpeed();
+        }
+      }
+ else {
+        mx=rh.getCurrentMaxSpeed();
+      }
       if (cachedSpeed != mx) {
         cachedSpeed=mx;
         if (cachedSpeed == 0) {

@@ -1,0 +1,22 @@
+{
+  if (calculatingThread == Thread.currentThread()) {
+    lastFound=runUpdateInThread(loc);
+  }
+ else   if (calculatingThread == null && loc != null) {
+    calculatingThread=new Thread(new Runnable(){
+      @Override public void run(){
+        try {
+          lastFound=runUpdateInThread(loc);
+          if (lastAskedLocation != loc) {
+            getLastKnownRouteSegment(lastAskedLocation);
+          }
+        }
+  finally {
+          calculatingThread=null;
+        }
+      }
+    }
+);
+    calculatingThread.start();
+  }
+}
