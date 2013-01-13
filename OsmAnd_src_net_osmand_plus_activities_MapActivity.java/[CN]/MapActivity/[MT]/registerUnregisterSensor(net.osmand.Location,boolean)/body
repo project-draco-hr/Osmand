@@ -12,11 +12,13 @@
  else   if (!sensorRegistered && show) {
     Log.d(LogUtil.TAG,"Enable sensor");
     SensorManager sensorMgr=(SensorManager)getSystemService(SENSOR_SERVICE);
-    Sensor s=sensorMgr.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-    if (s != null) {
-      if (!sensorMgr.registerListener(this,s,SensorManager.SENSOR_DELAY_FASTEST)) {
-        Log.e(LogUtil.TAG,"Sensor could not be enabled");
-      }
+    Sensor s=sensorMgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+    if (s == null || !sensorMgr.registerListener(this,s,SensorManager.SENSOR_DELAY_UI)) {
+      Log.e(LogUtil.TAG,"Sensor accelerometer could not be enabled");
+    }
+    s=sensorMgr.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+    if (s == null || !sensorMgr.registerListener(this,s,SensorManager.SENSOR_DELAY_UI)) {
+      Log.e(LogUtil.TAG,"Sensor magnetic field could not be enabled");
     }
     sensorRegistered=true;
   }
