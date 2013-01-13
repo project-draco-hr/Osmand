@@ -1,10 +1,18 @@
 {
-  menu.add(0,R.string.local_index_mi_backup,0,getString(R.string.local_index_mi_backup) + "...");
-  menu.add(0,R.string.local_index_mi_restore,1,getString(R.string.local_index_mi_restore) + "...");
-  menu.add(0,R.string.local_index_mi_delete,2,getString(R.string.local_index_mi_delete) + "...");
-  menu.add(0,R.string.local_index_mi_reload,3,R.string.local_index_mi_reload);
-  if (OsmandPlugin.getEnabledPlugin(OsmEditingPlugin.class) != null) {
-    menu.add(0,R.string.local_index_mi_upload_gpx,4,getString(R.string.local_index_mi_upload_gpx) + "...");
+  optionsMenuAdapter=new ContextMenuAdapter(this);
+  OnContextMenuClick listener=new OnContextMenuClick(){
+    @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      localOptionsMenu(itemId);
+    }
+  }
+;
+  optionsMenuAdapter.registerItem(R.string.local_index_mi_backup,0,listener,0);
+  optionsMenuAdapter.registerItem(R.string.local_index_mi_restore,0,listener,1);
+  optionsMenuAdapter.registerItem(R.string.local_index_mi_delete,0,listener,2);
+  optionsMenuAdapter.registerItem(R.string.local_index_mi_reload,0,listener,3);
+  OsmandPlugin.onOptionsMenuLocalIndexes(this,optionsMenuAdapter);
+  for (int j=0; j < optionsMenuAdapter.length(); j++) {
+    menu.add(0,optionsMenuAdapter.getItemId(j),j + 1,optionsMenuAdapter.getItemName(j));
   }
   return true;
 }
