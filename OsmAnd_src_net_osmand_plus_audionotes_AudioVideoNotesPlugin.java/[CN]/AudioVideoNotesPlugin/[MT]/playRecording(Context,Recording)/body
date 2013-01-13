@@ -1,13 +1,13 @@
 {
   final MediaPlayer player=r.isPhoto() ? null : new MediaPlayer();
-  final AccessibleAlertBuilder dlg=new AccessibleAlertBuilder(view.getContext());
+  final AccessibleAlertBuilder dlg=new AccessibleAlertBuilder(ctx);
   dlg.setPositiveButton(R.string.recording_open_external_player,new OnClickListener(){
     @Override public void onClick(    DialogInterface v,    int w){
       if (player == null) {
         Intent vint=new Intent(Intent.ACTION_VIEW);
         vint.setDataAndType(Uri.fromFile(r.file),"image/*");
         vint.setFlags(0x10000000);
-        view.getContext().startActivity(vint);
+        ctx.startActivity(vint);
       }
  else {
         if (player.isPlaying()) {
@@ -17,7 +17,7 @@
         vint.setDataAndType(Uri.fromFile(r.file),"video/*");
         vint.setFlags(0x10000000);
         try {
-          view.getContext().startActivity(vint);
+          ctx.startActivity(vint);
         }
  catch (        Exception e) {
           e.printStackTrace();
@@ -36,7 +36,7 @@
 );
   try {
     if (r.isPhoto()) {
-      ImageView img=new ImageView(view.getContext());
+      ImageView img=new ImageView(ctx);
       Options opts=new Options();
       opts.inSampleSize=4;
       int rot=r.getBitmapRotation();
@@ -53,7 +53,7 @@
       dlg.show();
     }
  else {
-      dlg.setMessage(view.getContext().getString(R.string.recording_playing,r.getDescription(view.getContext())));
+      dlg.setMessage(ctx.getString(R.string.recording_playing,r.getDescription(ctx)));
       player.setDataSource(r.file.getAbsolutePath());
       player.setOnPreparedListener(new OnPreparedListener(){
         @Override public void onPrepared(        MediaPlayer mp){
@@ -66,6 +66,6 @@
     }
   }
  catch (  Exception e) {
-    AccessibleToast.makeText(view.getContext(),R.string.recording_can_not_be_played,Toast.LENGTH_SHORT).show();
+    AccessibleToast.makeText(ctx,R.string.recording_can_not_be_played,Toast.LENGTH_SHORT).show();
   }
 }
