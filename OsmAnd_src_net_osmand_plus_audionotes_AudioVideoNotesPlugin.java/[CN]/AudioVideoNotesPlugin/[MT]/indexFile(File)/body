@@ -1,4 +1,8 @@
 {
+  boolean oldFileExist=recordingByFileName.containsKey(f.getName());
+  if (oldFileExist) {
+    return;
+  }
   Recording r=new Recording(f);
   String encodeName=f.getName();
   int i=encodeName.indexOf('-');
@@ -13,5 +17,16 @@
   LatLon l=MapUtils.decodeShortLocString(encodeName);
   r.lat=l.getLatitude();
   r.lon=l.getLongitude();
+  if (lastTakingPhoto != null && lastTakingPhoto.getName().equals(f.getName())) {
+    float rot=activity.getLastSensorRotation();
+    try {
+      r.updatePhotoInformation(r.lat,r.lon,rot == 0 ? Double.NaN : rot);
+    }
+ catch (    IOException e) {
+      log.error("Error updating EXIF information " + e.getMessage(),e);
+    }
+    lastTakingPhoto=null;
+  }
   recordings.registerObject(r.lat,r.lon,r);
+  recordingByFileName.put(f.getName(),r);
 }
