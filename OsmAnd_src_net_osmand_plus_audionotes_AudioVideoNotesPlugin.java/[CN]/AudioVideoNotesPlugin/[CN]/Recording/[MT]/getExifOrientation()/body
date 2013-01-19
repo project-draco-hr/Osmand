@@ -1,12 +1,16 @@
 {
-  ExifInterface exif;
   int orientation=0;
   try {
-    exif=new ExifInterface(file.getAbsolutePath());
-    orientation=exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,1);
+    Class exClass=Class.forName("android.media.ExifInterface");
+    Constructor c=exClass.getConstructor(new Class[]{String.class});
+    Object exInstance=c.newInstance(file.getAbsolutePath());
+    Method getAttributeInt=exClass.getMethod("getAttributeInt",new Class[]{String.class,Integer.TYPE});
+    Integer it=(Integer)getAttributeInt.invoke(exInstance,"Orientation",new Integer(1));
+    orientation=it.intValue();
   }
- catch (  IOException e) {
+ catch (  Exception e) {
     e.printStackTrace();
+    log.error(e);
   }
   return orientation;
 }
