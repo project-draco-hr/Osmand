@@ -1,0 +1,27 @@
+{
+  if (applicationInitializing) {
+    manager.close();
+  }
+  applicationInitializing=false;
+  activity.finish();
+  if (getNavigationService() == null) {
+    fullExit();
+  }
+ else   if (disableService) {
+    final Intent serviceIntent=new Intent(this,NavigationService.class);
+    stopService(serviceIntent);
+    new Thread(new Runnable(){
+      public void run(){
+        while (getNavigationService() != null) {
+          try {
+            Thread.sleep(100);
+          }
+ catch (          InterruptedException e) {
+          }
+        }
+        fullExit();
+      }
+    }
+).start();
+  }
+}
