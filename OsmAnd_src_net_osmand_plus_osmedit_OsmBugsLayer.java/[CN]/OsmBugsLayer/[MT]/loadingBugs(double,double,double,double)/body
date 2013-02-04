@@ -34,5 +34,17 @@ catch (  NumberFormatException e) {
 catch (  RuntimeException e) {
     log.warn("Error loading bugs",e);
   }
+  for (  OsmbugsPoint p : local.getOsmbugsPoints()) {
+    if (p.getId() < 0) {
+      OpenStreetBug bug=new OpenStreetBug();
+      bug.setId(p.getId());
+      bug.setLongitude(p.getLongitude());
+      bug.setLatitude(p.getLatitude());
+      bug.setName(p.getText());
+      bug.setOpened(p.getAction() == Action.CREATE || p.getAction() == Action.MODIFY);
+      bug.setLocal(true);
+      bugs.add(bug);
+    }
+  }
   return bugs;
 }
