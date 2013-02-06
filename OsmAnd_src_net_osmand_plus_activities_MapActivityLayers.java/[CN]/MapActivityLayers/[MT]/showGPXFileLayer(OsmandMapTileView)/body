@@ -3,21 +3,22 @@
   selectGPXFileLayer(true,true,true,new CallbackWithObject<GPXFile>(){
     @Override public boolean processResult(    GPXFile result){
       GPXFile toShow=result;
-      if (toShow == null) {
+      if (toShow == null || toShow.showCurrentTrack) {
         if (!settings.SAVE_TRACK_TO_GPX.get()) {
           AccessibleToast.makeText(activity,R.string.gpx_monitoring_disabled_warn,Toast.LENGTH_SHORT).show();
-          return true;
         }
         Map<String,GPXFile> data=activity.getSavingTrackHelper().collectRecordedData();
-        if (data.isEmpty()) {
+        if (toShow == null) {
           toShow=new GPXFile();
+          toShow.showCurrentTrack=true;
         }
- else {
-          toShow=data.values().iterator().next();
+        if (!data.isEmpty()) {
+          GPXFile last=data.values().iterator().next();
+          GPXUtilities.mergeGPXFileInto(toShow,last);
         }
       }
       settings.SHOW_FAVORITES.set(true);
-      getApplication().setGpxFileToDisplay(toShow,result == null);
+      getApplication().setGpxFileToDisplay(toShow,toShow.showCurrentTrack);
       WptPt loc=toShow.findPointToShow();
       if (loc != null) {
         mapView.getAnimatedDraggingThread().startMoving(loc.lat,loc.lon,mapView.getFloatZoom(),true);

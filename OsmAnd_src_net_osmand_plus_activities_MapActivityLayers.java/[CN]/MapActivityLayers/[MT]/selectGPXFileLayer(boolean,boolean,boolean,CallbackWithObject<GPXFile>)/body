@@ -21,18 +21,18 @@
       builder.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
         @Override public void onClick(        DialogInterface dialog,        int which){
           dialog.dismiss();
+          GPXFile currentGPX=null;
           if (showCurrentGpx && selected[0]) {
-            callbackWithObject.processResult(null);
+            currentGPX=new GPXFile();
+            currentGPX.showCurrentTrack=true;
           }
- else {
-            List<String> s=new ArrayList<String>();
-            for (int i=0; i < selected.length; i++) {
-              if (selected[i]) {
-                s.add(list.get(i));
-              }
+          List<String> s=new ArrayList<String>();
+          for (int i=(showCurrentGpx ? 1 : 0); i < selected.length; i++) {
+            if (selected[i]) {
+              s.add(list.get(i));
             }
-            loadGPXFileInDifferentThread(callbackWithObject,convertCloudmade,dir,s.toArray(new String[s.size()]));
           }
+          loadGPXFileInDifferentThread(callbackWithObject,convertCloudmade,dir,currentGPX,s.toArray(new String[s.size()]));
         }
       }
 );
@@ -45,7 +45,7 @@
             callbackWithObject.processResult(null);
           }
  else {
-            loadGPXFileInDifferentThread(callbackWithObject,convertCloudmade,dir,list.get(which));
+            loadGPXFileInDifferentThread(callbackWithObject,convertCloudmade,dir,null,list.get(which));
           }
         }
       }
