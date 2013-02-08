@@ -1,12 +1,14 @@
 {
   try {
     final Dialog dlg=new Dialog(mapActivity);
+    final File f=getBaseFileName(lat,lon,app,IMG_EXTENSION);
+    lastTakingPhoto=f;
     SurfaceView view=new SurfaceView(dlg.getContext());
     view.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     view.getHolder().addCallback(new Callback(){
       @Override public void surfaceDestroyed(      SurfaceHolder holder){
       }
-      public void setCameraDisplayOrientation(      android.hardware.Camera camera){
+      public void setCameraDisplayOrientation(      android.hardware.Camera camera,      Parameters parameters){
         int rotation=mapActivity.getWindowManager().getDefaultDisplay().getRotation();
         int degrees=0;
 switch (rotation) {
@@ -23,7 +25,7 @@ case 3:
 degrees=270;
 break;
 }
-camera.setDisplayOrientation(degrees);
+parameters.set("rotation",(90 + 360 - degrees) % 360);
 }
 @Override public void surfaceCreated(SurfaceHolder holder){
 try {
@@ -31,13 +33,13 @@ Parameters parameters=cam.getParameters();
 parameters.setGpsLatitude(lat);
 parameters.setGpsLongitude(lon);
 parameters.set("focus-mode","auto");
-setCameraDisplayOrientation(cam);
+setCameraDisplayOrientation(cam,parameters);
 cam.setParameters(parameters);
 cam.setPreviewDisplay(holder);
 cam.startPreview();
 cam.autoFocus(new AutoFocusCallback(){
 @Override public void onAutoFocus(boolean success,Camera camera){
-cam.takePicture(null,null,new AudioVideoPhotoHandler(dlg,getBaseFileName(lat,lon,app,IMG_EXTENSION)));
+cam.takePicture(null,null,new AudioVideoPhotoHandler(dlg,f));
 }
 }
 );
