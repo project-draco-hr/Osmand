@@ -45,6 +45,30 @@
   notification.flags=Notification.FLAG_NO_CLEAR;
   notification.setLatestEventInfo(this,Version.getAppName(cl),getString(R.string.service_stop_background_service),PendingIntent.getBroadcast(this,0,notificationIntent,PendingIntent.FLAG_UPDATE_CURRENT));
   NotificationManager mNotificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-  mNotificationManager.notify(NOTIFICATION_SERVICE_ID,notification);
+  if (mStartForeground != null) {
+    Log.d(PlatformUtil.TAG,"invoke startForeground");
+    try {
+      mStartForeground.invoke(this,NOTIFICATION_SERVICE_ID,notification);
+    }
+ catch (    InvocationTargetException e) {
+      Log.d(PlatformUtil.TAG,"invoke startForeground failed");
+    }
+catch (    IllegalAccessException e) {
+      Log.d(PlatformUtil.TAG,"invoke startForeground failed");
+    }
+  }
+ else {
+    Log.d(PlatformUtil.TAG,"invoke setForeground");
+    mNotificationManager.notify(NOTIFICATION_SERVICE_ID,notification);
+    try {
+      mSetForeground.invoke(this,Boolean.TRUE);
+    }
+ catch (    InvocationTargetException e) {
+      Log.d(PlatformUtil.TAG,"invoke setForeground failed");
+    }
+catch (    IllegalAccessException e) {
+      Log.d(PlatformUtil.TAG,"invoke setForeground failed");
+    }
+  }
   return START_REDELIVER_INTENT;
 }
