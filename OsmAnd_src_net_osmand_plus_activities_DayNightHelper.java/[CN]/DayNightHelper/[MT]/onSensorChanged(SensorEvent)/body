@@ -1,5 +1,13 @@
 {
   if (event.values.length > 0) {
-    lux=event.values[0];
+    float lux=event.values[0];
+    boolean nightMode=lux > SensorManager.LIGHT_CLOUDY ? false : true;
+    if (nightMode != lastNightMode) {
+      if (System.currentTimeMillis() - lastTime > 10000) {
+        lastTime=System.currentTimeMillis();
+        lastNightMode=nightMode;
+        sensorStateListener.stateChanged(nightMode);
+      }
+    }
   }
 }

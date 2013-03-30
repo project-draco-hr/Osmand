@@ -1,23 +1,22 @@
 {
   DayNightMode dayNightMode=pref.get();
   if (dayNightMode.isDay()) {
-    return Boolean.TRUE;
+    return false;
   }
  else   if (dayNightMode.isNight()) {
-    return Boolean.FALSE;
+    return true;
   }
  else   if (dayNightMode.isAuto()) {
     long currentTime=System.currentTimeMillis();
-    if (currentTime - lastAutoCall > 60000) {
-      lastAutoCall=System.currentTimeMillis();
+    if (currentTime - lastTime > 60000) {
+      lastTime=System.currentTimeMillis();
       try {
         SunriseSunset daynightSwitch=getSunriseSunset();
         if (daynightSwitch != null) {
           boolean daytime=daynightSwitch.isDaytime();
           log.debug("Sunrise/sunset setting to day: " + daytime);
-          lastAutoValue=Boolean.valueOf(daytime);
+          lastNightMode=!daytime;
         }
-        return lastAutoValue;
       }
  catch (      IllegalArgumentException e) {
         log.warn("Network location provider not available");
@@ -25,15 +24,11 @@
 catch (      SecurityException e) {
         log.warn("Missing permissions to get actual location!");
       }
-      return null;
     }
- else {
-      return lastAutoValue;
-    }
+    return lastNightMode;
   }
  else   if (dayNightMode.isSensor()) {
-    log.debug("lux value:" + lux + " setting to day: "+ (lux > SensorManager.LIGHT_CLOUDY));
-    return lux > SensorManager.LIGHT_CLOUDY ? Boolean.TRUE : Boolean.FALSE;
+    return lastNightMode;
   }
-  return null;
+  return false;
 }
