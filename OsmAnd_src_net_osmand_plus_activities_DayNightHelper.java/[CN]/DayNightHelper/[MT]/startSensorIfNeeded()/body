@@ -1,0 +1,14 @@
+{
+  DayNightMode dayNightMode=pref.get();
+  if (listener == null && dayNightMode.isSensor()) {
+    SensorManager mSensorManager=(SensorManager)osmandApplication.getSystemService(Context.SENSOR_SERVICE);
+    Sensor mLight=mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+    List<Sensor> list=mSensorManager.getSensorList(Sensor.TYPE_LIGHT);
+    log.info("Light sensors:" + list.size());
+    mSensorManager.registerListener(this,mLight,SensorManager.SENSOR_DELAY_NORMAL);
+    listener=this;
+  }
+ else   if (listener != null && !dayNightMode.isSensor()) {
+    stopSensorIfNeeded();
+  }
+}

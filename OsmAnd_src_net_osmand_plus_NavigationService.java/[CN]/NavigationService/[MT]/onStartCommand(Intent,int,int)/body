@@ -1,6 +1,7 @@
 {
   handler=new Handler();
-  ClientContext cl=((OsmandApplication)getApplication());
+  OsmandApplication app=(OsmandApplication)getApplication();
+  ClientContext cl=app;
   settings=cl.getSettings();
   startedForNavigation=intent.getBooleanExtra(NAVIGATION_START_SERVICE_PARAM,false);
   if (startedForNavigation) {
@@ -14,10 +15,8 @@
   serviceError=Math.min(serviceError,12 * 60 * 1000);
   serviceError=Math.max(serviceError,30 * 1000);
   serviceError=Math.min(serviceError,serviceOffInterval);
-  savingTrackHelper=((OsmandApplication)getApplication()).getSavingTrackHelper();
-  liveMonitoringHelper=((OsmandApplication)getApplication()).getLiveMonitoringHelper();
-  routingHelper=((OsmandApplication)getApplication()).getRoutingHelper();
-  ((OsmandApplication)getApplication()).setNavigationService(this);
+  locationProvider=app.getLocationProvider();
+  app.setNavigationService(this);
   if (isContinuous()) {
     LocationManager locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
     try {
@@ -33,42 +32,6 @@
     pendingIntent=PendingIntent.getBroadcast(this,0,new Intent(this,OnNavigationServiceAlarmReceiver.class),PendingIntent.FLAG_UPDATE_CURRENT);
     alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,SystemClock.elapsedRealtime() + 500,serviceOffInterval,pendingIntent);
   }
-  broadcastReceiver=new BroadcastReceiver(){
-    @Override public void onReceive(    Context context,    Intent intent){
-      NavigationService.this.stopSelf();
-    }
-  }
-;
-  registerReceiver(broadcastReceiver,new IntentFilter(OSMAND_STOP_SERVICE_ACTION));
-  Intent notificationIntent=new Intent(OSMAND_STOP_SERVICE_ACTION);
-  Notification notification=new Notification(R.drawable.bgs_icon,"",System.currentTimeMillis());
-  notification.flags=Notification.FLAG_NO_CLEAR;
-  notification.setLatestEventInfo(this,Version.getAppName(cl),getString(R.string.service_stop_background_service),PendingIntent.getBroadcast(this,0,notificationIntent,PendingIntent.FLAG_UPDATE_CURRENT));
-  NotificationManager mNotificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-  if (mStartForeground != null) {
-    Log.d(PlatformUtil.TAG,"invoke startForeground");
-    try {
-      mStartForeground.invoke(this,NOTIFICATION_SERVICE_ID,notification);
-    }
- catch (    InvocationTargetException e) {
-      Log.d(PlatformUtil.TAG,"invoke startForeground failed");
-    }
-catch (    IllegalAccessException e) {
-      Log.d(PlatformUtil.TAG,"invoke startForeground failed");
-    }
-  }
- else {
-    Log.d(PlatformUtil.TAG,"invoke setForeground");
-    mNotificationManager.notify(NOTIFICATION_SERVICE_ID,notification);
-    try {
-      mSetForeground.invoke(this,Boolean.TRUE);
-    }
- catch (    InvocationTargetException e) {
-      Log.d(PlatformUtil.TAG,"invoke setForeground failed");
-    }
-catch (    IllegalAccessException e) {
-      Log.d(PlatformUtil.TAG,"invoke setForeground failed");
-    }
-  }
+  showNotificationInStatusBar(cl);
   return START_REDELIVER_INTENT;
 }

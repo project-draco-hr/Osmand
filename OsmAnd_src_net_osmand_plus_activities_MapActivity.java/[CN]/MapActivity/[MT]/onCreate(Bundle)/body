@@ -1,15 +1,14 @@
 {
   super.onCreate(savedInstanceState);
-  settings=getMyApplication().getSettings();
+  app=getMyApplication();
+  settings=app.getSettings();
   mapActions=new MapActivityActions(this);
   mapLayers=new MapActivityLayers(this);
-  currentPositionHelper=new CurrentPositionHelper(getMyApplication());
-  navigationInfo=new NavigationInfo(this);
   requestWindowFeature(Window.FEATURE_NO_TITLE);
   setContentView(R.layout.main);
   startProgressDialog=new ProgressDialog(this);
   startProgressDialog.setCancelable(true);
-  ((OsmandApplication)getApplication()).checkApplicationIsBeingInitialized(this,startProgressDialog);
+  app.checkApplicationIsBeingInitialized(this,startProgressDialog);
   parseLaunchIntentLocation();
   mapView=(OsmandMapTileView)findViewById(R.id.MapView);
   mapView.setTrackBallDelegate(new OsmandMapTileView.OnTrackBallListener(){
@@ -20,17 +19,21 @@
   }
 );
   mapView.setAccessibilityActions(new MapAccessibilityActions(this));
+  if (mapViewTrackingUtilities == null) {
+    mapViewTrackingUtilities=new MapViewTrackingUtilities(app);
+  }
+  mapViewTrackingUtilities.setMapView(mapView);
   startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
     @Override public void onDismiss(    DialogInterface dialog){
-      getMyApplication().getResourceManager().getRenderer().clearCache();
+      app.getResourceManager().getRenderer().clearCache();
       mapView.refreshMap(true);
     }
   }
 );
-  getMyApplication().getResourceManager().getMapTileDownloader().addDownloaderCallback(new IMapDownloaderCallback(){
+  app.getResourceManager().getMapTileDownloader().addDownloaderCallback(new IMapDownloaderCallback(){
     @Override public void tileDownloaded(    DownloadRequest request){
       if (request != null && !request.error && request.fileToSave != null) {
-        ResourceManager mgr=getMyApplication().getResourceManager();
+        ResourceManager mgr=app.getResourceManager();
         mgr.tileDownloaded(request);
       }
       if (request == null || !request.error) {
@@ -39,32 +42,13 @@
     }
   }
 );
-  savingTrackHelper=getMyApplication().getSavingTrackHelper();
-  liveMonitoringHelper=getMyApplication().getLiveMonitoringHelper();
-  routingHelper=getMyApplication().getRoutingHelper();
   createProgressBarForRouting();
-  if (settings.FOLLOW_THE_ROUTE.get() && !routingHelper.isRouteCalculated()) {
-    restoreRoutingMode();
+  if (settings.FOLLOW_THE_ROUTE.get() && !app.getRoutingHelper().isRouteCalculated()) {
+    FailSafeFuntions.restoreRoutingMode(this);
   }
-  mapView.setMapLocationListener(this);
   mapLayers.createLayers(mapView);
   if (!settings.isLastKnownMapLocation()) {
-    LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
-    Location location=null;
-    for (    String provider : service.getAllProviders()) {
-      try {
-        Location loc=service.getLastKnownLocation(provider);
-        if (location == null) {
-          location=loc;
-        }
- else         if (loc != null && location.getTime() < loc.getTime()) {
-          location=loc;
-        }
-      }
- catch (      IllegalArgumentException e) {
-        Log.d(PlatformUtil.TAG,"Location provider not available");
-      }
-    }
+    net.osmand.Location location=app.getLocationProvider().getFirstTimeRunDefaultLocation();
     if (location != null) {
       mapView.setLatLon(location.getLatitude(),location.getLongitude());
       mapView.setZoom(14);

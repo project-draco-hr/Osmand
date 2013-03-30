@@ -1,11 +1,9 @@
 {
-  if (keyCode == KeyEvent.KEYCODE_BACK) {
-  }
- else   if (getMyApplication().getInternalAPI().accessibilityEnabled() && (keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
+  if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER && app.getInternalAPI().accessibilityEnabled()) {
     if (!uiHandler.hasMessages(LONG_KEYPRESS_MSG_ID)) {
       Message msg=Message.obtain(uiHandler,new Runnable(){
         @Override public void run(){
-          emitNavigationHint();
+          app.getLocationProvider().emitNavigationHint();
         }
       }
 );
@@ -23,7 +21,7 @@
     newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
     return true;
   }
- else   if (!routingHelper.isFollowingMode() && OsmandPlugin.getEnabledPlugin(AccessibilityPlugin.class) != null) {
+ else   if (!app.getRoutingHelper().isFollowingMode() && OsmandPlugin.getEnabledPlugin(AccessibilityPlugin.class) != null) {
     if (keyCode == KeyEvent.KEYCODE_VOLUME_UP && event.getRepeatCount() == 0) {
       if (mapView.isZooming()) {
         changeZoom(mapView.getZoom() + 2);

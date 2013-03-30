@@ -1,0 +1,15 @@
+{
+  LocationManager service=(LocationManager)app.getSystemService(Context.LOCATION_SERVICE);
+  List<String> providers=new ArrayList<String>(service.getProviders(true));
+  int passiveFirst=providers.indexOf("passive");
+  if (passiveFirst > -1) {
+    providers.add(0,providers.remove(passiveFirst));
+  }
+  for (  String provider : providers) {
+    net.osmand.Location location=convertLocation(service.getLastKnownLocation(provider),app);
+    if (location != null) {
+      return location;
+    }
+  }
+  return null;
+}

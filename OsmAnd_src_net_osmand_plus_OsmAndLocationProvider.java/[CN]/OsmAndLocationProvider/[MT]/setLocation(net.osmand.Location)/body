@@ -1,0 +1,21 @@
+{
+  if (location == null) {
+    updateGPSInfo(null);
+  }
+  enhanceLocation(location);
+  scheduleCheckIfGpsLost(location);
+  final RoutingHelper routingHelper=app.getRoutingHelper();
+  if (location != null) {
+    app.getSavingTrackHelper().updateLocation(location);
+    app.getLiveMonitoringHelper().updateLocation(location);
+  }
+  navigationInfo.setLocation(location);
+  net.osmand.Location updatedLocation=location;
+  if (routingHelper.isFollowingMode()) {
+    if (location == null || isPointAccurateForRouting(location)) {
+      updatedLocation=routingHelper.setCurrentLocation(location,settings.SNAP_TO_ROAD.get());
+    }
+  }
+  this.location=updatedLocation;
+  updateLocation(location);
+}

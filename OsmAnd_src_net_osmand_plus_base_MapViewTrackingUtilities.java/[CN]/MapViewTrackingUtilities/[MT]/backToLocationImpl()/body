@@ -1,0 +1,18 @@
+{
+  if (mapView != null) {
+    OsmAndLocationProvider locationProvider=app.getLocationProvider();
+    if (!isMapLinkedToLocation()) {
+      setMapLinkedToLocation(true);
+      if (locationProvider.getLastKnownLocation() != null) {
+        net.osmand.Location lastKnownLocation=locationProvider.getLastKnownLocation();
+        AnimateDraggingMapThread thread=mapView.getAnimatedDraggingThread();
+        float fZoom=mapView.getFloatZoom() < 15 ? 15 : mapView.getFloatZoom();
+        thread.startMoving(lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude(),fZoom,false);
+      }
+      mapView.refreshMap();
+    }
+    if (locationProvider.getLastKnownLocation() == null) {
+      app.showToastMessage(R.string.unknown_location);
+    }
+  }
+}

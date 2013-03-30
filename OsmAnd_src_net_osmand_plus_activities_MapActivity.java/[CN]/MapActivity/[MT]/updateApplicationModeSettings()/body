@@ -1,14 +1,18 @@
 {
-  int currentMapRotation=settings.ROTATE_MAP.get();
-  if (currentMapRotation == OsmandSettings.ROTATE_MAP_NONE) {
-    mapView.setRotate(0);
+  RendererRegistry registry=app.getRendererRegistry();
+  RenderingRulesStorage newRenderer=registry.getRenderer(settings.RENDERER.get());
+  if (newRenderer == null) {
+    newRenderer=registry.defaultRender();
   }
-  routingHelper.setAppMode(settings.getApplicationMode());
-  mapView.setMapPosition(settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_BEARING || settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_COMPASS ? OsmandSettings.BOTTOM_CONSTANT : OsmandSettings.CENTER_CONSTANT);
-  registerUnregisterSensor(getLastKnownLocation(),false);
+  if (registry.getCurrentSelectedRenderer() != newRenderer) {
+    registry.setCurrentSelectedRender(newRenderer);
+    app.getResourceManager().getRenderer().clearCache();
+  }
+  mapViewTrackingUtilities.updateSettings();
+  app.getRoutingHelper().setAppMode(settings.getApplicationMode());
   if (mapLayers.getMapInfoLayer() != null) {
     mapLayers.getMapInfoLayer().recreateControls();
   }
   mapLayers.updateLayers(mapView);
-  getMyApplication().getDaynightHelper().setDayNightMode(settings.DAYNIGHT_MODE.get());
+  app.getDaynightHelper().startSensorIfNeeded();
 }

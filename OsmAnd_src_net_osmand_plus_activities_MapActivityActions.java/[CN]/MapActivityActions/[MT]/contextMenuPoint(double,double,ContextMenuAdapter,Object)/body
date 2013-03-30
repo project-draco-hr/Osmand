@@ -2,7 +2,7 @@
   final ContextMenuAdapter adapter=iadapter == null ? new ContextMenuAdapter(mapActivity) : iadapter;
   Builder builder=new AlertDialog.Builder(mapActivity);
   adapter.registerItem(R.string.context_menu_item_navigate_point,R.drawable.list_view_set_destination);
-  final TargetPointsHelper targets=mapActivity.getTargetPoints();
+  final TargetPointsHelper targets=getMyApplication().getTargetPointsHelper();
   if (targets.getPointToNavigate() != null) {
     adapter.registerItem(R.string.context_menu_item_intermediate_point,R.drawable.list_view_set_intermediate);
   }
@@ -43,7 +43,7 @@
         mapActivity.startActivity(intent);
       }
  else       if (standardId == R.string.context_menu_item_navigate_point) {
-        mapActivity.getTargetPoints().navigateToPoint(mapActivity,new LatLon(latitude,longitude),true,-1);
+        getMyApplication().getTargetPointsHelper().navigateToPoint(new LatLon(latitude,longitude),true,-1);
         if (!routingHelper.isRouteBeingCalculated() && !routingHelper.isRouteCalculated()) {
           getDirections(null,new LatLon(latitude,longitude),true);
         }
@@ -57,7 +57,7 @@
         }
       }
  else       if (standardId == R.string.context_menu_item_intermediate_point) {
-        targets.navigateToPoint(mapActivity,new LatLon(latitude,longitude),true,targets.getIntermediatePoints().size());
+        targets.navigateToPoint(new LatLon(latitude,longitude),true,targets.getIntermediatePoints().size());
         IntermediatePointsDialog.openIntermediatePointsDialog(mapActivity);
       }
  else       if (standardId == R.string.context_menu_item_share_location) {

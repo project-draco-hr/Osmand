@@ -4,30 +4,33 @@
   if (settings.MAP_SCREEN_ORIENTATION.get() != getRequestedOrientation()) {
     setRequestedOrientation(settings.MAP_SCREEN_ORIENTATION.get());
   }
-  net.osmand.Location loc=getLastKnownLocation();
-  if (loc != null && (System.currentTimeMillis() - loc.getTime()) > 30 * 1000) {
-    setLocation(null);
-  }
-  currentScreenOrientation=getWindow().getWindowManager().getDefaultDisplay().getOrientation();
+  app.getLocationProvider().checkIfLastKnownLocationIsValid();
   if (settings.AUDIO_STREAM_GUIDANCE.get() != null) {
     setVolumeControlStream(settings.AUDIO_STREAM_GUIDANCE.get());
   }
  else {
     setVolumeControlStream(AudioManager.STREAM_MUSIC);
   }
+  applicationModeListener=new StateChangedListener<ApplicationMode>(){
+    @Override public void stateChanged(    ApplicationMode change){
+      updateApplicationModeSettings();
+    }
+  }
+;
+  settings.APPLICATION_MODE.addListener(applicationModeListener);
   updateApplicationModeSettings();
   String filterId=settings.getPoiFilterForMap();
-  PoiFilter poiFilter=getMyApplication().getPoiFilters().getFilterById(filterId);
+  PoiFilter poiFilter=app.getPoiFilters().getFilterById(filterId);
   if (poiFilter == null) {
-    poiFilter=new PoiFilter(null,getMyApplication());
+    poiFilter=new PoiFilter(null,app);
   }
   mapLayers.getPoiMapLayer().setFilter(poiFilter);
-  mapLayers.getMapInfoLayer().getBackToLocation().setEnabled(false);
-  TargetPointsHelper targets=getTargetPoints();
+  TargetPointsHelper targets=app.getTargetPointsHelper();
+  RoutingHelper routingHelper=app.getRoutingHelper();
   if (routingHelper.isFollowingMode() && (!Algorithms.objectEquals(targets.getPointToNavigate(),routingHelper.getFinalLocation()) || !Algorithms.objectEquals(targets.getIntermediatePoints(),routingHelper.getIntermediatePoints()))) {
-    routingHelper.setFinalAndCurrentLocation(targets.getPointToNavigate(),targets.getIntermediatePoints(),getLastKnownLocation(),routingHelper.getCurrentGPXRoute());
+    routingHelper.setFinalAndCurrentLocation(targets.getPointToNavigate(),targets.getIntermediatePoints(),app.getLocationProvider().getLastKnownLocation(),routingHelper.getCurrentGPXRoute());
   }
-  startLocationRequests();
+  app.getLocationProvider().resumeAllUpdates();
   if (settings != null && settings.isLastKnownMapLocation()) {
     LatLon l=settings.getLastKnownMapLocation();
     mapView.setLatLon(l.getLatitude(),l.getLongitude());
@@ -51,16 +54,13 @@
     mapView.getAnimatedDraggingThread().startMoving(latLonToShow.getLatitude(),latLonToShow.getLongitude(),settings.getMapZoomToShow(),true);
   }
   if (latLonToShow != null) {
-    setMapLinkedToLocation(false);
-  }
- else {
-    setMapLinkedToLocation(isMapLinkedToLocation);
+    mapViewTrackingUtilities.setMapLinkedToLocation(false);
   }
   View progress=mapLayers.getMapInfoLayer().getProgressBar();
   if (progress != null) {
-    getMyApplication().getResourceManager().setBusyIndicator(new BusyIndicator(this,progress));
+    app.getResourceManager().setBusyIndicator(new BusyIndicator(this,progress));
   }
   OsmandPlugin.onMapActivityResume(this);
-  getMyApplication().getDaynightHelper().onMapResume();
+  app.getDaynightHelper().startSensorIfNeeded();
   mapView.refreshMap(true);
 }

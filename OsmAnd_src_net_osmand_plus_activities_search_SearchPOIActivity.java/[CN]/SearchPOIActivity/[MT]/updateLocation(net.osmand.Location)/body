@@ -1,0 +1,37 @@
+{
+  app.getLocationProvider().registerOrUnregisterCompassListener(location != null);
+  boolean handled=false;
+  if (location != null && filter != null) {
+    net.osmand.Location searchedLocation=getSearchedLocation();
+    if (searchedLocation == null) {
+      searchedLocation=location;
+      if (!isNameFinderFilter() && !isSearchByNameFilter()) {
+        runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
+      }
+      handled=true;
+    }
+ else     if (location.distanceTo(searchedLocation) > MIN_DISTANCE_TO_RESEARCH) {
+      searchedLocation=location;
+      runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.SEARCH_AGAIN));
+      handled=true;
+    }
+ else     if (location.distanceTo(searchedLocation) > MIN_DISTANCE_TO_REFRESH) {
+      handled=true;
+    }
+  }
+ else {
+    if (location != null) {
+      handled=true;
+    }
+  }
+  if (handled) {
+    this.location=location;
+    updateSearchPoiTextButton();
+    int idx=getListView().getFirstVisiblePosition();
+    View vfirst=getListView().getChildAt(0);
+    int pos=0;
+    if (vfirst != null)     pos=vfirst.getTop();
+    amenityAdapter.notifyDataSetInvalidated();
+    getListView().setSelectionFromTop(idx,pos);
+  }
+}

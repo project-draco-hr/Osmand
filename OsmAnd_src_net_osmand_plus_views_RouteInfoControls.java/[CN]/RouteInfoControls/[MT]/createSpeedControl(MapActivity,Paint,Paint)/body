@@ -1,15 +1,17 @@
 {
+  final OsmandApplication app=map.getMyApplication();
   final TextInfoControl speedControl=new TextInfoControl(map,3,paintText,paintSubText){
     private float cachedSpeed=0;
     @Override public boolean updateInfo(){
-      if (map.getLastKnownLocation() != null && map.getLastKnownLocation().hasSpeed()) {
+      Location loc=app.getLastKnownLocation();
+      if (loc != null && loc.hasSpeed()) {
         float minDelta=.1f;
         if (cachedSpeed < 6) {
           minDelta=.015f;
         }
-        if (Math.abs(map.getLastKnownLocation().getSpeed() - cachedSpeed) > minDelta) {
-          cachedSpeed=map.getLastKnownLocation().getSpeed();
-          String ds=OsmAndFormatter.getFormattedSpeed(cachedSpeed,map.getMyApplication());
+        if (Math.abs(loc.getSpeed() - cachedSpeed) > minDelta) {
+          cachedSpeed=loc.getSpeed();
+          String ds=OsmAndFormatter.getFormattedSpeed(cachedSpeed,app);
           int ls=ds.lastIndexOf(' ');
           if (ls == -1) {
             setText(ds,null);
@@ -29,7 +31,7 @@
     }
   }
 ;
-  speedControl.setImageDrawable(map.getResources().getDrawable(R.drawable.info_speed));
+  speedControl.setImageDrawable(app.getResources().getDrawable(R.drawable.info_speed));
   speedControl.setText(null,null);
   return speedControl;
 }

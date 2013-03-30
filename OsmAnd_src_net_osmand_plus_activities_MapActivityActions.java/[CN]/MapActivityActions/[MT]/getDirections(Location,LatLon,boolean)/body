@@ -1,6 +1,6 @@
 {
   Builder builder=new AlertDialog.Builder(mapActivity);
-  final TargetPointsHelper targets=mapActivity.getTargetPoints();
+  final TargetPointsHelper targets=getTargets();
   View view=mapActivity.getLayoutInflater().inflate(R.layout.calculate_route,null);
   final CheckBox nonoptimal=(CheckBox)view.findViewById(R.id.OptimalCheckox);
   final ToggleButton[] buttons=new ToggleButton[ApplicationMode.values().length];
@@ -56,21 +56,18 @@
   DialogInterface.OnClickListener onlyShowCall=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (to != null) {
-        targets.navigateToPoint(mapActivity,to,false,-1);
+        targets.navigateToPoint(to,false,-1);
       }
       if (!targets.checkPointToNavigate(getMyApplication())) {
         return;
       }
       Location from=fromOrCurrent;
       if (from == null) {
-        from=mapActivity.getLastKnownLocation();
+        from=getLastKnownLocation();
       }
       if (from == null) {
         AccessibleToast.makeText(mapActivity,R.string.unknown_from_location,Toast.LENGTH_LONG).show();
         return;
-      }
-      if (!routingHelper.isFollowingMode()) {
-        settings.PREV_APPLICATION_MODE.set(settings.APPLICATION_MODE.get());
       }
       ApplicationMode mode=getAppMode(buttons,settings);
       routingHelper.setAppMode(mode);
@@ -85,7 +82,7 @@
   DialogInterface.OnClickListener followCall=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (to != null) {
-        targets.navigateToPoint(mapActivity,to,false,-1);
+        targets.navigateToPoint(to,false,-1);
       }
       if (!targets.checkPointToNavigate(getMyApplication())) {
         return;
@@ -93,13 +90,13 @@
       boolean msg=true;
       Location current=fromOrCurrent;
       if (current == null) {
-        current=mapActivity.getLastKnownLocation();
+        current=getLastKnownLocation();
       }
-      if (!mapActivity.isPointAccurateForRouting(current)) {
+      if (!OsmAndLocationProvider.isPointAccurateForRouting(current)) {
         current=null;
       }
-      Location lastKnownLocation=mapActivity.getLastKnownLocation();
-      if (mapActivity.isPointAccurateForRouting(lastKnownLocation)) {
+      Location lastKnownLocation=getLastKnownLocation();
+      if (OsmAndLocationProvider.isPointAccurateForRouting(lastKnownLocation)) {
         current=lastKnownLocation;
         msg=false;
       }
@@ -116,7 +113,7 @@
   DialogInterface.OnClickListener useGpxNavigation=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (to != null) {
-        targets.navigateToPoint(mapActivity,to,false,-1);
+        targets.navigateToPoint(to,false,-1);
       }
       ApplicationMode mode=getAppMode(buttons,settings);
       navigateUsingGPX(mode);

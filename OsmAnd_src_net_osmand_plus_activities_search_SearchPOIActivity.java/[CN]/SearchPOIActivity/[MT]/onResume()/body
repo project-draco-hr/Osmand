@@ -12,7 +12,7 @@
     searchNearBy=true;
   }
   String filterId=bundle.getString(AMENITY_FILTER);
-  PoiFilter filter=((OsmandApplication)getApplication()).getPoiFilters().getFilterById(filterId);
+  PoiFilter filter=app.getPoiFilters().getFilterById(filterId);
   if (filter != this.filter) {
     this.filter=filter;
     if (filter != null) {
@@ -45,15 +45,12 @@
   if (filter != null) {
     searchArea.setText(filter.getSearchArea());
     updateSearchPoiTextButton();
-    setLocation(location);
     if (searchNearBy) {
-      LocationManager service=(LocationManager)getSystemService(LOCATION_SERVICE);
-      service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,gpsListener);
-      currentLocationProvider=LocationManager.GPS_PROVIDER;
-      if (!isRunningOnEmulator()) {
-        service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,networkListener);
-        currentLocationProvider=LocationManager.NETWORK_PROVIDER;
-      }
+      app.getLocationProvider().addCompassListener(this);
+      app.getLocationProvider().addLocationListener(this);
+      location=app.getLocationProvider().getLastKnownLocation();
+      app.getLocationProvider().resumeAllUpdates();
     }
+    updateLocation(location);
   }
 }

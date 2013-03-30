@@ -1,10 +1,8 @@
 {
   super.onPause();
-  stopLocationRequests();
-  SensorManager sensorMgr=(SensorManager)getSystemService(SENSOR_SERVICE);
-  sensorMgr.unregisterListener(this);
-  sensorRegistered=false;
-  getMyApplication().getDaynightHelper().onMapPause();
+  app.getLocationProvider().pauseAllUpdates();
+  app.getDaynightHelper().stopSensorIfNeeded();
+  settings.APPLICATION_MODE.removeListener(applicationModeListener);
   settings.setLastKnownMapLocation((float)mapView.getLatitude(),(float)mapView.getLongitude());
   AnimateDraggingMapThread animatedThread=mapView.getAnimatedDraggingThread();
   if (animatedThread.isAnimating() && animatedThread.getTargetZoom() != 0) {
@@ -12,7 +10,7 @@
   }
   settings.setLastKnownMapZoom(mapView.getZoom());
   settings.MAP_ACTIVITY_ENABLED.set(false);
-  getMyApplication().getResourceManager().interruptRendering();
-  getMyApplication().getResourceManager().setBusyIndicator(null);
+  app.getResourceManager().interruptRendering();
+  app.getResourceManager().setBusyIndicator(null);
   OsmandPlugin.onMapActivityPause(this);
 }
