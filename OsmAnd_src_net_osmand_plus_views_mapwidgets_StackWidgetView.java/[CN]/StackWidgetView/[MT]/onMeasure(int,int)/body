@@ -1,0 +1,56 @@
+{
+  int w=0;
+  int h=0;
+  int prevBot=0;
+  boolean first=true;
+  int cacheStack=0;
+  if (stackViews != null) {
+    for (    BaseMapWidget c : stackViews) {
+      cacheStack++;
+      if (c.getVisibility() != View.GONE) {
+        c.setBackgroundDrawable(first ? topDrawable : getStackDrawable(cacheStack));
+        first=false;
+        c.measure(MeasureSpec.UNSPECIFIED,MeasureSpec.UNSPECIFIED);
+        w=Math.max(w,c.getMeasuredWidth());
+        if (h > 0) {
+          h-=prevBot;
+        }
+ else {
+          h+=c.getPaddingTop();
+        }
+        h+=c.getMeasuredHeight();
+        prevBot=c.getPaddingBottom();
+      }
+    }
+    isCollapsible=false;
+    for (    BaseMapWidget c : collapsedViews) {
+      cacheStack++;
+      if (c.getVisibility() != View.GONE) {
+        isCollapsible=true;
+        if (!isCollapsed) {
+          c.setBackgroundDrawable(first ? topDrawable : getStackDrawable(cacheStack));
+          first=false;
+          c.measure(MeasureSpec.UNSPECIFIED,MeasureSpec.UNSPECIFIED);
+          w=Math.max(w,c.getMeasuredWidth());
+          h-=c.getPaddingBottom();
+          if (h > 0) {
+            h-=prevBot;
+          }
+          h+=c.getMeasuredHeight();
+          prevBot=c.getPaddingBottom();
+        }
+ else {
+          if (h == 0) {
+            c.measure(MeasureSpec.UNSPECIFIED,MeasureSpec.UNSPECIFIED);
+            h+=c.getPaddingTop();
+          }
+        }
+      }
+    }
+    if (isCollapsible) {
+      h+=expandView.getDrawable().getMinimumHeight();
+      w=Math.max(w,expandView.getDrawable().getMinimumWidth());
+    }
+  }
+  setMeasuredDimension(w,h);
+}

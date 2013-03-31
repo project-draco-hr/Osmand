@@ -1,0 +1,33 @@
+{
+  final TextInfoWidget altitudeControl=new TextInfoWidget(map,0,paintText,paintSubText){
+    private int cachedAlt=0;
+    @Override public boolean updateInfo(){
+      Location loc=map.getMyApplication().getLastKnownLocation();
+      if (loc != null && loc.hasAltitude()) {
+        double compAlt=loc.getAltitude();
+        if (cachedAlt != (int)compAlt) {
+          cachedAlt=(int)compAlt;
+          String ds=OsmAndFormatter.getFormattedAlt(cachedAlt,map.getMyApplication());
+          int ls=ds.lastIndexOf(' ');
+          if (ls == -1) {
+            setText(ds,null);
+          }
+ else {
+            setText(ds.substring(0,ls),ds.substring(ls + 1));
+          }
+          return true;
+        }
+      }
+ else       if (cachedAlt != 0) {
+        cachedAlt=0;
+        setText(null,null);
+        return true;
+      }
+      return false;
+    }
+  }
+;
+  altitudeControl.setText(null,null);
+  altitudeControl.setImageDrawable(map.getResources().getDrawable(R.drawable.info_altitude));
+  return altitudeControl;
+}
