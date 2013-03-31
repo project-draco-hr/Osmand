@@ -1,4 +1,8 @@
 {
+  final RoutingHelper rh=app.getRoutingHelper();
+  final OsmandSettings settings=app.getSettings();
+  final OsmAndLocationProvider locationProvider=app.getLocationProvider();
+  final MapViewTrackingUtilities trackingUtilities=ma.getMapViewTrackingUtilities();
   final Paint paintCircle=new Paint();
   final float th=11 * scaleCoefficient;
   paintCircle.setColor(Color.rgb(225,15,15));
@@ -14,16 +18,30 @@
   ptext.setFakeBoldText(true);
   ptext.setAntiAlias(true);
   ptext.setTextAlign(Align.CENTER);
-  final MapInfoControl alarm=new MapInfoControl(ctx){
+  final MapInfoControl alarm=new MapInfoControl(ma){
     private String text="";
     private Bitmap img=null;
     private int imgId;
     @Override public boolean updateInfo(){
-      boolean limits=settings.SHOW_SPEED_LIMITS.get();
+      boolean trafficWarnings=settings.SHOW_TRAFFIC_WARNINGS.get();
       boolean cams=settings.SHOW_CAMERAS.get();
       boolean visible=false;
-      if ((limits || cams) && routingHelper != null && routingHelper.isFollowingMode()) {
-        AlarmInfo alarm=routingHelper.getMostImportantAlarm(settings.METRIC_SYSTEM.get(),cams);
+      boolean eval=rh.isFollowingMode() || trackingUtilities.isMapLinkedToLocation();
+      if ((trafficWarnings || cams) && eval) {
+        AlarmInfo alarm;
+        if (rh.isFollowingMode()) {
+          alarm=rh.getMostImportantAlarm(settings.METRIC_SYSTEM.get(),cams);
+        }
+ else {
+          RouteDataObject ro=locationProvider.getLastKnownRouteSegment();
+          Location loc=locationProvider.getLastKnownLocation();
+          if (ro != null && loc != null) {
+            alarm=rh.calculateMostImportantAlarm(ro,loc,settings.METRIC_SYSTEM.get(),cams);
+          }
+ else {
+            alarm=null;
+          }
+        }
         if (alarm != null) {
           int locimgId=0;
           String text=null;
@@ -52,7 +70,7 @@
               visible=cams;
             }
  else {
-              visible=limits;
+              visible=trafficWarnings;
             }
           }
           if (visible) {
