@@ -1,0 +1,14 @@
+{
+  SQLiteConnection db=getDatabase();
+  if (db == null || coordinatesZoom > 25) {
+    return null;
+  }
+  int minZoom=(17 - minZ) + 1;
+  SQLiteCursor q=db.rawQuery("SELECT max(x << (8+z)), min(x << (8+z)), max(y << (8+z)), min(y << (8+z))" + " from tiles where z < " + minZoom,new String[0]);
+  q.moveToFirst();
+  int right=(int)(q.getInt(0) >> (25 - coordinatesZoom));
+  int left=(int)(q.getInt(1) >> (25 - coordinatesZoom));
+  int top=(int)(q.getInt(3) >> (25 - coordinatesZoom));
+  int bottom=(int)(q.getInt(2) >> (25 - coordinatesZoom));
+  return new QuadRect(left,top,right,bottom);
+}

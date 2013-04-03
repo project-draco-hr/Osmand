@@ -1,0 +1,57 @@
+{
+  return new SQLiteTileSource(activity.getMyApplication(),null,new ArrayList<TileSourceTemplate>()){
+    @Override protected SQLiteConnection getDatabase(){
+      throw new UnsupportedOperationException();
+    }
+    public boolean isLocked(){
+      return false;
+    }
+    List<String> getTileSource(    int x,    int y,    int zoom){
+      ArrayList<String> ls=new ArrayList<String>();
+      int z=(zoom - ZOOM_BOUNDARY);
+      if (z > 0) {
+        indexedResources.queryInBox(new QuadRect(x >> z,y >> z,(x >> z),(y >> z)),ls);
+      }
+ else {
+        indexedResources.queryInBox(new QuadRect(x << -z,y << -z,(x + 1) << -z,(y + 1) << -z),ls);
+      }
+      return ls;
+    }
+    @Override public boolean exists(    int x,    int y,    int zoom,    boolean exact){
+      return !getTileSource(x,y,zoom).isEmpty();
+    }
+    @Override public Bitmap getImage(    int x,    int y,    int zoom){
+      List<String> ts=getTileSource(x,y,zoom);
+      for (      String t : ts) {
+        SQLiteTileSource sqLiteTileSource=resources.get(t);
+        Bitmap img=sqLiteTileSource.getImage(x,y,zoom);
+        if (img != null) {
+          return img;
+        }
+      }
+      return null;
+    }
+    @Override public int getBitDensity(){
+      return 32;
+    }
+    @Override public int getMinimumZoomSupported(){
+      return 5;
+    }
+    @Override public int getMaximumZoomSupported(){
+      return 19;
+    }
+    @Override public int getTileSize(){
+      return 256;
+    }
+    @Override public boolean couldBeDownloadedFromInternet(){
+      return false;
+    }
+    @Override public String getName(){
+      return "Hillshade";
+    }
+    @Override public String getTileFormat(){
+      return "jpg";
+    }
+  }
+;
+}
