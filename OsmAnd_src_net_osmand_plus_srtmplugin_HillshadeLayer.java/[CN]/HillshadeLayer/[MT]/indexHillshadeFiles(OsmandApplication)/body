@@ -12,6 +12,7 @@
       Map<String,SQLiteTileSource> rs=readFiles(app,tilesDir,fileModified);
       indexCachedResources(fileModified,rs);
       indexNonCachedResources(fileModified,rs);
+      sqliteDb.close();
       resources=rs;
       return null;
     }
@@ -23,7 +24,7 @@
           cv.put("filename",filename);
           cv.put("date_modified",fileModified.get(filename));
           SQLiteTileSource ts=rs.get(filename);
-          QuadRect rt=ts.getRectBoundary(ZOOM_BOUNDARY);
+          QuadRect rt=ts.getRectBoundary(ZOOM_BOUNDARY,1);
           if (rt != null) {
             indexedResources.insert(filename,rt);
             cv.put("left",(int)rt.left);
