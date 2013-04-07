@@ -49,4 +49,26 @@
   }
 );
   qa.addActionItem(liveAction);
+  final ActionItem saveGPXAction=new ActionItem();
+  String s=view.getResources().getString(R.string.save_current_track);
+  saveGPXAction.setTitle(s.replaceFirst(" ","\n"));
+  saveGPXAction.setIcon(view.getResources().getDrawable(R.drawable.monitoring_rec_inactive));
+  saveGPXAction.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      app.getTaskManager().runInBackground(new OsmAndTaskRunnable<Void,Void,Void>(){
+        @Override protected Void doInBackground(        Void... params){
+          SavingTrackHelper helper=app.getSavingTrackHelper();
+          helper.saveDataToGpx();
+          helper.close();
+          return null;
+        }
+        @Override protected void onPostExecute(        Void result){
+          qa.dismiss();
+        }
+      }
+,null);
+    }
+  }
+);
+  qa.addActionItem(saveGPXAction);
 }
