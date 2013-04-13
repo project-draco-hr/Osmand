@@ -1,6 +1,7 @@
 {
   TargetPointsHelper tg=map.getMyApplication().getTargetPointsHelper();
   List<LatLon> intermediatePoints=tg.getIntermediatePointsWithTarget();
+  int r=getRadiusPoi(view.getZoom());
   for (int i=0; i < intermediatePoints.size(); i++) {
     LatLon latLon=intermediatePoints.get(i);
     boolean target=i == intermediatePoints.size() - 1;
@@ -9,8 +10,7 @@
       int ey=(int)point.y;
       int x=view.getRotatedMapXForPoint(latLon.getLatitude(),latLon.getLongitude());
       int y=view.getRotatedMapYForPoint(latLon.getLatitude(),latLon.getLongitude());
-      int r=getRadiusPoi(view.getZoom());
-      if (Math.abs(x - ex) <= r && Math.abs(y - ey) <= r) {
+      if (calculateBelongs(ex,ey,x,y,r)) {
         TargetPoint tp=new TargetPoint();
         tp.location=latLon;
         tp.intermediate=!target;
