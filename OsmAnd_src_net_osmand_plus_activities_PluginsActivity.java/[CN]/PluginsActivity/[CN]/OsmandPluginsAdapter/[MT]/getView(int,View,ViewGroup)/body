@@ -6,15 +6,22 @@
   }
   OsmandPlugin plugin=getItem(position);
   boolean toBeEnabled=restartPlugins.contains(plugin.getId());
-  int resourceId=toBeEnabled ? R.drawable.marker1_enabled : R.drawable.marker1_disabled;
   final View row=v;
+  CheckBox ch=(CheckBox)row.findViewById(R.id.check_item);
+  ch.setOnClickListener(null);
+  ch.setChecked(toBeEnabled);
+  ch.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      click(position);
+    }
+  }
+);
   TextView nameView=(TextView)row.findViewById(R.id.plugin_name);
   nameView.setText(plugin.getName());
-  nameView.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.list_activities_plugin_menu_symbol),null,getResources().getDrawable(resourceId),null);
   nameView.setContentDescription(plugin.getName() + " " + getString(toBeEnabled ? R.string.item_checked : R.string.item_unchecked));
   TextView description=(TextView)row.findViewById(R.id.plugin_descr);
   description.setText(plugin.getDescription());
   description.setVisibility(clickedPlugins.contains(plugin.getId()) || !restartPlugins.contains(plugin.getId()) ? View.VISIBLE : View.GONE);
-  description.setTextColor(toBeEnabled ? colorGreen : Color.LTGRAY);
+  description.setTextColor(Color.LTGRAY);
   return row;
 }
