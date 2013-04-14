@@ -1,6 +1,14 @@
 {
+  final Drawable backToLoc=map.getResources().getDrawable(R.drawable.back_to_loc);
+  final Drawable backToLocWhite=map.getResources().getDrawable(R.drawable.back_to_loc_white);
   ImageView backToLocation=new ImageViewWidget(map){
-    @Override public boolean updateInfo(){
+    private boolean nightM;
+    @Override public boolean updateInfo(    DrawSettings drawSettings){
+      boolean nightMode=drawSettings == null ? false : drawSettings.isNightMode();
+      if (nightM != nightMode) {
+        nightM=nightMode;
+        setImageDrawable(nightM ? backToLocWhite : backToLoc);
+      }
       boolean enabled=map.getMyApplication().getLocationProvider().getLastKnownLocation() != null;
       enabled=enabled && !map.getMapViewTrackingUtilities().isMapLinkedToLocation();
       setEnabled(enabled);

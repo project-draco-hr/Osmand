@@ -1,8 +1,26 @@
 {
   final OsmandMapTileView view=map.getMapView();
-  final ImageView lockView=new ImageView(view.getContext());
-  final Drawable lockEnabled=view.getResources().getDrawable(R.drawable.lock_enabled);
-  final Drawable lockDisabled=view.getResources().getDrawable(R.drawable.lock_disabled);
+  final Drawable lockEnabledNormal=view.getResources().getDrawable(R.drawable.lock_enabled);
+  final Drawable lockDisabledNormal=view.getResources().getDrawable(R.drawable.lock_disabled);
+  final Drawable lockEnabledWhite=view.getResources().getDrawable(R.drawable.lock_enabled_white);
+  final Drawable lockDisabledWhite=view.getResources().getDrawable(R.drawable.lock_disabled_white);
+  lockDisabled=lockDisabledNormal;
+  lockEnabled=lockEnabledNormal;
+  final ImageViewWidget lockView=new ImageViewWidget(view.getContext()){
+    private boolean nightMode;
+    @Override public boolean updateInfo(    DrawSettings drawSettings){
+      boolean nightMode=drawSettings == null ? false : drawSettings.isNightMode();
+      if (nightMode != this.nightMode) {
+        this.nightMode=nightMode;
+        lockDisabled=drawSettings.isNightMode() ? lockDisabledWhite : lockDisabledNormal;
+        lockEnabled=drawSettings.isNightMode() ? lockEnabledWhite : lockEnabledNormal;
+        setImageDrawable(isScreenLocked ? lockEnabled : lockDisabled);
+        return true;
+      }
+      return false;
+    }
+  }
+;
   if (isScreenLocked) {
     map.getMapViewTrackingUtilities().backToLocationImpl();
     lockView.setBackgroundDrawable(lockEnabled);
