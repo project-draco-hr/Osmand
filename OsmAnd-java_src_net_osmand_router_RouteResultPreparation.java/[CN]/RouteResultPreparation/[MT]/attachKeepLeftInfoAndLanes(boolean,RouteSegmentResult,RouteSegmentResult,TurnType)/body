@@ -1,0 +1,84 @@
+{
+  int[] lanes=null;
+  boolean kl=false;
+  boolean kr=false;
+  List<RouteSegmentResult> attachedRoutes=currentSegm.getAttachedRoutes(currentSegm.getStartPointIndex());
+  int ls=prevSegm.getObject().getLanes();
+  if (ls >= 0 && prevSegm.getObject().getOneway() == 0) {
+    ls=(ls + 1) / 2;
+  }
+  int left=0;
+  int right=0;
+  boolean speak=false;
+  int speakPriority=Math.max(highwaySpeakPriority(prevSegm.getObject().getHighway()),highwaySpeakPriority(currentSegm.getObject().getHighway()));
+  if (attachedRoutes != null) {
+    for (    RouteSegmentResult attached : attachedRoutes) {
+      double ex=MapUtils.degreesDiff(attached.getBearingBegin(),currentSegm.getBearingBegin());
+      double mpi=Math.abs(MapUtils.degreesDiff(prevSegm.getBearingEnd(),attached.getBearingBegin()));
+      int rsSpeakPriority=highwaySpeakPriority(attached.getObject().getHighway());
+      if (rsSpeakPriority != MAX_SPEAK_PRIORITY || speakPriority == MAX_SPEAK_PRIORITY) {
+        if ((ex < TURN_DEGREE_MIN || mpi < TURN_DEGREE_MIN) && ex >= 0) {
+          kl=true;
+          int lns=attached.getObject().getLanes();
+          if (attached.getObject().getOneway() == 0) {
+            lns=(lns + 1) / 2;
+          }
+          if (lns > 0) {
+            right+=lns;
+          }
+          speak=speak || rsSpeakPriority <= speakPriority;
+        }
+ else         if ((ex > -TURN_DEGREE_MIN || mpi < TURN_DEGREE_MIN) && ex <= 0) {
+          kr=true;
+          int lns=attached.getObject().getLanes();
+          if (attached.getObject().getOneway() == 0) {
+            lns=(lns + 1) / 2;
+          }
+          if (lns > 0) {
+            left+=lns;
+          }
+          speak=speak || rsSpeakPriority <= speakPriority;
+        }
+      }
+    }
+  }
+  if (kr && left == 0) {
+    left=1;
+  }
+ else   if (kl && right == 0) {
+    right=1;
+  }
+  int current=currentSegm.getObject().getLanes();
+  if (currentSegm.getObject().getOneway() == 0) {
+    current=(current + 1) / 2;
+  }
+  if (current <= 0) {
+    current=1;
+  }
+  lanes=new int[current + left + right];
+  ls=current + left + right;
+  for (int it=0; it < ls; it++) {
+    if (it < left || it >= left + current) {
+      lanes[it]=0;
+    }
+ else {
+      lanes[it]=1;
+    }
+  }
+  if ((current <= left + right) && (left > 1 || right > 1)) {
+    speak=true;
+  }
+  double devation=Math.abs(MapUtils.degreesDiff(prevSegm.getBearingEnd(),currentSegm.getBearingBegin()));
+  if (kl) {
+    t=TurnType.valueOf(devation > 5 ? TurnType.TSLL : TurnType.KL,leftSide);
+    t.setSkipToSpeak(!speak);
+  }
+  if (kr) {
+    t=TurnType.valueOf(devation > 5 ? TurnType.TSLR : TurnType.KR,leftSide);
+    t.setSkipToSpeak(!speak);
+  }
+  if (t != null && lanes != null) {
+    t.setLanes(lanes);
+  }
+  return t;
+}

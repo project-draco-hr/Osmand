@@ -1,0 +1,28 @@
+{
+  if (file.isCloudmadeRouteFile() || OSMAND_ROUTER.equals(file.author)) {
+    directions=parseCloudmadeRoute(points,file,OSMAND_ROUTER.equals(file.author),leftSide,10);
+    if (reverse) {
+      directions=null;
+      Collections.reverse(points);
+    }
+  }
+ else {
+    for (    Track tr : file.tracks) {
+      for (      TrkSegment tkSeg : tr.segments) {
+        for (        WptPt pt : tkSeg.points) {
+          points.add(createLocation(pt));
+        }
+      }
+    }
+    if (points.isEmpty()) {
+      for (      Route rte : file.routes) {
+        for (        WptPt pt : rte.points) {
+          points.add(createLocation(pt));
+        }
+      }
+    }
+    if (reverse) {
+      Collections.reverse(points);
+    }
+  }
+}

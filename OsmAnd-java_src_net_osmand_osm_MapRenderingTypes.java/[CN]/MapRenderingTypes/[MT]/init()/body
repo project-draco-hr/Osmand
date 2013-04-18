@@ -1,0 +1,50 @@
+{
+  InputStream is;
+  try {
+    if (resourceName == null) {
+      is=MapRenderingTypes.class.getResourceAsStream("rendering_types.xml");
+    }
+ else {
+      is=new FileInputStream(resourceName);
+    }
+    long time=System.currentTimeMillis();
+    XmlPullParser parser=PlatformUtil.newXMLPullParser();
+    int tok;
+    parser.setInput(is,"UTF-8");
+    String poiParentCategory=null;
+    String poiParentPrefix=null;
+    while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
+      if (tok == XmlPullParser.START_TAG) {
+        String name=parser.getName();
+        if (name.equals("category")) {
+          poiParentCategory=parser.getAttributeValue("","poi_category");
+          poiParentPrefix=parser.getAttributeValue("","poi_prefix");
+          parseCategoryFromXml(parser,poiParentCategory,poiParentPrefix);
+        }
+ else         if (name.equals("type")) {
+          parseTypeFromXML(parser,poiParentCategory,poiParentPrefix);
+        }
+ else         if (name.equals("routing_type")) {
+          parseRouteTagFromXML(parser);
+        }
+      }
+    }
+    log.info("Time to init " + (System.currentTimeMillis() - time));
+    is.close();
+  }
+ catch (  IOException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw new RuntimeException(e);
+  }
+catch (  RuntimeException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw e;
+  }
+catch (  XmlPullParserException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw new RuntimeException(e);
+  }
+}

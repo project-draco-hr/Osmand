@@ -1,0 +1,50 @@
+{
+  if (args == null || args.length == 0) {
+    printUsage(null);
+    return;
+  }
+  String f=args[0];
+  if (f.charAt(0) == '-') {
+    if (f.equals("-c") || f.equals("-combine")) {
+      if (args.length < 4) {
+        printUsage("Too few parameters to extract (require minimum 4)");
+      }
+ else {
+        Map<File,String> parts=new HashMap<File,String>();
+        for (int i=2; i < args.length; i++) {
+          File file=new File(args[i]);
+          if (!file.exists()) {
+            System.err.println("File to extract from doesn't exist " + args[i]);
+            return;
+          }
+          parts.put(file,null);
+          if (i < args.length - 1) {
+            if (args[i + 1].startsWith("-") || args[i + 1].startsWith("+")) {
+              parts.put(file,args[i + 1]);
+              i++;
+            }
+          }
+        }
+        List<Float> extracted=combineParts(new File(args[1]),parts);
+        if (extracted != null) {
+          println("\n" + extracted.size() + " parts were successfully extracted to "+ args[1]);
+        }
+      }
+    }
+ else     if (f.startsWith("-v")) {
+      if (args.length < 2) {
+        printUsage("Missing file parameter");
+      }
+ else {
+        VerboseInfo vinfo=new VerboseInfo(args);
+        printFileInformation(args[args.length - 1],vinfo);
+      }
+    }
+ else {
+      printUsage("Unknown command : " + f);
+    }
+  }
+ else {
+    printFileInformation(f,null);
+  }
+}

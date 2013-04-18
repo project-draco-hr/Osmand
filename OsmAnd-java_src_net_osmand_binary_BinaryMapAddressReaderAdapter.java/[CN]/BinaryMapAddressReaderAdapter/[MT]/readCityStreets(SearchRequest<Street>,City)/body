@@ -1,0 +1,31 @@
+{
+  int x=MapUtils.get31TileNumberX(city.getLocation().getLongitude());
+  int y=MapUtils.get31TileNumberY(city.getLocation().getLatitude());
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      return;
+case OsmandOdb.CityBlockIndex.STREETS_FIELD_NUMBER:
+    Street s=new Street(city);
+  s.setFileOffset(codedIS.getTotalBytesRead());
+int length=codedIS.readRawVarint32();
+int oldLimit=codedIS.pushLimit(length);
+readStreet(s,null,false,x >> 7,y >> 7,city.isPostcode() ? city.getName() : null);
+if (resultMatcher == null || resultMatcher.publish(s)) {
+city.registerStreet(s);
+}
+if (resultMatcher != null && resultMatcher.isCancelled()) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+}
+codedIS.popLimit(oldLimit);
+break;
+case OsmandOdb.CityBlockIndex.BUILDINGS_FIELD_NUMBER:
+skipUnknownField(t);
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

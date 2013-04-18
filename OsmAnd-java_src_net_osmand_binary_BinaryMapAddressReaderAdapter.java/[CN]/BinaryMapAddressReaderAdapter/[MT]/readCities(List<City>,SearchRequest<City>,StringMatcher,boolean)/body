@@ -1,0 +1,28 @@
+{
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      return;
+case CitiesIndex.CITIES_FIELD_NUMBER:
+    int fp=codedIS.getTotalBytesRead();
+  int length=codedIS.readRawVarint32();
+int oldLimit=codedIS.pushLimit(length);
+City c=readCityHeader(matcher,fp,useEn);
+if (c != null) {
+if (resultMatcher == null || resultMatcher.publish(c)) {
+cities.add(c);
+}
+}
+codedIS.popLimit(oldLimit);
+if (resultMatcher != null && resultMatcher.isCancelled()) {
+codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
+}
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

@@ -1,0 +1,41 @@
+{
+  if (intermediates != null && localDirections != null) {
+    int[] interLocations=new int[intermediates.size()];
+    int currentIntermediate=0;
+    int currentLocation=0;
+    double distanceThreshold=25;
+    double prevDistance=distanceThreshold * 4;
+    while ((currentIntermediate < intermediates.size() || prevDistance > distanceThreshold) && currentLocation < this.locations.size()) {
+      if (currentIntermediate < intermediates.size() && getDistanceToLocation(intermediates.get(currentIntermediate),currentLocation) < 50) {
+        prevDistance=getDistanceToLocation(intermediates.get(currentIntermediate),currentLocation);
+        interLocations[currentIntermediate]=currentLocation;
+        currentIntermediate++;
+      }
+ else       if (currentIntermediate > 0 && prevDistance > distanceThreshold && getDistanceToLocation(intermediates.get(currentIntermediate - 1),currentLocation) < prevDistance) {
+        prevDistance=getDistanceToLocation(intermediates.get(currentIntermediate - 1),currentLocation);
+        interLocations[currentIntermediate - 1]=currentLocation;
+      }
+      currentLocation++;
+    }
+    int currentDirection=0;
+    currentIntermediate=0;
+    while (currentIntermediate < intermediates.size() && currentDirection < localDirections.size()) {
+      int locationIndex=localDirections.get(currentDirection).routePointOffset;
+      if (locationIndex >= interLocations[currentIntermediate]) {
+        if (locationIndex > interLocations[currentIntermediate] && getDistanceToLocation(intermediates.get(currentIntermediate),locationIndex) > 50) {
+          RouteDirectionInfo toSplit=localDirections.get(currentDirection);
+          RouteDirectionInfo info=new RouteDirectionInfo(localDirections.get(currentDirection).getAverageSpeed(),TurnType.valueOf(TurnType.C,false));
+          info.setRef(toSplit.getRef());
+          info.setStreetName(toSplit.getStreetName());
+          info.setDestinationName(toSplit.getDestinationName());
+          info.routePointOffset=interLocations[currentIntermediate];
+          info.setDescriptionRoute(ctx.getString(R.string.route_head));
+          localDirections.add(currentDirection,info);
+        }
+        intermediatePoints[currentIntermediate]=currentDirection;
+        currentIntermediate++;
+      }
+      currentDirection++;
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  if (args == null || args.length == 0) {
+    info();
+    return;
+  }
+  long time=System.currentTimeMillis();
+  Parameters params=Parameters.init(args);
+  if ((params.tests.isEmpty() && params.startLat == 0) || params.obfDir == null) {
+    info();
+    return;
+  }
+  if (!params.tests.isEmpty()) {
+    boolean allSuccess=runAllTests(params,lib);
+    if (allSuccess) {
+      System.out.println("All is successfull " + (System.currentTimeMillis() - time) + " ms");
+    }
+  }
+  if (params.startLat != 0) {
+    BinaryMapIndexReader[] rs=collectFiles(params.obfDir.getAbsolutePath());
+    calculateRoute(params.startLat,params.startLon,params.endLat,params.endLon,rs);
+    calculateRoute(params.startLat,params.startLon,params.endLat,params.endLon,rs);
+  }
+}

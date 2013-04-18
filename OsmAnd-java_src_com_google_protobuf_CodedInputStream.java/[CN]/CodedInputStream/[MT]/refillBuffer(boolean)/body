@@ -1,0 +1,48 @@
+{
+  if (bufferPos < bufferSize) {
+    throw new IllegalStateException("refillBuffer() called when buffer wasn't empty.");
+  }
+  if (totalBytesRetired + bufferSize == currentLimit) {
+    if (mustSucceed) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+ else {
+      return false;
+    }
+  }
+  totalBytesRetired+=bufferSize;
+  bufferPos=0;
+  if (raf != null) {
+    long remain=raf.length() - raf.getFilePointer();
+    bufferSize=(int)Math.min(remain,buffer.length);
+    if (bufferSize > 0) {
+      raf.readFully(buffer,0,bufferSize);
+    }
+ else {
+      bufferSize=-1;
+    }
+  }
+ else {
+    bufferSize=(input == null) ? -1 : input.read(buffer);
+  }
+  if (bufferSize == 0 || bufferSize < -1) {
+    throw new IllegalStateException("InputStream#read(byte[]) returned invalid result: " + bufferSize + "\nThe InputStream implementation is buggy.");
+  }
+  if (bufferSize == -1) {
+    bufferSize=0;
+    if (mustSucceed) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+ else {
+      return false;
+    }
+  }
+ else {
+    recomputeBufferSizeAfterLimit();
+    final int totalBytesRead=totalBytesRetired + bufferSize + bufferSizeAfterLimit;
+    if (totalBytesRead > sizeLimit || totalBytesRead < 0) {
+      throw InvalidProtocolBufferException.sizeLimitExceeded();
+    }
+    return true;
+  }
+}

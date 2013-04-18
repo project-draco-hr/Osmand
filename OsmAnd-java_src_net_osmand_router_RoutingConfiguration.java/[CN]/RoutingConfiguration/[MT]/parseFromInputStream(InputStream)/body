@@ -1,0 +1,37 @@
+{
+  XmlPullParser parser=PlatformUtil.newXMLPullParser();
+  final RoutingConfiguration.Builder config=new RoutingConfiguration.Builder();
+  GeneralRouter currentRouter=null;
+  String previousKey=null;
+  String previousTag=null;
+  int tok;
+  parser.setInput(is,"UTF-8");
+  while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
+    if (tok == XmlPullParser.START_TAG) {
+      String name=parser.getName();
+      if ("osmand_routing_config".equals(name)) {
+        config.defaultRouter=parser.getAttributeValue("","defaultProfile");
+      }
+ else       if ("routingProfile".equals(name)) {
+        currentRouter=parseRoutingProfile(parser,config);
+      }
+ else       if ("attribute".equals(name)) {
+        parseAttribute(parser,config,currentRouter);
+        previousKey=parser.getAttributeValue("","name");
+        previousTag=name;
+      }
+ else       if ("specialization".equals(name)) {
+        parseSpecialization(parser,currentRouter,previousKey,previousTag);
+      }
+ else {
+        previousKey=parser.getAttributeValue("","tag") + "$" + parser.getAttributeValue("","value");
+        previousTag=name;
+        if (parseCurrentRule(parser,currentRouter,previousKey,name)) {
+        }
+ else {
+        }
+      }
+    }
+  }
+  return config;
+}

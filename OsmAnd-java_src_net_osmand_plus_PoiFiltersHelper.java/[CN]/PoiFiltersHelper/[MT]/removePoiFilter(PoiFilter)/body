@@ -1,0 +1,15 @@
+{
+  if (filter.getFilterId().equals(PoiFilter.CUSTOM_FILTER_ID) || filter.getFilterId().equals(PoiFilter.BY_NAME_FILTER_ID)) {
+    return false;
+  }
+  PoiFilterDbHelper helper=openDbHelper();
+  if (helper == null) {
+    return false;
+  }
+  boolean res=helper.deleteFilter(helper.getWritableDatabase(),filter);
+  if (res) {
+    cacheUserDefinedFilters.remove(filter);
+  }
+  helper.close();
+  return res;
+}

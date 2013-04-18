@@ -1,0 +1,65 @@
+{
+  int x=0;
+  int y=0;
+  int x2=0;
+  int y2=0;
+  Building b=new Building();
+  b.setFileOffset(fileOffset);
+  while (true) {
+    int t=codedIS.readTag();
+    int tag=WireFormat.getTagFieldNumber(t);
+switch (tag) {
+case 0:
+      b.setLocation(MapUtils.getLatitudeFromTile(24,y),MapUtils.getLongitudeFromTile(24,x));
+    if (x2 != 0 && y2 != 0) {
+      b.setLatLon2(new LatLon(MapUtils.getLatitudeFromTile(24,y2),MapUtils.getLongitudeFromTile(24,x2)));
+    }
+  if (b.getEnName().length() == 0) {
+    b.setEnName(Junidecode.unidecode(b.getName()));
+  }
+return b;
+case OsmandOdb.BuildingIndex.ID_FIELD_NUMBER:
+b.setId(codedIS.readUInt64());
+break;
+case OsmandOdb.BuildingIndex.NAME_EN_FIELD_NUMBER:
+b.setEnName(codedIS.readString());
+break;
+case OsmandOdb.BuildingIndex.NAME_FIELD_NUMBER:
+b.setName(codedIS.readString());
+break;
+case OsmandOdb.BuildingIndex.NAME_EN2_FIELD_NUMBER:
+codedIS.readString();
+break;
+case OsmandOdb.BuildingIndex.NAME2_FIELD_NUMBER:
+b.setName2(codedIS.readString());
+break;
+case OsmandOdb.BuildingIndex.INTERPOLATION_FIELD_NUMBER:
+int sint=codedIS.readSInt32();
+if (sint > 0) {
+b.setInterpolationInterval(sint);
+}
+ else {
+b.setInterpolationType(BuildingInterpolation.fromValue(sint));
+}
+break;
+case OsmandOdb.BuildingIndex.X_FIELD_NUMBER:
+x=codedIS.readSInt32() + street24X;
+break;
+case OsmandOdb.BuildingIndex.X2_FIELD_NUMBER:
+x2=codedIS.readSInt32() + street24X;
+break;
+case OsmandOdb.BuildingIndex.Y_FIELD_NUMBER:
+y=codedIS.readSInt32() + street24Y;
+break;
+case OsmandOdb.BuildingIndex.Y2_FIELD_NUMBER:
+y2=codedIS.readSInt32() + street24Y;
+break;
+case OsmandOdb.BuildingIndex.POSTCODE_FIELD_NUMBER:
+b.setPostcode(codedIS.readString());
+break;
+default :
+skipUnknownField(t);
+break;
+}
+}
+}

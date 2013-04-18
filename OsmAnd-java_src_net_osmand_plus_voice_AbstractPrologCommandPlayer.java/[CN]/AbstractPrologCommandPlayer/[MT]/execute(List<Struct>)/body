@@ -1,0 +1,22 @@
+{
+  Struct list=new Struct(listCmd.toArray(new Term[listCmd.size()]));
+  Var result=new Var("RESULT");
+  List<String> files=new ArrayList<String>();
+  SolveInfo res=prologSystem.solve(new Struct(P_RESOLVE,list,result));
+  if (res.isSuccess()) {
+    try {
+      prologSystem.solveEnd();
+      Term solution=res.getVarValue(result.getName());
+      Iterator<?> listIterator=((Struct)solution).listIterator();
+      while (listIterator.hasNext()) {
+        Object term=listIterator.next();
+        if (term instanceof Struct) {
+          files.add(((Struct)term).getName());
+        }
+      }
+    }
+ catch (    NoSolutionException e) {
+    }
+  }
+  return files;
+}

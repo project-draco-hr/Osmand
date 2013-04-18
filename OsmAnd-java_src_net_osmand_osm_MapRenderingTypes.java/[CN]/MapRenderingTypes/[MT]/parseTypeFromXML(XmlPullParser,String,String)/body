@@ -1,0 +1,44 @@
+{
+  AmenityRuleType rtype=new AmenityRuleType();
+  rtype.tag=parser.getAttributeValue("","tag");
+  rtype.value=parser.getAttributeValue("","value");
+  if (rtype.value != null && rtype.value.length() == 0) {
+    rtype.value=null;
+  }
+  if (poiParentCategory != null) {
+    rtype.poiCategory=AmenityType.valueOf(poiParentCategory.toUpperCase());
+    rtype.poiSpecified=true;
+  }
+  if (poiParentPrefix != null) {
+    rtype.poiPrefix=poiParentPrefix;
+  }
+  String poiCategory=parser.getAttributeValue("","poi_category");
+  if (poiCategory != null) {
+    rtype.poiSpecified=true;
+    if (poiCategory.length() == 0) {
+      rtype.poiCategory=null;
+    }
+ else {
+      rtype.poiCategory=AmenityType.valueOf(poiCategory.toUpperCase());
+    }
+  }
+  String poiPrefix=parser.getAttributeValue("","poi_prefix");
+  if (poiPrefix != null) {
+    rtype.poiPrefix=poiPrefix;
+  }
+  rtype.relation=Boolean.parseBoolean(parser.getAttributeValue("","relation"));
+  if (rtype.poiSpecified) {
+    registerAmenityType(rtype.tag,rtype.value,rtype);
+    String targetTag=parser.getAttributeValue("","target_tag");
+    String targetValue=parser.getAttributeValue("","target_value");
+    if (targetTag != null || targetValue != null) {
+      if (targetTag == null) {
+        targetTag=rtype.tag;
+      }
+      if (targetValue == null) {
+        targetValue=rtype.value;
+      }
+      rtype.targetTagValue=amenityTypes.get(constructRuleKey(targetTag,targetValue));
+    }
+  }
+}

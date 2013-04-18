@@ -1,0 +1,49 @@
+{
+  InputStream is=getInputStream(name);
+  try {
+    XmlPullParser parser=PlatformUtil.newXMLPullParser();
+    parser.setInput(is,"UTF-8");
+    int tok;
+    while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
+      if (tok == XmlPullParser.START_TAG) {
+        String tagName=parser.getName();
+        if (tagName.equals("renderingConstant")) {
+          if (!renderingConstants.containsKey(parser.getAttributeValue("","name"))) {
+            renderingConstants.put(parser.getAttributeValue("","name"),parser.getAttributeValue("","value"));
+          }
+        }
+      }
+    }
+  }
+  finally {
+    is.close();
+  }
+  is=getInputStream(name);
+  final RenderingRulesStorage main=new RenderingRulesStorage(name,renderingConstants);
+  loadedRenderers.put(name,main);
+  try {
+    main.parseRulesFromXmlInputStream(is,new RenderingRulesStorageResolver(){
+      @Override public RenderingRulesStorage resolve(      String name,      RenderingRulesStorageResolver ref) throws XmlPullParserException {
+        if (loadedRenderers.containsKey(name)) {
+          log.warn("Circular dependencies found " + name);
+        }
+        RenderingRulesStorage dep=null;
+        try {
+          dep=loadRenderer(name,loadedRenderers,renderingConstants);
+        }
+ catch (        IOException e) {
+          log.warn("Dependent renderer not found : " + e.getMessage(),e);
+        }
+        if (dep == null) {
+          log.warn("Dependent renderer not found : " + name);
+        }
+        return dep;
+      }
+    }
+);
+  }
+  finally {
+    is.close();
+  }
+  return main;
+}

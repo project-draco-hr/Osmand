@@ -1,0 +1,63 @@
+{
+  String vehicle=parser.getAttributeValue("","vehicle");
+  int loadedTiles=(int)parseFloat(parser,"loadedTiles");
+  int visitedSegments=(int)parseFloat(parser,"visitedSegments");
+  int complete_time=(int)parseFloat(parser,"complete_time");
+  int routing_time=(int)parseFloat(parser,"routing_time");
+  int complete_distance=(int)parseFloat(parser,"complete_distance");
+  float percent=parseFloat(parser,"best_percent");
+  String testDescription=parser.getAttributeValue("","description");
+  if (percent == 0) {
+    System.err.println("\n\n!! Skipped test case '" + testDescription + "' because 'best_percent' attribute is not specified \n\n");
+    return;
+  }
+  RoutingConfiguration rconfig=config.build(vehicle,MEMORY_TEST_LIMIT);
+  RoutePlannerFrontEnd router=new RoutePlannerFrontEnd(oldRouting);
+  RoutingContext ctx=new RoutingContext(rconfig,lib,rs);
+  String skip=parser.getAttributeValue("","skip_comment");
+  if (skip != null && skip.length() > 0) {
+    System.err.println("\n\n!! Skipped test case '" + testDescription + "' because '"+ skip+ "'\n\n");
+    return;
+  }
+  System.out.println("Run test " + testDescription);
+  double startLat=Double.parseDouble(parser.getAttributeValue("","start_lat"));
+  double startLon=Double.parseDouble(parser.getAttributeValue("","start_lon"));
+  double endLat=Double.parseDouble(parser.getAttributeValue("","target_lat"));
+  double endLon=Double.parseDouble(parser.getAttributeValue("","target_lon"));
+  LatLon start=new LatLon(startLat,startLon);
+  LatLon end=new LatLon(endLat,endLon);
+  List<RouteSegmentResult> route=router.searchRoute(ctx,start,end,null,false);
+  final float calcRoutingTime=ctx.routingTime;
+  float completeTime=0;
+  float completeDistance=0;
+  for (int i=0; i < route.size(); i++) {
+    completeTime+=route.get(i).getSegmentTime();
+    completeDistance+=route.get(i).getDistance();
+  }
+  if (complete_time > 0 && !isInOrLess(complete_time,completeTime,percent)) {
+    throw new IllegalArgumentException(MessageFormat.format("Complete time (expected) {0} != {1} (original) : {2}",complete_time,completeTime,testDescription));
+  }
+  if (complete_distance > 0 && !isInOrLess(complete_distance,completeDistance,percent)) {
+    throw new IllegalArgumentException(MessageFormat.format("Complete distance (expected) {0} != {1} (original) : {2}",complete_distance,completeDistance,testDescription));
+  }
+  if (routing_time > 0 && !isInOrLess(routing_time,calcRoutingTime,percent)) {
+    throw new IllegalArgumentException(MessageFormat.format("Complete routing time (expected) {0} != {1} (original) : {2}",routing_time,calcRoutingTime,testDescription));
+  }
+  if (visitedSegments > 0 && !isInOrLess(visitedSegments,ctx.visitedSegments,percent)) {
+    throw new IllegalArgumentException(MessageFormat.format("Visited segments (expected) {0} != {1} (original) : {2}",visitedSegments,ctx.visitedSegments,testDescription));
+  }
+  if (loadedTiles > 0 && !isInOrLess(loadedTiles,ctx.loadedTiles,percent)) {
+    throw new IllegalArgumentException(MessageFormat.format("Loaded tiles (expected) {0} != {1} (original) : {2}",loadedTiles,ctx.loadedTiles,testDescription));
+  }
+  if (TEST_BOTH_DIRECTION) {
+    rconfig.planRoadDirection=-1;
+    runTestSpecialTest(lib,rs,rconfig,router,start,end,calcRoutingTime,"Calculated routing time in both direction {0} != {1} time in -1 direction");
+    rconfig.planRoadDirection=1;
+    runTestSpecialTest(lib,rs,rconfig,router,start,end,calcRoutingTime,"Calculated routing time in both direction {0} != {1} time in 1 direction");
+  }
+  if (TEST_WO_HEURISTIC) {
+    rconfig.planRoadDirection=0;
+    rconfig.heuristicCoefficient=0.5f;
+    runTestSpecialTest(lib,rs,rconfig,router,start,end,calcRoutingTime,"Calculated routing time with heuristic 1 {0} != {1} with heuristic 0.5");
+  }
+}

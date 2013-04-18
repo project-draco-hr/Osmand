@@ -1,0 +1,25 @@
+{
+  checkFavoritePoints();
+  SQLiteConnection db=openConnection(false);
+  if (db != null) {
+    try {
+      String oldCategory=p.getCategory();
+      db.execSQL("UPDATE " + FAVOURITE_TABLE_NAME + " SET "+ FAVOURITE_COL_NAME+ " = ?, "+ FAVOURITE_COL_CATEGORY+ "= ? WHERE "+ whereNameLatLon(),new Object[]{newName,category,p.getName(),p.getLatitude(),p.getLongitude()});
+      p.setName(newName);
+      p.setCategory(category);
+      if (!oldCategory.equals(category)) {
+        favoriteGroups.get(oldCategory).remove(p);
+        if (!favoriteGroups.containsKey(category)) {
+          addCategoryQuery(category,db);
+          favoriteGroups.put(category,new ArrayList<FavouritePoint>());
+        }
+        favoriteGroups.get(category).add(p);
+      }
+    }
+  finally {
+      db.close();
+    }
+    return true;
+  }
+  return false;
+}

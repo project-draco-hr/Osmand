@@ -1,0 +1,46 @@
+{
+  if (path != null) {
+    try {
+      System.load(path + libBaseName);
+      return true;
+    }
+ catch (    UnsatisfiedLinkError e) {
+      log.error(e);
+    }
+  }
+  String osname=System.getProperty("os.name").toLowerCase();
+  String osarch=System.getProperty("os.arch");
+  if (osname.startsWith("mac os")) {
+    osname="mac";
+    osarch="universal";
+  }
+  if (osname.startsWith("windows"))   osname="win";
+  if (osname.startsWith("sunos"))   osname="solaris";
+  if (osarch.startsWith("i") && osarch.endsWith("86"))   osarch="x86";
+  String libname=libBaseName + "-" + osname+ '-'+ osarch+ ".lib";
+  try {
+    ClassLoader cl=NativeLibrary.class.getClassLoader();
+    InputStream in=cl.getResourceAsStream(libname);
+    if (in == null) {
+      log.error("libname: " + libname + " not found");
+      return false;
+    }
+    File tmplib=File.createTempFile(libBaseName + "-",".lib");
+    tmplib.deleteOnExit();
+    OutputStream out=new FileOutputStream(tmplib);
+    byte[] buf=new byte[1024];
+    for (int len; (len=in.read(buf)) != -1; )     out.write(buf,0,len);
+    in.close();
+    out.close();
+    System.load(tmplib.getAbsolutePath());
+    return true;
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    log.error(e.getMessage(),e);
+  }
+catch (  UnsatisfiedLinkError e) {
+    log.error(e.getMessage(),e);
+  }
+  return false;
+}

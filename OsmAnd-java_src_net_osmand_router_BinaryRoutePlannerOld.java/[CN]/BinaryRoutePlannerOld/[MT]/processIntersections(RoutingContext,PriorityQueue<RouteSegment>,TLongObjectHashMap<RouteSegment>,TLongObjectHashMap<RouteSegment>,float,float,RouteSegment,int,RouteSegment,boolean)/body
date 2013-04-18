@@ -1,0 +1,69 @@
+{
+  boolean thereAreRestrictions=proccessRestrictions(ctx,segment.road,inputNext,reverseWay);
+  Iterator<RouteSegment> nextIterator=null;
+  if (thereAreRestrictions) {
+    nextIterator=ctx.segmentsToVisitPrescripted.iterator();
+  }
+  RouteSegment next=inputNext;
+  boolean hasNext=nextIterator == null || nextIterator.hasNext();
+  while (hasNext) {
+    if (nextIterator != null) {
+      next=nextIterator.next();
+    }
+    long nts=(next.road.getId() << ROUTE_POINTS) + next.getSegmentStart();
+    if (oppositeSegments.contains(nts) && oppositeSegments.get(nts) != null) {
+      RouteSegment opposite=oppositeSegments.get(nts);
+      if (next.getSegmentStart() != segmentEnd || opposite.getRoad().getId() != segment.getRoad().getId()) {
+        FinalRouteSegment frs=new FinalRouteSegment(segment.getRoad(),segment.getSegmentStart());
+        float distStartObstacles=segment.distanceFromStart;
+        frs.setParentRoute(segment.getParentRoute());
+        frs.setParentSegmentEnd(segment.getParentSegmentEnd());
+        frs.reverseWaySearch=reverseWay;
+        frs.distanceFromStart=opposite.distanceFromStart + distStartObstacles;
+        RouteSegment op=new RouteSegment(segment.getRoad(),segmentEnd);
+        op.setParentRoute(opposite);
+        op.setParentSegmentEnd(next.getSegmentStart());
+        frs.distanceToEnd=0;
+        frs.opposite=op;
+        ctx.finalRouteSegment=frs;
+        return true;
+      }
+    }
+    boolean alreadyVisited=visitedSegments.contains(nts);
+    if (!alreadyVisited) {
+      float distanceToEnd=(float)h(ctx,distToFinalPoint,next);
+      if (next.parentRoute == null || ctx.roadPriorityComparator(next.distanceFromStart,next.distanceToEnd,distFromStart,distanceToEnd) > 0) {
+        if (next.parentRoute != null) {
+          if (!graphSegments.remove(next)) {
+            RouteSegment cpy=new RouteSegment(next.getRoad(),next.getSegmentStart());
+            next=cpy;
+          }
+        }
+        next.distanceFromStart=distFromStart;
+        next.distanceToEnd=distanceToEnd;
+        next.setParentRoute(segment);
+        next.setParentSegmentEnd(segmentEnd);
+        graphSegments.add(next);
+      }
+      if (ctx.visitor != null) {
+      }
+    }
+ else {
+      if (distFromStart < next.distanceFromStart && next.road.id != segment.road.id) {
+        next.distanceFromStart=distFromStart;
+        next.setParentRoute(segment);
+        next.setParentSegmentEnd(segmentEnd);
+        if (ctx.visitor != null) {
+        }
+      }
+    }
+    if (nextIterator == null) {
+      next=next.next;
+      hasNext=next != null;
+    }
+ else {
+      hasNext=nextIterator.hasNext();
+    }
+  }
+  return false;
+}

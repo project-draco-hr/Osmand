@@ -1,0 +1,27 @@
+{
+  for (int i=0; i < result.size(); i++) {
+    RouteSegmentResult rr=result.get(i);
+    RouteDataObject road=rr.getObject();
+    double distOnRoadToPass=0;
+    double speed=ctx.getRouter().defineSpeed(road);
+    if (speed == 0) {
+      speed=ctx.getRouter().getMinDefaultSpeed();
+    }
+    boolean plus=rr.getStartPointIndex() < rr.getEndPointIndex();
+    int next;
+    double distance=0;
+    for (int j=rr.getStartPointIndex(); j != rr.getEndPointIndex(); j=next) {
+      next=plus ? j + 1 : j - 1;
+      double d=measuredDist(road.getPoint31XTile(j),road.getPoint31YTile(j),road.getPoint31XTile(next),road.getPoint31YTile(next));
+      distance+=d;
+      double obstacle=ctx.getRouter().defineObstacle(road,j);
+      if (obstacle < 0) {
+        obstacle=0;
+      }
+      distOnRoadToPass+=d / speed + obstacle;
+    }
+    rr.setSegmentTime((float)distOnRoadToPass);
+    rr.setSegmentSpeed((float)speed);
+    rr.setDistance((float)distance);
+  }
+}

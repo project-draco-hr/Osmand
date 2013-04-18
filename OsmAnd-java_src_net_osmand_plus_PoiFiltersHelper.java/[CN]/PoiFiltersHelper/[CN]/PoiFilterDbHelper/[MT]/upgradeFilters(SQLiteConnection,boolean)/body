@@ -1,0 +1,30 @@
+{
+  List<PoiFilter> filters=PoiFilterDbHelper.this.getFilters(conn);
+  List<PoiFilter> def=getUserDefinedDefaultFilters();
+  for (  PoiFilter f : filters) {
+    PoiFilter std=null;
+    for (    PoiFilter d : def) {
+      if (f.getFilterId().equals(d.getFilterId())) {
+        std=d;
+        break;
+      }
+    }
+    for (    String toDel : DEL) {
+      if (f.getFilterId().equals(toDel)) {
+        deleteFilter(conn,f);
+      }
+    }
+    if (std != null) {
+      if (!onlyAdd) {
+        editFilter(conn,std);
+      }
+ else {
+        updateName(conn,std);
+      }
+      def.remove(std);
+    }
+  }
+  for (  PoiFilter d : def) {
+    addFilter(d,conn,false);
+  }
+}

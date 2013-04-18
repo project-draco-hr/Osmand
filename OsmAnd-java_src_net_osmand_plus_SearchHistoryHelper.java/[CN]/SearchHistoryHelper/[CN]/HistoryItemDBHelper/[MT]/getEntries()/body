@@ -1,0 +1,21 @@
+{
+  List<HistoryEntry> entries=new ArrayList<HistoryEntry>();
+  SQLiteConnection db=openConnection(true);
+  if (db != null) {
+    try {
+      SQLiteCursor query=db.rawQuery("SELECT " + HISTORY_COL_NAME + ", "+ HISTORY_COL_LAT+ ","+ HISTORY_COL_LON+ " FROM "+ HISTORY_TABLE_NAME+ " ORDER BY "+ HISTORY_COL_TIME+ " DESC",null);
+      if (query.moveToFirst()) {
+        do {
+          HistoryEntry e=new HistoryEntry(query.getDouble(1),query.getDouble(2),query.getString(0));
+          entries.add(e);
+        }
+ while (query.moveToNext());
+      }
+      query.close();
+    }
+  finally {
+      db.close();
+    }
+  }
+  return entries;
+}

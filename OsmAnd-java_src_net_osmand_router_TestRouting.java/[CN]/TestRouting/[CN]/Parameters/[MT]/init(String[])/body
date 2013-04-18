@@ -1,0 +1,51 @@
+{
+  Parameters p=new Parameters();
+  String routingXmlFile=null;
+  String obfDirectory=null;
+  RouteResultPreparation.PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST=false;
+  for (  String a : args) {
+    if (a.startsWith("-routingXmlPath=")) {
+      routingXmlFile=a.substring("-routingXmlPath=".length());
+    }
+ else     if (a.startsWith("-verbose")) {
+      RouteResultPreparation.PRINT_TO_CONSOLE_ROUTE_INFORMATION_TO_TEST=true;
+    }
+ else     if (a.startsWith("-obfDir=")) {
+      obfDirectory=a.substring("-obfDir=".length());
+    }
+ else     if (a.startsWith("-start=")) {
+      String start=a.substring("-start=".length());
+      String[] pt=start.split(";");
+      p.startLat=Double.parseDouble(pt[0]);
+      p.startLon=Double.parseDouble(pt[1]);
+    }
+ else     if (a.startsWith("-end=")) {
+      String start=a.substring("-end=".length());
+      String[] pt=start.split(";");
+      p.endLat=Double.parseDouble(pt[0]);
+      p.endLon=Double.parseDouble(pt[1]);
+    }
+ else     if (a.startsWith("-testDir=")) {
+      String testDirectory=a.substring("-testDir=".length());
+      for (      File f : new File(testDirectory).listFiles()) {
+        if (f.getName().endsWith(".test.xml")) {
+          p.tests.add(f);
+        }
+      }
+    }
+ else     if (!a.startsWith("-")) {
+      p.tests.add(new File(a));
+    }
+  }
+  if (obfDirectory == null) {
+    throw new IllegalStateException("Directory with obf files not specified");
+  }
+  p.obfDir=new File(obfDirectory);
+  if (routingXmlFile == null || routingXmlFile.equals("routing.xml")) {
+    p.configBuilder=RoutingConfiguration.getDefault();
+  }
+ else {
+    p.configBuilder=RoutingConfiguration.parseFromInputStream(new FileInputStream(routingXmlFile));
+  }
+  return p;
+}

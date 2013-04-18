@@ -1,0 +1,17 @@
+{
+  SQLiteConnection conn=context.getSQLiteAPI().getOrCreateDatabase(DB_NAME,readonly);
+  if (conn.getVersion() == 0 || DB_VERSION != conn.getVersion()) {
+    if (readonly) {
+      conn.close();
+      conn=context.getSQLiteAPI().getOrCreateDatabase(DB_NAME,readonly);
+    }
+    if (conn.getVersion() == 0) {
+      conn.setVersion(DB_VERSION);
+      onCreate(conn);
+    }
+ else {
+      onUpgrade(conn,conn.getVersion(),DB_VERSION);
+    }
+  }
+  return conn;
+}

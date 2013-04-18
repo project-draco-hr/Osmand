@@ -1,0 +1,20 @@
+{
+  for (  final Map.Entry<FieldDescriptorType,Object> entry : fields.entrySet()) {
+    final FieldDescriptorType descriptor=entry.getKey();
+    if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
+      if (descriptor.isRepeated()) {
+        for (        final MessageLite element : (List<MessageLite>)entry.getValue()) {
+          if (!element.isInitialized()) {
+            return false;
+          }
+        }
+      }
+ else {
+        if (!((MessageLite)entry.getValue()).isInitialized()) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}

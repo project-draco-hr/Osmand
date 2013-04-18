@@ -1,0 +1,31 @@
+{
+  TIntObjectHashMap<TransportRoute> result=new TIntObjectHashMap<TransportRoute>();
+  Map<TransportIndex,TIntArrayList> groupPoints=new HashMap<TransportIndex,TIntArrayList>();
+  for (  int filePointer : filePointers) {
+    TransportIndex ind=getTransportIndex(filePointer);
+    if (ind != null) {
+      if (!groupPoints.containsKey(ind)) {
+        groupPoints.put(ind,new TIntArrayList());
+      }
+      groupPoints.get(ind).add(filePointer);
+    }
+  }
+  Iterator<Entry<TransportIndex,TIntArrayList>> it=groupPoints.entrySet().iterator();
+  if (it.hasNext()) {
+    Entry<TransportIndex,TIntArrayList> e=it.next();
+    TransportIndex ind=e.getKey();
+    TIntArrayList pointers=e.getValue();
+    pointers.sort();
+    TIntObjectHashMap<String> stringTable=new TIntObjectHashMap<String>();
+    for (int i=0; i < pointers.size(); i++) {
+      int filePointer=pointers.get(i);
+      TransportRoute transportRoute=transportAdapter.getTransportRoute(filePointer,stringTable,false);
+      result.put(filePointer,transportRoute);
+    }
+    transportAdapter.initializeStringTable(ind,stringTable);
+    for (    TransportRoute r : result.values(new TransportRoute[result.size()])) {
+      transportAdapter.initializeNames(false,r,stringTable);
+    }
+  }
+  return result;
+}

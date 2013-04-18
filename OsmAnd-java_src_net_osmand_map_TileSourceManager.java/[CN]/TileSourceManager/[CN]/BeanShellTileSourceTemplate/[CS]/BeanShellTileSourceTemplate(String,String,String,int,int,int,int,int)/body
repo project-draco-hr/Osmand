@@ -1,0 +1,22 @@
+{
+  super(name,urlToLoad,ext,maxZoom,minZoom,tileSize,bitDensity,avgSize);
+  bshInterpreter=new Interpreter();
+  try {
+    bshInterpreter.eval(urlToLoad);
+    bshInterpreter.getClassManager().setClassLoader(new ClassLoader(){
+      @Override public URL getResource(      String resName){
+        return null;
+      }
+      @Override public InputStream getResourceAsStream(      String resName){
+        return null;
+      }
+      @Override public Class<?> loadClass(      String className) throws ClassNotFoundException {
+        throw new ClassNotFoundException("Error requesting " + className);
+      }
+    }
+);
+  }
+ catch (  bsh.EvalError e) {
+    log.error("Error executing the map init script " + urlToLoad,e);
+  }
+}

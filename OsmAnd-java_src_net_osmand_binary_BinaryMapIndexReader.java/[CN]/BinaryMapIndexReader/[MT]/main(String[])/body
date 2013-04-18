@@ -1,0 +1,23 @@
+{
+  RandomAccessFile raf=new RandomAccessFile("","r");
+  BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
+  println("VERSION " + reader.getVersion());
+  long time=System.currentTimeMillis();
+  if (testMapSearch) {
+    testMapSearch(reader);
+  }
+  if (testAddressSearch) {
+    testAddressSearchByName(reader);
+    testAddressSearch(reader);
+  }
+  if (testTransportSearch) {
+    testTransportSearch(reader);
+  }
+  if (testPoiSearch) {
+    PoiRegion poiRegion=reader.getPoiIndexes().get(0);
+    testPoiSearch(reader,poiRegion);
+    testPoiSearchByName(reader);
+  }
+  println("MEMORY " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+  println("Time " + (System.currentTimeMillis() - time));
+}

@@ -1,0 +1,26 @@
+{
+  List<RouteSegmentResult> result=new ArrayList<RouteSegmentResult>();
+  if (finalSegment != null) {
+    ctx.routingTime=finalSegment.distanceFromStart;
+    println("Routing calculated time distance " + finalSegment.distanceFromStart);
+    RouteSegment segment=finalSegment.reverseWaySearch ? finalSegment : finalSegment.opposite.getParentRoute();
+    int parentSegmentStart=finalSegment.reverseWaySearch ? finalSegment.opposite.getSegmentStart() : finalSegment.opposite.getParentSegmentEnd();
+    while (segment != null) {
+      RouteSegmentResult res=new RouteSegmentResult(segment.road,parentSegmentStart,segment.getSegmentStart());
+      parentSegmentStart=segment.getParentSegmentEnd();
+      segment=segment.getParentRoute();
+      addRouteSegmentToResult(result,res,false);
+    }
+    Collections.reverse(result);
+    segment=finalSegment.reverseWaySearch ? finalSegment.opposite.getParentRoute() : finalSegment;
+    int parentSegmentEnd=finalSegment.reverseWaySearch ? finalSegment.opposite.getParentSegmentEnd() : finalSegment.opposite.getSegmentStart();
+    while (segment != null) {
+      RouteSegmentResult res=new RouteSegmentResult(segment.road,segment.getSegmentStart(),parentSegmentEnd);
+      parentSegmentEnd=segment.getParentSegmentEnd();
+      segment=segment.getParentRoute();
+      addRouteSegmentToResult(result,res,true);
+    }
+    Collections.reverse(result);
+  }
+  return result;
+}

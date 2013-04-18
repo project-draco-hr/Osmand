@@ -1,0 +1,34 @@
+{
+  if (!locations.isEmpty() && locations.get(0).distanceTo(start) > 200) {
+    locations.add(0,start);
+    if (segs != null) {
+      segs.add(0,segs.get(0));
+    }
+    if (directions != null && !directions.isEmpty()) {
+      for (      RouteDirectionInfo i : directions) {
+        i.routePointOffset++;
+      }
+      RouteDirectionInfo info=new RouteDirectionInfo(directions.get(0).getAverageSpeed(),TurnType.valueOf(TurnType.C,false));
+      info.routePointOffset=0;
+      directions.add(0,info);
+    }
+  }
+  RouteDirectionInfo lastDirInf=directions.size() > 0 ? directions.get(directions.size() - 1) : null;
+  if ((lastDirInf == null || lastDirInf.routePointOffset < locations.size() - 1) && locations.size() - 1 > 0) {
+    String type=TurnType.C;
+    Location prevLast=locations.get(locations.size() - 2);
+    float lastBearing=prevLast.bearingTo(locations.get(locations.size() - 1));
+    float[] compute=new float[2];
+    Location.distanceBetween(prevLast.getLatitude(),prevLast.getLongitude(),end.getLatitude(),end.getLongitude(),compute);
+    float bearingToEnd=compute[1];
+    double diff=MapUtils.degreesDiff(lastBearing,bearingToEnd);
+    if (Math.abs(diff) > 10) {
+      type=diff > 0 ? TurnType.KL : TurnType.KR;
+    }
+    RouteDirectionInfo info=new RouteDirectionInfo(1,TurnType.valueOf(type,false));
+    info.distance=0;
+    info.afterLeftTime=0;
+    info.routePointOffset=locations.size() - 1;
+    directions.add(info);
+  }
+}
