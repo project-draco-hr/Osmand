@@ -52,29 +52,29 @@ if (previousCorrectionValue != 360) {
 val+=previousCorrectionValue;
 }
 float valRad=(float)(val / 180f * Math.PI);
-float valSin=(float)Math.sin(valRad);
-float valCos=(float)Math.cos(valRad);
+lastValSin=(float)Math.sin(valRad);
+lastValCos=(float)Math.cos(valRad);
+lastHeadingCalcTime=System.currentTimeMillis();
 if (heading == null && previousCompassIndA == 0) {
-Arrays.fill(previousCompassValuesA,valSin);
-Arrays.fill(previousCompassValuesB,valCos);
-avgValSin=valSin;
-avgValCos=valCos;
+Arrays.fill(previousCompassValuesA,lastValSin);
+Arrays.fill(previousCompassValuesB,lastValCos);
+avgValSin=lastValSin;
+avgValCos=lastValCos;
 }
  else {
 if (USE_KALMAN_FILTER) {
-avgValSin=KALMAN_COEFFICIENT * valSin + avgValSin * (1 - KALMAN_COEFFICIENT);
-avgValCos=KALMAN_COEFFICIENT * valCos + avgValCos * (1 - KALMAN_COEFFICIENT);
+avgValSin=KALMAN_COEFFICIENT * lastValSin + avgValSin * (1 - KALMAN_COEFFICIENT);
+avgValCos=KALMAN_COEFFICIENT * lastValCos + avgValCos * (1 - KALMAN_COEFFICIENT);
 }
  else {
 int l=previousCompassValuesA.length;
 previousCompassIndA=(previousCompassIndA + 1) % l;
 previousCompassIndB=(previousCompassIndB + 1) % l;
-avgValSin=avgValSin + (-previousCompassValuesA[previousCompassIndA] + valSin) / l;
-previousCompassValuesA[previousCompassIndA]=valSin;
-avgValCos=avgValCos + (-previousCompassValuesB[previousCompassIndB] + valCos) / l;
-previousCompassValuesB[previousCompassIndB]=valCos;
+avgValSin=avgValSin + (-previousCompassValuesA[previousCompassIndA] + lastValSin) / l;
+previousCompassValuesA[previousCompassIndA]=lastValSin;
+avgValCos=avgValCos + (-previousCompassValuesB[previousCompassIndB] + lastValCos) / l;
+previousCompassValuesB[previousCompassIndB]=lastValCos;
 }
 }
-heading=(float)getAngle(avgValSin,avgValCos);
-updateCompassValue(heading.floatValue());
+updateCompassVal();
 }
