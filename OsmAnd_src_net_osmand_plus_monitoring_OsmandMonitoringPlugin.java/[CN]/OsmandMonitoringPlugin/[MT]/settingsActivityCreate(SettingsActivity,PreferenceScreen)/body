@@ -1,41 +1,14 @@
 {
-  Preference offlineData=screen.findPreference("local_indexes");
-  if (offlineData == null) {
-    log.error("OsmAndMonitoringPlugin: Index settings preference not found !");
-  }
- else {
-    offlineData.setSummary(offlineData.getSummary() + " " + app.getString(R.string.gpx_index_settings_descr));
-  }
-  PreferenceCategory cat=new PreferenceCategory(activity);
-  cat.setTitle(R.string.save_track_to_gpx);
-  ((PreferenceScreen)screen.findPreference(SettingsActivity.SCREEN_ID_NAVIGATION_SETTINGS)).addPreference(cat);
-  cat.addPreference(activity.createCheckBoxPreference(settings.SAVE_TRACK_TO_GPX,R.string.save_track_to_gpx,R.string.save_track_to_gpx_descrp));
-  cat.addPreference(activity.createTimeListPreference(settings.SAVE_TRACK_INTERVAL,SECONDS,MINUTES,1000,R.string.save_track_interval,R.string.save_track_interval_descr));
-  cat=new PreferenceCategory(activity);
-  cat.setTitle(R.string.live_monitoring);
-  ((PreferenceScreen)screen.findPreference(SettingsActivity.SCREEN_ID_NAVIGATION_SETTINGS)).addPreference(cat);
-  cat.addPreference(activity.createCheckBoxPreference(settings.LIVE_MONITORING,R.string.live_monitoring,R.string.live_monitoring_descr));
-  cat.addPreference(activity.createTimeListPreference(settings.LIVE_MONITORING_INTERVAL,SECONDS,MINUTES,1000,R.string.live_monitoring_interval,R.string.live_monitoring_interval_descr));
-  cat=new PreferenceCategory(activity);
-  cat.setTitle(R.string.monitor_preferences);
-  PreferenceScreen generalSection=((PreferenceScreen)screen.findPreference(SettingsActivity.SCREEN_ID_GENERAL_SETTINGS));
-  generalSection.addPreference(cat);
-  cat.addPreference(activity.createEditTextPreference(settings.LIVE_MONITORING_URL,R.string.live_monitoring_url,R.string.live_monitoring_url_descr));
-  Preference pref=new Preference(activity);
-  pref.setTitle(R.string.save_current_track);
-  pref.setSummary(R.string.save_current_track_descr);
-  pref.setOnPreferenceClickListener(new OnPreferenceClickListener(){
+  Preference grp=new Preference(activity);
+  grp.setOnPreferenceClickListener(new OnPreferenceClickListener(){
     @Override public boolean onPreferenceClick(    Preference preference){
-      SavingTrackHelper helper=app.getSavingTrackHelper();
-      if (helper.hasDataToSave()) {
-        saveCurrentTracks(helper,activity);
-      }
- else {
-        helper.close();
-      }
+      activity.startActivity(new Intent(activity,SettingsMonitoringActivity.class));
       return true;
     }
   }
 );
-  cat.addPreference(pref);
+  grp.setTitle(R.string.monitoring_settings);
+  grp.setSummary(R.string.monitoring_settings_descr);
+  grp.setKey("monitoring_settings");
+  screen.addPreference(grp);
 }

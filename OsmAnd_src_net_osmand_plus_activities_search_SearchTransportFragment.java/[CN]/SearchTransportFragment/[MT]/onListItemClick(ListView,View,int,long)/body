@@ -1,0 +1,44 @@
+{
+  final RouteInfoLocation item=stopsAdapter.getItem(position);
+  Builder builder=new AlertDialog.Builder(getActivity());
+  List<String> items=new ArrayList<String>();
+  final List<TransportStop> stops=item.getDirection() ? item.getRoute().getForwardStops() : item.getRoute().getBackwardStops();
+  LatLon locationToGo=getLocationToGo();
+  LatLon locationToStart=getLocationToStart();
+  builder.setTitle(getString(R.string.transport_stop_to_go_out) + "\n" + getInformation(item,stops,getCurrentRouteLocation(),true));
+  int ind=0;
+  for (  TransportStop st : stops) {
+    StringBuilder n=new StringBuilder(50);
+    n.append(ind++);
+    if (st == item.getStop()) {
+      n.append("!! ");
+    }
+ else {
+      n.append(". ");
+    }
+    String name=st.getName(settings.usingEnglishNames());
+    if (locationToGo != null) {
+      n.append(name).append(" - [");
+      n.append(OsmAndFormatter.getFormattedDistance((int)MapUtils.getDistance(locationToGo,st.getLocation()),(ClientContext)getApplication())).append("]");
+    }
+ else     if (locationToStart != null) {
+      n.append("[").append(OsmAndFormatter.getFormattedDistance((int)MapUtils.getDistance(locationToStart,st.getLocation()),(ClientContext)getApplication())).append("] - ");
+      n.append(name);
+    }
+ else {
+      n.append(name);
+    }
+    items.add(n.toString());
+  }
+  builder.setItems(items.toArray(new String[items.size()]),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      int i=which;
+      if (i >= 0) {
+        TransportStop stop=stops.get(i);
+        showContextMenuOnStop(stop,item,i);
+      }
+    }
+  }
+);
+  builder.show();
+}

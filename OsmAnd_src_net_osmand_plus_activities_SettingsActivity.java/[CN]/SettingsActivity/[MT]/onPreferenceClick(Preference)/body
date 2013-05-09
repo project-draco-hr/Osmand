@@ -1,5 +1,5 @@
 {
-  if (preference.getKey().equals(OsmandSettings.LOCAL_INDEXES)) {
+  if (preference == localIndexes) {
     boolean empty=getMyApplication().getResourceManager().getIndexFileNames().isEmpty();
     if (empty) {
       File folder=getMyApplication().getAppPath(IndexConstants.BACKUP_INDEX_DIR);
@@ -18,23 +18,21 @@
   }
  else   if (preference == bidforfix) {
     startActivity(new Intent(this,OsmandBidForFixActivity.class));
+  }
+ else   if (preference == general) {
+    startActivity(new Intent(this,SettingsGeneralActivity.class));
+    return true;
+  }
+ else   if (preference == routing) {
+    startActivity(new Intent(this,SettingsNavigationActivity.class));
     return true;
   }
  else   if (preference == plugins) {
-    startActivityForResult(new Intent(this,PluginsActivity.class),PLUGINS_SELECTION_REQUEST);
+    startActivityForResult(new Intent(this,OsmandIntents.getPluginsActivity()),PLUGINS_SELECTION_REQUEST);
     return true;
   }
- else   if (preference == avoidRouting) {
-    showBooleanSettings(new String[]{getString(R.string.avoid_toll_roads),getString(R.string.avoid_ferries),getString(R.string.avoid_unpaved),getString(R.string.avoid_motorway)},new OsmandPreference[]{osmandSettings.AVOID_TOLL_ROADS,osmandSettings.AVOID_FERRIES,osmandSettings.AVOID_UNPAVED_ROADS,osmandSettings.AVOID_MOTORWAY});
-    return true;
-  }
- else   if (preference == preferRouting) {
-    showBooleanSettings(new String[]{getString(R.string.prefer_motorways)},new OsmandPreference[]{osmandSettings.PREFER_MOTORWAYS});
-    return true;
-  }
- else   if (preference == showAlarms) {
-    showBooleanSettings(new String[]{getString(R.string.show_traffic_warnings),getString(R.string.show_cameras),getString(R.string.show_lanes)},new OsmandPreference[]{osmandSettings.SHOW_TRAFFIC_WARNINGS,osmandSettings.SHOW_CAMERAS,osmandSettings.SHOW_LANES});
-    return true;
+ else {
+    super.onPreferenceClick(preference);
   }
   return false;
 }

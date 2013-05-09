@@ -1,0 +1,24 @@
+{
+  OsmandPreference<Boolean> boolPref=booleanPreferences.get(preference.getKey());
+  OsmandPreference<Integer> seekPref=seekBarPreferences.get(preference.getKey());
+  OsmandPreference<Object> listPref=(OsmandPreference<Object>)listPreferences.get(preference.getKey());
+  OsmandPreference<String> editPref=editTextPreferences.get(preference.getKey());
+  if (boolPref != null) {
+    boolPref.set((Boolean)newValue);
+  }
+ else   if (seekPref != null) {
+    seekPref.set((Integer)newValue);
+  }
+ else   if (editPref != null) {
+    editPref.set((String)newValue);
+  }
+ else   if (listPref != null) {
+    int ind=((ListPreference)preference).findIndexOfValue((String)newValue);
+    CharSequence entry=((ListPreference)preference).getEntries()[ind];
+    Map<String,?> map=listPrefValues.get(preference.getKey());
+    Object obj=map.get(entry);
+    boolean changed=listPref.set(obj);
+    return changed;
+  }
+  return true;
+}

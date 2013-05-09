@@ -6,13 +6,32 @@
     }
   }
 ;
-  optionsMenuAdapter.registerItem(R.string.local_index_mi_backup,0,listener,0);
-  optionsMenuAdapter.registerItem(R.string.local_index_mi_restore,0,listener,1);
-  optionsMenuAdapter.registerItem(R.string.local_index_mi_delete,0,listener,2);
-  optionsMenuAdapter.registerItem(R.string.local_index_mi_reload,0,listener,3);
+  optionsMenuAdapter.registerItem(R.string.local_index_download,isLightActionBar() ? R.drawable.a_9_av_download_light : R.drawable.a_9_av_download_dark,listener,0);
+  optionsMenuAdapter.registerItem(R.string.local_index_mi_reload,isLightActionBar() ? R.drawable.a_1_navigation_refresh_light : R.drawable.a_1_navigation_refresh_dark,listener,1);
+  optionsMenuAdapter.registerItem(R.string.local_index_mi_backup,isLightActionBar() ? R.drawable.a_8_images_rotate_left_light : R.drawable.a_8_images_rotate_left_dark,listener,2);
+  optionsMenuAdapter.registerItem(R.string.local_index_mi_restore,isLightActionBar() ? R.drawable.a_8_images_rotate_right_light : R.drawable.a_8_images_rotate_right_dark,listener,3);
+  optionsMenuAdapter.registerItem(R.string.local_index_mi_delete,isLightActionBar() ? R.drawable.a_5_content_discard_light : R.drawable.a_5_content_discard_dark,listener,4);
   OsmandPlugin.onOptionsMenuLocalIndexes(this,optionsMenuAdapter);
+  int max=getResources().getInteger(R.integer.abs__max_action_buttons);
+  SubMenu split=null;
   for (int j=0; j < optionsMenuAdapter.length(); j++) {
-    menu.add(0,optionsMenuAdapter.getItemId(j),j + 1,optionsMenuAdapter.getItemName(j));
+    MenuItem item;
+    if (j + 1 >= max) {
+      if (split == null) {
+        split=menu.addSubMenu(0,1,0,R.string.default_buttons_other_actions);
+        split.setIcon(isLightActionBar() ? R.drawable.abs__ic_menu_moreoverflow_holo_light : R.drawable.abs__ic_menu_moreoverflow_holo_dark);
+        split.getItem().setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      }
+      item=split.add(0,optionsMenuAdapter.getItemId(j),j + 1,optionsMenuAdapter.getItemName(j));
+      item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+    }
+ else {
+      item=menu.add(0,optionsMenuAdapter.getItemId(j),j + 1,optionsMenuAdapter.getItemName(j));
+      item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+    }
+    if (optionsMenuAdapter.getImageId(j) != 0) {
+      item.setIcon(optionsMenuAdapter.getImageId(j));
+    }
   }
   return true;
 }

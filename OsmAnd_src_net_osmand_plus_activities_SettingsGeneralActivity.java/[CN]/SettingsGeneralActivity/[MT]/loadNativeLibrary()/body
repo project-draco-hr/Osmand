@@ -1,0 +1,21 @@
+{
+  if (!NativeOsmandLibrary.isLoaded()) {
+    final RenderingRulesStorage storage=getMyApplication().getRendererRegistry().getCurrentSelectedRenderer();
+    new AsyncTask<Void,Void,Void>(){
+      @Override protected void onPreExecute(){
+        setSupportProgressBarIndeterminateVisibility(true);
+      }
+      @Override protected Void doInBackground(      Void... params){
+        NativeOsmandLibrary.getLibrary(storage,getMyApplication());
+        return null;
+      }
+      @Override protected void onPostExecute(      Void result){
+        setSupportProgressBarIndeterminateVisibility(false);
+        if (!NativeOsmandLibrary.isNativeSupported(storage,getMyApplication())) {
+          AccessibleToast.makeText(SettingsGeneralActivity.this,R.string.native_library_not_supported,Toast.LENGTH_LONG).show();
+        }
+      }
+    }
+.execute();
+  }
+}

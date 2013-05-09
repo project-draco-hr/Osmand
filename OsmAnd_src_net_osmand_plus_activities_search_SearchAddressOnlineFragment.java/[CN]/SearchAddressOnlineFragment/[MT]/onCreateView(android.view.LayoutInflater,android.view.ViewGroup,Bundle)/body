@@ -1,0 +1,40 @@
+{
+  view=inflater.inflate(R.layout.search_address_online,container,false);
+  adapter=new PlacesAdapter(new ArrayList<SearchAddressOnlineFragment.Place>());
+  Button searchOffline=(Button)view.findViewById(R.id.SearchOffline);
+  if (getActivity() instanceof SearchActivity) {
+    searchOffline.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        ((SearchActivity)getActivity()).startSearchAddressOffline();
+      }
+    }
+);
+  }
+ else {
+    searchOffline.setVisibility(View.INVISIBLE);
+  }
+  settings=((OsmandApplication)getActivity().getApplication()).getSettings();
+  final EditText searchText=(EditText)view.findViewById(R.id.SearchText);
+  Button clearSearch=(Button)view.findViewById(R.id.ClearSearch);
+  clearSearch.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      searchText.setText("");
+      adapter.clear();
+    }
+  }
+);
+  Button searchButton=(Button)view.findViewById(R.id.SearchButton);
+  searchButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      InputMethodManager inputMethodManager=(InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+      inputMethodManager.hideSoftInputFromWindow(searchText.getWindowToken(),0);
+      searchPlaces(searchText.getText().toString());
+    }
+  }
+);
+  location=settings.getLastKnownMapLocation();
+  ListView lv=(ListView)view.findViewById(android.R.id.list);
+  lv.setAdapter(adapter);
+  lv.setOnItemClickListener(this);
+  return view;
+}

@@ -1,0 +1,29 @@
+{
+  String id=preference.getKey();
+  super.onPreferenceChange(preference,newValue);
+  if (id.equals(settings.SAFE_MODE.getId())) {
+    if (((Boolean)newValue).booleanValue()) {
+      loadNativeLibrary();
+    }
+  }
+ else   if (preference == applicationDir) {
+    warnAboutChangingStorage((String)newValue);
+    return false;
+  }
+ else   if (id.equals(settings.APPLICATION_MODE.getId())) {
+    settings.DEFAULT_APPLICATION_MODE.set(settings.APPLICATION_MODE.get());
+    updateAllSettings();
+  }
+ else   if (id.equals(settings.PREFERRED_LOCALE.getId())) {
+    getMyApplication().checkPrefferedLocale();
+    Intent intent=getIntent();
+    finish();
+    startActivity(intent);
+  }
+ else   if (id.equals(settings.OSMAND_THEME.getId())) {
+    Intent intent=getIntent();
+    finish();
+    startActivity(intent);
+  }
+  return true;
+}

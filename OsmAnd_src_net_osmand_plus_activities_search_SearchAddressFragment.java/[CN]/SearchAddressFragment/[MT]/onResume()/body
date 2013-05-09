@@ -1,0 +1,23 @@
+{
+  super.onResume();
+  searchPoint=osmandSettings.getLastSearchedPoint();
+  Intent intent=getActivity().getIntent();
+  if (intent != null) {
+    selectAddressMode=intent.hasExtra(SELECT_ADDRESS_POINT_INTENT_KEY);
+  }
+ else {
+    selectAddressMode=false;
+  }
+  region=null;
+  postcode=null;
+  city=null;
+  street=null;
+  building=null;
+  region=osmandSettings.getLastSearchedRegion();
+  RegionAddressRepository reg=((OsmandApplication)getApplication()).getResourceManager().getRegionRepository(region);
+  if (reg != null && reg.useEnglishNames() != osmandSettings.USE_ENGLISH_NAMES.get()) {
+    reg.setUseEnglishNames(osmandSettings.USE_ENGLISH_NAMES.get());
+  }
+  loadData();
+  updateUI();
+}

@@ -1,0 +1,70 @@
+{
+  if (Algorithms.isEmpty(search)) {
+    return;
+  }
+  new AsyncTask<Void,Void,Void>(){
+    List<Place> places=null;
+    String warning=null;
+    protected void onPreExecute(){
+      view.findViewById(R.id.ProgressBar).setVisibility(View.VISIBLE);
+    }
+    @Override protected Void doInBackground(    Void... params){
+      try {
+        final List<Place> places=new ArrayList<Place>();
+        StringBuilder b=new StringBuilder();
+        b.append("http://nominatim.openstreetmap.org/search");
+        b.append("?format=xml&addressdetails=0&accept-language=").append(Locale.getDefault().getLanguage());
+        b.append("&q=").append(URLEncoder.encode(search,"UTF-8"));
+        log.info("Searching address at : " + b.toString());
+        URL url=new URL(b.toString());
+        URLConnection conn=url.openConnection();
+        conn.setDoInput(true);
+        conn.setRequestProperty("User-Agent",Version.getFullVersion((ClientContext)getActivity().getApplication()));
+        conn.connect();
+        InputStream is=conn.getInputStream();
+        XmlPullParser parser=Xml.newPullParser();
+        parser.setInput(is,"UTF-8");
+        int ev;
+        while ((ev=parser.next()) != XmlPullParser.END_DOCUMENT) {
+          if (ev == XmlPullParser.START_TAG) {
+            if (parser.getName().equals("place")) {
+              String lat=parser.getAttributeValue("","lat");
+              String lon=parser.getAttributeValue("","lon");
+              String displayName=parser.getAttributeValue("","display_name");
+              if (lat != null && lon != null && displayName != null) {
+                Place p=new Place();
+                p.lat=Double.parseDouble(lat);
+                p.lon=Double.parseDouble(lon);
+                p.displayName=displayName;
+                places.add(p);
+              }
+            }
+          }
+        }
+        is.close();
+        if (places.isEmpty()) {
+          this.places=null;
+          warning=getString(R.string.search_nothing_found);
+        }
+ else {
+          this.places=places;
+        }
+      }
+ catch (      Exception e) {
+        log.error("Error searching address",e);
+        warning=getString(R.string.error_io_error) + " : " + e.getMessage();
+      }
+      return null;
+    }
+    protected void onPostExecute(    Void result){
+      view.findViewById(R.id.ProgressBar).setVisibility(View.INVISIBLE);
+      if (places == null) {
+        AccessibleToast.makeText(getActivity(),warning,Toast.LENGTH_LONG).show();
+      }
+ else {
+        adapter.setPlaces(places);
+      }
+    }
+  }
+.execute((Void)null);
+}

@@ -1,5 +1,7 @@
 {
+  requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
   super.onCreate(icicle);
+  getSherlock().setUiOptions(ActivityInfo.UIOPTION_SPLIT_ACTION_BAR_WHEN_NARROW);
   final Collator collator=Collator.getInstance();
   collator.setStrength(Collator.SECONDARY);
   favoritesComparator=new Comparator<FavouritePoint>(){
@@ -8,35 +10,11 @@
     }
   }
 ;
-  CustomTitleBar titleBar=new CustomTitleBar(this,R.string.favourites_activity,R.drawable.tab_search_favorites_icon);
   setContentView(R.layout.favourites_list);
-  titleBar.afterSetContentView();
+  getSupportActionBar().setTitle(R.string.favourites_activity);
+  setSupportProgressBarIndeterminateVisibility(false);
   helper=getMyApplication().getFavorites();
   favouritesAdapter=new FavouritesAdapter();
   favouritesAdapter.setFavoriteGroups(helper.getFavoriteGroups());
   getExpandableListView().setAdapter(favouritesAdapter);
-  findViewById(R.id.CancelButton).setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      cancelSelectingMode();
-    }
-  }
-);
-  findViewById(R.id.ActionButton).setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      if (groupsToDelete.size() + favoritesToDelete.size() > 0) {
-        Builder b=new AlertDialog.Builder(FavouritesActivity.this);
-        b.setMessage(getString(R.string.favorite_delete_multiple,favoritesToDelete.size(),groupsToDelete.size()));
-        b.setPositiveButton(R.string.default_buttons_delete,new DialogInterface.OnClickListener(){
-          @Override public void onClick(          DialogInterface dialog,          int which){
-            cancelSelectingMode();
-            deleteFavorites();
-          }
-        }
-);
-        b.setNegativeButton(R.string.default_buttons_cancel,null);
-        b.show();
-      }
-    }
-  }
-);
 }

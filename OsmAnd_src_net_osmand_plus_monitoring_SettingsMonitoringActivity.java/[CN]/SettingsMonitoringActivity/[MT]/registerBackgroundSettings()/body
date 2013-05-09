@@ -1,0 +1,40 @@
+{
+  PreferenceCategory cat=new PreferenceCategory(this);
+  cat.setTitle(R.string.osmand_service);
+  getPreferenceScreen().addPreference(cat);
+  if (broadcastReceiver != null) {
+    unregisterReceiver(broadcastReceiver);
+    broadcastReceiver=null;
+  }
+  routeServiceEnabled=new CheckBoxPreference(this);
+  broadcastReceiver=new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      routeServiceEnabled.setChecked(false);
+    }
+  }
+;
+  registerReceiver(broadcastReceiver,new IntentFilter(NavigationService.OSMAND_STOP_SERVICE_ACTION));
+  routeServiceEnabled.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+    @Override public boolean onPreferenceChange(    Preference preference,    Object newValue){
+      Intent serviceIntent=new Intent(SettingsMonitoringActivity.this,NavigationService.class);
+      if ((Boolean)newValue) {
+        ComponentName name=startService(serviceIntent);
+        if (name == null) {
+          routeServiceEnabled.setChecked(getMyApplication().getNavigationService() != null);
+        }
+      }
+ else {
+        if (!stopService(serviceIntent)) {
+          routeServiceEnabled.setChecked(getMyApplication().getNavigationService() != null);
+        }
+      }
+      return true;
+    }
+  }
+);
+  routeServiceEnabled.setTitle(R.string.background_router_service);
+  routeServiceEnabled.setSummary(R.string.background_router_service_descr);
+  routeServiceEnabled.setKey(OsmandSettings.SERVICE_OFF_ENABLED);
+  cat.addPreference(routeServiceEnabled);
+  cat.addPreference(createTimeListPreference(settings.SERVICE_OFF_INTERVAL,BG_SECONDS,BG_MINUTES,1000,R.string.background_service_int,R.string.background_service_int_descr));
+}

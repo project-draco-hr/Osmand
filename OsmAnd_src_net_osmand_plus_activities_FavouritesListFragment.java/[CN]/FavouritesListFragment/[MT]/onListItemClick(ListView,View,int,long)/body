@@ -1,0 +1,22 @@
+{
+  if (!isSelectFavoriteMode()) {
+    QuickAction qa=new QuickAction(v);
+    FavouritePoint point=favouritesAdapter.getItem(position);
+    String name=getString(R.string.favorite) + ": " + point.getName();
+    LatLon location=new LatLon(point.getLatitude(),point.getLongitude());
+    View.OnClickListener onshow=new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        settings.SHOW_FAVORITES.set(true);
+      }
+    }
+;
+    MapActivityActions.createDirectionsActions(qa,location,point,name,settings.getLastKnownMapZoom(),getActivity(),true,onshow);
+    qa.show();
+  }
+ else {
+    Intent intent=getActivity().getIntent();
+    intent.putExtra(SELECT_FAVORITE_POINT_INTENT_KEY,favouritesAdapter.getItem(position));
+    getActivity().setResult(SELECT_FAVORITE_POINT_RESULT_OK,intent);
+    getActivity().finish();
+  }
+}

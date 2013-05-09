@@ -1,0 +1,19 @@
+{
+  try {
+    double lat=convert(((TextView)view.findViewById(R.id.LatitudeEdit)).getText().toString());
+    double lon=convert(((TextView)view.findViewById(R.id.LongitudeEdit)).getText().toString());
+    if (navigate) {
+      MapActivityActions.navigatePointDialogAndLaunchMap(getActivity(),lat,lon,getString(R.string.point_on_map,lat,lon));
+    }
+ else {
+      OsmandApplication app=(OsmandApplication)getActivity().getApplication();
+      app.getSettings().setMapLocationToShow(lat,lon,Math.max(12,app.getSettings().getLastKnownMapZoom()),getString(R.string.point_on_map,lat,lon));
+      MapActivity.launchMapActivityMoveToTop(getActivity());
+    }
+  }
+ catch (  RuntimeException e) {
+    ((TextView)view.findViewById(R.id.ValidateTextView)).setVisibility(View.VISIBLE);
+    ((TextView)view.findViewById(R.id.ValidateTextView)).setText(R.string.invalid_locations);
+    Log.w(PlatformUtil.TAG,"Convertion failed",e);
+  }
+}

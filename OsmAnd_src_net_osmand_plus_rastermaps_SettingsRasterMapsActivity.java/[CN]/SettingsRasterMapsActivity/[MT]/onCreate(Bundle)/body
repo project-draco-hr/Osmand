@@ -1,0 +1,45 @@
+{
+  super.onCreate(savedInstanceState);
+  getSupportActionBar().setTitle(R.string.online_map_settings);
+  PreferenceScreen grp=getPreferenceScreen();
+  OnPreferenceChangeListener listener=createPreferenceListener();
+  PreferenceCategory cat=new PreferenceCategory(this);
+  cat.setTitle(R.string.pref_raster_map);
+  grp.addPreference(cat);
+  CheckBoxPreference mapVectorData=createCheckBoxPreference(settings.MAP_ONLINE_DATA,R.string.map_online_data,R.string.map_online_data_descr);
+  cat.addPreference(mapVectorData);
+  tileSourcePreference=new ListPreference(this);
+  tileSourcePreference.setSummary(R.string.map_tile_source_descr);
+  tileSourcePreference.setTitle(R.string.map_tile_source);
+  tileSourcePreference.setOnPreferenceChangeListener(listener);
+  cat.addPreference(tileSourcePreference);
+  cat.addPreference(createCheckBoxPreference(settings.USE_INTERNET_TO_DOWNLOAD_TILES,R.string.use_internet,R.string.use_internet_to_download_tile));
+  int startZoom=1;
+  int endZoom=18;
+  String[] entries=new String[endZoom - startZoom + 1];
+  Integer[] intValues=new Integer[endZoom - startZoom + 1];
+  for (int i=startZoom; i <= endZoom; i++) {
+    entries[i - startZoom]=i + "";
+    intValues[i - startZoom]=i;
+  }
+  ListPreference lp=createListPreference(settings.LEVEL_TO_SWITCH_VECTOR_RASTER,entries,intValues,R.string.level_to_switch_vector_raster,R.string.level_to_switch_vector_raster_descr);
+  cat.addPreference(lp);
+  cat=new PreferenceCategory(this);
+  cat.setTitle(R.string.pref_overlay);
+  grp.addPreference(cat);
+  overlayPreference=new ListPreference(this);
+  overlayPreference.setSummary(R.string.map_overlay_descr);
+  overlayPreference.setTitle(R.string.map_overlay);
+  overlayPreference.setOnPreferenceChangeListener(listener);
+  cat.addPreference(overlayPreference);
+  underlayPreference=new ListPreference(this);
+  underlayPreference.setSummary(R.string.map_underlay_descr);
+  underlayPreference.setTitle(R.string.map_underlay);
+  underlayPreference.setOnPreferenceChangeListener(listener);
+  cat.addPreference(underlayPreference);
+  SeekBarPreference sp=createSeekBarPreference(settings.MAP_OVERLAY_TRANSPARENCY,R.string.overlay_transparency,R.string.overlay_transparency_descr,R.string.modify_transparency,0,255);
+  cat.addPreference(sp);
+  sp=createSeekBarPreference(settings.MAP_TRANSPARENCY,R.string.map_transparency,R.string.map_transparency_descr,R.string.modify_transparency,0,255);
+  cat.addPreference(sp);
+  cat.addPreference(createCheckBoxPreference(settings.USE_HIGH_RES_MAPS,R.string.use_high_res_maps,R.string.use_high_res_maps_descr));
+}

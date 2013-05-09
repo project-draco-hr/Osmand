@@ -6,9 +6,13 @@
   }
   spinnerAdapter.insert(message + suffix,0);
   this.searchPoint=searchPoint;
-  Activity currentActivity=getLocalActivityManager().getCurrentActivity();
-  if (currentActivity instanceof SearchActivityChild) {
-    ((SearchActivityChild)currentActivity).locationUpdate(searchPoint);
+  for (  WeakReference<Fragment> ref : fragList) {
+    Fragment f=ref.get();
+    if (f instanceof SearchActivityChild) {
+      if (!f.isDetached()) {
+        ((SearchActivityChild)f).locationUpdate(searchPoint);
+      }
+    }
   }
-  spinner.setSelection(0);
+  getSupportActionBar().setSelectedNavigationItem(0);
 }

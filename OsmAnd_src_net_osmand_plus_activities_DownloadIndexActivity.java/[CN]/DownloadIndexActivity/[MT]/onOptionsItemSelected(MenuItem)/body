@@ -2,45 +2,19 @@
   if (item.getItemId() == RELOAD_ID) {
     downloadListIndexThread=new DownloadIndexListThread(this);
     downloadIndexList();
+    return true;
   }
- else {
-    final DownloadIndexAdapter listAdapter=(DownloadIndexAdapter)getExpandableListAdapter();
-    if (item.getItemId() == SELECT_ALL_ID) {
-      int selected=0;
-      for (int j=0; j < listAdapter.getGroupCount(); j++) {
-        for (int i=0; i < listAdapter.getChildrenCount(j); i++) {
-          IndexItem es=listAdapter.getChild(j,i);
-          if (!entriesToDownload.containsKey(es)) {
-            selected++;
-            entriesToDownload.put(es,es.createDownloadEntry(getClientContext(),type,new ArrayList<DownloadEntry>(1)));
-          }
-        }
-      }
-      AccessibleToast.makeText(this,MessageFormat.format(getString(R.string.items_were_selected),selected),Toast.LENGTH_SHORT).show();
-      listAdapter.notifyDataSetInvalidated();
-      if (selected > 0) {
-        findViewById(R.id.DownloadButton).setVisibility(View.VISIBLE);
-      }
-    }
- else     if (item.getItemId() == FILTER_EXISTING_REGIONS) {
-      final Map<String,String> listAlreadyDownloaded=listAlreadyDownloadedWithAlternatives();
-      final List<IndexItem> filtered=new ArrayList<IndexItem>();
-      for (      IndexItem fileItem : listAdapter.getIndexFiles()) {
-        if (fileItem.isAlreadyDownloaded(listAlreadyDownloaded)) {
-          filtered.add(fileItem);
-        }
-      }
-      listAdapter.setIndexFiles(filtered,IndexItemCategory.categorizeIndexItems(getClientContext(),filtered));
-      listAdapter.notifyDataSetChanged();
-    }
- else     if (item.getItemId() == DESELECT_ALL_ID) {
-      entriesToDownload.clear();
-      listAdapter.notifyDataSetInvalidated();
-      findViewById(R.id.DownloadButton).setVisibility(View.GONE);
-    }
- else {
-      return false;
-    }
+ else   if (item.getItemId() == SELECT_ALL_ID) {
+    selectAll();
+    return true;
   }
-  return true;
+ else   if (item.getItemId() == FILTER_EXISTING_REGIONS) {
+    filterExisting();
+    return true;
+  }
+ else   if (item.getItemId() == DESELECT_ALL_ID) {
+    deselectAll();
+    return true;
+  }
+  return super.onOptionsItemSelected(item);
 }

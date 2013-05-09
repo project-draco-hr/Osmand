@@ -1,0 +1,50 @@
+{
+  stopsAdapter.clear();
+  searchArea.setText(getSearchArea());
+  boolean routeCalculated=isRouteCalculated();
+  searchTransportLevel.setEnabled(false);
+  if (!routeCalculated && getLocationToStart() != null) {
+    final LatLon locationToStart=getLocationToStart();
+    final LatLon locationToGo=getLocationToGo();
+    List<TransportIndexRepository> rs=((OsmandApplication)getApplication()).getResourceManager().searchTransportRepositories(locationToStart.getLatitude(),locationToStart.getLongitude());
+    if (!rs.isEmpty()) {
+      final AsyncTask<?,?,?> previous=asyncTask;
+      AsyncTask<TransportIndexRepository,Void,List<RouteInfoLocation>> current=new AsyncTask<TransportIndexRepository,Void,List<RouteInfoLocation>>(){
+        @Override protected void onPreExecute(){
+          super.onPreExecute();
+          progress.setVisibility(View.VISIBLE);
+        }
+        @Override protected List<RouteInfoLocation> doInBackground(        TransportIndexRepository... params){
+          if (previous != null) {
+            try {
+              previous.get();
+            }
+ catch (            Exception e) {
+            }
+          }
+          List<RouteInfoLocation> res=new ArrayList<TransportIndexRepository.RouteInfoLocation>();
+          for (          TransportIndexRepository repo : params) {
+            List<RouteInfoLocation> r=repo.searchTransportRouteStops(locationToStart.getLatitude(),locationToStart.getLongitude(),locationToGo,zoom);
+            if (r != null) {
+              res.addAll(r);
+            }
+          }
+          return res;
+        }
+        @Override protected void onPostExecute(        List<RouteInfoLocation> result){
+          stopsAdapter.setNewModel(result);
+          updateSearchMoreButton();
+          searchArea.setText(getSearchArea());
+          progress.setVisibility(View.INVISIBLE);
+          asyncTask=null;
+        }
+      }
+;
+      asyncTask=current;
+      current.execute(rs.toArray(new TransportIndexRepository[rs.size()]));
+    }
+  }
+ else {
+    updateSearchMoreButton();
+  }
+}

@@ -1,0 +1,32 @@
+{
+  View row=convertView;
+  if (row == null) {
+    LayoutInflater inflater=getActivity().getLayoutInflater();
+    row=inflater.inflate(R.layout.search_history_list_item,parent,false);
+  }
+  TextView label=(TextView)row.findViewById(R.id.label);
+  String distance="";
+  ImageButton icon=(ImageButton)row.findViewById(R.id.remove);
+  final HistoryEntry model=getItem(position);
+  if (location != null) {
+    int dist=(int)(MapUtils.getDistance(location,model.getLat(),model.getLon()));
+    distance=OsmAndFormatter.getFormattedDistance(dist,(ClientContext)getActivity().getApplication()) + "  ";
+  }
+  label.setText(distance + model.getName(),BufferType.SPANNABLE);
+  ((Spannable)label.getText()).setSpan(new ForegroundColorSpan(getResources().getColor(R.color.color_distance)),0,distance.length(),0);
+  icon.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      helper.remove(model);
+      historyAdapter.remove(model);
+    }
+  }
+);
+  View.OnClickListener clickListener=new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      selectModel(model,v);
+    }
+  }
+;
+  label.setOnClickListener(clickListener);
+  return row;
+}

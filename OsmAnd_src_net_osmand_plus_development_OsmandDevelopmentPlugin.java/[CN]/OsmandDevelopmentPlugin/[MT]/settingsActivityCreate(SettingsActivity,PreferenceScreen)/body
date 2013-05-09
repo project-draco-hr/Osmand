@@ -1,44 +1,12 @@
 {
-  PreferenceScreen general=(PreferenceScreen)screen.findPreference(SettingsActivity.SCREEN_ID_GENERAL_SETTINGS);
-  PreferenceCategory cat=new PreferenceCategory(app);
-  cat.setTitle(R.string.debugging_and_development);
-  general.addPreference(cat);
-  CheckBoxPreference dbg=activity.createCheckBoxPreference(settings.DEBUG_RENDERING_INFO,R.string.trace_rendering,R.string.trace_rendering_descr);
-  cat.addPreference(dbg);
-  Preference pref=new Preference(app);
-  pref.setTitle(R.string.test_voice_prompts);
-  pref.setSummary(R.string.play_commands_of_currently_selected_voice);
-  pref.setKey("test_voice_commands");
-  pref.setOnPreferenceClickListener(new OnPreferenceClickListener(){
+  Preference grp=new Preference(activity);
+  grp.setTitle(R.string.debugging_and_development);
+  grp.setOnPreferenceClickListener(new OnPreferenceClickListener(){
     @Override public boolean onPreferenceClick(    Preference preference){
-      activity.startActivity(new Intent(activity,TestVoiceActivity.class));
+      activity.startActivity(new Intent(activity,SettingsDevelopmentActivity.class));
       return true;
     }
   }
 );
-  cat.addPreference(pref);
-  pref=new Preference(app);
-  pref.setTitle(R.string.global_app_allocated_memory);
-  long javaAvailMem=(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024l);
-  long javaTotal=Runtime.getRuntime().totalMemory() / (1024 * 1024l);
-  long dalvikSize=android.os.Debug.getNativeHeapAllocatedSize() / (1024 * 1024l);
-  pref.setSummary(activity.getString(R.string.global_app_allocated_memory_descr,javaAvailMem,javaTotal,dalvikSize));
-  cat.addPreference(pref);
-  MemoryInfo mem=new Debug.MemoryInfo();
-  Debug.getMemoryInfo(mem);
-  pref=new Preference(app);
-  pref.setTitle(R.string.native_app_allocated_memory);
-  pref.setSummary(activity.getString(R.string.native_app_allocated_memory_descr,mem.nativePrivateDirty / 1024,mem.dalvikPrivateDirty / 1024,mem.otherPrivateDirty / 1024,mem.nativePss / 1024,mem.dalvikPss / 1024,mem.otherPss / 1024));
-  cat.addPreference(pref);
-  SunriseSunset sunriseSunset=app.getDaynightHelper().getSunriseSunset();
-  pref=new Preference(app);
-  pref.setTitle(R.string.day_night_info);
-  if (sunriseSunset != null) {
-    SimpleDateFormat prt=new SimpleDateFormat("yyyy-MM-dd  HH:mm");
-    pref.setSummary(activity.getString(R.string.day_night_info_description,prt.format(sunriseSunset.getSunrise()),prt.format(sunriseSunset.getSunset())));
-  }
- else {
-    pref.setSummary(activity.getString(R.string.day_night_info_description,"null","null"));
-  }
-  cat.addPreference(pref);
+  screen.addPreference(grp);
 }
