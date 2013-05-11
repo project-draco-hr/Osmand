@@ -10,8 +10,6 @@
   poiDescription.setTitle(getString(R.string.poi_context_menu_showdescription));
   poiDescription.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      Builder bs=new AlertDialog.Builder(v.getContext());
-      bs.setTitle(OsmAndFormatter.getPoiSimpleFormat(amenity,getMyApplication(),settings.USE_ENGLISH_NAMES.get()));
       StringBuilder d=new StringBuilder();
       if (amenity.getOpeningHours() != null) {
         d.append(getString(R.string.opening_hours) + " : ").append(amenity.getOpeningHours()).append("\n");
@@ -25,8 +23,15 @@
       if (amenity.getDescription() != null) {
         d.append(amenity.getDescription());
       }
-      bs.setMessage(d.toString());
-      bs.show();
+      SpannableString spannable=new SpannableString(d);
+      Linkify.addLinks(spannable,Linkify.ALL);
+      Builder bs=new AlertDialog.Builder(v.getContext());
+      bs.setTitle(OsmAndFormatter.getPoiSimpleFormat(amenity,getMyApplication(),settings.USE_ENGLISH_NAMES.get()));
+      bs.setMessage(spannable);
+      AlertDialog dialog=bs.show();
+      TextView textView=(TextView)dialog.findViewById(android.R.id.message);
+      textView.setMovementMethod(LinkMovementMethod.getInstance());
+      textView.setLinksClickable(true);
     }
   }
 );
