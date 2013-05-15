@@ -1,4 +1,5 @@
 {
+  final Intent serviceIntent=new Intent(view.getContext(),NavigationService.class);
   final boolean off=!view.getSettings().SAVE_TRACK_TO_GPX.get();
   qa.registerItem(off ? R.string.monitoring_mode_off : R.string.monitoring_mode_on,off ? R.drawable.monitoring_rec_inactive : R.drawable.monitoring_rec_big,new OnContextMenuClick(){
     @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
@@ -9,12 +10,19 @@
           @Override public void onClick(          DialogInterface dialog,          int which){
             view.getSettings().SAVE_TRACK_INTERVAL.set(vs.value);
             view.getSettings().SAVE_TRACK_TO_GPX.set(true);
+            if (view.getApplication().getNavigationService() == null) {
+              view.getSettings().SERVICE_OFF_INTERVAL.set(0);
+              view.getContext().startService(serviceIntent);
+            }
           }
         }
 );
       }
  else {
         view.getSettings().SAVE_TRACK_TO_GPX.set(false);
+        if (view.getApplication().getNavigationService() != null && !view.getApplication().getNavigationService().startedForNavigation()) {
+          view.getContext().stopService(serviceIntent);
+        }
       }
     }
   }
@@ -24,7 +32,6 @@
   int draw=!bgoff ? R.drawable.monitoring_rec_big : R.drawable.monitoring_rec_inactive;
   qa.registerItem(msgId,draw,new OnContextMenuClick(){
     @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
-      final Intent serviceIntent=new Intent(view.getContext(),NavigationService.class);
       if (view.getApplication().getNavigationService() == null) {
         final ValueHolder<Integer> vs=new ValueHolder<Integer>();
         vs.value=view.getSettings().SERVICE_OFF_INTERVAL.get();

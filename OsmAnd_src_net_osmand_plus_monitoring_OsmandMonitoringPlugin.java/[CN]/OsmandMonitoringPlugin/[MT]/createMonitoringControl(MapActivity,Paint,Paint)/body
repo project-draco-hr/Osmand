@@ -49,11 +49,23 @@
   monitoringControl.updateInfo(null);
   monitoringControl.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      boolean isTrackMonitored=settings.SAVE_TRACK_TO_GPX.get();
-      if (!isTrackMonitored) {
+      boolean wasTrackMonitored=settings.SAVE_TRACK_TO_GPX.get();
+      if (!wasTrackMonitored) {
         app.getSavingTrackHelper().startNewSegment();
       }
-      settings.SAVE_TRACK_TO_GPX.set(!isTrackMonitored);
+      settings.SAVE_TRACK_TO_GPX.set(!wasTrackMonitored);
+      final Intent serviceIntent=new Intent(map,NavigationService.class);
+      if (wasTrackMonitored) {
+        if (app.getNavigationService() != null && !app.getNavigationService().startedForNavigation()) {
+          app.stopService(serviceIntent);
+        }
+      }
+ else {
+        if (app.getNavigationService() == null) {
+          app.getSettings().SERVICE_OFF_INTERVAL.set(0);
+          app.startService(serviceIntent);
+        }
+      }
       monitoringControl.updateInfo(null);
     }
   }
