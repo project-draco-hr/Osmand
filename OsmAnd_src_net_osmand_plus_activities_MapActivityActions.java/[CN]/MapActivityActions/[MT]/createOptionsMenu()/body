@@ -1,0 +1,119 @@
+{
+  final OsmandMapTileView mapView=mapActivity.getMapView();
+  final OsmandApplication app=mapActivity.getMyApplication();
+  ContextMenuAdapter optionsMenuHelper=new ContextMenuAdapter(app);
+  boolean light=app.getSettings().isLightContent();
+  optionsMenuHelper.registerItem(R.string.where_am_i,light ? R.drawable.a_10_device_access_location_found_light : R.drawable.a_10_device_access_location_found_dark,new OnContextMenuClick(){
+    @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      if (getMyApplication().getInternalAPI().accessibilityEnabled()) {
+        whereAmIDialog();
+      }
+ else {
+        mapActivity.getMapViewTrackingUtilities().backToLocationImpl();
+      }
+    }
+  }
+);
+  optionsMenuHelper.registerItem(R.string.menu_layers,light ? R.drawable.a_7_location_map_light : R.drawable.a_7_location_map_dark,new OnContextMenuClick(){
+    @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      mapActivity.getMapLayers().openLayerSelectionDialog(mapView);
+    }
+  }
+);
+  boolean muteVisible=routingHelper.getFinalLocation() != null && routingHelper.isFollowingMode();
+  if (muteVisible) {
+    boolean mute=routingHelper.getVoiceRouter().isMute();
+    int t=mute ? R.string.menu_mute_on : R.string.menu_mute_off;
+    int icon;
+    if (mute) {
+      icon=light ? R.drawable.a_10_device_access_volume_muted_light : R.drawable.a_10_device_access_volume_muted_dark;
+    }
+ else {
+      icon=light ? R.drawable.a_10_device_access_volume_on_light : R.drawable.a_10_device_access_volume_on_dark;
+    }
+    optionsMenuHelper.registerItem(t,icon,new OnContextMenuClick(){
+      @Override public void onContextMenuClick(      int itemId,      int pos,      boolean isChecked,      DialogInterface dialog){
+        routingHelper.getVoiceRouter().setMute(!routingHelper.getVoiceRouter().isMute());
+      }
+    }
+);
+  }
+  optionsMenuHelper.registerItem(routingHelper.isRouteCalculated() ? R.string.show_route : R.string.get_directions,light ? R.drawable.a_7_location_directions_light : R.drawable.a_7_location_directions_dark,new OnContextMenuClick(){
+    @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      if (routingHelper.isRouteCalculated()) {
+        aboutRoute();
+      }
+ else {
+        getDirections(null,null,true);
+      }
+    }
+  }
+);
+  optionsMenuHelper.registerItem(R.string.settings_Button,light ? R.drawable.a_ic_menu_settings_light : R.drawable.a_ic_menu_settings_dark,new OnContextMenuClick(){
+    @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      final Intent intentSettings=new Intent(mapActivity,OsmandIntents.getSettingsActivity());
+      mapActivity.startActivity(intentSettings);
+    }
+  }
+);
+  optionsMenuHelper.registerItem(R.string.search_button,light ? R.drawable.a_2_action_search_light : R.drawable.a_2_action_search_dark,new OnContextMenuClick(){
+    @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      Intent newIntent=new Intent(mapActivity,OsmandIntents.getSearchActivity());
+      LatLon loc=mapActivity.getMapLocation();
+      newIntent.putExtra(SearchActivity.SEARCH_LAT,loc.getLatitude());
+      newIntent.putExtra(SearchActivity.SEARCH_LON,loc.getLongitude());
+      newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+      mapActivity.startActivity(newIntent);
+    }
+  }
+);
+  optionsMenuHelper.registerItem(R.string.favorites_Button,light ? R.drawable.a_3_rating_important_light : R.drawable.a_3_rating_important_dark,new OnContextMenuClick(){
+    @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      Intent newIntent=new Intent(mapActivity,OsmandIntents.getFavoritesActivity());
+      mapActivity.startActivity(newIntent);
+    }
+  }
+);
+  if (mapActivity.getPointToNavigate() != null) {
+    int nav=(routingHelper.isRouteCalculated() || routingHelper.isFollowingMode() || routingHelper.isRouteBeingCalculated()) ? R.string.stop_routing : R.string.stop_navigation;
+    optionsMenuHelper.registerItem(nav,light ? R.drawable.a_1_navigation_cancel_light : R.drawable.a_1_navigation_cancel_dark,new OnContextMenuClick(){
+      @Override public void onContextMenuClick(      int itemId,      int pos,      boolean isChecked,      DialogInterface dialog){
+        stopNavigationActionConfirm(mapView);
+      }
+    }
+);
+  }
+  if (getTargets().getPointToNavigate() != null) {
+    optionsMenuHelper.registerItem(R.string.target_points,light ? R.drawable.a_9_av_make_available_offline_light : R.drawable.a_9_av_make_available_offline_dark,new OnContextMenuClick(){
+      @Override public void onContextMenuClick(      int itemId,      int pos,      boolean isChecked,      DialogInterface dialog){
+        openIntermediatePointsDialog();
+      }
+    }
+);
+  }
+  optionsMenuHelper.registerItem(R.string.show_point_options,light ? R.drawable.a_7_location_place_light : R.drawable.a_7_location_place_dark,new OnContextMenuClick(){
+    @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      contextMenuPoint(mapView.getLatitude(),mapView.getLongitude());
+    }
+  }
+);
+  if (Version.isGpsStatusEnabled(app) && !Version.isBlackberry(app)) {
+    optionsMenuHelper.registerItem(R.string.show_gps_status,light ? R.drawable.a_2_action_about_light : R.drawable.a_2_action_about_dark,new OnContextMenuClick(){
+      @Override public void onContextMenuClick(      int itemId,      int pos,      boolean isChecked,      DialogInterface dialog){
+        startGpsStatusIntent();
+      }
+    }
+);
+  }
+  final OsmAndLocationProvider loc=app.getLocationProvider();
+  if (app.getTargetPointsHelper().getPointToNavigate() != null) {
+    optionsMenuHelper.registerItem(loc.getLocationSimulation().isRouteAnimating() ? R.string.animate_route_off : R.string.animate_route,light ? R.drawable.a_9_av_play_over_video_light : R.drawable.a_9_av_play_over_video_dark,new OnContextMenuClick(){
+      @Override public void onContextMenuClick(      int itemId,      int pos,      boolean isChecked,      DialogInterface dialog){
+        loc.getLocationSimulation().startStopRouteAnimation(mapActivity);
+      }
+    }
+);
+  }
+  OsmandPlugin.registerOptionsMenu(mapActivity,optionsMenuHelper);
+  return optionsMenuHelper;
+}
