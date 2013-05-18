@@ -15,11 +15,46 @@
       nativeCheckbox.setChecked(true);
     }
     screen.addPreference(nativeCheckbox);
-    applicationDir=new EditTextPreference(this);
+    applicationDir=new Preference(this);
     applicationDir.setTitle(R.string.application_dir);
     applicationDir.setKey("external_storage_dir");
-    applicationDir.setDialogTitle(R.string.application_dir);
-    applicationDir.setOnPreferenceChangeListener(this);
+    applicationDir.setOnPreferenceClickListener(new OnPreferenceClickListener(){
+      public void showOtherDialog(){
+        AlertDialog.Builder editalert=new AlertDialog.Builder(SettingsGeneralActivity.this);
+        editalert.setTitle(R.string.application_dir);
+        final EditText input=new EditText(SettingsGeneralActivity.this);
+        input.setText(settings.getExternalStorageDirectory().getAbsolutePath());
+        input.setPadding(3,3,3,3);
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT);
+        input.setLayoutParams(lp);
+        settings.getExternalStorageDirectory().getAbsolutePath();
+        editalert.setView(input);
+        editalert.setNegativeButton(R.string.default_buttons_cancel,null);
+        editalert.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
+          public void onClick(          DialogInterface dialog,          int whichButton){
+            warnAboutChangingStorage(input.getText().toString());
+          }
+        }
+);
+        editalert.show();
+      }
+      @Override public boolean onPreferenceClick(      Preference preference){
+        SuggestExternalDirectoryDialog.showDialog(SettingsGeneralActivity.this,new OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            dialog.dismiss();
+            showOtherDialog();
+          }
+        }
+,new Runnable(){
+          @Override public void run(){
+            reloadIndexes();
+          }
+        }
+);
+        return false;
+      }
+    }
+);
     screen.addPreference(applicationDir);
   }
   registerBooleanPreference(settings.USE_ENGLISH_NAMES,screen);
