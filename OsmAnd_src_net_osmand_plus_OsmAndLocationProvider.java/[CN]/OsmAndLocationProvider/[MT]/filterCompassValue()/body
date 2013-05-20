@@ -1,0 +1,23 @@
+{
+  if (heading == null && previousCompassIndA == 0) {
+    Arrays.fill(previousCompassValuesA,lastValSin);
+    Arrays.fill(previousCompassValuesB,lastValCos);
+    avgValSin=lastValSin;
+    avgValCos=lastValCos;
+  }
+ else {
+    if (USE_KALMAN_FILTER) {
+      avgValSin=KALMAN_COEFFICIENT * lastValSin + avgValSin * (1 - KALMAN_COEFFICIENT);
+      avgValCos=KALMAN_COEFFICIENT * lastValCos + avgValCos * (1 - KALMAN_COEFFICIENT);
+    }
+ else {
+      int l=previousCompassValuesA.length;
+      previousCompassIndA=(previousCompassIndA + 1) % l;
+      previousCompassIndB=(previousCompassIndB + 1) % l;
+      avgValSin=avgValSin + (-previousCompassValuesA[previousCompassIndA] + lastValSin) / l;
+      previousCompassValuesA[previousCompassIndA]=lastValSin;
+      avgValCos=avgValCos + (-previousCompassValuesB[previousCompassIndB] + lastValCos) / l;
+      previousCompassValuesB[previousCompassIndB]=lastValCos;
+    }
+  }
+}

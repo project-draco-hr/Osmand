@@ -1,29 +1,29 @@
 {
-  float val=0;
+  if (inUpdateValue) {
+    return;
+  }
+synchronized (this) {
+    inUpdateValue=true;
+    try {
+      float val=0;
 switch (event.sensor.getType()) {
 case Sensor.TYPE_ACCELEROMETER:
-    if (mGravs == null) {
-      mGravs=new float[3];
-    }
-  System.arraycopy(event.values,0,mGravs,0,3);
-break;
+        System.arraycopy(event.values,0,mGravs,0,3);
+      break;
 case Sensor.TYPE_MAGNETIC_FIELD:
-if (mGeoMags == null) {
-mGeoMags=new float[3];
-}
-System.arraycopy(event.values,0,mGeoMags,0,3);
-break;
+    System.arraycopy(event.values,0,mGeoMags,0,3);
+  break;
 case Sensor.TYPE_ORIENTATION:
 val=event.values[0];
-if (mGravs != null && mGeoMags != null) {
+if (USE_MAGNETIC_FIELD_SENSOR_COMPASS.get()) {
 return;
 }
 break;
 default :
 return;
 }
+if (USE_MAGNETIC_FIELD_SENSOR_COMPASS.get()) {
 if (mGravs != null && mGeoMags != null) {
-float[] mRotationM=new float[9];
 boolean success=SensorManager.getRotationMatrix(mRotationM,null,mGravs,mGeoMags);
 if (!success) {
 return;
@@ -31,49 +31,27 @@ return;
 float[] orientation=SensorManager.getOrientation(mRotationM,new float[3]);
 val=(float)Math.toDegrees(orientation[0]);
 }
- else if (event.sensor.getType() != Sensor.TYPE_ORIENTATION) {
+ else {
 return;
 }
-if (currentScreenOrientation == 1) {
-val+=90;
 }
- else if (currentScreenOrientation == 2) {
-val+=180;
-}
- else if (currentScreenOrientation == 3) {
-val-=90;
-}
-if (previousCorrectionValue == 360 && getLastKnownLocation() != null) {
-net.osmand.Location l=getLastKnownLocation();
-GeomagneticField gf=new GeomagneticField((float)l.getLatitude(),(float)l.getLongitude(),(float)l.getAltitude(),System.currentTimeMillis());
-previousCorrectionValue=gf.getDeclination();
-}
-if (previousCorrectionValue != 360) {
-val+=previousCorrectionValue;
-}
+val=calcScreenOrientationCorrection(val);
+val=calcGeoMagneticCorrection(val);
 float valRad=(float)(val / 180f * Math.PI);
 lastValSin=(float)Math.sin(valRad);
 lastValCos=(float)Math.cos(valRad);
-if (heading == null && previousCompassIndA == 0) {
-Arrays.fill(previousCompassValuesA,lastValSin);
-Arrays.fill(previousCompassValuesB,lastValCos);
+boolean filter=true;
+if (filter) {
+filterCompassValue();
+}
+ else {
 avgValSin=lastValSin;
 avgValCos=lastValCos;
 }
- else {
-if (USE_KALMAN_FILTER) {
-avgValSin=KALMAN_COEFFICIENT * lastValSin + avgValSin * (1 - KALMAN_COEFFICIENT);
-avgValCos=KALMAN_COEFFICIENT * lastValCos + avgValCos * (1 - KALMAN_COEFFICIENT);
-}
- else {
-int l=previousCompassValuesA.length;
-previousCompassIndA=(previousCompassIndA + 1) % l;
-previousCompassIndB=(previousCompassIndB + 1) % l;
-avgValSin=avgValSin + (-previousCompassValuesA[previousCompassIndA] + lastValSin) / l;
-previousCompassValuesA[previousCompassIndA]=lastValSin;
-avgValCos=avgValCos + (-previousCompassValuesB[previousCompassIndB] + lastValCos) / l;
-previousCompassValuesB[previousCompassIndB]=lastValCos;
-}
-}
 updateCompassVal();
+}
+  finally {
+inUpdateValue=false;
+}
+}
 }
