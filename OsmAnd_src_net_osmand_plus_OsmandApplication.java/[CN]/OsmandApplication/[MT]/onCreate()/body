@@ -1,8 +1,14 @@
 {
   long timeToStart=System.currentTimeMillis();
   if (Version.getAppName(this).equals("OsmAnd~")) {
-    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectDiskWrites().detectNetwork().detectCustomSlowCalls().detectDiskReads().penaltyLog().build());
-    StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
+    if (android.os.Build.VERSION.SDK_INT >= 9) {
+      try {
+        Class.forName("net.osmand.plus.base.EnableStrictMode").newInstance();
+      }
+ catch (      Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
   super.onCreate();
   settingsAPI=new net.osmand.plus.api.SettingsAPIImpl(this);
