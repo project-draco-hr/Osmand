@@ -2,12 +2,16 @@
   super.onCreate(savedInstanceState);
   settings=((OsmandApplication)getApplication()).getSettings();
   if (downloadListIndexThread == null) {
-    downloadListIndexThread=new DownloadIndexListThread(this);
+    downloadListIndexThread=new DownloadIndexesThread(this);
   }
   setContentView(R.layout.download_index);
+  indeterminateProgressBar=(ProgressBar)findViewById(R.id.IndeterminateProgressBar);
+  determinateProgressBar=(ProgressBar)findViewById(R.id.DeterminateProgressBar);
+  progressView=findViewById(R.id.ProgressView);
+  progressMessage=(TextView)findViewById(R.id.ProgressMessage);
+  progressPercent=(TextView)findViewById(R.id.ProgressPercent);
   getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
   getSupportActionBar().setTitle(R.string.local_index_download);
-  downloadFileHelper=new DownloadFileHelper(getClientContext());
   findViewById(R.id.DownloadButton).setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       downloadFilesCheckFreeVersion(flattenDownloadEntries());
@@ -37,11 +41,12 @@
     }
   }
   List<IndexItem> list=new ArrayList<IndexItem>();
+  downloadListIndexThread.setUiActivity(this);
   if (downloadListIndexThread.getCachedIndexFiles() != null && downloadListIndexThread.isDownloadedFromInternet()) {
     list=getFilteredByType();
   }
  else {
-    downloadIndexList();
+    downloadListIndexThread.runReloadIndexFiles();
   }
   DownloadIndexAdapter adapter=new DownloadIndexAdapter(this,list);
   setListAdapter(adapter);

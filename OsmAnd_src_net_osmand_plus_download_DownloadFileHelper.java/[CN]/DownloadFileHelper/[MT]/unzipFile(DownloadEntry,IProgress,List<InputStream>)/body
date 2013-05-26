@@ -1,0 +1,46 @@
+{
+  String taskName=ctx.getString(R.string.downloading_file_new) + " " + de.baseName;
+  CountingMultiInputStream fin=new CountingMultiInputStream(is);
+  int len=(int)fin.available();
+  progress.startTask(taskName,len / 1024);
+  if (!de.zipStream) {
+    copyFile(de,progress,fin,len,fin,de.fileToDownload);
+  }
+ else {
+    if (de.unzipFolder) {
+      de.fileToDownload.mkdirs();
+    }
+    ZipInputStream zipIn=new ZipInputStream(fin);
+    ZipEntry entry=null;
+    boolean first=true;
+    while ((entry=zipIn.getNextEntry()) != null) {
+      if (entry.isDirectory() || entry.getName().endsWith(IndexConstants.GEN_LOG_EXT)) {
+        continue;
+      }
+      File fs;
+      if (!de.unzipFolder) {
+        if (first) {
+          fs=de.fileToDownload;
+          first=false;
+        }
+ else {
+          String name=entry.getName();
+          int ind=name.lastIndexOf('_');
+          if (ind > 0) {
+            int i=name.indexOf('.',ind);
+            if (i > 0) {
+              name=name.substring(0,ind) + name.substring(i,name.length());
+            }
+          }
+          fs=new File(de.fileToDownload.getParent(),name);
+        }
+      }
+ else {
+        fs=new File(de.fileToDownload,entry.getName());
+      }
+      copyFile(de,progress,fin,len,zipIn,fs);
+    }
+    zipIn.close();
+  }
+  fin.close();
+}

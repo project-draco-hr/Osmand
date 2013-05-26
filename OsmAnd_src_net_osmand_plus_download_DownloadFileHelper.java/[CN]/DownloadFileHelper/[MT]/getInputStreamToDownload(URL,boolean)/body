@@ -1,0 +1,145 @@
+{
+  InputStream cis=new InputStream(){
+    byte[] buffer=new byte[BUFFER_SIZE];
+    int bufLen=0;
+    int bufRead=0;
+    int length=0;
+    int fileread=0;
+    int triesDownload=TRIES_TO_DOWNLOAD;
+    boolean notFound=false;
+    boolean first=true;
+    private InputStream is;
+    private void reconnect() throws IOException {
+      while (triesDownload > 0) {
+        try {
+          if (!first) {
+            log.info("Reconnecting");
+            try {
+              Thread.sleep(TIMEOUT_BETWEEN_DOWNLOADS);
+            }
+ catch (            InterruptedException e) {
+            }
+          }
+          HttpURLConnection conn=(HttpURLConnection)url.openConnection();
+          conn.setRequestProperty("User-Agent",Version.getFullVersion(ctx));
+          conn.setReadTimeout(30000);
+          if (fileread > 0) {
+            String range="bytes=" + fileread + "-"+ (length - 1);
+            conn.setRequestProperty("Range",range);
+          }
+          conn.setConnectTimeout(30000);
+          log.info(conn.getResponseMessage() + " " + conn.getResponseCode());
+          boolean wifiConnectionBroken=forceWifi && !isWifiConnected();
+          if (conn.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+            notFound=true;
+            break;
+          }
+          if ((conn.getResponseCode() != HttpURLConnection.HTTP_PARTIAL && conn.getResponseCode() != HttpURLConnection.HTTP_OK) || wifiConnectionBroken) {
+            conn.disconnect();
+            triesDownload--;
+            continue;
+          }
+          is=conn.getInputStream();
+          if (first) {
+            length=conn.getContentLength();
+          }
+          first=false;
+          return;
+        }
+ catch (        IOException e) {
+          log.error("IOException",e);
+          triesDownload--;
+        }
+      }
+      if (notFound) {
+        throw new IOException("File not found ");
+      }
+ else       if (length == 0) {
+        throw new IOException("File was not fully read");
+      }
+ else       if (triesDownload == 0 && length != fileread) {
+        throw new IOException("File was not fully read");
+      }
+    }
+    @Override public synchronized void reset() throws IOException {
+      reconnect();
+    }
+    @Override public int read(    byte[] buffer,    int offset,    int len) throws IOException {
+      int r=0;
+      while (len > 0) {
+        if (bufLen == -1) {
+          return -1;
+        }
+        int av=bufLen - bufRead;
+        if (len > av) {
+          System.arraycopy(this.buffer,bufRead,buffer,offset,av);
+          len-=av;
+          offset+=av;
+          bufRead+=av;
+          r+=av;
+          refillBuffer();
+        }
+ else {
+          System.arraycopy(this.buffer,bufRead,buffer,offset,len);
+          bufRead+=len;
+          r+=len;
+          return r;
+        }
+      }
+      return r;
+    }
+    @Override public int read() throws IOException {
+      int r=-1;
+      if (bufLen == -1) {
+        return -1;
+      }
+      refillBuffer();
+      if (bufRead < bufLen) {
+        byte b=buffer[bufRead++];
+        return b >= 0 ? b : b + 256;
+      }
+      if (length <= fileread) {
+        throw new IOException("File was not fully read");
+      }
+      return r;
+    }
+    private void refillBuffer() throws IOException {
+      boolean readAgain=bufRead >= bufLen;
+      while (readAgain) {
+        if (is == null) {
+          reconnect();
+        }
+        try {
+          readAgain=false;
+          bufRead=0;
+          if ((bufLen=is.read(buffer)) != -1) {
+            if (interruptDownloading) {
+              throw new IOException("Interrupted");
+            }
+            fileread+=bufLen;
+          }
+        }
+ catch (        IOException e) {
+          log.error("IOException",e);
+          triesDownload--;
+          reconnect();
+          readAgain=true;
+        }
+      }
+    }
+    @Override public void close() throws IOException {
+      if (is != null) {
+        is.close();
+      }
+    }
+    @Override public int available() throws IOException {
+      if (is == null) {
+        reconnect();
+      }
+      return length - fileread;
+    }
+  }
+;
+  cis.reset();
+  return cis;
+}

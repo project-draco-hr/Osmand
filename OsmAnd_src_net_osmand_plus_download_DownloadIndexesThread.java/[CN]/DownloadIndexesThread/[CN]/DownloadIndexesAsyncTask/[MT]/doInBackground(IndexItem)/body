@@ -1,0 +1,48 @@
+{
+  try {
+    List<File> filesToReindex=new ArrayList<File>();
+    boolean forceWifi=downloadFileHelper.isWifiConnected();
+    int counter=1;
+    int all=countAllDownloadEntry(filesToDownload);
+    for (int i=0; i < filesToDownload.length; i++) {
+      IndexItem filename=filesToDownload[i];
+      List<DownloadEntry> list=entriesToDownload.get(filename);
+      if (list != null) {
+        for (        DownloadEntry entry : list) {
+          String indexOfAllFiles=all <= 1 ? "" : (" [" + counter + "/"+ all+ "]");
+          counter++;
+          boolean result=downloadFile(entry,filesToReindex,indexOfAllFiles,forceWifi);
+          if (result) {
+            entriesToDownload.remove(filename);
+            if (entry.type != DownloadActivityType.SRTM_FILE && entry.type != DownloadActivityType.HILLSHADE_FILE) {
+              downloads.set(downloads.get() + 1);
+            }
+            if (entry.existingBackupFile != null) {
+              Algorithms.removeAllFiles(entry.existingBackupFile);
+            }
+            trackEvent(entry);
+            publishProgress(entry);
+          }
+        }
+      }
+    }
+    boolean vectorMapsToReindex=false;
+    for (    File f : filesToReindex) {
+      if (f.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
+        vectorMapsToReindex=true;
+        break;
+      }
+    }
+    ResourceManager manager=app.getResourceManager();
+    manager.indexVoiceFiles(this);
+    if (vectorMapsToReindex) {
+      List<String> warnings=manager.indexingMaps(this);
+      if (!warnings.isEmpty()) {
+        return warnings.get(0);
+      }
+    }
+  }
+ catch (  InterruptedException e) {
+  }
+  return null;
+}
