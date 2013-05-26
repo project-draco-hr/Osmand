@@ -1,0 +1,24 @@
+{
+  boolean vectorMapsToReindex=false;
+  for (  File f : filesToReindex) {
+    if (f.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
+      vectorMapsToReindex=true;
+      break;
+    }
+  }
+  ResourceManager manager=app.getResourceManager();
+  manager.indexVoiceFiles(this);
+  List<String> warnings=new ArrayList<String>();
+  if (vectorMapsToReindex) {
+    warnings=manager.indexingMaps(this);
+  }
+  if (cachedSRTMFiles != null) {
+    for (    SrtmIndexItem i : cachedSRTMFiles) {
+      ((SrtmIndexItem)i).updateExistingTiles(app.getResourceManager().getIndexFileNames());
+    }
+  }
+  if (!warnings.isEmpty()) {
+    return warnings.get(0);
+  }
+  return null;
+}

@@ -1,0 +1,33 @@
+{
+  int x=getListView().getScrollX();
+  int y=getListView().getScrollY();
+  if (getEntriesToDownload().isEmpty()) {
+    findViewById(R.id.DownloadButton).setVisibility(View.GONE);
+  }
+ else {
+    BasicProgressAsyncTask<?,?,?> task=downloadListIndexThread.getCurrentRunningTask();
+    boolean running=task instanceof DownloadIndexesThread.DownloadIndexesAsyncTask;
+    ((Button)findViewById(R.id.DownloadButton)).setEnabled(!running);
+    String text;
+    int downloads=downloadListIndexThread.getDownloads();
+    if (!running) {
+      text=getString(R.string.download_files) + " " + downloads;
+    }
+ else {
+      text=getString(R.string.downloading_file_new) + " " + downloads;
+    }
+    findViewById(R.id.DownloadButton).setVisibility(View.VISIBLE);
+    if (Version.isFreeVersion(getMyApplication())) {
+      int left=MAXIMUM_AVAILABLE_FREE_DOWNLOADS - settings.NUMBER_OF_FREE_DOWNLOADS.get() - downloads;
+      boolean excessLimit=left < 0;
+      if (left < 0)       left=0;
+      if (getType() != DownloadActivityType.HILLSHADE_FILE || getType() != DownloadActivityType.SRTM_FILE) {
+        text+=" (" + (excessLimit ? "! " : "") + getString(R.string.files_limit,left).toLowerCase()+ ")";
+      }
+    }
+    ((Button)findViewById(R.id.DownloadButton)).setText(text);
+  }
+  if (scroll) {
+    getListView().scrollTo(x,y);
+  }
+}

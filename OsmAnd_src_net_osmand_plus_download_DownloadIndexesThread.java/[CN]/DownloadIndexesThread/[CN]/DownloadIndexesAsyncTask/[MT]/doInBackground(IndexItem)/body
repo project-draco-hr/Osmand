@@ -2,18 +2,45 @@
   try {
     List<File> filesToReindex=new ArrayList<File>();
     boolean forceWifi=downloadFileHelper.isWifiConnected();
-    int counter=1;
-    int all=countAllDownloadEntry(filesToDownload);
-    for (int i=0; i < filesToDownload.length; i++) {
-      IndexItem filename=filesToDownload[i];
-      List<DownloadEntry> list=entriesToDownload.get(filename);
+    currentDownloads=new HashSet<DownloadEntry>();
+    String breakDownloadMessage=null;
+    downloadCycle:     while (!entriesToDownload.isEmpty()) {
+      Iterator<Entry<IndexItem,List<DownloadEntry>>> it=entriesToDownload.entrySet().iterator();
+      IndexItem file=null;
+      List<DownloadEntry> list=null;
+      while (it.hasNext()) {
+        Entry<IndexItem,List<DownloadEntry>> n=it.next();
+        if (!currentDownloads.containsAll(n.getValue())) {
+          file=n.getKey();
+          list=n.getValue();
+          break;
+        }
+      }
+      if (file == null) {
+        break downloadCycle;
+      }
       if (list != null) {
+        boolean success=false;
         for (        DownloadEntry entry : list) {
-          String indexOfAllFiles=all <= 1 ? "" : (" [" + counter + "/"+ all+ "]");
-          counter++;
-          boolean result=downloadFile(entry,filesToReindex,indexOfAllFiles,forceWifi);
+          if (currentDownloads.contains(entry)) {
+            continue;
+          }
+          currentDownloads.add(entry);
+          double asz=getAvailableSpace();
+          if (downloadFileHelper.isInterruptDownloading()) {
+            break downloadCycle;
+          }
+          if (asz != -1 && entry.sizeMB > asz) {
+            breakDownloadMessage=app.getString(R.string.download_files_not_enough_space,entry.sizeMB,asz);
+            break downloadCycle;
+          }
+          if (exceedsFreelimit(entry)) {
+            breakDownloadMessage=app.getString(R.string.free_version_message,DownloadIndexActivity.MAXIMUM_AVAILABLE_FREE_DOWNLOADS + "");
+            break downloadCycle;
+          }
+          boolean result=downloadFile(entry,filesToReindex,forceWifi);
+          success=result || success;
           if (result) {
-            entriesToDownload.remove(filename);
             if (entry.type != DownloadActivityType.SRTM_FILE && entry.type != DownloadActivityType.HILLSHADE_FILE) {
               downloads.set(downloads.get() + 1);
             }
@@ -24,25 +51,24 @@
             publishProgress(entry);
           }
         }
+        if (success) {
+          entriesToDownload.remove(file);
+        }
       }
     }
-    boolean vectorMapsToReindex=false;
-    for (    File f : filesToReindex) {
-      if (f.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
-        vectorMapsToReindex=true;
-        break;
+    String warn=reindexFiles(filesToReindex);
+    if (breakDownloadMessage != null) {
+      if (warn != null) {
+        warn=breakDownloadMessage + "\n" + warn;
+      }
+ else {
+        warn=breakDownloadMessage;
       }
     }
-    ResourceManager manager=app.getResourceManager();
-    manager.indexVoiceFiles(this);
-    if (vectorMapsToReindex) {
-      List<String> warnings=manager.indexingMaps(this);
-      if (!warnings.isEmpty()) {
-        return warnings.get(0);
-      }
-    }
+    return warn;
   }
  catch (  InterruptedException e) {
+    log.info("Download Interrupted");
   }
   return null;
 }

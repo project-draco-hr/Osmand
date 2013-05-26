@@ -65,28 +65,20 @@
       reconnect();
     }
     @Override public int read(    byte[] buffer,    int offset,    int len) throws IOException {
-      int r=0;
-      while (len > 0) {
-        if (bufLen == -1) {
-          return -1;
-        }
-        int av=bufLen - bufRead;
-        if (len > av) {
-          System.arraycopy(this.buffer,bufRead,buffer,offset,av);
-          len-=av;
-          offset+=av;
-          bufRead+=av;
-          r+=av;
-          refillBuffer();
-        }
- else {
-          System.arraycopy(this.buffer,bufRead,buffer,offset,len);
-          bufRead+=len;
-          r+=len;
-          return r;
-        }
+      if (bufLen == -1) {
+        return -1;
       }
-      return r;
+      if (bufRead >= bufLen) {
+        refillBuffer();
+      }
+      if (bufLen == -1) {
+        return -1;
+      }
+      int av=bufLen - bufRead;
+      int min=Math.min(len,av);
+      System.arraycopy(this.buffer,bufRead,buffer,offset,min);
+      bufRead+=min;
+      return min;
     }
     @Override public int read() throws IOException {
       int r=-1;
@@ -113,18 +105,21 @@
           readAgain=false;
           bufRead=0;
           if ((bufLen=is.read(buffer)) != -1) {
-            if (interruptDownloading) {
-              throw new IOException("Interrupted");
-            }
             fileread+=bufLen;
+            if (interruptDownloading) {
+              break;
+            }
           }
         }
  catch (        IOException e) {
-          log.error("IOException",e);
+          if (interruptDownloading)           log.error("IOException",e);
           triesDownload--;
           reconnect();
           readAgain=true;
         }
+      }
+      if (interruptDownloading) {
+        throw new IOException("Interrupted");
       }
     }
     @Override public void close() throws IOException {

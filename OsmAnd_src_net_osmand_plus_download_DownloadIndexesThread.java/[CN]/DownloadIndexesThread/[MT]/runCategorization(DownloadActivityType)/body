@@ -1,0 +1,95 @@
+{
+  final BasicProgressAsyncTask<Void,Void,List<IndexItem>> inst=new BasicProgressAsyncTask<Void,Void,List<IndexItem>>(ctx){
+    private List<IndexItemCategory> cats;
+    @Override protected void onPreExecute(){
+      super.onPreExecute();
+      currentRunningTask.add(this);
+      this.message=ctx.getString(R.string.downloading_list_indexes);
+      if (uiActivity != null) {
+        uiActivity.updateProgress(false);
+      }
+    }
+    @Override protected List<IndexItem> doInBackground(    Void... params){
+      final List<IndexItem> filtered=getFilteredByType();
+      cats=IndexItemCategory.categorizeIndexItems(app,filtered);
+      return filtered;
+    }
+    public List<IndexItem> getFilteredByType(){
+      final List<IndexItem> filtered=new ArrayList<IndexItem>();
+      if (type == DownloadActivityType.SRTM_FILE) {
+        Map<String,String> indexFileNames=app.getResourceManager().getIndexFileNames();
+        if (cachedSRTMFiles == null) {
+          cachedSRTMFiles=new ArrayList<SrtmIndexItem>();
+synchronized (cachedSRTMFiles) {
+            List<RegionCountry> countries=RegionRegistry.getRegionRegistry().getCountries();
+            for (            RegionCountry rc : countries) {
+              if (rc.tiles.size() > 35 && rc.getSubRegions().size() > 0) {
+                for (                RegionCountry ch : rc.getSubRegions()) {
+                  cachedSRTMFiles.add(new SrtmIndexItem(ch,indexFileNames));
+                }
+              }
+ else {
+                cachedSRTMFiles.add(new SrtmIndexItem(rc,indexFileNames));
+              }
+            }
+            filtered.addAll(cachedSRTMFiles);
+          }
+        }
+ else {
+synchronized (cachedSRTMFiles) {
+            for (            SrtmIndexItem s : cachedSRTMFiles) {
+              s.updateExistingTiles(indexFileNames);
+              filtered.add(s);
+            }
+          }
+        }
+      }
+      List<IndexItem> cachedIndexFiles=getCachedIndexFiles();
+      if (cachedIndexFiles != null) {
+        for (        IndexItem file : cachedIndexFiles) {
+          if (file.getType() == type) {
+            filtered.add(file);
+          }
+        }
+      }
+      return filtered;
+    }
+    @Override protected void onPostExecute(    List<IndexItem> filtered){
+      if (uiActivity != null) {
+        DownloadIndexAdapter a=((DownloadIndexAdapter)uiActivity.getExpandableListAdapter());
+        a.setIndexFiles(filtered,cats);
+        a.notifyDataSetChanged();
+        a.getFilter().filter(uiActivity.getFilterText());
+        if (type == DownloadActivityType.SRTM_FILE && OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) instanceof SRTMPlugin && !OsmandPlugin.getEnabledPlugin(SRTMPlugin.class).isPaid()) {
+          Builder msg=new AlertDialog.Builder(uiActivity);
+          msg.setTitle(R.string.srtm_paid_version_title);
+          msg.setMessage(R.string.srtm_paid_version_msg);
+          msg.setNegativeButton(R.string.button_upgrade_osmandplus,new DialogInterface.OnClickListener(){
+            @Override public void onClick(            DialogInterface dialog,            int which){
+              Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse("market://search?q=pname:net.osmand.srtmPlugin.paid"));
+              try {
+                ctx.startActivity(intent);
+              }
+ catch (              ActivityNotFoundException e) {
+              }
+            }
+          }
+);
+          msg.setPositiveButton(R.string.default_buttons_ok,null);
+          msg.show();
+        }
+      }
+      currentRunningTask.remove(this);
+      if (uiActivity != null) {
+        uiActivity.updateProgress(false);
+      }
+    }
+    @Override protected void updateProgress(    boolean updateOnlyProgress){
+      if (uiActivity != null) {
+        uiActivity.updateProgress(updateOnlyProgress);
+      }
+    }
+  }
+;
+  execute(inst,new Void[0]);
+}

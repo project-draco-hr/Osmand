@@ -1,30 +1,6 @@
 {
   if (downloadListIndexThread != null && type != tp) {
     type=tp;
-    AsyncTask<Void,Void,List<IndexItem>> t=new AsyncTask<Void,Void,List<IndexItem>>(){
-      private List<IndexItemCategory> cats;
-      private ProgressDialog progressDialog;
-      @Override protected void onPreExecute(){
-        super.onPreExecute();
-        progressDialog=ProgressDialog.show(DownloadIndexActivity.this,getString(R.string.downloading),getString(R.string.downloading_list_indexes));
-      }
-      @Override protected List<IndexItem> doInBackground(      Void... params){
-        final List<IndexItem> filtered=getFilteredByType();
-        cats=IndexItemCategory.categorizeIndexItems(getClientContext(),filtered);
-        return filtered;
-      }
-      @Override protected void onPostExecute(      List<IndexItem> filtered){
-        entriesToDownload.clear();
-        DownloadIndexAdapter a=((DownloadIndexAdapter)getExpandableListAdapter());
-        if (a != null) {
-          a.setIndexFiles(filtered,cats);
-          a.notifyDataSetChanged();
-          a.getFilter().filter(filterText.getText());
-        }
-        progressDialog.dismiss();
-      }
-    }
-;
-    t.execute();
+    downloadListIndexThread.runCategorization(tp);
   }
 }

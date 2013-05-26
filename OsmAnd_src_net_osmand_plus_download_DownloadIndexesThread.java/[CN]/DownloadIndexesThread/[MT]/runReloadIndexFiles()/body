@@ -1,18 +1,13 @@
 {
-  if (checkRunning()) {
-    return;
-  }
+  checkRunning();
   final BasicProgressAsyncTask<Void,Void,IndexFileList> inst=new BasicProgressAsyncTask<Void,Void,IndexFileList>(ctx){
     @Override protected IndexFileList doInBackground(    Void... params){
       return DownloadOsmandIndexesHelper.getIndexesList(ctx);
     }
     @Override protected void onPreExecute(){
-      currentRunningTask=this;
+      currentRunningTask.add(this);
       super.onPreExecute();
       this.message=ctx.getString(R.string.downloading_list_indexes);
-      if (uiActivity != null) {
-        uiActivity.updateProgress(false,this);
-      }
     }
     protected void onPostExecute(    IndexFileList result){
       indexFiles=result;
@@ -25,7 +20,6 @@
           AccessibleToast.makeText(uiActivity,R.string.basemap_was_selected_to_download,Toast.LENGTH_LONG).show();
           uiActivity.findViewById(R.id.DownloadButton).setVisibility(View.VISIBLE);
         }
-        uiActivity.setListAdapter(new DownloadIndexAdapter(uiActivity,uiActivity.getFilteredByType()));
         if (indexFiles.isIncreasedMapVersion()) {
           showWarnDialog();
         }
@@ -33,9 +27,11 @@
  else {
         AccessibleToast.makeText(ctx,R.string.list_index_files_was_not_loaded,Toast.LENGTH_LONG).show();
       }
+      currentRunningTask.remove(this);
       if (uiActivity != null) {
-        uiActivity.updateProgress(false,null);
+        uiActivity.updateProgress(false);
       }
+      runCategorization(uiActivity.getType());
     }
     private void showWarnDialog(){
       AlertDialog.Builder builder=new AlertDialog.Builder(ctx);
@@ -61,10 +57,10 @@
     }
     @Override protected void updateProgress(    boolean updateOnlyProgress){
       if (uiActivity != null) {
-        uiActivity.updateProgress(updateOnlyProgress,this);
+        uiActivity.updateProgress(updateOnlyProgress);
       }
     }
   }
 ;
-  inst.execute(new Void[0]);
+  execute(inst,new Void[0]);
 }

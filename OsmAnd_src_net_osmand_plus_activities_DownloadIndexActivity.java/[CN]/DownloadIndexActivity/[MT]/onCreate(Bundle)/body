@@ -10,11 +10,20 @@
   progressView=findViewById(R.id.ProgressView);
   progressMessage=(TextView)findViewById(R.id.ProgressMessage);
   progressPercent=(TextView)findViewById(R.id.ProgressPercent);
+  cancel=(ImageView)findViewById(R.id.Cancel);
+  int d=settings.isLightContent() ? R.drawable.a_1_navigation_cancel_small_light : R.drawable.a_1_navigation_cancel_small_dark;
+  cancel.setImageDrawable(getResources().getDrawable(d));
+  cancel.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      makeSureUserCancelDownload();
+    }
+  }
+);
   getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
   getSupportActionBar().setTitle(R.string.local_index_download);
   findViewById(R.id.DownloadButton).setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      downloadFilesCheckFreeVersion(flattenDownloadEntries());
+      downloadFilesCheckFreeVersion();
     }
   }
 );
@@ -43,7 +52,7 @@
   List<IndexItem> list=new ArrayList<IndexItem>();
   downloadListIndexThread.setUiActivity(this);
   if (downloadListIndexThread.getCachedIndexFiles() != null && downloadListIndexThread.isDownloadedFromInternet()) {
-    list=getFilteredByType();
+    downloadListIndexThread.runCategorization(type);
   }
  else {
     downloadListIndexThread.runReloadIndexFiles();
