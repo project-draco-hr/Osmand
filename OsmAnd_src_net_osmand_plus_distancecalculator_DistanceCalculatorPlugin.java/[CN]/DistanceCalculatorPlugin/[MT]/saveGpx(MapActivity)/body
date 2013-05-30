@@ -1,0 +1,48 @@
+{
+  Builder b=new AlertDialog.Builder(activity);
+  final File dir=app.getAppPath(IndexConstants.GPX_INDEX_DIR);
+  LinearLayout ll=new LinearLayout(activity);
+  ll.setOrientation(LinearLayout.VERTICAL);
+  ll.setPadding(5,5,5,5);
+  final TextView tv=new TextView(activity);
+  tv.setText("");
+  tv.setTextColor(Color.RED);
+  ll.addView(tv);
+  final EditText editText=new EditText(activity);
+  editText.setHint(R.string.gpx_file_name);
+  editText.addTextChangedListener(new TextWatcher(){
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void afterTextChanged(    Editable s){
+      boolean e=false;
+      try {
+        e=new File(dir,s.toString()).exists() || new File(dir,s.toString() + ".gpx").exists();
+      }
+ catch (      Exception e1) {
+      }
+      if (e) {
+        tv.setText(R.string.file_with_name_already_exists);
+      }
+ else {
+        tv.setText("");
+      }
+    }
+  }
+);
+  ll.addView(editText);
+  b.setView(ll);
+  b.setPositiveButton(R.string.default_buttons_save,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      String newName=editText.getText().toString();
+      if (!newName.endsWith(".gpx")) {
+        newName+=".gpx";
+      }
+      saveGpx(activity,newName);
+    }
+  }
+);
+  b.setNegativeButton(R.string.default_buttons_cancel,null);
+  b.show();
+}

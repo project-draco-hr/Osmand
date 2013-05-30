@@ -1,0 +1,62 @@
+{
+  final AsyncTask<Void,Void,String> exportTask=new AsyncTask<Void,Void,String>(){
+    private ProgressDialog dlg;
+    private File toSave;
+    @Override protected String doInBackground(    Void... params){
+      toSave=new File(app.getAppPath(IndexConstants.GPX_INDEX_DIR),fileNameSave);
+      GPXFile gpx;
+      boolean saveTrackToRte=false;
+      if (originalGPX != null) {
+        gpx=originalGPX;
+        saveTrackToRte=originalGPX.routes.size() > 0 && originalGPX.tracks.size() == 0;
+        gpx.tracks.clear();
+        gpx.routes.clear();
+        gpx.points.clear();
+      }
+ else {
+        gpx=new GPXFile();
+      }
+      for (int i=0; i < measurementPoints.size(); i++) {
+        LinkedList<WptPt> lt=measurementPoints.get(i);
+        if (lt.size() == 1) {
+          gpx.points.add(lt.getFirst());
+        }
+ else         if (lt.size() > 1) {
+          if (saveTrackToRte) {
+            Route rt=new Route();
+            gpx.routes.add(rt);
+            rt.points.addAll(lt);
+          }
+ else {
+            if (gpx.tracks.size() == 0) {
+              gpx.tracks.add(new Track());
+            }
+            Track ts=gpx.tracks.get(gpx.tracks.size() - 1);
+            TrkSegment sg=new TrkSegment();
+            ts.segments.add(sg);
+            sg.points.addAll(lt);
+          }
+        }
+      }
+      return GPXUtilities.writeGpxFile(toSave,gpx,app);
+    }
+    @Override protected void onPreExecute(){
+      dlg=new ProgressDialog(activity);
+      dlg.setMessage(app.getString(R.string.saving_gpx_tracks));
+      dlg.show();
+    }
+    @Override protected void onPostExecute(    String warning){
+      if (warning == null) {
+        AccessibleToast.makeText(activity,MessageFormat.format(app.getString(R.string.gpx_saved_sucessfully),toSave.getAbsolutePath()),Toast.LENGTH_LONG).show();
+      }
+ else {
+        AccessibleToast.makeText(activity,warning,Toast.LENGTH_LONG).show();
+      }
+      if (dlg != null && dlg.isShowing()) {
+        dlg.dismiss();
+      }
+    }
+  }
+;
+  exportTask.execute(new Void[0]);
+}

@@ -1,0 +1,35 @@
+{
+  activity.getMapLayers().selectGPXFileLayer(true,false,false,new CallbackWithObject<GPXUtilities.GPXFile>(){
+    @Override public boolean processResult(    GPXFile result){
+      measurementPoints.clear();
+      if (result != null) {
+        originalGPX=result;
+        for (        Track t : result.tracks) {
+          for (          TrkSegment s : t.segments) {
+            if (s.points.size() > 0) {
+              LinkedList<WptPt> l=new LinkedList<WptPt>(s.points);
+              measurementPoints.add(l);
+            }
+          }
+        }
+        for (        Route r : result.routes) {
+          LinkedList<WptPt> l=new LinkedList<WptPt>(r.points);
+          measurementPoints.add(l);
+        }
+        for (        WptPt p : result.points) {
+          LinkedList<WptPt> l=new LinkedList<WptPt>();
+          l.add(p);
+          measurementPoints.add(l);
+        }
+        WptPt pt=result.findPointToShow();
+        OsmandMapTileView mapView=activity.getMapView();
+        if (pt != null) {
+          mapView.getAnimatedDraggingThread().startMoving(pt.lat,pt.lon,mapView.getFloatZoom(),true);
+        }
+      }
+      calculateDistance();
+      return true;
+    }
+  }
+);
+}
