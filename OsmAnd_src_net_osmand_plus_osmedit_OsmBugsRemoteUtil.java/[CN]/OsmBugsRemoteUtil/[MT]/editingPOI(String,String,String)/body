@@ -1,0 +1,58 @@
+{
+  try {
+    HttpURLConnection connection=(HttpURLConnection)new URL(url).openConnection();
+    log.info("Editing poi " + url);
+    connection.setConnectTimeout(15000);
+    connection.setRequestMethod(requestMethod);
+    connection.setRequestProperty("User-Agent",Version.getFullVersion(app));
+    if (true) {
+      String token=settings.USER_NAME.get() + ":" + settings.USER_PASSWORD.get();
+      connection.addRequestProperty("Authorization","Basic " + Base64.encode(token.getBytes("UTF-8")));
+    }
+    connection.setDoInput(true);
+    if (requestMethod.equals("PUT") || requestMethod.equals("POST") || requestMethod.equals("DELETE")) {
+    }
+    connection.connect();
+    String msg=connection.getResponseMessage();
+    boolean ok=connection.getResponseCode() == HttpURLConnection.HTTP_OK;
+    log.info(msg);
+    StringBuilder responseBody=new StringBuilder();
+    if (true) {
+      responseBody.setLength(0);
+      InputStream i=connection.getInputStream();
+      if (i != null) {
+        BufferedReader in=new BufferedReader(new InputStreamReader(i,"UTF-8"),256);
+        String s;
+        boolean f=true;
+        while ((s=in.readLine()) != null) {
+          if (!f) {
+            responseBody.append("\n");
+          }
+ else {
+            f=false;
+          }
+          responseBody.append(s);
+        }
+      }
+      log.info("Response : " + responseBody.toString());
+    }
+    connection.disconnect();
+    if (!ok) {
+      return msg + "\n" + responseBody.toString();
+    }
+  }
+ catch (  NullPointerException e) {
+    String msg=app.getString(R.string.auth_failed);
+    log.error(msg,e);
+    return app.getString(R.string.auth_failed) + "";
+  }
+catch (  MalformedURLException e) {
+    log.error(userOperation + " " + app.getString(R.string.failed_op),e);
+    return e.getMessage() + "";
+  }
+catch (  IOException e) {
+    log.error(userOperation + " " + app.getString(R.string.failed_op),e);
+    return e.getMessage() + "";
+  }
+  return null;
+}
