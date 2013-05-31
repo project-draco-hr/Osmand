@@ -1,0 +1,40 @@
+{
+  super.onCreate(savedInstanceState);
+  final Intent intent=getIntent();
+  if (intent != null) {
+    Cursor cur=getContentResolver().query(intent.getData(),null,null,null,null);
+    if (cur.moveToFirst() == false) {
+      return;
+    }
+    final String street=cur.getString(cur.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS));
+    StringTokenizer token=new StringTokenizer(street,",");
+    boolean latlong=false;
+    String latitude=null;
+    String longitude=null;
+    if (token.countTokens() == 2) {
+      String temp=token.nextToken();
+      if (temp.startsWith("loc:")) {
+        temp=temp.substring(4);
+      }
+      if (temp.trim().matches("((-|\\+)?[0-9]+(\\.[0-9]+)?)+")) {
+        latitude=temp.trim();
+      }
+      temp=token.nextToken();
+      if (temp.trim().matches("((-|\\+)?[0-9]+(\\.[0-9]+)?)+")) {
+        longitude=temp.trim();
+      }
+      if (latitude != null && longitude != null) {
+        latlong=true;
+      }
+    }
+    String data="geo:";
+    if (latlong) {
+      data=data + latitude + ","+ longitude;
+    }
+ else {
+      data=data + "0,0?q=" + street;
+    }
+    startOSMAND(intent,data);
+  }
+  finish();
+}
