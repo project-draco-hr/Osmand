@@ -1,0 +1,19 @@
+{
+  ResourceManager resourceManager=resourceManager();
+  List<RegionAddressRepository> foundCountries=new ArrayList<RegionAddressRepository>();
+  RegionAddressRepository country;
+  Iterator<String> it=q.iterator();
+  while (it.hasNext()) {
+    String maybeCountry=it.next();
+    country=resourceManager.getRegionRepository(maybeCountry);
+    if (country != null) {
+      foundCountries.add(country);
+      it.remove();
+    }
+  }
+  Collection<RegionAddressRepository> countriesToSearch=foundCountries;
+  if (foundCountries.isEmpty()) {
+    countriesToSearch=resourceManager.getAddressRepositories();
+  }
+  return countriesToSearch;
+}

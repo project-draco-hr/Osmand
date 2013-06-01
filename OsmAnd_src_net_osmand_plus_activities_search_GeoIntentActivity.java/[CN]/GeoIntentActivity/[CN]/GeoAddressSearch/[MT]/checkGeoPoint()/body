@@ -1,0 +1,48 @@
+{
+  double lat=Double.NaN;
+  double lon=Double.NaN;
+  for (  String e : elements) {
+    if (e.startsWith("S") || e.startsWith("N")) {
+      try {
+        lat=Double.parseDouble(e.substring(1));
+        if (e.startsWith("S")) {
+          lat=-lat;
+        }
+      }
+ catch (      NumberFormatException es) {
+      }
+    }
+ else     if (e.startsWith("E") || e.startsWith("W")) {
+      try {
+        lon=Double.parseDouble(e.substring(1));
+        if (e.startsWith("W")) {
+          lon=-lon;
+        }
+      }
+ catch (      NumberFormatException es) {
+      }
+    }
+ else     if (e.contains(".")) {
+      try {
+        double n=Double.parseDouble(e);
+        if (Double.isNaN(lat)) {
+          lat=n;
+        }
+ else {
+          lon=n;
+        }
+      }
+ catch (      NumberFormatException es) {
+      }
+    }
+  }
+  if (Double.isNaN(lat) || Double.isNaN(lon)) {
+    return null;
+  }
+  Amenity point=new Amenity();
+  ((Amenity)point).setType(AmenityType.USER_DEFINED);
+  ((Amenity)point).setSubType("");
+  point.setLocation(lat,lon);
+  point.setName("Lat: " + lat + ",Lon:"+ lon);
+  return point;
+}

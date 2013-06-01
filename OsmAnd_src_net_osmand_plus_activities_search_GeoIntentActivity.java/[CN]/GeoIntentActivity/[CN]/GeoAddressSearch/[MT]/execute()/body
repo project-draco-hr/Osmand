@@ -2,38 +2,25 @@
   if (elements.isEmpty()) {
     return Collections.emptyList();
   }
-  ResourceManager resourceManager=resourceManager();
-  List<RegionAddressRepository> foundCountries=new ArrayList<RegionAddressRepository>();
-  RegionAddressRepository country;
-  for (  String maybeCountry : elements) {
-    country=resourceManager.getRegionRepository(maybeCountry);
-    if (country != null) {
-      foundCountries.add(country);
-    }
+  List<String> q=new ArrayList<String>(elements);
+  MapObject geo=checkGeoPoint();
+  if (geo != null) {
+    return Collections.singleton(geo);
   }
-  Collection<RegionAddressRepository> countriesToSearch=foundCountries;
-  if (foundCountries.isEmpty()) {
-    countriesToSearch=resourceManager.getAddressRepositories();
-  }
-  final List<MapObject> results=new ArrayList<MapObject>();
-  final List<MapObject> connectedStreets=new ArrayList<MapObject>();
+  Collection<RegionAddressRepository> countriesToSearch=limitSearchToCountries(q);
+  final List<Street> allStreets=new ArrayList<Street>();
+  final TLongObjectHashMap<City> cityIds=new TLongObjectHashMap<City>();
   for (  RegionAddressRepository rar : countriesToSearch) {
-    final TLongObjectHashMap<City> cityIds=new TLongObjectHashMap<City>();
-    for (    String element : elements) {
-      if (element != null && element.length() > 0) {
+    for (    String element : q) {
+      if (element != null && element.length() > 2) {
         rar.searchMapObjectsByName(element,new ResultMatcher<MapObject>(){
           @Override public boolean publish(          MapObject object){
             if (object instanceof City && object.getId() != null) {
               cityIds.put(object.getId(),(City)object);
             }
  else             if (object instanceof Street) {
-              City c=((Street)object).getCity();
-              if (c != null && c.getId() != null && cityIds.containsKey(c.getId().longValue())) {
-                connectedStreets.add((Street)object);
-                return false;
-              }
+              allStreets.add((Street)object);
             }
-            results.add(object);
             return false;
           }
           @Override public boolean isCancelled(){
@@ -44,6 +31,37 @@
       }
     }
   }
-  connectedStreets.addAll(results);
-  return connectedStreets;
+  if (cityIds.isEmpty()) {
+    return allStreets;
+  }
+  final List<MapObject> connectedStreets=new ArrayList<MapObject>();
+  Iterator<Street> p=allStreets.iterator();
+  while (p.hasNext()) {
+    Street s=p.next();
+    if (cityIds.contains(s.getCity().getId())) {
+      connectedStreets.add(s);
+    }
+ else {
+      boolean tooFar=true;
+      for (      City c : cityIds.values()) {
+        if (MapUtils.getDistance(c.getLocation(),s.getLocation()) < 50000) {
+          tooFar=false;
+          break;
+        }
+      }
+      if (tooFar) {
+        p.remove();
+      }
+    }
+  }
+  if (connectedStreets.isEmpty()) {
+    List<MapObject> all=new ArrayList<MapObject>();
+    all.addAll(cityIds.valueCollection());
+    all.addAll(allStreets);
+    return all;
+  }
+ else {
+    connectedStreets.addAll(cityIds.valueCollection());
+    return connectedStreets;
+  }
 }
