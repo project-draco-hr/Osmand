@@ -1,0 +1,51 @@
+{
+  node.lowerBound=0.0;
+  Arrays.fill(node.degree,0);
+  for (int i=0; i < n; i++) {
+    for (int j=0; j < n; j++)     costWithPi[i][j]=node.excluded[i][j] ? Double.MAX_VALUE : cost[i][j] + node.pi[i] + node.pi[j];
+  }
+  int firstNeighbor;
+  int secondNeighbor;
+  if (costWithPi[0][2] < costWithPi[0][1]) {
+    firstNeighbor=2;
+    secondNeighbor=1;
+  }
+ else {
+    firstNeighbor=1;
+    secondNeighbor=2;
+  }
+  for (int j=3; j < n; j++) {
+    if (costWithPi[0][j] < costWithPi[0][secondNeighbor]) {
+      if (costWithPi[0][j] < costWithPi[0][firstNeighbor]) {
+        secondNeighbor=firstNeighbor;
+        firstNeighbor=j;
+      }
+ else {
+        secondNeighbor=j;
+      }
+    }
+  }
+  addEdge(node,0,firstNeighbor);
+  Arrays.fill(node.parent,firstNeighbor);
+  node.parent[firstNeighbor]=0;
+  double[] minCost=costWithPi[firstNeighbor].clone();
+  for (int k=2; k < n; k++) {
+    int i;
+    for (i=1; i < n; i++) {
+      if (node.degree[i] == 0)       break;
+    }
+    for (int j=i + 1; j < n; j++) {
+      if (node.degree[j] == 0 && minCost[j] < minCost[i])       i=j;
+    }
+    addEdge(node,node.parent[i],i);
+    for (int j=1; j < n; j++) {
+      if (node.degree[j] == 0 && costWithPi[i][j] < minCost[j]) {
+        minCost[j]=costWithPi[i][j];
+        node.parent[j]=i;
+      }
+    }
+  }
+  addEdge(node,0,secondNeighbor);
+  node.parent[0]=secondNeighbor;
+  node.lowerBound=Math.rint(node.lowerBound);
+}

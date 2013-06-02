@@ -1,0 +1,21 @@
+{
+  node.pi=new double[n];
+  node.lowerBound=Double.MIN_VALUE;
+  node.degree=new int[n];
+  node.parent=new int[n];
+  double lambda=0.1;
+  while (lambda > 1e-06) {
+    double previousLowerBound=node.lowerBound;
+    computeOneTree(node);
+    if (!(node.lowerBound < bestNode.lowerBound))     return;
+    if (!(node.lowerBound < previousLowerBound))     lambda*=0.9;
+    int denom=0;
+    for (int i=1; i < n; i++) {
+      int d=node.degree[i] - 2;
+      denom+=d * d;
+    }
+    if (denom == 0)     return;
+    double t=lambda * node.lowerBound / denom;
+    for (int i=1; i < n; i++)     node.pi[i]+=t * (node.degree[i] - 2);
+  }
+}

@@ -1,0 +1,46 @@
+{
+  bestNode.lowerBound=Double.MAX_VALUE;
+  Node currentNode=new Node();
+  currentNode.excluded=new boolean[n][n];
+  costWithPi=new double[n][n];
+  computeHeldKarp(currentNode);
+  PriorityQueue<Node> pq=new PriorityQueue<Node>(11,new NodeComparator());
+  do {
+    do {
+      boolean isTour=true;
+      int i=-1;
+      for (int j=0; j < n; j++) {
+        if (currentNode.degree[j] > 2 && (i < 0 || currentNode.degree[j] < currentNode.degree[i]))         i=j;
+      }
+      if (i < 0) {
+        if (currentNode.lowerBound < bestNode.lowerBound) {
+          bestNode=currentNode;
+          System.err.printf("%.0f",bestNode.lowerBound);
+        }
+        break;
+      }
+      System.err.printf(".");
+      PriorityQueue<Node> children=new PriorityQueue<Node>(11,new NodeComparator());
+      children.add(exclude(currentNode,i,currentNode.parent[i]));
+      for (int j=0; j < n; j++) {
+        if (currentNode.parent[j] == i)         children.add(exclude(currentNode,i,j));
+      }
+      currentNode=children.poll();
+      pq.addAll(children);
+    }
+ while (currentNode.lowerBound < bestNode.lowerBound);
+    System.err.printf("%n");
+    currentNode=pq.poll();
+  }
+ while (currentNode != null && currentNode.lowerBound < bestNode.lowerBound);
+  int j=0;
+  int k=0;
+  do {
+    int i=bestNode.parent[j];
+    order[k++]=j;
+    System.out.printf("%f\t\n",cost[j][i]);
+    j=i;
+  }
+ while (j != 0);
+  return order;
+}

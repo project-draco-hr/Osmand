@@ -1,0 +1,33 @@
+{
+  List<LatLon> l=new ArrayList<LatLon>();
+  l.add(start);
+  l.addAll(intermediates);
+  l.add(end);
+  n=l.size();
+  graph=new double[n][n];
+  double maxSum=0;
+  for (int i=0; i < n; i++) {
+    double maxIWeight=0;
+    for (int j=1; j < n; j++) {
+      double d=Math.rint(MapUtils.getDistance(l.get(i),l.get(j))) + 0.1;
+      maxIWeight=Math.max(d,maxIWeight);
+      graph[i][j]=d;
+    }
+    maxSum+=maxIWeight;
+  }
+  maxSum=Math.rint(maxSum) + 1;
+  for (int i=0; i < n; i++) {
+    if (i == n - 1) {
+      graph[i][0]=0.1;
+    }
+ else {
+      graph[i][0]=maxSum;
+    }
+  }
+  m=(int)(n * numAntFactor);
+  trails=new double[n][n];
+  probs=new double[n];
+  ants=new Ant[m];
+  for (int j=0; j < m; j++)   ants[j]=new Ant();
+  return this;
+}
