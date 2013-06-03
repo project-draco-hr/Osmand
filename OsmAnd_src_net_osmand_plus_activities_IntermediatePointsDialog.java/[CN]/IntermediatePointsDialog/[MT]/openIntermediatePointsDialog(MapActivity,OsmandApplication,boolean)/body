@@ -1,55 +1,27 @@
 {
   TargetPointsHelper targets=app.getTargetPointsHelper();
   final List<LatLon> intermediates=targets.getIntermediatePointsWithTarget();
+  final TIntArrayList originalPositions=new TIntArrayList(intermediates.size());
+  for (int j=1; j <= intermediates.size(); j++) {
+    originalPositions.add(j);
+  }
   final List<String> names=targets.getIntermediatePointNamesWithTarget();
   final boolean[] checkedIntermediates=new boolean[intermediates.size()];
-  final ArrayAdapter<LatLon> listadapter=getListAdapter(app,activity,changeOrder,intermediates,names,checkedIntermediates);
+  final ArrayAdapter<LatLon> listadapter=getListAdapter(app,activity,changeOrder,intermediates,originalPositions,names,checkedIntermediates);
   ListView lv=new ListView(activity);
+  View contentView=lv;
   final ProgressBar pb=new ProgressBar(activity);
   pb.setVisibility(View.GONE);
   final TextView textInfo=new TextView(activity);
   textInfo.setText(R.string.intermediate_items_sort_return);
   textInfo.setVisibility(View.GONE);
   if (changeOrder) {
-    Button btn=new Button(activity);
-    btn.setText(R.string.intermediate_items_sort_by_distance);
-    btn.setOnClickListener(new OnClickListener(){
-      @Override public void onClick(      View v){
-        new AsyncTask<Void,Void,int[]>(){
-          protected void onPreExecute(){
-            pb.setVisibility(View.VISIBLE);
-            textInfo.setVisibility(View.VISIBLE);
-          }
-          protected int[] doInBackground(          Void[] params){
-            ArrayList<LatLon> lt=new ArrayList<LatLon>(intermediates);
-            LatLon start=new LatLon(activity.getMapView().getLatitude(),activity.getMapView().getLongitude());
-            LatLon end=lt.remove(lt.size() - 1);
-            return new TspAnt().readGraph(lt,start,end).solve();
-          }
-          protected void onPostExecute(          int[] result){
-            pb.setVisibility(View.GONE);
-            List<LatLon> alocs=new ArrayList<LatLon>();
-            List<String> anames=new ArrayList<String>();
-            for (int i=0; i < result.length; i++) {
-              if (result[i] > 0) {
-                alocs.add(intermediates.get(result[i] - 1));
-                anames.add(names.get(result[i] - 1));
-              }
-            }
-            intermediates.clear();
-            intermediates.addAll(alocs);
-            names.clear();
-            names.addAll(anames);
-            listadapter.notifyDataSetChanged();
-          }
-        }
-.execute(new Void[0]);
-      }
-    }
-);
-    lv.addFooterView(pb);
-    lv.addFooterView(textInfo);
-    lv.addFooterView(btn);
+    LinearLayout ll=new LinearLayout(activity);
+    ll.setOrientation(LinearLayout.VERTICAL);
+    ll.addView(lv);
+    ll.addView(pb);
+    ll.addView(textInfo);
+    contentView=ll;
   }
   lv.setAdapter(listadapter);
   lv.setOnItemClickListener(new OnItemClickListener(){
@@ -65,7 +37,7 @@
   }
 );
   Builder builder=new AccessibleAlertBuilder(activity);
-  builder.setView(lv);
+  builder.setView(contentView);
   builder.setInverseBackgroundForced(true);
   lv.setBackgroundColor(Color.WHITE);
   builder.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
@@ -87,5 +59,16 @@
     }
 );
   }
-  builder.show();
+ else {
+    builder.setNeutralButton(R.string.intermediate_items_sort_by_distance,new Dialog.OnClickListener(){
+      @Override public void onClick(      DialogInterface d,      int which){
+      }
+    }
+);
+  }
+  AlertDialog dlg=builder.create();
+  if (changeOrder) {
+    applySortTargets(dlg,activity,intermediates,originalPositions,names,listadapter,pb,textInfo);
+  }
+  dlg.show();
 }

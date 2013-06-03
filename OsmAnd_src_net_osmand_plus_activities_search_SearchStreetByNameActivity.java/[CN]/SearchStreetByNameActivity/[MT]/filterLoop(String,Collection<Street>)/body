@@ -1,23 +1,41 @@
 {
-  boolean emptyQuery=query == null || query.length() == 0;
-  for (  Street obj : list) {
-    if (namesFilter.isCancelled) {
-      break;
-    }
-    if (emptyQuery || CollatorStringMatcher.cmatches(collator,obj.getNameWithoutCityPart(region.useEnglishNames()),query,StringMatcherMode.CHECK_ONLY_STARTS_WITH)) {
-      Message msg=uiHandler.obtainMessage(MESSAGE_ADD_ENTITY,obj);
-      msg.sendToTarget();
-    }
+  if (searchWithCity == -1) {
+    filter(query,list);
   }
-  if (!emptyQuery) {
+ else   if (searchWithCity == 0) {
     for (    Street obj : list) {
       if (namesFilter.isCancelled) {
         break;
       }
-      if (CollatorStringMatcher.cmatches(collator,obj.getNameWithoutCityPart(region.useEnglishNames()),query,StringMatcherMode.CHECK_STARTS_FROM_SPACE_NOT_BEGINNING)) {
+      if (filterObject(obj,query)) {
         Message msg=uiHandler.obtainMessage(MESSAGE_ADD_ENTITY,obj);
         msg.sendToTarget();
       }
     }
+  }
+ else {
+    searchWithCity=0;
+    final List res=region.searchMapObjectsByName(query,new ResultMatcher<MapObject>(){
+      @Override public boolean publish(      MapObject object){
+        if (object instanceof Street) {
+          if (city == null || MapUtils.getDistance(city.getLocation(),object.getLocation()) < 100 * 1000) {
+            Message msg=uiHandler.obtainMessage(MESSAGE_ADD_ENTITY,object);
+            msg.sendToTarget();
+            return true;
+          }
+        }
+        return false;
+      }
+      @Override public boolean isCancelled(){
+        return namesFilter.isCancelled;
+      }
+    }
+);
+    runOnUiThread(new Runnable(){
+      @Override public void run(){
+        finishInitializing(res);
+      }
+    }
+);
   }
 }
