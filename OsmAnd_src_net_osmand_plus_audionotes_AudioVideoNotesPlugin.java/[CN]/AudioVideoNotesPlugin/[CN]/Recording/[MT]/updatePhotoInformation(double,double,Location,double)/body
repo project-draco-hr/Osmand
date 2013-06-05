@@ -10,8 +10,22 @@
     setAttribute.invoke(exInstance,"GPSLongitudeRef",lon > 0 ? "E" : "W");
     if (!Double.isNaN(rot)) {
       setAttribute.invoke(exInstance,"GPSImgDirectionRef","T");
-      String rotString=(int)(rot * 100.0) + "/100";
+      while (rot < 0) {
+        rot+=360;
+      }
+      while (rot > 360) {
+        rot-=360;
+      }
+      int abs=(int)(Math.abs(rot) * 100.0);
+      String rotString=abs / 100f + "";
       setAttribute.invoke(exInstance,"GPSImgDirection",rotString);
+    }
+    if (loc != null && loc.hasAltitude()) {
+      double alt=loc.getAltitude();
+      String altString=(int)(Math.abs(alt) * 100.0) + "/100";
+      System.err.println(altString);
+      setAttribute.invoke(exInstance,"GPSAltitude",altString);
+      setAttribute.invoke(exInstance,"GPSAltitudeRef",alt < 0 ? "1" : "0");
     }
     Method saveAttributes=exClass.getMethod("saveAttributes",new Class[]{});
     saveAttributes.invoke(exInstance);
