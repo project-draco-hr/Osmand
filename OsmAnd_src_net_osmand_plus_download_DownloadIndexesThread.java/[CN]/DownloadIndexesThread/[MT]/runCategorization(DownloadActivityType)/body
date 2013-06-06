@@ -12,6 +12,7 @@
     @Override protected List<IndexItem> doInBackground(    Void... params){
       final List<IndexItem> filtered=getFilteredByType();
       cats=IndexItemCategory.categorizeIndexItems(app,filtered);
+      updateLoadedFiles();
       return filtered;
     }
     public List<IndexItem> getFilteredByType(){
@@ -57,6 +58,7 @@ synchronized (cachedSRTMFiles) {
     @Override protected void onPostExecute(    List<IndexItem> filtered){
       if (uiActivity != null) {
         DownloadIndexAdapter a=((DownloadIndexAdapter)uiActivity.getExpandableListAdapter());
+        a.setLoadedFiles(indexActivatedFileNames,indexFileNames);
         a.setIndexFiles(filtered,cats);
         a.notifyDataSetChanged();
         a.getFilter().filter(uiActivity.getFilterText());
