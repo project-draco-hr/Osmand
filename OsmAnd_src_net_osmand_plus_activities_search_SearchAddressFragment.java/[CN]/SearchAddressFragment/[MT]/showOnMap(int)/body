@@ -1,5 +1,6 @@
 {
   if (searchPoint == null) {
+    AccessibleToast.makeText(getActivity(),R.string.please_select_address,Toast.LENGTH_SHORT).show();
     return;
   }
   String historyName=null;
@@ -28,7 +29,7 @@
     objectName=city;
     zoom=14;
   }
-  if (selectAddressMode) {
+  if (mode == SELECT_POINT) {
     Intent intent=getActivity().getIntent();
     intent.putExtra(SELECT_ADDRESS_POINT_INTENT_KEY,objectName);
     intent.putExtra(SELECT_ADDRESS_POINT_LAT,searchPoint.getLatitude());
@@ -37,10 +38,16 @@
     getActivity().finish();
   }
  else {
-    if (navigateTo) {
+    OsmandApplication ctx=(OsmandApplication)getActivity().getApplication();
+    final TargetPointsHelper targetPointsHelper=ctx.getTargetPointsHelper();
+    if (mode == NAVIGATE_TO) {
+      targetPointsHelper.setSingleDestination(searchPoint.getLatitude(),searchPoint.getLongitude(),historyName);
+      MapActivity.launchMapActivityMoveToTop(getActivity());
+    }
+ else     if (mode == ADD_WAYPOINT) {
       MapActivityActions.navigatePointDialogAndLaunchMap(getActivity(),searchPoint.getLatitude(),searchPoint.getLongitude(),historyName);
     }
- else {
+ else     if (mode == SHOW_ON_MAP) {
       osmandSettings.setMapLocationToShow(searchPoint.getLatitude(),searchPoint.getLongitude(),zoom,historyName);
       MapActivity.launchMapActivityMoveToTop(getActivity());
     }
