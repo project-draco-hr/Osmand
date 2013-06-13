@@ -1,2 +1,138 @@
 {
+  Builder builder=new AlertDialog.Builder(mapActivity);
+  final TargetPointsHelper targets=getTargets();
+  View view=mapActivity.getLayoutInflater().inflate(R.layout.calculate_route,null);
+  boolean lc=mapActivity.getMyApplication().getSettings().isLightContentMenu();
+  final CheckBox nonoptimal=(CheckBox)view.findViewById(R.id.OptimalCheckox);
+  final ToggleButton[] buttons=new ToggleButton[ApplicationMode.values().length];
+  buttons[ApplicationMode.CAR.ordinal()]=(ToggleButton)view.findViewById(R.id.CarButton);
+  buttons[ApplicationMode.CAR.ordinal()].setButtonDrawable(lc ? R.drawable.car_dark : R.drawable.car_light);
+  buttons[ApplicationMode.BICYCLE.ordinal()]=(ToggleButton)view.findViewById(R.id.BicycleButton);
+  buttons[ApplicationMode.BICYCLE.ordinal()].setButtonDrawable(lc ? R.drawable.bicycle_dark : R.drawable.bicycle_light);
+  buttons[ApplicationMode.PEDESTRIAN.ordinal()]=(ToggleButton)view.findViewById(R.id.PedestrianButton);
+  buttons[ApplicationMode.PEDESTRIAN.ordinal()].setButtonDrawable(lc ? R.drawable.pedestrian_dark : R.drawable.pedestrian_light);
+  TextView tv=((TextView)view.findViewById(R.id.TextView));
+  tv.setText(generateRouteDescription(fromOrCurrent,to));
+  ApplicationMode appMode=settings.getApplicationMode();
+  if (appMode == ApplicationMode.DEFAULT) {
+    appMode=ApplicationMode.CAR;
+  }
+  for (int i=0; i < buttons.length; i++) {
+    if (buttons[i] != null) {
+      final int ind=i;
+      ToggleButton b=buttons[i];
+      final ApplicationMode buttonAppMode=ApplicationMode.values()[i];
+      b.setChecked(appMode == buttonAppMode);
+      if (b.isChecked()) {
+        nonoptimal.setChecked(!settings.OPTIMAL_ROUTE_MODE.getModeValue(buttonAppMode));
+      }
+      b.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
+          if (isChecked) {
+            nonoptimal.setChecked(!settings.OPTIMAL_ROUTE_MODE.getModeValue(buttonAppMode));
+            for (int j=0; j < buttons.length; j++) {
+              if (buttons[j] != null) {
+                if (buttons[j].isChecked() != (ind == j)) {
+                  buttons[j].setChecked(ind == j);
+                }
+              }
+            }
+          }
+ else {
+            boolean revert=true;
+            for (int j=0; j < buttons.length; j++) {
+              if (buttons[j] != null) {
+                if (buttons[j].isChecked()) {
+                  revert=false;
+                  break;
+                }
+              }
+            }
+            if (revert) {
+              buttons[ind].setChecked(true);
+            }
+          }
+        }
+      }
+);
+    }
+  }
+  DialogInterface.OnClickListener onlyShowCall=new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (to != null) {
+        targets.navigateToPoint(to,false,-1);
+      }
+      if (!targets.checkPointToNavigate(getMyApplication())) {
+        return;
+      }
+      Location from=fromOrCurrent;
+      if (from == null) {
+        from=getLastKnownLocation();
+      }
+      if (from == null) {
+        AccessibleToast.makeText(mapActivity,R.string.unknown_from_location,Toast.LENGTH_LONG).show();
+        return;
+      }
+      ApplicationMode mode=getAppMode(buttons,settings);
+      routingHelper.setAppMode(mode);
+      settings.OPTIMAL_ROUTE_MODE.setModeValue(mode,!nonoptimal.isChecked());
+      settings.FOLLOW_THE_ROUTE.set(false);
+      settings.FOLLOW_THE_GPX_ROUTE.set(null);
+      routingHelper.setFollowingMode(false);
+      routingHelper.setFinalAndCurrentLocation(targets.getPointToNavigate(),targets.getIntermediatePoints(),from,null);
+    }
+  }
+;
+  DialogInterface.OnClickListener followCall=new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (to != null) {
+        targets.navigateToPoint(to,false,-1);
+      }
+      if (!targets.checkPointToNavigate(getMyApplication())) {
+        return;
+      }
+      boolean msg=true;
+      Location current=fromOrCurrent;
+      if (current == null) {
+        current=getLastKnownLocation();
+      }
+      if (!OsmAndLocationProvider.isPointAccurateForRouting(current)) {
+        current=null;
+      }
+      Location lastKnownLocation=getLastKnownLocation();
+      if (OsmAndLocationProvider.isPointAccurateForRouting(lastKnownLocation)) {
+        current=lastKnownLocation;
+        msg=false;
+      }
+      if (msg) {
+        AccessibleToast.makeText(mapActivity,R.string.route_updated_loc_found,Toast.LENGTH_LONG).show();
+      }
+      ApplicationMode mode=getAppMode(buttons,settings);
+      settings.OPTIMAL_ROUTE_MODE.setModeValue(mode,!nonoptimal.isChecked());
+      dialog.dismiss();
+      mapActivity.followRoute(mode,targets.getPointToNavigate(),targets.getIntermediatePoints(),current,null);
+    }
+  }
+;
+  DialogInterface.OnClickListener useGpxNavigation=new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (to != null) {
+        targets.navigateToPoint(to,false,-1);
+      }
+      ApplicationMode mode=getAppMode(buttons,settings);
+      navigateUsingGPX(mode);
+    }
+  }
+;
+  builder.setView(view);
+  builder.setTitle(R.string.get_directions);
+  builder.setPositiveButton(R.string.follow,followCall);
+  builder.setNeutralButton(R.string.only_show,onlyShowCall);
+  if (gpxRouteEnabled) {
+    builder.setNegativeButton(R.string.gpx_navigation,useGpxNavigation);
+  }
+ else {
+    builder.setNegativeButton(R.string.no_route,null);
+  }
+  builder.show();
 }
