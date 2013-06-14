@@ -41,7 +41,11 @@
     OsmandApplication ctx=(OsmandApplication)getActivity().getApplication();
     final TargetPointsHelper targetPointsHelper=ctx.getTargetPointsHelper();
     if (mode == NAVIGATE_TO) {
-      targetPointsHelper.setSingleDestination(searchPoint.getLatitude(),searchPoint.getLongitude(),historyName);
+      osmandSettings.setPointToNavigate(searchPoint.getLatitude(),searchPoint.getLongitude(),false,historyName);
+      targetPointsHelper.updatePointsFromSettings();
+      if (!routingHelper.isRouteBeingCalculated() && !routingHelper.isRouteCalculated()) {
+        MapActivityActions.getDirections(null,new LatLon(lat,lon),true);
+      }
       MapActivity.launchMapActivityMoveToTop(getActivity());
     }
  else     if (mode == ADD_WAYPOINT) {
