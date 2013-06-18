@@ -1,2 +1,81 @@
 {
+  if (info.getGpxFile() == null) {
+    info.setGpxFile(GPXUtilities.loadGPXFile(app,f,true));
+  }
+  GPXFile result=info.getGpxFile();
+  if (result.warning != null) {
+    info.setCorrupted(true);
+    info.setDescription(result.warning);
+  }
+ else {
+    int totalDistance=0;
+    int totalTracks=0;
+    long startTime=Long.MAX_VALUE;
+    long endTime=Long.MIN_VALUE;
+    double diffElevationUp=0;
+    double diffElevationDown=0;
+    double totalElevation=0;
+    double minElevation=99999;
+    double maxElevation=0;
+    float maxSpeed=0;
+    int speedCount=0;
+    double totalSpeedSum=0;
+    float[] calculations=new float[1];
+    int points=0;
+    for (int i=0; i < result.tracks.size(); i++) {
+      Track subtrack=result.tracks.get(i);
+      for (      TrkSegment segment : subtrack.segments) {
+        totalTracks++;
+        points+=segment.points.size();
+        for (int j=0; j < segment.points.size(); j++) {
+          WptPt point=segment.points.get(j);
+          long time=point.time;
+          if (time != 0) {
+            startTime=Math.min(startTime,time);
+            endTime=Math.max(startTime,time);
+          }
+          float speed=(float)point.speed;
+          if (speed > 0) {
+            totalSpeedSum+=speed;
+            maxSpeed=Math.max(speed,maxSpeed);
+            speedCount++;
+          }
+          double elevation=point.ele;
+          if (!Double.isNaN(elevation)) {
+            totalElevation+=elevation;
+            minElevation=Math.min(elevation,minElevation);
+            maxElevation=Math.max(elevation,maxElevation);
+          }
+          if (j > 0) {
+            WptPt prev=segment.points.get(j - 1);
+            if (!Double.isNaN(point.ele) && !Double.isNaN(prev.ele)) {
+              double diff=point.ele - prev.ele;
+              if (diff > 0) {
+                diffElevationUp+=diff;
+              }
+ else {
+                diffElevationDown-=diff;
+              }
+            }
+            net.osmand.Location.distanceBetween(prev.lat,prev.lon,point.lat,point.lon,calculations);
+            totalDistance+=calculations[0];
+          }
+        }
+      }
+    }
+    if (startTime == Long.MAX_VALUE) {
+      startTime=f.lastModified();
+    }
+    if (endTime == Long.MIN_VALUE) {
+      endTime=f.lastModified();
+    }
+    info.setDescription(app.getString(R.string.local_index_gpx_info,totalTracks,points,result.points.size(),OsmAndFormatter.getFormattedDistance(totalDistance,app),startTime,endTime));
+    if (totalElevation != 0 || diffElevationUp != 0 || diffElevationDown != 0) {
+      info.setDescription(info.getDescription() + app.getString(R.string.local_index_gpx_info_elevation,totalElevation / points,minElevation,maxElevation,diffElevationUp,diffElevationDown));
+    }
+    if (speedCount > 0) {
+      info.setDescription(info.getDescription() + app.getString(R.string.local_index_gpx_info_speed,OsmAndFormatter.getFormattedSpeed((float)(totalSpeedSum / speedCount),app),OsmAndFormatter.getFormattedSpeed(maxSpeed,app)));
+    }
+    info.setDescription(info.getDescription() + app.getString(R.string.local_index_gpx_info_show));
+  }
 }
