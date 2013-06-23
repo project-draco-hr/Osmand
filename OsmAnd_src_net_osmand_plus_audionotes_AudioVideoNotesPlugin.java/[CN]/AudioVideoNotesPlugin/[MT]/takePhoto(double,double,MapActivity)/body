@@ -5,7 +5,36 @@
  else {
     final Camera cam=openCamera();
     if (cam != null) {
+      int shotId=0;
+      SoundPool sp=new SoundPool(5,AudioManager.STREAM_NOTIFICATION,0);
+      if (AV_PHOTO_PLAY_SOUND.get()) {
+        log.info("Play sound on photo");
+        shotId=sp.load("/mnt/sdcard/osmand/shot.ogg",1);
+        log.error("loaded file sound ID: " + shotId);
+      }
       takePhotoWithCamera(lat,lon,mapActivity,cam);
+      if (AV_PHOTO_PLAY_SOUND.get()) {
+        boolean error_play=true;
+        for (int i=0; i < 100; i++) {
+          int ret=sp.play(shotId,1,1,0,0,1);
+          if (0 != ret) {
+            log.debug("play sound shot success!");
+            log.debug("sp.play()=" + ret);
+            error_play=false;
+            break;
+          }
+ else {
+            try {
+              Thread.sleep(10);
+            }
+ catch (            Exception e) {
+              logErr(e);
+              e.printStackTrace();
+            }
+          }
+        }
+        if (error_play)         log.error("error play sound!");
+      }
     }
  else {
       takeIntentPhoto(lat,lon,mapActivity);
