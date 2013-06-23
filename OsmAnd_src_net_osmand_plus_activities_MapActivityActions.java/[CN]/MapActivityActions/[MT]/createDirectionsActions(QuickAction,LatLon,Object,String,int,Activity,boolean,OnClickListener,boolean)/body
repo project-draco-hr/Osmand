@@ -1,0 +1,73 @@
+{
+  ActionItem showOnMap=new ActionItem();
+  final OsmandApplication app=((OsmandApplication)activity.getApplication());
+  final TargetPointsHelper targetPointsHelper=app.getTargetPointsHelper();
+  showOnMap.setIcon(activity.getResources().getDrawable(R.drawable.list_activities_show_on_map));
+  showOnMap.setTitle(activity.getString(R.string.show_poi_on_map));
+  showOnMap.setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      if (onShow != null) {
+        onShow.onClick(v);
+      }
+      app.getSettings().setMapLocationToShow(location.getLatitude(),location.getLongitude(),z,saveHistory ? name : null,name,obj);
+      MapActivity.launchMapActivityMoveToTop(activity);
+      qa.dismiss();
+    }
+  }
+);
+  qa.addActionItem(showOnMap);
+  ActionItem setAsDestination=new ActionItem();
+  setAsDestination.setIcon(activity.getResources().getDrawable(R.drawable.list_activities_set_destination));
+  setAsDestination.setTitle(activity.getString(R.string.get_directions));
+  setAsDestination.setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      if (onShow != null) {
+        onShow.onClick(v);
+      }
+      targetPointsHelper.setDestination(location.getLatitude(),location.getLongitude(),name);
+      MapActivity.launchMapActivityMoveToTop(activity);
+      qa.dismiss();
+    }
+  }
+);
+  qa.addActionItem(setAsDestination);
+  ActionItem intermediate=new ActionItem();
+  if (targetPointsHelper.getPointToNavigate() != null) {
+    intermediate.setIcon(activity.getResources().getDrawable(R.drawable.list_activities_set_intermediate));
+    intermediate.setTitle(activity.getString(R.string.context_menu_item_intermediate_point));
+  }
+ else {
+    intermediate.setIcon(activity.getResources().getDrawable(R.drawable.list_activities_set_destination));
+    intermediate.setTitle(activity.getString(R.string.context_menu_item_destination_point));
+  }
+  intermediate.setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      if (onShow != null) {
+        onShow.onClick(v);
+      }
+      navigatePointDialogAndLaunchMap(activity,location.getLatitude(),location.getLongitude(),name);
+      qa.dismiss();
+    }
+  }
+);
+  qa.addActionItem(intermediate);
+  if (favorite) {
+    ActionItem addToFavorite=new ActionItem();
+    addToFavorite.setIcon(activity.getResources().getDrawable(R.drawable.list_activities_favorites));
+    addToFavorite.setTitle(activity.getString(R.string.add_to_favourite));
+    addToFavorite.setOnClickListener(new OnClickListener(){
+      @Override public void onClick(      View v){
+        if (onShow != null) {
+          onShow.onClick(v);
+        }
+        qa.dismiss();
+        Bundle args=new Bundle();
+        Dialog dlg=createAddFavouriteDialog(activity,args);
+        dlg.show();
+        prepareAddFavouriteDialog(activity,dlg,args,location.getLatitude(),location.getLongitude(),name);
+      }
+    }
+);
+    qa.addActionItem(addToFavorite);
+  }
+}

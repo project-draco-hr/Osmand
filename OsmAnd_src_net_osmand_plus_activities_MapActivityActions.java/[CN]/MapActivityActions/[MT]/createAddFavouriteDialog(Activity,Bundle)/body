@@ -1,16 +1,16 @@
 {
-  Builder builder=new AlertDialog.Builder(mapActivity);
+  Builder builder=new AlertDialog.Builder(activity);
   builder.setTitle(R.string.favourites_context_menu_edit);
-  final View v=mapActivity.getLayoutInflater().inflate(R.layout.favourite_edit_dialog,null,false);
-  final FavouritesDbHelper helper=getMyApplication().getFavorites();
+  final View v=activity.getLayoutInflater().inflate(R.layout.favourite_edit_dialog,null,false);
+  final FavouritesDbHelper helper=((OsmandApplication)activity.getApplication()).getFavorites();
   builder.setView(v);
   final EditText editText=(EditText)v.findViewById(R.id.Name);
   final AutoCompleteTextView cat=(AutoCompleteTextView)v.findViewById(R.id.Category);
-  cat.setAdapter(new ArrayAdapter<String>(mapActivity,R.layout.list_textview,helper.getFavoriteGroups().keySet().toArray(new String[]{})));
+  cat.setAdapter(new ArrayAdapter<String>(activity,R.layout.list_textview,helper.getFavoriteGroups().keySet().toArray(new String[]{})));
   builder.setNegativeButton(R.string.default_buttons_cancel,null);
   builder.setNeutralButton(R.string.update_existing,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      Dialog dlg=createReplaceFavouriteDialog(args);
+      Dialog dlg=createReplaceFavouriteDialog(activity,args);
       if (dlg != null) {
         dlg.show();
       }
@@ -20,14 +20,16 @@
   builder.setPositiveButton(R.string.default_buttons_add,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       FavouritePoint point=(FavouritePoint)args.getSerializable(KEY_FAVORITE);
-      final FavouritesDbHelper helper=mapActivity.getMyApplication().getFavorites();
+      final FavouritesDbHelper helper=((OsmandApplication)activity.getApplication()).getFavorites();
       point.setName(editText.getText().toString());
       point.setCategory(cat.getText().toString());
       boolean added=helper.addFavourite(point);
       if (added) {
-        AccessibleToast.makeText(mapActivity,MessageFormat.format(getString(R.string.add_favorite_dialog_favourite_added_template),point.getName()),Toast.LENGTH_SHORT).show();
+        AccessibleToast.makeText(activity,MessageFormat.format(activity.getString(R.string.add_favorite_dialog_favourite_added_template),point.getName()),Toast.LENGTH_SHORT).show();
       }
-      mapActivity.getMapView().refreshMap(true);
+      if (activity instanceof MapActivity) {
+        ((MapActivity)activity).getMapView().refreshMap(true);
+      }
     }
   }
 );

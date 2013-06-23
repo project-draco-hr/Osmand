@@ -1,5 +1,5 @@
 {
-  final FavouritesDbHelper helper=getMyApplication().getFavorites();
+  final FavouritesDbHelper helper=((OsmandApplication)activity.getApplication()).getFavorites();
   final List<FavouritePoint> points=new ArrayList<FavouritePoint>(helper.getFavouritePoints());
   final Collator ci=java.text.Collator.getInstance();
   Collections.sort(points,new Comparator<FavouritePoint>(){
@@ -10,10 +10,10 @@
 );
   final String[] names=new String[points.size()];
   if (names.length == 0) {
-    AccessibleToast.makeText(mapActivity,getString(R.string.fav_points_not_exist),Toast.LENGTH_SHORT).show();
+    AccessibleToast.makeText(activity,activity.getString(R.string.fav_points_not_exist),Toast.LENGTH_SHORT).show();
     return null;
   }
-  Builder b=new AlertDialog.Builder(mapActivity);
+  Builder b=new AlertDialog.Builder(activity);
   final FavouritePoint[] favs=new FavouritePoint[points.size()];
   Iterator<FavouritePoint> it=points.iterator();
   int i=0;
@@ -30,9 +30,11 @@
       FavouritePoint fv=favs[which];
       FavouritePoint point=(FavouritePoint)args.getSerializable(KEY_FAVORITE);
       if (helper.editFavourite(fv,point.getLatitude(),point.getLongitude())) {
-        AccessibleToast.makeText(mapActivity,getString(R.string.fav_points_edited),Toast.LENGTH_SHORT).show();
+        AccessibleToast.makeText(activity,activity.getString(R.string.fav_points_edited),Toast.LENGTH_SHORT).show();
       }
-      mapActivity.getMapView().refreshMap();
+      if (activity instanceof MapActivity) {
+        ((MapActivity)activity).getMapView().refreshMap();
+      }
     }
   }
 );
