@@ -1,10 +1,17 @@
 {
-  final Node n=openstreetmapUtil.loadNode(a);
-  if (n == null) {
-    AccessibleToast.makeText(ctx,ctx.getResources().getString(R.string.poi_error_poi_not_found),Toast.LENGTH_LONG).show();
-    return;
+  new AsyncTask<Void,Void,Node>(){
+    protected Node doInBackground(    Void[] params){
+      return openstreetmapUtil.loadNode(a);
+    }
+    protected void onPostExecute(    Node n){
+      if (n == null) {
+        AccessibleToast.makeText(ctx,ctx.getResources().getString(R.string.poi_error_poi_not_found),Toast.LENGTH_LONG).show();
+        return;
+      }
+      dialogBundle.putSerializable(KEY_AMENITY,a);
+      dialogBundle.putSerializable(KEY_AMENITY_NODE,n);
+      ctx.showDialog(DIALOG_DELETE_POI);
+    }
   }
-  dialogBundle.putSerializable(KEY_AMENITY,a);
-  dialogBundle.putSerializable(KEY_AMENITY_NODE,n);
-  ctx.showDialog(DIALOG_DELETE_POI);
+.execute(new Void[0]);
 }
