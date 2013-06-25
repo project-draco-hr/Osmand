@@ -4,9 +4,12 @@
   r=r.replaceAll("\\+","-" + endOfDay);
   int startDay=-1;
   int previousDay=-1;
+  int startMonth=-1;
+  int previousMonth=-1;
   int k=0;
-  BasicDayOpeningHourRule basic=new BasicDayOpeningHourRule();
+  BasicOpeningHourRule basic=new BasicOpeningHourRule();
   boolean[] days=basic.getDays();
+  boolean[] months=basic.getMonths();
   if ("24/7".equals(r)) {
     Arrays.fill(days,true);
     basic.addTimeRange(0,24 * 60);
@@ -27,6 +30,9 @@
  else     if (ch == '-') {
       if (previousDay != -1) {
         startDay=previousDay;
+      }
+ else       if (previousMonth != -1) {
+        startMonth=previousMonth;
       }
  else {
         return false;
@@ -60,6 +66,35 @@
         }
         previousDay=i;
       }
+ else {
+        int m=0;
+        for (        String s : monthsStr) {
+          if (s.charAt(0) == ch && s.charAt(1) == r.charAt(k + 1) && s.charAt(2) == r.charAt(k + 2)) {
+            break;
+          }
+          m++;
+        }
+        if (m < monthsStr.length) {
+          if (startMonth != -1) {
+            for (int j=startMonth; j <= m; j++) {
+              months[j]=true;
+            }
+            if (startMonth > m) {
+              for (int j=startMonth; j <= 11; j++) {
+                months[j]=true;
+              }
+              for (int j=0; j <= m; j++) {
+                months[j]=true;
+              }
+            }
+            startMonth=-1;
+          }
+ else {
+            months[m]=true;
+          }
+          previousMonth=m;
+        }
+      }
     }
  else {
       return false;
@@ -68,6 +103,11 @@
   if (previousDay == -1) {
     for (int i=0; i < 7; i++) {
       days[i]=true;
+    }
+  }
+  if (previousMonth == -1) {
+    for (int i=0; i < 12; i++) {
+      months[i]=true;
     }
   }
   String timeSubstr=r.substring(k);
