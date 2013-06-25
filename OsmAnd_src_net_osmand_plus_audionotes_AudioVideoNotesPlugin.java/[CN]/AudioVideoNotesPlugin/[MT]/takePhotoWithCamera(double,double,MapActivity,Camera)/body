@@ -33,10 +33,42 @@ Parameters parameters=cam.getParameters();
 boolean autofocus=true;
 parameters.setGpsLatitude(lat);
 parameters.setGpsLongitude(lon);
-if (autofocus) {
+switch (AV_CAMERA_FOCUS_TYPE.get()) {
+case AV_CAMERA_FOCUS_HIPERFOCAL:
+parameters.setFocusMode(Parameters.FOCUS_MODE_FIXED);
+autofocus=false;
+log.info("Osmand:AudioNotes set camera FOCUS_MODE_FIXED");
+break;
+case AV_CAMERA_FOCUS_EDOF:
+parameters.setFocusMode(Parameters.FOCUS_MODE_EDOF);
+autofocus=false;
+log.info("Osmand:AudioNotes set camera FOCUS_MODE_EDOF");
+break;
+case AV_CAMERA_FOCUS_INFINITY:
+parameters.setFocusMode(Parameters.FOCUS_MODE_INFINITY);
+autofocus=false;
+log.info("Osmand:AudioNotes set camera FOCUS_MODE_INFINITY");
+break;
+case AV_CAMERA_FOCUS_MACRO:
+parameters.setFocusMode(Parameters.FOCUS_MODE_MACRO);
+log.info("Osmand:AudioNotes set camera FOCUS_MODE_MACRO");
+break;
+case AV_CAMERA_FOCUS_CONTINUOUS:
+parameters.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+log.info("Osmand:AudioNotes set camera FOCUS_MODE_CONTINUOUS_PICTURE");
+break;
+default :
 parameters.setFocusMode(Parameters.FOCUS_MODE_AUTO);
+log.info("Osmand:AudioNotes set camera FOCUS_MODE_AUTO");
+break;
 }
- else {
+if (AV_PHOTO_PLAY_SOUND.get()) {
+if (sp == null) sp=new SoundPool(5,AudioManager.STREAM_MUSIC,0);
+log.info("Play sound on photo");
+if (shotId == 0) {
+shotId=sp.load(app.getAssets().openFd("sounds/camera_click.ogg"),1);
+log.debug("loaded file sound ID: " + shotId);
+}
 }
 parameters.setWhiteBalance(Parameters.WHITE_BALANCE_AUTO);
 parameters.setFlashMode(Parameters.FLASH_MODE_AUTO);
