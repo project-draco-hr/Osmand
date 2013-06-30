@@ -1,0 +1,47 @@
+{
+  boolean light=getMyApplication().getSettings().isLightActionBar();
+  showFilterItem=menu.add(0,FILTER,0,R.string.search_poi_filter).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+  showFilterItem=showFilterItem.setIcon(light ? R.drawable.ic_action_note_light : R.drawable.ic_action_note_dark);
+  showFilterItem.setOnMenuItemClickListener(new OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    com.actionbarsherlock.view.MenuItem item){
+      if (isSearchByNameFilter()) {
+        Intent newIntent=new Intent(SearchPOIActivity.this,EditPOIFilterActivity.class);
+        newIntent.putExtra(EditPOIFilterActivity.AMENITY_FILTER,PoiFilter.CUSTOM_FILTER_ID);
+        if (location != null) {
+          newIntent.putExtra(EditPOIFilterActivity.SEARCH_LAT,location.getLatitude());
+          newIntent.putExtra(EditPOIFilterActivity.SEARCH_LON,location.getLongitude());
+        }
+        startActivity(newIntent);
+      }
+ else {
+        if (searchFilterLayout.getVisibility() == View.GONE) {
+          searchFilterLayout.setVisibility(View.VISIBLE);
+        }
+ else {
+          searchFilter.setText("");
+          searchFilterLayout.setVisibility(View.GONE);
+        }
+      }
+      return true;
+    }
+  }
+);
+  showOnMapItem=menu.add(0,SHOW_ON_MAP,0,R.string.search_shown_on_map).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+  showOnMapItem=showOnMapItem.setIcon(light ? R.drawable.ic_action_map_marker_light : R.drawable.ic_action_map_marker_dark);
+  showOnMapItem.setOnMenuItemClickListener(new OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    com.actionbarsherlock.view.MenuItem item){
+      if (searchFilter.getVisibility() == View.VISIBLE) {
+        filter.setNameFilter(searchFilter.getText().toString());
+      }
+      settings.setPoiFilterForMap(filter.getFilterId());
+      settings.SHOW_POI_OVER_MAP.set(true);
+      if (location != null) {
+        settings.setMapLocationToShow(location.getLatitude(),location.getLongitude(),15);
+      }
+      MapActivity.launchMapActivityMoveToTop(SearchPOIActivity.this);
+      return true;
+    }
+  }
+);
+  return true;
+}

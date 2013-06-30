@@ -1,15 +1,15 @@
 {
+  requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
   super.onCreate(icicle);
   setContentView(R.layout.searchpoi);
   getSupportActionBar().setTitle(R.string.searchpoi_activity);
   getSupportActionBar().setIcon(R.drawable.tab_search_poi_icon);
+  getSherlock().setProgressBarIndeterminateVisibility(false);
   app=(OsmandApplication)getApplication();
   uiHandler=new Handler();
   searchPOILevel=(Button)findViewById(R.id.SearchPOILevelButton);
   searchFilter=(EditText)findViewById(R.id.SearchFilter);
   searchFilterLayout=findViewById(R.id.SearchFilterLayout);
-  showOnMap=(ImageButton)findViewById(R.id.ShowOnMap);
-  showFilter=(ImageButton)findViewById(R.id.ShowFilter);
   directionPath=createDirectionPath();
   settings=((OsmandApplication)getApplication()).getSettings();
   searchPOILevel.setOnClickListener(new OnClickListener(){
@@ -25,7 +25,7 @@
         runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
       }
  else       if (isSearchByNameFilter() && !Algorithms.objectEquals(((SearchByNameFilter)filter).getQuery(),query)) {
-        showFilter.setVisibility(View.INVISIBLE);
+        showFilterItem.setVisible(false);
         filter.clearPreviousZoom();
         showPoiCategoriesByNameFilter(query,location);
         ((SearchByNameFilter)filter).setQuery(query);
@@ -33,29 +33,6 @@
       }
  else {
         runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.SEARCH_FURTHER));
-      }
-    }
-  }
-);
-  showFilter.setOnClickListener(new OnClickListener(){
-    @Override public void onClick(    View v){
-      if (isSearchByNameFilter()) {
-        Intent newIntent=new Intent(SearchPOIActivity.this,EditPOIFilterActivity.class);
-        newIntent.putExtra(EditPOIFilterActivity.AMENITY_FILTER,PoiFilter.CUSTOM_FILTER_ID);
-        if (location != null) {
-          newIntent.putExtra(EditPOIFilterActivity.SEARCH_LAT,location.getLatitude());
-          newIntent.putExtra(EditPOIFilterActivity.SEARCH_LON,location.getLongitude());
-        }
-        startActivity(newIntent);
-      }
- else {
-        if (searchFilterLayout.getVisibility() == View.GONE) {
-          searchFilterLayout.setVisibility(View.VISIBLE);
-        }
- else {
-          searchFilter.setText("");
-          searchFilterLayout.setVisibility(View.GONE);
-        }
       }
     }
   }
@@ -76,20 +53,12 @@
     }
   }
 );
-  showOnMap.setOnClickListener(new OnClickListener(){
-    @Override public void onClick(    View v){
-      if (searchFilter.getVisibility() == View.VISIBLE) {
-        filter.setNameFilter(searchFilter.getText().toString());
-      }
-      settings.setPoiFilterForMap(filter.getFilterId());
-      settings.SHOW_POI_OVER_MAP.set(true);
-      if (location != null) {
-        settings.setMapLocationToShow(location.getLatitude(),location.getLongitude(),15);
-      }
-      MapActivity.launchMapActivityMoveToTop(SearchPOIActivity.this);
-    }
+  if (isNameFinderFilter()) {
+    searchFilterLayout.setVisibility(View.VISIBLE);
   }
-);
+ else   if (isSearchByNameFilter()) {
+    searchFilterLayout.setVisibility(View.VISIBLE);
+  }
   amenityAdapter=new AmenityAdapter(new ArrayList<Amenity>());
   setListAdapter(amenityAdapter);
 }
