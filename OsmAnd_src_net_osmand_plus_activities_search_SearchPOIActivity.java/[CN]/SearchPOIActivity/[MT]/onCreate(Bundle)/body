@@ -7,44 +7,20 @@
   getSherlock().setProgressBarIndeterminateVisibility(false);
   app=(OsmandApplication)getApplication();
   uiHandler=new Handler();
-  searchPOILevel=(Button)findViewById(R.id.SearchPOILevelButton);
   searchFilter=(EditText)findViewById(R.id.SearchFilter);
   searchFilterLayout=findViewById(R.id.SearchFilterLayout);
   directionPath=createDirectionPath();
   settings=((OsmandApplication)getApplication()).getSettings();
-  searchPOILevel.setOnClickListener(new OnClickListener(){
-    @Override public void onClick(    View v){
-      String query=searchFilter.getText().toString().trim();
-      if (query.length() < 2 && (isNameFinderFilter() || isSearchByNameFilter())) {
-        AccessibleToast.makeText(SearchPOIActivity.this,R.string.poi_namefinder_query_empty,Toast.LENGTH_LONG).show();
-        return;
-      }
-      if (isNameFinderFilter() && !Algorithms.objectEquals(((NameFinderPoiFilter)filter).getQuery(),query)) {
-        filter.clearPreviousZoom();
-        ((NameFinderPoiFilter)filter).setQuery(query);
-        runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
-      }
- else       if (isSearchByNameFilter() && !Algorithms.objectEquals(((SearchByNameFilter)filter).getQuery(),query)) {
-        showFilterItem.setVisible(false);
-        filter.clearPreviousZoom();
-        showPoiCategoriesByNameFilter(query,location);
-        ((SearchByNameFilter)filter).setQuery(query);
-        runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
-      }
- else {
-        runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.SEARCH_FURTHER));
-      }
-    }
-  }
-);
   searchFilter.addTextChangedListener(new TextWatcher(){
     @Override public void afterTextChanged(    Editable s){
       if (!isNameFinderFilter() && !isSearchByNameFilter()) {
         amenityAdapter.getFilter().filter(s);
       }
  else {
-        searchPOILevel.setEnabled(true);
-        searchPOILevel.setText(R.string.search_button);
+        if (searchPOILevel != null) {
+          searchPOILevel.setEnabled(true);
+          searchPOILevel.setTitle(R.string.search_button);
+        }
       }
     }
     @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){

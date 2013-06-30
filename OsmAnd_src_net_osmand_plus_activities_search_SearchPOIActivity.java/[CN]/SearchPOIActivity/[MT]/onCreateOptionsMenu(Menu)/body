@@ -1,7 +1,35 @@
 {
   boolean light=getMyApplication().getSettings().isLightActionBar();
+  searchPOILevel=menu.add(0,SEARCH_MORE,0,R.string.search_POI_level_btn).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+  searchPOILevel.setOnMenuItemClickListener(new OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    com.actionbarsherlock.view.MenuItem item){
+      String query=searchFilter.getText().toString().trim();
+      if (query.length() < 2 && (isNameFinderFilter() || isSearchByNameFilter())) {
+        AccessibleToast.makeText(SearchPOIActivity.this,R.string.poi_namefinder_query_empty,Toast.LENGTH_LONG).show();
+        return true;
+      }
+      if (isNameFinderFilter() && !Algorithms.objectEquals(((NameFinderPoiFilter)filter).getQuery(),query)) {
+        filter.clearPreviousZoom();
+        ((NameFinderPoiFilter)filter).setQuery(query);
+        runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
+      }
+ else       if (isSearchByNameFilter() && !Algorithms.objectEquals(((SearchByNameFilter)filter).getQuery(),query)) {
+        showFilterItem.setVisible(false);
+        filter.clearPreviousZoom();
+        showPoiCategoriesByNameFilter(query,location);
+        ((SearchByNameFilter)filter).setQuery(query);
+        runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
+      }
+ else {
+        runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.SEARCH_FURTHER));
+      }
+      return true;
+    }
+  }
+);
+  updateSearchPoiTextButton(false);
   showFilterItem=menu.add(0,FILTER,0,R.string.search_poi_filter).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-  showFilterItem=showFilterItem.setIcon(light ? R.drawable.ic_action_note_light : R.drawable.ic_action_note_dark);
+  showFilterItem=showFilterItem.setIcon(light ? R.drawable.ic_action_filter_light : R.drawable.ic_action_filter_dark);
   showFilterItem.setOnMenuItemClickListener(new OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    com.actionbarsherlock.view.MenuItem item){
       if (isSearchByNameFilter()) {
@@ -26,6 +54,10 @@
     }
   }
 );
+  updateShowFilterItem();
+  if (isSearchByNameFilter() || isNameFinderFilter()) {
+    showFilterItem.setVisible(false);
+  }
   showOnMapItem=menu.add(0,SHOW_ON_MAP,0,R.string.search_shown_on_map).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
   showOnMapItem=showOnMapItem.setIcon(light ? R.drawable.ic_action_map_marker_light : R.drawable.ic_action_map_marker_dark);
   showOnMapItem.setOnMenuItemClickListener(new OnMenuItemClickListener(){
