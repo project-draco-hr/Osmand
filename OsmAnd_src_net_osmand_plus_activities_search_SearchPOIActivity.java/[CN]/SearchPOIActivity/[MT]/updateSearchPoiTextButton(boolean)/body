@@ -1,20 +1,28 @@
 {
+  boolean enabled=false;
+  int title=R.string.search_POI_level_btn;
+  if (location == null) {
+    title=R.string.search_poi_location;
+    enabled=false;
+  }
+ else   if (!isNameFinderFilter() && !isSearchByNameFilter()) {
+    title=R.string.search_POI_level_btn;
+    enabled=(taskAlreadyFinished || currentSearchTask.getStatus() != Status.RUNNING) && filter.isSearchFurtherAvailable();
+  }
+ else   if (filter != null) {
+    title=R.string.search_button;
+    enabled=(taskAlreadyFinished || currentSearchTask.getStatus() != Status.RUNNING) && filter.isSearchFurtherAvailable();
+  }
   if (searchPOILevel != null) {
-    if (location == null) {
-      searchPOILevel.setTitle(R.string.search_poi_location);
-      searchPOILevel.setEnabled(false);
-    }
- else     if (!isNameFinderFilter() && !isSearchByNameFilter()) {
-      searchPOILevel.setTitle(R.string.search_POI_level_btn);
-      searchPOILevel.setEnabled((taskAlreadyFinished || currentSearchTask.getStatus() != Status.RUNNING) && filter.isSearchFurtherAvailable());
-    }
- else     if (filter != null) {
-      searchPOILevel.setTitle(R.string.search_button);
-      searchPOILevel.setEnabled((taskAlreadyFinished || currentSearchTask.getStatus() != Status.RUNNING) && filter.isSearchFurtherAvailable());
-    }
+    searchPOILevel.setEnabled(enabled);
+    searchPOILevel.setTitle(title);
+  }
+  if (ResourcesCompat.getResources_getBoolean(this,R.bool.abs__split_action_bar_is_narrow)) {
+    searchFooterButton.setVisibility(View.GONE);
+  }
  else {
-      searchPOILevel.setTitle(R.string.search_POI_level_btn);
-      searchPOILevel.setEnabled(false);
-    }
+    searchFooterButton.setVisibility(View.VISIBLE);
+    searchFooterButton.setEnabled(enabled);
+    searchFooterButton.setText(title);
   }
 }
