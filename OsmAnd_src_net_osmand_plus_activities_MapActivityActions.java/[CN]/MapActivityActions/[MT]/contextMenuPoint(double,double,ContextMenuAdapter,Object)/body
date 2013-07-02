@@ -1,21 +1,27 @@
 {
   final ContextMenuAdapter adapter=iadapter == null ? new ContextMenuAdapter(mapActivity) : iadapter;
-  adapter.registerItem(R.string.get_directions,R.drawable.list_activities_navigate_to);
+  adapter.item(R.string.get_directions).icons(R.drawable.ic_action_gdirections_dark,R.drawable.ic_action_gdirections_light).reg();
   final TargetPointsHelper targets=getMyApplication().getTargetPointsHelper();
   final OsmandSettings settings=getMyApplication().getSettings();
   if (targets.getPointToNavigate() != null) {
-    adapter.registerItem(R.string.context_menu_item_intermediate_point,R.drawable.list_activities_set_intermediate);
+    adapter.item(R.string.context_menu_item_intermediate_point).icons(R.drawable.ic_action_pin_dark,R.drawable.ic_action_pin_light).reg();
   }
  else {
-    adapter.registerItem(R.string.context_menu_item_destination_point,R.drawable.list_activities_set_destination);
+    adapter.item(R.string.context_menu_item_destination_point).icons(R.drawable.ic_action_pin_dark,R.drawable.ic_action_pin_light).reg();
   }
-  adapter.registerItem(R.string.context_menu_item_show_route,R.drawable.list_activities_show_route_from_here);
-  adapter.registerItem(R.string.context_menu_item_search,R.drawable.list_activities_search_near_here);
-  adapter.registerItem(R.string.context_menu_item_share_location,R.drawable.list_activities_share_location);
-  adapter.registerItem(R.string.context_menu_item_add_favorite,R.drawable.list_activities_favorites);
+  adapter.item(R.string.context_menu_item_show_route).icons(R.drawable.ic_action_gdirections_dark,R.drawable.ic_action_gdirections_light).reg();
+  adapter.item(R.string.context_menu_item_search).icons(R.drawable.ic_action_search,R.drawable.a_2_action_search_light).reg();
+  adapter.item(R.string.context_menu_item_share_location).icons(R.drawable.ic_action_gshare_dark,R.drawable.ic_action_gshare_light).reg();
+  adapter.item(R.string.context_menu_item_add_favorite).icons(R.drawable.ic_action_fav_dark,R.drawable.ic_action_fav_light).reg();
   OsmandPlugin.registerMapContextMenu(mapActivity,latitude,longitude,adapter,selectedObj);
   final Builder builder=new AlertDialog.Builder(mapActivity);
-  ListAdapter listAdapter=adapter.createListAdapter(mapActivity,R.layout.list_menu_item);
+  ListAdapter listAdapter;
+  if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+    listAdapter=adapter.createListAdapter(mapActivity,R.layout.list_menu_item,getMyApplication().getSettings().isLightContentMenu());
+  }
+ else {
+    listAdapter=adapter.createListAdapter(mapActivity,R.layout.list_menu_item_native,getMyApplication().getSettings().isLightContentMenu());
+  }
   builder.setAdapter(listAdapter,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       int standardId=adapter.getItemId(which);
