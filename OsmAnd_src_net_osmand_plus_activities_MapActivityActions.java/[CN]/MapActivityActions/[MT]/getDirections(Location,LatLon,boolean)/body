@@ -13,6 +13,13 @@
   buttons[ApplicationMode.PEDESTRIAN.ordinal()].setButtonDrawable(R.drawable.ic_pedestrian);
   TextView tv=((TextView)view.findViewById(R.id.TextView));
   tv.setText(generateRouteDescription(fromOrCurrent,to));
+  String from=mapActivity.getString(R.string.route_descr_current_location);
+  if (fromOrCurrent != null && fromOrCurrent.getProvider().equals("map")) {
+    from=getRoutePointDescription(fromOrCurrent.getLatitude(),fromOrCurrent.getLongitude());
+  }
+  Spinner fromSpinner=((Spinner)view.findViewById(R.id.FromSpinner));
+  ArrayAdapter<String> fromAdapter=new ArrayAdapter<String>(view.getContext(),android.R.layout.simple_spinner_item,new ArrayList<String>(Arrays.asList(new String[]{from})));
+  fromSpinner.setAdapter(fromAdapter);
   ApplicationMode appMode=settings.getApplicationMode();
   if (appMode == ApplicationMode.DEFAULT) {
     appMode=ApplicationMode.CAR;
