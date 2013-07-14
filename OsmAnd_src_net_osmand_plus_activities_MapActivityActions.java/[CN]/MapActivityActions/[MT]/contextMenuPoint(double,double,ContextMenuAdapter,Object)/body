@@ -41,7 +41,8 @@
           Location loc=new Location("map");
           loc.setLatitude(latitude);
           loc.setLongitude(longitude);
-          getDirections(loc,DirectionDialogStyle.create().gpxRouteEnabled().routeToMapPoint());
+          String name=mapActivity.getMapLayers().getContextMenuLayer().getSelectedObjectName();
+          getDirections(loc,name,DirectionDialogStyle.create().gpxRouteEnabled().routeToMapPoint());
         }
  else {
           targets.navigateToPoint(new LatLon(latitude,longitude),true,-1);
@@ -52,16 +53,19 @@
           Location loc=new Location("map");
           loc.setLatitude(latitude);
           loc.setLongitude(longitude);
-          getDirections(loc,DirectionDialogStyle.create().gpxRouteEnabled().routeFromMapPoint());
+          String name=mapActivity.getMapLayers().getContextMenuLayer().getSelectedObjectName();
+          getDirections(loc,name,DirectionDialogStyle.create().gpxRouteEnabled().routeFromMapPoint());
         }
       }
  else       if (standardId == R.string.context_menu_item_intermediate_point) {
+        String selected=mapActivity.getMapLayers().getContextMenuLayer().getSelectedObjectName();
         int sz=targets.getIntermediatePoints().size();
-        targets.navigateToPoint(new LatLon(latitude,longitude),true,sz);
+        targets.navigateToPoint(new LatLon(latitude,longitude),true,sz,selected);
         IntermediatePointsDialog.openIntermediatePointsDialog(mapActivity);
       }
  else       if (standardId == R.string.context_menu_item_destination_point) {
-        targets.navigateToPoint(new LatLon(latitude,longitude),true,-1);
+        String selected=mapActivity.getMapLayers().getContextMenuLayer().getSelectedObjectName();
+        targets.navigateToPoint(new LatLon(latitude,longitude),true,-1,selected);
         IntermediatePointsDialog.openIntermediatePointsDialog(mapActivity);
       }
  else       if (standardId == R.string.context_menu_item_share_location) {
