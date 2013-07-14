@@ -1,4 +1,5 @@
 {
+  final Location current=getLastKnownLocation();
   Builder builder=new AlertDialog.Builder(mapActivity);
   final TargetPointsHelper targets=getTargets();
   View view=mapActivity.getLayoutInflater().inflate(R.layout.calculate_route,null);
@@ -11,15 +12,17 @@
   buttons[ApplicationMode.BICYCLE.ordinal()].setButtonDrawable(R.drawable.ic_bicycle);
   buttons[ApplicationMode.PEDESTRIAN.ordinal()]=(ToggleButton)view.findViewById(R.id.PedestrianButton);
   buttons[ApplicationMode.PEDESTRIAN.ordinal()].setButtonDrawable(R.drawable.ic_pedestrian);
-  TextView tv=((TextView)view.findViewById(R.id.TextView));
-  tv.setText(generateRouteDescription(fromOrCurrent,to));
-  String from=mapActivity.getString(R.string.route_descr_current_location);
-  if (fromOrCurrent != null && fromOrCurrent.getProvider().equals("map")) {
-    from=getRoutePointDescription(fromOrCurrent.getLatitude(),fromOrCurrent.getLongitude());
+  final Spinner fromSpinner=setupFromSpinner(mapView,view);
+  final List<LatLon> toList=new ArrayList<LatLon>();
+  final Spinner toSpinner=setupToSpinner(mapView,view,toList,style);
+  String via=generateViaDescription();
+  if (via.length() == 0) {
+    ((TextView)view.findViewById(R.id.ViaView)).setVisibility(View.GONE);
   }
-  Spinner fromSpinner=((Spinner)view.findViewById(R.id.FromSpinner));
-  ArrayAdapter<String> fromAdapter=new ArrayAdapter<String>(view.getContext(),android.R.layout.simple_spinner_item,new ArrayList<String>(Arrays.asList(new String[]{from})));
-  fromSpinner.setAdapter(fromAdapter);
+ else {
+    ((TextView)view.findViewById(R.id.ViaView)).setVisibility(View.VISIBLE);
+    ((TextView)view.findViewById(R.id.ViaView)).setText(via);
+  }
   ApplicationMode appMode=settings.getApplicationMode();
   if (appMode == ApplicationMode.DEFAULT) {
     appMode=ApplicationMode.CAR;
@@ -66,13 +69,14 @@
   }
   DialogInterface.OnClickListener onlyShowCall=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      if (to != null) {
-        targets.navigateToPoint(to,false,-1);
+      LatLon tos=toList.get(toSpinner.getSelectedItemPosition());
+      if (tos != null && tos != targets.getPointToNavigate()) {
+        targets.navigateToPoint(tos,false,-1);
       }
       if (!targets.checkPointToNavigate(getMyApplication())) {
         return;
       }
-      Location from=fromOrCurrent;
+      Location from=fromSpinner.getSelectedItemPosition() == 0 ? current : mapView;
       if (from == null) {
         from=getLastKnownLocation();
       }
@@ -92,23 +96,21 @@
 ;
   DialogInterface.OnClickListener followCall=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      if (to != null) {
-        targets.navigateToPoint(to,false,-1);
+      LatLon tos=toList.get(toSpinner.getSelectedItemPosition());
+      if (tos != null && tos != targets.getPointToNavigate()) {
+        targets.navigateToPoint(tos,false,-1);
       }
       if (!targets.checkPointToNavigate(getMyApplication())) {
         return;
       }
       boolean msg=true;
-      Location current=fromOrCurrent;
-      if (current == null) {
-        current=getLastKnownLocation();
-      }
-      if (!OsmAndLocationProvider.isPointAccurateForRouting(current)) {
-        current=null;
-      }
       Location lastKnownLocation=getLastKnownLocation();
+      Location from=fromSpinner.getSelectedItemPosition() == 0 ? current : mapView;
+      if (from == null) {
+        from=lastKnownLocation;
+      }
       if (OsmAndLocationProvider.isPointAccurateForRouting(lastKnownLocation)) {
-        current=lastKnownLocation;
+        from=lastKnownLocation;
         msg=false;
       }
       if (msg) {
@@ -117,14 +119,15 @@
       ApplicationMode mode=getAppMode(buttons,settings);
       settings.OPTIMAL_ROUTE_MODE.setModeValue(mode,!nonoptimal.isChecked());
       dialog.dismiss();
-      mapActivity.followRoute(mode,targets.getPointToNavigate(),targets.getIntermediatePoints(),current,null);
+      mapActivity.followRoute(mode,targets.getPointToNavigate(),targets.getIntermediatePoints(),from,null);
     }
   }
 ;
   DialogInterface.OnClickListener useGpxNavigation=new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      if (to != null) {
-        targets.navigateToPoint(to,false,-1);
+      LatLon tos=toList.get(toSpinner.getSelectedItemPosition());
+      if (tos != null && tos != targets.getPointToNavigate()) {
+        targets.navigateToPoint(tos,false,-1);
       }
       ApplicationMode mode=getAppMode(buttons,settings);
       navigateUsingGPX(mode);
@@ -135,7 +138,7 @@
   builder.setTitle(R.string.get_directions);
   builder.setPositiveButton(R.string.follow,followCall);
   builder.setNeutralButton(R.string.only_show,onlyShowCall);
-  if (gpxRouteEnabled) {
+  if (style.gpxRouteEnabled) {
     builder.setNegativeButton(R.string.gpx_navigation,useGpxNavigation);
   }
  else {
