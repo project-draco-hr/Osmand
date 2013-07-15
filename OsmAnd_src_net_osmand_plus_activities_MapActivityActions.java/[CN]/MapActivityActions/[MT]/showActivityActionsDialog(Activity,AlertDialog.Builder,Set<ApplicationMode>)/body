@@ -1,0 +1,59 @@
+{
+  View view=a.getLayoutInflater().inflate(R.layout.mode_toggles,null);
+  OsmandSettings settings=((OsmandApplication)a.getApplication()).getSettings();
+  boolean lc=settings.isLightContentMenu();
+  final ToggleButton[] buttons=new ToggleButton[ApplicationMode.values().length];
+  buttons[ApplicationMode.DEFAULT.ordinal()]=(ToggleButton)view.findViewById(R.id.DefaultButton);
+  buttons[ApplicationMode.DEFAULT.ordinal()].setButtonDrawable(R.drawable.ic_action_globus_light);
+  buttons[ApplicationMode.CAR.ordinal()]=(ToggleButton)view.findViewById(R.id.CarButton);
+  buttons[ApplicationMode.CAR.ordinal()].setButtonDrawable(R.drawable.ic_car);
+  buttons[ApplicationMode.BICYCLE.ordinal()]=(ToggleButton)view.findViewById(R.id.BicycleButton);
+  buttons[ApplicationMode.BICYCLE.ordinal()].setButtonDrawable(R.drawable.ic_bicycle);
+  buttons[ApplicationMode.PEDESTRIAN.ordinal()]=(ToggleButton)view.findViewById(R.id.PedestrianButton);
+  buttons[ApplicationMode.PEDESTRIAN.ordinal()].setButtonDrawable(R.drawable.ic_pedestrian);
+  ApplicationMode appMode=settings.getApplicationMode();
+  for (int i=0; i < buttons.length; i++) {
+    if (buttons[i] != null) {
+      final int ind=i;
+      ToggleButton b=buttons[i];
+      final ApplicationMode buttonAppMode=ApplicationMode.values()[i];
+      b.setChecked(appMode == buttonAppMode);
+      if (appMode == buttonAppMode) {
+        selected.add(appMode);
+      }
+      b.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
+          if (isChecked) {
+            selected.clear();
+            for (int j=0; j < buttons.length; j++) {
+              if (buttons[j] != null) {
+                if (ind == j) {
+                  selected.add(ApplicationMode.values()[j]);
+                }
+                if (buttons[j].isChecked() != (ind == j)) {
+                  buttons[j].setChecked(ind == j);
+                }
+              }
+            }
+          }
+ else {
+            boolean revert=true;
+            for (int j=0; j < buttons.length; j++) {
+              if (buttons[j] != null) {
+                if (buttons[j].isChecked()) {
+                  revert=false;
+                  break;
+                }
+              }
+            }
+            if (revert) {
+              buttons[ind].setChecked(true);
+            }
+          }
+        }
+      }
+);
+    }
+  }
+  return view;
+}
