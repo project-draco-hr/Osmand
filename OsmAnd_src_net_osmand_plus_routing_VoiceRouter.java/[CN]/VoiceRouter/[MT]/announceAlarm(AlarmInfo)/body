@@ -4,16 +4,27 @@
   }
   long ms=System.currentTimeMillis();
   if (alarm.getTime() == AlarmInfo.SPEED_LIMIT) {
-    if (router.getSettings().SPEAK_SPEED_LIMIT.get() && ms - lastAnnouncedSpeedLimit > 120 * 60 * 1000) {
-      CommandBuilder p=getNewCommandPlayerToPlay();
-      if (p != null) {
-        lastAnnouncedSpeedLimit=ms;
-        p.speedAlarm().play();
+    if (waitAnnouncedSpeedLimit == 0) {
+      if (ms - lastAnnouncedSpeedLimit > 120 * 1000) {
+        waitAnnouncedSpeedLimit=ms;
+      }
+    }
+ else {
+      if (ms - waitAnnouncedSpeedLimit > 20 * 1000) {
+        waitAnnouncedSpeedLimit=0;
+      }
+ else       if (router.getSettings().SPEAK_SPEED_LIMIT.get() && ms - waitAnnouncedSpeedLimit > 10 * 1000) {
+        CommandBuilder p=getNewCommandPlayerToPlay();
+        if (p != null) {
+          lastAnnouncedSpeedLimit=ms;
+          waitAnnouncedSpeedLimit=0;
+          p.speedAlarm().play();
+        }
       }
     }
   }
  else   if (alarm.getTime() == AlarmInfo.SPEED_CAMERA) {
-    if (router.getSettings().SPEAK_SPEED_CAMERA.get() && ms - lastAnnouncedSpeedCamera > 120 * 60 * 1000) {
+    if (router.getSettings().SPEAK_SPEED_CAMERA.get() && ms - lastAnnouncedSpeedCamera > 100 * 1000) {
       CommandBuilder p=getNewCommandPlayerToPlay();
       if (p != null) {
         lastAnnouncedSpeedCamera=ms;
@@ -22,7 +33,7 @@
     }
   }
  else {
-    if (router.getSettings().SPEAK_TRAFFIC_WARNINGS.get() && ms - lastAnnouncedWarning > 120 * 60 * 1000) {
+    if (router.getSettings().SPEAK_TRAFFIC_WARNINGS.get() && ms - lastAnnouncedWarning > 100 * 1000) {
       CommandBuilder p=getNewCommandPlayerToPlay();
       if (p != null) {
         lastAnnouncedWarning=ms;
