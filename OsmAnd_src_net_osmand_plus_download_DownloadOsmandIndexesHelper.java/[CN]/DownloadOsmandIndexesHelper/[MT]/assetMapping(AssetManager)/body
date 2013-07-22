@@ -1,0 +1,16 @@
+{
+  XmlPullParser xmlParser=XmlPullParserFactory.newInstance().newPullParser();
+  InputStream isBundledAssetsXml=assetManager.open("bundled_assets.xml");
+  xmlParser.setInput(isBundledAssetsXml,"UTF-8");
+  Map<String,String> assets=new HashMap<String,String>();
+  int next=0;
+  while ((next=xmlParser.next()) != XmlPullParser.END_DOCUMENT) {
+    if (next == XmlPullParser.START_TAG && xmlParser.getName().equals("asset")) {
+      final String source=xmlParser.getAttributeValue(null,"source");
+      final String destination=xmlParser.getAttributeValue(null,"destination");
+      assets.put(source,destination);
+    }
+  }
+  isBundledAssetsXml.close();
+  return assets;
+}
