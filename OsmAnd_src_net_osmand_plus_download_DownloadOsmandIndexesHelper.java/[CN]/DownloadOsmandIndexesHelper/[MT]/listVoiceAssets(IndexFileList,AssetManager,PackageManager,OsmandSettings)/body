@@ -14,15 +14,16 @@
     }
  catch (    NameNotFoundException e) {
     }
-    for (    String voice : list) {
-      if (voice.endsWith("tts")) {
+    Map<String,String> mapping=assetMapping(amanager);
+    for (    String key : mapping.keySet()) {
+      String target=mapping.get(key);
+      if (target.endsWith("-tts/_ttsconfig.p") && target.startsWith("voice/")) {
+        String voice=target.substring("voice/".length(),target.length() - "-tts/_ttsconfig.p".length());
         File destFile=new File(voicePath,voice + File.separatorChar + "_ttsconfig.p");
-        String key=voice + ext;
-        String assetName="voice" + File.separatorChar + voice+ File.separatorChar+ "ttsconfig.p";
-        result.add(new AssetIndexItem(key,"voice",date,dateModified,"0.1","",assetName,destFile.getPath()));
+        result.add(new AssetIndexItem(key,"voice",date,dateModified,"0.1","",key,destFile.getPath()));
       }
- else {
-        String key=voice + extvoice;
+ else       if (target.endsWith("/_config.p") && target.startsWith("voice/")) {
+        String voice=target.substring("voice/".length(),target.length() - "/_config.p".length());
         IndexItem item=result.getIndexFilesByName(key);
         if (item != null) {
           File destFile=new File(voicePath,voice + File.separatorChar + "_config.p");
@@ -36,14 +37,16 @@
             log.error("Parse exception",es);
           }
           item.date=date;
-          String assetName="voice" + File.separatorChar + voice+ File.separatorChar+ "config.p";
-          item.attachedItem=new AssetIndexItem(key,"voice",date,dateModified,"0.1","",assetName,destFile.getPath());
+          item.attachedItem=new AssetIndexItem(key,"voice",date,dateModified,"0.1","",key,destFile.getPath());
         }
       }
     }
     result.sort();
   }
  catch (  IOException e) {
+    log.error("Error while loading tts files from assets",e);
+  }
+catch (  XmlPullParserException e) {
     log.error("Error while loading tts files from assets",e);
   }
 }
