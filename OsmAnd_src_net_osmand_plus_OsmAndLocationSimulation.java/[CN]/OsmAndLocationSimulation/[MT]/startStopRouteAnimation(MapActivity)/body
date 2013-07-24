@@ -6,13 +6,14 @@
     ((TextView)view.findViewById(R.id.MinSpeedup)).setText("1");
     ((TextView)view.findViewById(R.id.MaxSpeedup)).setText("4");
     final SeekBar speedup=(SeekBar)view.findViewById(R.id.Speedup);
+    final CheckBox ch=(CheckBox)view.findViewById(R.id.AnnounceGPXWpt);
     speedup.setMax(3);
     builder.setView(view);
     builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
       @Override public void onClick(      DialogInterface dialog,      int which){
         ma.getMapLayers().selectGPXFileLayer(true,false,false,new CallbackWithObject<GPXUtilities.GPXFile>(){
           @Override public boolean processResult(          GPXUtilities.GPXFile result){
-            GPXRouteParams prms=new RouteProvider.GPXRouteParams(result,false,app.getSettings());
+            GPXRouteParams prms=new RouteProvider.GPXRouteParams(result,false,ch.isChecked(),app.getSettings());
             startAnimationThread(app.getRoutingHelper(),ma,prms.getPoints(),true,speedup.getProgress() + 1);
             return true;
           }
