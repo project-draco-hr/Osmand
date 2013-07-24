@@ -1,0 +1,38 @@
+{
+  String[] entries;
+  final String[] entrieValues;
+  Set<String> voiceFiles=getVoiceFiles();
+  entries=new String[voiceFiles.size()];
+  entrieValues=new String[voiceFiles.size()];
+  int k=0;
+  int selected=0;
+  for (  String s : voiceFiles) {
+    entries[k]=s;
+    entrieValues[k]=s;
+    if (s.equals(((OsmandApplication)getApplication()).getSettings().VOICE_PROVIDER)) {
+      selected=k;
+    }
+    k++;
+  }
+  Builder bld=new AlertDialog.Builder(this);
+  bld.setSingleChoiceItems(entrieValues,selected,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      final OsmandApplication app=(OsmandApplication)getApplication();
+      app.getSettings().VOICE_PROVIDER.set(entrieValues[which]);
+      app.showDialogInitializingCommandPlayer(TestVoiceActivity.this,true,new Runnable(){
+        @Override public void run(){
+          CommandPlayer p=app.getRoutingHelper().getVoiceRouter().getPlayer();
+          if (p == null) {
+            AccessibleToast.makeText(TestVoiceActivity.this,"Voice player not initialized",Toast.LENGTH_SHORT).show();
+          }
+ else {
+            addButtons(ll,p);
+          }
+        }
+      }
+);
+    }
+  }
+);
+  bld.create();
+}
