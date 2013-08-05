@@ -1,0 +1,18 @@
+{
+  MapInfoLayer mapInfoLayer=activity.getMapLayers().getMapInfoLayer();
+  final OsmandMapTileView mv=activity.getMapView();
+  if (mapInfoLayer != null) {
+    fps=new TextInfoWidget(activity,0,mapInfoLayer.getPaintText(),mapInfoLayer.getPaintSubText()){
+      @Override public boolean updateInfo(      DrawSettings drawSettings){
+        if (!mv.isMeasureFPS()) {
+          mv.setMeasureFPS(true);
+        }
+        setText(Float.toString(mv.getFPS()),"FPS");
+        return true;
+      }
+    }
+;
+    mapInfoLayer.getMapInfoControls().registerSideWidget(fps,0,R.string.map_widget_fps_info,"fps",false,EnumSet.allOf(ApplicationMode.class),EnumSet.noneOf(ApplicationMode.class),30);
+    mapInfoLayer.recreateControls();
+  }
+}

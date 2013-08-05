@@ -36,14 +36,15 @@ synchronized (holder) {
         holder.unlockCanvasAndPost(canvas);
       }
     }
-  }
-  if (MEASURE_FPS) {
-    fpsMeasureMs+=SystemClock.elapsedRealtime() - ms;
-    fpsMeasureCount++;
-    if (fpsMeasureCount > 4) {
-      log.debug("FPS speed " + (1000 * fpsMeasureCount / fpsMeasureMs));
-      fpsMeasureCount=0;
-      fpsMeasureMs=0;
+    if (MEASURE_FPS) {
+      fpsMeasureMs+=SystemClock.elapsedRealtime() - ms;
+      fpsMeasureCount++;
+      if (fpsMeasureCount > 10 || (ms - fpsFirstMeasurement) > 400) {
+        fpsFirstMeasurement=ms;
+        fps=(1000f * fpsMeasureCount / fpsMeasureMs);
+        fpsMeasureCount=0;
+        fpsMeasureMs=0;
+      }
     }
   }
 }
