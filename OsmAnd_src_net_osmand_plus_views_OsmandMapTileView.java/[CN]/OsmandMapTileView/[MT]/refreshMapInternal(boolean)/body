@@ -1,5 +1,6 @@
 {
   handler.removeMessages(1);
+  long ms=SystemClock.elapsedRealtime();
   boolean useInternet=getSettings().USE_INTERNET_TO_DOWNLOAD_TILES.get();
   if (useInternet) {
     if (application != null) {
@@ -34,6 +35,15 @@ synchronized (holder) {
   finally {
         holder.unlockCanvasAndPost(canvas);
       }
+    }
+  }
+  if (MEASURE_FPS) {
+    fpsMeasureMs+=SystemClock.elapsedRealtime() - ms;
+    fpsMeasureCount++;
+    if (fpsMeasureCount > 4) {
+      log.debug("FPS speed " + (1000 * fpsMeasureCount / fpsMeasureMs));
+      fpsMeasureCount=0;
+      fpsMeasureMs=0;
     }
   }
 }
