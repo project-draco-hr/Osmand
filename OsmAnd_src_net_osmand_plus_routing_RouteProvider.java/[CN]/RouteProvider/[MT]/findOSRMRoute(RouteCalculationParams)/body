@@ -1,0 +1,27 @@
+{
+  List<Location> res=new ArrayList<Location>();
+  StringBuilder uri=new StringBuilder();
+  uri.append("http://router.project-osrm.org/viaroute?alt=false");
+  uri.append("&loc=").append(String.valueOf(params.start.getLatitude()));
+  uri.append(",").append(String.valueOf(params.start.getLongitude()));
+  if (params.intermediates != null && params.intermediates.size() > 0) {
+    for (    LatLon il : params.intermediates) {
+      appendOSRMLoc(uri,il);
+    }
+  }
+  appendOSRMLoc(uri,params.end);
+  uri.append("&output=gpx");
+  log.info("URL route " + uri);
+  URL url=new URL(uri.toString());
+  URLConnection connection=url.openConnection();
+  connection.setRequestProperty("User-Agent",Version.getFullVersion(params.ctx));
+  StringBuilder content=new StringBuilder();
+  GPXFile gpxFile=GPXUtilities.loadGPXFile(params.ctx,connection.getInputStream(),false);
+  if (gpxFile.routes.isEmpty()) {
+    return new RouteCalculationResult("Route is empty");
+  }
+  for (  WptPt pt : gpxFile.routes.get(0).points) {
+    res.add(createLocation(pt));
+  }
+  return new RouteCalculationResult(res,null,params.start,params.end,null,null,null,params.ctx,params.leftSide,true);
+}

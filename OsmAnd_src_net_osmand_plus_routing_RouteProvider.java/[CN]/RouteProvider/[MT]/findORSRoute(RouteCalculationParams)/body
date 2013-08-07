@@ -12,10 +12,11 @@
   }
   StringBuilder request=new StringBuilder();
   request.append("http://openls.geog.uni-heidelberg.de/osm/eu/routing?").append("start=").append(params.start.getLongitude()).append(',').append(params.start.getLatitude()).append("&end=").append(params.end.getLongitude()).append(',').append(params.end.getLatitude()).append("&preference=").append(rpref);
-  log.info("URL route " + request.toString());
+  log.info("URL route " + request);
   URI uri=URI.create(request.toString());
   URL url=uri.toURL();
   URLConnection connection=url.openConnection();
+  connection.setRequestProperty("User-Agent",Version.getFullVersion(params.ctx));
   DocumentBuilder dom=DocumentBuilderFactory.newInstance().newDocumentBuilder();
   Document doc=dom.parse(new InputSource(new InputStreamReader(connection.getInputStream())));
   NodeList list=doc.getElementsByTagName("xls:RouteGeometry");
