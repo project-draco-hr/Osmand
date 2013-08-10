@@ -29,6 +29,10 @@
       if (en.exists()) {
         try {
           bmp=BitmapFactory.decodeFile(en.getAbsolutePath());
+          int ts=req.tileSource.getExpirationTimeMillis();
+          if (ts != -1 && req.url != null && time - en.lastModified() > ts) {
+            asyncLoadingThread.requestToDownload(req);
+          }
         }
  catch (        OutOfMemoryError e) {
           log.error("Out of memory error",e);
