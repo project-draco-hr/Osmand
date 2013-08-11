@@ -14,9 +14,9 @@
           }
         }
         int tnumbering=list.indexOf("tilenumbering");
-        boolean inversiveInfoZoom=tnumbering != -1 && "BigPlanet".equals(list.get(tnumbering));
+        boolean inversiveInfoZoom=tnumbering != -1 && "BigPlanet".equals(cursor.getString(tnumbering));
         if (tnumbering != -1) {
-          inversiveZoom="BigPlanet".equals(list.get(tnumbering));
+          inversiveZoom="BigPlanet".equalsIgnoreCase(cursor.getString(tnumbering));
         }
         int mnz=list.indexOf("minzoom");
         if (mnz != -1) {
@@ -32,8 +32,14 @@
           baseZoom=17 - mnz;
         }
       }
+      cursor.close();
       maxZoom=24;
       while ((tileSize >> (maxZoom - baseZoom)) < minScaledSize)       maxZoom--;
+      cursor=db.rawQuery("SELECT * FROM tiles",null);
+      cursor.moveToFirst();
+      List<String> cols=Arrays.asList(cursor.getColumnNames());
+      timeSupported=cols.contains("time");
+      cursor.close();
     }
  catch (    RuntimeException e) {
       e.printStackTrace();
