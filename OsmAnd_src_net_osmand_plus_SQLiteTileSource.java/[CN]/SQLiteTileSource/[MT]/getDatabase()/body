@@ -2,23 +2,41 @@
   if ((db == null || db.isClosed()) && file.exists()) {
     db=ctx.getSQLiteAPI().openByAbsolutePath(file.getAbsolutePath(),false);
     try {
-      String template=db.compileStatement("SELECT url FROM info").simpleQueryForString();
-      if (!Algorithms.isEmpty(template)) {
-        urlTemplate=template;
+      SQLiteCursor cursor=db.rawQuery("SELECT * FROM info",null);
+      if (cursor.moveToFirst()) {
+        String[] columnNames=cursor.getColumnNames();
+        List<String> list=Arrays.asList(columnNames);
+        int url=list.indexOf("url");
+        if (url != -1) {
+          String template=cursor.getString(url);
+          if (!Algorithms.isEmpty(template)) {
+            urlTemplate=template;
+          }
+        }
+        int tnumbering=list.indexOf("tilenumbering");
+        boolean inversiveInfoZoom=tnumbering != -1 && "BigPlanet".equals(list.get(tnumbering));
+        if (tnumbering != -1) {
+          inversiveZoom="BigPlanet".equals(list.get(tnumbering));
+        }
+        int mnz=list.indexOf("minzoom");
+        if (mnz != -1) {
+          minZoom=(int)cursor.getInt(mnz);
+        }
+        int mxz=list.indexOf("maxzoom");
+        if (mxz != -1) {
+          baseZoom=(int)cursor.getInt(mxz);
+        }
+        if (inversiveInfoZoom) {
+          mnz=minZoom;
+          minZoom=17 - baseZoom;
+          baseZoom=17 - mnz;
+        }
       }
-    }
- catch (    RuntimeException e) {
-    }
-    try {
-      long z;
-      z=db.compileStatement("SELECT minzoom FROM info").simpleQueryForLong();
-      if (z < 17)       baseZoom=17 - (int)z;
       maxZoom=24;
       while ((tileSize >> (maxZoom - baseZoom)) < minScaledSize)       maxZoom--;
-      z=db.compileStatement("SELECT maxzoom FROM info").simpleQueryForLong();
-      if (z < 17)       minZoom=17 - (int)z;
     }
  catch (    RuntimeException e) {
+      e.printStackTrace();
     }
   }
   return db;
