@@ -1,0 +1,128 @@
+{
+  final OsmandMapTileView view=map.getMapView();
+  final MapWidgetRegistry.MapWidgetRegInfo vectorRenderer=mapInfoControls.registerAppearanceWidget(R.drawable.widget_rendering_style,R.string.map_widget_renderer,"renderer",view.getSettings().RENDERER);
+  final OsmandApplication app=view.getApplication();
+  vectorRenderer.setStateChangeListener(new Runnable(){
+    @Override public void run(){
+      AlertDialog.Builder bld=new AlertDialog.Builder(view.getContext());
+      bld.setTitle(R.string.renderers);
+      Collection<String> rendererNames=app.getRendererRegistry().getRendererNames();
+      final String[] items=rendererNames.toArray(new String[rendererNames.size()]);
+      int i=-1;
+      for (int j=0; j < items.length; j++) {
+        if (items[j].equals(app.getRendererRegistry().getCurrentSelectedRenderer().getName())) {
+          i=j;
+          break;
+        }
+      }
+      bld.setSingleChoiceItems(items,i,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          String renderer=items[which];
+          RenderingRulesStorage loaded=app.getRendererRegistry().getRenderer(renderer);
+          if (loaded != null) {
+            view.getSettings().RENDERER.set(renderer);
+            app.getRendererRegistry().setCurrentSelectedRender(loaded);
+            app.getResourceManager().getRenderer().clearCache();
+            view.refreshMap(true);
+          }
+ else {
+            AccessibleToast.makeText(app,R.string.renderer_load_exception,Toast.LENGTH_SHORT).show();
+          }
+          if (EXTRA_SETTINGS) {
+            createCustomRenderingProperties(loaded,map,mapInfoLayer,mapInfoControls);
+          }
+          dialog.dismiss();
+        }
+      }
+);
+      bld.show();
+    }
+  }
+);
+  final MapWidgetRegistry.MapWidgetRegInfo dayNight=mapInfoControls.registerAppearanceWidget(R.drawable.widget_day_night_mode,R.string.map_widget_day_night,"dayNight",view.getSettings().DAYNIGHT_MODE);
+  dayNight.setStateChangeListener(new Runnable(){
+    @Override public void run(){
+      AlertDialog.Builder bld=new AlertDialog.Builder(view.getContext());
+      bld.setTitle(R.string.daynight);
+      final String[] items=new String[OsmandSettings.DayNightMode.values().length];
+      for (int i=0; i < items.length; i++) {
+        items[i]=OsmandSettings.DayNightMode.values()[i].toHumanString(map.getMyApplication());
+      }
+      int i=view.getSettings().DAYNIGHT_MODE.get().ordinal();
+      bld.setSingleChoiceItems(items,i,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          view.getSettings().DAYNIGHT_MODE.set(OsmandSettings.DayNightMode.values()[which]);
+          app.getResourceManager().getRenderer().clearCache();
+          view.refreshMap(true);
+          dialog.dismiss();
+        }
+      }
+);
+      bld.show();
+    }
+  }
+);
+  final MapWidgetRegistry.MapWidgetRegInfo displayViewDirections=mapInfoControls.registerAppearanceWidget(R.drawable.widget_viewing_direction,R.string.map_widget_view_direction,"viewDirection",view.getSettings().SHOW_VIEW_ANGLE);
+  displayViewDirections.setStateChangeListener(new Runnable(){
+    @Override public void run(){
+      view.getSettings().SHOW_VIEW_ANGLE.set(!view.getSettings().SHOW_VIEW_ANGLE.get());
+      map.getMapViewTrackingUtilities().updateSettings();
+    }
+  }
+);
+  if (EXTRA_SETTINGS) {
+    final OsmandSettings.OsmandPreference<Float> textSizePref=view.getSettings().MAP_TEXT_SIZE;
+    final MapWidgetRegistry.MapWidgetRegInfo textSize=mapInfoControls.registerAppearanceWidget(R.drawable.widget_text_size,R.string.map_text_size,"text_size",textSizePref);
+    textSize.setStateChangeListener(new Runnable(){
+      @Override public void run(){
+        final Float[] floatValues=new Float[]{0.6f,0.8f,1.0f,1.2f,1.5f,1.75f,2f};
+        String[] entries=new String[floatValues.length];
+        for (int i=0; i < floatValues.length; i++) {
+          entries[i]=(int)(floatValues[i] * 100) + " %";
+        }
+        AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
+        b.setTitle(R.string.map_text_size);
+        int i=Arrays.binarySearch(floatValues,textSizePref.get());
+        b.setSingleChoiceItems(entries,i,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            textSizePref.set(floatValues[which]);
+            app.getResourceManager().getRenderer().clearCache();
+            view.refreshMap(true);
+            dialog.dismiss();
+          }
+        }
+);
+        b.show();
+      }
+    }
+);
+    final MapWidgetRegistry.MapWidgetRegInfo showRuler=mapInfoControls.registerAppearanceWidget(R.drawable.widget_ruler,R.string.map_widget_show_ruler,"showRuler",view.getSettings().SHOW_RULER);
+    showRuler.setStateChangeListener(new Runnable(){
+      @Override public void run(){
+        view.getSettings().SHOW_RULER.set(!view.getSettings().SHOW_RULER.get());
+        view.refreshMap();
+      }
+    }
+);
+    final MapWidgetRegistry.MapWidgetRegInfo showDestinationArrow=mapInfoControls.registerAppearanceWidget(R.drawable.widget_show_destination_arrow,R.string.map_widget_show_destination_arrow,"show_destination_arrow",view.getSettings().SHOW_DESTINATION_ARROW);
+    showDestinationArrow.setStateChangeListener(new Runnable(){
+      @Override public void run(){
+        view.getSettings().SHOW_DESTINATION_ARROW.set(!view.getSettings().SHOW_DESTINATION_ARROW.get());
+        mapInfoLayer.recreateControls();
+      }
+    }
+);
+    final MapWidgetRegistry.MapWidgetRegInfo transparent=mapInfoControls.registerAppearanceWidget(R.drawable.widget_transparent_skin,R.string.map_widget_transparent,"transparent",view.getSettings().TRANSPARENT_MAP_THEME);
+    transparent.setStateChangeListener(new Runnable(){
+      @Override public void run(){
+        view.getSettings().TRANSPARENT_MAP_THEME.set(!view.getSettings().TRANSPARENT_MAP_THEME.get());
+        mapInfoLayer.recreateControls();
+      }
+    }
+);
+  }
+  RenderingRulesStorage renderer=app.getRendererRegistry().getCurrentSelectedRenderer();
+  if (renderer != null && EXTRA_SETTINGS) {
+    createCustomRenderingProperties(renderer,map,mapInfoLayer,mapInfoControls);
+  }
+}
