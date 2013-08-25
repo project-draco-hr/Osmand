@@ -34,20 +34,22 @@
     }
 ).reg();
   }
-  optionsMenuHelper.item(routingHelper.isRouteCalculated() ? R.string.show_route : R.string.get_directions).icons(R.drawable.ic_action_gdirections_dark,R.drawable.ic_action_gdirections_light).listen(new OnContextMenuClick(){
-    @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
-      if (routingHelper.isRouteCalculated()) {
-        aboutRoute();
-      }
+  if (!routingHelper.isRouteBeingCalculated() || routingHelper.isRouteCalculated()) {
+    optionsMenuHelper.item(routingHelper.isRouteCalculated() ? R.string.show_route : R.string.get_directions).icons(R.drawable.ic_action_gdirections_dark,R.drawable.ic_action_gdirections_light).listen(new OnContextMenuClick(){
+      @Override public void onContextMenuClick(      int itemId,      int pos,      boolean isChecked,      DialogInterface dialog){
+        if (routingHelper.isRouteCalculated()) {
+          aboutRoute();
+        }
  else {
-        Location loc=new Location("map");
-        loc.setLatitude(mapView.getLatitude());
-        loc.setLongitude(mapView.getLongitude());
-        getDirections(loc,null,DirectionDialogStyle.create().gpxRouteEnabled());
+          Location loc=new Location("map");
+          loc.setLatitude(mapView.getLatitude());
+          loc.setLongitude(mapView.getLongitude());
+          getDirections(loc,null,DirectionDialogStyle.create().gpxRouteEnabled());
+        }
       }
     }
-  }
 ).reg();
+  }
   if (getTargets().getPointToNavigate() != null) {
     optionsMenuHelper.item(R.string.target_points).icons(R.drawable.ic_action_flage_dark,R.drawable.ic_action_flage_light).listen(new OnContextMenuClick(){
       @Override public void onContextMenuClick(      int itemId,      int pos,      boolean isChecked,      DialogInterface dialog){

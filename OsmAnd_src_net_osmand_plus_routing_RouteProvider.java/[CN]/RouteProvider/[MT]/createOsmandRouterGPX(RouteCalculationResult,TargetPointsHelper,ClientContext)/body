@@ -1,0 +1,67 @@
+{
+  int currentRoute=srcRoute.currentRoute;
+  List<Location> routeNodes=srcRoute.getImmutableLocations();
+  List<RouteDirectionInfo> directionInfo=srcRoute.getDirections();
+  int currentDirectionInfo=srcRoute.currentDirectionInfo;
+  GPXFile gpx=new GPXFile();
+  gpx.author=OSMAND_ROUTER;
+  Track track=new Track();
+  gpx.tracks.add(track);
+  TrkSegment trkSegment=new TrkSegment();
+  track.segments.add(trkSegment);
+  int cRoute=currentRoute;
+  int cDirInfo=currentDirectionInfo;
+  for (int i=cRoute; i < routeNodes.size(); i++) {
+    Location loc=routeNodes.get(i);
+    WptPt pt=new WptPt();
+    pt.lat=loc.getLatitude();
+    pt.lon=loc.getLongitude();
+    if (loc.hasSpeed()) {
+      pt.speed=loc.getSpeed();
+    }
+    if (loc.hasAltitude()) {
+      pt.ele=loc.getAltitude();
+    }
+    if (loc.hasAccuracy()) {
+      pt.hdop=loc.getAccuracy();
+    }
+    trkSegment.points.add(pt);
+  }
+  Route route=new Route();
+  gpx.routes.add(route);
+  for (int i=cDirInfo; i < directionInfo.size(); i++) {
+    RouteDirectionInfo dirInfo=directionInfo.get(i);
+    if (dirInfo.routePointOffset >= cRoute) {
+      Location loc=routeNodes.get(dirInfo.routePointOffset);
+      WptPt pt=new WptPt();
+      pt.lat=loc.getLatitude();
+      pt.lon=loc.getLongitude();
+      pt.desc=dirInfo.getDescriptionRoute();
+      Map<String,String> extensions=pt.getExtensionsToWrite();
+      extensions.put("time",dirInfo.getExpectedTime() + "");
+      String turnType=dirInfo.getTurnType().getValue();
+      if (dirInfo.getTurnType().isRoundAbout()) {
+        turnType+=dirInfo.getTurnType().getExitOut();
+      }
+      if (!TurnType.C.equals(turnType)) {
+        extensions.put("turn",turnType);
+        extensions.put("turn-angle",dirInfo.getTurnType().getTurnAngle() + "");
+      }
+      extensions.put("offset",(dirInfo.routePointOffset - cRoute) + "");
+      route.points.add(pt);
+    }
+  }
+  List<LatLon> ps=helper.getIntermediatePointsWithTarget();
+  List<String> psNames=helper.getIntermediatePointNamesWithTarget();
+  for (int k=0; k < ps.size(); k++) {
+    WptPt pt=new WptPt();
+    pt.lat=ps.get(k).getLatitude();
+    pt.lon=ps.get(k).getLongitude();
+    if (k < psNames.size()) {
+      pt.name=psNames.get(k) + "";
+      pt.name=k == ps.size() - 1 ? ctx.getString(R.string.destination_point,pt.name) : ctx.getString(R.string.target_point,pt.name);
+      pt.desc=pt.name;
+    }
+  }
+  return gpx;
+}
