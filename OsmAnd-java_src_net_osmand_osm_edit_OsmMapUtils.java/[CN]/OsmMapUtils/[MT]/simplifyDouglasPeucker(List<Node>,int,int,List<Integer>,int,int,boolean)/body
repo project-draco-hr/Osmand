@@ -1,0 +1,41 @@
+{
+  double dmax=-1;
+  int index=-1;
+  for (int i=start + 1; i <= end - 1; i++) {
+    if (n.get(i) == null) {
+      continue;
+    }
+    double d=orthogonalDistance(zoom,n.get(start),n.get(end),n.get(i));
+    if (d > dmax) {
+      dmax=d;
+      index=i;
+    }
+  }
+  boolean nooseFound=false;
+  if (avoidNooses) {
+    Node st=n.get(start);
+    Node e=n.get(end);
+    for (int i=0; i < n.size() - 1; i++) {
+      if (i == start) {
+        i=end - 1;
+        continue;
+      }
+      Node np=n.get(i);
+      Node np2=n.get(i + 1);
+      if (np == null || np2 == null) {
+        continue;
+      }
+      if (OsmMapUtils.intersect2Segments(st,e,np,np2)) {
+        nooseFound=true;
+        break;
+      }
+    }
+  }
+  if (dmax >= epsilon || nooseFound) {
+    simplifyDouglasPeucker(n,zoom,epsilon,ints,start,index,avoidNooses);
+    simplifyDouglasPeucker(n,zoom,epsilon,ints,index,end,avoidNooses);
+  }
+ else {
+    ints.add(end);
+  }
+}
