@@ -29,25 +29,26 @@
  else   if (t.startsWith("access") && v != null) {
     type=ACCESS;
   }
+ else   if (t.equalsIgnoreCase("maxspeed:conditional") && v != null) {
+    conditions=new ArrayList<RouteTypeCondition>();
+    String[] cts=v.split(";");
+    for (    String c : cts) {
+      int ch=c.indexOf('@');
+      if (ch > 0) {
+        RouteTypeCondition cond=new RouteTypeCondition();
+        cond.floatValue=parseMaxSpeed(c.substring(ch));
+        cond.condition=c.substring(ch + 1).trim();
+        if (cond.condition.startsWith("(") && cond.condition.endsWith(")")) {
+          cond.condition=cond.condition.substring(1,cond.condition.length() - 1).trim();
+        }
+        cond.hours=OpeningHoursParser.parseOpenedHours(cond.condition);
+      }
+    }
+    type=MAXSPEED;
+  }
  else   if (t.equalsIgnoreCase("maxspeed") && v != null) {
     type=MAXSPEED;
-    floatValue=-1;
-    if (v.equals("none")) {
-      floatValue=RouteDataObject.NONE_MAX_SPEED;
-    }
- else {
-      int i=0;
-      while (i < v.length() && Character.isDigit(v.charAt(i))) {
-        i++;
-      }
-      if (i > 0) {
-        floatValue=Integer.parseInt(v.substring(0,i));
-        floatValue/=3.6;
-        if (v.contains("mph")) {
-          floatValue*=1.6;
-        }
-      }
-    }
+    floatValue=parseMaxSpeed(v);
   }
  else   if (t.equalsIgnoreCase("lanes") && v != null) {
     intValue=-1;
