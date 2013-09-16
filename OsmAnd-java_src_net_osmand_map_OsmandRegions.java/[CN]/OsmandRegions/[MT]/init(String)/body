@@ -1,0 +1,59 @@
+{
+  BinaryMapIndexReader reader=new BinaryMapIndexReader(new RandomAccessFile(fileName,"r"));
+  BinaryMapIndexReader.SearchRequest<BinaryMapDataObject> sr=BinaryMapIndexReader.buildSearchRequest(0,Integer.MAX_VALUE,0,Integer.MAX_VALUE,5,new BinaryMapIndexReader.SearchFilter(){
+    @Override public boolean accept(    TIntArrayList types,    BinaryMapIndexReader.MapIndex index){
+      return true;
+    }
+  }
+,new ResultMatcher<BinaryMapDataObject>(){
+    @Override public boolean publish(    BinaryMapDataObject object){
+      if (object.getPointsLength() < 1) {
+        return false;
+      }
+      if (downloadNameType == null) {
+        downloadNameType=object.getMapIndex().getRule("download_name",null);
+        prefixType=object.getMapIndex().getRule("region_prefix",null);
+        suffixType=object.getMapIndex().getRule("region_suffix",null);
+        if (downloadNameType == null) {
+          throw new IllegalStateException();
+        }
+      }
+      String nm=object.getNameByType(downloadNameType);
+      if (!countries.containsKey(nm)) {
+        LinkedList<BinaryMapDataObject> ls=new LinkedList<BinaryMapDataObject>();
+        countries.put(nm,ls);
+        ls.add(object);
+      }
+ else {
+        countries.get(nm).add(object);
+      }
+      int maxx=object.getPoint31XTile(0);
+      int maxy=object.getPoint31YTile(0);
+      int minx=maxx;
+      int miny=maxy;
+      for (int i=1; i < object.getPointsLength(); i++) {
+        int x=object.getPoint31XTile(i);
+        int y=object.getPoint31YTile(i);
+        if (y < miny) {
+          miny=y;
+        }
+ else         if (y > maxy) {
+          maxy=y;
+        }
+        if (x < minx) {
+          minx=x;
+        }
+ else         if (x > maxx) {
+          maxx=x;
+        }
+      }
+      quadTree.insert(nm,new QuadRect(minx,miny,maxx,maxy));
+      return false;
+    }
+    @Override public boolean isCancelled(){
+      return false;
+    }
+  }
+);
+  reader.searchMapIndex(sr);
+}
