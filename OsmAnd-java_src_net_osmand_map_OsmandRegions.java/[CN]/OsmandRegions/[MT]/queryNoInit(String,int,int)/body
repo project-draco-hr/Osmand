@@ -1,0 +1,26 @@
+{
+  final List<BinaryMapDataObject> result=new ArrayList<BinaryMapDataObject>();
+  BinaryMapIndexReader reader=new BinaryMapIndexReader(new RandomAccessFile(fileName,"r"));
+  BinaryMapIndexReader.SearchRequest<BinaryMapDataObject> sr=BinaryMapIndexReader.buildSearchRequest(tile31x,tile31x,tile31y,tile31y,5,new BinaryMapIndexReader.SearchFilter(){
+    @Override public boolean accept(    TIntArrayList types,    BinaryMapIndexReader.MapIndex index){
+      return true;
+    }
+  }
+,new ResultMatcher<BinaryMapDataObject>(){
+    @Override public boolean publish(    BinaryMapDataObject object){
+      if (object.getPointsLength() < 1) {
+        return false;
+      }
+      if (contain(object,tile31x,tile31y)) {
+        result.add(object);
+      }
+      return false;
+    }
+    @Override public boolean isCancelled(){
+      return false;
+    }
+  }
+);
+  reader.searchMapIndex(sr);
+  return result;
+}
