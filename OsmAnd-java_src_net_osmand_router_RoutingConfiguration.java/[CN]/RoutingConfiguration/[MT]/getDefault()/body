@@ -1,10 +1,21 @@
 {
   if (DEFAULT == null) {
+    InputStream resourceAsStream=null;
     try {
-      DEFAULT=parseFromInputStream(RoutingConfiguration.class.getResourceAsStream("routing.xml"));
+      resourceAsStream=RoutingConfiguration.class.getResourceAsStream("routing.xml");
+      DEFAULT=parseFromInputStream(resourceAsStream);
     }
  catch (    Exception e) {
       throw new IllegalStateException(e);
+    }
+ finally {
+      if (resourceAsStream != null) {
+        try {
+          resourceAsStream.close();
+        }
+ catch (        IOException ignore) {
+        }
+      }
     }
   }
   return DEFAULT;
