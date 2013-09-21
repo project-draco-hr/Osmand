@@ -1,6 +1,8 @@
 {
+  FileInputStream fis=null;
   try {
-    GPXFile file=loadGPXFile(ctx,new FileInputStream(f),convertCloudmadeSource);
+    fis=new FileInputStream(f);
+    GPXFile file=loadGPXFile(ctx,fis,convertCloudmadeSource);
     file.path=f.getAbsolutePath();
     return file;
   }
@@ -10,5 +12,12 @@
     log.error("Error reading gpx",e);
     res.warning=ctx.getString(R.string.error_reading_gpx);
     return res;
+  }
+ finally {
+    try {
+      if (fis != null)       fis.close();
+    }
+ catch (    IOException ignore) {
+    }
   }
 }
