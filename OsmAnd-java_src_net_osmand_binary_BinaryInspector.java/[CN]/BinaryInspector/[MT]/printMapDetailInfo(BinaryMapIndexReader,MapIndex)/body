@@ -1,0 +1,43 @@
+{
+  final StringBuilder b=new StringBuilder();
+  final DamnCounter mapObjectsCounter=new DamnCounter();
+  if (vInfo.osm) {
+    printToFile("<?xml version='1.0' encoding='UTF-8'?>\n" + "<osm version='0.5'>\n");
+  }
+  SearchRequest<BinaryMapDataObject> req=BinaryMapIndexReader.buildSearchRequest(MapUtils.get31TileNumberX(vInfo.lonleft),MapUtils.get31TileNumberX(vInfo.lonright),MapUtils.get31TileNumberY(vInfo.lattop),MapUtils.get31TileNumberY(vInfo.latbottom),vInfo.getZoom(),new SearchFilter(){
+    @Override public boolean accept(    TIntArrayList types,    MapIndex index){
+      return true;
+    }
+  }
+,new ResultMatcher<BinaryMapDataObject>(){
+    @Override public boolean publish(    BinaryMapDataObject obj){
+      mapObjectsCounter.value++;
+      if (vInfo.vmapObjects) {
+        b.setLength(0);
+        if (vInfo.osm) {
+          printOsmMapDetails(obj,b);
+          try {
+            printToFile(b.toString());
+          }
+ catch (          IOException e) {
+            throw new RuntimeException(e);
+          }
+        }
+ else {
+          printMapDetails(obj,b);
+          println(b.toString());
+        }
+      }
+      return false;
+    }
+    @Override public boolean isCancelled(){
+      return false;
+    }
+  }
+);
+  index.searchMapIndex(req,mapIndex);
+  if (vInfo.osm) {
+    printToFile("</osm >\n");
+  }
+  println("\tTotal map objects: " + mapObjectsCounter.value);
+}

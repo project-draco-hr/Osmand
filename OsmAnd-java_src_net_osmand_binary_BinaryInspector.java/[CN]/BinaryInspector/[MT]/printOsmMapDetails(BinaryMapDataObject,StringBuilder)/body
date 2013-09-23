@@ -1,0 +1,80 @@
+{
+  boolean multipolygon=obj.getPolygonInnerCoordinates() != null && obj.getPolygonInnerCoordinates().length > 0;
+  boolean point=obj.getPointsLength() == 1;
+  StringBuilder tags=new StringBuilder();
+  int[] types=obj.getTypes();
+  for (int j=0; j < types.length; j++) {
+    TagValuePair pair=obj.getMapIndex().decodeType(types[j]);
+    if (pair == null) {
+      throw new NullPointerException("Type " + types[j] + "was not found");
+    }
+    tags.append("\t<tag k='").append(pair.tag).append("' v='").append(pair.value).append("' />\n");
+  }
+  if (obj.getAdditionalTypes() != null && obj.getAdditionalTypes().length > 0) {
+    for (int j=0; j < obj.getAdditionalTypes().length; j++) {
+      TagValuePair pair=obj.getMapIndex().decodeType(obj.getAdditionalTypes()[j]);
+      if (pair == null) {
+        throw new NullPointerException("Type " + obj.getAdditionalTypes()[j] + "was not found");
+      }
+      tags.append("\t<tag k='").append(pair.tag).append("' v='").append(pair.value).append("' />\n");
+    }
+  }
+  TIntObjectHashMap<String> names=obj.getObjectNames();
+  if (names != null && !names.isEmpty()) {
+    int[] keys=names.keys();
+    for (int j=0; j < keys.length; j++) {
+      TagValuePair pair=obj.getMapIndex().decodeType(keys[j]);
+      if (pair == null) {
+        throw new NullPointerException("Type " + keys[j] + "was not found");
+      }
+      String name=names.get(keys[j]);
+      name=name.replace("'","&apos;");
+      tags.append("\t<tag k='").append(pair.tag).append("' v='").append(name).append("' />\n");
+    }
+  }
+  tags.append("\t<tag k=\'").append("original_id").append("' v='").append(obj.getId() >> 1).append("'/>\n");
+  if (point) {
+    float lon=(float)MapUtils.get31LongitudeX(obj.getPoint31XTile(0));
+    float lat=(float)MapUtils.get31LatitudeY(obj.getPoint31YTile(0));
+    b.append("<node id = '" + OSM_ID++ + "' lat='"+ lat+ "' lon='"+ lon+ "' >\n");
+    b.append(tags);
+    b.append("</node>\n");
+  }
+ else {
+    TLongArrayList innerIds=new TLongArrayList();
+    TLongArrayList ids=new TLongArrayList();
+    for (int i=0; i < obj.getPointsLength(); i++) {
+      float lon=(float)MapUtils.get31LongitudeX(obj.getPoint31XTile(i));
+      float lat=(float)MapUtils.get31LatitudeY(obj.getPoint31YTile(i));
+      int id=OSM_ID++;
+      b.append("\t<node id = '" + id + "' lat='"+ lat+ "' lon='"+ lon+ "' />\n");
+      ids.add(id);
+    }
+    long outerId=printWay(ids,b,multipolygon ? null : tags);
+    if (multipolygon) {
+      int[][] polygonInnerCoordinates=obj.getPolygonInnerCoordinates();
+      for (int j=0; j < polygonInnerCoordinates.length; j++) {
+        ids.clear();
+        ;
+        for (int i=0; i < polygonInnerCoordinates[j].length; i+=2) {
+          float lon=(float)MapUtils.get31LongitudeX(polygonInnerCoordinates[j][i]);
+          float lat=(float)MapUtils.get31LatitudeY(polygonInnerCoordinates[j][i + 1]);
+          int id=OSM_ID++;
+          b.append("<node id = '" + id + "' lat='"+ lat+ "' lon='"+ lon+ "' />\n");
+          ids.add(id);
+        }
+        innerIds.add(printWay(ids,b,null));
+      }
+      int id=OSM_ID++;
+      b.append("<relation id = '" + id + "'>\n");
+      b.append(tags);
+      b.append("\t<member type='way' role='outer' ref= '" + outerId + "'/>\n");
+      TLongIterator it=innerIds.iterator();
+      while (it.hasNext()) {
+        long ref=it.next();
+        b.append("<member type='way' role='inner' ref= '" + ref + "'/>\n");
+      }
+      b.append("</relation>\n");
+    }
+  }
+}
