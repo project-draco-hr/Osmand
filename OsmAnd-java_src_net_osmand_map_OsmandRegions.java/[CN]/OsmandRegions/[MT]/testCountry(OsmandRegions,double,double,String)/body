@@ -1,16 +1,13 @@
 {
-  List<BinaryMapDataObject> cs=or.queryNoInit(FILE_NAME,MapUtils.get31TileNumberX(lon),MapUtils.get31TileNumberY(lat));
-  if (cs.size() != test.length) {
-    StringBuilder found=new StringBuilder();
-    for (    BinaryMapDataObject b : cs) {
-      found.append(b.getName()).append(' ');
-    }
-    throw new IllegalStateException(" Expected " + Arrays.toString(test) + " - Lat "+ lat+ " lon "+ lon+ ", but found : "+ found);
+  long t=System.currentTimeMillis();
+  List<BinaryMapDataObject> cs=or.query(MapUtils.get31TileNumberX(lon),MapUtils.get31TileNumberY(lat));
+  Set<String> expected=new TreeSet<String>(Arrays.asList(test));
+  Set<String> found=new TreeSet<String>();
+  for (  BinaryMapDataObject b : cs) {
+    found.add(b.getName());
   }
-  for (int i=0; i < test.length; i++) {
-    String nm=cs.get(i).getName();
-    if (!test[i].equals(nm)) {
-      throw new IllegalStateException(" Expected " + test[i] + " but was "+ nm);
-    }
+  if (!found.equals(expected)) {
+    throw new IllegalStateException(" Expected " + expected + " but was "+ found);
   }
+  System.out.println("Found " + expected + " in "+ (System.currentTimeMillis() - t)+ " ms");
 }
