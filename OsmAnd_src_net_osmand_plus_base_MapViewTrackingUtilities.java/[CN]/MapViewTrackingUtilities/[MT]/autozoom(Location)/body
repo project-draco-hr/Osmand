@@ -1,7 +1,8 @@
 {
   if (location.hasSpeed()) {
     long now=System.currentTimeMillis();
-    float zdelta=defineZoomFromSpeed(location.getSpeed());
+    final RotatedTileBox tb=mapView.getCurrentRotatedTileBox();
+    float zdelta=defineZoomFromSpeed(tb,location.getSpeed());
     if (Math.abs(zdelta) >= OsmandMapTileView.ZOOM_DELTA_1) {
       if (zdelta >= 2) {
         zdelta-=3 * OsmandMapTileView.ZOOM_DELTA_1;
@@ -11,8 +12,10 @@
       }
       if (now - lastTimeAutoZooming > 4500) {
         lastTimeAutoZooming=now;
-        float newZoom=Math.round((mapView.getFloatZoom() + zdelta) * OsmandMapTileView.ZOOM_DELTA) * OsmandMapTileView.ZOOM_DELTA_1;
-        mapView.setZoom(newZoom);
+        float complexZoom=tb.getZoom() + tb.getZoomScale();
+        float newZoom=Math.round((complexZoom + zdelta) * OsmandMapTileView.ZOOM_DELTA) * OsmandMapTileView.ZOOM_DELTA_1;
+        final int tz=(int)newZoom;
+        mapView.setComplexZoom(tz,newZoom - tz);
       }
     }
   }

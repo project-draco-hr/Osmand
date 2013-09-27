@@ -3,18 +3,8 @@
     return;
   }
   ResourceManager mgr=resourceManager;
-  int nzoom=view.getZoom();
-  float tileX=view.getXTile();
-  float tileY=view.getYTile();
-  float w=view.getCenterPointX();
-  float h=view.getCenterPointY();
-  float ftileSize=view.getTileSize();
-  if (map.isEllipticYTile()) {
-    float ellipticYTile=view.getEllipticYTile();
-    tilesRect.bottom+=(ellipticYTile - tileY);
-    tilesRect.top+=(ellipticYTile - tileY);
-    tileY=ellipticYTile;
-  }
+  int nzoom=tileBox.getZoom();
+  final QuadRect tilesRect=tileBox.getTileBounds();
   int left=(int)FloatMath.floor(tilesRect.left);
   int top=(int)FloatMath.floor(tilesRect.top);
   int width=(int)FloatMath.ceil(tilesRect.right - left);
@@ -27,8 +17,10 @@
     for (int j=0; j < height; j++) {
       int leftPlusI=left + i;
       int topPlusJ=top + j;
-      float x1=(left + i - tileX) * ftileSize + w;
-      float y1=(top + j - tileY) * ftileSize + h;
+      int x1=tileBox.getPixXFromTileXNoRot(leftPlusI);
+      int x2=tileBox.getPixXFromTileXNoRot(leftPlusI + 1);
+      int y1=tileBox.getPixYFromTileYNoRot(topPlusJ);
+      int y2=tileBox.getPixYFromTileYNoRot(topPlusJ);
       String ordImgTile=mgr.calculateTileId(map,leftPlusI,topPlusJ,nzoom);
       boolean imgExist=mgr.tileExistOnFileSystem(ordImgTile,map,leftPlusI,topPlusJ,nzoom,false);
       Bitmap bmp=null;
@@ -62,14 +54,14 @@
           int xZoom=((left + i) % div) * tileSize / div;
           int yZoom=((top + j) % div) * tileSize / div;
           bitmapToZoom.set(xZoom,yZoom,xZoom + tileSize / div,yZoom + tileSize / div);
-          bitmapToDraw.set(x1,y1,x1 + ftileSize,y1 + ftileSize);
+          bitmapToDraw.set(x1,y1,x2,y2);
           canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
           oneTileShown=true;
         }
       }
  else {
         bitmapToZoom.set(0,0,tileSize,tileSize);
-        bitmapToDraw.set(x1,y1,x1 + ftileSize,y1 + ftileSize);
+        bitmapToDraw.set(x1,y1,x2,y2);
         canvas.drawBitmap(bmp,bitmapToZoom,bitmapToDraw,paintBitmap);
         oneTileShown=true;
       }

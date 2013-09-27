@@ -2,22 +2,24 @@
   path.reset();
   if (helper.getFinalLocation() != null && helper.getRoute().isCalculated()) {
     paint.setColor(getColor(nightMode));
-    int w=view.getWidth();
-    int h=view.getHeight();
+    int w=tb.getPixWidth();
+    int h=tb.getPixHeight();
     Location lastProjection=helper.getLastProjection();
-    if (lastProjection != null && view.isPointOnTheRotatedMap(lastProjection.getLatitude(),lastProjection.getLongitude())) {
-      boundsRect=new Rect(-w / 2,-h,3 * w / 2,h);
+    final RotatedTileBox cp;
+    if (lastProjection != null && tb.containsLatLon(lastProjection.getLatitude(),lastProjection.getLongitude())) {
+      cp=tb.copy();
+      cp.increasePixelDimensions(w / 2,h);
     }
  else {
-      boundsRect=new Rect(0,0,w,h);
+      cp=tb;
     }
-    view.calculateLatLonRectangle(boundsRect,latlonRect);
+    final QuadRect latlonRect=cp.getLatLonBounds();
     double topLatitude=latlonRect.top;
     double leftLongitude=latlonRect.left;
     double bottomLatitude=latlonRect.bottom;
     double rightLongitude=latlonRect.right;
     double lat=topLatitude - bottomLatitude + 0.1;
     double lon=rightLongitude - leftLongitude + 0.1;
-    drawLocations(canvas,topLatitude + lat,leftLongitude - lon,bottomLatitude - lat,rightLongitude + lon);
+    drawLocations(tb,canvas,topLatitude + lat,leftLongitude - lon,bottomLatitude - lat,rightLongitude + lon);
   }
 }

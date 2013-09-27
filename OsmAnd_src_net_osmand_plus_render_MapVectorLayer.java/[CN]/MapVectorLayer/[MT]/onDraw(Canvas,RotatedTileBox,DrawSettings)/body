@@ -8,16 +8,14 @@
   }
  else {
     if (!view.isZooming()) {
-      pixRect.set(0,0,view.getWidth(),view.getHeight());
-      updateRotatedTileBox();
-      if (resourceManager.updateRenderedMapNeeded(rotatedTileBox,drawSettings)) {
-        pixRect.set(-view.getWidth() / 3,-view.getHeight() / 4,4 * view.getWidth() / 3,5 * view.getHeight() / 4);
-        updateRotatedTileBox();
-        resourceManager.updateRendererMap(rotatedTileBox);
+      if (resourceManager.updateRenderedMapNeeded(tilesRect,drawSettings)) {
+        final RotatedTileBox copy=tilesRect.copy();
+        copy.increasePixelDimensions(copy.getPixWidth() / 3,copy.getPixHeight() / 4);
+        resourceManager.updateRendererMap(copy);
       }
     }
     MapRenderRepositories renderer=resourceManager.getRenderer();
-    drawRenderedMap(canvas,renderer.getBitmap(),renderer.getBitmapLocation());
-    drawRenderedMap(canvas,renderer.getPrevBitmap(),renderer.getPrevBmpLocation());
+    drawRenderedMap(canvas,renderer.getBitmap(),renderer.getBitmapLocation(),tilesRect);
+    drawRenderedMap(canvas,renderer.getPrevBitmap(),renderer.getPrevBmpLocation(),tilesRect);
   }
 }

@@ -1,2 +1,20 @@
 {
+  boolean shown=false;
+  if (bmp != null && bmpLoc != null) {
+    float rot=bmpLoc.getRotate();
+    final LatLon lt=bmpLoc.getLeftTopLatLon();
+    final LatLon rb=bmpLoc.getRightBottomLatLon();
+    canvas.rotate(-rot,currentViewport.getCenterPixelX(),currentViewport.getCenterPixelY());
+    final int x1=currentViewport.getPixXFromLonNoRot(lt.getLongitude());
+    final int y1=currentViewport.getPixYFromLatNoRot(lt.getLatitude());
+    final int x2=currentViewport.getPixXFromLonNoRot(rb.getLongitude());
+    final int y2=currentViewport.getPixYFromLatNoRot(rb.getLatitude());
+    destImage.set(x1,y1,x2,y2);
+    if (!bmp.isRecycled()) {
+      canvas.drawBitmap(bmp,null,destImage,paintImg);
+      shown=true;
+    }
+    canvas.rotate(rot,currentViewport.getCenterPixelX(),currentViewport.getCenterPixelY());
+  }
+  return shown;
 }

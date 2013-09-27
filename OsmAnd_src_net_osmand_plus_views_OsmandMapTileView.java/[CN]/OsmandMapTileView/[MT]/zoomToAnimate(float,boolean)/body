@@ -1,6 +1,18 @@
 {
+  int zoom=getZoom();
+  float zoomToScale=getZoomScale();
+  float zoomToAnimate=tzoom - zoom - zoomToScale;
+  if (zoomToAnimate >= 1) {
+    zoom+=(int)zoomToAnimate;
+    zoomToAnimate-=(int)zoomToAnimate;
+  }
+  while (zoomToAnimate < 0) {
+    zoom++;
+    zoomToAnimate+=1;
+  }
   if (mainLayer != null && mainLayer.getMaximumShownMapZoom() >= zoom && mainLayer.getMinimumShownMapZoom() <= zoom) {
-    this.zoom=zoom;
+    currentViewport.setZoom(zoom,zoomToScale,zoomToAnimate);
+    currentViewport.setRotate(zoom > LOWEST_ZOOM_TO_ROTATE ? rotate : 0);
     refreshMap();
     if (notify && locationListener != null) {
       locationListener.locationChanged(getLatitude(),getLongitude(),this);
