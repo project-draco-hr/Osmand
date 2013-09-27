@@ -9,21 +9,11 @@
   }
   SurfaceHolder holder=getHolder();
 synchronized (holder) {
-    int nzoom=getZoom();
-    float tileX=(float)MapUtils.getTileNumberX(nzoom,longitude);
-    float tileY=(float)MapUtils.getTileNumberY(nzoom,latitude);
-    float w=getCenterPointX();
-    float h=getCenterPointY();
     Canvas canvas=holder.lockCanvas();
     if (canvas != null) {
-      boolean nightMode=application.getDaynightHelper().isNightMode();
       try {
-        boundsRect.set(0,0,getWidth(),getHeight());
-        calculateTileRectangle(boundsRect,w,h,tileX,tileY,tilesRect);
-        latlonRect.top=(float)MapUtils.getLatitudeFromTile(nzoom,tilesRect.top);
-        latlonRect.left=(float)MapUtils.getLongitudeFromTile(nzoom,tilesRect.left);
-        latlonRect.bottom=(float)MapUtils.getLatitudeFromTile(nzoom,tilesRect.bottom);
-        latlonRect.right=(float)MapUtils.getLongitudeFromTile(nzoom,tilesRect.right);
+        updateLatLonBounds();
+        boolean nightMode=application.getDaynightHelper().isNightMode();
         if (nightMode) {
           canvas.drawARGB(255,100,100,100);
         }
