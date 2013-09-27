@@ -1,0 +1,29 @@
+{
+  PointF point=new PointF(event.getX(),event.getY());
+  List<Object> ns=new ArrayList<Object>();
+  Map<Object,IContextMenuProvider> newSelectedObjects=new LinkedHashMap<Object,ContextMenuLayer.IContextMenuProvider>();
+  for (  OsmandMapLayer layer : mapView.getLayers()) {
+    if (layer instanceof IContextMenuProvider) {
+      ns.clear();
+      ((IContextMenuProvider)layer).collectObjectsFromPoint(point,tb,ns);
+      for (      Object o : ns) {
+        newSelectedObjects.put(o,(IContextMenuProvider)layer);
+      }
+    }
+  }
+  if (newSelectedObjects.isEmpty()) {
+    ns.clear();
+    collectObjectsFromPoint(point,tb,ns);
+    for (    Object o : ns) {
+      newSelectedObjects.put(o,this);
+    }
+  }
+  if (different(newSelectedObjects,selectedObjects)) {
+    ContextMenuLayer contextMenuLayer=mapView.getLayerByClass(ContextMenuLayer.class);
+    if (contextMenuLayer != null) {
+      contextMenuLayer.setSelections(newSelectedObjects);
+      if (!ns.isEmpty())       mapView.showMessage(mapView.getSettings().USE_SHORT_OBJECT_NAMES.get() ? contextMenuLayer.getSelectedObjectName() : contextMenuLayer.getSelectedObjectDescription());
+    }
+    selectedObjects=newSelectedObjects;
+  }
+}

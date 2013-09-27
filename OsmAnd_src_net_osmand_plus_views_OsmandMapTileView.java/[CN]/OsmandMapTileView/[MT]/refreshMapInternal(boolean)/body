@@ -12,7 +12,11 @@ synchronized (holder) {
     Canvas canvas=holder.lockCanvas();
     if (canvas != null) {
       try {
-        updateLatLonBounds();
+        final float ratioy=mapPosition == OsmandSettings.BOTTOM_CONSTANT ? 0.8f : 0.5f;
+        final int cy=(int)(ratioy * getHeight());
+        if (currentViewport.getPixWidth() != getWidth() || currentViewport.getPixHeight() != getHeight() || currentViewport.getCenterPixelY() != cy) {
+          currentViewport.setPixelDimensions(getWidth(),getHeight(),0.5f,ratioy);
+        }
         boolean nightMode=application.getDaynightHelper().isNightMode();
         if (nightMode) {
           canvas.drawARGB(255,100,100,100);
@@ -20,7 +24,7 @@ synchronized (holder) {
  else {
           canvas.drawARGB(255,225,225,225);
         }
-        drawOverMap(canvas,latlonRect,tilesRect,new DrawSettings(nightMode,updateVectorRendering));
+        drawOverMap(canvas,currentViewport,new DrawSettings(nightMode,updateVectorRendering),false);
       }
   finally {
         holder.unlockCanvasAndPost(canvas);

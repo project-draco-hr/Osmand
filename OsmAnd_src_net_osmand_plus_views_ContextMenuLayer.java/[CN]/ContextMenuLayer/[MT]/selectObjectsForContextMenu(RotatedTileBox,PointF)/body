@@ -1,0 +1,23 @@
+{
+  final double lat=tileBox.getLatFromPixel((int)point.x,(int)point.y);
+  final double lon=tileBox.getLonFromPixel((int)point.x,(int)point.y);
+  selectedObjects.clear();
+  List<Object> s=new ArrayList<Object>();
+  LatLon latLon=null;
+  for (  OsmandMapLayer l : view.getLayers()) {
+    if (l instanceof ContextMenuLayer.IContextMenuProvider) {
+      s.clear();
+      ((ContextMenuLayer.IContextMenuProvider)l).collectObjectsFromPoint(point,tileBox,s);
+      for (      Object o : s) {
+        selectedObjects.put(o,((ContextMenuLayer.IContextMenuProvider)l));
+        if (latLon == null) {
+          latLon=((ContextMenuLayer.IContextMenuProvider)l).getObjectLocation(o);
+        }
+      }
+    }
+  }
+  if (latLon == null) {
+    latLon=new LatLon(lat,lon);
+  }
+  return latLon;
+}

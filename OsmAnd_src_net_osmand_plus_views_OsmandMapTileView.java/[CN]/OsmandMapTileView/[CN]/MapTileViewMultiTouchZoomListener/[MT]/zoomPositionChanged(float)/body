@@ -1,12 +1,9 @@
 {
-  float dx=initialMultiTouchCenterPoint.x - getCenterPointX();
-  float dy=initialMultiTouchCenterPoint.y - getCenterPointY();
-  float ex=calcDiffTileX(dx,dy);
-  float ey=calcDiffTileY(dx,dy);
-  int z=(int)calcZoom;
-  double tx=MapUtils.getTileNumberX(z,initialMultiTouchLocation.getLongitude());
-  double ty=MapUtils.getTileNumberY(z,initialMultiTouchLocation.getLatitude());
-  double lat=MapUtils.getLatitudeFromTile(z,ty - ey);
-  double lon=MapUtils.getLongitudeFromTile(z,tx - ex);
-  setLatLon(lat,lon);
+  final QuadPoint cp=initialViewport.getCenterPixelPoint();
+  float dx=initialMultiTouchCenterPoint.x - cp.x;
+  float dy=initialMultiTouchCenterPoint.y - cp.y;
+  final RotatedTileBox calc=initialViewport.copy();
+  calc.setLatLonCenter(initialCenterLatLon.getLatitude(),initialCenterLatLon.getLongitude());
+  final LatLon r=calc.getLatLonFromPixel(cp.x + dx,cp.y + dy);
+  setLatLon(r.getLatitude(),r.getLongitude());
 }

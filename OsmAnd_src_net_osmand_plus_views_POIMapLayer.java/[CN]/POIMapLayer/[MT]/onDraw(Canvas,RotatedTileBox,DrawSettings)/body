@@ -1,11 +1,12 @@
 {
-  if (view.getZoom() >= startZoom) {
+  if (tb.getZoom() >= startZoom) {
     objects.clear();
-    resourceManager.searchAmenitiesAsync(latLonBounds.top,latLonBounds.left,latLonBounds.bottom,latLonBounds.right,view.getZoom(),filter,objects);
-    int r=getRadiusPoi(view.getZoom());
+    final QuadRect latLonBounds=tb.getLatLonBounds();
+    resourceManager.searchAmenitiesAsync(latLonBounds.top,latLonBounds.left,latLonBounds.bottom,latLonBounds.right,tb.getZoom(),filter,objects);
+    int r=getRadiusPoi(tb);
     for (    Amenity o : objects) {
-      int x=view.getRotatedMapXForPoint(o.getLocation().getLatitude(),o.getLocation().getLongitude());
-      int y=view.getRotatedMapYForPoint(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+      int x=tb.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+      int y=tb.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
       canvas.drawCircle(x,y,r,pointAltUI);
       canvas.drawCircle(x,y,r,point);
       String id=null;
@@ -28,10 +29,10 @@
     if (view.getSettings().SHOW_POI_LABEL.get()) {
       TIntHashSet set=new TIntHashSet();
       for (      Amenity o : objects) {
-        int x=view.getRotatedMapXForPoint(o.getLocation().getLatitude(),o.getLocation().getLongitude());
-        int y=view.getRotatedMapYForPoint(o.getLocation().getLatitude(),o.getLocation().getLongitude());
-        int tx=view.getMapXForPoint(o.getLocation().getLongitude());
-        int ty=view.getMapYForPoint(o.getLocation().getLatitude());
+        int x=tb.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+        int y=tb.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+        int tx=tb.getPixXFromLonNoRot(o.getLocation().getLongitude());
+        int ty=tb.getPixYFromLatNoRot(o.getLocation().getLatitude());
         String name=o.getName(view.getSettings().USE_ENGLISH_NAMES.get());
         if (name != null && name.length() > 0) {
           int lines=0;

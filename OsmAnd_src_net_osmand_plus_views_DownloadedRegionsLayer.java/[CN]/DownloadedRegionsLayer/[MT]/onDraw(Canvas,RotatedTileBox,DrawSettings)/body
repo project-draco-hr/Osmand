@@ -1,13 +1,14 @@
 {
-  final int zoom=view.getZoom();
+  final int zoom=tb.getZoom();
   if (downloadBtn.getVisibility() == View.VISIBLE) {
     downloadBtn.setVisibility(View.GONE);
   }
   if (zoom >= ZOOM_TO_SHOW_BORDERS_ST && (zoom < ZOOM_TO_SHOW_BORDERS || zoom >= ZOOM_TO_SHOW_MAP_NAMES) && osmandRegions.isInitialized()) {
+    final QuadRect latLonBox=tb.getLatLonBounds();
     if (!queriedBBox.contains(latLonBox) || Math.abs(queriedZoom - zoom) > 2) {
       float w=Math.abs(latLonBox.width() / 2);
       float h=Math.abs(latLonBox.height() / 2);
-      final RectF rf=new RectF(latLonBox.left - w,latLonBox.top + h,latLonBox.right + w,latLonBox.bottom - h);
+      final QuadRect rf=new QuadRect(latLonBox.left - w,latLonBox.top + h,latLonBox.right + w,latLonBox.bottom - h);
       AsyncTask<Object,Object,List<BinaryMapDataObject>> task=createNewTask(zoom,rf);
       if (currentTask == null) {
         task.execute();
@@ -61,11 +62,11 @@
           }
           double lat=MapUtils.get31LatitudeY(o.getPoint31YTile(0));
           double lon=MapUtils.get31LongitudeX(o.getPoint31XTile(0));
-          path.moveTo(view.getRotatedMapXForPoint(lat,lon),view.getRotatedMapYForPoint(lat,lon));
+          path.moveTo(tb.getPixXFromLonNoRot(lon),tb.getPixYFromLatNoRot(lat));
           for (int j=1; j < o.getPointsLength(); j++) {
             lat=MapUtils.get31LatitudeY(o.getPoint31YTile(j));
             lon=MapUtils.get31LongitudeX(o.getPoint31XTile(j));
-            path.lineTo(view.getRotatedMapXForPoint(lat,lon),view.getRotatedMapYForPoint(lat,lon));
+            path.lineTo(tb.getPixXFromLonNoRot(lon),tb.getPixYFromLatNoRot(lat));
           }
         }
         canvas.drawPath(path,paint);

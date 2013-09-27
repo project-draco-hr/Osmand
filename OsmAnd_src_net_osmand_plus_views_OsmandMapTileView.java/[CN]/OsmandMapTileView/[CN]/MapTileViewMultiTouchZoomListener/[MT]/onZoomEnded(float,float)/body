@@ -1,16 +1,16 @@
 {
   float dz=(float)(Math.log(relativeToStart) / Math.log(2) * 1.5);
-  float calcZoom=initialMultiTouchZoom + dz;
+  float calcZoom=initialViewport.getZoom() + dz;
   setZoom(Math.round(calcZoom));
   final int newZoom=getZoom();
   zoomPositionChanged(newZoom);
   if (application.getInternalAPI().accessibilityEnabled()) {
-    if (newZoom != initialMultiTouchZoom) {
+    if (newZoom != initialViewport.getZoom()) {
       showMessage(getContext().getString(R.string.zoomIs) + " " + newZoom);
     }
  else {
-      final LatLon p1=getLatLonFromScreenPoint(x1,y1);
-      final LatLon p2=getLatLonFromScreenPoint(x2,y2);
+      final LatLon p1=initialViewport.getLatLonFromPixel(x1,y1);
+      final LatLon p2=initialViewport.getLatLonFromPixel(x2,y2);
       showMessage(OsmAndFormatter.getFormattedDistance((float)MapUtils.getDistance(p1.getLatitude(),p1.getLongitude(),p2.getLatitude(),p2.getLongitude()),application));
     }
   }
