@@ -1,12 +1,19 @@
 {
-  float calcZoom=initialViewport.getZoom() + dz + initialViewport.getZoomScale();
   final QuadPoint cp=initialViewport.getCenterPixelPoint();
   float dx=cp.x - initialMultiTouchCenterPoint.x;
   float dy=cp.y - initialMultiTouchCenterPoint.y;
   final RotatedTileBox calc=initialViewport.copy();
   calc.setLatLonCenter(initialCenterLatLon.getLatitude(),initialCenterLatLon.getLongitude());
+  float calcZoom=initialViewport.getZoom() + dz + initialViewport.getZoomScale();
+  float calcRotate=calc.getRotate() + angle;
+  calc.setRotate(angle);
   calc.setZoom(initialViewport.getZoom(),dz + initialViewport.getZoomScale());
   final LatLon r=calc.getLatLonFromPixel(cp.x + dx,cp.y + dy);
   setLatLon(r.getLatitude(),r.getLongitude());
-  zoomToAnimate(calcZoom,true);
+  if (Math.abs(currentViewport.getZoomAnimation() + currentViewport.getZoom() + currentViewport.getZoomScale() - calcZoom) > 0.1) {
+    zoomToAnimate(calcZoom,true);
+  }
+  if (currentViewport.getRotate() != calcRotate) {
+    rotateToAnimate(calcRotate);
+  }
 }
