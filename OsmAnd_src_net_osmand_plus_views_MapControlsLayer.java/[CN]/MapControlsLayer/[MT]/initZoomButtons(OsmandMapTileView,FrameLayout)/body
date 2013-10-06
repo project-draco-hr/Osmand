@@ -36,7 +36,8 @@
     }
   }
 );
-  zoomInButton.setOnLongClickListener(new View.OnLongClickListener(){
+  final OsmandSettings.OsmandPreference<Float> zoomScale=view.getSettings().MAP_ZOOM_SCALE_BY_DENSITY;
+  final View.OnLongClickListener listener=new View.OnLongClickListener(){
     @Override public boolean onLongClick(    View v){
       final AlertDialog.Builder bld=new AlertDialog.Builder(view.getContext());
       float scale=view.getZoomScale();
@@ -66,7 +67,8 @@
       bld.setSingleChoiceItems(values.toArray(new String[values.size()]),i,new DialogInterface.OnClickListener(){
         @Override public void onClick(        DialogInterface dialog,        int which){
           float newScale=(float)Math.sqrt((tlist.get(which) - 100f) / 100f);
-          view.getAnimatedDraggingThread().startZooming(view.getZoom(),newScale,false);
+          zoomScale.set(newScale - (float)Math.sqrt(Math.max(view.getDensity() - 1,0)));
+          view.getAnimatedDraggingThread().startZooming(view.getZoom(),view.getSettingsZoomScale(),false);
           dialog.dismiss();
         }
       }
@@ -75,11 +77,13 @@
       return true;
     }
   }
-);
+;
+  zoomInButton.setOnLongClickListener(listener);
   zoomOutButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       activity.changeZoom(-1);
     }
   }
 );
+  zoomOutButton.setOnLongClickListener(listener);
 }
