@@ -3,17 +3,17 @@
     long now=System.currentTimeMillis();
     final RotatedTileBox tb=mapView.getCurrentRotatedTileBox();
     float zdelta=defineZoomFromSpeed(tb,location.getSpeed());
-    if (Math.abs(zdelta) >= OsmandMapTileView.ZOOM_DELTA_1) {
+    if (Math.abs(zdelta) >= 0.5) {
       if (zdelta >= 2) {
-        zdelta-=3 * OsmandMapTileView.ZOOM_DELTA_1;
+        zdelta-=1;
       }
  else       if (zdelta <= -2) {
-        zdelta+=3 * OsmandMapTileView.ZOOM_DELTA_1;
+        zdelta+=1;
       }
       if (now - lastTimeAutoZooming > 4500) {
         lastTimeAutoZooming=now;
-        float complexZoom=tb.getZoom() + tb.getZoomScale();
-        float newZoom=Math.round((complexZoom + zdelta) * OsmandMapTileView.ZOOM_DELTA) * OsmandMapTileView.ZOOM_DELTA_1;
+        float complexZoom=tb.getZoom() + tb.getZoomScale() + zdelta;
+        float newZoom=Math.round(complexZoom * 2) * 0.5f;
         final int tz=(int)newZoom;
         mapView.setComplexZoom(tz,newZoom - tz);
       }
