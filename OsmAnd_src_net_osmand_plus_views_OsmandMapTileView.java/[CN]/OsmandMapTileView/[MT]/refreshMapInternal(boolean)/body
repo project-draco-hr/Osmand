@@ -1,13 +1,7 @@
 {
   handler.removeMessages(1);
-  long ms=SystemClock.elapsedRealtime();
-  boolean useInternet=getSettings().USE_INTERNET_TO_DOWNLOAD_TILES.get();
-  if (useInternet) {
-    if (application != null) {
-      application.getResourceManager().getMapTileDownloader().refuseAllPreviousRequests();
-    }
-  }
   SurfaceHolder holder=getHolder();
+  long ms=SystemClock.elapsedRealtime();
 synchronized (holder) {
     Canvas canvas=holder.lockCanvas();
     if (canvas != null) {
@@ -18,27 +12,22 @@ synchronized (holder) {
           currentViewport.setPixelDimensions(getWidth(),getHeight(),0.5f,ratioy);
         }
         boolean nightMode=application.getDaynightHelper().isNightMode();
+        RotatedTileBox viewportToDraw=currentViewport.copy();
+        DrawSettings drawSettings=new DrawSettings(nightMode,updateVectorRendering);
         if (nightMode) {
           canvas.drawARGB(255,100,100,100);
         }
  else {
           canvas.drawARGB(255,225,225,225);
         }
-        drawOverMap(canvas,currentViewport.copy(),new DrawSettings(nightMode,updateVectorRendering),false);
+        drawOverMap(canvas,viewportToDraw,drawSettings,false);
       }
   finally {
         holder.unlockCanvasAndPost(canvas);
       }
     }
     if (MEASURE_FPS) {
-      fpsMeasureMs+=SystemClock.elapsedRealtime() - ms;
-      fpsMeasureCount++;
-      if (fpsMeasureCount > 10 || (ms - fpsFirstMeasurement) > 400) {
-        fpsFirstMeasurement=ms;
-        fps=(1000f * fpsMeasureCount / fpsMeasureMs);
-        fpsMeasureCount=0;
-        fpsMeasureMs=0;
-      }
+      main.calculateFPS(ms,SystemClock.elapsedRealtime());
     }
   }
 }
