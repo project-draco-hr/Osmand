@@ -41,8 +41,8 @@
     @Override public boolean onLongClick(    View v){
       final AlertDialog.Builder bld=new AlertDialog.Builder(view.getContext());
       float scale=view.getZoomScale();
-      int p=(int)Math.round(scale * scale * 100) + 100;
-      final TIntArrayList tlist=new TIntArrayList(new int[]{100,150,200,300,400});
+      int p=(int)((scale > 0 ? 1 : -1) * Math.round(scale * scale * 100)) + 100;
+      final TIntArrayList tlist=new TIntArrayList(new int[]{75,100,150,200,300,400});
       final List<String> values=new ArrayList<String>();
       int i=-1;
       for (int k=0; k <= tlist.size(); k++) {
@@ -66,7 +66,14 @@
       bld.setTitle(R.string.map_magnifier);
       bld.setSingleChoiceItems(values.toArray(new String[values.size()]),i,new DialogInterface.OnClickListener(){
         @Override public void onClick(        DialogInterface dialog,        int which){
-          float newScale=(float)Math.sqrt((tlist.get(which) - 100f) / 100f);
+          int p=tlist.get(which);
+          float newScale;
+          if (p >= 100) {
+            newScale=(float)Math.sqrt((tlist.get(which) - 100f) / 100f);
+          }
+ else {
+            newScale=-(float)Math.sqrt((100f - tlist.get(which)) / 100f);
+          }
           zoomScale.set(newScale - (float)Math.sqrt(Math.max(view.getDensity() - 1,0)));
           view.getAnimatedDraggingThread().startZooming(view.getZoom(),view.getSettingsZoomScale(),false);
           dialog.dismiss();
