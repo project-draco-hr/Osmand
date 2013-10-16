@@ -1,17 +1,5 @@
 {
   this.view=view;
-synchronized (this) {
-    if (handlerToLoop == null) {
-      new Thread("Open street bugs layer"){
-        @Override public void run(){
-          Looper.prepare();
-          handlerToLoop=new Handler();
-          Looper.loop();
-        }
-      }
-.start();
-    }
-  }
   pointOpenedUI=new Paint();
   pointOpenedUI.setColor(activity.getResources().getColor(R.color.osmbug_opened));
   pointOpenedUI.setAntiAlias(true);
@@ -21,4 +9,14 @@ synchronized (this) {
   pointClosedUI=new Paint();
   pointClosedUI.setColor(activity.getResources().getColor(R.color.osmbug_closed));
   pointClosedUI.setAntiAlias(true);
+  data=new OsmandMapLayer.MapLayerData<List<OpenStreetNote>>(){
+{
+      ZOOM_THRESHOLD=1;
+    }
+    @Override protected List<OpenStreetNote> calculateResult(    RotatedTileBox tileBox){
+      QuadRect bounds=tileBox.getLatLonBounds();
+      return loadingBugs(bounds.top,bounds.left,bounds.bottom,bounds.right);
+    }
+  }
+;
 }
