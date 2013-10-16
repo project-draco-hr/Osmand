@@ -1,0 +1,37 @@
+{
+  for (  OsMoDroidPoint op : OsMoDroidPointArrayList) {
+    LatLon newLatlon;
+    try {
+      newLatlon=new LatLon(myOsMoDroidPlugin.mIRemoteService.getObjectLat(layerId,op.id),myOsMoDroidPlugin.mIRemoteService.getObjectLon(layerId,op.id));
+      if (!op.latlon.equals(newLatlon)) {
+        op.prevlatlon=op.latlon;
+      }
+      op.latlon=newLatlon;
+      op.speed=myOsMoDroidPlugin.mIRemoteService.getObjectSpeed(layerId,op.id);
+    }
+ catch (    RemoteException e) {
+      e.printStackTrace();
+      return;
+    }
+    double latitude=op.latlon.getLatitude();
+    double longitude=op.latlon.getLongitude();
+    double prevlatitude=op.latlon.getLatitude();
+    double prevlongitude=op.latlon.getLongitude();
+    if (op.prevlatlon != null) {
+      prevlatitude=op.prevlatlon.getLatitude();
+      prevlongitude=op.prevlatlon.getLongitude();
+    }
+    int locationX=tileBox.getPixXFromLatLon(latitude,longitude);
+    int locationY=tileBox.getPixYFromLatLon(latitude,longitude);
+    int prevlocationX=tileBox.getPixXFromLatLon(prevlatitude,prevlongitude);
+    int prevlocationY=tileBox.getPixYFromLatLon(prevlatitude,prevlongitude);
+    textPaint.setColor(Color.parseColor("#013220"));
+    canvas.drawText(op.name,locationX,locationY - radius,textPaint);
+    canvas.drawText(op.speed,locationX,locationY - 2 * radius,textPaint);
+    textPaint.setColor(Color.parseColor("#" + op.color));
+    textPaint.setShadowLayer(radius,0,0,Color.GRAY);
+    canvas.drawCircle(locationX,locationY,radius,textPaint);
+    textPaint.setStrokeWidth(radius);
+    canvas.drawLine(locationX,locationY,prevlocationX,prevlocationY,textPaint);
+  }
+}

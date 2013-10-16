@@ -1,5 +1,13 @@
 {
   final QuadPoint c=tileBox.getCenterPixelPoint();
+synchronized (this) {
+    if (bufferBitmap != null && !bufferBitmap.isRecycled()) {
+      canvas.save();
+      canvas.rotate(tileBox.getRotate(),c.x,c.y);
+      drawBasemap(canvas);
+      canvas.restore();
+    }
+  }
   for (int i=0; i < layers.size(); i++) {
     try {
       OsmandMapLayer layer=layers.get(i);
@@ -7,18 +15,13 @@
       if (!layer.drawInScreenPixels()) {
         canvas.rotate(tileBox.getRotate(),c.x,c.y);
       }
-      if (onPrepareImage) {
-        layer.onPrepareBufferImage(canvas,tileBox,drawSettings);
-      }
- else {
-        layer.onDraw(canvas,tileBox,drawSettings);
-      }
+      layer.onDraw(canvas,tileBox,drawSettings);
       canvas.restore();
     }
  catch (    IndexOutOfBoundsException e) {
     }
   }
-  if (showMapPosition && !onPrepareImage) {
+  if (showMapPosition) {
     canvas.drawCircle(c.x,c.y,3 * dm.density,paintCenter);
     canvas.drawCircle(c.x,c.y,7 * dm.density,paintCenter);
   }

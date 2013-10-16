@@ -1,2 +1,34 @@
 {
+  if (tileBox.getPixHeight() == 0 || tileBox.getPixWidth() == 0) {
+    return;
+  }
+  baseHandler.removeMessages(BASE_REFRESH_MESSAGE);
+  if (bufferBitmapTmp == null || tileBox.getPixHeight() != bufferBitmapTmp.getHeight() || tileBox.getPixWidth() != bufferBitmapTmp.getWidth()) {
+    bufferBitmapTmp=Bitmap.createBitmap(tileBox.getPixWidth(),tileBox.getPixHeight(),Config.RGB_565);
+  }
+  long start=SystemClock.elapsedRealtime();
+  final QuadPoint c=tileBox.getCenterPixelPoint();
+  Canvas canvas=new Canvas(bufferBitmapTmp);
+  fillCanvas(canvas,drawSettings);
+  for (int i=0; i < layers.size(); i++) {
+    try {
+      OsmandMapLayer layer=layers.get(i);
+      canvas.save();
+      if (!layer.drawInScreenPixels()) {
+        canvas.rotate(tileBox.getRotate(),c.x,c.y);
+      }
+      layer.onPrepareBufferImage(canvas,tileBox,drawSettings);
+      canvas.restore();
+    }
+ catch (    IndexOutOfBoundsException e) {
+    }
+  }
+  Bitmap t=bufferBitmap;
+synchronized (this) {
+    bufferImgLoc=tileBox;
+    bufferBitmap=bufferBitmapTmp;
+    bufferBitmapTmp=t;
+  }
+  long end=SystemClock.elapsedRealtime();
+  additional.calculateFPS(start,end);
 }

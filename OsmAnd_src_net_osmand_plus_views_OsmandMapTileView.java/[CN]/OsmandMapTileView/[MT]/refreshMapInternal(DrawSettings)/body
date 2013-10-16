@@ -1,5 +1,5 @@
 {
-  handler.removeMessages(1);
+  handler.removeMessages(MAP_REFRESH_MESSAGE);
   SurfaceHolder holder=getHolder();
   long ms=SystemClock.elapsedRealtime();
 synchronized (holder) {
@@ -11,16 +11,9 @@ synchronized (holder) {
         if (currentViewport.getPixWidth() != getWidth() || currentViewport.getPixHeight() != getHeight() || currentViewport.getCenterPixelY() != cy) {
           currentViewport.setPixelDimensions(getWidth(),getHeight(),0.5f,ratioy);
         }
-        boolean nightMode=application.getDaynightHelper().isNightMode();
         RotatedTileBox viewportToDraw=currentViewport.copy();
-        DrawSettings drawSettings=new DrawSettings(nightMode,updateVectorRendering);
-        if (nightMode) {
-          canvas.drawARGB(255,100,100,100);
-        }
- else {
-          canvas.drawARGB(255,225,225,225);
-        }
-        drawOverMap(canvas,viewportToDraw,drawSettings,false);
+        fillCanvas(canvas,drawSettings);
+        drawOverMap(canvas,viewportToDraw,drawSettings);
       }
   finally {
         holder.unlockCanvasAndPost(canvas);

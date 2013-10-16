@@ -1,0 +1,44 @@
+{
+  if (measurementPoints.size() > 0) {
+    path.reset();
+    int marginY=originIcon.getHeight();
+    int marginX=originIcon.getWidth() / 2;
+    for (int i=0; i < measurementPoints.size(); i++) {
+      Iterator<WptPt> it=measurementPoints.get(i).iterator();
+      boolean first=true;
+      while (it.hasNext()) {
+        WptPt point=it.next();
+        int locationX=tileBox.getPixXFromLonNoRot(point.lon);
+        int locationY=tileBox.getPixYFromLatNoRot(point.lat);
+        if (first) {
+          path.moveTo(locationX,locationY);
+          first=false;
+        }
+ else {
+          path.lineTo(locationX,locationY);
+        }
+      }
+    }
+    canvas.drawPath(path,paint);
+    for (int i=0; i < measurementPoints.size(); i++) {
+      Iterator<WptPt> it=measurementPoints.get(i).iterator();
+      boolean first=true;
+      while (it.hasNext()) {
+        WptPt pt=it.next();
+        if (tileBox.containsLatLon(pt.lat,pt.lon)) {
+          int locationX=tileBox.getPixXFromLonNoRot(pt.lon);
+          int locationY=tileBox.getPixYFromLatNoRot(pt.lat);
+          if (first || !it.hasNext() || pt.desc != null) {
+            canvas.rotate(-view.getRotate(),locationX,locationY);
+            canvas.drawBitmap(distanceMeasurementMode == 1 ? originIcon : destinationIcon,locationX - marginX,locationY - marginY,bitmapPaint);
+            canvas.rotate(view.getRotate(),locationX,locationY);
+          }
+ else {
+            canvas.drawCircle(locationX,locationY,10 * tileBox.getDensity(),paint2);
+          }
+        }
+        first=false;
+      }
+    }
+  }
+}

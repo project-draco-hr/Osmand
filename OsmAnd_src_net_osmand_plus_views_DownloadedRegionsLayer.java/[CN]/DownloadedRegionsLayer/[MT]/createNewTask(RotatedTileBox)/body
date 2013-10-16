@@ -1,20 +1,20 @@
 {
   return new AsyncTask<Object,Object,List<BinaryMapDataObject>>(){
     @Override protected List<BinaryMapDataObject> doInBackground(    Object... params){
-      if (queriedBBox.contains(rf)) {
+      if (queriedBox != null && !queriedBox.containsTileBox(tileBox) && Math.abs(queriedBox.getZoom() - tileBox.getZoom()) <= ZOOM_THRESHOLD) {
         return null;
       }
-      if (zoom < ZOOM_TO_SHOW_MAP_NAMES) {
+      if (tileBox.getZoom() < ZOOM_TO_SHOW_MAP_NAMES) {
         basemapExists=rm.getRenderer().basemapExists();
       }
       List<BinaryMapDataObject> result=null;
-      int left=MapUtils.get31TileNumberX(rf.left);
-      int right=MapUtils.get31TileNumberX(rf.right);
-      int top=MapUtils.get31TileNumberY(rf.top);
-      int bottom=MapUtils.get31TileNumberY(rf.bottom);
-      final boolean empty=rm.getRenderer().checkIfMapIsEmpty(left,right,top,bottom,zoom);
+      int left=MapUtils.get31TileNumberX(tileBox.getLeftTopLatLon().getLongitude());
+      int right=MapUtils.get31TileNumberX(tileBox.getRightBottomLatLon().getLongitude());
+      int top=MapUtils.get31TileNumberY(tileBox.getLeftTopLatLon().getLatitude());
+      int bottom=MapUtils.get31TileNumberY(tileBox.getRightBottomLatLon().getLatitude());
+      final boolean empty=rm.getRenderer().checkIfMapIsEmpty(left,right,top,bottom,tileBox.getZoom());
       noMapsPresent=empty;
-      if (!empty && zoom >= ZOOM_TO_SHOW_MAP_NAMES) {
+      if (!empty && tileBox.getZoom() >= ZOOM_TO_SHOW_MAP_NAMES) {
         return Collections.emptyList();
       }
       try {
@@ -26,7 +26,7 @@
       Iterator<BinaryMapDataObject> it=result.iterator();
       while (it.hasNext()) {
         BinaryMapDataObject o=it.next();
-        if (zoom < ZOOM_TO_SHOW_BORDERS) {
+        if (tileBox.getZoom() < ZOOM_TO_SHOW_BORDERS) {
         }
  else {
           if (!osmandRegions.contain(o,left / 2 + right / 2,top / 2 + bottom / 2)) {
@@ -41,9 +41,8 @@
     }
     @Override protected void onPostExecute(    List<BinaryMapDataObject> result){
       if (result != null) {
-        queriedBBox=rf;
+        queriedBox=tileBox;
         objectsToDraw=result;
-        queriedZoom=zoom;
       }
       currentTask=null;
       if (pendingTask != null) {

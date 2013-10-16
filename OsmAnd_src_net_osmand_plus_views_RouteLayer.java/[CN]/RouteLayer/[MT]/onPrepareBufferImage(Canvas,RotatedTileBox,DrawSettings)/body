@@ -1,0 +1,25 @@
+{
+  path.reset();
+  if (helper.getFinalLocation() != null && helper.getRoute().isCalculated()) {
+    paint.setColor(getColor(settings));
+    int w=tileBox.getPixWidth();
+    int h=tileBox.getPixHeight();
+    Location lastProjection=helper.getLastProjection();
+    final RotatedTileBox cp;
+    if (lastProjection != null && tileBox.containsLatLon(lastProjection.getLatitude(),lastProjection.getLongitude())) {
+      cp=tileBox.copy();
+      cp.increasePixelDimensions(w / 2,h);
+    }
+ else {
+      cp=tileBox;
+    }
+    final QuadRect latlonRect=cp.getLatLonBounds();
+    double topLatitude=latlonRect.top;
+    double leftLongitude=latlonRect.left;
+    double bottomLatitude=latlonRect.bottom;
+    double rightLongitude=latlonRect.right;
+    double lat=topLatitude - bottomLatitude + 0.1;
+    double lon=rightLongitude - leftLongitude + 0.1;
+    drawLocations(tileBox,canvas,topLatitude + lat,leftLongitude - lon,bottomLatitude - lat,rightLongitude + lon);
+  }
+}

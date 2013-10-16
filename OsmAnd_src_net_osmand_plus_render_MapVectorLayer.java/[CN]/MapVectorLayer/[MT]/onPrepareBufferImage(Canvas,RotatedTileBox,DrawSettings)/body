@@ -1,0 +1,21 @@
+{
+  if (!visible) {
+    return;
+  }
+  if (!isVectorDataVisible() && tileLayer != null) {
+    tileLayer.drawTileMap(canvas,tilesRect);
+    resourceManager.getRenderer().interruptLoadingMap();
+  }
+ else {
+    if (!view.isZooming()) {
+      if (resourceManager.updateRenderedMapNeeded(tilesRect,drawSettings)) {
+        final RotatedTileBox copy=tilesRect.copy();
+        copy.increasePixelDimensions(copy.getPixWidth() / 3,copy.getPixHeight() / 4);
+        resourceManager.updateRendererMap(copy);
+      }
+    }
+    MapRenderRepositories renderer=resourceManager.getRenderer();
+    drawRenderedMap(canvas,renderer.getBitmap(),renderer.getBitmapLocation(),tilesRect);
+    drawRenderedMap(canvas,renderer.getPrevBitmap(),renderer.getPrevBmpLocation(),tilesRect);
+  }
+}
