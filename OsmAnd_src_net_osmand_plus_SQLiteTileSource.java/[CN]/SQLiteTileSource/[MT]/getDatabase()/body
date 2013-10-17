@@ -29,6 +29,17 @@
           timeSupported=hasTimeColumn();
           addInfoColumn("timecolumn",timeSupported ? "yes" : "no");
         }
+        int expireminutes=list.indexOf("expireminutes");
+        this.expirationTimeMillis=-1;
+        if (expireminutes != -1) {
+          int minutes=(int)cursor.getInt(expireminutes);
+          if (minutes > 0) {
+            this.expirationTimeMillis=minutes * 60 * 1000;
+          }
+        }
+ else {
+          addInfoColumn("expireminutes","0");
+        }
         boolean inversiveInfoZoom=inversiveZoom;
         int mnz=list.indexOf("minzoom");
         if (mnz != -1) {
@@ -36,17 +47,15 @@
         }
         int mxz=list.indexOf("maxzoom");
         if (mxz != -1) {
-          baseZoom=(int)cursor.getInt(mxz);
+          maxZoom=(int)cursor.getInt(mxz);
         }
         if (inversiveInfoZoom) {
           mnz=minZoom;
-          minZoom=17 - baseZoom;
-          baseZoom=17 - mnz;
+          minZoom=17 - maxZoom;
+          maxZoom=17 - mnz;
         }
       }
       cursor.close();
-      maxZoom=24;
-      while ((tileSize >> (maxZoom - baseZoom)) < minScaledSize)       maxZoom--;
     }
  catch (    RuntimeException e) {
       e.printStackTrace();

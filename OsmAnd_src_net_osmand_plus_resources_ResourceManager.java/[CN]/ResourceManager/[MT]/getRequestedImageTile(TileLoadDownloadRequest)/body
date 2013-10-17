@@ -17,7 +17,14 @@
     Bitmap bmp=null;
     if (req.tileSource instanceof SQLiteTileSource) {
       try {
-        bmp=((SQLiteTileSource)req.tileSource).getImage(req.xTile,req.yTile,req.zoom);
+        long[] tm=new long[1];
+        bmp=((SQLiteTileSource)req.tileSource).getImage(req.xTile,req.yTile,req.zoom,tm);
+        if (tm[0] != 0) {
+          int ts=req.tileSource.getExpirationTimeMillis();
+          if (ts != -1 && req.url != null && time - tm[0] > ts) {
+            asyncLoadingThread.requestToDownload(req);
+          }
+        }
       }
  catch (      OutOfMemoryError e) {
         log.error("Out of memory error",e);

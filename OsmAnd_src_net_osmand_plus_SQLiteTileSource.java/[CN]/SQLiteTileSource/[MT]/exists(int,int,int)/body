@@ -1,0 +1,24 @@
+{
+  SQLiteConnection db=getDatabase();
+  if (db == null) {
+    return false;
+  }
+  long time=System.currentTimeMillis();
+  try {
+    int z=getFileZoom(zoom);
+    SQLiteCursor cursor=db.rawQuery("SELECT 1 FROM tiles WHERE x = ? AND y = ? AND z = ?",new String[]{x + "",y + "",z + ""});
+    try {
+      boolean e=cursor.moveToFirst();
+      cursor.close();
+      return e;
+    }
+ catch (    SQLiteDiskIOException e) {
+      return false;
+    }
+  }
+  finally {
+    if (log.isDebugEnabled()) {
+      log.debug("Checking tile existance x = " + x + " y = "+ y+ " z = "+ zoom+ " for "+ (System.currentTimeMillis() - time));
+    }
+  }
+}
