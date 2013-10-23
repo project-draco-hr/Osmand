@@ -7,10 +7,18 @@
  catch (  IllegalArgumentException e) {
     Log.d(PlatformUtil.TAG,"GPS location provider not available");
   }
-  try {
-    service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,networkListener);
-  }
- catch (  IllegalArgumentException e) {
-    Log.d(PlatformUtil.TAG,"Network location provider not available");
+  List<String> providers=service.getProviders(true);
+  for (  String provider : providers) {
+    if (provider == null || provider.equals(LocationManager.GPS_PROVIDER)) {
+      continue;
+    }
+    try {
+      NetworkListener networkListener=new NetworkListener();
+      service.requestLocationUpdates(provider,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,networkListener);
+      networkListeners.add(networkListener);
+    }
+ catch (    IllegalArgumentException e) {
+      Log.d(PlatformUtil.TAG,provider + " location provider not available");
+    }
   }
 }
