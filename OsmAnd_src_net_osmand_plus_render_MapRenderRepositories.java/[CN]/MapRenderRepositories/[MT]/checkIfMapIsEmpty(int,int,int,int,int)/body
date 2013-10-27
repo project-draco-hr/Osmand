@@ -10,6 +10,16 @@
     }
   }
 );
+  SearchRequest<RouteDataObject> searchRouteRequest=BinaryMapIndexReader.buildSearchRouteRequest(leftX,rightX,topY,bottomY,new ResultMatcher<RouteDataObject>(){
+    @Override public boolean publish(    RouteDataObject object){
+      empty[0]=false;
+      return false;
+    }
+    @Override public boolean isCancelled(){
+      return !empty[0];
+    }
+  }
+);
   for (  BinaryMapIndexReader c : files.values()) {
     if (!c.isBasemap()) {
       try {
@@ -19,6 +29,16 @@
       }
       if (!empty[0]) {
         return false;
+      }
+      for (      RouteRegion r : c.getRoutingIndexes()) {
+        try {
+          List<RouteSubregion> regs=c.searchRouteIndexTree(searchRouteRequest,r.getSubregions());
+          if (!regs.isEmpty()) {
+            return false;
+          }
+        }
+ catch (        IOException e) {
+        }
       }
     }
   }
