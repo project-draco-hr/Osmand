@@ -1,0 +1,33 @@
+{
+  for (int i=currentRoad; i < roads.size(); i++) {
+    RouteSegmentResult road=roads.get(i);
+    boolean firstRoad=i == currentRoad;
+    boolean plus=road.getStartPointIndex() < road.getEndPointIndex();
+    for (int j=firstRoad ? currentSegment : road.getStartPointIndex() + 1; j <= road.getEndPointIndex(); ) {
+      RouteDataObject obj=road.getObject();
+      int st31x=obj.getPoint31XTile(j - 1);
+      int st31y=obj.getPoint31YTile(j - 1);
+      int end31x=obj.getPoint31XTile(j);
+      int end31y=obj.getPoint31YTile(j);
+      boolean last=i == roads.size() - 1 && j == road.getEndPointIndex();
+      boolean first=firstRoad && j == currentSegment;
+      if (first) {
+        st31x=(int)currentPoint.x;
+        st31y=(int)currentPoint.y;
+      }
+      double dd=MapUtils.squareRootDist31(st31x,st31y,end31x,end31y);
+      if (meters > dd && !last) {
+        meters-=dd;
+      }
+ else {
+        int prx=(int)(st31x + (end31x - st31x) * (meters / dd));
+        int pry=(int)(st31y + (end31y - st31y) * (meters / dd));
+        l.setLongitude(MapUtils.get31LongitudeX(prx));
+        l.setLatitude(MapUtils.get31LatitudeY(pry));
+        return (float)Math.max(meters - dd,0);
+      }
+      j+=plus ? 1 : -1;
+    }
+  }
+  return -1;
+}

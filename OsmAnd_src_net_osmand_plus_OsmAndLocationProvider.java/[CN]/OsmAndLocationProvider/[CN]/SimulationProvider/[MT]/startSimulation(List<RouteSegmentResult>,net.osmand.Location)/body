@@ -1,5 +1,5 @@
 {
-  roads=roads;
+  this.roads=roads;
   startLocation=new net.osmand.Location(currentLocation);
   long ms=System.currentTimeMillis();
   if (ms - startLocation.getTime() > 5000 || ms < startLocation.getTime()) {
@@ -10,16 +10,19 @@
   int py=MapUtils.get31TileNumberY(currentLocation.getLatitude());
   double dist=1000;
   for (int i=0; i < roads.size(); i++) {
-    BinaryMapDataObject road=roads.get(i);
-    for (int j=1; j < road.getPointsLength(); j++) {
-      QuadPoint proj=MapUtils.getProjectionPoint31(px,py,road.getPoint31XTile(j - 1),road.getPoint31YTile(j - 1),road.getPoint31XTile(j),road.getPoint31YTile(j));
+    RouteSegmentResult road=roads.get(i);
+    boolean plus=road.getStartPointIndex() < road.getEndPointIndex();
+    for (int j=road.getStartPointIndex() + 1; j <= road.getEndPointIndex(); ) {
+      RouteDataObject obj=road.getObject();
+      QuadPoint proj=MapUtils.getProjectionPoint31(px,py,obj.getPoint31XTile(j - 1),obj.getPoint31YTile(j - 1),obj.getPoint31XTile(j),obj.getPoint31YTile(j));
       double dd=squareDist((int)proj.x,(int)proj.y,px,py);
       if (dd < dist) {
         dist=dd;
         currentRoad=i;
         currentSegment=j;
-        currentProjection=MapUtils.calculateProjection31TileMetric(road.getPoint31XTile(j - 1),road.getPoint31YTile(j - 1),road.getPoint31XTile(j),road.getPoint31YTile(j),px,py);
+        currentPoint=proj;
       }
+      j+=plus ? 1 : -1;
     }
   }
 }

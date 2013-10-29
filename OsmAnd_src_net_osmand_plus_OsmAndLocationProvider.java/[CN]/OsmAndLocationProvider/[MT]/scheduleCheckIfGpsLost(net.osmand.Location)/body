@@ -16,5 +16,22 @@
       }
     }
 ,LOST_LOCATION_CHECK_DELAY);
+    if (routingHelper.isFollowingMode() && routingHelper.getLeftDistance() > 0 && simulatePosition == null) {
+      app.runMessageInUIThreadAndCancelPrevious(START_SIMULATE_LOCATION_MSG_ID,new Runnable(){
+        @Override public void run(){
+          net.osmand.Location lastKnown=getLastKnownLocation();
+          if (lastKnown != null && lastKnown.getTime() > fixTime) {
+            return;
+          }
+          List<RouteSegmentResult> tunnel=routingHelper.getUpcomingTunnel(1000);
+          if (tunnel != null) {
+            simulatePosition=new SimulationProvider();
+            simulatePosition.startSimulation(tunnel,location);
+            simulatePosition();
+          }
+        }
+      }
+,START_LOCATION_SIMULATION_DELAY);
+    }
   }
 }
