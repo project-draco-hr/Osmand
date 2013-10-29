@@ -1,0 +1,27 @@
+{
+  if (zoomShadow.getBounds().width() == 0) {
+    zoomShadow.setBounds(zoomInButton.getLeft() - 2,zoomInButton.getTop() - (int)(18 * scaleCoefficient),zoomInButton.getRight(),zoomInButton.getBottom());
+  }
+  zoomShadow.draw(canvas);
+  if (drawZoomLevel) {
+    String zoomText=tb.getZoom() + "";
+    float frac=tb.getZoomScale();
+    if (frac != 0) {
+      int ifrac=(int)(frac * 10);
+      boolean pos=ifrac > 0;
+      zoomText+=(pos ? "+" : "-");
+      zoomText+=Math.abs(ifrac) / 10;
+      if (ifrac % 10 != 0) {
+        zoomText+="." + Math.abs(ifrac) % 10;
+      }
+    }
+    float length=zoomTextPaint.measureText(zoomText);
+    ShadowText.draw(zoomText,canvas,zoomInButton.getLeft() + (zoomInButton.getWidth() - length - 2) / 2,zoomInButton.getTop() + 4 * scaleCoefficient,zoomTextPaint,shadowColor);
+  }
+ else {
+    int size=(int)(16 * scaleCoefficient);
+    int top=(int)(zoomInButton.getTop() - size - 4 * scaleCoefficient);
+    int left=(int)(zoomInButton.getLeft() + (zoomInButton.getWidth() - mapMagnifier.getWidth() - 2 * scaleCoefficient) / 2);
+    canvas.drawBitmap(mapMagnifier,null,new Rect(left,top,left + size * 2,top + size * 2),bitmapPaint);
+  }
+}
