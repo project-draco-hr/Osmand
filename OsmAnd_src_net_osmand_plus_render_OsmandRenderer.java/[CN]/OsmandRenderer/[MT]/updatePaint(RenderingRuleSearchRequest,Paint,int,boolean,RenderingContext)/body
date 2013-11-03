@@ -61,7 +61,28 @@
     }
     String pathEffect=req.getStringPropertyValue(rPathEff);
     if (!Algorithms.isEmpty(pathEffect)) {
-      p.setPathEffect(getDashEffect(pathEffect));
+      if (!parsedDashEffects.containsKey(pathEffect)) {
+        String[] vls=pathEffect.split("_");
+        float[] vs=new float[vls.length * 2];
+        for (int i=0; i < vls.length; i++) {
+          int s=vls[i].indexOf(':');
+          String pre=vls[i];
+          String post="";
+          if (s != -1) {
+            pre=vls[i].substring(0,i);
+            post=vls[i].substring(i + 1);
+          }
+          if (pre.length() > 0) {
+            vs[i * 2]=Float.parseFloat(pre);
+          }
+          if (post.length() > 0) {
+            vs[i * 2 + 1]=Float.parseFloat(post);
+          }
+        }
+        parsedDashEffects.put(pathEffect,vs);
+      }
+      float[] cachedValues=parsedDashEffects.get(pathEffect);
+      p.setPathEffect(getDashEffect(rc,cachedValues,0));
     }
  else {
       p.setPathEffect(null);
