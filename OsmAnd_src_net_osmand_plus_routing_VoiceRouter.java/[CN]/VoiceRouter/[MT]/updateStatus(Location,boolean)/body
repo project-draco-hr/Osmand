@@ -7,7 +7,7 @@
   RouteSegmentResult currentSegment=router.getCurrentSegmentResult();
   if (nextInfo == null || nextInfo.directionInfo == null || nextInfo.directionInfo.distance == 0) {
     if (repeat || currentStatus <= STATUS_UNKNOWN) {
-      if (playGoAheadToDestination(nextInfo == null ? "" : getSpeakableStreetName(nextInfo.directionInfo),nextInfo == null ? "" : getSpeakablePointName(nextInfo.pointName))) {
+      if (playGoAheadToDestination(nextInfo == null ? empty : getSpeakableStreetName(currentSegment,nextInfo.directionInfo),nextInfo == null ? "" : getSpeakablePointName(nextInfo.pointName))) {
         currentStatus=STATUS_TOLD;
         playGoAheadDist=0;
       }
@@ -16,7 +16,7 @@
   }
   if (nextInfo.intermediatePoint) {
     if (repeat || currentStatus <= STATUS_UNKNOWN) {
-      if (playGoAheadToIntermediate(getSpeakableStreetName(nextInfo.directionInfo),getSpeakablePointName(nextInfo.pointName))) {
+      if (playGoAheadToIntermediate(getSpeakableStreetName(currentSegment,nextInfo.directionInfo),getSpeakablePointName(nextInfo.pointName))) {
         currentStatus=STATUS_TOLD;
         playGoAheadDist=0;
       }
@@ -50,20 +50,20 @@
   NextDirectionInfo nextNextInfo=router.getNextRouteDirectionInfoAfter(nextInfo,new NextDirectionInfo(),!repeat);
   if ((repeat || statusNotPassed(STATUS_TURN)) && isDistanceLess(speed,dist,TURN_DISTANCE,TURN_DEFAULT_SPEED)) {
     if (next.distance < TURN_IN_DISTANCE_END && nextNextInfo != null) {
-      playMakeTurn(next,nextNextInfo.directionInfo);
+      playMakeTurn(currentSegment,next,nextNextInfo.directionInfo);
     }
  else {
-      playMakeTurn(next,null);
+      playMakeTurn(currentSegment,next,null);
     }
     nextStatusAfter(STATUS_TURN);
   }
  else   if ((repeat || statusNotPassed(STATUS_TURN_IN)) && isDistanceLess(speed,dist,TURN_IN_DISTANCE)) {
     if (repeat || dist >= TURN_IN_DISTANCE_END) {
       if ((isDistanceLess(speed,next.distance,TURN_DISTANCE) || next.distance < TURN_IN_DISTANCE_END) && nextNextInfo != null) {
-        playMakeTurnIn(next,dist,nextNextInfo.directionInfo);
+        playMakeTurnIn(currentSegment,next,dist,nextNextInfo.directionInfo);
       }
  else {
-        playMakeTurnIn(next,dist,null);
+        playMakeTurnIn(currentSegment,next,dist,null);
       }
     }
     nextStatusAfter(STATUS_TURN_IN);
@@ -73,14 +73,14 @@
       if (!repeat && (next.getTurnType().keepLeft() || next.getTurnType().keepRight())) {
       }
  else {
-        playPrepareTurn(next,dist);
+        playPrepareTurn(currentSegment,next,dist);
       }
     }
     nextStatusAfter(STATUS_PREPARE);
   }
  else   if ((repeat || statusNotPassed(STATUS_LONG_PREPARE)) && (dist <= PREPARE_LONG_DISTANCE)) {
     if (repeat || dist >= PREPARE_LONG_DISTANCE_END) {
-      playPrepareTurn(next,dist);
+      playPrepareTurn(currentSegment,next,dist);
     }
     nextStatusAfter(STATUS_LONG_PREPARE);
   }
@@ -89,6 +89,6 @@
   }
  else   if (repeat || (statusNotPassed(STATUS_TURN_IN) && dist < playGoAheadDist)) {
     playGoAheadDist=0;
-    playGoAhead(dist,getSpeakableStreetName(next));
+    playGoAhead(dist,getSpeakableStreetName(currentSegment,next));
   }
 }

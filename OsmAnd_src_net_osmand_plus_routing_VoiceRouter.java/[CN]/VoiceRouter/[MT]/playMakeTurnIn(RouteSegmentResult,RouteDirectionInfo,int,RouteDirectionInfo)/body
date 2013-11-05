@@ -1,0 +1,35 @@
+{
+  CommandBuilder play=getNewCommandPlayerToPlay();
+  if (play != null) {
+    String tParam=getTurnType(next.getTurnType());
+    boolean isPlay=true;
+    if (tParam != null) {
+      play.turn(tParam,dist,getSpeakableStreetName(currentSegment,next));
+    }
+ else     if (next.getTurnType().isRoundAbout()) {
+      play.roundAbout(dist,next.getTurnType().getTurnAngle(),next.getTurnType().getExitOut(),getSpeakableStreetName(currentSegment,next));
+    }
+ else     if (next.getTurnType().getValue().equals(TurnType.TU) || next.getTurnType().getValue().equals(TurnType.TRU)) {
+      play.makeUT(dist,getSpeakableStreetName(currentSegment,next));
+    }
+ else {
+      isPlay=false;
+    }
+    if (pronounceNextNext != null) {
+      TurnType t=pronounceNextNext.getTurnType();
+      isPlay=true;
+      if (next.getTurnType().getValue().equals(TurnType.C) && !TurnType.C.equals(t.getValue())) {
+        play.goAhead(dist,getSpeakableStreetName(currentSegment,next));
+      }
+      if (TurnType.TL.equals(t.getValue()) || TurnType.TSHL.equals(t.getValue()) || TurnType.TSLL.equals(t.getValue())|| TurnType.TU.equals(t.getValue())|| TurnType.KL.equals(t.getValue())) {
+        play.then().bearLeft(getSpeakableStreetName(currentSegment,next));
+      }
+ else       if (TurnType.TR.equals(t.getValue()) || TurnType.TSHR.equals(t.getValue()) || TurnType.TSLR.equals(t.getValue())|| TurnType.KR.equals(t.getValue())) {
+        play.then().bearRight(getSpeakableStreetName(currentSegment,next));
+      }
+    }
+    if (isPlay) {
+      play.play();
+    }
+  }
+}
