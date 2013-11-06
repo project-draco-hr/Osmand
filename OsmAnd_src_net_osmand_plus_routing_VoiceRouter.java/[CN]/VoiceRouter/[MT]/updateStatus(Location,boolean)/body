@@ -5,22 +5,7 @@
   }
   NextDirectionInfo nextInfo=router.getNextRouteDirectionInfo(new NextDirectionInfo(),true);
   RouteSegmentResult currentSegment=router.getCurrentSegmentResult();
-  if (nextInfo == null || nextInfo.directionInfo == null || nextInfo.directionInfo.distance == 0) {
-    if (repeat || currentStatus <= STATUS_UNKNOWN) {
-      if (playGoAheadToDestination(nextInfo == null ? empty : getSpeakableStreetName(currentSegment,nextInfo.directionInfo),nextInfo == null ? "" : getSpeakablePointName(nextInfo.pointName))) {
-        currentStatus=STATUS_TOLD;
-        playGoAheadDist=0;
-      }
-    }
-    return;
-  }
-  if (nextInfo.intermediatePoint) {
-    if (repeat || currentStatus <= STATUS_UNKNOWN) {
-      if (playGoAheadToIntermediate(getSpeakableStreetName(currentSegment,nextInfo.directionInfo),getSpeakablePointName(nextInfo.pointName))) {
-        currentStatus=STATUS_TOLD;
-        playGoAheadDist=0;
-      }
-    }
+  if (nextInfo.directionInfo == null || nextInfo.directionInfo.distance == 0) {
     return;
   }
   int dist=nextInfo.distanceTo;
@@ -28,6 +13,7 @@
   if (next != nextRouteDirection) {
     nextRouteDirection=next;
     currentStatus=STATUS_UNKNOWN;
+    playedAndArriveAtTarget=false;
     playGoAheadDist=0;
   }
   if (!repeat && (dist == 0 || currentStatus == STATUS_TOLD)) {
@@ -55,6 +41,9 @@
  else {
       playMakeTurn(currentSegment,next,null);
     }
+    if (next.distance < TURN_IN_DISTANCE && isTargetPoint(nextNextInfo)) {
+      andSpeakArriveAtPoint(nextNextInfo);
+    }
     nextStatusAfter(STATUS_TURN);
   }
  else   if ((repeat || statusNotPassed(STATUS_TURN_IN)) && isDistanceLess(speed,dist,TURN_IN_DISTANCE)) {
@@ -65,6 +54,7 @@
  else {
         playMakeTurnIn(currentSegment,next,dist,null);
       }
+      playAndArriveAtDestination(repeat,nextInfo,currentSegment);
     }
     nextStatusAfter(STATUS_TURN_IN);
   }
@@ -75,12 +65,14 @@
  else {
         playPrepareTurn(currentSegment,next,dist);
       }
+      playAndArriveAtDestination(repeat,nextInfo,currentSegment);
     }
     nextStatusAfter(STATUS_PREPARE);
   }
  else   if ((repeat || statusNotPassed(STATUS_LONG_PREPARE)) && (dist <= PREPARE_LONG_DISTANCE)) {
     if (repeat || dist >= PREPARE_LONG_DISTANCE_END) {
       playPrepareTurn(currentSegment,next,dist);
+      playAndArriveAtDestination(repeat,nextInfo,currentSegment);
     }
     nextStatusAfter(STATUS_LONG_PREPARE);
   }
