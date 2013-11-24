@@ -1,0 +1,25 @@
+{
+  Map<String,MapRulType> types=getEncodingRuleTypes();
+  MapRulType rType=types.get(constructRuleKey(tag,val));
+  if (rType == null || (!rType.isPOI() && poi) || (!rType.isMap() && !poi)) {
+    rType=types.get(constructRuleKey(tag,null));
+  }
+  if (rType == null || (!rType.isPOI() && poi) || (!rType.isMap() && !poi)) {
+    return null;
+  }
+ else   if (rType.isAdditional() && rType.tagValuePattern.value == null) {
+    MapRulType parent=rType;
+    rType=MapRulType.createAdditional(tag,val);
+    rType.additional=true;
+    rType.applyToTagValue=parent.applyToTagValue;
+    rType.onlyMap=parent.onlyMap;
+    rType.onlyPoi=parent.onlyPoi;
+    rType.onlyPoint=parent.onlyPoint;
+    rType.poiSpecified=parent.poiSpecified;
+    rType.poiCategory=parent.poiCategory;
+    rType.poiPrefix=parent.poiPrefix;
+    rType.namePrefix=parent.namePrefix;
+    registerRuleType(rType);
+  }
+  return rType;
+}
