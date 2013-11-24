@@ -1,0 +1,85 @@
+{
+  String tag=parser.getAttributeValue("","tag");
+  String value=parser.getAttributeValue("","value");
+  String additional=parser.getAttributeValue("","additional");
+  if (value != null && value.length() == 0) {
+    value=null;
+  }
+  MapRulType rtype=MapRulType.createMainEntity(tag,value);
+  boolean onlyMap="true".equals(parser.getAttributeValue("","only_map"));
+  if ("true".equals(additional)) {
+    rtype=MapRulType.createMainEntity(tag,value);
+  }
+ else   if ("text".equals(additional)) {
+    rtype=MapRulType.createText(tag);
+  }
+  String targetTag=parser.getAttributeValue("","target_tag");
+  String targetValue=parser.getAttributeValue("","target_value");
+  if (targetTag != null || targetValue != null) {
+    if (targetTag == null) {
+      targetTag=rtype.getTag();
+    }
+    if (targetValue == null) {
+      targetValue=rtype.getValue();
+    }
+    rtype.targetTagValue=types.get(constructRuleKey(targetTag,targetValue));
+    if (rtype.targetTagValue == null) {
+      throw new RuntimeException("Illegal target tag/value " + targetTag + " "+ targetValue);
+    }
+  }
+  String applyTo=parser.getAttributeValue("","apply_to");
+  String applyValue=parser.getAttributeValue("","apply_value");
+  if (applyTo != null || applyValue != null) {
+    rtype.applyToTagValue=new HashSet<TagValuePattern>();
+    rtype.applyToTagValue.add(new TagValuePattern(applyTo,applyValue));
+  }
+  if (!onlyMap) {
+    registerRuleType(rtype);
+  }
+  if (poiParentCategory != null) {
+    rtype.poiCategory=AmenityType.findRegisteredType(poiParentCategory,null);
+    rtype.poiSpecified=true;
+  }
+  if (poiParentPrefix != null) {
+    rtype.poiPrefix=poiParentPrefix;
+  }
+  String poiCategory=parser.getAttributeValue("","poi_category");
+  if (poiCategory != null) {
+    rtype.poiSpecified=true;
+    if (poiCategory.length() == 0) {
+      rtype.poiCategory=null;
+    }
+ else {
+      rtype.poiCategory=AmenityType.getAndRegisterType(poiCategory);
+    }
+  }
+  String poiPrefix=parser.getAttributeValue("","poi_prefix");
+  if (poiPrefix != null) {
+    rtype.poiPrefix=poiPrefix;
+  }
+  if (!rtype.isAdditional() && !rtype.isText()) {
+    rtype.onlyPoint=Boolean.parseBoolean(parser.getAttributeValue("","point"));
+    rtype.relation=Boolean.parseBoolean(parser.getAttributeValue("","relation"));
+    rtype.namePrefix=parser.getAttributeValue("","namePrefix");
+    if (rtype.namePrefix == null) {
+      rtype.namePrefix="";
+    }
+    String v=parser.getAttributeValue("","nameTags");
+    if (v != null) {
+      String[] names=v.split(",");
+      rtype.names=new MapRulType[names.length];
+      for (int i=0; i < names.length; i++) {
+        String tagName=names[i];
+        if (rtype.namePrefix.length() > 0) {
+          tagName=rtype.namePrefix + tagName;
+        }
+        MapRulType mt=MapRulType.createText(tagName);
+        mt.applyToTagValue=new HashSet<TagValuePattern>();
+        mt.applyToTagValue.add(rtype.tagValuePattern);
+        mt=registerRuleType(mt);
+        rtype.names[i]=mt;
+      }
+    }
+  }
+  return rtype;
+}
