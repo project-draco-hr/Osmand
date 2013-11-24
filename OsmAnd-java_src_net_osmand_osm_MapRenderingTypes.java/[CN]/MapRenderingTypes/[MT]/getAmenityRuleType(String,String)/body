@@ -4,8 +4,20 @@
   if (rType == null || !rType.isPOI()) {
     rType=types.get(constructRuleKey(tag,null));
   }
-  if (!rType.isPOI()) {
+  if (rType == null || !rType.isPOI()) {
     return null;
+  }
+ else   if (rType.isAdditional() && rType.tagValuePattern.value == null) {
+    MapRulType parent=rType;
+    rType=MapRulType.createAdditional(tag,val);
+    rType.additional=true;
+    rType.applyToTagValue=parent.applyToTagValue;
+    rType.onlyMap=parent.onlyMap;
+    rType.onlyPoi=parent.onlyPoi;
+    rType.onlyPoint=parent.onlyPoint;
+    rType.poiSpecified=parent.poiSpecified;
+    rType.poiCategory=parent.poiCategory;
+    registerRuleType(rType);
   }
   return rType;
 }

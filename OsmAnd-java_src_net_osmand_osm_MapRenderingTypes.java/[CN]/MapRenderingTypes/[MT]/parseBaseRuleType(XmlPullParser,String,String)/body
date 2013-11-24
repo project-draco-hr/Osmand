@@ -6,13 +6,13 @@
     value=null;
   }
   MapRulType rtype=MapRulType.createMainEntity(tag,value);
-  boolean onlyMap="true".equals(parser.getAttributeValue("","only_map"));
   if ("true".equals(additional)) {
-    rtype=MapRulType.createMainEntity(tag,value);
+    rtype=MapRulType.createAdditional(tag,value);
   }
  else   if ("text".equals(additional)) {
     rtype=MapRulType.createText(tag);
   }
+  rtype.onlyMap="true".equals(parser.getAttributeValue("","only_map"));
   String targetTag=parser.getAttributeValue("","target_tag");
   String targetValue=parser.getAttributeValue("","target_value");
   if (targetTag != null || targetValue != null) {
@@ -33,7 +33,7 @@
     rtype.applyToTagValue=new HashSet<TagValuePattern>();
     rtype.applyToTagValue.add(new TagValuePattern(applyTo,applyValue));
   }
-  if (!onlyMap) {
+  if (!rtype.onlyMap) {
     registerRuleType(rtype);
   }
   if (poiParentCategory != null) {
