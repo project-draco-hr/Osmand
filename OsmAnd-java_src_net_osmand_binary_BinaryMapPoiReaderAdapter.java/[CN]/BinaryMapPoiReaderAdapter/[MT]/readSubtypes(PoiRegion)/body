@@ -1,0 +1,43 @@
+{
+  while (true) {
+    int outT=codedIS.readTag();
+    int outTag=WireFormat.getTagFieldNumber(outT);
+switch (outTag) {
+case 0:
+      return;
+case OsmandOdb.OsmAndSubtypesTable.SUBTYPES_FIELD_NUMBER:
+    int length=codedIS.readRawVarint32();
+  int oldLimit=codedIS.pushLimit(length);
+PoiSubType st=new PoiSubType();
+cycle: while (true) {
+int inT=codedIS.readTag();
+int inTag=WireFormat.getTagFieldNumber(inT);
+switch (inTag) {
+case 0:
+  break cycle;
+case OsmandOdb.OsmAndPoiSubtype.NAME_FIELD_NUMBER:
+st.name=codedIS.readString().intern();
+break;
+case OsmandOdb.OsmAndPoiSubtype.SUBTYPEVALUE_FIELD_NUMBER:
+if (st.possibleValues == null) {
+st.possibleValues=new ArrayList<String>();
+}
+st.possibleValues.add(codedIS.readString().intern());
+break;
+case OsmandOdb.OsmAndPoiSubtype.ISTEXT_FIELD_NUMBER:
+st.text=codedIS.readBool();
+break;
+default :
+skipUnknownField(inT);
+break;
+}
+}
+region.subTypes.add(st);
+codedIS.popLimit(oldLimit);
+break;
+default :
+skipUnknownField(outT);
+break;
+}
+}
+}

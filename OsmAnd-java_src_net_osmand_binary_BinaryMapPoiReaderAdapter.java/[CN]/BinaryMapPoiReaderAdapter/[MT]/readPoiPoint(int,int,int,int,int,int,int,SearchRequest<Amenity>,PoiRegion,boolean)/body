@@ -2,7 +2,9 @@
   Amenity am=null;
   int x=0;
   int y=0;
+  StringBuilder retValue=new StringBuilder();
   AmenityType amenityType=null;
+  LinkedList<String> textTags=null;
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
@@ -31,6 +33,31 @@ return null;
 }
 am=new Amenity();
 am.setLocation(MapUtils.get31LatitudeY(y),MapUtils.get31LongitudeX(x));
+break;
+case OsmandOdb.OsmAndPoiBoxDataAtom.SUBCATEGORIES_FIELD_NUMBER:
+int subtypev=codedIS.readUInt32();
+retValue.setLength(0);
+PoiSubType st=region.getSubtypeFromId(subtypev,retValue);
+if (st != null) {
+am.setAdditionalInfo(st.name,retValue.toString());
+}
+break;
+case OsmandOdb.OsmAndPoiBoxDataAtom.TEXTCATEGORIES_FIELD_NUMBER:
+int texttypev=codedIS.readUInt32();
+retValue.setLength(0);
+PoiSubType textt=region.getSubtypeFromId(texttypev,retValue);
+if (textt != null && textt.text) {
+if (textTags == null) {
+textTags=new LinkedList<String>();
+}
+textTags.add(textt.name);
+}
+break;
+case OsmandOdb.OsmAndPoiBoxDataAtom.TEXTVALUES_FIELD_NUMBER:
+String str=codedIS.readString();
+if (textTags != null && !textTags.isEmpty()) {
+am.setAdditionalInfo(textTags.poll(),str);
+}
 break;
 case OsmandOdb.OsmAndPoiBoxDataAtom.CATEGORIES_FIELD_NUMBER:
 int cat=codedIS.readUInt32();
