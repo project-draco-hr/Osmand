@@ -13,21 +13,21 @@
     rtype=MapRulType.createText(tag);
   }
   rtype.onlyMap="true".equals(parser.getAttributeValue("","only_map"));
+  if (filterOnlyMap && rtype.onlyMap) {
+    return null;
+  }
   String targetTag=parser.getAttributeValue("","target_tag");
   String targetValue=parser.getAttributeValue("","target_value");
   if (targetTag != null || targetValue != null) {
     if (targetTag == null) {
       targetTag=rtype.getTag();
     }
- else {
-      targetTag=tag;
-    }
     if (targetValue == null) {
       targetValue=rtype.getValue();
     }
     rtype.targetTagValue=types.get(constructRuleKey(targetTag,targetValue));
     if (rtype.targetTagValue == null) {
-      throw new RuntimeException("Illegal target tag/value " + targetTag + " "+ targetValue);
+      throw new RuntimeException("Illegal target tag/value " + targetTag + " "+ targetValue+ " for "+ tag+ " / "+ value);
     }
   }
   String applyTo=parser.getAttributeValue("","apply_to");
