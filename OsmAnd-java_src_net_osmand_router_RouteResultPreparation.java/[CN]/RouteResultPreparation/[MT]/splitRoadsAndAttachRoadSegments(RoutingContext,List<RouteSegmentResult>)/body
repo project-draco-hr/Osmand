@@ -17,9 +17,19 @@
         attachRoadSegments(ctx,result,i,next,plus);
       }
       List<RouteSegmentResult> attachedRoutes=rr.getAttachedRoutes(next);
-      if (next != rr.getEndPointIndex() && !rr.getObject().roundabout() && attachedRoutes != null) {
+      boolean tryToSplit=next != rr.getEndPointIndex() && !rr.getObject().roundabout() && attachedRoutes != null;
+      if (rr.getDistance(next,plus) == 0) {
+        tryToSplit=false;
+      }
+      if (tryToSplit) {
         float before=rr.getBearing(next,!plus);
         float after=rr.getBearing(next,plus);
+        if (rr.getDistance(next,plus) < 5) {
+          after=before + 180;
+        }
+ else         if (rr.getDistance(next,!plus) < 5) {
+          before=after - 180;
+        }
         boolean straight=Math.abs(MapUtils.degreesDiff(before + 180,after)) < TURN_DEGREE_MIN;
         boolean isSplit=false;
         for (        RouteSegmentResult rs : attachedRoutes) {
