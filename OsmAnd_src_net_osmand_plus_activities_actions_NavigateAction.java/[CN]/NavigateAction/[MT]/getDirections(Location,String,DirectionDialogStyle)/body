@@ -2,14 +2,13 @@
   final Location current=getLastKnownLocation();
   Builder builder=new AlertDialog.Builder(mapActivity);
   final TargetPointsHelper targets=app.getTargetPointsHelper();
-  final List<ApplicationMode> values=new ArrayList<ApplicationMode>();
-  values.add(ApplicationMode.CAR);
-  values.add(ApplicationMode.BICYCLE);
-  values.add(ApplicationMode.PEDESTRIAN);
+  final List<ApplicationMode> values=new ArrayList<ApplicationMode>(ApplicationMode.values(app));
+  values.remove(ApplicationMode.DEFAULT);
   View view=mapActivity.getLayoutInflater().inflate(R.layout.calculate_route,null);
   boolean osmandRouter=mapActivity.getMyApplication().getSettings().ROUTER_SERVICE.get() == RouteService.OSMAND;
   final CheckBox nonoptimal=(CheckBox)view.findViewById(R.id.OptimalCheckox);
-  final ToggleButton[] buttons=createToggles(values,view);
+  LinearLayout topLayout=(LinearLayout)view.findViewById(R.id.LinearLayout);
+  final ToggleButton[] buttons=createToggles(values,topLayout,mapActivity);
   final Spinner fromSpinner=setupFromSpinner(mapView,name,view,style);
   final List<LatLon> toList=new ArrayList<LatLon>();
   final Spinner toSpinner=setupToSpinner(mapView,name,view,toList,style);
