@@ -2,16 +2,13 @@
   final Location current=getLastKnownLocation();
   Builder builder=new AlertDialog.Builder(mapActivity);
   final TargetPointsHelper targets=app.getTargetPointsHelper();
+  final List<ApplicationMode> values=new ArrayList<ApplicationMode>(ApplicationMode.values(app.getSettings()));
+  values.remove(ApplicationMode.DEFAULT);
   View view=mapActivity.getLayoutInflater().inflate(R.layout.calculate_route,null);
   boolean osmandRouter=mapActivity.getMyApplication().getSettings().ROUTER_SERVICE.get() == RouteService.OSMAND;
   final CheckBox nonoptimal=(CheckBox)view.findViewById(R.id.OptimalCheckox);
-  final ToggleButton[] buttons=new ToggleButton[ApplicationMode.values().length];
-  buttons[ApplicationMode.CAR.ordinal()]=(ToggleButton)view.findViewById(R.id.CarButton);
-  buttons[ApplicationMode.CAR.ordinal()].setButtonDrawable(R.drawable.ic_car);
-  buttons[ApplicationMode.BICYCLE.ordinal()]=(ToggleButton)view.findViewById(R.id.BicycleButton);
-  buttons[ApplicationMode.BICYCLE.ordinal()].setButtonDrawable(R.drawable.ic_bicycle);
-  buttons[ApplicationMode.PEDESTRIAN.ordinal()]=(ToggleButton)view.findViewById(R.id.PedestrianButton);
-  buttons[ApplicationMode.PEDESTRIAN.ordinal()].setButtonDrawable(R.drawable.ic_pedestrian);
+  LinearLayout topLayout=(LinearLayout)view.findViewById(R.id.LinearLayout);
+  final ToggleButton[] buttons=createToggles(values,topLayout,mapActivity);
   final Spinner fromSpinner=setupFromSpinner(mapView,name,view,style);
   final List<LatLon> toList=new ArrayList<LatLon>();
   final Spinner toSpinner=setupToSpinner(mapView,name,view,toList,style);
@@ -36,7 +33,7 @@
     if (buttons[i] != null) {
       final int ind=i;
       ToggleButton b=buttons[i];
-      final ApplicationMode buttonAppMode=ApplicationMode.values()[i];
+      final ApplicationMode buttonAppMode=values.get(i);
       b.setChecked(appMode == buttonAppMode);
       if (b.isChecked()) {
         nonoptimal.setChecked(!settings.OPTIMAL_ROUTE_MODE.getModeValue(buttonAppMode));
@@ -89,7 +86,7 @@
         AccessibleToast.makeText(mapActivity,R.string.unknown_from_location,Toast.LENGTH_LONG).show();
         return;
       }
-      ApplicationMode mode=getAppMode(buttons,settings);
+      ApplicationMode mode=getAppMode(buttons,settings,values);
       app.getRoutingHelper().setAppMode(mode);
       settings.OPTIMAL_ROUTE_MODE.setModeValue(mode,!nonoptimal.isChecked());
       settings.FOLLOW_THE_ROUTE.set(false);
@@ -121,7 +118,7 @@
       if (msg) {
         AccessibleToast.makeText(mapActivity,R.string.route_updated_loc_found,Toast.LENGTH_LONG).show();
       }
-      ApplicationMode mode=getAppMode(buttons,settings);
+      ApplicationMode mode=getAppMode(buttons,settings,values);
       settings.OPTIMAL_ROUTE_MODE.setModeValue(mode,!nonoptimal.isChecked());
       dialog.dismiss();
       mapActivity.followRoute(mode,targets.getPointToNavigate(),targets.getIntermediatePoints(),from,null);
@@ -134,7 +131,7 @@
       if (tos != null && tos != targets.getPointToNavigate()) {
         targets.navigateToPoint(tos,false,-1);
       }
-      ApplicationMode mode=getAppMode(buttons,settings);
+      ApplicationMode mode=getAppMode(buttons,settings,values);
       navigateUsingGPX(mode);
     }
   }

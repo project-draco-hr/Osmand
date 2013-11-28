@@ -1,26 +1,17 @@
 {
-  View view=a.getLayoutInflater().inflate(R.layout.mode_toggles,parent);
+  LinearLayout ll=(LinearLayout)a.getLayoutInflater().inflate(R.layout.mode_toggles,parent);
   OsmandSettings settings=((OsmandApplication)a.getApplication()).getSettings();
-  final ToggleButton[] buttons=new ToggleButton[ApplicationMode.values().length];
-  if (showDefault) {
-    buttons[ApplicationMode.DEFAULT.ordinal()]=(ToggleButton)view.findViewById(R.id.DefaultButton);
-    buttons[ApplicationMode.DEFAULT.ordinal()].setButtonDrawable(R.drawable.ic_browse_map);
+  final List<ApplicationMode> values=new ArrayList<ApplicationMode>(ApplicationMode.values(settings));
+  if (!showDefault) {
+    values.remove(ApplicationMode.DEFAULT);
   }
- else {
-    view.findViewById(R.id.DefaultButton).setVisibility(View.GONE);
-  }
-  buttons[ApplicationMode.CAR.ordinal()]=(ToggleButton)view.findViewById(R.id.CarButton);
-  buttons[ApplicationMode.CAR.ordinal()].setButtonDrawable(R.drawable.ic_car);
-  buttons[ApplicationMode.BICYCLE.ordinal()]=(ToggleButton)view.findViewById(R.id.BicycleButton);
-  buttons[ApplicationMode.BICYCLE.ordinal()].setButtonDrawable(R.drawable.ic_bicycle);
-  buttons[ApplicationMode.PEDESTRIAN.ordinal()]=(ToggleButton)view.findViewById(R.id.PedestrianButton);
-  buttons[ApplicationMode.PEDESTRIAN.ordinal()].setButtonDrawable(R.drawable.ic_pedestrian);
+  final ToggleButton[] buttons=createToggles(values,ll,a);
   ApplicationMode appMode=settings.getApplicationMode();
   for (int i=0; i < buttons.length; i++) {
     if (buttons[i] != null) {
       final int ind=i;
       ToggleButton b=buttons[i];
-      final ApplicationMode buttonAppMode=ApplicationMode.values()[i];
+      final ApplicationMode buttonAppMode=values.get(i);
       b.setChecked(appMode == buttonAppMode);
       if (appMode == buttonAppMode) {
         selected.add(appMode);
@@ -32,7 +23,7 @@
             for (int j=0; j < buttons.length; j++) {
               if (buttons[j] != null) {
                 if (ind == j) {
-                  selected.add(ApplicationMode.values()[j]);
+                  selected.add(values.get(j));
                 }
                 if (buttons[j].isChecked() != (ind == j)) {
                   buttons[j].setChecked(ind == j);
@@ -62,5 +53,5 @@
 );
     }
   }
-  return view;
+  return ll;
 }
