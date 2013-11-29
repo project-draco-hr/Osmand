@@ -16,14 +16,17 @@
     config=RoutingConfiguration.getDefault();
   }
   GeneralRouterProfile p;
-  if (params.mode == ApplicationMode.BICYCLE) {
+  if (params.mode.isDerivedRoutingFrom(ApplicationMode.BICYCLE)) {
     p=GeneralRouterProfile.BICYCLE;
   }
- else   if (params.mode == ApplicationMode.PEDESTRIAN) {
+ else   if (params.mode.isDerivedRoutingFrom(ApplicationMode.PEDESTRIAN)) {
     p=GeneralRouterProfile.PEDESTRIAN;
   }
- else {
+ else   if (params.mode.isDerivedRoutingFrom(ApplicationMode.CAR)) {
     p=GeneralRouterProfile.CAR;
+  }
+ else {
+    return applicationModeNotSupported(params);
   }
   List<String> specs=new ArrayList<String>();
   if (!settings.FAST_ROUTE_MODE.getModeValue(params.mode)) {
@@ -84,9 +87,9 @@
         return new RouteCalculationResult("Route can not be found from end point (" + ctx.calculationProgress.distanceFromEnd / 1000f + " km)");
       }
       if (ctx.calculationProgress.isCancelled) {
-        return new RouteCalculationResult("Route calculation was interrupted");
+        return interrupted();
       }
-      return new RouteCalculationResult("Empty result");
+      return emptyResult();
     }
  else {
       RouteCalculationResult res=new RouteCalculationResult(result,params.start,params.end,params.intermediates,params.ctx,params.leftSide,ctx.routingTime);
@@ -97,7 +100,7 @@
     return new RouteCalculationResult(e.getMessage());
   }
 catch (  InterruptedException e) {
-    return new RouteCalculationResult("Route calculation was interrupted");
+    return interrupted();
   }
 catch (  OutOfMemoryError e) {
     int max=(int)(Runtime.getRuntime().maxMemory() / (1 << 20));

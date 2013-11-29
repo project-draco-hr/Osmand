@@ -22,16 +22,13 @@
   }
   uri.append(params.end.getLatitude() + "").append(",");
   uri.append(params.end.getLongitude() + "").append("/");
-  float speed=1.5f;
-  if (ApplicationMode.PEDESTRIAN == params.mode) {
+  if (params.mode.isDerivedRoutingFrom(ApplicationMode.PEDESTRIAN)) {
     uri.append("foot.gpx");
   }
- else   if (ApplicationMode.BICYCLE == params.mode) {
-    speed=4.2f;
+ else   if (params.mode.isDerivedRoutingFrom(ApplicationMode.BICYCLE)) {
     uri.append("bicycle.gpx");
   }
- else {
-    speed=15.3f;
+ else   if (params.mode.isDerivedRoutingFrom(ApplicationMode.CAR)) {
     if (params.fast) {
       uri.append("car.gpx");
     }
@@ -39,12 +36,15 @@
       uri.append("car/shortest.gpx");
     }
   }
+ else {
+    return applicationModeNotSupported(params);
+  }
   uri.append("?lang=").append(Locale.getDefault().getLanguage());
   log.info("URL route " + uri);
   URL url=new URL(uri.toString());
   URLConnection connection=url.openConnection();
   connection.setRequestProperty("User-Agent",Version.getFullVersion(params.ctx));
   GPXFile gpxFile=GPXUtilities.loadGPXFile(params.ctx,connection.getInputStream(),false);
-  directions=parseCloudmadeRoute(res,gpxFile,false,params.leftSide,speed);
+  directions=parseCloudmadeRoute(res,gpxFile,false,params.leftSide,params.mode.getDefaultSpeed());
   return new RouteCalculationResult(res,directions,params,null);
 }
