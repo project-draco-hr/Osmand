@@ -1,0 +1,40 @@
+{
+  Map<String,Map<String,String>> groupByOpenSeamaps=new HashMap<String,Map<String,String>>();
+  Map<String,String> common=new HashMap<String,String>();
+  String ATTACHED_KEY="seamark:attached";
+  String type="";
+  for (  String s : tags.keySet()) {
+    String value=tags.get(s);
+    if (s.equals("seamark:type")) {
+      type=value;
+      common.put(ATTACHED_KEY,openSeaType(value));
+    }
+ else     if (s.startsWith("seamark:")) {
+      String stype=s.substring("seamark:".length());
+      int ind=stype.indexOf(':');
+      if (ind == -1) {
+        common.put(s,value);
+      }
+ else {
+        String group=openSeaType(stype.substring(0,ind));
+        String add=stype.substring(ind + 1);
+        if (!groupByOpenSeamaps.containsKey(group)) {
+          groupByOpenSeamaps.put(group,new HashMap<String,String>());
+        }
+        groupByOpenSeamaps.get(group).put("seamark:" + add,value);
+      }
+    }
+ else {
+      common.put(s,value);
+    }
+  }
+  for (  Entry<String,Map<String,String>> g : groupByOpenSeamaps.entrySet()) {
+    g.getValue().putAll(common);
+    g.getValue().put("seamark",g.getKey());
+    if (openSeaType(type).equals(g.getKey())) {
+      g.getValue().remove(ATTACHED_KEY);
+      g.getValue().put("seamark",type);
+    }
+  }
+  return groupByOpenSeamaps.values().iterator();
+}
