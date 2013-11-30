@@ -1,0 +1,23 @@
+{
+  Builder b=new AlertDialog.Builder(this);
+  final List<ApplicationMode> modes=ApplicationMode.allPossibleValues(settings);
+  modes.remove(ApplicationMode.DEFAULT);
+  final Set<ApplicationMode> selected=new LinkedHashSet<ApplicationMode>(ApplicationMode.values(settings));
+  selected.remove(ApplicationMode.DEFAULT);
+  View v=NavigateAction.prepareAppModeView(this,modes,selected,null,false,new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      StringBuilder vls=new StringBuilder(ApplicationMode.DEFAULT.getStringKey() + ",");
+      for (      ApplicationMode mode : modes) {
+        if (selected.contains(mode)) {
+          vls.append(mode.getStringKey() + ",");
+        }
+      }
+      settings.AVAILABLE_APP_MODES.set(vls.toString());
+    }
+  }
+);
+  b.setTitle(R.string.profile_settings);
+  b.setPositiveButton(R.string.default_buttons_ok,null);
+  b.setView(v);
+  b.show();
+}

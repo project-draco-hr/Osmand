@@ -1,3 +1,21 @@
 {
-  return values;
+  if (cachedFilteredValues.isEmpty()) {
+    if (!listenerRegistered) {
+      settings.AVAILABLE_APP_MODES.addListener(new StateChangedListener<String>(){
+        @Override public void stateChanged(        String change){
+          cachedFilteredValues=new ArrayList<ApplicationMode>();
+        }
+      }
+);
+      listenerRegistered=true;
+    }
+    String available=settings.AVAILABLE_APP_MODES.get();
+    cachedFilteredValues=new ArrayList<ApplicationMode>();
+    for (    ApplicationMode v : values) {
+      if (available.indexOf(v.getStringKey() + ",") != -1 || v == DEFAULT) {
+        cachedFilteredValues.add(v);
+      }
+    }
+  }
+  return cachedFilteredValues;
 }

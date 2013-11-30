@@ -6,14 +6,17 @@
   uri.append("&flon=").append(params.start.getLongitude());
   uri.append("&tlat=").append(params.end.getLatitude());
   uri.append("&tlon=").append(params.end.getLongitude());
-  if (ApplicationMode.PEDESTRIAN == params.mode) {
-    uri.append("&v=foot");
-  }
- else   if (ApplicationMode.BICYCLE == params.mode) {
+  if (params.mode.isDerivedRoutingFrom(ApplicationMode.BICYCLE)) {
     uri.append("&v=bicycle");
   }
- else {
+ else   if (params.mode.isDerivedRoutingFrom(ApplicationMode.PEDESTRIAN)) {
+    uri.append("&v=foot");
+  }
+ else   if (params.mode.isDerivedRoutingFrom(ApplicationMode.CAR)) {
     uri.append("&v=motorcar");
+  }
+ else {
+    return applicationModeNotSupported(params);
   }
   uri.append("&fast=").append(params.fast ? "1" : "0").append("&layer=mapnik");
   log.info("URL route " + uri);

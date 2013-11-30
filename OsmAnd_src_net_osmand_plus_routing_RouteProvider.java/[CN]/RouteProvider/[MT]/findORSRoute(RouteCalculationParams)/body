@@ -1,14 +1,19 @@
 {
   List<Location> res=new ArrayList<Location>();
   String rpref="Fastest";
-  if (ApplicationMode.PEDESTRIAN == params.mode) {
+  if (params.mode.isDerivedRoutingFrom(ApplicationMode.PEDESTRIAN)) {
     rpref="Pedestrian";
   }
- else   if (ApplicationMode.BICYCLE == params.mode) {
+ else   if (params.mode.isDerivedRoutingFrom(ApplicationMode.BICYCLE)) {
     rpref="Bicycle";
   }
- else   if (!params.fast) {
-    rpref="Shortest";
+ else   if (params.mode.isDerivedRoutingFrom(ApplicationMode.CAR)) {
+    if (!params.fast) {
+      rpref="Shortest";
+    }
+  }
+ else {
+    return applicationModeNotSupported(params);
   }
   StringBuilder request=new StringBuilder();
   request.append("http://openls.geog.uni-heidelberg.de/osm/eu/routing?").append("start=").append(params.start.getLongitude()).append(',').append(params.start.getLatitude()).append("&end=").append(params.end.getLongitude()).append(',').append(params.end.getLatitude()).append("&preference=").append(rpref);
