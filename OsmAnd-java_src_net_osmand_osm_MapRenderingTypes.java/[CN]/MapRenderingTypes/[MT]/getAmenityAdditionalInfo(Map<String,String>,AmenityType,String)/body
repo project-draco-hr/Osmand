@@ -1,11 +1,10 @@
 {
   Map<String,String> map=new LinkedHashMap<String,String>();
-  Collection<String> tagKeySet=e.getTagKeySet();
-  for (  String tag : tagKeySet) {
-    String val=e.getTag(tag);
+  for (  String tag : tags.keySet()) {
+    String val=tags.get(tag);
     MapRulType rType=getAmenityRuleType(tag,val);
     if (rType != null && val.length() > 0) {
-      if (rType == nameEnRuleType && Algorithms.objectEquals(val,e.getTag(OSMTagKey.NAME))) {
+      if (rType == nameEnRuleType && Algorithms.objectEquals(val,tags.get(OSMTagKey.NAME))) {
         continue;
       }
       if (rType.targetTagValue != null) {
@@ -17,7 +16,7 @@
           Iterator<TagValuePattern> it=rType.applyToTagValue.iterator();
           while (!applied && it.hasNext()) {
             TagValuePattern nv=it.next();
-            applied=nv.isApplicable(e);
+            applied=nv.isApplicable(tags);
           }
         }
         if (applied) {
