@@ -1,5 +1,8 @@
 {
-  for (  OsMoDroidPoint op : OsMoDroidPointArrayList) {
+  for (  OsMoDroidPoint op : osMoDroidPointArrayList) {
+    if (seekOsMoDroidPoint != null && seekOsMoDroidPoint.equals(op)) {
+      map.setMapLocation(op.latlon.getLatitude(),op.latlon.getLongitude());
+    }
     LatLon newLatlon;
     try {
       newLatlon=new LatLon(myOsMoDroidPlugin.mIRemoteService.getObjectLat(layerId,op.id),myOsMoDroidPlugin.mIRemoteService.getObjectLon(layerId,op.id));
@@ -34,10 +37,21 @@
     textPaint.setStrokeWidth(radius);
     canvas.drawLine(locationX,locationY,prevlocationX,prevlocationY,textPaint);
   }
-  for (  GPXFile gpxFile : gpxArrayList) {
-    gpxFile.proccessPoints();
-    List<List<WptPt>> points=gpxFile.processedPointsToDisplay;
-    paint.setColor(getColor(settings));
+  for (  OsMoDroidPoint point : osMoDroidFixedPointArrayList) {
+    double latitude=point.latlon.getLatitude();
+    double longitude=point.latlon.getLongitude();
+    int locationX=(int)tileBox.getPixXFromLatLon(latitude,longitude);
+    int locationY=(int)tileBox.getPixYFromLatLon(latitude,longitude);
+    textPaint.setColor(Color.parseColor("#013220"));
+    canvas.drawText(point.name,locationX,locationY - radius,textPaint);
+    textPaint.setColor(Color.parseColor("#" + point.color));
+    textPaint.setShadowLayer(radius,0,0,Color.GRAY);
+    canvas.drawRect(new Rect(locationX - radius,locationY - radius,locationX + radius,locationY + radius),textPaint);
+  }
+  for (  ColoredGPX cg : gpxArrayList) {
+    cg.gpxFile.proccessPoints();
+    List<List<WptPt>> points=cg.gpxFile.processedPointsToDisplay;
+    paint.setColor(cg.color);
     final QuadRect latLonBounds=tileBox.getLatLonBounds();
     for (    List<WptPt> l : points) {
       path.rewind();
