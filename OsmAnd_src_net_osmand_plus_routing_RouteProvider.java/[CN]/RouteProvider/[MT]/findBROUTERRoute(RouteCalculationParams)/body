@@ -19,19 +19,12 @@
   bpars.putString("trackFormat","kml");
   OsmandApplication ctx=(OsmandApplication)params.ctx;
   List<Location> res=new ArrayList<Location>();
-  BRouterServiceConnection conn=BRouterServiceConnection.connect(ctx);
-  if (conn == null) {
+  IBRouterService brouterService=ctx.getBRouterService();
+  if (brouterService == null) {
     return new RouteCalculationResult("BRouter service is not available");
   }
-  long begin=System.currentTimeMillis();
   try {
-    while ((System.currentTimeMillis() - begin) < 15000 && conn.brouterService == null) {
-      Thread.sleep(500);
-    }
-    if (conn.brouterService == null) {
-      return new RouteCalculationResult("BRouter service is not available");
-    }
-    String kmlMessage=conn.brouterService.getTrackFromParams(bpars);
+    String kmlMessage=brouterService.getTrackFromParams(bpars);
     if (kmlMessage == null)     kmlMessage="no result from brouter";
     if (!kmlMessage.startsWith("<")) {
       return new RouteCalculationResult(kmlMessage);
@@ -71,7 +64,6 @@
         return new RouteCalculationResult(item.getNodeValue());
       }
     }
-    conn.disconnect((Context)params.ctx);
   }
  catch (  Exception e) {
     return new RouteCalculationResult("Exception calling BRouter: " + e);
