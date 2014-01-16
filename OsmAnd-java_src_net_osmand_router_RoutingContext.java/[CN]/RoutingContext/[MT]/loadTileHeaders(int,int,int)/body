@@ -1,0 +1,32 @@
+{
+  SearchRequest<RouteDataObject> request=BinaryMapIndexReader.buildSearchRouteRequest(tileX << zoomToLoadM31,(tileX + 1) << zoomToLoadM31,tileY << zoomToLoadM31,(tileY + 1) << zoomToLoadM31,null);
+  List<RoutingSubregionTile> collection=null;
+  for (  Entry<BinaryMapIndexReader,List<RouteSubregion>> r : map.entrySet()) {
+    try {
+      if (r.getValue().size() > 0) {
+        long now=System.nanoTime();
+        List<RouteSubregion> subregs=r.getKey().searchRouteIndexTree(request,r.getValue());
+        for (        RouteSubregion sr : subregs) {
+          int ind=searchSubregionTile(sr);
+          RoutingSubregionTile found;
+          if (ind < 0) {
+            found=new RoutingSubregionTile(sr);
+            subregionTiles.add(-(ind + 1),found);
+          }
+ else {
+            found=subregionTiles.get(ind);
+          }
+          if (collection == null) {
+            collection=new ArrayList<RoutingContext.RoutingSubregionTile>(4);
+          }
+          collection.add(found);
+        }
+        timeToLoadHeaders+=(System.nanoTime() - now);
+      }
+    }
+ catch (    IOException e) {
+      throw new RuntimeException("Loading data exception",e);
+    }
+  }
+  return collection;
+}
