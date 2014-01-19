@@ -3,16 +3,20 @@
     ctx.calculationProgress=new RouteCalculationProgress();
   }
   boolean intermediatesEmpty=intermediates == null || intermediates.isEmpty();
+  PrecalculatedRouteDirection routeDirection=null;
   if (ctx.calculationMode == RouteCalculationMode.COMPLEX && intermediatesEmpty) {
     RoutingContext nctx=buildRoutingContext(ctx.config,ctx.nativeLib,ctx.getMaps(),RouteCalculationMode.BASE);
     List<RouteSegmentResult> ls=searchRoute(nctx,start,end,intermediates);
-    ctx.precalculatedRouteDirection=PrecalculatedRouteDirection.build(ls,5000,ctx.getRouter().getMaxDefaultSpeed() / 2);
+    routeDirection=PrecalculatedRouteDirection.build(ls,5000,ctx.getRouter().getMaxDefaultSpeed() / 2);
   }
   if (intermediatesEmpty && useOldVersion && ctx.nativeLib != null) {
     ctx.startX=MapUtils.get31TileNumberX(start.getLongitude());
     ctx.startY=MapUtils.get31TileNumberY(start.getLatitude());
     ctx.targetX=MapUtils.get31TileNumberX(end.getLongitude());
     ctx.targetY=MapUtils.get31TileNumberY(end.getLatitude());
+    if (routeDirection != null) {
+      ctx.precalculatedRouteDirection=routeDirection.adopt(ctx);
+    }
     List<RouteSegmentResult> res=runNativeRouting(ctx);
     if (res != null) {
       new RouteResultPreparation().printResults(ctx,start,end,res);
@@ -34,7 +38,7 @@
   if (!addSegment(end,ctx,indexNotFound++,points)) {
     return null;
   }
-  List<RouteSegmentResult> res=searchRoute(ctx,points);
+  List<RouteSegmentResult> res=searchRoute(ctx,points,routeDirection);
   if (res != null) {
     new RouteResultPreparation().printResults(ctx,start,end,res);
   }
