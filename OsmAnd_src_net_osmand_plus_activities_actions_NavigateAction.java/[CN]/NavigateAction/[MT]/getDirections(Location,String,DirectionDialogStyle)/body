@@ -5,7 +5,6 @@
   final List<ApplicationMode> values=new ArrayList<ApplicationMode>(ApplicationMode.values(app.getSettings()));
   values.remove(ApplicationMode.DEFAULT);
   final View view=mapActivity.getLayoutInflater().inflate(R.layout.calculate_route,null);
-  final CheckBox nonoptimal=(CheckBox)view.findViewById(R.id.OptimalCheckox);
   LinearLayout topLayout=(LinearLayout)view.findViewById(R.id.LinearLayout);
   final ToggleButton[] buttons=createToggles(values,topLayout,mapActivity);
   final Spinner fromSpinner=setupFromSpinner(mapView,name,view,style);
@@ -31,12 +30,10 @@
       final ApplicationMode buttonAppMode=values.get(i);
       b.setChecked(appMode == buttonAppMode);
       if (b.isChecked()) {
-        nonoptimal.setChecked(!settings.OPTIMAL_ROUTE_MODE.getModeValue(buttonAppMode));
       }
       b.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
         @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
           if (isChecked) {
-            nonoptimal.setChecked(!settings.OPTIMAL_ROUTE_MODE.getModeValue(buttonAppMode));
             updateTooLongDistance(current != null ? current : mapView,targets,view,buttonAppMode);
             for (int j=0; j < buttons.length; j++) {
               if (buttons[j] != null) {
@@ -84,7 +81,6 @@
       }
       ApplicationMode mode=getAppMode(buttons,settings,values);
       app.getRoutingHelper().setAppMode(mode);
-      settings.OPTIMAL_ROUTE_MODE.setModeValue(mode,!nonoptimal.isChecked());
       settings.FOLLOW_THE_ROUTE.set(false);
       settings.FOLLOW_THE_GPX_ROUTE.set(null);
       app.getRoutingHelper().setFollowingMode(false);
@@ -115,7 +111,6 @@
         AccessibleToast.makeText(mapActivity,R.string.route_updated_loc_found,Toast.LENGTH_LONG).show();
       }
       ApplicationMode mode=getAppMode(buttons,settings,values);
-      settings.OPTIMAL_ROUTE_MODE.setModeValue(mode,!nonoptimal.isChecked());
       dialog.dismiss();
       mapActivity.followRoute(mode,targets.getPointToNavigate(),targets.getIntermediatePoints(),from,null);
     }

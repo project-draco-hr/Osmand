@@ -1,0 +1,19 @@
+{
+  ctx.targetX=end.road.getPoint31XTile(end.getSegmentStart());
+  ctx.targetY=end.road.getPoint31YTile(end.getSegmentStart());
+  ctx.startX=start.road.getPoint31XTile(start.getSegmentStart());
+  ctx.startY=start.road.getPoint31YTile(start.getSegmentStart());
+  if (ctx.nativeLib != null && useOldVersion) {
+    return runNativeRouting(ctx);
+  }
+ else {
+    refreshProgressDistance(ctx);
+    if (useOldVersion) {
+      new BinaryRoutePlannerOld().searchRouteInternal(ctx,start,end);
+    }
+ else {
+      ctx.finalRouteSegment=new BinaryRoutePlanner().searchRouteInternal(ctx,start,end);
+    }
+    return new RouteResultPreparation().prepareResult(ctx,ctx.finalRouteSegment);
+  }
+}

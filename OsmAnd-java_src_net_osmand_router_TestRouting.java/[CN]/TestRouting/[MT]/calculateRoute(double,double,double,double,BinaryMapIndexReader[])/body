@@ -3,7 +3,7 @@
   Builder config=RoutingConfiguration.getDefault();
   RoutingConfiguration rconfig=config.build(vehicle,MEMORY_TEST_LIMIT);
   RoutePlannerFrontEnd router=new RoutePlannerFrontEnd(oldRouting);
-  RoutingContext ctx=new RoutingContext(rconfig,lib,rs);
+  RoutingContext ctx=router.buildRoutingContext(rconfig,lib,rs);
   RouteSegment startSegment=router.findRouteSegment(startLat,startLon,ctx);
   RouteSegment endSegment=router.findRouteSegment(endLat,endLon,ctx);
   if (startSegment == null) {
@@ -12,7 +12,7 @@
   if (endSegment == null) {
     throw new IllegalArgumentException("End segment is not found ");
   }
-  ctx=new RoutingContext(rconfig,lib,rs);
-  List<RouteSegmentResult> route=router.searchRoute(ctx,new LatLon(startLat,startLon),new LatLon(endLat,endLon),null,false);
+  ctx=router.buildRoutingContext(rconfig,lib,rs);
+  List<RouteSegmentResult> route=router.searchRoute(ctx,new LatLon(startLat,startLon),new LatLon(endLat,endLon),null);
   System.out.println("Route is " + route.size() + " segments "+ (System.currentTimeMillis() - ts)+ " ms ");
 }
