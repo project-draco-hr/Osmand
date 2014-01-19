@@ -6,51 +6,6 @@
       return te;
     }
   }
-  if (RoutingContext.USE_BORDER_LINES) {
-    int begBorder=ctx.searchBorderLineIndex(begY);
-    int endBorder=ctx.searchBorderLineIndex(endY);
-    if (begBorder != endBorder) {
-      double res=0;
-      boolean plus=begBorder < endBorder;
-      boolean beginEqStart=begX == ctx.startX && begY == ctx.startY;
-      boolean beginEqTarget=begX == ctx.targetX && begY == ctx.targetY;
-      boolean endEqStart=endX == ctx.startX && endY == ctx.startY;
-      boolean endEqTarget=endX == ctx.targetX && endY == ctx.targetY;
-      if (endEqStart || endEqTarget) {
-        if (begX > ctx.leftBorderBoundary && begX < ctx.rightBorderBoundary) {
-          List<RouteDataBorderLinePoint> pnts=ctx.borderLines[plus ? begBorder : begBorder - 1].borderPoints;
-          for (          RouteDataBorderLinePoint p : pnts) {
-            double f=(endEqTarget ? p.distanceToEndPoint : p.distanceToStartPoint) + squareRootDist(p.x,p.y,begX,begY);
-            if (res > f || res <= 0) {
-              res=f;
-            }
-          }
-        }
-      }
- else       if (beginEqStart || beginEqTarget) {
-        if (endX > ctx.leftBorderBoundary && endX < ctx.rightBorderBoundary) {
-          List<RouteDataBorderLinePoint> pnts=ctx.borderLines[plus ? endBorder - 1 : endBorder].borderPoints;
-          for (          RouteDataBorderLinePoint p : pnts) {
-            double f=(beginEqTarget ? p.distanceToEndPoint : p.distanceToStartPoint) + squareRootDist(p.x,p.y,endX,endY);
-            if (res > f || res <= 0) {
-              res=f;
-            }
-          }
-        }
-      }
- else {
-        throw new IllegalStateException();
-      }
-      if (res > 0) {
-        if (res < distToFinalPoint - 0.01) {
-          throw new IllegalStateException("Estimated distance " + res + " > "+ distToFinalPoint);
-        }
-        distToFinalPoint=res;
-      }
- else {
-      }
-    }
-  }
   double result=distToFinalPoint / ctx.getRouter().getMaxDefaultSpeed();
   return (float)result;
 }

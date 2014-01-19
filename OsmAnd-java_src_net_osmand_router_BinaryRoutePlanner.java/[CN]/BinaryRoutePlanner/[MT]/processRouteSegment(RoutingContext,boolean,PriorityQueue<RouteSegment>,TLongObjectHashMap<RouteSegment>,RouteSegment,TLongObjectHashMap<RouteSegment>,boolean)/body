@@ -37,27 +37,6 @@
     if (x == prevx && y == prevy) {
       continue;
     }
-    if (RoutingContext.USE_BORDER_LINES) {
-      int st=ctx.searchBorderLineIndex(y);
-      int tt=ctx.searchBorderLineIndex(prevy);
-      if (st != tt) {
-        for (int i=Math.min(st,tt); i < Math.max(st,tt) & i < ctx.borderLines.length; i++) {
-          Iterator<RouteDataBorderLinePoint> pnts=ctx.borderLines[i].borderPoints.iterator();
-          boolean changed=false;
-          while (pnts.hasNext()) {
-            RouteDataBorderLinePoint o=pnts.next();
-            if (o.id == road.id) {
-              pnts.remove();
-              changed=true;
-            }
-          }
-          if (changed) {
-            ctx.updateDistanceForBorderPoints(ctx.startX,ctx.startY,true);
-            ctx.updateDistanceForBorderPoints(ctx.targetX,ctx.targetY,false);
-          }
-        }
-      }
-    }
     segmentDist+=squareRootDist(x,y,prevx,prevy);
     double obstacle=ctx.getRouter().defineRoutingObstacle(road,segmentEnd);
     if (obstacle < 0) {
