@@ -2,7 +2,7 @@
   if (zoom > 31) {
     zoom=31;
   }
-  ArrayList<Integer> l=new ArrayList<Integer>();
+  boolean[] kept=new boolean[n.size()];
   int first=0;
   int nsize=n.size();
   while (first < nsize) {
@@ -19,7 +19,7 @@
     last--;
   }
   if (last - first < 1) {
-    return;
+    return kept;
   }
   boolean checkCycle=true;
   boolean cycle=false;
@@ -36,15 +36,18 @@
     }
   }
   if (last - first < 1) {
-    return;
+    return kept;
   }
-  simplifyDouglasPeucker(n,zoom,epsilon,l,first,last,avoidNooses);
+  simplifyDouglasPeucker(n,zoom,epsilon,kept,first,last,avoidNooses);
   result.add(n.get(first));
-  int lsize=l.size();
-  for (int i=0; i < lsize; i++) {
-    result.add(n.get(l.get(i)));
+  for (int i=0; i < kept.length; i++) {
+    if (kept[i]) {
+      result.add(n.get(i));
+    }
   }
   if (cycle) {
     result.add(n.get(first));
+    kept[first]=true;
   }
+  return kept;
 }
