@@ -1,0 +1,26 @@
+{
+  int ind=-1;
+  cachedS.clear();
+  quadTree.queryInBox(new QuadRect(x31 - SHIFT,y31 - SHIFT,x31 + SHIFT,y31 + SHIFT),cachedS);
+  if (cachedS.size() == 0) {
+    for (int k=0; k < SHIFTS.length; k++) {
+      quadTree.queryInBox(new QuadRect(x31 - SHIFTS[k],y31 - SHIFTS[k],x31 + SHIFTS[k],y31 + SHIFTS[k]),cachedS);
+      if (cachedS.size() != 0) {
+        break;
+      }
+    }
+    if (cachedS.size() == 0) {
+      return -1;
+    }
+  }
+  double minDist=0;
+  for (int i=0; i < cachedS.size(); i++) {
+    Integer n=cachedS.get(i);
+    double ds=BinaryRoutePlanner.squareRootDist(x31,y31,pointsX.get(n),pointsY.get(n));
+    if (ds < minDist || i == 0) {
+      ind=n;
+      minDist=ds;
+    }
+  }
+  return ind;
+}

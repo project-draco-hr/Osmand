@@ -1,0 +1,37 @@
+{
+  RouteSegment startPos=start.initRouteSegment(true);
+  RouteSegment startNeg=start.initRouteSegment(false);
+  RouteSegment endPos=end.initRouteSegment(true);
+  RouteSegment endNeg=end.initRouteSegment(false);
+  if (ctx.config.initialDirection != null) {
+    double plusDir=start.getRoad().directionRoute(start.getSegmentStart(),true);
+    double diff=plusDir - ctx.config.initialDirection;
+    if (Math.abs(MapUtils.alignAngleDifference(diff)) <= Math.PI / 3) {
+      if (startNeg != null) {
+        startNeg.distanceFromStart+=500;
+      }
+    }
+ else     if (Math.abs(MapUtils.alignAngleDifference(diff - Math.PI)) <= Math.PI / 3) {
+      if (startPos != null) {
+        startPos.distanceFromStart+=500;
+      }
+    }
+  }
+  float estimatedDistance=(float)estimatedDistance(ctx,ctx.targetX,ctx.targetY,ctx.startX,ctx.startY);
+  if (startPos != null) {
+    startPos.distanceToEnd=estimatedDistance;
+    graphDirectSegments.add(startPos);
+  }
+  if (startNeg != null) {
+    startNeg.distanceToEnd=estimatedDistance;
+    graphDirectSegments.add(startNeg);
+  }
+  if (endPos != null) {
+    endPos.distanceToEnd=estimatedDistance;
+    graphReverseSegments.add(endPos);
+  }
+  if (endNeg != null) {
+    endNeg.distanceToEnd=estimatedDistance;
+    graphReverseSegments.add(endNeg);
+  }
+}

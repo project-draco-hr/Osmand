@@ -1,0 +1,55 @@
+{
+  boolean thereAreRestrictions;
+  boolean processFurther=true;
+  Iterator<RouteSegment> nextIterator=null;
+  if (inputNext != null && inputNext.getRoad().getId() == segment.getRoad().getId() && inputNext.next == null) {
+    thereAreRestrictions=false;
+  }
+ else {
+    thereAreRestrictions=proccessRestrictions(ctx,segment.road,inputNext,reverseWaySearch);
+    if (thereAreRestrictions) {
+      nextIterator=ctx.segmentsToVisitPrescripted.iterator();
+      if (TRACE_ROUTING) {
+        println("  >> There are restrictions");
+      }
+    }
+  }
+  int targetEndX=reverseWaySearch ? ctx.startX : ctx.targetX;
+  int targetEndY=reverseWaySearch ? ctx.startY : ctx.targetY;
+  float distanceToEnd=h(ctx,segment.getRoad().getPoint31XTile(segmentPoint),segment.getRoad().getPoint31YTile(segmentPoint),targetEndX,targetEndY);
+  RouteSegment next=inputNext;
+  boolean hasNext=nextIterator == null || nextIterator.hasNext();
+  while (hasNext) {
+    if (nextIterator != null) {
+      next=nextIterator.next();
+    }
+    if (next.getSegmentStart() == segmentPoint && next.getRoad().getId() == segment.getRoad().id) {
+      RouteSegment itself=next.initRouteSegment(segment.isPositive());
+      if (itself == null) {
+      }
+ else       if (itself.getParentRoute() == null || ctx.roadPriorityComparator(itself.distanceFromStart,itself.distanceToEnd,distFromStart,distanceToEnd) > 0) {
+        itself.distanceFromStart=distFromStart;
+        itself.distanceToEnd=distanceToEnd;
+        itself.setParentRoute(segment);
+        itself.setParentSegmentEnd(segmentPoint);
+      }
+ else {
+        processFurther=false;
+      }
+    }
+ else     if (!doNotAddIntersections) {
+      RouteSegment nextPos=next.initRouteSegment(true);
+      RouteSegment nextNeg=next.initRouteSegment(false);
+      processOneRoadIntersection(ctx,graphSegments,visitedSegments,distFromStart,distanceToEnd,segment,segmentPoint,nextPos);
+      processOneRoadIntersection(ctx,graphSegments,visitedSegments,distFromStart,distanceToEnd,segment,segmentPoint,nextNeg);
+    }
+    if (nextIterator == null) {
+      next=next.next;
+      hasNext=next != null;
+    }
+ else {
+      hasNext=nextIterator.hasNext();
+    }
+  }
+  return processFurther;
+}

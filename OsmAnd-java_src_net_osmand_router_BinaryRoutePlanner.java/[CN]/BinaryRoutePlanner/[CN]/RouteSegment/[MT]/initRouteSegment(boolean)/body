@@ -1,0 +1,25 @@
+{
+  if (segStart == 0 && !positiveDirection) {
+    return null;
+  }
+  if (segStart == road.getPointsLength() - 1 && positiveDirection) {
+    return null;
+  }
+  RouteSegment rs=this;
+  if (directionAssgn == 0) {
+    rs.directionAssgn=(byte)(positiveDirection ? 1 : -1);
+  }
+ else {
+    if (positiveDirection != (directionAssgn == 1)) {
+      if (oppositeDirection == null) {
+        oppositeDirection=new RouteSegment(road,segStart);
+        oppositeDirection.directionAssgn=(byte)(positiveDirection ? 1 : -1);
+      }
+      if ((oppositeDirection.directionAssgn == 1) != positiveDirection) {
+        throw new IllegalStateException();
+      }
+      rs=oppositeDirection;
+    }
+  }
+  return rs;
+}

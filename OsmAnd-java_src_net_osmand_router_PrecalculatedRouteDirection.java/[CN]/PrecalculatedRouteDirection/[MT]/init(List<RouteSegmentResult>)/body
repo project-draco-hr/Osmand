@@ -5,15 +5,16 @@
     boolean plus=s.getStartPointIndex() < s.getEndPointIndex();
     int i=s.getStartPointIndex();
     RouteDataObject obj=s.getObject();
-    float spd=s.getSegmentSpeed();
+    float routeSpd=s.getDistance() / s.getRoutingTime();
     while (true) {
       int iprev=i;
       i=plus ? i + 1 : i - 1;
-      float tm=(float)(BinaryRoutePlanner.squareRootDist(obj.getPoint31XTile(iprev),obj.getPoint31YTile(iprev),obj.getPoint31XTile(i),obj.getPoint31YTile(i)) / spd);
+      float dist=(float)MapUtils.measuredDist31(obj.getPoint31XTile(iprev),obj.getPoint31YTile(iprev),obj.getPoint31XTile(i),obj.getPoint31YTile(i));
+      float tm=dist / routeSpd;
       pointsX.add(obj.getPoint31XTile(i));
       pointsY.add(obj.getPoint31YTile(i));
       times.add(tm);
-      indexedPoints.registerObjectXY(obj.getPoint31XTile(i),obj.getPoint31YTile(i),pointsX.size() - 1);
+      quadTree.insert(pointsX.size() - 1,obj.getPoint31XTile(i),obj.getPoint31YTile(i));
       totaltm+=tm;
       if (i == s.getEndPointIndex()) {
         break;

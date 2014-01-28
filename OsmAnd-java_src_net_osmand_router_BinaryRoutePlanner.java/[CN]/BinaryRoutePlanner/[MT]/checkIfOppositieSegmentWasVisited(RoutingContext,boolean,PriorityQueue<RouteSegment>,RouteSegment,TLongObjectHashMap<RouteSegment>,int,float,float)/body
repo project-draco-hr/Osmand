@@ -1,0 +1,21 @@
+{
+  RouteDataObject road=segment.getRoad();
+  long opp=calculateRoutePointId(road,segment.isPositive() ? segmentPoint - 1 : segmentPoint,!segment.isPositive());
+  if (oppositeSegments.containsKey(opp)) {
+    RouteSegment opposite=oppositeSegments.get(opp);
+    FinalRouteSegment frs=new FinalRouteSegment(road,segmentPoint);
+    float distStartObstacles=segment.distanceFromStart + calculateTimeWithObstacles(ctx,road,segmentDist,obstaclesTime);
+    frs.setParentRoute(segment);
+    frs.setParentSegmentEnd(segmentPoint);
+    frs.reverseWaySearch=reverseWaySearch;
+    frs.distanceFromStart=opposite.distanceFromStart + distStartObstacles;
+    frs.distanceToEnd=0;
+    frs.opposite=opposite;
+    graphSegments.add(frs);
+    if (TRACE_ROUTING) {
+      printRoad("  >> Final segment : ",frs);
+    }
+    return true;
+  }
+  return false;
+}

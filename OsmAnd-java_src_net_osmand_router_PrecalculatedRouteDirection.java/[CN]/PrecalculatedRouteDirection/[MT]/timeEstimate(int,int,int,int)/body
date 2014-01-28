@@ -1,5 +1,35 @@
 {
-  getIndex(sx31,sy31,ct1);
-  getIndex(ex31,ey31,ct2);
-  return Math.abs(ct1[0] - ct2[0]) + ct1[1] + ct2[1];
+  long l1=calc(sx31,sy31);
+  long l2=calc(ex31,ey31);
+  int x31;
+  int y31;
+  boolean start;
+  if (l1 == startPoint || l1 == endPoint) {
+    start=l1 == startPoint;
+    x31=ex31;
+    y31=ey31;
+  }
+ else   if (l2 == startPoint || l2 == endPoint) {
+    start=l2 == startPoint;
+    x31=sx31;
+    y31=sy31;
+  }
+ else {
+    throw new UnsupportedOperationException();
+  }
+  int ind=getIndex(x31,y31);
+  if (ind == -1) {
+    return -1;
+  }
+  if ((ind == 0 && start) || (ind == pointsX.size() - 1 && !start)) {
+    return -1;
+  }
+  float distToPoint=getDeviationDistance(x31,y31,ind);
+  float deviationPenalty=distToPoint / speed;
+  if (start) {
+    return (tms[0] - tms[ind]) + deviationPenalty;
+  }
+ else {
+    return tms[ind] + deviationPenalty;
+  }
 }

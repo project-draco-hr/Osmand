@@ -1,0 +1,30 @@
+{
+  if (next != null) {
+    float obstaclesTime=(float)ctx.getRouter().calculateTurnTime(next,next.isPositive() ? next.getRoad().getPointsLength() - 1 : 0,segment,segmentPoint);
+    distFromStart+=obstaclesTime;
+    if (TEST_SPECIFIC && next.road.getId() == TEST_ID) {
+      printRoad(" !? distFromStart=" + +distFromStart + " from "+ segment.getRoad().getId()+ " dir="+ segment.getDirectionAssigned()+ " distToEnd="+ distanceToEnd+ " segmentPoint="+ segmentPoint+ " -- ",next);
+    }
+    if (!visitedSegments.containsKey(calculateRoutePointId(next,next.isPositive()))) {
+      if (next.getParentRoute() == null || ctx.roadPriorityComparator(next.distanceFromStart,next.distanceToEnd,distFromStart,distanceToEnd) > 0) {
+        next.distanceFromStart=distFromStart;
+        next.distanceToEnd=distanceToEnd;
+        if (TRACE_ROUTING) {
+          printRoad("  >>",next);
+        }
+        next.setParentRoute(segment);
+        next.setParentSegmentEnd(segmentPoint);
+        graphSegments.add(next);
+      }
+    }
+ else {
+      if (distFromStart < next.distanceFromStart) {
+        if (ctx.config.heuristicCoefficient <= 1) {
+          System.err.println("! Alert distance from start " + distFromStart + " < "+ next.distanceFromStart+ " id="+ next.road.id);
+        }
+        if (ctx.visitor != null) {
+        }
+      }
+    }
+  }
+}

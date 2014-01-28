@@ -1,72 +1,64 @@
 {
   final RouteDataObject road=segment.road;
-  boolean initDirectionAllowed=checkIfInitialMovementAllowedOnSegment(ctx,reverseWaySearch,visitedSegments,segment,direction,road);
+  boolean initDirectionAllowed=checkIfInitialMovementAllowedOnSegment(ctx,reverseWaySearch,visitedSegments,segment,road);
+  if (TEST_SPECIFIC && road.getId() == TEST_ID) {
+    printRoad(" ! " + +segment.distanceFromStart + " ",segment);
+  }
   boolean directionAllowed=initDirectionAllowed;
+  if (!directionAllowed) {
+    alreadyVisited++;
+    if (TRACE_ROUTING) {
+      println("  >> Already visited");
+    }
+    return;
+  }
   float obstaclesTime=0;
-  if (segment.getParentRoute() != null && directionAllowed) {
-    obstaclesTime=(float)ctx.getRouter().calculateTurnTime(segment,direction ? segment.getRoad().getPointsLength() - 1 : 0,segment.getParentRoute(),segment.getParentSegmentEnd());
-  }
-  if (ctx.firstRoadId == calculateRoutePointId(road,segment.getSegmentStart(),true)) {
-    if (direction && ctx.firstRoadDirection < 0) {
-      obstaclesTime+=500;
-    }
- else     if (!direction && ctx.firstRoadDirection > 0) {
-      obstaclesTime+=500;
-    }
-  }
   float segmentDist=0;
-  int segmentEnd=segment.getSegmentStart();
+  short segmentPoint=segment.getSegmentStart();
+  boolean dir=segment.isPositive();
   while (directionAllowed) {
-    int prevInd=segmentEnd;
-    if (direction) {
-      segmentEnd++;
+    short prevInd=segmentPoint;
+    if (dir) {
+      segmentPoint++;
     }
  else {
-      segmentEnd--;
+      segmentPoint--;
     }
-    if (segmentEnd < 0 || segmentEnd >= road.getPointsLength()) {
+    if (segmentPoint < 0 || segmentPoint >= road.getPointsLength()) {
       directionAllowed=false;
       continue;
     }
-    final int intervalId=direction ? segmentEnd - 1 : segmentEnd;
-    visitedSegments.put(calculateRoutePointId(road,intervalId,direction),segment);
-    final int x=road.getPoint31XTile(segmentEnd);
-    final int y=road.getPoint31YTile(segmentEnd);
+    visitedSegments.put(calculateRoutePointId(segment.getRoad(),segment.isPositive() ? segmentPoint - 1 : segmentPoint,segment.isPositive()),segment);
+    final int x=road.getPoint31XTile(segmentPoint);
+    final int y=road.getPoint31YTile(segmentPoint);
     final int prevx=road.getPoint31XTile(prevInd);
     final int prevy=road.getPoint31YTile(prevInd);
     if (x == prevx && y == prevy) {
       continue;
     }
     segmentDist+=squareRootDist(x,y,prevx,prevy);
-    double obstacle=ctx.getRouter().defineRoutingObstacle(road,segmentEnd);
+    double obstacle=ctx.getRouter().defineRoutingObstacle(road,segmentPoint);
     if (obstacle < 0) {
       directionAllowed=false;
       continue;
     }
     obstaclesTime+=obstacle;
-    boolean alreadyVisited=checkIfOppositieSegmentWasVisited(ctx,reverseWaySearch,graphSegments,segment,oppositeSegments,road,segmentEnd,direction,intervalId,segmentDist,obstaclesTime);
+    boolean alreadyVisited=checkIfOppositieSegmentWasVisited(ctx,reverseWaySearch,graphSegments,segment,oppositeSegments,segmentPoint,segmentDist,obstaclesTime);
     if (alreadyVisited) {
       directionAllowed=false;
       continue;
     }
+    if (ctx.precalculatedRouteDirection != null) {
+    }
     final RouteSegment roadNext=ctx.loadRouteSegment(x,y,ctx.config.memoryLimitation - ctx.memoryOverhead);
-    if (roadNext != null && !((roadNext == segment || roadNext.road.id == road.id) && roadNext.next == null)) {
-      boolean outgoingConnections=false;
-      RouteSegment r=roadNext;
-      while (r != null && !outgoingConnections) {
-        if (r.road.id != road.id || r.getSegmentStart() != 0 || r.road.getOneway() != 1) {
-          outgoingConnections=true;
-        }
-        r=r.next;
-      }
-      if (outgoingConnections) {
-        directionAllowed=false;
-      }
-      float distStartObstacles=segment.distanceFromStart + calculateTimeWithObstacles(ctx,road,segmentDist,obstaclesTime);
-      processIntersections(ctx,graphSegments,visitedSegments,distStartObstacles,segment,segmentEnd,roadNext,reverseWaySearch,outgoingConnections);
+    float distStartObstacles=segment.distanceFromStart + calculateTimeWithObstacles(ctx,road,segmentDist,obstaclesTime);
+    boolean processFurther=processIntersections(ctx,graphSegments,visitedSegments,distStartObstacles,segment,segmentPoint,roadNext,reverseWaySearch,doNotAddIntersections);
+    if (!processFurther) {
+      directionAllowed=false;
+      continue;
     }
   }
   if (initDirectionAllowed && ctx.visitor != null) {
-    ctx.visitor.visitSegment(segment,segmentEnd,true);
+    ctx.visitor.visitSegment(segment,segmentPoint,true);
   }
 }

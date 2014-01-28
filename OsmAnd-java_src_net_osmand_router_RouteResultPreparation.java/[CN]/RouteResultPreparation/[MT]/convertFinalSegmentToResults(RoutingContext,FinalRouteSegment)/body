@@ -5,8 +5,10 @@
     println("Routing calculated time distance " + finalSegment.distanceFromStart);
     RouteSegment segment=finalSegment.reverseWaySearch ? finalSegment : finalSegment.opposite.getParentRoute();
     int parentSegmentStart=finalSegment.reverseWaySearch ? finalSegment.opposite.getSegmentStart() : finalSegment.opposite.getParentSegmentEnd();
+    float parentRoutingTime=-1;
     while (segment != null) {
       RouteSegmentResult res=new RouteSegmentResult(segment.road,parentSegmentStart,segment.getSegmentStart());
+      parentRoutingTime=calcRoutingTime(parentRoutingTime,finalSegment,segment,res);
       parentSegmentStart=segment.getParentSegmentEnd();
       segment=segment.getParentRoute();
       addRouteSegmentToResult(ctx,result,res,false);
@@ -14,8 +16,10 @@
     Collections.reverse(result);
     segment=finalSegment.reverseWaySearch ? finalSegment.opposite.getParentRoute() : finalSegment;
     int parentSegmentEnd=finalSegment.reverseWaySearch ? finalSegment.opposite.getParentSegmentEnd() : finalSegment.opposite.getSegmentStart();
+    parentRoutingTime=-1;
     while (segment != null) {
       RouteSegmentResult res=new RouteSegmentResult(segment.road,segment.getSegmentStart(),parentSegmentEnd);
+      parentRoutingTime=calcRoutingTime(parentRoutingTime,finalSegment,segment,res);
       parentSegmentEnd=segment.getParentSegmentEnd();
       segment=segment.getParentRoute();
       addRouteSegmentToResult(ctx,result,res,true);
