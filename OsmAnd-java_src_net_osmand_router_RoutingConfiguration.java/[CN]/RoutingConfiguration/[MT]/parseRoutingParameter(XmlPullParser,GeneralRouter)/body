@@ -1,0 +1,22 @@
+{
+  String description=parser.getAttributeValue("","description");
+  String name=parser.getAttributeValue("","name");
+  String id=parser.getAttributeValue("","id");
+  String type=parser.getAttributeValue("","type");
+  if (type.equalsIgnoreCase("boolean")) {
+    currentRouter.registerBooleanParameter(id,name,description);
+  }
+ else   if (type.equalsIgnoreCase("numeric")) {
+    String values=parser.getAttributeValue("","values");
+    String valueDescriptions=parser.getAttributeValue("","valueDescriptions");
+    String[] strValues=values.split(",");
+    Double[] vls=new Double[strValues.length];
+    for (int i=0; i < vls.length; i++) {
+      vls[i]=Double.parseDouble(strValues[i].trim());
+    }
+    currentRouter.registerNumericParameter(id,name,description,vls,valueDescriptions.split(","));
+  }
+ else {
+    throw new UnsupportedOperationException("Unsupported routing parameter type - " + type);
+  }
+}

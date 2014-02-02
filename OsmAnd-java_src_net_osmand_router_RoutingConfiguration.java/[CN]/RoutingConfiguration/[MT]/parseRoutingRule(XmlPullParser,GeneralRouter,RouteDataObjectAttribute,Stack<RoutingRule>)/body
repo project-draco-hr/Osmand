@@ -1,0 +1,30 @@
+{
+  String pname=parser.getName();
+  if (checkTag(pname)) {
+    if (attr == null) {
+      throw new NullPointerException("Select tag filter outside road attribute < " + pname + " > : "+ parser.getLineNumber());
+    }
+    RoutingRule rr=new RoutingRule();
+    rr.tagName=pname;
+    rr.t=parser.getAttributeValue("","t");
+    rr.v=parser.getAttributeValue("","v");
+    rr.param=parser.getAttributeValue("","param");
+    rr.value1=parser.getAttributeValue("","value1");
+    rr.value2=parser.getAttributeValue("","value2");
+    rr.type=parser.getAttributeValue("","type");
+    RouteAttributeContext ctx=currentRouter.getObjContext(attr);
+    if ("select".equals(rr.tagName)) {
+      String val=parser.getAttributeValue("","value");
+      String type=parser.getAttributeValue("","type");
+      ctx.registerNewRule(val,type);
+      addSubclause(rr,ctx);
+      for (int i=0; i < stack.size(); i++) {
+        addSubclause(stack.get(i),ctx);
+      }
+    }
+ else     if (stack.size() > 0 && stack.peek().tagName.equals("select")) {
+      addSubclause(rr,ctx);
+    }
+    stack.push(rr);
+  }
+}

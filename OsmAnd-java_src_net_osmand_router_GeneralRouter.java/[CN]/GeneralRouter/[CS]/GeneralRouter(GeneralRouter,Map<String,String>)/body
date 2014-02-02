@@ -1,14 +1,21 @@
 {
-  this.highwaySpeed=new LinkedHashMap<String,Float>(pr.highwaySpeed);
-  this.highwayPriorities=new LinkedHashMap<String,Float>(pr.highwayPriorities);
-  this.avoid=new LinkedHashMap<String,Float>(pr.avoid);
-  this.obstacles=new LinkedHashMap<String,Float>(pr.obstacles);
-  this.routingObstacles=new LinkedHashMap<String,Float>(pr.routingObstacles);
   this.attributes=new LinkedHashMap<String,String>();
-  this.profile=pr.profile;
-  Iterator<Entry<String,String>> e=attributes.entrySet().iterator();
+  Iterator<Entry<String,String>> e=parent.attributes.entrySet().iterator();
   while (e.hasNext()) {
     Entry<String,String> next=e.next();
     addAttribute(next.getKey(),next.getValue());
+  }
+  universalRules=parent.universalRules;
+  universalRulesById=parent.universalRulesById;
+  tagRuleMask=parent.tagRuleMask;
+  ruleToValue=parent.ruleToValue;
+  parameters=parent.parameters;
+  objectAttributes=new RouteAttributeContext[RouteDataObjectAttribute.values().length];
+  for (int i=0; i < objectAttributes.length; i++) {
+    objectAttributes[i]=new RouteAttributeContext(parent.objectAttributes[i],params);
+  }
+  shortestRoute=params.containsKey(USE_SHORTEST_WAY) && parseSilentBoolean(params.get(USE_SHORTEST_WAY),false);
+  if (shortestRoute) {
+    maxDefaultSpeed=Math.min(CAR_SHORTEST_DEFAULT_SPEED,maxDefaultSpeed);
   }
 }

@@ -2,10 +2,10 @@
   XmlPullParser parser=PlatformUtil.newXMLPullParser();
   final RoutingConfiguration.Builder config=new RoutingConfiguration.Builder();
   GeneralRouter currentRouter=null;
-  String previousKey=null;
-  String previousTag=null;
-  int tok;
+  RouteDataObjectAttribute currentAttribute=null;
+  Stack<RoutingRule> rulesStck=new Stack<RoutingConfiguration.RoutingRule>();
   parser.setInput(is,"UTF-8");
+  int tok;
   while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
     if (tok == XmlPullParser.START_TAG) {
       String name=parser.getName();
@@ -17,19 +17,22 @@
       }
  else       if ("attribute".equals(name)) {
         parseAttribute(parser,config,currentRouter);
-        previousKey=parser.getAttributeValue("","name");
-        previousTag=name;
       }
- else       if ("specialization".equals(name)) {
-        parseSpecialization(parser,currentRouter,previousKey,previousTag);
+ else       if ("parameter".equals(name)) {
+        parseRoutingParameter(parser,currentRouter);
+      }
+ else       if ("point".equals(name) || "way".equals(name)) {
+        String attribute=parser.getAttributeValue("","attribute");
+        currentAttribute=RouteDataObjectAttribute.getValueOf(attribute);
       }
  else {
-        previousKey=parser.getAttributeValue("","tag") + "$" + parser.getAttributeValue("","value");
-        previousTag=name;
-        if (parseCurrentRule(parser,currentRouter,previousKey,name)) {
-        }
- else {
-        }
+        parseRoutingRule(parser,currentRouter,currentAttribute,rulesStck);
+      }
+    }
+ else     if (tok == XmlPullParser.END_TAG) {
+      String pname=parser.getName();
+      if (checkTag(pname)) {
+        rulesStck.pop();
       }
     }
   }

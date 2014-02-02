@@ -1,0 +1,28 @@
+{
+  String value=values[id];
+  Number cacheValue=cacheValues[id];
+  if (cacheValue != null) {
+    return cacheValue.doubleValue();
+  }
+  Object o=null;
+  if (value instanceof String && value.toString().startsWith("$")) {
+    BitSet mask=tagRuleMask.get(value.toString().substring(1));
+    if (mask != null && mask.intersects(types)) {
+      BitSet findBit=new BitSet(mask.size());
+      findBit.or(mask);
+      findBit.and(types);
+      int v=findBit.nextSetBit(0);
+      o=parseValueFromTag(v,valueType);
+    }
+  }
+ else   if (value instanceof String && value.toString().startsWith(":")) {
+    String p=((String)value).substring(1);
+    if (paramContext != null && paramContext.vars.containsKey(p)) {
+      o=parseValue(paramContext.vars.get(p),value);
+    }
+  }
+  if (o instanceof Number) {
+    return ((Number)o).doubleValue();
+  }
+  return Double.NaN;
+}

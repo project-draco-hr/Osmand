@@ -1,0 +1,22 @@
+{
+  if (selectValue instanceof String && selectValue.toString().startsWith("$")) {
+    BitSet mask=tagRuleMask.get(selectValue.toString().substring(1));
+    if (mask != null && mask.intersects(types)) {
+      BitSet findBit=new BitSet(mask.size());
+      findBit.or(mask);
+      findBit.and(types);
+      int value=findBit.nextSetBit(0);
+      return parseValueFromTag(value,selectType);
+    }
+  }
+ else   if (selectValue instanceof String && selectValue.toString().startsWith(":")) {
+    String p=((String)selectValue).substring(1);
+    if (paramContext != null && paramContext.vars.containsKey(p)) {
+      selectValue=parseValue(paramContext.vars.get(p),selectType);
+    }
+ else {
+      return null;
+    }
+  }
+  return selectValue;
+}
