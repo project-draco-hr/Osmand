@@ -14,6 +14,8 @@
   float obstaclesTime=0;
   float segmentDist=0;
   short segmentPoint=segment.getSegmentStart();
+  boolean[] processFurther=new boolean[1];
+  RouteSegment previous=segment;
   boolean dir=segment.isPositive();
   while (directionAllowed) {
     short prevInd=segmentPoint;
@@ -27,7 +29,7 @@
       directionAllowed=false;
       continue;
     }
-    visitedSegments.put(calculateRoutePointId(segment.getRoad(),segment.isPositive() ? segmentPoint - 1 : segmentPoint,segment.isPositive()),segment);
+    visitedSegments.put(calculateRoutePointId(segment.getRoad(),segment.isPositive() ? segmentPoint - 1 : segmentPoint,segment.isPositive()),previous != null ? previous : segment);
     final int x=road.getPoint31XTile(segmentPoint);
     final int y=road.getPoint31YTile(segmentPoint);
     final int prevx=road.getPoint31XTile(prevInd);
@@ -51,8 +53,8 @@
     }
     final RouteSegment roadNext=ctx.loadRouteSegment(x,y,ctx.config.memoryLimitation - ctx.memoryOverhead);
     float distStartObstacles=segment.distanceFromStart + calculateTimeWithObstacles(ctx,road,segmentDist,obstaclesTime);
-    boolean processFurther=processIntersections(ctx,graphSegments,visitedSegments,distStartObstacles,segment,segmentPoint,roadNext,reverseWaySearch,doNotAddIntersections);
-    if (!processFurther) {
+    previous=processIntersections(ctx,graphSegments,visitedSegments,distStartObstacles,segment,segmentPoint,roadNext,reverseWaySearch,doNotAddIntersections,processFurther);
+    if (!processFurther[0]) {
       directionAllowed=false;
       continue;
     }
