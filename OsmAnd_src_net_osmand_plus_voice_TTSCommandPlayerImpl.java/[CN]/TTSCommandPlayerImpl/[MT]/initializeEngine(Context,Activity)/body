@@ -4,6 +4,7 @@
   }
   if (mTts == null) {
     mTtsContext=ctx;
+    final float speechRate=cSpeechRate;
     mTts=new TextToSpeech(ctx,new OnInitListener(){
       @Override public void onInit(      int status){
         if (status != TextToSpeech.SUCCESS) {
@@ -21,13 +22,16 @@ case TextToSpeech.LANG_AVAILABLE:
 case TextToSpeech.LANG_COUNTRY_AVAILABLE:
 case TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE:
         mTts.setLanguage(new Locale(language));
-      break;
+      if (speechRate != 1) {
+        mTts.setSpeechRate(speechRate);
+      }
+    break;
 case TextToSpeech.LANG_NOT_SUPPORTED:
-    if (isSettingsActivity(act)) {
-      Builder builder=createAlertDialog(R.string.tts_language_not_supported_title,R.string.tts_language_not_supported,new IntentStarter(act,Intent.ACTION_VIEW,Uri.parse("market://search?q=text to speech engine")),act);
-      builder.show();
-    }
-  break;
+  if (isSettingsActivity(act)) {
+    Builder builder=createAlertDialog(R.string.tts_language_not_supported_title,R.string.tts_language_not_supported,new IntentStarter(act,Intent.ACTION_VIEW,Uri.parse("market://search?q=text to speech engine")),act);
+    builder.show();
+  }
+break;
 }
 }
 }
