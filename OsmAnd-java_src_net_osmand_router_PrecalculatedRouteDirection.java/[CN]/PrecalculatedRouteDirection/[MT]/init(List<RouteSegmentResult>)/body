@@ -1,34 +1,21 @@
 {
-  float totaltm=0;
-  List<Float> times=new ArrayList<Float>();
   TIntArrayList px=new TIntArrayList();
   TIntArrayList py=new TIntArrayList();
+  List<Float> speedSegments=new ArrayList<Float>();
   for (  RouteSegmentResult s : ls) {
     boolean plus=s.getStartPointIndex() < s.getEndPointIndex();
     int i=s.getStartPointIndex();
     RouteDataObject obj=s.getObject();
-    float routeSpd=s.getDistance() / s.getRoutingTime();
+    float routeSpd=(s.getRoutingTime() == 0 || s.getDistance() == 0) ? maxSpeed : (s.getDistance() / s.getRoutingTime());
     while (true) {
-      int iprev=i;
       i=plus ? i + 1 : i - 1;
-      float dist=(float)MapUtils.measuredDist31(obj.getPoint31XTile(iprev),obj.getPoint31YTile(iprev),obj.getPoint31XTile(i),obj.getPoint31YTile(i));
-      float tm=dist / routeSpd;
       px.add(obj.getPoint31XTile(i));
       py.add(obj.getPoint31YTile(i));
-      times.add(tm);
-      quadTree.insert(px.size() - 1,obj.getPoint31XTile(i),obj.getPoint31YTile(i));
-      totaltm+=tm;
+      speedSegments.add(routeSpd);
       if (i == s.getEndPointIndex()) {
         break;
       }
     }
   }
-  pointsX=px.toArray();
-  pointsY=py.toArray();
-  tms=new float[times.size()];
-  float totDec=totaltm;
-  for (int i=0; i < times.size(); i++) {
-    totDec-=times.get(i);
-    tms[i]=totDec;
-  }
+  init(px,py,speedSegments);
 }
