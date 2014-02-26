@@ -1,0 +1,64 @@
+{
+  PreferenceCategory cat=(PreferenceCategory)screen.findPreference("routing_preferences");
+  cat.removeAll();
+  CheckBoxPreference fastRoute=createCheckBoxPreference(settings.FAST_ROUTE_MODE,R.string.fast_route_mode,R.string.fast_route_mode_descr);
+  if (settings.ROUTER_SERVICE.get() != RouteService.OSMAND) {
+    cat.addPreference(fastRoute);
+  }
+ else {
+    ApplicationMode am=settings.getApplicationMode();
+    GeneralRouter router=getRouter(am);
+    clearParameters();
+    if (router != null) {
+      Map<String,RoutingParameter> parameters=router.getParameters();
+      if (parameters.containsKey("short_way")) {
+        cat.addPreference(fastRoute);
+      }
+      List<RoutingParameter> others=new ArrayList<GeneralRouter.RoutingParameter>();
+      for (      Map.Entry<String,RoutingParameter> e : parameters.entrySet()) {
+        String param=e.getKey();
+        if (param.startsWith("avoid_")) {
+          avoidParameters.add(e.getValue());
+        }
+ else         if (param.startsWith("prefer_")) {
+          preferParameters.add(e.getValue());
+        }
+ else         if (!param.equals("short_way")) {
+          others.add(e.getValue());
+        }
+      }
+      if (avoidParameters.size() > 0) {
+        avoidRouting=new Preference(this);
+        avoidRouting.setTitle(R.string.avoid_in_routing_title);
+        avoidRouting.setSummary(R.string.avoid_in_routing_descr);
+        avoidRouting.setOnPreferenceClickListener(this);
+        cat.addPreference(avoidRouting);
+      }
+      if (preferParameters.size() > 0) {
+        preferRouting=new Preference(this);
+        preferRouting.setTitle(R.string.prefer_in_routing_title);
+        preferRouting.setSummary(R.string.prefer_in_routing_descr);
+        preferRouting.setOnPreferenceClickListener(this);
+        cat.addPreference(preferRouting);
+      }
+      for (      RoutingParameter p : others) {
+        Preference basePref;
+        if (p.getType() == RoutingParameterType.BOOLEAN) {
+          basePref=createCheckBoxPreference(settings.getCustomRoutingBooleanProperty(p.getId()));
+        }
+ else {
+          Object[] vls=p.getPossibleValues();
+          String[] svlss=new String[vls.length];
+          int i=0;
+          for (          Object o : vls) {
+            svlss[i++]=o.toString();
+          }
+          basePref=createListPreference(settings.getCustomRoutingProperty(p.getId()),p.getPossibleValueDescriptions(),svlss);
+        }
+        basePref.setTitle(SettingsBaseActivity.getRoutingStringPropertyName(this,p.getId(),p.getName()));
+        basePref.setSummary(SettingsBaseActivity.getRoutingStringPropertyName(this,p.getId(),p.getDescription()));
+        cat.addPreference(basePref);
+      }
+    }
+  }
+}
