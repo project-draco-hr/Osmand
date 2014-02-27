@@ -2,28 +2,22 @@
   addPreferencesFromResource(R.xml.navigation_settings);
   PreferenceScreen screen=getPreferenceScreen();
   settings=getMyApplication().getSettings();
-  registerBooleanPreference(settings.FAST_ROUTE_MODE,screen);
-  PreferenceCategory cat=(PreferenceCategory)screen.findPreference("routing_preferences");
-  avoidRouting=(Preference)screen.findPreference("avoid_in_routing");
-  avoidRouting.setOnPreferenceClickListener(this);
-  preferRouting=(Preference)screen.findPreference("prefer_in_routing");
-  preferRouting.setOnPreferenceClickListener(this);
+  routerServicePreference=(ListPreference)screen.findPreference(settings.ROUTER_SERVICE.getId());
+  RouteService[] vls=RouteService.getAvailableRouters(getMyApplication());
+  String[] entries=new String[vls.length];
+  for (int i=0; i < entries.length; i++) {
+    entries[i]=vls[i].getName();
+  }
+  registerListPreference(settings.ROUTER_SERVICE,screen,entries,vls);
   registerBooleanPreference(settings.SNAP_TO_ROAD,screen);
   registerBooleanPreference(settings.USE_COMPASS_IN_NAVIGATION,screen);
   Integer[] intValues=new Integer[]{0,5,10,15,20,25,30,45,60,90};
-  String[] entries=new String[intValues.length];
+  entries=new String[intValues.length];
   entries[0]=getString(R.string.auto_follow_route_never);
   for (int i=1; i < intValues.length; i++) {
     entries[i]=(int)intValues[i] + " " + getString(R.string.int_seconds);
   }
   registerListPreference(settings.AUTO_FOLLOW_ROUTE,screen,entries,intValues);
-  RouteService[] vls=RouteService.getAvailableRouters(getMyApplication());
-  entries=new String[vls.length];
-  for (int i=0; i < entries.length; i++) {
-    entries[i]=vls[i].getName();
-  }
-  registerListPreference(settings.ROUTER_SERVICE,screen,entries,vls);
-  routerServicePreference=(ListPreference)screen.findPreference(settings.ROUTER_SERVICE.getId());
   entries=new String[AutoZoomMap.values().length];
   for (int i=0; i < entries.length; i++) {
     entries[i]=getString(AutoZoomMap.values()[i].name);
@@ -35,6 +29,5 @@
   showAlarms.setOnPreferenceClickListener(this);
   speakAlarms=(Preference)screen.findPreference("speak_routing_alarms");
   speakAlarms.setOnPreferenceClickListener(this);
-  reloadVoiceListPreference(screen);
   profileDialog();
 }

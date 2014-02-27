@@ -1,10 +1,14 @@
 {
-  if (preference == avoidRouting) {
-    showBooleanSettings(new String[]{getString(R.string.avoid_toll_roads),getString(R.string.avoid_ferries),getString(R.string.avoid_unpaved),getString(R.string.avoid_motorway)},new OsmandPreference[]{settings.AVOID_TOLL_ROADS,settings.AVOID_FERRIES,settings.AVOID_UNPAVED_ROADS,settings.AVOID_MOTORWAY});
-    return true;
-  }
- else   if (preference == preferRouting) {
-    showBooleanSettings(new String[]{getString(R.string.prefer_motorways)},new OsmandPreference[]{settings.PREFER_MOTORWAYS});
+  if (preference == avoidRouting || preference == preferRouting) {
+    List<RoutingParameter> prms=preference == avoidRouting ? avoidParameters : preferParameters;
+    String[] vals=new String[prms.size()];
+    OsmandPreference[] bls=new OsmandPreference[prms.size()];
+    for (int i=0; i < prms.size(); i++) {
+      RoutingParameter p=prms.get(i);
+      vals[i]=SettingsBaseActivity.getRoutingStringPropertyName(this,p.getId(),p.getName());
+      bls[i]=settings.getCustomRoutingBooleanProperty(p.getId());
+    }
+    showBooleanSettings(vals,bls);
     return true;
   }
  else   if (preference == showAlarms) {
