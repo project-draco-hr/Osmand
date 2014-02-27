@@ -28,24 +28,30 @@
  else {
     return applicationModeNotSupported(params);
   }
+  GeneralRouter generalRouter=SettingsNavigationActivity.getRouter(params.mode);
+  if (generalRouter == null) {
+    return applicationModeNotSupported(params);
+  }
   Map<String,String> paramsR=new LinkedHashMap<String,String>();
-  if (!settings.FAST_ROUTE_MODE.getModeValue(params.mode)) {
-    paramsR.put(GeneralRouter.USE_SHORTEST_WAY,"true");
-  }
-  if (settings.AVOID_FERRIES.getModeValue(params.mode)) {
-    paramsR.put(GeneralRouter.AVOID_FERRIES,"true");
-  }
-  if (settings.AVOID_TOLL_ROADS.getModeValue(params.mode)) {
-    paramsR.put(GeneralRouter.AVOID_TOLL,"true");
-  }
-  if (settings.AVOID_MOTORWAY.getModeValue(params.mode)) {
-    paramsR.put(GeneralRouter.AVOID_MOTORWAY,"true");
-  }
- else   if (settings.PREFER_MOTORWAYS.getModeValue(params.mode)) {
-    paramsR.put(GeneralRouter.PREFER_MOTORWAYS,"true");
-  }
-  if (settings.AVOID_UNPAVED_ROADS.getModeValue(params.mode)) {
-    paramsR.put(GeneralRouter.AVOID_UNPAVED,"true");
+  for (  Map.Entry<String,RoutingParameter> e : generalRouter.getParameters().entrySet()) {
+    String key=e.getKey();
+    RoutingParameter pr=e.getValue();
+    String vl;
+    if (key.equals(GeneralRouter.USE_SHORTEST_WAY)) {
+      Boolean bool=settings.FAST_ROUTE_MODE.getModeValue(params.mode);
+      vl=bool ? "true" : null;
+    }
+ else     if (pr.getType() == RoutingParameterType.BOOLEAN) {
+      CommonPreference<Boolean> pref=settings.getCustomRoutingBooleanProperty(key);
+      Boolean bool=pref.getModeValue(params.mode);
+      vl=bool ? "true" : null;
+    }
+ else {
+      vl=settings.getCustomRoutingProperty(key).getModeValue(params.mode);
+    }
+    if (vl != null && vl.length() > 0) {
+      paramsR.put(key,vl);
+    }
   }
   float mb=(1 << 20);
   Runtime rt=Runtime.getRuntime();
