@@ -1,0 +1,89 @@
+{
+  BinaryMapIndexReader.SearchFilter searchFilter=new BinaryMapIndexReader.SearchFilter(){
+    @Override public boolean accept(    TIntArrayList types,    BinaryMapIndexReader.MapIndex root){
+      for (int j=0; j < types.size(); j++) {
+        int type=types.get(j);
+        TagValuePair pair=root.decodeType(type);
+        if (pair != null) {
+          for (int i=1; i <= 3; i++) {
+            renderingReq.setIntFilter(renderingReq.ALL.R_MINZOOM,zoom);
+            renderingReq.setStringFilter(renderingReq.ALL.R_TAG,pair.tag);
+            renderingReq.setStringFilter(renderingReq.ALL.R_VALUE,pair.value);
+            if (renderingReq.search(i,false)) {
+              return true;
+            }
+          }
+          renderingReq.setStringFilter(renderingReq.ALL.R_TAG,pair.tag);
+          renderingReq.setStringFilter(renderingReq.ALL.R_VALUE,pair.value);
+          if (renderingReq.search(RenderingRulesStorage.TEXT_RULES,false)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+  }
+;
+  if (zoom > 16) {
+    searchFilter=null;
+  }
+  MapIndex mi=null;
+  searchRequest=BinaryMapIndexReader.buildSearchRequest(leftX,rightX,topY,bottomY,zoom,searchFilter);
+  for (  BinaryMapIndexReader c : files.values()) {
+    boolean basemap=c.isBasemap();
+    searchRequest.clearSearchResults();
+    List<BinaryMapDataObject> res;
+    try {
+      res=c.searchMapIndex(searchRequest);
+    }
+ catch (    IOException e) {
+      res=new ArrayList<BinaryMapDataObject>();
+      log.debug("Search failed " + c.getRegionNames(),e);
+    }
+    if (res.size() > 0) {
+      if (basemap) {
+        renderedState|=1;
+      }
+ else {
+        renderedState|=2;
+      }
+    }
+    for (    BinaryMapDataObject r : res) {
+      if (checkForDuplicateObjectIds && !basemap) {
+        if (ids.contains(r.getId()) && r.getId() > 0) {
+          continue;
+        }
+        ids.add(r.getId());
+      }
+      count[0]++;
+      if (r.containsType(r.getMapIndex().coastlineEncodingType)) {
+        if (basemap) {
+          basemapCoastLines.add(r);
+        }
+ else {
+          coastLines.add(r);
+        }
+      }
+ else {
+        if (basemap) {
+          basemapResult.add(r);
+        }
+ else {
+          tempResult.add(r);
+        }
+      }
+      if (checkWhetherInterrupted()) {
+        return null;
+      }
+    }
+    if (searchRequest.isOcean()) {
+      mi=c.getMapIndexes().get(0);
+      ocean[0]=true;
+    }
+    if (searchRequest.isLand()) {
+      mi=c.getMapIndexes().get(0);
+      land[0]=true;
+    }
+  }
+  return mi;
+}

@@ -5,100 +5,40 @@
   double cRightLongitude=dataBox.right;
   long now=System.currentTimeMillis();
   System.gc();
-  int count=0;
   ArrayList<BinaryMapDataObject> tempResult=new ArrayList<BinaryMapDataObject>();
   ArrayList<BinaryMapDataObject> basemapResult=new ArrayList<BinaryMapDataObject>();
-  TLongSet ids=new TLongHashSet();
+  int[] count=new int[]{0};
+  boolean[] ocean=new boolean[]{false};
+  boolean[] land=new boolean[]{false};
   List<BinaryMapDataObject> coastLines=new ArrayList<BinaryMapDataObject>();
   List<BinaryMapDataObject> basemapCoastLines=new ArrayList<BinaryMapDataObject>();
   int leftX=MapUtils.get31TileNumberX(cLeftLongitude);
   int rightX=MapUtils.get31TileNumberX(cRightLongitude);
   int bottomY=MapUtils.get31TileNumberY(cBottomLatitude);
   int topY=MapUtils.get31TileNumberY(cTopLatitude);
-  BinaryMapIndexReader.SearchFilter searchFilter=new BinaryMapIndexReader.SearchFilter(){
-    @Override public boolean accept(    TIntArrayList types,    BinaryMapIndexReader.MapIndex root){
-      for (int j=0; j < types.size(); j++) {
-        int type=types.get(j);
-        TagValuePair pair=root.decodeType(type);
-        if (pair != null) {
-          for (int i=1; i <= 3; i++) {
-            renderingReq.setIntFilter(renderingReq.ALL.R_MINZOOM,zoom);
-            renderingReq.setStringFilter(renderingReq.ALL.R_TAG,pair.tag);
-            renderingReq.setStringFilter(renderingReq.ALL.R_VALUE,pair.value);
-            if (renderingReq.search(i,false)) {
-              return true;
-            }
-          }
-          renderingReq.setStringFilter(renderingReq.ALL.R_TAG,pair.tag);
-          renderingReq.setStringFilter(renderingReq.ALL.R_VALUE,pair.value);
-          if (renderingReq.search(RenderingRulesStorage.TEXT_RULES,false)) {
-            return true;
-          }
-        }
-      }
-      return false;
-    }
+  TLongSet ids=new TLongHashSet();
+  MapIndex mi=readMapObjectsForRendering(zoom,renderingReq,tempResult,basemapResult,ids,count,ocean,land,coastLines,basemapCoastLines,leftX,rightX,bottomY,topY);
+  int renderRouteDataFile=0;
+  if (renderingReq.searchRenderingAttribute("showRoadMapsAttribute")) {
+    renderRouteDataFile=renderingReq.getIntPropertyValue(renderingReq.ALL.R_ATTR_INT_VALUE);
   }
-;
-  if (zoom > 16) {
-    searchFilter=null;
+  if (checkWhetherInterrupted()) {
+    return false;
   }
-  boolean ocean=false;
-  boolean land=false;
-  MapIndex mi=null;
-  searchRequest=BinaryMapIndexReader.buildSearchRequest(leftX,rightX,topY,bottomY,zoom,searchFilter);
-  for (  BinaryMapIndexReader c : files.values()) {
-    searchRequest.clearSearchResults();
-    List<BinaryMapDataObject> res;
-    try {
-      res=c.searchMapIndex(searchRequest);
-    }
- catch (    IOException e) {
-      res=new ArrayList<BinaryMapDataObject>();
-      log.debug("Search failed " + c.getRegionNames(),e);
-    }
-    for (    BinaryMapDataObject r : res) {
-      if (checkForDuplicateObjectIds) {
-        if (ids.contains(r.getId()) && r.getId() > 0) {
-          continue;
-        }
-        ids.add(r.getId());
-      }
-      count++;
-      if (r.containsType(r.getMapIndex().coastlineEncodingType)) {
-        if (c.isBasemap()) {
-          basemapCoastLines.add(r);
-        }
- else {
-          coastLines.add(r);
-        }
-      }
- else {
-        if (c.isBasemap()) {
-          basemapResult.add(r);
-        }
- else {
-          tempResult.add(r);
-        }
-      }
-      if (checkWhetherInterrupted()) {
-        return false;
+  if (renderRouteDataFile >= 0 && zoom >= BASEMAP_ZOOM) {
+    searchRequest=BinaryMapIndexReader.buildSearchRequest(leftX,rightX,topY,bottomY,zoom,null);
+    for (    BinaryMapIndexReader c : files.values()) {
+      if (c.getMapIndexes().size() == 0 || renderRouteDataFile == 1) {
+        readRouteDataAsMapObjects(searchRequest,c,tempResult,ids);
       }
     }
-    if (searchRequest.isOcean()) {
-      mi=c.getMapIndexes().get(0);
-      ocean=true;
-    }
-    if (searchRequest.isLand()) {
-      mi=c.getMapIndexes().get(0);
-      land=true;
-    }
+    log.info(String.format("Route objects %s",tempResult.size() + ""));
   }
   String coastlineTime="";
   boolean addBasemapCoastlines=true;
   boolean emptyData=zoom > BASEMAP_ZOOM && tempResult.isEmpty() && coastLines.isEmpty();
   boolean basemapMissing=zoom <= BASEMAP_ZOOM && basemapCoastLines.isEmpty() && mi == null;
-  boolean detailedLandData=zoom >= 14 && tempResult.size() > 0;
+  boolean detailedLandData=zoom >= zoomForBaseRouteRendering && tempResult.size() > 0 && renderRouteDataFile < 0;
   if (!coastLines.isEmpty()) {
     long ms=System.currentTimeMillis();
     boolean coastlinesWereAdded=processCoastlines(coastLines,leftX,rightX,bottomY,topY,zoom,basemapCoastLines.isEmpty(),true,tempResult);
@@ -115,7 +55,7 @@
     coastlineTime="(coastline " + (System.currentTimeMillis() - ms) + " ms )";
   }
   if (addBasemapCoastlines && mi != null) {
-    BinaryMapDataObject o=new BinaryMapDataObject(new int[]{leftX,topY,rightX,topY,rightX,bottomY,leftX,bottomY,leftX,topY},new int[]{ocean && !land ? mi.coastlineEncodingType : (mi.landEncodingType)},null,-1);
+    BinaryMapDataObject o=new BinaryMapDataObject(new int[]{leftX,topY,rightX,topY,rightX,bottomY,leftX,bottomY,leftX,topY},new int[]{ocean[0] && !land[0] ? mi.coastlineEncodingType : (mi.landEncodingType)},null,-1);
     o.setMapIndex(mi);
     tempResult.add(o);
   }
@@ -133,9 +73,9 @@
   if (zoom <= BASEMAP_ZOOM || emptyData) {
     tempResult.addAll(basemapResult);
   }
-  if (count > 0) {
+  if (count[0] > 0) {
     log.info(String.format("BLat=%s, TLat=%s, LLong=%s, RLong=%s, zoom=%s",cBottomLatitude,cTopLatitude,cLeftLongitude,cRightLongitude,zoom));
-    log.info(String.format("Searching: %s ms  %s (%s results found)",System.currentTimeMillis() - now,coastlineTime,count));
+    log.info(String.format("Searching: %s ms  %s (%s results found)",System.currentTimeMillis() - now,coastlineTime,count[0]));
   }
   cObjects=tempResult;
   cObjectsBox=dataBox;
