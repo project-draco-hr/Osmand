@@ -1,0 +1,64 @@
+{
+  final boolean basemap=c.isBasemap();
+  try {
+    for (    RouteRegion reg : c.getRoutingIndexes()) {
+      List<RouteSubregion> parent=sr.getZoom() < 15 ? reg.getBaseSubregions() : reg.getSubregions();
+      List<RouteSubregion> searchRouteIndexTree=c.searchRouteIndexTree(sr,parent);
+      final MapIndex nmi=new MapIndex();
+      c.loadRouteIndexData(searchRouteIndexTree,new ResultMatcher<RouteDataObject>(){
+        @Override public boolean publish(        RouteDataObject r){
+          if (basemap) {
+            renderedState|=1;
+          }
+ else {
+            renderedState|=2;
+          }
+          if (checkForDuplicateObjectIds && !basemap) {
+            if (ids.contains(r.getId()) && r.getId() > 0) {
+              return false;
+            }
+            ids.add(r.getId());
+          }
+          int[] coordinantes=new int[r.getPointsLength() * 2];
+          int[] roTypes=r.getTypes();
+          for (int k=0; k < roTypes.length; k++) {
+            int type=roTypes[k];
+            registerMissingType(nmi,r,type);
+          }
+          for (int k=0; k < coordinantes.length / 2; k++) {
+            coordinantes[2 * k]=r.getPoint31XTile(k);
+            coordinantes[2 * k + 1]=r.getPoint31YTile(k);
+          }
+          BinaryMapDataObject mo=new BinaryMapDataObject(coordinantes,roTypes,new int[0][],r.getId());
+          TIntObjectHashMap<String> names=r.getNames();
+          if (names != null) {
+            TIntObjectIterator<String> it=names.iterator();
+            while (it.hasNext()) {
+              it.advance();
+              registerMissingType(nmi,r,it.key());
+              mo.putObjectName(it.key(),it.value());
+            }
+          }
+          mo.setMapIndex(nmi);
+          tempResult.add(mo);
+          return false;
+        }
+        private void registerMissingType(        final MapIndex nmi,        RouteDataObject r,        int type){
+          if (!nmi.isRegisteredRule(type)) {
+            RouteTypeRule rr=r.region.quickGetEncodingRule(type);
+            String tag=rr.getTag();
+            int additional=("highway".equals(tag) || "route".equals(tag) || "railway".equals(tag)|| "aeroway".equals(tag)|| "aerialway".equals(tag)) ? 0 : 1;
+            nmi.initMapEncodingRule(additional,type,rr.getTag(),rr.getValue());
+          }
+        }
+        @Override public boolean isCancelled(){
+          return !interrupted;
+        }
+      }
+);
+    }
+  }
+ catch (  IOException e) {
+    log.debug("Search failed " + c.getRegionNames(),e);
+  }
+}
