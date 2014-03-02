@@ -1,0 +1,45 @@
+{
+  BinaryMapIndexReader[] files=params.ctx.getTodoAPI().getRoutingMapFiles();
+  RoutePlannerFrontEnd router=new RoutePlannerFrontEnd(false);
+  OsmandSettings settings=params.ctx.getSettings();
+  GeneralRouter generalRouter=SettingsNavigationActivity.getRouter(params.mode);
+  if (generalRouter == null) {
+    return applicationModeNotSupported(params);
+  }
+  RoutingConfiguration cf=initOsmAndRoutingConfig(params,settings,generalRouter);
+  if (cf == null) {
+    return applicationModeNotSupported(params);
+  }
+  PrecalculatedRouteDirection precalculated=null;
+  if (calcGPXRoute) {
+    ArrayList<Location> sublist=findGpxLocations(params,null,null);
+    LatLon[] latLon=new LatLon[sublist.size()];
+    for (int k=0; k < latLon.length; k++) {
+      latLon[k]=new LatLon(sublist.get(k).getLatitude(),sublist.get(k).getLongitude());
+    }
+    precalculated=PrecalculatedRouteDirection.build(latLon,generalRouter.getMaxDefaultSpeed());
+    cf.planRoadDirection=1;
+  }
+  RoutingContext ctx=router.buildRoutingContext(cf,params.ctx.getInternalAPI().getNativeLibrary(),files,RouteCalculationMode.NORMAL);
+  RoutingContext complexCtx=null;
+  boolean complex=params.mode.isDerivedRoutingFrom(ApplicationMode.CAR) && !settings.DISABLE_COMPLEX_ROUTING.get() && precalculated == null;
+  if (complex) {
+    complexCtx=router.buildRoutingContext(cf,params.ctx.getInternalAPI().getNativeLibrary(),files,RouteCalculationMode.COMPLEX);
+    complexCtx.calculationProgress=params.calculationProgress;
+    complexCtx.leftSideNavigation=params.leftSide;
+  }
+  if (precalculated != null) {
+    ctx.precalculatedRouteDirection=precalculated.adopt(ctx);
+  }
+  ctx.leftSideNavigation=params.leftSide;
+  ctx.calculationProgress=params.calculationProgress;
+  if (params.previousToRecalculate != null) {
+  }
+  LatLon st=new LatLon(params.start.getLatitude(),params.start.getLongitude());
+  LatLon en=new LatLon(params.end.getLatitude(),params.end.getLongitude());
+  List<LatLon> inters=new ArrayList<LatLon>();
+  if (params.intermediates != null) {
+    inters=new ArrayList<LatLon>(params.intermediates);
+  }
+  return calcOfflineRouteImpl(params,router,ctx,complexCtx,st,en,inters);
+}

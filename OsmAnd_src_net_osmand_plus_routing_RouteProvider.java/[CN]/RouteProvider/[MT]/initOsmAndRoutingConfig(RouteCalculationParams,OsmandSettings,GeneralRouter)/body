@@ -1,0 +1,55 @@
+{
+  File routingXml=params.ctx.getAppPath(IndexConstants.ROUTING_XML_FILE);
+  RoutingConfiguration.Builder config;
+  if (routingXml.exists() && routingXml.canRead()) {
+    try {
+      config=RoutingConfiguration.parseFromInputStream(new FileInputStream(routingXml));
+    }
+ catch (    XmlPullParserException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+ else {
+    config=RoutingConfiguration.getDefault();
+  }
+  GeneralRouterProfile p;
+  if (params.mode.isDerivedRoutingFrom(ApplicationMode.BICYCLE)) {
+    p=GeneralRouterProfile.BICYCLE;
+  }
+ else   if (params.mode.isDerivedRoutingFrom(ApplicationMode.PEDESTRIAN)) {
+    p=GeneralRouterProfile.PEDESTRIAN;
+  }
+ else   if (params.mode.isDerivedRoutingFrom(ApplicationMode.CAR)) {
+    p=GeneralRouterProfile.CAR;
+  }
+ else {
+    return null;
+  }
+  Map<String,String> paramsR=new LinkedHashMap<String,String>();
+  for (  Map.Entry<String,RoutingParameter> e : generalRouter.getParameters().entrySet()) {
+    String key=e.getKey();
+    RoutingParameter pr=e.getValue();
+    String vl;
+    if (key.equals(GeneralRouter.USE_SHORTEST_WAY)) {
+      Boolean bool=!settings.FAST_ROUTE_MODE.getModeValue(params.mode);
+      vl=bool ? "true" : null;
+    }
+ else     if (pr.getType() == RoutingParameterType.BOOLEAN) {
+      CommonPreference<Boolean> pref=settings.getCustomRoutingBooleanProperty(key);
+      Boolean bool=pref.getModeValue(params.mode);
+      vl=bool ? "true" : null;
+    }
+ else {
+      vl=settings.getCustomRoutingProperty(key).getModeValue(params.mode);
+    }
+    if (vl != null && vl.length() > 0) {
+      paramsR.put(key,vl);
+    }
+  }
+  float mb=(1 << 20);
+  Runtime rt=Runtime.getRuntime();
+  int memoryLimit=(int)(0.95 * ((rt.maxMemory() - rt.totalMemory()) + rt.freeMemory()) / mb);
+  log.warn("Use " + memoryLimit + " MB Free "+ rt.freeMemory() / mb + " of " + rt.totalMemory() / mb + " max " + rt.maxMemory() / mb);
+  RoutingConfiguration cf=config.build(p.name().toLowerCase(),params.start.hasBearing() ? params.start.getBearing() / 180d * Math.PI : null,memoryLimit,paramsR);
+  return cf;
+}
