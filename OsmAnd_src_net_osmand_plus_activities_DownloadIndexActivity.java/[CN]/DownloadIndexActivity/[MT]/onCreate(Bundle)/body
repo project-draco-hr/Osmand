@@ -60,7 +60,10 @@
   DownloadIndexAdapter adapter=new DownloadIndexAdapter(this,list);
   setListAdapter(adapter);
   if (getMyApplication().getResourceManager().getIndexFileNames().isEmpty()) {
-    boolean showedDialog=SuggestExternalDirectoryDialog.showDialog(this,null,null);
+    boolean showedDialog=false;
+    if (Build.VERSION.SDK_INT < 19) {
+      SuggestExternalDirectoryDialog.showDialog(this,null,null);
+    }
     if (!showedDialog) {
       showDialogOfFreeDownloadsIfNeeded();
     }
@@ -78,4 +81,17 @@
     }
   }
 );
+  if (Build.VERSION.SDK_INT >= 19) {
+    if (!settings.getExternalStorageDirectory().equals(settings.getDefaultExternalStorageLocation())) {
+      AccessibleAlertBuilder ab=new AccessibleAlertBuilder(this);
+      ab.setMessage(getString(R.string.android_19_location_disabled,settings.getExternalStorageDirectory()));
+      ab.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          copyFilesForAndroid19();
+        }
+      }
+);
+      ab.setNegativeButton(R.string.default_buttons_cancel,null);
+    }
+  }
 }
