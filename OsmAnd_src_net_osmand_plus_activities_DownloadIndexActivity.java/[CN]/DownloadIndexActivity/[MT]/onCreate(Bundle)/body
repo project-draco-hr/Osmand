@@ -61,7 +61,7 @@
   setListAdapter(adapter);
   if (getMyApplication().getResourceManager().getIndexFileNames().isEmpty()) {
     boolean showedDialog=false;
-    if (Build.VERSION.SDK_INT < 19) {
+    if (Build.VERSION.SDK_INT < OsmandSettings.VERSION_DEFAULTLOCATION_CHANGED) {
       SuggestExternalDirectoryDialog.showDialog(this,null,null);
     }
     if (!showedDialog) {
@@ -81,8 +81,8 @@
     }
   }
 );
-  if (Build.VERSION.SDK_INT >= 19) {
-    if (!settings.getExternalStorageDirectory().equals(settings.getDefaultExternalStorageLocation())) {
+  if (Build.VERSION.SDK_INT >= OsmandSettings.VERSION_DEFAULTLOCATION_CHANGED) {
+    if (!settings.getExternalStorageDirectory().getAbsolutePath().equals(settings.getDefaultExternalStorageLocation())) {
       AccessibleAlertBuilder ab=new AccessibleAlertBuilder(this);
       ab.setMessage(getString(R.string.android_19_location_disabled,settings.getExternalStorageDirectory()));
       ab.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
@@ -92,6 +92,7 @@
       }
 );
       ab.setNegativeButton(R.string.default_buttons_cancel,null);
+      ab.show();
     }
   }
 }
