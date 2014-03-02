@@ -6,7 +6,11 @@
     }
     try {
       RouteCalculationResult res;
-      if (params.gpxRoute != null && !params.gpxRoute.points.isEmpty()) {
+      boolean calcGPXRoute=params.gpxRoute != null && !params.gpxRoute.points.isEmpty();
+      if (params.type == RouteService.OSMAND || (calcGPXRoute && params.gpxRoute.calculateOsmAndRoute)) {
+        res=findVectorMapsRoute(params,calcGPXRoute);
+      }
+ else       if (calcGPXRoute) {
         res=calculateGpxRoute(params);
       }
  else       if (params.type == RouteService.YOURS) {
@@ -17,9 +21,6 @@
       }
  else       if (params.type == RouteService.OSRM) {
         res=findOSRMRoute(params);
-      }
- else       if (params.type == RouteService.OSMAND) {
-        res=findVectorMapsRoute(params);
       }
  else       if (params.type == RouteService.BROUTER) {
         res=findBROUTERRoute(params);

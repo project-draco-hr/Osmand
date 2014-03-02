@@ -87,7 +87,20 @@
             }
           }
           @Override protected void onPostExecute(          GPXFile result){
-            final GPXRouteParams gpxRoute=result == null ? null : new GPXRouteParams(result,false,settings.SPEAK_GPX_WPT.get(),settings);
+            final GPXRouteParams gpxRoute;
+            if (result != null) {
+              GPXRouteParamsBuilder builder=GPXRouteParamsBuilder.newBuilder(result,settings);
+              if (settings.SPEAK_GPX_WPT.get()) {
+                builder.announceWaypoints();
+              }
+              if (settings.CALC_GPX_ROUTE.get()) {
+                builder.calculateOsmAndRoute();
+              }
+              gpxRoute=builder.build();
+            }
+ else {
+              gpxRoute=null;
+            }
             LatLon endPoint=pointToNavigate != null ? pointToNavigate : gpxRoute.getLastPoint();
             net.osmand.Location startPoint=gpxRoute == null ? null : gpxRoute.getStartPointForRoute();
             if (endPoint == null) {
