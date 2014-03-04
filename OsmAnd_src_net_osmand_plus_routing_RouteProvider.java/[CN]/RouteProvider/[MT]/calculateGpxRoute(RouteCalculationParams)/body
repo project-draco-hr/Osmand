@@ -1,34 +1,10 @@
 {
   RouteCalculationResult res;
-  float minDist=Integer.MAX_VALUE;
-  int startI=0;
   GPXRouteParams params=pars.gpxRoute;
   List<Location> gpxRoute=params.points;
-  int endI=gpxRoute.size();
-  if (pars.start != null) {
-    for (int i=0; i < gpxRoute.size(); i++) {
-      float d=gpxRoute.get(i).distanceTo(pars.start);
-      if (d < minDist) {
-        startI=i;
-        minDist=d;
-      }
-    }
-  }
- else {
-    pars.start=gpxRoute.get(0);
-  }
-  Location l=new Location("temp");
-  l.setLatitude(pars.end.getLatitude());
-  l.setLongitude(pars.end.getLongitude());
-  minDist=Integer.MAX_VALUE;
-  for (int i=gpxRoute.size() - 1; i >= startI; i--) {
-    float d=gpxRoute.get(i).distanceTo(l);
-    if (d < minDist) {
-      endI=i + 1;
-      minDist=d - 40;
-    }
-  }
-  ArrayList<Location> sublist=new ArrayList<Location>(gpxRoute.subList(startI,endI));
+  int[] startI=new int[]{0};
+  int[] endI=new int[]{gpxRoute.size()};
+  ArrayList<Location> sublist=findGpxLocations(pars,startI,endI);
   pars.intermediates=null;
   if (params.directions == null) {
     res=new RouteCalculationResult(sublist,null,pars,params.wpt);
@@ -36,9 +12,9 @@
  else {
     List<RouteDirectionInfo> subdirections=new ArrayList<RouteDirectionInfo>();
     for (    RouteDirectionInfo info : params.directions) {
-      if (info.routePointOffset >= startI && info.routePointOffset < endI) {
+      if (info.routePointOffset >= startI[0] && info.routePointOffset < endI[0]) {
         RouteDirectionInfo ch=new RouteDirectionInfo(info.getAverageSpeed(),info.getTurnType());
-        ch.routePointOffset=info.routePointOffset - startI;
+        ch.routePointOffset=info.routePointOffset - startI[0];
         ch.setDescriptionRoute(info.getDescriptionRoute());
         ch.distance=0;
         ch.afterLeftTime=0;

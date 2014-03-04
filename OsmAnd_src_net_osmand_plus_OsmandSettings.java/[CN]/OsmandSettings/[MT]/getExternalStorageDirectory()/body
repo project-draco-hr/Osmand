@@ -1,3 +1,7 @@
 {
-  return new File(settingsAPI.getString(globalPreferences,EXTERNAL_STORAGE_DIR,ctx.getExternalServiceAPI().getExternalStorageDirectory()));
+  String defaultLocation=ctx.getExternalServiceAPI().getExternalStorageDirectory();
+  if (Build.VERSION.SDK_INT >= VERSION_DEFAULTLOCATION_CHANGED && !new File(defaultLocation,IndexConstants.APP_DIR).exists()) {
+    defaultLocation+="/Android/data/" + ctx.getPackageName();
+  }
+  return new File(settingsAPI.getString(globalPreferences,EXTERNAL_STORAGE_DIR,defaultLocation));
 }

@@ -1,0 +1,38 @@
+{
+  GPXRouteParams params=pars.gpxRoute;
+  List<Location> gpxRoute=params.points;
+  float minDist=Integer.MAX_VALUE;
+  int start=0;
+  int end=gpxRoute.size();
+  if (pars.start != null) {
+    for (int i=0; i < gpxRoute.size(); i++) {
+      float d=gpxRoute.get(i).distanceTo(pars.start);
+      if (d < minDist) {
+        start=i;
+        minDist=d;
+      }
+    }
+  }
+ else {
+    pars.start=gpxRoute.get(0);
+  }
+  Location l=new Location("temp");
+  l.setLatitude(pars.end.getLatitude());
+  l.setLongitude(pars.end.getLongitude());
+  minDist=Integer.MAX_VALUE;
+  for (int i=gpxRoute.size() - 1; i >= start; i--) {
+    float d=gpxRoute.get(i).distanceTo(l);
+    if (d < minDist) {
+      end=i + 1;
+      minDist=d - 40;
+    }
+  }
+  ArrayList<Location> sublist=new ArrayList<Location>(gpxRoute.subList(start,end));
+  if (startI != null) {
+    startI[0]=start;
+  }
+  if (endI != null) {
+    endI[0]=end;
+  }
+  return sublist;
+}

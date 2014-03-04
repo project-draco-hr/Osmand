@@ -2,7 +2,7 @@
   final RouteDataObject road=segment.road;
   boolean initDirectionAllowed=checkIfInitialMovementAllowedOnSegment(ctx,reverseWaySearch,visitedSegments,segment,road);
   if (TEST_SPECIFIC && road.getId() == TEST_ID) {
-    printRoad(" ! " + +segment.distanceFromStart + " ",segment);
+    printRoad(" ! " + +segment.distanceFromStart + " ",segment,reverseWaySearch);
   }
   boolean directionAllowed=initDirectionAllowed;
   if (!directionAllowed) {
@@ -53,6 +53,9 @@
     }
     final RouteSegment roadNext=ctx.loadRouteSegment(x,y,ctx.config.memoryLimitation - ctx.memoryOverhead);
     float distStartObstacles=segment.distanceFromStart + calculateTimeWithObstacles(ctx,road,segmentDist,obstaclesTime);
+    if (ctx.precalculatedRouteDirection != null && ctx.precalculatedRouteDirection.isFollowNext()) {
+      distStartObstacles=ctx.precalculatedRouteDirection.getDeviationDistance(x,y) / ctx.getRouter().getMaxDefaultSpeed();
+    }
     previous=processIntersections(ctx,graphSegments,visitedSegments,distStartObstacles,segment,segmentPoint,roadNext,reverseWaySearch,doNotAddIntersections,processFurther);
     if (!processFurther[0]) {
       directionAllowed=false;
