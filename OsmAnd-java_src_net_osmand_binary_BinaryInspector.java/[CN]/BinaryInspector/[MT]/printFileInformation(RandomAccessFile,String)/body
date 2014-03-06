@@ -1,0 +1,63 @@
+{
+  try {
+    BinaryMapIndexReader index=new BinaryMapIndexReader(r);
+    int i=1;
+    println("Binary index " + filename + " version = "+ index.getVersion());
+    for (    BinaryIndexPart p : index.getIndexes()) {
+      String partname="";
+      if (p instanceof MapIndex) {
+        partname="Map";
+      }
+ else       if (p instanceof TransportIndex) {
+        partname="Transport";
+      }
+ else       if (p instanceof RouteRegion) {
+        partname="Routing";
+      }
+ else       if (p instanceof PoiRegion) {
+        partname="Poi";
+      }
+ else       if (p instanceof AddressRegion) {
+        partname="Address";
+      }
+      String name=p.getName() == null ? "" : p.getName();
+      println(MessageFormat.format("{0} {1} data {3} - {2,number,#} bytes",new Object[]{i,partname,p.getLength(),name}));
+      if (p instanceof TransportIndex) {
+        TransportIndex ti=((TransportIndex)p);
+        int sh=(31 - BinaryMapIndexReader.TRANSPORT_STOP_ZOOM);
+        println("\tBounds " + formatBounds(ti.getLeft() << sh,ti.getRight() << sh,ti.getTop() << sh,ti.getBottom() << sh));
+      }
+ else       if (p instanceof RouteRegion) {
+        RouteRegion ri=((RouteRegion)p);
+        println("\tBounds " + formatLatBounds(ri.getLeftLongitude(),ri.getRightLongitude(),ri.getTopLatitude(),ri.getBottomLatitude()));
+      }
+ else       if (p instanceof MapIndex) {
+        MapIndex m=((MapIndex)p);
+        int j=1;
+        for (        MapRoot mi : m.getRoots()) {
+          println(MessageFormat.format("\t{4}.{5} Map level minZoom = {0}, maxZoom = {1}, size = {2,number,#} bytes \n\t\tBounds {3}",new Object[]{mi.getMinZoom(),mi.getMaxZoom(),mi.getLength(),formatBounds(mi.getLeft(),mi.getRight(),mi.getTop(),mi.getBottom()),i,j++}));
+        }
+        if ((vInfo != null && vInfo.isVmap())) {
+          printMapDetailInfo(index,m);
+        }
+      }
+ else       if (p instanceof PoiRegion && (vInfo != null && vInfo.isVpoi())) {
+        printPOIDetailInfo(vInfo,index,(PoiRegion)p);
+      }
+ else       if (p instanceof AddressRegion) {
+        List<CitiesBlock> cities=((AddressRegion)p).cities;
+        for (        CitiesBlock c : cities) {
+          println("\t" + i + "."+ c.type+ " Address part size="+ c.length+ " bytes");
+        }
+        if (vInfo != null && vInfo.isVaddress()) {
+          printAddressDetailedInfo(vInfo,index,(AddressRegion)p);
+        }
+      }
+      i++;
+    }
+  }
+ catch (  IOException e) {
+    System.err.println("File doesn't have valid structure : " + filename + " "+ e.getMessage());
+    throw e;
+  }
+}
