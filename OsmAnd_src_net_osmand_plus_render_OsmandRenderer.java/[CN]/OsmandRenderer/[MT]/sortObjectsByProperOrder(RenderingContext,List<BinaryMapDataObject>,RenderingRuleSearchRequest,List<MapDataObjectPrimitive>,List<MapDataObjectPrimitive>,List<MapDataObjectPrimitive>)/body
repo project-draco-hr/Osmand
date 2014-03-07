@@ -1,11 +1,11 @@
 {
   int sz=objects.size();
-  TIntObjectHashMap<TIntArrayList> orderMap=new TIntObjectHashMap<TIntArrayList>();
+  List<MapDataObjectPrimitive> linesArray=new ArrayList<OsmandRenderer.MapDataObjectPrimitive>();
   if (render != null) {
     render.clearState();
+    float mult=(float)(1. / MapUtils.getPowZoom(Math.max(31 - (rc.zoom + 8),0)));
     for (int i=0; i < sz; i++) {
       BinaryMapDataObject o=objects.get(i);
-      int sh=i << 8;
       for (int j=0; j < o.getTypes().length; j++) {
         int wholeType=o.getTypes()[j];
         int layer=0;
@@ -21,9 +21,26 @@
           if (render.search(RenderingRulesStorage.ORDER_RULES)) {
             int objectType=render.getIntPropertyValue(render.ALL.R_OBJECT_TYPE);
             int order=render.getIntPropertyValue(render.ALL.R_ORDER);
-            put(orderMap,(order << 2) | objectType,sh + j);
+            MapDataObjectPrimitive mapObj=new MapDataObjectPrimitive();
+            mapObj.objectType=objectType;
+            mapObj.order=order;
+            mapObj.typeInd=j;
+            mapObj.obj=o;
             if (objectType == 3) {
-              put(orderMap,(128 << 2) | 1,sh + j);
+              MapDataObjectPrimitive pointObj=mapObj;
+              pointObj.objectType=1;
+              double area=polygonArea(mapObj,mult);
+              if (area > MAX_V) {
+                mapObj.order=mapObj.order + (1. / area);
+                polygonsArray.add(mapObj);
+                pointsArray.add(pointObj);
+              }
+            }
+ else             if (objectType == 1) {
+              pointsArray.add(mapObj);
+            }
+ else {
+              linesArray.add(mapObj);
             }
             if (render.isSpecified(render.ALL.R_SHADOW_LEVEL)) {
               rc.shadowLevelMin=Math.min(rc.shadowLevelMin,order);
@@ -34,9 +51,12 @@
         }
       }
       if (rc.interrupted) {
-        return orderMap;
+        return;
       }
     }
   }
-  return orderMap;
+  Collections.sort(polygonsArray,sortByOrder());
+  Collections.sort(pointsArray,sortByOrder());
+  Collections.sort(linesArray,sortByOrder());
+  filterLinesByDensity(rc,linesResArray,linesArray);
 }
