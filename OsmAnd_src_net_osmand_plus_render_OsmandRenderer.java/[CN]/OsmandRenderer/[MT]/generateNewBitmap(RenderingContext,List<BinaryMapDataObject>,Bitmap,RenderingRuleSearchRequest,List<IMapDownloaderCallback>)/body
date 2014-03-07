@@ -7,47 +7,21 @@
   if (objects != null && !objects.isEmpty() && rc.width > 0 && rc.height > 0) {
     rc.cosRotateTileSize=FloatMath.cos((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
     rc.sinRotateTileSize=FloatMath.sin((float)Math.toRadians(rc.rotate)) * TILE_SIZE;
-    TIntObjectHashMap<TIntArrayList> orderMap=sortObjectsByProperOrder(rc,objects,render);
-    int objCount=0;
-    int[] keys=orderMap.keys();
-    Arrays.sort(keys);
-    boolean shadowDrawn=false;
-    for (int k=0; k < keys.length; k++) {
-      if (!shadowDrawn && (keys[k] >> 2) >= rc.shadowLevelMin && (keys[k] >> 2) <= rc.shadowLevelMax && rc.shadowRenderingMode > 1) {
-        for (int ki=k; ki < keys.length; ki++) {
-          if ((keys[ki] >> 2) > rc.shadowLevelMax || rc.interrupted) {
-            break;
-          }
-          TIntArrayList list=orderMap.get(keys[ki]);
-          for (int j=0; j < list.size(); j++) {
-            int i=list.get(j);
-            int ind=i >> 8;
-            int l=i & 0xff;
-            BinaryMapDataObject obj=objects.get(ind);
-            drawObj(obj,render,cv,rc,l,l == 0,true,(keys[ki] & 3));
-            objCount++;
-          }
-        }
-        shadowDrawn=true;
-      }
-      if (rc.interrupted) {
-        return;
-      }
-      TIntArrayList list=orderMap.get(keys[k]);
-      for (int j=0; j < list.size(); j++) {
-        int i=list.get(j);
-        int ind=i >> 8;
-        int l=i & 0xff;
-        BinaryMapDataObject obj=objects.get(ind);
-        drawObj(obj,render,cv,rc,l,l == 0,false,(keys[k] & 3));
-        objCount++;
-      }
-      rc.lastRenderedKey=(keys[k] >> 2);
-      if (objCount > 25) {
-        notifyListeners(notifyList);
-        objCount=0;
-      }
+    List<MapDataObjectPrimitive> pointsArray=new ArrayList<OsmandRenderer.MapDataObjectPrimitive>();
+    List<MapDataObjectPrimitive> polygonsArray=new ArrayList<OsmandRenderer.MapDataObjectPrimitive>();
+    List<MapDataObjectPrimitive> linesArray=new ArrayList<OsmandRenderer.MapDataObjectPrimitive>();
+    sortObjectsByProperOrder(rc,objects,render,pointsArray,polygonsArray,linesArray);
+    rc.lastRenderedKey=0;
+    drawObject(rc,cv,render,polygonsArray,0);
+    rc.lastRenderedKey=5;
+    if (rc.shadowRenderingMode > 1) {
+      drawObject(rc,cv,render,linesArray,1);
     }
+    rc.lastRenderedKey=40;
+    drawObject(rc,cv,render,linesArray,2);
+    rc.lastRenderedKey=60;
+    drawObject(rc,cv,render,pointsArray,3);
+    rc.lastRenderedKey=125;
     long beforeIconTextTime=System.currentTimeMillis() - now;
     notifyListeners(notifyList);
     drawIconsOverCanvas(rc,cv);

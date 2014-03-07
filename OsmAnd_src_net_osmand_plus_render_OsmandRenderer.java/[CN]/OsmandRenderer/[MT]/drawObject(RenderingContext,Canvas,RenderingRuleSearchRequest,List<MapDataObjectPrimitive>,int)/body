@@ -1,0 +1,23 @@
+{
+  double minPolygonSize=1. / rc.polygonMinSizeToDisplay;
+  for (int i=0; i < array.size(); i++) {
+    rc.allObjects++;
+    BinaryMapDataObject mObj=array.get(i).obj;
+    TagValuePair pair=mObj.getMapIndex().decodeType(mObj.getTypes()[array.get(i).typeInd]);
+    if (objOrder == 0) {
+      if (array.get(i).order > minPolygonSize + ((int)array.get(i).order)) {
+        continue;
+      }
+      drawPolygon(mObj,req,cv,rc,pair);
+    }
+ else     if (objOrder == 1 || objOrder == 2) {
+      drawPolyline(mObj,req,cv,rc,pair,mObj.getSimpleLayer(),objOrder == 1);
+    }
+ else     if (objOrder == 3) {
+      drawPoint(mObj,req,cv,rc,pair,array.get(i).typeInd == 0);
+    }
+    if (i % 25 == 0 && rc.interrupted) {
+      return;
+    }
+  }
+}
