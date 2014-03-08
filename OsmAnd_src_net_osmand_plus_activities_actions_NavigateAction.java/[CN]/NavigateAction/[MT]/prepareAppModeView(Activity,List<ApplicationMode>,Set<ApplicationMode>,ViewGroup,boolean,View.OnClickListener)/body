@@ -1,6 +1,7 @@
 {
   LinearLayout ll=(LinearLayout)a.getLayoutInflater().inflate(R.layout.mode_toggles,parent);
   final ToggleButton[] buttons=createToggles(values,ll,a);
+  final boolean[] selectionChangeLoop=new boolean[]{false};
   for (int i=0; i < buttons.length; i++) {
     if (buttons[i] != null) {
       final int ind=i;
@@ -9,45 +10,18 @@
       b.setChecked(selected.contains(buttonAppMode));
       b.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
         @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
-          if (singleSelection) {
-            if (isChecked) {
-              selected.clear();
-              for (int j=0; j < buttons.length; j++) {
-                if (buttons[j] != null) {
-                  if (ind == j) {
-                    selected.add(values.get(j));
-                  }
-                  if (buttons[j].isChecked() != (ind == j)) {
-                    buttons[j].setChecked(ind == j);
-                  }
-                }
-              }
-            }
- else {
-              boolean revert=true;
-              for (int j=0; j < buttons.length; j++) {
-                if (buttons[j] != null) {
-                  if (buttons[j].isChecked()) {
-                    revert=false;
-                    break;
-                  }
-                }
-              }
-              if (revert) {
-                buttons[ind].setChecked(true);
-              }
+          if (selectionChangeLoop[0]) {
+            return;
+          }
+          selectionChangeLoop[0]=true;
+          try {
+            handleSelection(values,selected,singleSelection,buttons,ind,buttonAppMode,isChecked);
+            if (onClickListener != null) {
+              onClickListener.onClick(null);
             }
           }
- else {
-            if (isChecked) {
-              selected.add(buttonAppMode);
-            }
- else {
-              selected.remove(buttonAppMode);
-            }
-          }
-          if (onClickListener != null) {
-            onClickListener.onClick(null);
+  finally {
+            selectionChangeLoop[0]=false;
           }
         }
       }
