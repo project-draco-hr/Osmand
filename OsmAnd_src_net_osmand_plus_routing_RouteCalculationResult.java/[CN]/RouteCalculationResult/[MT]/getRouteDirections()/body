@@ -1,11 +1,27 @@
 {
-  if (currentDirectionInfo < directions.size()) {
-    if (currentDirectionInfo == 0) {
-      return directions;
+  if (currentDirectionInfo < directions.size() - 1) {
+    if (cacheCurrentTextDirectionInfo != currentDirectionInfo) {
+      cacheCurrentTextDirectionInfo=currentDirectionInfo;
+      List<RouteDirectionInfo> list=currentDirectionInfo == 0 ? directions : directions.subList(currentDirectionInfo + 1,directions.size());
+      cacheAgreggatedDirections=new ArrayList<RouteDirectionInfo>();
+      RouteDirectionInfo p=null;
+      for (      RouteDirectionInfo i : list) {
+        if (p == null || !i.getTurnType().isSkipToSpeak() || (!Algorithms.objectEquals(p.getRef(),i.getRef()) && !Algorithms.objectEquals(p.getStreetName(),i.getStreetName()))) {
+          p=new RouteDirectionInfo(i.getAverageSpeed(),i.getTurnType());
+          p.routePointOffset=i.routePointOffset;
+          p.setDestinationName(i.getDestinationName());
+          p.setRef(i.getRef());
+          p.setStreetName(i.getStreetName());
+          p.setDescriptionRoute(i.getDescriptionRoutePart());
+          cacheAgreggatedDirections.add(p);
+        }
+        float time=i.getExpectedTime() + p.getExpectedTime();
+        p.distance+=i.distance;
+        p.setAverageSpeed(p.distance / time);
+        p.afterLeftTime=i.afterLeftTime;
+      }
     }
-    if (currentDirectionInfo < directions.size() - 1) {
-      return directions.subList(currentDirectionInfo + 1,directions.size());
-    }
+    return cacheAgreggatedDirections;
   }
   return Collections.emptyList();
 }
