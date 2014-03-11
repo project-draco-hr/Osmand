@@ -1,0 +1,27 @@
+{
+  final QuickAction mQuickAction=new QuickAction(backToMenuButton);
+  List<ApplicationMode> vls=ApplicationMode.values(mapActivity.getMyApplication().getSettings());
+  final ApplicationMode[] modes=vls.toArray(new ApplicationMode[vls.size()]);
+  int[] icons=new int[vls.size()];
+  int[] values=new int[vls.size()];
+  for (int k=0; k < modes.length; k++) {
+    icons[k]=modes[k].getSmallIcon(false);
+    values[k]=modes[k].getStringResource();
+  }
+  for (int i=0; i < modes.length; i++) {
+    final ActionItem action=new ActionItem();
+    action.setTitle(mapActivity.getResources().getString(values[i]));
+    action.setIcon(mapActivity.getResources().getDrawable(icons[i]));
+    final int j=i;
+    action.setOnClickListener(new OnClickListener(){
+      @Override public void onClick(      View v){
+        mapActivity.getMyApplication().getSettings().APPLICATION_MODE.set(modes[j]);
+        mQuickAction.dismiss();
+      }
+    }
+);
+    mQuickAction.addActionItem(action);
+  }
+  mQuickAction.setAnimStyle(QuickAction.ANIM_AUTO);
+  mQuickAction.show();
+}

@@ -1,0 +1,31 @@
+{
+  if ((zoomControls.isVisible() && zoomControls.isShowZoomLevel()) || !mapActivity.getMyApplication().getSettings().SHOW_RULER.get()) {
+    return;
+  }
+  OsmandMapTileView view=mapActivity.getMapView();
+  if (view.isZooming()) {
+    cacheRulerText=null;
+  }
+ else   if ((tb.getZoom() + tb.getZoomScale()) != cacheRulerZoom || Math.abs(tb.getCenterTileX() - cacheRulerTileX) + Math.abs(tb.getCenterTileY() - cacheRulerTileY) > 1) {
+    cacheRulerZoom=(tb.getZoom() + tb.getZoomScale());
+    cacheRulerTileX=tb.getCenterTileX();
+    cacheRulerTileY=tb.getCenterTileY();
+    final double dist=tb.getDistance(0,tb.getPixHeight() / 2,tb.getPixWidth(),tb.getPixHeight() / 2);
+    double pixDensity=tb.getPixWidth() / dist;
+    double roundedDist=OsmAndFormatter.calculateRoundedDist(dist * screenRulerPercent,view.getApplication());
+    int cacheRulerDistPix=(int)(pixDensity * roundedDist);
+    cacheRulerText=ShadowText.create(OsmAndFormatter.getFormattedDistance((float)roundedDist,view.getApplication()));
+    cacheRulerTextLen=rulerTextPaint.measureText(cacheRulerText.getText());
+    Rect bounds=rulerDrawable.getBounds();
+    bounds.right=(int)(view.getWidth() - 7 * scaleCoefficient);
+    bounds.bottom=(int)(view.getHeight() - (!zoomControls.isVisible() ? 0 : zoomControls.getHeight()));
+    bounds.top=bounds.bottom - rulerDrawable.getMinimumHeight();
+    bounds.left=bounds.right - cacheRulerDistPix;
+    rulerDrawable.setBounds(bounds);
+  }
+  if (cacheRulerText != null) {
+    rulerDrawable.draw(canvas);
+    Rect bounds=rulerDrawable.getBounds();
+    cacheRulerText.draw(canvas,bounds.left + (bounds.width() - cacheRulerTextLen) / 2,bounds.bottom - 8 * scaleCoefficient,rulerTextPaint,shadowColor);
+  }
+}

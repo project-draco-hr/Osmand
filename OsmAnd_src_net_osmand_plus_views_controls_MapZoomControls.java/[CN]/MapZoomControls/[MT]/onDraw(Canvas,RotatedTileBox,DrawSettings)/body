@@ -1,0 +1,26 @@
+{
+  BaseMapLayer mainLayer=view.getMainLayer();
+  boolean zoomInEnabled=mainLayer != null && tileBox.getZoom() < mainLayer.getMaximumShownMapZoom();
+  boolean zoomOutEnabled=mainLayer != null && tileBox.getZoom() > mainLayer.getMinimumShownMapZoom();
+  if (zoomInButton.isEnabled() != zoomInEnabled) {
+    zoomInButton.setEnabled(zoomInEnabled);
+  }
+  if (zoomOutButton.isEnabled() != zoomOutEnabled) {
+    zoomOutButton.setEnabled(zoomOutEnabled);
+  }
+  if (view.isZooming()) {
+    showZoomLevel=true;
+    showZoomLevelButton=false;
+    showUIHandler.removeMessages(SHOW_ZOOM_LEVEL_MSG_ID);
+    showUIHandler.removeMessages(SHOW_ZOOM_BUTTON_MSG_ID);
+  }
+ else {
+    if (isShowZoomLevel() && view.getSettings().SHOW_RULER.get()) {
+      hideZoomLevelInTime();
+    }
+  }
+  boolean drawZoomLevel=isShowZoomLevel() || !view.getSettings().SHOW_RULER.get();
+  if (drawZoomLevel) {
+    drawZoomLevel(canvas,tileBox,!showZoomLevelButton);
+  }
+}

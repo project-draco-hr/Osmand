@@ -1,0 +1,38 @@
+{
+  int minimumWidth=view.getResources().getDrawable(R.drawable.map_zoom_in).getMinimumWidth();
+  Context ctx=view.getContext();
+  zoomInButton=new Button(ctx);
+  zoomInButton.setBackgroundResource(R.drawable.map_zoom_in);
+  android.widget.FrameLayout.LayoutParams params=new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT,Gravity.BOTTOM | Gravity.RIGHT);
+  params.setMargins(0,0,0,0);
+  zoomInButton.setContentDescription(ctx.getString(R.string.zoomIn));
+  parent.addView(zoomInButton,params);
+  zoomOutButton=new Button(ctx);
+  zoomOutButton.setBackgroundResource(R.drawable.map_zoom_out);
+  params=new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT,Gravity.BOTTOM | Gravity.RIGHT);
+  params.setMargins(0,0,minimumWidth,0);
+  zoomOutButton.setContentDescription(ctx.getString(R.string.zoomOut));
+  parent.addView(zoomOutButton,params);
+  mapActivity.accessibleContent.add(zoomInButton);
+  mapActivity.accessibleContent.add(zoomOutButton);
+  zoomInButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (view.isZooming()) {
+        mapActivity.changeZoom(2);
+      }
+ else {
+        mapActivity.changeZoom(1);
+      }
+    }
+  }
+);
+  final View.OnLongClickListener listener=MapMagnifier.getOnClickMagnifierListener(view);
+  zoomInButton.setOnLongClickListener(listener);
+  zoomOutButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      mapActivity.changeZoom(-1);
+    }
+  }
+);
+  zoomOutButton.setOnLongClickListener(listener);
+}

@@ -1,39 +1,27 @@
 {
-  BaseMapLayer mainLayer=view.getMainLayer();
-  boolean zoomInEnabled=mainLayer != null && tileBox.getZoom() < mainLayer.getMaximumShownMapZoom();
-  boolean zoomOutEnabled=mainLayer != null && tileBox.getZoom() > mainLayer.getMinimumShownMapZoom();
-  if (zoomInButton.isEnabled() != zoomInEnabled) {
-    zoomInButton.setEnabled(zoomInEnabled);
-  }
-  if (zoomOutButton.isEnabled() != zoomOutEnabled) {
-    zoomOutButton.setEnabled(zoomOutEnabled);
-  }
-  drawApplicationMode(canvas,nightMode != null && nightMode.isNightMode());
-  if (view.isZooming()) {
-    showZoomLevel=true;
-    showZoomLevelButton=false;
-    showUIHandler.removeMessages(SHOW_ZOOM_LEVEL_MSG_ID);
-    showUIHandler.removeMessages(SHOW_ZOOM_BUTTON_MSG_ID);
-  }
- else {
-    if (showZoomLevel && view.getSettings().SHOW_RULER.get()) {
-      hideZoomLevelInTime();
-    }
-  }
   int sh=Color.WHITE;
   if (nightMode != null && nightMode.isNightMode()) {
     sh=Color.TRANSPARENT;
   }
   if (shadowColor != sh) {
     shadowColor=sh;
-    zoomTextPaint.setColor(sh == Color.WHITE ? Color.BLACK : 0xffC8C8C8);
-    rulerTextPaint.setColor(sh == Color.WHITE ? Color.BLACK : 0xffC8C8C8);
+    int textColor=sh == Color.WHITE ? Color.BLACK : HOVER_COLOR;
+    rulerTextPaint.setColor(textColor);
+    zoomControls.setShadowColor(textColor,sh);
+    mapMenuControls.setShadowColor(textColor,sh);
   }
-  boolean drawZoomLevel=showZoomLevel || !view.getSettings().SHOW_RULER.get();
-  if (drawZoomLevel) {
-    drawZoomLevel(canvas,tileBox,!showZoomLevelButton);
-  }
+  boolean showZooms=!mapActivity.getRoutingHelper().isRouteCalculated();
+  if (showZooms != zoomControls.isVisible()) {
+    if (showZooms) {
+      zoomControls.show((FrameLayout)mapActivity.getMapView().getParent());
+    }
  else {
-    drawRuler(canvas,tileBox);
+      zoomControls.hide((FrameLayout)mapActivity.getMapView().getParent());
+    }
   }
+  if (showZooms) {
+    zoomControls.onDraw(canvas,tileBox,nightMode);
+  }
+  mapMenuControls.onDraw(canvas,tileBox,nightMode);
+  drawRuler(canvas,tileBox,nightMode);
 }
