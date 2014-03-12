@@ -2,10 +2,18 @@
   scaleCoefficient=view.getScaleCoefficient();
   FrameLayout parent=(FrameLayout)view.getParent();
   Handler showUIHandler=new Handler();
-  zoomControls=init(new MapZoomControls(mapActivity,showUIHandler,scaleCoefficient),parent);
-  mapMenuControls=init(new MapMenuControls(mapActivity,showUIHandler,scaleCoefficient),parent);
-  mapSmallMenuControls=init(new SmallMapMenuControls(mapActivity,showUIHandler,scaleCoefficient),parent);
-  mapCancelNavigationControl=init(new MapCancelControl(mapActivity,showUIHandler,scaleCoefficient),parent);
-  rulerControl=init(new RulerControl(zoomControls,mapActivity,showUIHandler,scaleCoefficient),parent);
+  int rightGravity=Gravity.RIGHT | Gravity.BOTTOM;
+  int leftGravity=Gravity.LEFT | Gravity.BOTTOM;
+  zoomControls=init(new MapZoomControls(mapActivity,showUIHandler,scaleCoefficient),parent,rightGravity);
+  mapMenuControls=init(new MapMenuControls(mapActivity,showUIHandler,scaleCoefficient),parent,leftGravity);
+  mapSmallMenuControls=init(new SmallMapMenuControls(mapActivity,showUIHandler,scaleCoefficient),parent,leftGravity);
+  mapCancelNavigationControl=init(new MapCancelControl(mapActivity,showUIHandler,scaleCoefficient),parent,leftGravity);
+  mapInfoNavigationControl=init(new MapInfoControl(mapActivity,showUIHandler,scaleCoefficient),parent,leftGravity);
+  mapNavigationControl=init(new MapNavigateControl(mapActivity,showUIHandler,scaleCoefficient),parent,rightGravity);
+  mapAppModeControl=init(new MapAppModeControl(mapActivity,showUIHandler,scaleCoefficient),parent,rightGravity);
+  rulerControl=init(new RulerControl(zoomControls,mapActivity,showUIHandler,scaleCoefficient),parent,rightGravity);
+  mapCancelNavigationControl.setMargin(mapSmallMenuControls.getWidth());
+  mapInfoNavigationControl.setMargin(mapSmallMenuControls.getWidth() + mapCancelNavigationControl.getWidth());
+  mapAppModeControl.setMargin(mapNavigationControl.getWidth());
   initTransparencyBar(view,parent);
 }
