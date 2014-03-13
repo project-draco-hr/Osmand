@@ -1,0 +1,27 @@
+{
+  final ProgressDialog dlg=showDialog ? null : ProgressDialog.show(uiContext,getString(R.string.loading_data),getString(R.string.voice_data_initializing));
+  new Thread(new Runnable(){
+    @Override public void run(){
+      try {
+        if (player != null) {
+          player.clear();
+        }
+        player=CommandPlayerFactory.createCommandPlayer(voiceProvider,OsmandApplication.this,uiContext);
+        routingHelper.getVoiceRouter().setPlayer(player);
+        if (dlg != null) {
+          dlg.dismiss();
+        }
+        if (run != null && uiContext != null) {
+          uiContext.runOnUiThread(run);
+        }
+      }
+ catch (      CommandPlayerException e) {
+        if (dlg != null) {
+          dlg.dismiss();
+        }
+        showWarning(uiContext,e.getError());
+      }
+    }
+  }
+).start();
+}
