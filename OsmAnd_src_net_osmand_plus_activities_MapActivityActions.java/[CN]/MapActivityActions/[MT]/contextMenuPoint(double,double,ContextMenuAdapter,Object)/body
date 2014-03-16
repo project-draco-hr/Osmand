@@ -9,7 +9,9 @@
  else {
     adapter.item(R.string.context_menu_item_destination_point).icons(R.drawable.ic_action_flag_dark,R.drawable.ic_action_flag_light).reg();
   }
-  adapter.item(R.string.context_menu_item_directions_from).icons(R.drawable.ic_action_gdirections_dark,R.drawable.ic_action_gdirections_light).reg();
+  if (!mapActivity.getRoutingHelper().isFollowingMode()) {
+    adapter.item(R.string.context_menu_item_directions_from).icons(R.drawable.ic_action_gdirections_dark,R.drawable.ic_action_gdirections_light).reg();
+  }
   adapter.item(R.string.context_menu_item_search).icons(R.drawable.ic_action_search_dark,R.drawable.ic_action_search_light).reg();
   adapter.item(R.string.context_menu_item_share_location).icons(R.drawable.ic_action_gshare_dark,R.drawable.ic_action_gshare_light).reg();
   adapter.item(R.string.context_menu_item_add_favorite).icons(R.drawable.ic_action_fav_dark,R.drawable.ic_action_fav_light).reg();
@@ -54,8 +56,18 @@
           Location loc=new Location("map");
           loc.setLatitude(latitude);
           loc.setLongitude(longitude);
+          ApplicationMode mode=settings.DEFAULT_APPLICATION_MODE.get();
+          if (mode == ApplicationMode.DEFAULT) {
+            mode=ApplicationMode.CAR;
+          }
+          OsmandApplication app=mapActivity.getMyApplication();
+          app.getSettings().APPLICATION_MODE.set(mode);
+          app.getRoutingHelper().setAppMode(mode);
+          settings.FOLLOW_THE_ROUTE.set(false);
+          settings.FOLLOW_THE_GPX_ROUTE.set(null);
+          app.getRoutingHelper().setFollowingMode(false);
+          app.getRoutingHelper().setFinalAndCurrentLocation(targets.getPointToNavigate(),targets.getIntermediatePoints(),loc,null);
           String name=mapActivity.getMapLayers().getContextMenuLayer().getSelectedObjectName();
-          new NavigateAction(mapActivity).getDirections(loc,name,DirectionDialogStyle.create().gpxRouteEnabled().routeFromMapPoint());
         }
       }
  else       if (standardId == R.string.context_menu_item_intermediate_point || standardId == R.string.context_menu_item_destination_point) {

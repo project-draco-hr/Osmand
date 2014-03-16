@@ -1,6 +1,13 @@
 {
   if ((db == null || db.isClosed()) && file.exists()) {
-    db=ctx.getSQLiteAPI().openByAbsolutePath(file.getAbsolutePath(),false);
+    try {
+      onlyReadonlyAvailable=false;
+      db=ctx.getSQLiteAPI().openByAbsolutePath(file.getAbsolutePath(),false);
+    }
+ catch (    RuntimeException e) {
+      onlyReadonlyAvailable=true;
+      db=ctx.getSQLiteAPI().openByAbsolutePath(file.getAbsolutePath(),true);
+    }
     try {
       SQLiteCursor cursor=db.rawQuery("SELECT * FROM info",null);
       if (cursor.moveToFirst()) {
