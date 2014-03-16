@@ -1,26 +1,12 @@
 {
-  AlertDialog.Builder builder=new AlertDialog.Builder(mapActivity);
-  View lmain=mapActivity.getLayoutInflater().inflate(R.layout.plan_route_info,null);
-  boolean addButtons=routingHelper.isRouteCalculated();
-  if (addButtons) {
-    attachListeners(lmain);
-    updateInfo(lmain);
+  dialog=createDialog();
+  dialog.show();
+  infoButton.setBackgroundResource(R.drawable.map_btn_signpost_p);
+  dialog.setOnDismissListener(new OnDismissListener(){
+    @Override public void onDismiss(    DialogInterface dlg){
+      infoButton.setBackgroundResource(R.drawable.map_btn_signpost);
+      dialog=null;
+    }
   }
- else {
-    lmain.findViewById(R.id.RouteInfoControls).setVisibility(View.GONE);
-    lmain.findViewById(R.id.SimulateRoute).setVisibility(View.GONE);
-  }
-  builder.setView(lmain);
-  Dialog dialog=builder.create();
-  dialog.setCanceledOnTouchOutside(true);
-  WindowManager.LayoutParams lp=new WindowManager.LayoutParams();
-  lp.copyFrom(dialog.getWindow().getAttributes());
-  lp.width=WindowManager.LayoutParams.WRAP_CONTENT;
-  lp.height=WindowManager.LayoutParams.WRAP_CONTENT;
-  lp.gravity=Gravity.BOTTOM;
-  lp.y=(int)(infoButton.getBottom() - infoButton.getTop() + scaleCoefficient * 5);
-  dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-  dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-  dialog.getWindow().setAttributes(lp);
-  return dialog;
+);
 }

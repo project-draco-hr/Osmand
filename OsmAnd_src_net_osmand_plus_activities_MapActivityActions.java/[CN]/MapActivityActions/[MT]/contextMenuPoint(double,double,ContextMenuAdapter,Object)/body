@@ -9,7 +9,7 @@
  else {
     adapter.item(R.string.context_menu_item_destination_point).icons(R.drawable.ic_action_flag_dark,R.drawable.ic_action_flag_light).reg();
   }
-  if (!mapActivity.getRoutingHelper().isFollowingMode()) {
+  if (!mapActivity.getRoutingHelper().isFollowingMode() || mapActivity.getRoutingHelper().isRoutePlanningMode()) {
     adapter.item(R.string.context_menu_item_directions_from).icons(R.drawable.ic_action_gdirections_dark,R.drawable.ic_action_gdirections_light).reg();
   }
   adapter.item(R.string.context_menu_item_search).icons(R.drawable.ic_action_search_dark,R.drawable.ic_action_search_light).reg();
@@ -41,13 +41,11 @@
  else       if (standardId == R.string.context_menu_item_directions_to) {
         String name=mapActivity.getMapLayers().getContextMenuLayer().getSelectedObjectName();
         targets.navigateToPoint(new LatLon(latitude,longitude),true,-1,name);
-        enterRoutePlanningMode(null);
+        enterRoutePlanningMode(null,null);
       }
  else       if (standardId == R.string.context_menu_item_directions_from) {
-        Location loc=new Location("map");
-        loc.setLatitude(latitude);
-        loc.setLongitude(longitude);
-        enterRoutePlanningMode(loc);
+        String name=mapActivity.getMapLayers().getContextMenuLayer().getSelectedObjectName();
+        enterRoutePlanningMode(new LatLon(latitude,longitude),name);
       }
  else       if (standardId == R.string.context_menu_item_intermediate_point || standardId == R.string.context_menu_item_destination_point) {
         boolean dest=standardId == R.string.context_menu_item_destination_point;
