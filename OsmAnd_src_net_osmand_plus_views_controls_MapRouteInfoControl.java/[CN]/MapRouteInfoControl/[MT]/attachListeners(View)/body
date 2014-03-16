@@ -1,11 +1,25 @@
 {
   final OsmandApplication ctx=mapActivity.getMyApplication();
+  final Button simulateRoute=(Button)mainView.findViewById(R.id.SimulateRoute);
+  final OsmAndLocationProvider loc=ctx.getLocationProvider();
+  simulateRoute.setText(loc.getLocationSimulation().isRouteAnimating() ? R.string.animate_route_off : R.string.animate_route);
+  simulateRoute.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      mainView.findViewById(R.id.RouteTargets).setVisibility(View.GONE);
+      mainView.findViewById(R.id.RouteInfoControls).setVisibility(View.GONE);
+      simulateRoute.setText(loc.getLocationSimulation().isRouteAnimating() ? R.string.animate_route : R.string.animate_route_off);
+      loc.getLocationSimulation().startStopRouteAnimation(mapActivity);
+    }
+  }
+);
+  ImageButton prev=(ImageButton)mainView.findViewById(R.id.Prev);
   prev.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       if (routingHelper.getRouteDirections() != null && directionInfo > 0) {
         directionInfo--;
         if (routingHelper.getRouteDirections().size() > directionInfo) {
-          mainView.findViewById(R.id.MainLayout).setVisibility(View.GONE);
+          mainView.findViewById(R.id.RouteTargets).setVisibility(View.GONE);
+          simulateRoute.setVisibility(View.GONE);
           RouteDirectionInfo info=routingHelper.getRouteDirections().get(directionInfo);
           net.osmand.Location l=routingHelper.getLocationFromRouteDirection(info);
           contextMenu.setLocation(new LatLon(l.getLatitude(),l.getLongitude()),info.getDescriptionRoute(ctx));
@@ -16,10 +30,12 @@
     }
   }
 );
+  ImageButton next=(ImageButton)mainView.findViewById(R.id.Next);
   next.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       if (routingHelper.getRouteDirections() != null && directionInfo < routingHelper.getRouteDirections().size() - 1) {
-        mainView.findViewById(R.id.MainLayout).setVisibility(View.GONE);
+        mainView.findViewById(R.id.RouteTargets).setVisibility(View.GONE);
+        simulateRoute.setVisibility(View.GONE);
         directionInfo++;
         RouteDirectionInfo info=routingHelper.getRouteDirections().get(directionInfo);
         net.osmand.Location l=routingHelper.getLocationFromRouteDirection(info);
@@ -30,6 +46,7 @@
     }
   }
 );
+  ImageButton info=(ImageButton)mainView.findViewById(R.id.Info);
   info.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       Intent intent=new Intent(mapView.getContext(),ShowRouteInfoActivity.class);

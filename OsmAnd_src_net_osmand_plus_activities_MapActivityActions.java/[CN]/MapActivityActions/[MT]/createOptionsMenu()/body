@@ -34,18 +34,10 @@
     }
 ).reg();
   }
-  if (!routingHelper.isRouteBeingCalculated() || routingHelper.isRouteCalculated()) {
-    optionsMenuHelper.item(routingHelper.isRouteCalculated() ? R.string.show_route : R.string.get_directions).icons(R.drawable.ic_action_gdirections_dark,R.drawable.ic_action_gdirections_light).listen(new OnContextMenuClick(){
+  if (!routingHelper.isFollowingMode() && !routingHelper.isRoutePlanningMode()) {
+    optionsMenuHelper.item(R.string.get_directions).icons(R.drawable.ic_action_gdirections_dark,R.drawable.ic_action_gdirections_light).listen(new OnContextMenuClick(){
       @Override public void onContextMenuClick(      int itemId,      int pos,      boolean isChecked,      DialogInterface dialog){
-        if (routingHelper.isRouteCalculated()) {
-          aboutRoute();
-        }
- else {
-          Location loc=new Location("map");
-          loc.setLatitude(mapView.getLatitude());
-          loc.setLongitude(mapView.getLongitude());
-          new NavigateAction(mapActivity).getDirections(loc,null,DirectionDialogStyle.create().gpxRouteEnabled());
-        }
+        enterRoutePlanningMode(null);
       }
     }
 ).reg();
@@ -137,12 +129,14 @@
 ).reg();
   final OsmAndLocationProvider loc=app.getLocationProvider();
   if (app.getTargetPointsHelper().getPointToNavigate() != null || loc.getLocationSimulation().isRouteAnimating()) {
-    optionsMenuHelper.item(loc.getLocationSimulation().isRouteAnimating() ? R.string.animate_route_off : R.string.animate_route).icons(R.drawable.ic_action_play_dark,R.drawable.ic_action_play_light).listen(new OnContextMenuClick(){
-      @Override public void onContextMenuClick(      int itemId,      int pos,      boolean isChecked,      DialogInterface dialog){
-        loc.getLocationSimulation().startStopRouteAnimation(mapActivity);
+    if (OsmandPlugin.getEnabledPlugin(OsmandDevelopmentPlugin.class) != null) {
+      optionsMenuHelper.item(loc.getLocationSimulation().isRouteAnimating() ? R.string.animate_route_off : R.string.animate_route).icons(R.drawable.ic_action_play_dark,R.drawable.ic_action_play_light).listen(new OnContextMenuClick(){
+        @Override public void onContextMenuClick(        int itemId,        int pos,        boolean isChecked,        DialogInterface dialog){
+          loc.getLocationSimulation().startStopRouteAnimation(mapActivity);
+        }
       }
-    }
 ).reg();
+    }
   }
   OsmandPlugin.registerOptionsMenu(mapActivity,optionsMenuHelper);
   optionsMenuHelper.item(R.string.exit_Button).icons(R.drawable.ic_action_quit_dark,R.drawable.ic_action_quit_light).listen(new OnContextMenuClick(){

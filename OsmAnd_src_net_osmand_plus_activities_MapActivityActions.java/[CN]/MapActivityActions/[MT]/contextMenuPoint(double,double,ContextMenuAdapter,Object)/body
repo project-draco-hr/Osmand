@@ -39,36 +39,15 @@
         mapActivity.startActivity(intent);
       }
  else       if (standardId == R.string.context_menu_item_directions_to) {
-        if (!routingHelper.isRouteBeingCalculated() && !routingHelper.isRouteCalculated()) {
-          Location loc=new Location("map");
-          loc.setLatitude(latitude);
-          loc.setLongitude(longitude);
-          String name=mapActivity.getMapLayers().getContextMenuLayer().getSelectedObjectName();
-          new NavigateAction(mapActivity).getDirections(loc,name,DirectionDialogStyle.create().gpxRouteEnabled().routeToMapPoint());
-        }
- else {
-          String name=mapActivity.getMapLayers().getContextMenuLayer().getSelectedObjectName();
-          targets.navigateToPoint(new LatLon(latitude,longitude),true,-1,name);
-        }
+        String name=mapActivity.getMapLayers().getContextMenuLayer().getSelectedObjectName();
+        targets.navigateToPoint(new LatLon(latitude,longitude),true,-1,name);
+        enterRoutePlanningMode(null);
       }
  else       if (standardId == R.string.context_menu_item_directions_from) {
-        if (targets.checkPointToNavigate(getMyApplication())) {
-          Location loc=new Location("map");
-          loc.setLatitude(latitude);
-          loc.setLongitude(longitude);
-          ApplicationMode mode=settings.DEFAULT_APPLICATION_MODE.get();
-          if (mode == ApplicationMode.DEFAULT) {
-            mode=ApplicationMode.CAR;
-          }
-          OsmandApplication app=mapActivity.getMyApplication();
-          app.getSettings().APPLICATION_MODE.set(mode);
-          app.getRoutingHelper().setAppMode(mode);
-          settings.FOLLOW_THE_ROUTE.set(false);
-          settings.FOLLOW_THE_GPX_ROUTE.set(null);
-          app.getRoutingHelper().setFollowingMode(false);
-          app.getRoutingHelper().setFinalAndCurrentLocation(targets.getPointToNavigate(),targets.getIntermediatePoints(),loc,null);
-          String name=mapActivity.getMapLayers().getContextMenuLayer().getSelectedObjectName();
-        }
+        Location loc=new Location("map");
+        loc.setLatitude(latitude);
+        loc.setLongitude(longitude);
+        enterRoutePlanningMode(loc);
       }
  else       if (standardId == R.string.context_menu_item_intermediate_point || standardId == R.string.context_menu_item_destination_point) {
         boolean dest=standardId == R.string.context_menu_item_destination_point;

@@ -1,0 +1,49 @@
+{
+  View settingsDlg=View.inflate(mapActivity,R.layout.plan_route_settings,null);
+  Context ctx=mapActivity;
+  final OsmandSettings settings=mapActivity.getMyApplication().getSettings();
+  ApplicationMode am=settings.APPLICATION_MODE.get();
+  final ListView lv=(ListView)settingsDlg.findViewById(android.R.id.list);
+  final Set<ApplicationMode> selected=new HashSet<ApplicationMode>();
+  selected.add(am);
+  final ArrayAdapter<RoutingParameter> listAdapter=new ArrayAdapter<RoutingParameter>(ctx,R.layout.layers_list_activity_item,R.id.title,getRoutingParameters(am)){
+    @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
+      View v=mapActivity.getLayoutInflater().inflate(R.layout.layers_list_activity_item,null);
+      final TextView tv=(TextView)v.findViewById(R.id.title);
+      final CheckBox ch=((CheckBox)v.findViewById(R.id.check_item));
+      RoutingParameter rp=getItem(position);
+      tv.setText(SettingsBaseActivity.getRoutingStringPropertyName(mapActivity,rp.getId(),rp.getName()));
+      tv.setPadding((int)(5 * scaleCoefficient),0,0,0);
+      final CommonPreference<Boolean> property=settings.getCustomRoutingBooleanProperty(rp.getId());
+      ch.setChecked(property.get());
+      ch.setVisibility(View.VISIBLE);
+      ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+        @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
+          property.set(isChecked);
+          mapActivity.getRoutingHelper().recalculateRouteDueToSettingsChange();
+        }
+      }
+);
+      return v;
+    }
+  }
+;
+  AppModeDialog.prepareAppModeView(mapActivity,selected,false,(ViewGroup)settingsDlg.findViewById(R.id.TopBar),true,new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (selected.size() > 0) {
+        ApplicationMode next=selected.iterator().next();
+        settings.APPLICATION_MODE.set(next);
+        mapActivity.getRoutingHelper().recalculateRouteDueToSettingsChange();
+        listAdapter.setNotifyOnChange(false);
+        listAdapter.clear();
+        for (        RoutingParameter r : getRoutingParameters(next)) {
+          listAdapter.add(r);
+        }
+        listAdapter.notifyDataSetChanged();
+      }
+    }
+  }
+);
+  lv.setAdapter(listAdapter);
+  return settingsDlg;
+}

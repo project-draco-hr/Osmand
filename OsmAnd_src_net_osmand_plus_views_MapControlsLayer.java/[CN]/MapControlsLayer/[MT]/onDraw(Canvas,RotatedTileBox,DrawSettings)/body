@@ -6,11 +6,25 @@
     shadowColor=shadw;
     updatextColor(textColor,shadw,rulerControl,zoomControls,mapMenuControls);
   }
-  boolean route=mapActivity.getRoutingHelper().isRouteCalculated() || mapActivity.getRoutingHelper().isRouteBeingCalculated();
-  boolean showDefaultButtons=!route && !mapActivity.getRoutingHelper().isFollowingMode();
+  boolean routePlanningMode=false;
+  RoutingHelper rh=mapActivity.getRoutingHelper();
+  if (rh.isRoutePlanningMode()) {
+    routePlanningMode=true;
+  }
+ else   if ((rh.isRouteCalculated() || rh.isRouteBeingCalculated()) && !rh.isFollowingMode()) {
+    routePlanningMode=true;
+  }
+  boolean routeFollowingMode=!routePlanningMode && rh.isFollowingMode();
+  boolean showDefaultButtons=!routeFollowingMode && !routePlanningMode;
+  if (routePlanningMode) {
+    forceHideView(zoomControls);
+    forceHideView(mapMenuControls);
+    forceHideView(mapRoutePlanControl);
+  }
   checkVisibilityAndDraw(showDefaultButtons,zoomControls,canvas,tileBox,nightMode);
   checkVisibilityAndDraw(showDefaultButtons,mapMenuControls,canvas,tileBox,nightMode);
-  boolean showRouteCalculationControls=route && !mapActivity.getRoutingHelper().isFollowingMode();
+  checkVisibilityAndDraw(false,mapRoutePlanControl,canvas,tileBox,nightMode);
+  boolean showRouteCalculationControls=routePlanningMode;
   checkVisibilityAndDraw(showRouteCalculationControls,mapSmallMenuControls,canvas,tileBox,nightMode);
   checkVisibilityAndDraw(showRouteCalculationControls,mapCancelNavigationControl,canvas,tileBox,nightMode);
   checkVisibilityAndDraw(showRouteCalculationControls,mapInfoNavigationControl,canvas,tileBox,nightMode);
