@@ -1,5 +1,6 @@
 {
-  final File dir=getApplication().getAppPath(IndexConstants.GPX_INDEX_DIR);
+  OsmandApplication app=(OsmandApplication)activity.getApplication();
+  final File dir=app.getAppPath(IndexConstants.GPX_INDEX_DIR);
   final List<String> list=getSortedGPXFilenames(dir);
   if (list.isEmpty()) {
     AccessibleToast.makeText(activity,R.string.gpx_files_not_found,Toast.LENGTH_LONG).show();
@@ -7,7 +8,7 @@
   if (!list.isEmpty() || showCurrentGpx) {
     Builder builder=new AlertDialog.Builder(activity);
     if (showCurrentGpx) {
-      list.add(0,getString(R.string.show_current_gpx_title));
+      list.add(0,activity.getString(R.string.show_current_gpx_title));
     }
     String[] items=list.toArray(new String[list.size()]);
     if (multipleChoice) {
@@ -32,7 +33,7 @@
               s.add(list.get(i));
             }
           }
-          loadGPXFileInDifferentThread(callbackWithObject,convertCloudmade,dir,currentGPX,s.toArray(new String[s.size()]));
+          loadGPXFileInDifferentThread(activity,callbackWithObject,dir,currentGPX,s.toArray(new String[s.size()]));
         }
       }
 );
@@ -45,7 +46,7 @@
             callbackWithObject.processResult(null);
           }
  else {
-            loadGPXFileInDifferentThread(callbackWithObject,convertCloudmade,dir,null,list.get(which));
+            loadGPXFileInDifferentThread(activity,callbackWithObject,dir,null,list.get(which));
           }
         }
       }
