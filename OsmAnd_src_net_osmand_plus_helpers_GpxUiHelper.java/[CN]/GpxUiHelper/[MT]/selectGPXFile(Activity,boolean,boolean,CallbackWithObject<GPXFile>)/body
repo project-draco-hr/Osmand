@@ -6,57 +6,17 @@
     AccessibleToast.makeText(activity,R.string.gpx_files_not_found,Toast.LENGTH_LONG).show();
   }
   if (!list.isEmpty() || showCurrentGpx) {
-    Builder builder=new AlertDialog.Builder(activity);
+    final ContextMenuAdapter adapter=new ContextMenuAdapter(activity);
     if (showCurrentGpx) {
       list.add(0,activity.getString(R.string.show_current_gpx_title));
     }
-    String[] items=list.toArray(new String[list.size()]);
-    if (multipleChoice) {
-      final boolean[] selected=new boolean[items.length];
-      builder.setMultiChoiceItems(items,selected,new DialogInterface.OnMultiChoiceClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which,        boolean isChecked){
-          selected[which]=isChecked;
-        }
+    for (    String s : list) {
+      if (s.endsWith(".gpx")) {
+        s=s.substring(0,s.length() - ".gpx".length());
       }
-);
-      builder.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          dialog.dismiss();
-          GPXFile currentGPX=null;
-          if (showCurrentGpx && selected[0]) {
-            currentGPX=new GPXFile();
-            currentGPX.showCurrentTrack=true;
-          }
-          List<String> s=new ArrayList<String>();
-          for (int i=(showCurrentGpx ? 1 : 0); i < selected.length; i++) {
-            if (selected[i]) {
-              s.add(list.get(i));
-            }
-          }
-          loadGPXFileInDifferentThread(activity,callbackWithObject,dir,currentGPX,s.toArray(new String[s.size()]));
-        }
-      }
-);
+      s=s.replace('_',' ');
+      adapter.item(s).selected(multipleChoice ? 0 : -1).icons(R.drawable.ic_action_info_dark,R.drawable.ic_action_info_light).reg();
     }
- else {
-      builder.setItems(items,new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          dialog.dismiss();
-          if (showCurrentGpx && which == 0) {
-            callbackWithObject.processResult(null);
-          }
- else {
-            loadGPXFileInDifferentThread(activity,callbackWithObject,dir,null,list.get(which));
-          }
-        }
-      }
-);
-    }
-    AlertDialog dlg=builder.show();
-    try {
-      dlg.getListView().setFastScrollEnabled(true);
-    }
- catch (    Exception e) {
-    }
+    createDialog(activity,showCurrentGpx,multipleChoice,callbackWithObject,list,adapter);
   }
 }
