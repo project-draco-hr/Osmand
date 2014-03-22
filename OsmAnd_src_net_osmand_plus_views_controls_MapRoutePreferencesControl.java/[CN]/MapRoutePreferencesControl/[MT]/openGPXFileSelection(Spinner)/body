@@ -5,12 +5,17 @@
       params.setAnnounceWaypoints(settings.SPEAK_GPX_WPT.get());
       params.setCalculateOsmAndRoute(settings.CALC_GPX_ROUTE.get());
       List<Location> ps=params.getPoints();
-      mapActivity.getRoutingHelper().setGpxParams(params);
       if (!ps.isEmpty()) {
         Location loc=ps.get(ps.size() - 1);
         TargetPointsHelper tg=mapActivity.getMyApplication().getTargetPointsHelper();
-        tg.navigateToPoint(new LatLon(loc.getLatitude(),loc.getLongitude()),true,-1);
+        tg.navigateToPoint(new LatLon(loc.getLatitude(),loc.getLongitude()),false,-1);
+        if (tg.getPointToStart() == null) {
+          loc=ps.get(0);
+          tg.setStartPoint(new LatLon(loc.getLatitude(),loc.getLongitude()),false,null);
+        }
       }
+      mapActivity.getRoutingHelper().setGpxParams(params);
+      mapActivity.getRoutingHelper().recalculateRouteDueToSettingsChange();
       updateSpinnerItems(gpxSpinner);
       updateParameters();
       return true;
