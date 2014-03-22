@@ -4,7 +4,13 @@
       GPXRouteParamsBuilder params=new GPXRouteParamsBuilder(result,mapActivity.getMyApplication().getSettings());
       params.setAnnounceWaypoints(settings.SPEAK_GPX_WPT.get());
       params.setCalculateOsmAndRoute(settings.CALC_GPX_ROUTE.get());
+      List<Location> ps=params.getPoints();
       mapActivity.getRoutingHelper().setGpxParams(params);
+      if (!ps.isEmpty()) {
+        Location loc=ps.get(ps.size() - 1);
+        TargetPointsHelper tg=mapActivity.getMyApplication().getTargetPointsHelper();
+        tg.navigateToPoint(new LatLon(loc.getLatitude(),loc.getLongitude()),true,-1);
+      }
       updateSpinnerItems(gpxSpinner);
       updateParameters();
       return true;
