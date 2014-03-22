@@ -1,12 +1,21 @@
 {
-  List<RoutingParameter> list=new ArrayList<RoutingParameter>();
+  List<LocalRoutingParameter> list=new ArrayList<LocalRoutingParameter>();
   GeneralRouter rm=SettingsNavigationActivity.getRouter(am);
-  if (rm == null) {
+  GPXRouteParamsBuilder rparams=mapActivity.getRoutingHelper().getCurrentGPXRoute();
+  if (rparams != null) {
+    list.add(new GPXLocalRoutingParameter(R.string.gpx_option_reverse_route,getString(R.string.gpx_option_reverse_route),rparams.isReverse()));
+    list.add(new GPXLocalRoutingParameter(R.string.gpx_option_from_start_point,getString(R.string.gpx_option_from_start_point),rparams.isPassWholeRoute()));
+    list.add(new GPXLocalRoutingParameter(R.string.announce_gpx_waypoints,getString(R.string.announce_gpx_waypoints),rparams.isAnnounceWaypoints()));
+    list.add(new GPXLocalRoutingParameter(R.string.calculate_osmand_route_gpx,getString(R.string.calculate_osmand_route_gpx),rparams.isCalculateOsmAndRoute()));
+  }
+  if (rm == null || !settings.CALC_GPX_ROUTE.get()) {
     return list;
   }
   for (  RoutingParameter r : rm.getParameters().values()) {
     if (r.getType() == RoutingParameterType.BOOLEAN) {
-      list.add(r);
+      LocalRoutingParameter rp=new LocalRoutingParameter();
+      rp.routingParameter=r;
+      list.add(rp);
     }
   }
   return list;

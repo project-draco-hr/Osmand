@@ -23,19 +23,18 @@
         if (gpxNavigation) {
           GpxUiHelper.selectGPXFile(ma,false,false,new CallbackWithObject<GPXUtilities.GPXFile>(){
             @Override public boolean processResult(            GPXUtilities.GPXFile result){
-              GPXRouteParamsBuilder builder=GPXRouteParams.GPXRouteParamsBuilder.newBuilder(result,app.getSettings());
+              GPXRouteParamsBuilder builder=new GPXRouteParamsBuilder(result,app.getSettings());
               if (ch.isChecked()) {
-                builder.announceWaypoints();
+                builder.setAnnounceWaypoints(true);
               }
-              GPXRouteParams prms=builder.build();
-              startAnimationThread(app.getRoutingHelper(),ma,prms.getPoints(),true,speedup.getProgress() + 1);
+              startAnimationThread(app.getRoutingHelper(),ma,builder.getPoints(),true,speedup.getProgress() + 1);
               return true;
             }
           }
 );
         }
  else {
-          List<Location> currentRoute=app.getRoutingHelper().getCurrentRoute();
+          List<Location> currentRoute=app.getRoutingHelper().getCurrentCalculatedRoute();
           if (currentRoute.isEmpty()) {
             AccessibleToast.makeText(app,R.string.animate_routing_route_not_calculated,Toast.LENGTH_LONG).show();
           }

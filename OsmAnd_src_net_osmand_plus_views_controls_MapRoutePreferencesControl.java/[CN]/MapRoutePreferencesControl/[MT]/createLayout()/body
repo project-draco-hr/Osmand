@@ -7,20 +7,22 @@
   final Set<ApplicationMode> selected=new HashSet<ApplicationMode>();
   selected.add(am);
   setupSpinner(settingsDlg);
-  final ArrayAdapter<RoutingParameter> listAdapter=new ArrayAdapter<RoutingParameter>(ctx,R.layout.layers_list_activity_item,R.id.title,getRoutingParameters(am)){
+  listAdapter=new ArrayAdapter<LocalRoutingParameter>(ctx,R.layout.layers_list_activity_item,R.id.title,getRoutingParameters(am)){
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=mapActivity.getLayoutInflater().inflate(R.layout.layers_list_activity_item,null);
       final TextView tv=(TextView)v.findViewById(R.id.title);
       final CheckBox ch=((CheckBox)v.findViewById(R.id.check_item));
-      RoutingParameter rp=getItem(position);
-      tv.setText(SettingsBaseActivity.getRoutingStringPropertyName(mapActivity,rp.getId(),rp.getName()));
+      final LocalRoutingParameter rp=getItem(position);
+      tv.setText(rp.getText(mapActivity));
       tv.setPadding((int)(5 * scaleCoefficient),0,0,0);
-      final CommonPreference<Boolean> property=settings.getCustomRoutingBooleanProperty(rp.getId());
-      ch.setChecked(property.get());
+      ch.setChecked(rp.isSelected(settings));
       ch.setVisibility(View.VISIBLE);
       ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
         @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
-          property.set(isChecked);
+          rp.setSelected(settings,isChecked);
+          if (rp instanceof GPXLocalRoutingParameter) {
+            updateGpxRoutingParameter((GPXLocalRoutingParameter)rp);
+          }
           mapActivity.getRoutingHelper().recalculateRouteDueToSettingsChange();
         }
       }
@@ -35,12 +37,7 @@
         ApplicationMode next=selected.iterator().next();
         settings.APPLICATION_MODE.set(next);
         mapActivity.getRoutingHelper().recalculateRouteDueToSettingsChange();
-        listAdapter.setNotifyOnChange(false);
-        listAdapter.clear();
-        for (        RoutingParameter r : getRoutingParameters(next)) {
-          listAdapter.add(r);
-        }
-        listAdapter.notifyDataSetChanged();
+        updateParameters();
       }
     }
   }
