@@ -16,7 +16,11 @@
       InputStream config;
       config=new FileInputStream(new File(voiceDir,configFile));
       MetricsConstants mc=settings.METRIC_SYSTEM.get();
-      prologSystem.addTheory(new Theory("appMode('" + settings.getApplicationMode().toString().toLowerCase() + "')."));
+      ApplicationMode m=settings.getApplicationMode();
+      if (m.getParent() != null) {
+        m=m.getParent();
+      }
+      prologSystem.addTheory(new Theory("appMode('" + m.getStringKey().toLowerCase() + "')."));
       prologSystem.addTheory(new Theory("measure('" + mc.toTTSString() + "')."));
       prologSystem.addTheory(new Theory(config));
     }
