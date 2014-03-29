@@ -1,0 +1,18 @@
+{
+  GPXRouteParamsBuilder params=new GPXRouteParamsBuilder(result,mapActivity.getMyApplication().getSettings());
+  params.setAnnounceWaypoints(settings.SPEAK_GPX_WPT.get());
+  params.setCalculateOsmAndRoute(settings.CALC_GPX_ROUTE.get());
+  List<Location> ps=params.getPoints();
+  if (!ps.isEmpty()) {
+    Location loc=ps.get(ps.size() - 1);
+    TargetPointsHelper tg=mapActivity.getMyApplication().getTargetPointsHelper();
+    tg.navigateToPoint(new LatLon(loc.getLatitude(),loc.getLongitude()),false,-1);
+    if (tg.getPointToStart() == null) {
+      loc=ps.get(0);
+      tg.setStartPoint(new LatLon(loc.getLatitude(),loc.getLongitude()),false,null);
+    }
+    tg.updateRoutingHelper();
+  }
+  mapActivity.getRoutingHelper().setGpxParams(params);
+  settings.FOLLOW_THE_GPX_ROUTE.set(result.path);
+}
