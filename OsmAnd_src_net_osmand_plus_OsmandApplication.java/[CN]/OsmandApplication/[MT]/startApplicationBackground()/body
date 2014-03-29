@@ -23,7 +23,12 @@
     player=null;
     if (savingTrackHelper.hasDataToSave()) {
       startDialog.startTask(getString(R.string.saving_gpx_tracks),-1);
-      warnings.addAll(savingTrackHelper.saveDataToGpx());
+      try {
+        warnings.addAll(savingTrackHelper.saveDataToGpx());
+      }
+ catch (      RuntimeException e) {
+        warnings.add(e.getMessage());
+      }
     }
     final File appDir=getAppPath(null);
     File save=new File(appDir,FavouritesDbHelper.FILE_TO_SAVE);
@@ -35,7 +40,10 @@
       bak.renameTo(save);
     }
   }
-  finally {
+ catch (  RuntimeException e) {
+    warnings.add(e.getMessage());
+  }
+ finally {
 synchronized (OsmandApplication.this) {
       final ProgressDialog toDismiss;
       if (startDialog != null) {
