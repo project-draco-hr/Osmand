@@ -2,20 +2,8 @@
   if (rParams.start != null && rParams.gpxRoute.passWholeRoute) {
     Location startOfGpx=rParams.gpxRoute.getStartPointForRoute();
     if (startOfGpx != null && rParams.start.distanceTo(startOfGpx) > 60) {
-      RouteCalculationParams newParams=new RouteCalculationParams();
-      newParams.start=rParams.start;
-      newParams.end=new LatLon(startOfGpx.getLatitude(),startOfGpx.getLongitude());
-      newParams.ctx=rParams.ctx;
-      newParams.calculationProgress=rParams.calculationProgress;
-      newParams.mode=rParams.mode;
-      newParams.type=RouteService.OSMAND;
-      newParams.leftSide=rParams.leftSide;
-      RouteCalculationResult newRes=null;
-      try {
-        newRes=findVectorMapsRoute(newParams,false);
-      }
- catch (      IOException e) {
-      }
+      LatLon end=new LatLon(startOfGpx.getLatitude(),startOfGpx.getLongitude());
+      RouteCalculationResult newRes=findOfflineRouteSegment(rParams,rParams.start,end);
       if (newRes == null || !newRes.isCalculated()) {
         rParams.gpxRoute.points.add(rParams.start);
       }
