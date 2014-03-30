@@ -1,49 +1,33 @@
 {
-  if (rParams.start != null && rParams.gpxRoute.passWholeRoute) {
-    Location startOfGpx=rParams.gpxRoute.getStartPointForRoute();
-    if (startOfGpx != null && rParams.start.distanceTo(startOfGpx) > 60) {
-      LatLon end=new LatLon(startOfGpx.getLatitude(),startOfGpx.getLongitude());
-      RouteCalculationResult newRes=findOfflineRouteSegment(rParams,rParams.start,end);
-      if (newRes == null || !newRes.isCalculated()) {
-        rParams.gpxRoute.points.add(rParams.start);
-      }
- else {
-        List<Location> loct=newRes.getImmutableLocations();
-        List<RouteDirectionInfo> dt=newRes.getDirections();
-        List<RouteDirectionInfo> gpxRouteDirections=rParams.gpxRoute.directions;
-        rParams.gpxRoute.points.addAll(0,loct);
-        if (gpxRouteDirections != null) {
-          gpxRouteDirections.addAll(0,dt);
-          for (int i=dt.size(); i < gpxRouteDirections.size(); i++) {
-            gpxRouteDirections.get(i).routePointOffset+=loct.size();
-          }
-        }
-      }
-    }
-  }
-  RouteCalculationResult res;
-  GPXRouteParams params=rParams.gpxRoute;
-  List<Location> gpxRoute=params.points;
+  GPXRouteParams gpxParams=routeParams.gpxRoute;
+  List<Location> gpxRoute;
   int[] startI=new int[]{0};
-  int[] endI=new int[]{gpxRoute.size()};
-  ArrayList<Location> sublist=findGpxLocations(rParams,startI,endI);
-  rParams.intermediates=null;
-  if (params.directions == null) {
-    res=new RouteCalculationResult(sublist,null,rParams,params.wpt);
+  int[] endI=new int[]{gpxParams.points.size()};
+  if (routeParams.gpxRoute.passWholeRoute) {
+    gpxRoute=gpxParams.points;
   }
  else {
-    List<RouteDirectionInfo> subdirections=new ArrayList<RouteDirectionInfo>();
-    for (    RouteDirectionInfo info : params.directions) {
-      if (info.routePointOffset >= startI[0] && info.routePointOffset < endI[0]) {
-        RouteDirectionInfo ch=new RouteDirectionInfo(info.getAverageSpeed(),info.getTurnType());
-        ch.routePointOffset=info.routePointOffset - startI[0];
-        ch.setDescriptionRoute(info.getDescriptionRoutePart());
-        ch.distance=0;
-        ch.afterLeftTime=0;
-        subdirections.add(ch);
-      }
-    }
-    res=new RouteCalculationResult(sublist,subdirections,rParams,params.wpt);
+    gpxRoute=findStartAndEndLocationsFromRoute(gpxParams.points,routeParams.start,routeParams.end,startI,endI);
   }
+  List<RouteDirectionInfo> gpxDirections=new ArrayList<RouteDirectionInfo>();
+  if (gpxParams.directions != null) {
+    gpxDirections.addAll(gpxParams.directions);
+  }
+  for (  RouteDirectionInfo info : gpxDirections) {
+    if (info.routePointOffset >= startI[0] && info.routePointOffset < endI[0]) {
+      RouteDirectionInfo ch=new RouteDirectionInfo(info.getAverageSpeed(),info.getTurnType());
+      ch.routePointOffset=info.routePointOffset - startI[0];
+      ch.setDescriptionRoute(info.getDescriptionRoutePart());
+      gpxDirections.add(ch);
+    }
+  }
+  boolean calculateOsmAndRouteParts=gpxParams.calculateOsmAndRouteParts;
+  insertInitialSegment(routeParams,gpxRoute,gpxDirections,calculateOsmAndRouteParts);
+  insertFinalSegment(routeParams,gpxRoute,gpxDirections,calculateOsmAndRouteParts);
+  for (  RouteDirectionInfo info : gpxDirections) {
+    info.distance=0;
+    info.afterLeftTime=0;
+  }
+  RouteCalculationResult res=new RouteCalculationResult(gpxRoute,gpxDirections,routeParams,gpxParams.wpt);
   return res;
 }

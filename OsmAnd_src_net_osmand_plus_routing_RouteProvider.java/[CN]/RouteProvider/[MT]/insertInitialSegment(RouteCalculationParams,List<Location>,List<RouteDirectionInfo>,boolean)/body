@@ -1,0 +1,27 @@
+{
+  Location realStart=routeParams.start;
+  if (realStart != null && points.size() > 0 && realStart.distanceTo(points.get(0)) > 60) {
+    Location trackStart=points.get(0);
+    RouteCalculationResult newRes=null;
+    if (calculateOsmAndRouteParts) {
+      LatLon end=new LatLon(trackStart.getLatitude(),trackStart.getLongitude());
+      newRes=findOfflineRouteSegment(routeParams,realStart,end);
+    }
+    List<Location> loct;
+    List<RouteDirectionInfo> dt;
+    if (newRes != null && newRes.isCalculated()) {
+      loct=newRes.getImmutableLocations();
+      dt=newRes.getDirections();
+    }
+ else {
+      loct=new ArrayList<Location>();
+      loct.add(realStart);
+      dt=new ArrayList<RouteDirectionInfo>();
+    }
+    points.addAll(0,loct);
+    directions.addAll(0,dt);
+    for (int i=dt.size(); i < directions.size(); i++) {
+      directions.get(i).routePointOffset+=loct.size();
+    }
+  }
+}
