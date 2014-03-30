@@ -18,7 +18,6 @@ synchronized (this) {
       if (finished) {
         return null;
       }
-      announceGpxWaypoints(currentLocation);
       List<Location> routeNodes=route.getImmutableLocations();
       int currentRoute=route.currentRoute;
       if (currentRoute > 0) {
@@ -38,12 +37,15 @@ synchronized (this) {
         calculateRoute=true;
       }
       boolean uTurnIsNeeded=identifyUTurnIsNeeded(currentLocation,posTolerance);
-      boolean inRecalc=calculateRoute || isRouteBeingCalculated();
-      if (!inRecalc && !uTurnIsNeeded && !wrongMovementDirection) {
-        voiceRouter.updateStatus(currentLocation,false);
-      }
- else       if (uTurnIsNeeded) {
-        voiceRouter.makeUTStatus();
+      if (isFollowingMode) {
+        announceGpxWaypoints(currentLocation);
+        boolean inRecalc=calculateRoute || isRouteBeingCalculated();
+        if (!inRecalc && !uTurnIsNeeded && !wrongMovementDirection) {
+          voiceRouter.updateStatus(currentLocation,false);
+        }
+ else         if (uTurnIsNeeded) {
+          voiceRouter.makeUTStatus();
+        }
       }
       if (currentRoute > 0) {
         locationProjection=new Location(currentLocation);
