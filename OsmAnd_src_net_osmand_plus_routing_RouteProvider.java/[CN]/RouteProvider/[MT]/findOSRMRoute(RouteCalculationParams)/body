@@ -15,7 +15,13 @@
   URL url=new URL(uri.toString());
   URLConnection connection=url.openConnection();
   connection.setRequestProperty("User-Agent",Version.getFullVersion(params.ctx));
-  GPXFile gpxFile=GPXUtilities.loadGPXFile(params.ctx,connection.getInputStream());
+  final InputStream inputStream=connection.getInputStream();
+  GPXFile gpxFile=GPXUtilities.loadGPXFile(params.ctx,inputStream);
+  try {
+    inputStream.close();
+  }
+ catch (  IOException e) {
+  }
   if (gpxFile.routes.isEmpty()) {
     return new RouteCalculationResult("Route is empty");
   }
