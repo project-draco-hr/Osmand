@@ -4,6 +4,20 @@
     currentRunningJob=null;
     return;
   }
+  final boolean onlineSourceWithoutInternet=!res.isCalculated() && params.type.isOnline() && !settings.isInternetConnectionAvailable();
+  if (onlineSourceWithoutInternet && settings.ROUTE_CALC_OSMAND_PARTS.get()) {
+    if (params.previousToRecalculate != null && params.previousToRecalculate.isCalculated()) {
+      RouteCalculationResult rcr=params.previousToRecalculate;
+      List<Location> locs=rcr.getRouteLocations();
+      List<RouteDirectionInfo> routeDirections=rcr.getRouteDirections();
+      try {
+        provider.insertInitialSegment(params,locs,routeDirections,true);
+      }
+ catch (      RuntimeException e) {
+        e.printStackTrace();
+      }
+    }
+  }
 synchronized (RoutingHelper.this) {
     if (res.isCalculated()) {
       setNewRoute(res,params.start);
@@ -21,23 +35,8 @@ synchronized (RoutingHelper.this) {
     }
     showMessage(msg);
   }
- else   if (params.type.isOnline() && !settings.isInternetConnectionAvailable()) {
-    boolean showMsg=true;
-    if (settings.ROUTE_CALC_OSMAND_PARTS.get() && params.previousToRecalculate != null && params.previousToRecalculate.isCalculated()) {
-      RouteCalculationResult rcr=params.previousToRecalculate;
-      List<Location> locs=rcr.getRouteLocations();
-      List<RouteDirectionInfo> routeDirections=rcr.getRouteDirections();
-      try {
-        provider.insertInitialSegment(params,locs,routeDirections,true);
-        showMsg=false;
-      }
- catch (      RuntimeException e) {
-        e.printStackTrace();
-      }
-    }
-    if (showMsg) {
-      showMessage(app.getString(R.string.error_calculating_route) + ":\n" + app.getString(R.string.internet_connection_required_for_online_route));
-    }
+ else   if (onlineSourceWithoutInternet) {
+    showMessage(app.getString(R.string.error_calculating_route) + ":\n" + app.getString(R.string.internet_connection_required_for_online_route));
   }
  else {
     if (res.getErrorMessage() != null) {
