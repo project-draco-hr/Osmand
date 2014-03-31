@@ -1,12 +1,19 @@
 {
   List<LocalRoutingParameter> list=new ArrayList<LocalRoutingParameter>();
-  GeneralRouter rm=SettingsNavigationActivity.getRouter(mapActivity.getMyApplication().getDefaultRoutingConfig(),am);
   GPXRouteParamsBuilder rparams=mapActivity.getRoutingHelper().getCurrentGPXRoute();
-  if (rparams != null) {
-    list.add(new GPXLocalRoutingParameter(R.string.gpx_option_reverse_route,getString(R.string.gpx_option_reverse_route),rparams.isReverse()));
-    list.add(new GPXLocalRoutingParameter(R.string.gpx_option_from_start_point,getString(R.string.gpx_option_from_start_point),rparams.isPassWholeRoute()));
-    list.add(new GPXLocalRoutingParameter(R.string.announce_gpx_waypoints,getString(R.string.announce_gpx_waypoints),rparams.isAnnounceWaypoints()));
+  boolean osmandRouter=settings.ROUTER_SERVICE.get() == RouteService.OSMAND;
+  if (!osmandRouter) {
+    list.add(new OtherLocalRoutingParameter(R.string.calculate_osmand_route_without_internet,getString(R.string.calculate_osmand_route_without_internet),settings.ROUTE_CALC_OSMAND_PARTS.get()));
+    list.add(new OtherLocalRoutingParameter(R.string.fast_route_mode,getString(R.string.fast_route_mode),settings.FAST_ROUTE_MODE.get()));
+    return list;
   }
+  if (rparams != null) {
+    list.add(new OtherLocalRoutingParameter(R.string.gpx_option_reverse_route,getString(R.string.gpx_option_reverse_route),rparams.isReverse()));
+    list.add(new OtherLocalRoutingParameter(R.string.gpx_option_from_start_point,getString(R.string.gpx_option_from_start_point),rparams.isPassWholeRoute()));
+    list.add(new OtherLocalRoutingParameter(R.string.gpx_option_calculate_first_last_segment,getString(R.string.gpx_option_calculate_first_last_segment),rparams.isCalculateOsmAndRouteParts()));
+    list.add(new OtherLocalRoutingParameter(R.string.announce_gpx_waypoints,getString(R.string.announce_gpx_waypoints),rparams.isAnnounceWaypoints()));
+  }
+  GeneralRouter rm=SettingsNavigationActivity.getRouter(mapActivity.getMyApplication().getDefaultRoutingConfig(),am);
   if (rm == null || (rparams != null && !rparams.isCalculateOsmAndRoute())) {
     return list;
   }

@@ -1,0 +1,36 @@
+{
+  float minDist=Integer.MAX_VALUE;
+  int start=0;
+  int end=route.size();
+  if (startLoc != null) {
+    for (int i=0; i < route.size(); i++) {
+      float d=route.get(i).distanceTo(startLoc);
+      if (d < minDist) {
+        start=i;
+        minDist=d;
+      }
+    }
+  }
+ else {
+    startLoc=route.get(0);
+  }
+  Location l=new Location("temp");
+  l.setLatitude(endLoc.getLatitude());
+  l.setLongitude(endLoc.getLongitude());
+  minDist=Integer.MAX_VALUE;
+  for (int i=route.size() - 1; i >= start; i--) {
+    float d=route.get(i).distanceTo(l);
+    if (d < minDist) {
+      end=i + 1;
+      minDist=d - 40;
+    }
+  }
+  ArrayList<Location> sublist=new ArrayList<Location>(route.subList(start,end));
+  if (startI != null) {
+    startI[0]=start;
+  }
+  if (endI != null) {
+    endI[0]=end;
+  }
+  return sublist;
+}

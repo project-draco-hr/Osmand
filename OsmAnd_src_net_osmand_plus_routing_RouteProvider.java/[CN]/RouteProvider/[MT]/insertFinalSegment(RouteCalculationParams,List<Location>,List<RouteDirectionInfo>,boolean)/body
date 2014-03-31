@@ -1,0 +1,32 @@
+{
+  if (points.size() > 0) {
+    Location routeEnd=points.get(points.size() - 1);
+    LatLon e=routeEnd == null ? null : new LatLon(routeEnd.getLatitude(),routeEnd.getLongitude());
+    LatLon finalEnd=routeParams.end;
+    if (finalEnd != null && MapUtils.getDistance(finalEnd,e) > 60) {
+      RouteCalculationResult newRes=null;
+      if (calculateOsmAndRouteParts) {
+        newRes=findOfflineRouteSegment(routeParams,routeEnd,finalEnd);
+      }
+      List<Location> loct;
+      List<RouteDirectionInfo> dt;
+      if (newRes != null && newRes.isCalculated()) {
+        loct=newRes.getImmutableAllLocations();
+        dt=newRes.getImmutableAllDirections();
+      }
+ else {
+        loct=new ArrayList<Location>();
+        Location l=new Location("");
+        l.setLatitude(finalEnd.getLatitude());
+        l.setLongitude(finalEnd.getLongitude());
+        loct.add(l);
+        dt=new ArrayList<RouteDirectionInfo>();
+      }
+      for (      RouteDirectionInfo i : dt) {
+        i.routePointOffset+=points.size();
+      }
+      points.addAll(loct);
+      directions.addAll(dt);
+    }
+  }
+}
