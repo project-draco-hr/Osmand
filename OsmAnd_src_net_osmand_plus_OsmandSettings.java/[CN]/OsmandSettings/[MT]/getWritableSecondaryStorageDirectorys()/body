@@ -1,0 +1,36 @@
+{
+  String primaryExternalStorageDirectory=getDefaultExternalStorageLocation();
+  File[] externalFilesDirs=ctx.getExternalFilesDirs(null);
+  List<String> writableSecondaryStorages=getWritableSecondaryStorages();
+  List<String> writableSecondaryStorageDirectory=new ArrayList<String>();
+  try {
+    boolean primaryExternalStorageFound=false;
+    if (externalFilesDirs != null) {
+      for (      File externFileDir : externalFilesDirs) {
+        if (externFileDir != null) {
+          final String externalFilePath=externFileDir.getAbsolutePath();
+          if (externalFilePath.startsWith(primaryExternalStorageDirectory) && !primaryExternalStorageFound) {
+            primaryExternalStorageFound=true;
+          }
+ else {
+            boolean specialPathRequired=true;
+            for (            String writableSecondaryStorage : writableSecondaryStorages) {
+              if (externalFilePath.startsWith(writableSecondaryStorage)) {
+                writableSecondaryStorageDirectory.add(writableSecondaryStorage);
+                specialPathRequired=false;
+                break;
+              }
+            }
+            if (specialPathRequired == true) {
+              writableSecondaryStorageDirectory.add(externalFilePath);
+            }
+          }
+        }
+      }
+    }
+  }
+ catch (  RuntimeException e) {
+    e.printStackTrace();
+  }
+  return writableSecondaryStorageDirectory;
+}

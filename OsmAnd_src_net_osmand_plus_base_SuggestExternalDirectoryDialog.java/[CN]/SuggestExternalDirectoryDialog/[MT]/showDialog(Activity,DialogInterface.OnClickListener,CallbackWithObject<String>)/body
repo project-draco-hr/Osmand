@@ -2,9 +2,15 @@
   final boolean showOther=otherListener != null;
   final OsmandApplication app=(OsmandApplication)a.getApplication();
   Builder bld=new AlertDialog.Builder(a);
-  HashSet<String> externalMounts=getExternalMounts();
+  HashSet<String> externalMounts;
+  if (Build.VERSION.SDK_INT < OsmandSettings.VERSION_DEFAULTLOCATION_CHANGED) {
+    externalMounts=getExternalMounts();
+  }
+ else {
+    externalMounts=new HashSet<String>(app.getSettings().getWritableSecondaryStorageDirectorys());
+  }
   String apath=app.getSettings().getExternalStorageDirectory().getAbsolutePath();
-  externalMounts.add(app.getExternalServiceAPI().getExternalStorageDirectory());
+  externalMounts.add(app.getSettings().getDefaultExternalStorageLocation());
   externalMounts.add(apath);
   final String[] extMounts=new String[showOther ? externalMounts.size() + 1 : externalMounts.size()];
   externalMounts.toArray(extMounts);
