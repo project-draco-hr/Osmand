@@ -3,6 +3,7 @@
   final RoutingConfiguration.Builder config=new RoutingConfiguration.Builder();
   GeneralRouter currentRouter=null;
   RouteDataObjectAttribute currentAttribute=null;
+  String preType=null;
   Stack<RoutingRule> rulesStck=new Stack<RoutingConfiguration.RoutingRule>();
   parser.setInput(is,"UTF-8");
   int tok;
@@ -24,9 +25,10 @@
  else       if ("point".equals(name) || "way".equals(name)) {
         String attribute=parser.getAttributeValue("","attribute");
         currentAttribute=RouteDataObjectAttribute.getValueOf(attribute);
+        preType=parser.getAttributeValue("","type");
       }
  else {
-        parseRoutingRule(parser,currentRouter,currentAttribute,rulesStck);
+        parseRoutingRule(parser,currentRouter,currentAttribute,preType,rulesStck);
       }
     }
  else     if (tok == XmlPullParser.END_TAG) {
