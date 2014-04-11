@@ -1,13 +1,16 @@
 {
   isFollowingMode=follow;
   if (follow) {
-    if (!app.getInternalAPI().isNavigationServiceStarted()) {
-      app.getInternalAPI().startNavigationService(true);
+    if (app.getNavigationService() != null) {
+      Intent serviceIntent=new Intent(app,NavigationService.class);
+      serviceIntent.putExtra(NavigationService.NAVIGATION_START_SERVICE_PARAM,true);
+      app.startService(serviceIntent);
     }
   }
  else {
-    if (app.getInternalAPI().isNavigationServiceStartedForNavigation()) {
-      app.getInternalAPI().stopNavigationService();
+    if (app.getNavigationService() != null && app.getNavigationService().startedForNavigation()) {
+      Intent serviceIntent=new Intent(app,NavigationService.class);
+      app.stopService(serviceIntent);
     }
   }
 }
