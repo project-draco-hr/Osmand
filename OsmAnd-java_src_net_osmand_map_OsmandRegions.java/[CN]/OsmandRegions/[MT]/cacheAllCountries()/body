@@ -1,24 +1,19 @@
 {
   quadTree=new QuadTree<String>(new QuadRect(0,0,Integer.MAX_VALUE,Integer.MAX_VALUE),8,0.55f);
-  BinaryMapIndexReader.SearchRequest<BinaryMapDataObject> sr=BinaryMapIndexReader.buildSearchRequest(0,Integer.MAX_VALUE,0,Integer.MAX_VALUE,5,new BinaryMapIndexReader.SearchFilter(){
-    @Override public boolean accept(    TIntArrayList types,    BinaryMapIndexReader.MapIndex index){
-      return true;
-    }
-  }
-,new ResultMatcher<BinaryMapDataObject>(){
+  final ResultMatcher<BinaryMapDataObject> resultMatcher=new ResultMatcher<BinaryMapDataObject>(){
     @Override public boolean publish(    BinaryMapDataObject object){
       if (object.getPointsLength() < 1) {
         return false;
       }
       initTypes(object);
       String nm=object.getNameByType(downloadNameType);
-      if (!countries.containsKey(nm)) {
+      if (!countriesByDownloadName.containsKey(nm)) {
         LinkedList<BinaryMapDataObject> ls=new LinkedList<BinaryMapDataObject>();
-        countries.put(nm,ls);
+        countriesByDownloadName.put(nm,ls);
         ls.add(object);
       }
  else {
-        countries.get(nm).add(object);
+        countriesByDownloadName.get(nm).add(object);
       }
       int maxx=object.getPoint31XTile(0);
       int maxy=object.getPoint31YTile(0);
@@ -47,8 +42,6 @@
       return false;
     }
   }
-);
-  if (reader != null) {
-    reader.searchMapIndex(sr);
-  }
+;
+  iterateOverAllObjects(resultMatcher);
 }

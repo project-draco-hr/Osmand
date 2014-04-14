@@ -1,0 +1,35 @@
+{
+  final ResultMatcher<BinaryMapDataObject> resultMatcher=new ResultMatcher<BinaryMapDataObject>(){
+    @Override public boolean publish(    BinaryMapDataObject object){
+      if (object.getPointsLength() < 1) {
+        return false;
+      }
+      initTypes(object);
+      String downloadName=object.getNameByType(downloadNameType).toLowerCase();
+      String locName=getLocaleName(object);
+      if (locName != null && locName.length() > 0) {
+        downloadNamesToLocaleNames.put(downloadName,locName);
+      }
+      MapIndex mi=object.getMapIndex();
+      TIntObjectIterator<String> it=object.getObjectNames().iterator();
+      StringBuilder ind=new StringBuilder();
+      while (it.hasNext()) {
+        it.advance();
+        TagValuePair tp=mi.decodeType(it.key());
+        if (tp.tag.startsWith("name")) {
+          final String vl=it.value().toLowerCase();
+          if (ind.indexOf(vl) == -1) {
+            ind.append(" ").append(vl);
+          }
+        }
+      }
+      downloadNamesToLowercaseIndex.put(downloadName,ind.toString());
+      return false;
+    }
+    @Override public boolean isCancelled(){
+      return false;
+    }
+  }
+;
+  iterateOverAllObjects(resultMatcher);
+}
