@@ -1,4 +1,7 @@
 {
+  if (getIntent() != null) {
+    setupCustomization(getIntent());
+  }
   ((OsmandApplication)getApplication()).applyTheme(this);
   super.onCreate(savedInstanceState);
   boolean exit=false;
@@ -10,6 +13,7 @@
   }
   requestWindowFeature(Window.FEATURE_NO_TITLE);
   setContentView(R.layout.menu);
+  OsmAndAppCustomization appCustomization=getMyApplication().getAppCustomization();
   onCreateMainMenu(getWindow(),this);
   Window window=getWindow();
   final Activity activity=this;
@@ -54,6 +58,7 @@
     }
   }
 );
+  appCustomization.customizeMainMenu(window);
   if (exit) {
     getMyApplication().closeApplication(activity);
     return;
@@ -66,42 +71,51 @@
   }
   startProgressDialog=new ProgressDialog(this);
   getMyApplication().checkApplicationIsBeingInitialized(this,startProgressDialog);
-  SharedPreferences pref=getPreferences(MODE_WORLD_WRITEABLE);
+  boolean dialogShown=false;
   boolean firstTime=false;
+  SharedPreferences pref=getPreferences(MODE_WORLD_WRITEABLE);
+  boolean appVersionChanged=false;
   if (!pref.contains(FIRST_TIME_APP_RUN)) {
     firstTime=true;
     pref.edit().putBoolean(FIRST_TIME_APP_RUN,true).commit();
     pref.edit().putString(VERSION_INSTALLED,Version.getFullVersion(app)).commit();
-    applicationInstalledFirstTime();
   }
- else {
-    int i=pref.getInt(TIPS_SHOW,0);
-    if (i < 7) {
-      pref.edit().putInt(TIPS_SHOW,++i).commit();
-    }
-    boolean appVersionChanged=false;
-    if (!Version.getFullVersion(app).equals(pref.getString(VERSION_INSTALLED,""))) {
-      pref.edit().putString(VERSION_INSTALLED,Version.getFullVersion(app)).commit();
-      appVersionChanged=true;
-    }
-    if (i == 1 || i == 5 || appVersionChanged) {
-      TipsAndTricksActivity tipsActivity=new TipsAndTricksActivity(this);
-      Dialog dlg=tipsActivity.getDialogToShowTips(!appVersionChanged,false);
-      dlg.show();
+ else   if (!Version.getFullVersion(app).equals(pref.getString(VERSION_INSTALLED,""))) {
+    pref.edit().putString(VERSION_INSTALLED,Version.getFullVersion(app)).commit();
+    appVersionChanged=true;
+  }
+  if (appCustomization.showFirstTimeRunAndTips(firstTime,appVersionChanged)) {
+    if (firstTime) {
+      applicationInstalledFirstTime();
+      dialogShown=true;
     }
  else {
-      if (startProgressDialog.isShowing()) {
-        startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
-          @Override public void onDismiss(          DialogInterface dialog){
-            checkVectorIndexesDownloaded();
-          }
+      int i=pref.getInt(TIPS_SHOW,0);
+      if (i < 7) {
+        pref.edit().putInt(TIPS_SHOW,++i).commit();
+      }
+      if (i == 1 || i == 5 || appVersionChanged) {
+        TipsAndTricksActivity tipsActivity=new TipsAndTricksActivity(this);
+        Dialog dlg=tipsActivity.getDialogToShowTips(!appVersionChanged,false);
+        dlg.show();
+        dialogShown=true;
+      }
+    }
+  }
+  if (!dialogShown && appCustomization.checkBasemapDownloadedOnStart()) {
+    if (startProgressDialog.isShowing()) {
+      startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
+        @Override public void onDismiss(        DialogInterface dialog){
+          checkVectorIndexesDownloaded();
         }
+      }
 );
-      }
+    }
  else {
-        checkVectorIndexesDownloaded();
-      }
+      checkVectorIndexesDownloaded();
     }
   }
-  checkPreviousRunsForExceptions(firstTime);
+  if (appCustomization.checkExceptionsOnStart()) {
+    checkPreviousRunsForExceptions(firstTime);
+  }
 }
