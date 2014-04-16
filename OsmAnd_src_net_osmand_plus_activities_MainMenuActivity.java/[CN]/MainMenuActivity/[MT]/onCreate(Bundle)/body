@@ -13,14 +13,14 @@
   }
   requestWindowFeature(Window.FEATURE_NO_TITLE);
   setContentView(R.layout.menu);
-  OsmAndAppCustomization appCustomization=getMyApplication().getAppCustomization();
+  final OsmAndAppCustomization appCustomization=getMyApplication().getAppCustomization();
   onCreateMainMenu(getWindow(),this);
   Window window=getWindow();
   final Activity activity=this;
   View showMap=window.findViewById(R.id.MapButton);
   showMap.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      final Intent mapIndent=new Intent(activity,OsmandIntents.getMapActivity());
+      final Intent mapIndent=new Intent(activity,appCustomization.getMapActivity());
       activity.startActivityForResult(mapIndent,0);
     }
   }
@@ -28,7 +28,7 @@
   View settingsButton=window.findViewById(R.id.SettingsButton);
   settingsButton.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      final Intent settings=new Intent(activity,OsmandIntents.getSettingsActivity());
+      final Intent settings=new Intent(activity,appCustomization.getSettingsActivity());
       activity.startActivity(settings);
     }
   }
@@ -36,7 +36,7 @@
   View favouritesButton=window.findViewById(R.id.FavoritesButton);
   favouritesButton.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      final Intent favorites=new Intent(activity,OsmandIntents.getFavoritesActivity());
+      final Intent favorites=new Intent(activity,appCustomization.getFavoritesActivity());
       favorites.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
       activity.startActivity(favorites);
     }
@@ -52,20 +52,20 @@
   View searchButton=window.findViewById(R.id.SearchButton);
   searchButton.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      final Intent search=new Intent(activity,OsmandIntents.getSearchActivity());
+      final Intent search=new Intent(activity,appCustomization.getSearchActivity());
       search.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
       activity.startActivity(search);
     }
   }
 );
-  appCustomization.customizeMainMenu(window);
+  appCustomization.customizeMainMenu(window,this);
   if (exit) {
     getMyApplication().closeApplication(activity);
     return;
   }
   OsmandApplication app=getMyApplication();
   if (app.getSettings().FOLLOW_THE_ROUTE.get() && !app.getRoutingHelper().isRouteCalculated()) {
-    final Intent mapIndent=new Intent(this,OsmandIntents.getMapActivity());
+    final Intent mapIndent=new Intent(this,appCustomization.getMapActivity());
     startActivityForResult(mapIndent,0);
     return;
   }
