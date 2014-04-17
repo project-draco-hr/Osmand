@@ -1,5 +1,7 @@
 {
   super.onCreate(savedInstanceState);
+  final List<DownloadActivityType> downloadTypes=getDownloadTypes();
+  type=downloadTypes.get(0);
   settings=((OsmandApplication)getApplication()).getSettings();
   if (downloadListIndexThread == null) {
     downloadListIndexThread=new DownloadIndexesThread(this);
@@ -46,7 +48,12 @@
   if (intent != null && intent.getExtras() != null) {
     final String filter=intent.getExtras().getString(FILTER_KEY);
     if (filter != null) {
-      filterText.setText(filter);
+      if (filter.equals(getString(R.string.voice))) {
+        changeType(DownloadActivityType.VOICE_FILE);
+      }
+ else {
+        filterText.setText(filter);
+      }
     }
   }
   List<IndexItem> list=new ArrayList<IndexItem>();
@@ -71,12 +78,11 @@
  else {
     showDialogOfFreeDownloadsIfNeeded();
   }
-  final DownloadActivityType[] downloadTypes=getDownloadTypes();
-  spinnerAdapter=new ArrayAdapter<String>(getSupportActionBar().getThemedContext(),R.layout.sherlock_spinner_item,new ArrayList<String>(Arrays.asList(toString(downloadTypes))));
+  spinnerAdapter=new ArrayAdapter<String>(getSupportActionBar().getThemedContext(),R.layout.sherlock_spinner_item,toString(downloadTypes));
   spinnerAdapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
   getSupportActionBar().setListNavigationCallbacks(spinnerAdapter,new OnNavigationListener(){
     @Override public boolean onNavigationItemSelected(    int itemPosition,    long itemId){
-      changeType(downloadTypes[itemPosition]);
+      changeType(downloadTypes.get(itemPosition));
       return true;
     }
   }

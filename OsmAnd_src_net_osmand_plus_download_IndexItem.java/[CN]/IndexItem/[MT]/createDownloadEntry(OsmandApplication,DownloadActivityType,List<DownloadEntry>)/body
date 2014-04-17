@@ -1,51 +1,7 @@
 {
   String fileName=this.fileName;
-  File parent=null;
-  String extension=null;
-  boolean unzipDir=false;
-  boolean zipStream=false;
-  boolean preventMediaIndexing=false;
-  if (fileName.endsWith(IndexConstants.BINARY_SRTM_MAP_INDEX_EXT_ZIP)) {
-    parent=ctx.getAppPath(IndexConstants.SRTM_INDEX_DIR);
-    extension=BINARY_SRTM_MAP_INDEX_EXT;
-    zipStream=true;
-  }
- else   if (fileName.endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
-    parent=ctx.getAppPath(IndexConstants.MAPS_PATH);
-    extension=BINARY_MAP_INDEX_EXT;
-  }
- else   if (fileName.endsWith(IndexConstants.BINARY_MAP_INDEX_EXT_ZIP)) {
-    parent=ctx.getAppPath(IndexConstants.MAPS_PATH);
-    zipStream=true;
-    extension=BINARY_MAP_INDEX_EXT;
-  }
- else   if (fileName.endsWith(IndexConstants.EXTRA_ZIP_EXT)) {
-    parent=ctx.getAppPath("");
-    zipStream=true;
-    extension=IndexConstants.EXTRA_EXT;
-  }
- else   if (fileName.endsWith(IndexConstants.SQLITE_EXT)) {
-    parent=ctx.getAppPath(IndexConstants.TILES_INDEX_DIR);
-    extension=IndexConstants.SQLITE_EXT;
-  }
- else   if (fileName.endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
-    parent=ctx.getAppPath(IndexConstants.VOICE_INDEX_DIR);
-    zipStream=true;
-    extension="";
-    unzipDir=true;
-    preventMediaIndexing=true;
-  }
- else   if (fileName.endsWith(IndexConstants.TTSVOICE_INDEX_EXT_ZIP)) {
-    parent=ctx.getAppPath(IndexConstants.VOICE_INDEX_DIR);
-    zipStream=true;
-    extension="";
-    unzipDir=true;
-  }
-  if (type == DownloadActivityType.ROADS_FILE) {
-    extension="-roads" + extension;
-  }
- else   if (type == DownloadActivityType.SRTM_COUNTRY_FILE) {
-  }
+  File parent=type.getDownloadFolder(ctx,this);
+  boolean preventMediaIndexing=type.preventMediaIndexing(ctx,this);
   if (parent != null) {
     parent.mkdirs();
     if (preventMediaIndexing) {
@@ -65,20 +21,9 @@
     entry=new DownloadEntry(this);
     entry.type=type;
     entry.baseName=getBasename();
-    String url="http://" + IndexConstants.INDEX_DOWNLOAD_DOMAIN + "/download?event=2&";
-    url+=Version.getVersionAsURLParam(ctx) + "&";
-    if (type == DownloadActivityType.ROADS_FILE) {
-      url+="road=yes&";
-    }
-    if (type == DownloadActivityType.SRTM_COUNTRY_FILE) {
-      url+="srtmcountry=yes&";
-    }
-    if (type == DownloadActivityType.HILLSHADE_FILE) {
-      url+="hillshade=yes&";
-    }
-    entry.urlToDownload=url + "file=" + fileName;
-    entry.zipStream=zipStream;
-    entry.unzipFolder=unzipDir;
+    entry.urlToDownload=entry.type.getBaseUrl(ctx,fileName) + entry.type.getUrlSuffix(ctx);
+    entry.zipStream=type.isZipStream(ctx,this);
+    entry.unzipFolder=type.isZipFolder(ctx,this);
     try {
       final java.text.DateFormat format=DateFormat.getDateFormat((Context)ctx);
       format.setTimeZone(TimeZone.getTimeZone("GMT+01:00"));
@@ -98,6 +43,7 @@
     if (parts != null) {
       entry.parts=Integer.parseInt(parts);
     }
+    String extension=type.getUnzipExtension(ctx,this);
     entry.targetFile=new File(parent,entry.baseName + extension);
     File backup=new File(ctx.getAppPath(IndexConstants.BACKUP_INDEX_DIR),entry.targetFile.getName());
     if (backup.exists()) {

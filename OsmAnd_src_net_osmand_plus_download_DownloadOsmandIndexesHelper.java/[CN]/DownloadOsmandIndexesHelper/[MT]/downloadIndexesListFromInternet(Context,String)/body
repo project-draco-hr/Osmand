@@ -11,17 +11,12 @@
       int next;
       while ((next=parser.next()) != XmlPullParser.END_DOCUMENT) {
         if (next == XmlPullParser.START_TAG) {
-          DownloadActivityType tp=getIndexType(parser.getName());
+          DownloadActivityType tp=DownloadActivityType.getIndexType(parser.getAttributeValue(null,"type"));
           if (tp != null) {
-            String name=parser.getAttributeValue(null,"name");
-            String size=parser.getAttributeValue(null,"size");
-            String date=parser.getAttributeValue(null,"date");
-            String description=parser.getAttributeValue(null,"description");
-            String parts=parser.getAttributeValue(null,"parts");
-            date=reparseDate(ctx,date);
-            IndexItem it=new IndexItem(name,description,date,size,parts);
-            it.setType(tp);
-            result.add(it);
+            IndexItem it=tp.parseIndexItem(ctx,parser);
+            if (it != null) {
+              result.add(it);
+            }
           }
  else           if ("osmand_regions".equals(parser.getName())) {
             String mapversion=parser.getAttributeValue(null,"mapversion");
