@@ -20,14 +20,17 @@
       }
     }
     List<IndexItem> filter=new ArrayList<IndexItem>();
-    ClientContext c=downloadActivity.getMyApplication();
+    Context c=downloadActivity;
     for (    IndexItem item : indexFiles) {
       boolean add=true;
-      final String visibleName=item.getVisibleName(c).toLowerCase();
+      String indexLC=osmandRegions.getDownloadNameIndexLowercase(item.getBasename());
+      if (indexLC == null) {
+        indexLC=item.getVisibleName(c,osmandRegions).toLowerCase();
+      }
       for (      List<String> or : conds) {
         boolean tadd=true;
         for (        String var : or) {
-          if (!visibleName.contains(var)) {
+          if (!indexLC.contains(var)) {
             tadd=false;
             break;
           }

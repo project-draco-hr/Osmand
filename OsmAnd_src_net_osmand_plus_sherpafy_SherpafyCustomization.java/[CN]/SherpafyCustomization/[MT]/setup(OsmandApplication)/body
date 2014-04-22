@@ -1,0 +1,24 @@
+{
+  super.setup(app);
+  originalSettings=createSettings(app.getSettings().getSettingsAPI());
+  selectedTourPref=originalSettings.registerBooleanPreference(SELECTED_TOUR,null).makeGlobal();
+  File toursFolder=new File(originalSettings.getExternalStorageDirectory(),"tours");
+  if (selectedTourPref.get() != null) {
+    selectedTourFolder=new File(toursFolder,selectedTourPref.get());
+    selectedTourFolder.mkdirs();
+  }
+  if (selectedTourFolder != null) {
+    File settingsFile=new File(selectedTourFolder,"settings.props");
+    FileSettingsAPIImpl fapi;
+    try {
+      fapi=new FileSettingsAPIImpl(app,settingsFile);
+      if (!settingsFile.exists()) {
+        fapi.saveFile();
+      }
+      app.getSettings().setSettingsAPI(fapi);
+    }
+ catch (    IOException e) {
+      app.showToastMessage(R.string.settings_file_create_error);
+    }
+  }
+}

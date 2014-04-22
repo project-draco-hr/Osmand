@@ -8,8 +8,8 @@
   TextView item=(TextView)row.findViewById(R.id.download_item);
   TextView description=(TextView)row.findViewById(R.id.download_descr);
   IndexItem e=(IndexItem)getChild(groupPosition,childPosition);
-  ClientContext clctx=downloadActivity.getMyApplication();
-  String eName=e.getVisibleDescription(clctx) + "\n" + e.getVisibleName(clctx);
+  OsmandApplication clctx=downloadActivity.getMyApplication();
+  String eName=e.getVisibleDescription(clctx) + "\n" + e.getVisibleName(clctx,osmandRegions);
   item.setText(eName.trim());
   String d=e.getDate() + "\n" + e.getSizeDescription(clctx);
   description.setText(d.trim());
@@ -31,7 +31,16 @@
  else {
       if (e.getType() == DownloadActivityType.HILLSHADE_FILE || e.getType() == DownloadActivityType.SRTM_COUNTRY_FILE) {
         item.setTextColor(okColor);
-        item.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+        String sfName=e.getTargetFileName();
+        if (indexActivatedFileNames.containsKey(sfName)) {
+          item.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+        }
+ else         if (e.getType() == DownloadActivityType.HILLSHADE_FILE) {
+          item.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+        }
+ else {
+          item.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
+        }
       }
  else       if (e.getDate() != null) {
         String sfName=e.getTargetFileName();

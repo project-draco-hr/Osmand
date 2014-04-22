@@ -11,9 +11,8 @@
     }
   }
   super.onCreate();
-  settingsAPI=new net.osmand.plus.api.SettingsAPIImpl(this);
-  externalServiceAPI=new net.osmand.plus.api.ExternalServiceAPIImpl(this);
-  internalOsmAndAPI=new net.osmand.plus.api.InternalOsmAndAPIImpl(this);
+  appCustomization=new OsmAndAppCustomization();
+  appCustomization.setup(this);
   sqliteAPI=new SQLiteAPIImpl(this);
   try {
     bRouterServiceConnection=BRouterServiceConnection.connect(this);
@@ -21,14 +20,14 @@
  catch (  Exception e) {
     e.printStackTrace();
   }
-  osmandSettings=createOsmandSettingsInstance();
+  osmandSettings=appCustomization.createSettings(new net.osmand.plus.api.SettingsAPIImpl(this));
   if (!osmandSettings.FOLLOW_THE_ROUTE.get()) {
     osmandSettings.APPLICATION_MODE.set(osmandSettings.DEFAULT_APPLICATION_MODE.get());
   }
   applyTheme(this);
   routingHelper=new RoutingHelper(this,player);
   taskManager=new OsmAndTaskManager(this);
-  manager=new ResourceManager(this);
+  resourceManager=new ResourceManager(this);
   daynightHelper=new DayNightHelper(this);
   locationProvider=new OsmAndLocationProvider(this);
   savingTrackHelper=new SavingTrackHelper(this);

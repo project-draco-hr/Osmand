@@ -21,11 +21,12 @@
     precalculated=PrecalculatedRouteDirection.build(latLon,generalRouter.getMaxDefaultSpeed());
     precalculated.setFollowNext(true);
   }
-  RoutingContext ctx=router.buildRoutingContext(cf,params.ctx.getInternalAPI().getNativeLibrary(),files,RouteCalculationMode.NORMAL);
+  NativeOsmandLibrary lib=settings.SAFE_MODE.get() ? null : NativeOsmandLibrary.getLoadedLibrary();
+  RoutingContext ctx=router.buildRoutingContext(cf,lib,files,RouteCalculationMode.NORMAL);
   RoutingContext complexCtx=null;
   boolean complex=params.mode.isDerivedRoutingFrom(ApplicationMode.CAR) && !settings.DISABLE_COMPLEX_ROUTING.get() && precalculated == null;
   if (complex) {
-    complexCtx=router.buildRoutingContext(cf,params.ctx.getInternalAPI().getNativeLibrary(),files,RouteCalculationMode.COMPLEX);
+    complexCtx=router.buildRoutingContext(cf,lib,files,RouteCalculationMode.COMPLEX);
     complexCtx.calculationProgress=params.calculationProgress;
     complexCtx.leftSideNavigation=params.leftSide;
   }
