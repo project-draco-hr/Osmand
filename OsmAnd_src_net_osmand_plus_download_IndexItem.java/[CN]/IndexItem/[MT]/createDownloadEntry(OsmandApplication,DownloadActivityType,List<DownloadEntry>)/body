@@ -24,25 +24,8 @@
     entry.urlToDownload=entry.type.getBaseUrl(ctx,fileName) + entry.type.getUrlSuffix(ctx);
     entry.zipStream=type.isZipStream(ctx,this);
     entry.unzipFolder=type.isZipFolder(ctx,this);
-    try {
-      final java.text.DateFormat format=DateFormat.getDateFormat((Context)ctx);
-      format.setTimeZone(TimeZone.getTimeZone("GMT+01:00"));
-      Date d=format.parse(date);
-      entry.dateModified=d.getTime();
-    }
- catch (    ParseException e1) {
-      log.error("ParseException",e1);
-    }
-    try {
-      entry.sizeMB=Double.parseDouble(size);
-    }
- catch (    NumberFormatException e1) {
-      log.error("ParseException",e1);
-    }
-    entry.parts=1;
-    if (parts != null) {
-      entry.parts=Integer.parseInt(parts);
-    }
+    entry.dateModified=timestamp;
+    entry.sizeMB=contentSize / (1024f * 1024f);
     String extension=type.getUnzipExtension(ctx,this);
     entry.targetFile=new File(parent,entry.baseName + extension);
     File backup=new File(ctx.getAppPath(IndexConstants.BACKUP_INDEX_DIR),entry.targetFile.getName());
