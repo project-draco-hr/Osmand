@@ -1,0 +1,19 @@
+{
+  if (!Version.isBlackberry((OsmandApplication)getApplication())) {
+    ListPreference lp=createListPreference(settings.AUDIO_STREAM_GUIDANCE,new String[]{getString(R.string.voice_stream_music),getString(R.string.voice_stream_notification),getString(R.string.voice_stream_voice_call)},new Integer[]{AudioManager.STREAM_MUSIC,AudioManager.STREAM_NOTIFICATION,AudioManager.STREAM_VOICE_CALL},R.string.choose_audio_stream,R.string.choose_audio_stream_descr);
+    final OnPreferenceChangeListener prev=lp.getOnPreferenceChangeListener();
+    lp.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+      @Override public boolean onPreferenceChange(      Preference preference,      Object newValue){
+        prev.onPreferenceChange(preference,newValue);
+        CommandPlayer player=getMyApplication().getPlayer();
+        if (player != null) {
+          player.updateAudioStream(settings.AUDIO_STREAM_GUIDANCE.get());
+        }
+        return true;
+      }
+    }
+);
+    cat.addPreference(lp);
+    cat.addPreference(createCheckBoxPreference(settings.INTERRUPT_MUSIC,R.string.interrupt_music,R.string.interrupt_music_descr));
+  }
+}

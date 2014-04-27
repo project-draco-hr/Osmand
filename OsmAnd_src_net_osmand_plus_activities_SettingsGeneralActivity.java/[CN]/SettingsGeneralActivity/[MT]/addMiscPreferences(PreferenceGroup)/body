@@ -1,0 +1,58 @@
+{
+  if (!Version.isBlackberry(getMyApplication())) {
+    applicationDir=new Preference(this);
+    applicationDir.setTitle(R.string.application_dir);
+    applicationDir.setKey("external_storage_dir");
+    applicationDir.setOnPreferenceClickListener(new OnPreferenceClickListener(){
+      public void showOtherDialog(){
+        AlertDialog.Builder editalert=new AlertDialog.Builder(SettingsGeneralActivity.this);
+        editalert.setTitle(R.string.application_dir);
+        final EditText input=new EditText(SettingsGeneralActivity.this);
+        input.setText(settings.getExternalStorageDirectory().getAbsolutePath());
+        input.setPadding(3,3,3,3);
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT);
+        input.setLayoutParams(lp);
+        settings.getExternalStorageDirectory().getAbsolutePath();
+        editalert.setView(input);
+        editalert.setNegativeButton(R.string.default_buttons_cancel,null);
+        editalert.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
+          public void onClick(          DialogInterface dialog,          int whichButton){
+            warnAboutChangingStorage(input.getText().toString());
+          }
+        }
+);
+        editalert.show();
+      }
+      @Override public boolean onPreferenceClick(      Preference preference){
+        SuggestExternalDirectoryDialog.showDialog(SettingsGeneralActivity.this,new OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            dialog.dismiss();
+            showOtherDialog();
+          }
+        }
+,new CallbackWithObject<String>(){
+          @Override public boolean processResult(          String result){
+            warnAboutChangingStorage(result);
+            return true;
+          }
+        }
+);
+        return false;
+      }
+    }
+);
+    misc.addPreference(applicationDir);
+    CheckBoxPreference nativeCheckbox=createCheckBoxPreference(settings.SAFE_MODE,R.string.safe_mode,R.string.safe_mode_description);
+    if ((NativeOsmandLibrary.isLoaded() && !NativeOsmandLibrary.isSupported()) || settings.NATIVE_RENDERING_FAILED.get()) {
+      nativeCheckbox.setEnabled(false);
+      nativeCheckbox.setChecked(true);
+    }
+    misc.addPreference(nativeCheckbox);
+    int nav=getResources().getConfiguration().navigation;
+    if (nav == Configuration.NAVIGATION_DPAD || nav == Configuration.NAVIGATION_TRACKBALL || nav == Configuration.NAVIGATION_WHEEL || nav == Configuration.NAVIGATION_UNDEFINED) {
+      misc.addPreference(createCheckBoxPreference(settings.USE_TRACKBALL_FOR_MOVEMENTS,R.string.use_trackball,R.string.use_trackball_descr));
+    }
+  }
+  registerListPreference(settings.OSMAND_THEME,misc,new String[]{"Dark","Light","Dark ActionBar"},new Integer[]{OsmandSettings.OSMAND_DARK_THEME,OsmandSettings.OSMAND_LIGHT_THEME,OsmandSettings.OSMAND_LIGHT_DARK_ACTIONBAR_THEME});
+  misc.addPreference(createCheckBoxPreference(settings.USE_KALMAN_FILTER_FOR_COMPASS,R.string.use_kalman_filter_compass,R.string.use_kalman_filter_compass_descr));
+}
