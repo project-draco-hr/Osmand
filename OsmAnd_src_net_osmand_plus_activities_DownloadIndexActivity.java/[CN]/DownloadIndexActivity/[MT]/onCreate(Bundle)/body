@@ -48,11 +48,15 @@
   if (intent != null && intent.getExtras() != null) {
     final String filter=intent.getExtras().getString(FILTER_KEY);
     if (filter != null) {
-      if (filter.equals(getString(R.string.voice))) {
-        changeType(DownloadActivityType.VOICE_FILE);
-      }
- else {
-        filterText.setText(filter);
+      filterText.setText(filter);
+    }
+    final String filterCat=intent.getExtras().getString(FILTER_CAT);
+    if (filterCat != null) {
+      DownloadActivityType type=DownloadActivityType.getIndexType(filterCat.toLowerCase());
+      if (type != null) {
+        this.type=type;
+        downloadTypes.remove(type);
+        downloadTypes.add(0,type);
       }
     }
   }
@@ -78,7 +82,7 @@
  else {
     showDialogOfFreeDownloadsIfNeeded();
   }
-  spinnerAdapter=new ArrayAdapter<String>(getSupportActionBar().getThemedContext(),R.layout.sherlock_spinner_item,toString(downloadTypes));
+  ArrayAdapter<String> spinnerAdapter=new ArrayAdapter<String>(getSupportActionBar().getThemedContext(),R.layout.sherlock_spinner_item,toString(downloadTypes));
   spinnerAdapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
   getSupportActionBar().setListNavigationCallbacks(spinnerAdapter,new OnNavigationListener(){
     @Override public boolean onNavigationItemSelected(    int itemPosition,    long itemId){
