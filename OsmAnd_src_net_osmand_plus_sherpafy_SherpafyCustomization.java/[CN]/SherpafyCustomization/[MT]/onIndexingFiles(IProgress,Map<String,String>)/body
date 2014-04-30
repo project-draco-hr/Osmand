@@ -1,0 +1,23 @@
+{
+  ArrayList<TourInformation> tourPresent=new ArrayList<TourInformation>();
+  if (toursFolder.exists()) {
+    File[] availableTours=toursFolder.listFiles();
+    if (availableTours != null) {
+      String selectedName=selectedTourPref.get();
+      for (      File tr : availableTours) {
+        if (tr.isDirectory()) {
+          boolean selected=selectedName != null && selectedName.equals(tr.getName());
+          String date=app.getResourceManager().getDateFormat().format(new Date(DownloadIndexActivity.findFileInDir(tr).lastModified()));
+          indexFileNames.put(tr.getName(),date);
+          final TourInformation tourInformation=new TourInformation(tr);
+          tourPresent.add(tourInformation);
+          if (selected) {
+            reloadSelectedTour(progress,tr,tourInformation);
+          }
+        }
+      }
+    }
+  }
+  this.tourPresent=tourPresent;
+  return Collections.emptyList();
+}
