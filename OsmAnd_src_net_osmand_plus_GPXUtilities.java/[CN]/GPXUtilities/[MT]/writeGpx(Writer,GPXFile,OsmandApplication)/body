@@ -1,0 +1,66 @@
+{
+  try {
+    SimpleDateFormat format=new SimpleDateFormat(GPX_TIME_FORMAT);
+    format.setTimeZone(TimeZone.getTimeZone("UTC"));
+    XmlSerializer serializer=PlatformUtil.newSerializer();
+    serializer.setOutput(output);
+    serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output",true);
+    serializer.startDocument("UTF-8",true);
+    serializer.startTag(null,"gpx");
+    serializer.attribute(null,"version","1.1");
+    if (file.author == null) {
+      serializer.attribute(null,"creator",Version.getAppName(ctx));
+    }
+ else {
+      serializer.attribute(null,"creator",file.author);
+    }
+    serializer.attribute(null,"xmlns","http://www.topografix.com/GPX/1/1");
+    serializer.attribute(null,"xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance");
+    serializer.attribute(null,"xsi:schemaLocation","http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd");
+    for (    Track track : file.tracks) {
+      serializer.startTag(null,"trk");
+      writeNotNullText(serializer,"name",track.name);
+      writeNotNullText(serializer,"desc",track.desc);
+      for (      TrkSegment segment : track.segments) {
+        serializer.startTag(null,"trkseg");
+        for (        WptPt p : segment.points) {
+          serializer.startTag(null,"trkpt");
+          writeWpt(format,serializer,p);
+          serializer.endTag(null,"trkpt");
+        }
+        serializer.endTag(null,"trkseg");
+      }
+      writeExtensions(serializer,track);
+      serializer.endTag(null,"trk");
+    }
+    for (    Route track : file.routes) {
+      serializer.startTag(null,"rte");
+      writeNotNullText(serializer,"name",track.name);
+      writeNotNullText(serializer,"desc",track.desc);
+      for (      WptPt p : track.points) {
+        serializer.startTag(null,"rtept");
+        writeWpt(format,serializer,p);
+        serializer.endTag(null,"rtept");
+      }
+      writeExtensions(serializer,track);
+      serializer.endTag(null,"rte");
+    }
+    for (    WptPt l : file.points) {
+      serializer.startTag(null,"wpt");
+      writeWpt(format,serializer,l);
+      serializer.endTag(null,"wpt");
+    }
+    serializer.endTag(null,"gpx");
+    serializer.flush();
+    serializer.endDocument();
+  }
+ catch (  RuntimeException e) {
+    log.error("Error saving gpx",e);
+    return ctx.getString(R.string.error_occurred_saving_gpx);
+  }
+catch (  IOException e) {
+    log.error("Error saving gpx",e);
+    return ctx.getString(R.string.error_occurred_saving_gpx);
+  }
+  return null;
+}
