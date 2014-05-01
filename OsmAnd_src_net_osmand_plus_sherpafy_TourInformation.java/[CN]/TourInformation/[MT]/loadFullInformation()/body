@@ -1,3 +1,53 @@
 {
-  description=loadDescription();
+  XmlPullParser parser=PlatformUtil.newXMLPullParser();
+  final Reader reader=getUTF8Reader(new FileInputStream(new File(folder,"inventory.xml")));
+  parser.setInput(reader);
+  int tok;
+  String text="";
+  StageInformation stage=null;
+  stageInformation.clear();
+  while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
+    if (tok == XmlPullParser.START_TAG) {
+      String tag=parser.getName();
+      if (tag.equals("tour")) {
+        name=getDefAttribute(parser,"name",name);
+      }
+ else       if (tag.equals("stage")) {
+        String name=getDefAttribute(parser,"name","");
+        stage=new StageInformation();
+        stage.name=name;
+      }
+    }
+ else     if (tok == XmlPullParser.TEXT) {
+      text=parser.getText();
+    }
+ else     if (tok == XmlPullParser.END_TAG) {
+      String tag=parser.getName();
+      if (tag.equals("stage")) {
+        stageInformation.add(stage);
+        stage=null;
+      }
+ else       if (stage != null && tag.equals("description")) {
+        stage.description=text;
+      }
+ else       if (stage != null && tag.equals("gpx")) {
+        if (text.startsWith(FILE_PREFIX)) {
+          stage.gpxFile=new File(folder,text.substring(FILE_PREFIX.length()));
+        }
+      }
+ else       if (tag.equals("fullDescription")) {
+        fulldescription=text;
+      }
+ else       if (tag.equals("shortDescription")) {
+        shortDescription=text;
+      }
+ else       if (tag.equals("defaultImage")) {
+        if (text.startsWith(FILE_PREFIX)) {
+          imgFile=new File(folder,text.substring(FILE_PREFIX.length()));
+        }
+      }
+      text="";
+    }
+  }
+  reader.close();
 }
