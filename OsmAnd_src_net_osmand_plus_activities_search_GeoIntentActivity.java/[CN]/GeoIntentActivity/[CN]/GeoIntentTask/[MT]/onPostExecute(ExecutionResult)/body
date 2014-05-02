@@ -1,0 +1,21 @@
+{
+  progress.dismiss();
+  if (result != null) {
+    if (result.isEmpty()) {
+      AccessibleToast.makeText(GeoIntentActivity.this,getString(R.string.search_nothing_found),Toast.LENGTH_LONG).show();
+    }
+ else {
+      if (result.hasZoom()) {
+        getMyApplication().getSettings().setLastKnownMapZoom(result.getZoom());
+      }
+      final List<MapObject> places=new ArrayList<MapObject>(result.getMapObjects());
+      setListAdapter(new MapObjectAdapter(places));
+      if (places.size() == 1) {
+        onListItemClick(getListView(),getListAdapter().getView(0,null,null),0,getListAdapter().getItemId(0));
+      }
+    }
+  }
+ else {
+    AccessibleToast.makeText(GeoIntentActivity.this,getString(R.string.error_doing_search),Toast.LENGTH_LONG).show();
+  }
+}

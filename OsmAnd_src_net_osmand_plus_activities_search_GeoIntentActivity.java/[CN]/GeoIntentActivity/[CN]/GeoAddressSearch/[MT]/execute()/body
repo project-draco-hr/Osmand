@@ -1,11 +1,11 @@
 {
   if (elements.isEmpty()) {
-    return Collections.emptyList();
+    return ExecutionResult.EMPTY;
   }
   List<String> q=new ArrayList<String>(elements);
   MapObject geo=checkGeoPoint();
   if (geo != null) {
-    return Collections.singleton(geo);
+    return new ExecutionResult(Collections.singleton(geo));
   }
   Collection<RegionAddressRepository> countriesToSearch=limitSearchToCountries(q);
   final List<Street> allStreets=new ArrayList<Street>();
@@ -32,7 +32,7 @@
     }
   }
   if (cityIds.isEmpty()) {
-    return allStreets;
+    return new ExecutionResult(allStreets);
   }
   final List<MapObject> connectedStreets=new ArrayList<MapObject>();
   Iterator<Street> p=allStreets.iterator();
@@ -58,10 +58,10 @@
     List<MapObject> all=new ArrayList<MapObject>();
     all.addAll(cityIds.valueCollection());
     all.addAll(allStreets);
-    return all;
+    return new ExecutionResult(all);
   }
  else {
     connectedStreets.addAll(cityIds.valueCollection());
-    return connectedStreets;
+    return new ExecutionResult(connectedStreets);
   }
 }

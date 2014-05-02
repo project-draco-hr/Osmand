@@ -7,40 +7,15 @@
   location=getMyApplication().getSettings().getLastKnownMapLocation();
   final Intent intent=getIntent();
   if (intent != null) {
-    progressDlg=ProgressDialog.show(this,getString(R.string.searching),getString(R.string.searching_address));
-    final Thread searcher=new Thread(new Runnable(){
-      @Override public void run(){
-        try {
-          while (getMyApplication().isApplicationInitializing()) {
-            Thread.sleep(200);
-          }
-          Collection<? extends MapObject> results=extract(intent.getData()).execute();
-          if (!results.isEmpty()) {
-            showResult(0,new ArrayList<MapObject>(results));
-          }
- else {
-            showResult(R.string.search_nothing_found,null);
-          }
-        }
- catch (        Exception e) {
-          e.printStackTrace();
-          showResult(R.string.error_doing_search,null);
-        }
- finally {
-          if (progressDlg != null) {
-            progressDlg.dismiss();
-          }
-        }
-      }
-    }
-,"SearchingAddress");
-    searcher.start();
-    progressDlg.setOnCancelListener(new OnCancelListener(){
+    final ProgressDialog progress=ProgressDialog.show(GeoIntentActivity.this,getString(R.string.searching),getString(R.string.searching_address));
+    final GeoIntentTask task=new GeoIntentTask(progress,intent);
+    progress.setOnCancelListener(new OnCancelListener(){
       @Override public void onCancel(      DialogInterface dialog){
-        searcher.interrupt();
+        task.cancel(true);
       }
     }
 );
-    progressDlg.setCancelable(true);
+    progress.setCancelable(true);
+    task.execute();
   }
 }

@@ -1,0 +1,89 @@
+{
+  if ("http".equals(scheme)) {
+    String q=null;
+    String parameter=data.getQueryParameter("q");
+    if (parameter == null) {
+      parameter=data.getQueryParameter("daddr");
+    }
+    if (parameter != null) {
+      q=parameter.split(" ")[0];
+    }
+    if (q.indexOf(',') != -1) {
+      int i=q.indexOf(',');
+      String lat=q.substring(0,i);
+      String lon=q.substring(i + 1);
+      if (lat.indexOf(':') != -1) {
+        i=lat.indexOf(':');
+        lat=lat.substring(i + 1);
+      }
+      try {
+        double llat=Double.parseDouble(lat.trim());
+        double llon=Double.parseDouble(lon.trim());
+        return new GeoPointSearch(llat,llon);
+      }
+ catch (      NumberFormatException e) {
+        showErrorMessage(q);
+      }
+    }
+ else {
+      showErrorMessage(q);
+    }
+  }
+  if ("geo".equals(scheme)) {
+    final String schemeSpecific=data.getSchemeSpecificPart();
+    if (schemeSpecific == null) {
+      showErrorMessage("null");
+      return MyService.EMPTY;
+    }
+    if (schemeSpecific.startsWith("0,0?q=")) {
+      try {
+        final String query=schemeSpecific.substring("0,0?q=".length());
+        final Matcher matcher=Pattern.compile("(.+?),(.+?)\\((.+?)\\)").matcher(query);
+        if (matcher.matches() && matcher.groupCount() == 3) {
+          try {
+            final double lat=Double.valueOf(matcher.group(1));
+            final double lon=Double.valueOf(matcher.group(2));
+            final String name=matcher.group(3);
+            return new GeoPointSearch(lat,lon,name);
+          }
+ catch (          NumberFormatException e) {
+            showErrorMessage(schemeSpecific);
+            return MyService.EMPTY;
+          }
+        }
+ else {
+          return new GeoAddressSearch(query);
+        }
+      }
+ catch (      NumberFormatException e) {
+        showErrorMessage(schemeSpecific);
+        return MyService.EMPTY;
+      }
+    }
+ else {
+      final String pattern="(.+?),(.+?)" + (schemeSpecific.contains("?z=") ? "\\?z=(.+?)" : "");
+      final Matcher matcher=Pattern.compile(pattern).matcher(schemeSpecific);
+      if (matcher.matches() && matcher.groupCount() >= 2) {
+        try {
+          final double lat=Double.valueOf(matcher.group(1));
+          final double lon=Double.valueOf(matcher.group(2));
+          if (matcher.groupCount() == 3) {
+            return new GeoPointSearch(lat,lon,Integer.valueOf(matcher.group(3)));
+          }
+ else {
+            return new GeoPointSearch(lat,lon);
+          }
+        }
+ catch (        NumberFormatException e) {
+          showErrorMessage(schemeSpecific);
+          return MyService.EMPTY;
+        }
+      }
+ else {
+        showErrorMessage(schemeSpecific);
+        return MyService.EMPTY;
+      }
+    }
+  }
+  return MyService.EMPTY;
+}
