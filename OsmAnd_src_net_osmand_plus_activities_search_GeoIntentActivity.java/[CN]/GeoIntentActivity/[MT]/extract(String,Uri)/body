@@ -22,68 +22,48 @@
         return new GeoPointSearch(llat,llon);
       }
  catch (      NumberFormatException e) {
-        showErrorMessage(q);
+        return null;
       }
     }
  else {
-      showErrorMessage(q);
+      return null;
     }
   }
   if ("geo".equals(scheme)) {
     final String schemeSpecific=data.getSchemeSpecificPart();
     if (schemeSpecific == null) {
-      showErrorMessage("null");
-      return MyService.EMPTY;
+      return null;
     }
     if (schemeSpecific.startsWith("0,0?q=")) {
-      try {
-        final String query=schemeSpecific.substring("0,0?q=".length());
-        final Matcher matcher=Pattern.compile("(.+?),(.+?)\\((.+?)\\)").matcher(query);
-        if (matcher.matches() && matcher.groupCount() == 3) {
-          try {
-            final double lat=Double.valueOf(matcher.group(1));
-            final double lon=Double.valueOf(matcher.group(2));
-            final String name=matcher.group(3);
-            return new GeoPointSearch(lat,lon,name);
-          }
- catch (          NumberFormatException e) {
-            showErrorMessage(schemeSpecific);
-            return MyService.EMPTY;
-          }
-        }
- else {
-          return new GeoAddressSearch(query);
-        }
+      final String query=schemeSpecific.substring("0,0?q=".length());
+      final Matcher matcher=Pattern.compile("([\\-0-9.]+),([\\-0-9.]+)(?:,[\\-0-9.]+)?\\((.+?)\\)").matcher(query);
+      if (matcher.matches()) {
+        final double lat=Double.valueOf(matcher.group(1));
+        final double lon=Double.valueOf(matcher.group(2));
+        final String name=matcher.group(3);
+        return new GeoPointSearch(lat,lon,name);
       }
- catch (      NumberFormatException e) {
-        showErrorMessage(schemeSpecific);
-        return MyService.EMPTY;
+ else {
+        return new GeoAddressSearch(query);
       }
     }
  else {
-      final String pattern="(.+?),(.+?)" + (schemeSpecific.contains("?z=") ? "\\?z=(.+?)" : "");
+      final String pattern="([\\-0-9.]+),([\\-0-9.]+)(?:,([\\-0-9.]+))?(?:\\?z=([0-9]+))?(?:;.*)?";
       final Matcher matcher=Pattern.compile(pattern).matcher(schemeSpecific);
-      if (matcher.matches() && matcher.groupCount() >= 2) {
-        try {
-          final double lat=Double.valueOf(matcher.group(1));
-          final double lon=Double.valueOf(matcher.group(2));
-          if (matcher.groupCount() == 3) {
-            return new GeoPointSearch(lat,lon,Integer.valueOf(matcher.group(3)));
-          }
- else {
-            return new GeoPointSearch(lat,lon);
-          }
+      if (matcher.matches()) {
+        final double lat=Double.valueOf(matcher.group(1));
+        final double lon=Double.valueOf(matcher.group(2));
+        if (matcher.group(4) == null) {
+          return new GeoPointSearch(lat,lon);
         }
- catch (        NumberFormatException e) {
-          showErrorMessage(schemeSpecific);
-          return MyService.EMPTY;
+ else {
+          return new GeoPointSearch(lat,lon,Integer.valueOf(matcher.group(4)));
         }
       }
  else {
-        showErrorMessage(schemeSpecific);
-        return MyService.EMPTY;
+        return null;
       }
     }
   }
-  return MyService.EMPTY;
+  return null;
 }
