@@ -1,0 +1,34 @@
+{
+  if (progress != null) {
+    progress.startTask(app.getString(R.string.indexing_tour,tr.getName()),-1);
+  }
+  File settingsFile=new File(tr,"settings.props");
+  FileSettingsAPIImpl fapi;
+  try {
+    fapi=new FileSettingsAPIImpl(app,settingsFile);
+    if (!settingsFile.exists()) {
+      fapi.saveFile();
+    }
+    app.getSettings().setSettingsAPI(fapi);
+  }
+ catch (  IOException e) {
+    warns.add(app.getString(R.string.settings_file_create_error));
+    app.showToastMessage(R.string.settings_file_create_error);
+  }
+  selectedStagePref=app.getSettings().registerStringPreference(SELECTED_STAGE,null).makeGlobal();
+  try {
+    tourInformation.loadFullInformation();
+  }
+ catch (  Exception e) {
+    warns.add("Selected tour : " + e.getMessage());
+  }
+  selectedTour=tourInformation;
+  if (selectedStagePref.get() != null) {
+    for (    StageInformation s : selectedTour.getStageInformation()) {
+      if (s.getName().equals(selectedStagePref.get())) {
+        selectedStage=s;
+        break;
+      }
+    }
+  }
+}
