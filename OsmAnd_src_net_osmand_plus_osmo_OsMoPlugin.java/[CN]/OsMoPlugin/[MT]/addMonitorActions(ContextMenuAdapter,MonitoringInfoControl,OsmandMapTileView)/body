@@ -1,32 +1,16 @@
 {
   final boolean off=!service.isActive();
-  qa.item(off ? R.string.osmodroid_mode_off : R.string.osmodroid_mode_on).icon(off ? R.drawable.monitoring_rec_inactive : R.drawable.monitoring_rec_big).listen(new OnContextMenuClick(){
+  qa.item(off ? R.string.osmo_mode_off : R.string.osmo_mode_on).icon(off ? R.drawable.monitoring_rec_inactive : R.drawable.monitoring_rec_big).listen(new OnContextMenuClick(){
     @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
-      try {
-        String response;
-        if (off) {
-          response=service.activate(getUUID(app));
-        }
- else {
-          response=service.deactivate();
-        }
-        app.showToastMessage(response);
-      }
- catch (      Exception e) {
-        app.showToastMessage(app.getString(R.string.error_io_error) + ": " + e.getMessage());
-      }
+      connect(off);
     }
   }
 ).reg();
   qa.item("Test (send)").icons(R.drawable.ic_action_grefresh_dark,R.drawable.ic_action_grefresh_light).listen(new OnContextMenuClick(){
     @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
-      try {
-        String response=service.sendCoordinate(view.getLatitude(),view.getLongitude(),0,0,0,0);
-        app.showToastMessage(response);
-      }
- catch (      Exception e) {
-        app.showToastMessage(app.getString(R.string.error_io_error) + ": " + e.getMessage());
-      }
+      final double lat=view.getLatitude();
+      final double lon=view.getLongitude();
+      sendCoordinate(lat,lon);
     }
   }
 ).reg();

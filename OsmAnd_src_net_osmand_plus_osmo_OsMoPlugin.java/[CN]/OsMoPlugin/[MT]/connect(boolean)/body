@@ -1,0 +1,31 @@
+{
+  new AsyncTask<Void,Void,String>(){
+    private Exception e;
+    @Override protected String doInBackground(    Void... params){
+      try {
+        String response;
+        if (enable) {
+          response=service.activate(getUUID(app));
+        }
+ else {
+          response=service.deactivate();
+        }
+        return response;
+      }
+ catch (      Exception e) {
+        this.e=e;
+        return null;
+      }
+    }
+    protected void onPostExecute(    String result){
+      if (e != null) {
+        app.showToastMessage(app.getString(R.string.osmo_io_error) + ": " + e.getMessage());
+        log.error(e.getMessage(),e);
+      }
+ else {
+        app.showToastMessage(result + "");
+      }
+    }
+  }
+.execute();
+}
