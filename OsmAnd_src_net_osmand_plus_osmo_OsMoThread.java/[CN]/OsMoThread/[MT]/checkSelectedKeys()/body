@@ -1,0 +1,30 @@
+{
+  selector.select(SELECT_TIMEOUT);
+  Set<SelectionKey> keys=selector.selectedKeys();
+  if (keys == null) {
+    return;
+  }
+  Iterator<SelectionKey> iterator=keys.iterator();
+  while (iterator.hasNext()) {
+    SelectionKey key=iterator.next();
+    final boolean isActive=new Integer(activeConnectionId).equals(key.attachment());
+    if (isActive) {
+      if (key.isWritable()) {
+        writeCommands();
+      }
+      if (key.isReadable()) {
+        readCommands();
+      }
+    }
+ else {
+      try {
+        key.channel().close();
+      }
+ catch (      Exception e) {
+        log.info("Exception closing channel",e);
+        e.printStackTrace();
+      }
+    }
+    iterator.remove();
+  }
+}

@@ -1,8 +1,13 @@
 {
-  final boolean off=!service.isActive();
+  final boolean off=!service.isConnected();
   qa.item(off ? R.string.osmo_mode_off : R.string.osmo_mode_on).icon(off ? R.drawable.monitoring_rec_inactive : R.drawable.monitoring_rec_big).listen(new OnContextMenuClick(){
     @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
-      connect(off);
+      if (off) {
+        service.connect(true);
+      }
+ else {
+        service.disconnect();
+      }
     }
   }
 ).reg();
@@ -10,7 +15,7 @@
     @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
       final double lat=view.getLatitude();
       final double lon=view.getLongitude();
-      sendCoordinate(lat,lon);
+      tracker.sendCoordinate(lat,lon);
     }
   }
 ).reg();

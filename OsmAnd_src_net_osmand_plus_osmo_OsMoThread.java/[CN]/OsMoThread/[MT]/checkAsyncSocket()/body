@@ -1,0 +1,37 @@
+{
+  long delay=HEARTBEAT_DELAY;
+  try {
+    if (selector == null) {
+      stopThread=true;
+    }
+ else {
+      if (activeChannel != null && connectionStarted != -1 && !activeChannel.isConnectionPending()) {
+        connectionStarted=-1;
+      }
+      if ((connectionStarted != -1 && System.currentTimeMillis() - connectionStarted > CONNECTION_DELAY) || activeChannel == null) {
+        initConnection();
+      }
+ else {
+        checkSelectedKeys();
+      }
+    }
+  }
+ catch (  Exception e) {
+    log.info("Exception selecting socket",e);
+    e.printStackTrace();
+    delay=HEARTBEAT_FAILED_DELAY;
+    if (activeChannel != null && !activeChannel.isConnected()) {
+      activeChannel=null;
+    }
+    if (failures++ > LIMIT_OF_FAILURES_RECONNECT) {
+      stopChannel();
+    }
+  }
+  if (stopThread) {
+    stopChannel();
+    serviceThread.getLooper().quit();
+  }
+ else {
+    scheduleHeartbeat(delay);
+  }
+}

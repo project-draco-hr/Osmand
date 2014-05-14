@@ -1,0 +1,39 @@
+{
+  boolean hasSomethingToRead=true;
+  while (hasSomethingToRead) {
+    pendingReadCommand.clear();
+    int read=activeChannel.read(pendingReadCommand);
+    if (pendingReadCommand.hasRemaining()) {
+      hasSomethingToRead=true;
+    }
+ else {
+      hasSomethingToRead=false;
+    }
+    if (read > 0) {
+      byte[] ar=pendingReadCommand.array();
+      String res=new String(ar,0,read);
+      readCommand+=res;
+      int i;
+      while ((i=readCommand.indexOf('\n')) != -1) {
+        String cmd=readCommand.substring(0,i);
+        readCommand=readCommand.substring(i + 1);
+        queueOfMessages.add(cmd.replace("\\n","\n"));
+      }
+    }
+  }
+  if (queueOfMessages.size() > 0) {
+    while (!queueOfMessages.isEmpty()) {
+      String cmd=queueOfMessages.poll();
+      boolean processed=false;
+      for (      OsMoReactor o : listReactors) {
+        if (o.acceptCommand(cmd)) {
+          processed=true;
+          break;
+        }
+      }
+      if (!processed) {
+        log.warn("Command not processed '" + cmd + "'");
+      }
+    }
+  }
+}
