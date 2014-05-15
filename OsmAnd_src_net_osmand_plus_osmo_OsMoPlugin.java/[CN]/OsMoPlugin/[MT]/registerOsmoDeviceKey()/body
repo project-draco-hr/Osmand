@@ -1,0 +1,34 @@
+{
+  HttpClient httpclient=new DefaultHttpClient();
+  HttpPost httppost=new HttpPost("http://api.osmo.mobi/auth");
+  try {
+    List<NameValuePair> nameValuePairs=new ArrayList<NameValuePair>(2);
+    nameValuePairs.add(new BasicNameValuePair("android_id",Secure.ANDROID_ID));
+    nameValuePairs.add(new BasicNameValuePair("android_model",Build.MODEL));
+    nameValuePairs.add(new BasicNameValuePair("imei","0"));
+    nameValuePairs.add(new BasicNameValuePair("android_product",Build.PRODUCT));
+    nameValuePairs.add(new BasicNameValuePair("osmand",Version.getFullVersion(app)));
+    httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+    HttpResponse response=httpclient.execute(httppost);
+    InputStream cm=response.getEntity().getContent();
+    BufferedReader reader=new BufferedReader(new InputStreamReader(cm));
+    String r=reader.readLine();
+    reader.close();
+    log.info("Authorization key : " + r);
+    final JSONObject obj=new JSONObject(r);
+    if (obj.has("error")) {
+      return new RuntimeException(obj.getString("error"));
+    }
+    app.getSettings().OSMO_DEVICE_KEY.set(obj.getString("key"));
+    return null;
+  }
+ catch (  ClientProtocolException e) {
+    return e;
+  }
+catch (  IOException e) {
+    return e;
+  }
+catch (  JSONException e) {
+    return e;
+  }
+}

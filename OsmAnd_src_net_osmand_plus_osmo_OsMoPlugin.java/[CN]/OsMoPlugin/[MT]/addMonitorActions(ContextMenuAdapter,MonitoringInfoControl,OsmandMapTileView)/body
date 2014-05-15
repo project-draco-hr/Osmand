@@ -2,6 +2,15 @@
   final boolean off=!service.isConnected();
   qa.item(off ? R.string.osmo_mode_off : R.string.osmo_mode_on).icon(off ? R.drawable.monitoring_rec_inactive : R.drawable.monitoring_rec_big).listen(new OnContextMenuClick(){
     @Override public void onContextMenuClick(    int itemId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      if (app.getSettings().OSMO_DEVICE_KEY.get().length() == 0) {
+        getRegisterDeviceTask(view.getContext(),new Runnable(){
+          public void run(){
+            service.connect(true);
+          }
+        }
+);
+        return;
+      }
       if (off) {
         service.connect(true);
       }

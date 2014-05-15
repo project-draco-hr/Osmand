@@ -1,0 +1,24 @@
+{
+  return new AsyncTask<Void,Void,Exception>(){
+    private ProgressDialog dlg;
+    protected void onPreExecute(){
+      dlg=ProgressDialog.show(uiContext,"",app.getString(R.string.osmo_register_device));
+    }
+    @Override protected void onPostExecute(    Exception result){
+      if (result != null) {
+        result.printStackTrace();
+        app.showToastMessage(app.getString(R.string.osmo_io_error) + result.getMessage());
+      }
+ else       if (postAction != null) {
+        postAction.run();
+      }
+    }
+    @Override protected Exception doInBackground(    Void... params){
+      if (dlg.isShowing()) {
+        dlg.dismiss();
+      }
+      return OsmandPlugin.getEnabledPlugin(OsMoPlugin.class).registerOsmoDeviceKey();
+    }
+  }
+;
+}

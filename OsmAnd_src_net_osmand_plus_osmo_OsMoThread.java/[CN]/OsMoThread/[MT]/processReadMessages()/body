@@ -1,0 +1,46 @@
+{
+  while (!queueOfMessages.isEmpty()) {
+    String cmd=queueOfMessages.poll();
+    int k=cmd.indexOf('|');
+    String header=cmd;
+    String data="";
+    if (k >= 0) {
+      header=cmd.substring(0,k);
+      data=cmd.substring(k + 1);
+    }
+    JSONObject obj=null;
+    if (data.startsWith("{")) {
+      try {
+        obj=new JSONObject(data);
+      }
+ catch (      JSONException e) {
+        e.printStackTrace();
+      }
+    }
+    if (cmd.equalsIgnoreCase("AUTH")) {
+      if (obj != null && !obj.has("error")) {
+        try {
+          ctx.showToastMessage(ctx.getString(R.string.osmo_io_error) + obj.getString("error"));
+        }
+ catch (        JSONException e) {
+          e.printStackTrace();
+        }
+      }
+ else {
+        authorized=true;
+        ctx.showToastMessage("OSMo authorization successfull");
+      }
+      continue;
+    }
+    boolean processed=false;
+    for (    OsMoReactor o : listReactors) {
+      if (o.acceptCommand(header,data,obj,this)) {
+        processed=true;
+        break;
+      }
+    }
+    if (!processed) {
+      log.warn("Command not processed '" + cmd + "'");
+    }
+  }
+}

@@ -1,10 +1,18 @@
 {
+  if (authorizationCommand != null) {
+    String auth=authorizationCommand;
+    authorizationCommand=null;
+    return ByteBuffer.wrap(prepareCommand(auth).toString().getBytes("UTF-8"));
+  }
+  if (!authorized) {
+    return null;
+  }
   for (  OsMoSender s : listSenders) {
-    String l=s.nextSendCommand();
+    String l=s.nextSendCommand(this);
     if (l != null) {
       StringBuilder res=prepareCommand(l);
-      pendingSendCommand=ByteBuffer.wrap(res.toString().getBytes("UTF-8"));
-      break;
+      return ByteBuffer.wrap(res.toString().getBytes("UTF-8"));
     }
   }
+  return null;
 }
