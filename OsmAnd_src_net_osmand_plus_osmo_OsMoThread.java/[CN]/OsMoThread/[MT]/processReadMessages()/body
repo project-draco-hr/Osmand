@@ -17,18 +17,20 @@
         e.printStackTrace();
       }
     }
-    if (cmd.equalsIgnoreCase("AUTH")) {
-      if (obj != null && !obj.has("error")) {
-        try {
-          ctx.showToastMessage(ctx.getString(R.string.osmo_io_error) + obj.getString("error"));
-        }
- catch (        JSONException e) {
-          e.printStackTrace();
-        }
+    boolean error=false;
+    if (obj != null && !obj.has("error")) {
+      error=true;
+      try {
+        service.showErrorMessage(obj.getString("error"));
       }
- else {
+ catch (      JSONException e) {
+        e.printStackTrace();
+      }
+    }
+    if (cmd.equalsIgnoreCase("TOKEN")) {
+      if (!error) {
         authorized=true;
-        ctx.showToastMessage("OSMo authorization successfull");
+        service.showErrorMessage("OSMo authorization successfull");
       }
       continue;
     }

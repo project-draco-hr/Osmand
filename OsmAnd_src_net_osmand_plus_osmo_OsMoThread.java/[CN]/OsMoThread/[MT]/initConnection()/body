@@ -1,16 +1,17 @@
 {
-  try {
-    authorized=false;
-    authorizationCommand=getAuthorizationCmd();
-    selector=Selector.open();
-    connectionStarted=System.currentTimeMillis();
-    activeChannel=SocketChannel.open();
-    activeChannel.configureBlocking(false);
-    SelectionKey key=activeChannel.register(selector,SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-    key.attach(new Integer(++activeConnectionId));
-    activeChannel.connect(new InetSocketAddress(TRACKER_SERVER,TRACKER_PORT));
+  if (token == null) {
+    token=service.getSessionToken();
   }
- catch (  IOException e) {
-    throw e;
+  authorized=false;
+  selector=Selector.open();
+  SocketChannel activeChannel=SocketChannel.open();
+  activeChannel.configureBlocking(true);
+  activeChannel.connect(new InetSocketAddress(token.hostName,Integer.parseInt(token.port)));
+  activeChannel.configureBlocking(false);
+  SelectionKey key=activeChannel.register(selector,SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+  if (this.activeChannel != null) {
+    stopChannel();
   }
+  this.activeChannel=activeChannel;
+  key.attach(new Integer(++activeConnectionId));
 }
