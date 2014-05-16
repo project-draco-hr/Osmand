@@ -1,7 +1,16 @@
 {
-  if (!start) {
-    start=true;
-    return "TRACKER_SESSION_OPEN";
+  if (trackerStarted != startSendingLocations) {
+    if (!trackerStarted) {
+      trackerStarted=true;
+      return "TRACKER_SESSION_OPEN";
+    }
+ else {
+      trackerStarted=false;
+      return "TRACKER_SESSION_CLOSE";
+    }
+  }
+  if (!listenIds.isEmpty()) {
+    return listenIds.poll();
   }
   if (!bufferOfLocations.isEmpty()) {
     Location loc=bufferOfLocations.poll();
@@ -15,6 +24,12 @@
     }
     if (loc.hasSpeed()) {
       cmd.append("S").append((float)loc.getSpeed());
+    }
+    if (loc.hasBearing()) {
+      cmd.append("C").append((float)loc.getBearing());
+    }
+    if ((System.currentTimeMillis() - loc.getTime()) > 30000) {
+      cmd.append("T").append(loc.getTime());
     }
     return cmd.toString();
   }
