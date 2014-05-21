@@ -3,7 +3,6 @@
   OsMoService service=plugin.getService();
   OsMoTracker tracker=plugin.getTracker();
   StringBuilder s=new StringBuilder();
-  s.append(getString(R.string.osmo_settings_uuid)).append(" : ").append(getMyApplication().getSettings().OSMO_DEVICE_KEY.get().toUpperCase()).append("\n");
   if (service.isConnected()) {
     int seconds=(int)((System.currentTimeMillis() - service.getConnectionTime()) / 1000);
     s.append(getString(R.string.osmo_conn_successfull,Algorithms.formatDuration(seconds))).append("\n");
@@ -16,9 +15,13 @@
     }
   }
  else {
-    s.append(getString(R.string.osmo_io_error) + service.getLastRegistrationError()).append("\n");
+    String err=service.getLastRegistrationError();
+    if (err == null) {
+      err="...";
+    }
+    s.append(getString(R.string.osmo_io_error) + err).append("\n");
   }
-  s.append(getString(R.string.osmo_locations_sent,tracker.getLocationsSent(),tracker.getBufferLocationsSize()));
+  s.append(getString(R.string.osmo_locations_sent,tracker.getLocationsSent(),tracker.getBufferLocationsSize())).append("\n");
+  s.append(getString(R.string.osmo_settings_uuid)).append(" : ").append(getMyApplication().getSettings().OSMO_DEVICE_KEY.get().toUpperCase()).append("\n");
   debugPref.setSummary(s.toString().trim());
-  debugPref.setOnPreferenceClickListener(this);
 }
