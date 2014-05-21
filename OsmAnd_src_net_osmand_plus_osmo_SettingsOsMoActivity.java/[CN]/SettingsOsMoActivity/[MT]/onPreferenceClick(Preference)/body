@@ -1,13 +1,21 @@
 {
-  if (preference == uuid) {
-    OsMoPlugin.getEnabledPlugin(OsMoPlugin.class).getRegisterDeviceTask(this,new Runnable(){
-      @Override public void run(){
-        updateAllSettings();
-        uuid.setSummary(getMyApplication().getSettings().OSMO_DEVICE_KEY.get().toUpperCase());
-      }
-    }
-).execute();
+  if (preference == debugPref) {
+    updateDebugPref();
     return true;
+  }
+ else   if (preference == trackerId) {
+    final OsMoPlugin plugin=OsMoPlugin.getEnabledPlugin(OsMoPlugin.class);
+    OsMoService service=plugin.getService();
+    SessionInfo ci=service.getCurrentSessionInfo();
+    if (ci == null || ci.trackerId == null) {
+      AccessibleToast.makeText(this,R.string.osmo_auth_pending,Toast.LENGTH_SHORT).show();
+    }
+ else {
+      Builder bld=new AlertDialog.Builder(this);
+      bld.setTitle(R.string.osmo_tracker_id);
+      bld.setMessage(ci.trackerId);
+      bld.show();
+    }
   }
   return super.onPreferenceClick(preference);
 }

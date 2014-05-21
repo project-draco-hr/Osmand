@@ -1,15 +1,16 @@
 {
-  if (token == null) {
-    token=service.getSessionToken();
+  if (sessionInfo == null) {
+    sessionInfo=service.prepareSessionToken();
   }
   authorized=0;
   reconnect=false;
   selector=Selector.open();
   SocketChannel activeChannel=SocketChannel.open();
   activeChannel.configureBlocking(true);
-  activeChannel.connect(new InetSocketAddress(token.hostName,Integer.parseInt(token.port)));
+  activeChannel.connect(new InetSocketAddress(sessionInfo.hostName,Integer.parseInt(sessionInfo.port)));
   activeChannel.configureBlocking(false);
   SelectionKey key=activeChannel.register(selector,SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+  connectionTime=System.currentTimeMillis();
   if (this.activeChannel != null) {
     stopChannel();
   }

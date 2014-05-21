@@ -1,5 +1,8 @@
 {
   String deviceKey=app.getSettings().OSMO_DEVICE_KEY.get();
+  if (deviceKey.length() == 0) {
+    deviceKey=registerOsmoDeviceKey();
+  }
   HttpClient httpclient=new DefaultHttpClient();
   HttpPost httppost=new HttpPost("http://api.osmo.mobi/prepare");
   try {
@@ -15,13 +18,16 @@
     log.info("Authorization key : " + r);
     final JSONObject obj=new JSONObject(r);
     if (obj.has("error")) {
+      lastRegistrationError=obj.getString("error");
       throw new RuntimeException(obj.getString("error"));
     }
     if (!obj.has("address")) {
+      lastRegistrationError="Host name not specified";
       throw new RuntimeException("Host name not specified");
     }
     if (!obj.has("token")) {
-      throw new RuntimeException("Token not specified");
+      lastRegistrationError="Token not specified by server";
+      throw new RuntimeException("Token not specified by server");
     }
     SessionInfo si=new SessionInfo();
     String a=obj.getString("address");
