@@ -1,0 +1,47 @@
+{
+  View row=convertView;
+  if (row == null) {
+    LayoutInflater inflater=getLayoutInflater();
+    row=inflater.inflate(R.layout.osmo_group_list_item,parent,false);
+  }
+  TextView label=(TextView)row.findViewById(R.id.osmo_label);
+  ImageView icon=(ImageView)row.findViewById(R.id.osmo_user_icon);
+  final OsMoUser model=(OsMoUser)getChild(groupPosition,childPosition);
+  row.setTag(model);
+  LatLon lnLocation=mapLocation;
+  Location location=tracker.getLastLocation(model.trackerId);
+  if (location == null || lnLocation == null) {
+    icon.setImageResource(R.drawable.list_favorite);
+    label.setText(model.getVisibleName());
+  }
+ else {
+    DirectionDrawable draw=new DirectionDrawable();
+    float[] mes=new float[2];
+    net.osmand.Location.distanceBetween(location.getLatitude(),location.getLongitude(),lnLocation.getLatitude(),lnLocation.getLongitude(),mes);
+    draw.setAngle(mes[1] - lastCompass + 180);
+    draw.setRecent(Math.abs(location.getTime() - System.currentTimeMillis()) < RECENT_THRESHOLD);
+    icon.setImageDrawable(draw);
+    icon.setImageResource(R.drawable.list_favorite);
+    int dist=(int)mes[0];
+    long seconds=Math.max(0,(System.currentTimeMillis() - location.getTime()) / 1000);
+    String time="  (";
+    if (seconds < 100) {
+      time=seconds + " " + getString(R.string.seconds_ago);
+    }
+ else     if (seconds / 60 < 100) {
+      time=(seconds / 60) + " " + getString(R.string.minutes_ago);
+    }
+ else {
+      time=(seconds / (60 * 60)) + " " + getString(R.string.hours_ago);
+    }
+    time+=")";
+    String distance=OsmAndFormatter.getFormattedDistance(dist,getMyApplication()) + "  ";
+    String visibleName=model.getVisibleName();
+    String firstPart=distance + visibleName;
+    final String fullText=firstPart + time;
+    label.setText(fullText,TextView.BufferType.SPANNABLE);
+    ((Spannable)label.getText()).setSpan(new ForegroundColorSpan(getResources().getColor(R.color.color_distance)),0,distance.length() - 1,0);
+    ((Spannable)label.getText()).setSpan(new ForegroundColorSpan(getResources().getColor(R.color.color_unknown)),firstPart.length(),fullText.length() - 1,0);
+  }
+  return row;
+}

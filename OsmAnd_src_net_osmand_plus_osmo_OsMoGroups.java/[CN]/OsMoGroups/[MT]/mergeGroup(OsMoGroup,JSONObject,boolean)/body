@@ -3,9 +3,7 @@
     if (obj.has(GROUP_NAME)) {
       gr.name=obj.getString(GROUP_NAME);
     }
-    if (obj.has(MY_GROUP_TRACKER_ID)) {
-      gr.myGroupTrackerId=obj.getString(MY_GROUP_TRACKER_ID);
-    }
+    String myGroupTrackerId=getMyGroupTrackerId();
     JSONArray arr=obj.getJSONArray(GROUP_TRACKERS);
     Set<String> toDelete=new HashSet<String>(gr.users.keySet());
     for (int i=0; i < arr.length(); i++) {
@@ -15,10 +13,11 @@
       OsMoUser us=gr.users.get(tid);
       if (us == null) {
         us=new OsMoUser();
+        us.group=gr;
         us.trackerId=tid;
         gr.users.put(tid,us);
         if (gr.active) {
-          if (!tid.equals(gr.myGroupTrackerId)) {
+          if (!tid.equals(myGroupTrackerId)) {
             tracker.startTrackingId(tid);
           }
         }

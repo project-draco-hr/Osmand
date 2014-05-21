@@ -22,12 +22,13 @@
   }
  else   if (command.startsWith("JOIN_GROUP:")) {
     String gid=command.substring(command.indexOf(':') + 1);
+    String myGroupTrackerId=getMyGroupTrackerId();
     OsMoGroup gr=groups.get(gid);
     if (gr != null) {
       mergeGroup(gr,obj,true);
       gr.active=true;
       for (      String key : gr.users.keySet()) {
-        if (!key.equals(gr.myGroupTrackerId)) {
+        if (!key.equals(myGroupTrackerId)) {
           tracker.startTrackingId(key);
         }
       }
@@ -35,12 +36,13 @@
     return true;
   }
  else   if (command.startsWith("LEAVE_GROUP:")) {
+    String myGroupTrackerId=getMyGroupTrackerId();
     String gid=command.substring(command.indexOf(':') + 1);
     OsMoGroup gr=groups.get(gid);
     if (gr != null) {
       gr.active=false;
       for (      String key : gr.users.keySet()) {
-        if (!key.equals(gr.myGroupTrackerId)) {
+        if (!key.equals(myGroupTrackerId)) {
           tracker.stopTrackingId(key);
         }
       }
