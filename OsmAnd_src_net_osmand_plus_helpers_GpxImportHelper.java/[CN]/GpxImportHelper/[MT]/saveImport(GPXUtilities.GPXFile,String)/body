@@ -1,0 +1,22 @@
+{
+  final String warning;
+  if (gpxFile.isEmpty()) {
+    warning=application.getString(R.string.error_reading_gpx);
+  }
+ else {
+    final File importDir=application.getAppPath(IndexConstants.GPX_IMPORT_DIR);
+    importDir.mkdirs();
+    if (importDir.exists() && importDir.isDirectory() && importDir.canWrite()) {
+      final GPXUtilities.WptPt pt=gpxFile.findPointToShow();
+      final File toWrite=getFileToSave(fileName,importDir,pt);
+      warning=GPXUtilities.writeGpxFile(toWrite,gpxFile,application);
+      if (warning == null) {
+        gpxFile.path=toWrite.getAbsolutePath();
+      }
+    }
+ else {
+      warning=application.getString(R.string.sd_dir_not_accessible);
+    }
+  }
+  return warning;
+}

@@ -1,0 +1,33 @@
+{
+  new AsyncTask<Void,Void,GPXUtilities.GPXFile>(){
+    ProgressDialog progress=null;
+    @Override protected void onPreExecute(){
+      progress=ProgressDialog.show(mapActivity,application.getString(R.string.loading),application.getString(R.string.loading_data));
+    }
+    @Override protected GPXUtilities.GPXFile doInBackground(    Void... nothing){
+      InputStream is=null;
+      try {
+        final ParcelFileDescriptor pFD=application.getContentResolver().openFileDescriptor(gpxFile,"r");
+        if (pFD != null) {
+          is=new FileInputStream(pFD.getFileDescriptor());
+          return GPXUtilities.loadGPXFile(application,is);
+        }
+      }
+ catch (      FileNotFoundException e) {
+      }
+ finally {
+        if (is != null)         try {
+          is.close();
+        }
+ catch (        IOException ignore) {
+        }
+      }
+      return null;
+    }
+    @Override protected void onPostExecute(    GPXUtilities.GPXFile result){
+      progress.dismiss();
+      handleResult(result,fileName);
+    }
+  }
+.execute();
+}
