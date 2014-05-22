@@ -3,8 +3,9 @@
   boolean reverse=builder.reverse;
   passWholeRoute=builder.passWholeRoute;
   calculateOsmAndRouteParts=builder.calculateOsmAndRouteParts;
+  useIntermediatePointsRTE=builder.useIntermediatePointsRTE;
   boolean announceWaypoints=builder.announceWaypoints;
-  calculateOsmAndRoute=false;
+  builder.calculateOsmAndRoute=false;
   if (file.isCloudmadeRouteFile() || OSMAND_ROUTER.equals(file.author)) {
     directions=parseOsmAndGPXRoute(points,file,OSMAND_ROUTER.equals(file.author),builder.leftSide,10);
     if (reverse) {
@@ -13,10 +14,12 @@
     }
   }
  else {
-    for (    Track tr : file.tracks) {
-      for (      TrkSegment tkSeg : tr.segments) {
-        for (        WptPt pt : tkSeg.points) {
-          points.add(createLocation(pt));
+    if (!useIntermediatePointsRTE) {
+      for (      Track tr : file.tracks) {
+        for (        TrkSegment tkSeg : tr.segments) {
+          for (          WptPt pt : tkSeg.points) {
+            points.add(createLocation(pt));
+          }
         }
       }
     }

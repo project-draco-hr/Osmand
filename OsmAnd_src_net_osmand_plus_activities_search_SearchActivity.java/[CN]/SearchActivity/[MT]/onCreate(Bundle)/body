@@ -6,6 +6,7 @@
   getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
   setContentView(R.layout.search_main);
   settings=((OsmandApplication)getApplication()).getSettings();
+  Integer tab=settings.SEARCH_TAB.get();
   getSupportActionBar().setDisplayHomeAsUpEnabled(true);
   getSupportActionBar().setTitle("");
   final TextView tabinfo=(TextView)findViewById(R.id.textViewADesc);
@@ -14,7 +15,7 @@
   TabHost tabHost=(TabHost)findViewById(android.R.id.tabhost);
   tabHost.setup();
   ViewPager mViewPager=(ViewPager)findViewById(R.id.pager);
-  mTabsAdapter=new TabsAdapter(this,tabHost,tabinfo,mViewPager);
+  mTabsAdapter=new TabsAdapter(this,tabHost,tabinfo,mViewPager,settings);
   TabSpec poiTab=tabHost.newTabSpec(SEARCH_POI).setIndicator(getTabIndicator(tabHost,R.drawable.tab_search_poi_icon,R.string.poi));
   mTabsAdapter.addTab(poiTab,SearchPoiFilterActivity.class,null);
   TabSpec addressSpec=tabHost.newTabSpec(SEARCH_ADDRESS).setIndicator(getTabIndicator(tabHost,R.drawable.tab_search_address_icon,R.string.address));
@@ -27,19 +28,12 @@
   mTabsAdapter.addTab(historyTab,SearchHistoryFragment.class,null);
   TabSpec transportTab=tabHost.newTabSpec(SEARCH_TRANSPORT).setIndicator(getTabIndicator(tabHost,R.drawable.tab_search_transport_icon,R.string.transport));
   mTabsAdapter.addTab(transportTab,SearchTransportFragment.class,null);
-  tabHost.setCurrentTab(POI_TAB_INDEX);
-  if (savedInstanceState != null) {
-    tabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
-  }
+  tabHost.setCurrentTab(tab);
   setTopSpinner();
   Log.i("net.osmand","Start on create " + (System.currentTimeMillis() - t));
   Intent intent=getIntent();
-  int tabIndex=0;
+  OsmandSettings settings=((OsmandApplication)getApplication()).getSettings();
   if (intent != null) {
-    if (intent.hasExtra(TAB_INDEX_EXTRA)) {
-      tabIndex=intent.getIntExtra(TAB_INDEX_EXTRA,POI_TAB_INDEX);
-      mTabsAdapter.mTabHost.setCurrentTab(tabIndex);
-    }
     double lat=intent.getDoubleExtra(SEARCH_LAT,0);
     double lon=intent.getDoubleExtra(SEARCH_LON,0);
     if (lat != 0 || lon != 0) {

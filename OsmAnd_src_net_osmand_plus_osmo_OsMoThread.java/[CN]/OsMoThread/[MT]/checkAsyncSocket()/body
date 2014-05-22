@@ -1,19 +1,11 @@
 {
   long delay=HEARTBEAT_DELAY;
   try {
-    if (selector == null) {
-      stopThread=true;
+    if (activeChannel == null || reconnect) {
+      initConnection();
     }
  else {
-      if (activeChannel != null && connectionStarted != -1 && !activeChannel.isConnectionPending()) {
-        connectionStarted=-1;
-      }
-      if ((connectionStarted != -1 && System.currentTimeMillis() - connectionStarted > CONNECTION_DELAY) || activeChannel == null) {
-        initConnection();
-      }
- else {
-        checkSelectedKeys();
-      }
+      checkSelectedKeys();
     }
   }
  catch (  Exception e) {
@@ -24,7 +16,7 @@
       activeChannel=null;
     }
     if (failures++ > LIMIT_OF_FAILURES_RECONNECT) {
-      stopChannel();
+      reconnect=true;
     }
   }
   if (stopThread) {

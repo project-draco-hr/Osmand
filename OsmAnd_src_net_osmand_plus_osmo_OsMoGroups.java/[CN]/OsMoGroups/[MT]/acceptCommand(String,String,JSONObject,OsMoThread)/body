@@ -1,0 +1,51 @@
+{
+  if (command.startsWith("ON_GROUP_CHANGE:")) {
+    String gid=command.substring(command.indexOf(':') + 1);
+    OsMoGroup gr=groups.get(gid);
+    if (gr != null) {
+      mergeGroup(gr,obj,false);
+    }
+    return true;
+  }
+ else   if (command.startsWith("CREATE_GROUP:")) {
+    String gid=command.substring(command.indexOf(':') + 1);
+    OsMoGroup gr=new OsMoGroup();
+    gr.groupId=gid;
+    try {
+      gr.name=obj.getString(GROUP_NAME);
+    }
+ catch (    JSONException e) {
+      e.printStackTrace();
+      service.showErrorMessage(e.getMessage());
+    }
+    joinGroup(gid);
+  }
+ else   if (command.startsWith("JOIN_GROUP:")) {
+    String gid=command.substring(command.indexOf(':') + 1);
+    OsMoGroup gr=groups.get(gid);
+    if (gr != null) {
+      mergeGroup(gr,obj,true);
+      gr.active=true;
+      for (      String key : gr.users.keySet()) {
+        if (!key.equals(gr.myGroupTrackerId)) {
+          tracker.startTrackingId(key);
+        }
+      }
+    }
+    return true;
+  }
+ else   if (command.startsWith("LEAVE_GROUP:")) {
+    String gid=command.substring(command.indexOf(':') + 1);
+    OsMoGroup gr=groups.get(gid);
+    if (gr != null) {
+      gr.active=false;
+      for (      String key : gr.users.keySet()) {
+        if (!key.equals(gr.myGroupTrackerId)) {
+          tracker.stopTrackingId(key);
+        }
+      }
+    }
+    return true;
+  }
+  return false;
+}

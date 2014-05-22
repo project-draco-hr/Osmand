@@ -1,0 +1,26 @@
+{
+  JSONObject mainObj=new JSONObject();
+  try {
+    saveGroupUsers(mainGroup,mainObj);
+    JSONArray ar=new JSONArray();
+    for (    OsMoGroup gr : groups.values()) {
+      if (gr.isMainGroup()) {
+        continue;
+      }
+      JSONObject obj=new JSONObject();
+      if (gr.userName != null) {
+        obj.put(USER_NAME,gr.userName);
+      }
+      if (gr.name != null) {
+        obj.put(NAME,gr.name);
+      }
+      obj.put(GROUP_ID,gr.groupId);
+      ar.put(obj);
+    }
+  }
+ catch (  JSONException e) {
+    e.printStackTrace();
+    service.showErrorMessage(e.getMessage());
+  }
+  settings.OSMO_GROUPS.set(mainObj.toString());
+}

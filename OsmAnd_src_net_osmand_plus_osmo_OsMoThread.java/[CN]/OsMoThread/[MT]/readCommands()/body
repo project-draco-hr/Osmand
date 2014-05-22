@@ -3,13 +3,16 @@
   while (hasSomethingToRead) {
     pendingReadCommand.clear();
     int read=activeChannel.read(pendingReadCommand);
-    if (pendingReadCommand.hasRemaining()) {
+    if (!pendingReadCommand.hasRemaining()) {
       hasSomethingToRead=true;
     }
  else {
       hasSomethingToRead=false;
     }
-    if (read > 0) {
+    if (read == -1) {
+      reconnect=true;
+    }
+ else     if (read > 0) {
       byte[] ar=pendingReadCommand.array();
       String res=new String(ar,0,read);
       readCommand+=res;
@@ -22,18 +25,6 @@
     }
   }
   if (queueOfMessages.size() > 0) {
-    while (!queueOfMessages.isEmpty()) {
-      String cmd=queueOfMessages.poll();
-      boolean processed=false;
-      for (      OsMoReactor o : listReactors) {
-        if (o.acceptCommand(cmd)) {
-          processed=true;
-          break;
-        }
-      }
-      if (!processed) {
-        log.warn("Command not processed '" + cmd + "'");
-      }
-    }
+    processReadMessages();
   }
 }
