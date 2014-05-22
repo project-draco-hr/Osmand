@@ -1,0 +1,41 @@
+{
+  new AsyncTask<Void,Void,GPXUtilities.GPXFile>(){
+    ProgressDialog progress=null;
+    @Override protected void onPreExecute(){
+      progress=ProgressDialog.show(mapActivity,application.getString(R.string.loading),application.getString(R.string.loading_data));
+    }
+    @Override protected GPXUtilities.GPXFile doInBackground(    Void... nothing){
+      InputStream is=null;
+      try {
+        final ParcelFileDescriptor pFD=application.getContentResolver().openFileDescriptor(kmlFile,"r");
+        if (pFD != null) {
+          is=new FileInputStream(pFD.getFileDescriptor());
+          final String result=Kml2Gpx.toGpx(is);
+          if (result != null) {
+            try {
+              return GPXUtilities.loadGPXFile(application,new ByteArrayInputStream(result.getBytes("UTF-8")));
+            }
+ catch (            UnsupportedEncodingException e) {
+              return null;
+            }
+          }
+        }
+      }
+ catch (      FileNotFoundException e) {
+      }
+ finally {
+        if (is != null)         try {
+          is.close();
+        }
+ catch (        IOException ignore) {
+        }
+      }
+      return null;
+    }
+    @Override protected void onPostExecute(    GPXUtilities.GPXFile result){
+      progress.dismiss();
+      handleResult(result,name);
+    }
+  }
+.execute();
+}
