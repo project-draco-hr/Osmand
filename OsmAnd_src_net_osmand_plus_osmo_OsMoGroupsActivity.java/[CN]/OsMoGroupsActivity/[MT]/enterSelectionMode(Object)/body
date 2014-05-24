@@ -1,8 +1,23 @@
 {
+  if (!checkOperationIsNotRunning()) {
+    return;
+  }
   actionMode=startActionMode(new Callback(){
     @Override public boolean onCreateActionMode(    ActionMode mode,    Menu menu){
       selectedObject=o;
       createMenuItem(menu,DELETE_ACTION_ID,R.string.default_buttons_delete,R.drawable.ic_action_delete_light,R.drawable.ic_action_delete_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      MenuItem mi=createMenuItem(menu,ON_OFF_ACTION_ID,R.string.default_buttons_ok,0,0,MenuItem.SHOW_AS_ACTION_ALWAYS);
+      final LayoutInflater inflater=LayoutInflater.from(OsMoGroupsActivity.this);
+      View view=inflater.inflate(R.layout.check_item_rel,null);
+      final CompoundButton check=(CompoundButton)view.findViewById(R.id.check_item);
+      check.setChecked(o instanceof OsMoDevice ? ((OsMoDevice)o).isEnabled() : ((OsMoGroup)o).isEnabled());
+      check.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+        @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
+          onOffAction(check);
+        }
+      }
+);
+      mi.setActionView(view);
       return true;
     }
     @Override public boolean onPrepareActionMode(    ActionMode mode,    Menu menu){
@@ -27,7 +42,34 @@
         bld.setNegativeButton(R.string.default_buttons_no,null);
         bld.show();
       }
+ else       if (item.getItemId() == ON_OFF_ACTION_ID) {
+        CompoundButton bt=((CompoundButton)item.getActionView().findViewById(R.id.check_item));
+        onOffAction(bt);
+      }
       return true;
+    }
+    private void onOffAction(    CompoundButton bt){
+      if ((selectedObject instanceof OsMoDevice)) {
+        OsMoDevice d=(OsMoDevice)selectedObject;
+        if (bt.isChecked()) {
+          osMoPlugin.getGroups().connectDevice(d);
+        }
+ else {
+          osMoPlugin.getGroups().disconnectDevice(d);
+        }
+      }
+ else {
+        OsMoGroup g=(OsMoGroup)selectedObject;
+        if (bt.isChecked()) {
+          String operation=osMoPlugin.getGroups().connectGroup(g);
+          startLongRunningOperation(operation);
+        }
+ else {
+          String operation=osMoPlugin.getGroups().disconnectGroup(g);
+          startLongRunningOperation(operation);
+        }
+      }
+      quitSelectionMode();
     }
   }
 );
