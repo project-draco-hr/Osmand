@@ -2,14 +2,21 @@
   View row=convertView;
   if (row == null) {
     LayoutInflater inflater=getLayoutInflater();
-    row=inflater.inflate(R.layout.expandable_list_item_category,parent,false);
+    row=inflater.inflate(R.layout.osmo_group_item,parent,false);
     fixBackgroundRepeat(row);
   }
   adjustIndicator(groupPosition,isExpanded,row);
   TextView label=(TextView)row.findViewById(R.id.category_name);
   final OsMoGroup model=getGroup(groupPosition);
   label.setText(model.getVisibleName(OsMoGroupsActivity.this));
-  final CheckBox ch=(CheckBox)row.findViewById(R.id.check_item);
-  ch.setVisibility(View.INVISIBLE);
+  final CompoundButton ch=(CompoundButton)row.findViewById(R.id.check_item);
+  ch.setVisibility(View.VISIBLE);
+  ch.setChecked(model.active);
+  ch.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      osMoPlugin.getGroups().joinGroup(model.groupId);
+    }
+  }
+);
   return row;
 }

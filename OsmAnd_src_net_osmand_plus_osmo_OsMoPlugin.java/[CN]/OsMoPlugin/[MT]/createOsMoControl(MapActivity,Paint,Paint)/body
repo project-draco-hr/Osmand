@@ -1,0 +1,51 @@
+{
+  final Drawable srcSmall=map.getResources().getDrawable(R.drawable.mon_osmo_conn_small);
+  final Drawable srcSignalSmall=map.getResources().getDrawable(R.drawable.mon_osmo_conn_signal_small);
+  final Drawable srcBig=map.getResources().getDrawable(R.drawable.mon_osmo_conn_big);
+  final Drawable srcSignalBig=map.getResources().getDrawable(R.drawable.mon_osmo_conn_signal_big);
+  final Drawable srcinactive=map.getResources().getDrawable(R.drawable.monitoring_rec_inactive);
+  final TextInfoWidget osmoControl=new TextInfoWidget(map,0,paintText,paintSubText){
+    long lastUpdateTime;
+    @Override public boolean updateInfo(    DrawSettings drawSettings){
+      boolean visible=true;
+      String txt="";
+      String subtxt="OsMo";
+      Drawable small=srcinactive;
+      Drawable big=srcinactive;
+      if (service.isActive()) {
+        small=tracker.isEnabledTracker() ? srcSignalSmall : srcSmall;
+        big=tracker.isEnabledTracker() ? srcSignalBig : srcBig;
+        long last=service.getLastCommandTime();
+        if (last != lastUpdateTime) {
+          lastUpdateTime=last;
+          blink(big,small);
+        }
+      }
+      setText(txt,subtxt);
+      setImageDrawable(small);
+      updateVisibility(visible);
+      return true;
+    }
+    private void blink(    Drawable bigger,    final Drawable smaller){
+      setImageDrawable(bigger);
+      invalidate();
+      postDelayed(new Runnable(){
+        @Override public void run(){
+          setImageDrawable(smaller);
+          invalidate();
+        }
+      }
+,500);
+    }
+  }
+;
+  osmoControl.updateInfo(null);
+  osmoControl.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      Intent intent=new Intent(map,OsMoGroupsActivity.class);
+      map.startActivity(intent);
+    }
+  }
+);
+  return osmoControl;
+}
