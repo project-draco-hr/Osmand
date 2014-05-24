@@ -18,12 +18,24 @@
   ch.setVisibility(model.isMainGroup() ? View.INVISIBLE : View.VISIBLE);
   ch.setChecked(model.enabled);
   ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+    boolean revert=false;
     @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
+      if (revert) {
+        revert=false;
+        return;
+      }
+      if (checkOperationIsNotRunning()) {
+        revert=true;
+        ch.setChecked(!isChecked);
+        return;
+      }
       if (isChecked) {
-        osMoPlugin.getGroups().connectGroup(model);
+        String operation=osMoPlugin.getGroups().connectGroup(model);
+        startLongRunningOperation(operation);
       }
  else {
-        osMoPlugin.getGroups().disconnectGroup(model);
+        String operation=osMoPlugin.getGroups().disconnectGroup(model);
+        startLongRunningOperation(operation);
       }
     }
   }

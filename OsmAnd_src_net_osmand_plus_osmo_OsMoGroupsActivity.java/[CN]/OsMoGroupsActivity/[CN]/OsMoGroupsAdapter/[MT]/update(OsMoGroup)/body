@@ -1,0 +1,20 @@
+{
+  if (group.isDeleted()) {
+    sortedGroups.remove(group);
+    users.remove(group);
+  }
+ else {
+    List<OsMoDevice> us=!group.isEnabled() && !group.isMainGroup() ? new ArrayList<OsMoDevice>(0) : group.getGroupUsers();
+    final Collator ci=Collator.getInstance();
+    Collections.sort(us,new Comparator<OsMoDevice>(){
+      @Override public int compare(      OsMoDevice lhs,      OsMoDevice rhs){
+        return ci.compare(lhs.getVisibleName(),rhs.getVisibleName());
+      }
+    }
+);
+    users.put(group,us);
+    if (!sortedGroups.contains(group)) {
+      sortedGroups.add(group);
+    }
+  }
+}

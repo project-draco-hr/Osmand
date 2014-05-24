@@ -1,0 +1,24 @@
+{
+  ImageView status=(ImageView)findViewById(R.id.osmo_status);
+  final Drawable srcSmall=getResources().getDrawable(R.drawable.mon_osmo_conn_small);
+  final Drawable srcSignalSmall=getResources().getDrawable(R.drawable.mon_osmo_conn_signal_small);
+  final Drawable srcBig=getResources().getDrawable(R.drawable.mon_osmo_conn_big);
+  final Drawable srcSignalBig=getResources().getDrawable(R.drawable.mon_osmo_conn_signal_big);
+  final Drawable srcinactive=getResources().getDrawable(R.drawable.monitoring_rec_inactive);
+  Drawable small=srcinactive;
+  Drawable big=srcinactive;
+  OsMoService service=osMoPlugin.getService();
+  OsMoTracker tracker=osMoPlugin.getTracker();
+  long last=service.getLastCommandTime();
+  if (service.isActive()) {
+    small=tracker.isEnabledTracker() ? srcSignalSmall : srcSmall;
+    big=tracker.isEnabledTracker() ? srcSignalBig : srcBig;
+  }
+  if (blinkImg != small) {
+    status.setImageDrawable(small);
+  }
+  if (last != lastUpdateTime) {
+    lastUpdateTime=last;
+    blink(status,big,small);
+  }
+}

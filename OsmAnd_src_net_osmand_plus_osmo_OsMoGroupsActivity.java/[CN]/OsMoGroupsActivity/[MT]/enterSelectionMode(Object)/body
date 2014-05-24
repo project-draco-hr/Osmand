@@ -1,0 +1,34 @@
+{
+  actionMode=startActionMode(new Callback(){
+    @Override public boolean onCreateActionMode(    ActionMode mode,    Menu menu){
+      selectedObject=o;
+      createMenuItem(menu,DELETE_ACTION_ID,R.string.default_buttons_delete,R.drawable.ic_action_delete_light,R.drawable.ic_action_delete_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      return true;
+    }
+    @Override public boolean onPrepareActionMode(    ActionMode mode,    Menu menu){
+      return false;
+    }
+    @Override public void onDestroyActionMode(    ActionMode mode){
+      selectedObject=null;
+    }
+    @Override public boolean onActionItemClicked(    ActionMode mode,    MenuItem item){
+      if (item.getItemId() == DELETE_ACTION_ID) {
+        Builder bld=new AlertDialog.Builder(OsMoGroupsActivity.this);
+        String name=(selectedObject instanceof OsMoDevice) ? ((OsMoDevice)selectedObject).getVisibleName() : ((OsMoGroup)selectedObject).getVisibleName(OsMoGroupsActivity.this);
+        bld.setTitle(getString(R.string.delete_confirmation_msg,name));
+        bld.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            Object obj=selectedObject;
+            quitSelectionMode();
+            deleteObject(obj);
+          }
+        }
+);
+        bld.setNegativeButton(R.string.default_buttons_no,null);
+        bld.show();
+      }
+      return true;
+    }
+  }
+);
+}

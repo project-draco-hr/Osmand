@@ -2,14 +2,43 @@
   Builder builder=new AlertDialog.Builder(this);
   builder.setTitle(R.string.osmo_connect_to_device);
   final View v=getLayoutInflater().inflate(R.layout.osmo_connect_to_device,getExpandableListView(),false);
+  final RadioButton device=(RadioButton)v.findViewById(R.id.ConnectToDevice);
+  final TextView labelTracker=(TextView)v.findViewById(R.id.LabelTrackerId);
+  final TextView labelName=(TextView)v.findViewById(R.id.LabelName);
   final EditText tracker=(EditText)v.findViewById(R.id.TrackerId);
   final EditText name=(EditText)v.findViewById(R.id.Name);
+  device.setChecked(true);
+  device.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
+      if (isChecked) {
+        labelTracker.setText(R.string.osmo_connect_to_device_tracker_id);
+        labelName.setText(R.string.osmo_connect_to_device_name);
+      }
+ else {
+        labelTracker.setText(R.string.osmo_connect_to_group_id);
+        labelName.setText(R.string.osmo_connect_to_group_name);
+      }
+    }
+  }
+);
   builder.setView(v);
   builder.setNegativeButton(R.string.default_buttons_cancel,null);
   builder.setPositiveButton(R.string.default_buttons_apply,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      String nameUser=name.getText().toString();
-      adapter.registerUser(tracker.getText().toString(),nameUser);
+      final String nameUser=name.getText().toString();
+      final String id=tracker.getText().toString();
+      if (device.isChecked()) {
+        OsMoDevice dev=osMoPlugin.getGroups().addConnectedDevice(id,nameUser,0);
+        adapter.update(dev.group);
+        adapter.notifyDataSetChanged();
+      }
+ else {
+        if (!checkOperationIsNotRunning()) {
+          return;
+        }
+        String op=osMoPlugin.getGroups().joinGroup(id,nameUser);
+        startLongRunningOperation(op);
+      }
     }
   }
 );
