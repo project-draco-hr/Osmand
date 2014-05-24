@@ -1,53 +1,71 @@
 {
-  if (command.startsWith("ON_GROUP_CHANGE:")) {
+  boolean processed=false;
+  String operation=command;
+  if (command.startsWith("GROUP_CHANGE:")) {
     String gid=command.substring(command.indexOf(':') + 1);
-    OsMoGroup gr=groups.get(gid);
+    OsMoGroup gr=storage.getGroup(gid);
     if (gr != null) {
-      mergeGroup(gr,obj,false);
+      List<OsMoDevice> delta=mergeGroup(gr,obj,false);
+      for (      OsMoDevice d : delta) {
+        if (d.getDeletedTimestamp() != 0 && d.isEnabled()) {
+          disconnectImpl(d);
+        }
+ else         if (d.isEnabled() && !d.isActive()) {
+          connectDeviceImpl(d);
+        }
+      }
+      storage.save();
     }
-    return true;
+    processed=true;
   }
- else   if (command.startsWith("CREATE_GROUP:")) {
+ else   if (command.startsWith("GROUP_DISCONNECT:")) {
     String gid=command.substring(command.indexOf(':') + 1);
-    OsMoGroup gr=new OsMoGroup();
-    gr.groupId=gid;
-    try {
-      gr.name=obj.getString(GROUP_NAME);
+    OsMoGroup gr=storage.getGroup(gid);
+    if (gr != null) {
+      disconnectAllGroupUsers(gr);
     }
- catch (    JSONException e) {
-      e.printStackTrace();
-      service.showErrorMessage(e.getMessage());
-    }
-    joinGroup(gid);
+    processed=true;
   }
- else   if (command.startsWith("JOIN_GROUP:")) {
+ else   if (command.startsWith("GROUP_CONNECT:")) {
     String gid=command.substring(command.indexOf(':') + 1);
-    String myGroupTrackerId=getMyGroupTrackerId();
-    OsMoGroup gr=groups.get(gid);
+    OsMoGroup gr=storage.getGroup(gid);
     if (gr != null) {
       mergeGroup(gr,obj,true);
       gr.active=true;
-      for (      String key : gr.users.keySet()) {
-        if (!key.equals(myGroupTrackerId)) {
-          tracker.startTrackingId(key);
-        }
+      for (      OsMoDevice d : storage.getMainGroup().getGroupUsers()) {
+        connectDeviceImpl(d);
       }
+      storage.save();
     }
-    return true;
+    processed=true;
+  }
+ else   if (command.startsWith("GROUP_CREATE:") || command.startsWith("GROUP_JOIN:")) {
+    if (command.startsWith("GROUP_CREATE:")) {
+      operation="GROUP_CREATE";
+    }
+    String gid=command.substring(command.indexOf(':') + 1);
+    OsMoGroup gr=storage.getGroup(gid);
+    if (gr == null) {
+      gr=new OsMoGroup();
+      gr.groupId=gid;
+    }
+    parseGroup(obj,gr);
+    connectGroupImpl(gr);
+    storage.save();
+    processed=true;
   }
  else   if (command.startsWith("LEAVE_GROUP:")) {
-    String myGroupTrackerId=getMyGroupTrackerId();
     String gid=command.substring(command.indexOf(':') + 1);
-    OsMoGroup gr=groups.get(gid);
+    OsMoGroup gr=storage.getGroup(gid);
     if (gr != null) {
-      gr.active=false;
-      for (      String key : gr.users.keySet()) {
-        if (!key.equals(myGroupTrackerId)) {
-          tracker.stopTrackingId(key);
-        }
-      }
+      disconnectAllGroupUsers(gr);
+      storage.deleteGroup(gr);
+      storage.save();
     }
-    return true;
+    processed=true;
   }
-  return false;
+  if (processed && uiListener != null) {
+    uiListener.groupsListChange(operation);
+  }
+  return processed;
 }

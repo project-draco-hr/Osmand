@@ -1,9 +1,18 @@
 {
   this.service=service;
   this.tracker=tracker;
-  this.settings=settings;
   service.registerReactor(this);
-  mainGroup=new OsMoGroup();
-  groups.put("",mainGroup);
-  parseGroups();
+  tracker.setTrackerListener(this);
+  storage=new OsMoGroupsStorage(this,settings.OSMO_GROUPS);
+  storage.load();
+  for (  OsMoDevice d : storage.getMainGroup().getGroupUsers()) {
+    if (d.isEnabled()) {
+      connectDeviceImpl(d);
+    }
+  }
+  for (  OsMoGroup g : storage.getGroups()) {
+    if (!g.isMainGroup() && g.isEnabled()) {
+      connectGroupImpl(g);
+    }
+  }
 }

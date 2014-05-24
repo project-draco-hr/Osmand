@@ -1,37 +1,41 @@
 {
+  List<OsMoDevice> delta=new ArrayList<OsMoDevice>();
   try {
-    if (obj.has(GROUP_NAME)) {
-      gr.name=obj.getString(GROUP_NAME);
-    }
-    String myGroupTrackerId=getMyGroupTrackerId();
-    JSONArray arr=obj.getJSONArray(GROUP_TRACKERS);
-    Set<String> toDelete=new HashSet<String>(gr.users.keySet());
+    parseGroup(obj,gr);
+    JSONArray arr=obj.getJSONArray(USERS);
+    Map<String,OsMoDevice> toDelete=new HashMap<String,OsMoDevice>(gr.users);
     for (int i=0; i < arr.length(); i++) {
       JSONObject o=(JSONObject)arr.get(i);
-      String tid=o.getString(TRACKER_ID);
-      toDelete.remove(tid);
-      OsMoUser us=gr.users.get(tid);
-      if (us == null) {
-        us=new OsMoUser();
-        us.group=gr;
-        us.trackerId=tid;
-        gr.users.put(tid,us);
-        if (gr.active) {
-          if (!tid.equals(myGroupTrackerId)) {
-            tracker.startTrackingId(tid);
-          }
-        }
+      String tid=o.getString(GROUP_TRACKER_ID);
+      OsMoDevice device=toDelete.remove(tid);
+      if (device == null) {
+        device=new OsMoDevice();
+        device.group=gr;
+        device.trackerId=tid;
+        device.enabled=true;
+        gr.users.put(tid,device);
       }
-      if (o.has(NAME)) {
-        us.serverName=o.getString(NAME);
+      if (o.has(USER_NAME)) {
+        device.serverName=o.getString(USER_NAME);
       }
+      if (o.has(DELETED) && o.getBoolean(DELETED)) {
+        device.deleted=System.currentTimeMillis();
+      }
+ else {
+        device.deleted=0;
+      }
+      if (o.has(LAST_ONLINE)) {
+        device.lastOnline=o.getLong(LAST_ONLINE);
+      }
+      if (o.has(USER_COLOR)) {
+        device.serverColor=o.getInt(USER_COLOR);
+      }
+      delta.add(device);
     }
     if (deleteUsers) {
-      for (      String s : toDelete) {
-        gr.users.remove(s);
-        if (gr.active) {
-          tracker.stopTrackingId(s);
-        }
+      for (      OsMoDevice s : toDelete.values()) {
+        s.deleted=System.currentTimeMillis();
+        delta.add(s);
       }
     }
   }
@@ -39,4 +43,5 @@
     e.printStackTrace();
     service.showErrorMessage(e.getMessage());
   }
+  return delta;
 }

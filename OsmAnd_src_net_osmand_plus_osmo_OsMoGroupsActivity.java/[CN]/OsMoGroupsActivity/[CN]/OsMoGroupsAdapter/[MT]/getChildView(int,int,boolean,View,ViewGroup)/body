@@ -4,12 +4,29 @@
     LayoutInflater inflater=getLayoutInflater();
     row=inflater.inflate(R.layout.osmo_group_list_item,parent,false);
   }
+  final OsMoDevice model=(OsMoDevice)getChild(groupPosition,childPosition);
+  row.setTag(model);
   TextView label=(TextView)row.findViewById(R.id.osmo_label);
   ImageView icon=(ImageView)row.findViewById(R.id.osmo_user_icon);
   final CompoundButton ch=(CompoundButton)row.findViewById(R.id.check_item);
-  ch.setVisibility(View.VISIBLE);
-  final OsMoUser model=(OsMoUser)getChild(groupPosition,childPosition);
-  row.setTag(model);
+  if (model.getGroup().isMainGroup()) {
+    ch.setVisibility(View.VISIBLE);
+    ch.setChecked(model.enabled);
+    ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+      @Override public void onCheckedChanged(      CompoundButton buttonView,      boolean isChecked){
+        if (isChecked) {
+          osMoPlugin.getGroups().connectDevice(model);
+        }
+ else {
+          osMoPlugin.getGroups().disconnectDevice(model);
+        }
+      }
+    }
+);
+  }
+ else {
+    ch.setVisibility(View.GONE);
+  }
   LatLon lnLocation=mapLocation;
   Location location=tracker.getLastLocation(model.trackerId);
   if (location == null || lnLocation == null) {

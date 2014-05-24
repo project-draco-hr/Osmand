@@ -1,0 +1,39 @@
+{
+  JSONObject mainObj=new JSONObject();
+  try {
+    saveGroupUsers(mainGroup,mainObj);
+    JSONArray ar=new JSONArray();
+    for (    OsMoGroup gr : groups.values()) {
+      if (gr.isMainGroup()) {
+        continue;
+      }
+      JSONObject obj=new JSONObject();
+      if (gr.userName != null) {
+        obj.put(USER_NAME,gr.userName);
+      }
+      if (gr.name != null) {
+        obj.put(NAME,gr.name);
+      }
+      if (gr.description != null) {
+        obj.put(DESCRIPTION,gr.description);
+      }
+      if (gr.policy != null) {
+        obj.put(POLICY,gr.policy);
+      }
+      if (gr.expireTime != 0) {
+        obj.put(EXPIRE_TIME,gr.expireTime);
+      }
+      if (gr.enabled) {
+        obj.put(ENABLED,true);
+      }
+      obj.put(GROUP_ID,gr.groupId);
+      ar.put(obj);
+    }
+    mainObj.put(GROUPS,ar);
+  }
+ catch (  JSONException e) {
+    e.printStackTrace();
+    service.showErrorMessage(e.getMessage());
+  }
+  pref.set(mainObj.toString());
+}

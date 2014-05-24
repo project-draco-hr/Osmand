@@ -3,18 +3,28 @@
   if (row == null) {
     LayoutInflater inflater=getLayoutInflater();
     row=inflater.inflate(R.layout.osmo_group_item,parent,false);
-    fixBackgroundRepeat(row);
   }
   adjustIndicator(groupPosition,isExpanded,row);
   TextView label=(TextView)row.findViewById(R.id.category_name);
   final OsMoGroup model=getGroup(groupPosition);
   label.setText(model.getVisibleName(OsMoGroupsActivity.this));
+  if (model.isMainGroup() || model.active) {
+    label.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+  }
+ else {
+    label.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
+  }
   final CompoundButton ch=(CompoundButton)row.findViewById(R.id.check_item);
-  ch.setVisibility(View.VISIBLE);
-  ch.setChecked(model.active);
-  ch.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      osMoPlugin.getGroups().joinGroup(model.groupId);
+  ch.setVisibility(model.isMainGroup() ? View.INVISIBLE : View.VISIBLE);
+  ch.setChecked(model.enabled);
+  ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
+      if (isChecked) {
+        osMoPlugin.getGroups().connectGroup(model);
+      }
+ else {
+        osMoPlugin.getGroups().disconnectGroup(model);
+      }
     }
   }
 );

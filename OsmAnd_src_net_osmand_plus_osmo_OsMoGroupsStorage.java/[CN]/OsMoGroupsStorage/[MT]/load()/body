@@ -1,0 +1,40 @@
+{
+  String grp=pref.get();
+  try {
+    JSONObject obj=new JSONObject(grp);
+    parseGroupUsers(mainGroup,obj);
+    if (!obj.has(GROUPS)) {
+      return;
+    }
+    JSONArray groups=obj.getJSONArray(GROUPS);
+    for (int i=0; i < groups.length(); i++) {
+      JSONObject o=(JSONObject)groups.get(i);
+      OsMoGroup group=new OsMoGroup();
+      group.groupId=o.getString(GROUP_ID);
+      if (o.has(NAME)) {
+        group.name=o.getString(NAME);
+      }
+      if (o.has(EXPIRE_TIME)) {
+        group.expireTime=o.getLong(EXPIRE_TIME);
+      }
+      if (o.has(USER_NAME)) {
+        group.userName=o.getString(USER_NAME);
+      }
+      if (o.has(DESCRIPTION)) {
+        group.description=o.getString(DESCRIPTION);
+      }
+      if (o.has(POLICY)) {
+        group.policy=o.getString(POLICY);
+      }
+      if (o.has(ENABLED) && o.getBoolean(ENABLED)) {
+        group.enabled=true;
+      }
+      parseGroupUsers(group,o);
+      this.groups.put(group.groupId,group);
+    }
+  }
+ catch (  JSONException e) {
+    e.printStackTrace();
+    service.showErrorMessage(e.getMessage());
+  }
+}
