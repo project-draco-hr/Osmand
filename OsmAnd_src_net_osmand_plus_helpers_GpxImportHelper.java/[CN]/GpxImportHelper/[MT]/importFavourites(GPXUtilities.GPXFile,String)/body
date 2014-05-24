@@ -1,0 +1,24 @@
+{
+  final DialogInterface.OnClickListener importFavouritesListener=new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+switch (which) {
+case DialogInterface.BUTTON_POSITIVE:
+        final List<FavouritePoint> favourites=asFavourites(gpxFile.points);
+      final FavouritesDbHelper favorites=application.getFavorites();
+    for (    final FavouritePoint favourite : favourites) {
+      favorites.deleteFavourite(favourite);
+      favorites.addFavourite(favourite);
+    }
+  AccessibleToast.makeText(mapActivity,R.string.fav_imported_sucessfully,Toast.LENGTH_LONG).show();
+final Intent newIntent=new Intent(mapActivity,application.getAppCustomization().getFavoritesActivity());
+mapActivity.startActivity(newIntent);
+break;
+case DialogInterface.BUTTON_NEGATIVE:
+handleResult(gpxFile,fileName);
+break;
+}
+}
+}
+;
+new AlertDialog.Builder(mapActivity).setMessage(R.string.import_file_favourites).setPositiveButton(R.string.import_fav,importFavouritesListener).setNegativeButton(R.string.import_save,importFavouritesListener).show();
+}
