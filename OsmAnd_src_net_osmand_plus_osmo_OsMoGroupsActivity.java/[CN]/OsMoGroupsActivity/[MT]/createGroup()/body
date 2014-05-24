@@ -1,2 +1,33 @@
 {
+  Builder builder=new AlertDialog.Builder(this);
+  builder.setTitle(R.string.osmo_create_group);
+  final View v=getLayoutInflater().inflate(R.layout.osmo_create_group,getExpandableListView(),false);
+  final EditText policy=(EditText)v.findViewById(R.id.Policy);
+  final EditText description=(EditText)v.findViewById(R.id.Description);
+  final EditText name=(EditText)v.findViewById(R.id.Name);
+  final Spinner expire=(Spinner)v.findViewById(R.id.ExpireGroup);
+  final int[] days=new int[]{1,2,3,7,14};
+  String[] ds=new String[days.length];
+  for (int k=0; k < days.length; k++) {
+    ds[k]=days[k] + " " + getString(R.string.int_days);
+  }
+  ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,ds);
+  adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+  expire.setAdapter(adapter);
+  expire.setSelection(3);
+  builder.setView(v);
+  builder.setNegativeButton(R.string.default_buttons_cancel,null);
+  builder.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (!checkOperationIsNotRunning()) {
+        return;
+      }
+      long eTime=days[expire.getSelectedItemPosition()] * 60 * 60* 24* 1000 + System.currentTimeMillis();
+      String op=osMoPlugin.getGroups().createGroup(name.getText().toString(),eTime,description.getText().toString(),policy.getText().toString());
+      startLongRunningOperation(op);
+    }
+  }
+);
+  builder.create().show();
+  AndroidUtils.softKeyboardDelayed(name);
 }

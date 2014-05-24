@@ -1,5 +1,12 @@
 {
-  if (startSendingLocations) {
-    bufferOfLocations.add(location);
+  if (startSendingLocations && location != null) {
+    long ltime=lastBufferLocation == null ? 0 : lastBufferLocation.getTime();
+    if (location.getTime() - ltime > pref.get()) {
+      if (lastBufferLocation != null && (!lastBufferLocation.hasSpeed() || lastBufferLocation.getSpeed() < 1) && lastBufferLocation.distanceTo(location) < 40) {
+        return;
+      }
+      lastBufferLocation=location;
+      bufferOfLocations.add(location);
+    }
   }
 }

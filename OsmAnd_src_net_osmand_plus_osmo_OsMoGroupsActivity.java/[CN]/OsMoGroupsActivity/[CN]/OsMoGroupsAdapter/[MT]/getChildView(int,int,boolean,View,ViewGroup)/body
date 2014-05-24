@@ -6,11 +6,18 @@
   }
   final OsMoDevice model=(OsMoDevice)getChild(groupPosition,childPosition);
   row.setTag(model);
+  if (selectedObject == model) {
+    row.setBackgroundColor(getResources().getColor(R.color.row_selection_color));
+  }
+ else {
+    row.setBackgroundColor(Color.TRANSPARENT);
+  }
   TextView label=(TextView)row.findViewById(R.id.osmo_label);
   ImageView icon=(ImageView)row.findViewById(R.id.osmo_user_icon);
   final CompoundButton ch=(CompoundButton)row.findViewById(R.id.check_item);
   if (model.getGroup().isMainGroup()) {
     ch.setVisibility(View.VISIBLE);
+    ch.setOnCheckedChangeListener(null);
     ch.setChecked(model.enabled);
     ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
       @Override public void onCheckedChanged(      CompoundButton buttonView,      boolean isChecked){
@@ -33,7 +40,12 @@
     location=tracker.getLastSendLocation();
   }
   if (location == null || lnLocation == null) {
-    icon.setImageResource(R.drawable.list_favorite);
+    if (model.isEnabled()) {
+      icon.setImageResource(R.drawable.mon_osmo_conn_small);
+    }
+ else {
+      icon.setImageResource(R.drawable.monitoring_rec_inactive);
+    }
     label.setText(model.getVisibleName());
   }
  else {
@@ -46,7 +58,7 @@
     icon.setImageResource(R.drawable.list_favorite);
     int dist=(int)mes[0];
     long seconds=Math.max(0,(System.currentTimeMillis() - location.getTime()) / 1000);
-    String time="  (";
+    String time="\n  (";
     if (seconds < 100) {
       time=seconds + " " + getString(R.string.seconds_ago);
     }

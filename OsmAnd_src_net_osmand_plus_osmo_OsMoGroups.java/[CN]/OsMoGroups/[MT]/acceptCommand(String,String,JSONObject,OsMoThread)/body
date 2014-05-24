@@ -40,11 +40,21 @@
     }
     processed=true;
   }
- else   if (command.startsWith("AGROUP_CREATE:") || command.startsWith("GROUP_JOIN:")) {
-    if (command.startsWith("AGROUP_CREATE:")) {
-      operation="AGROUP_CREATE";
+ else   if (command.startsWith("AGROUP_CREATE") || command.startsWith("GROUP_JOIN:")) {
+    String gid;
+    if (command.startsWith("AGROUP_CREATE")) {
+      try {
+        gid=obj.getString(GROUP_ID);
+      }
+ catch (      JSONException e) {
+        e.printStackTrace();
+        service.showErrorMessage(e.getMessage());
+        return true;
+      }
     }
-    String gid=command.substring(command.indexOf(':') + 1);
+ else {
+      gid=command.substring(command.indexOf(':') + 1);
+    }
     group=storage.getGroup(gid);
     if (group == null) {
       group=new OsMoGroup();

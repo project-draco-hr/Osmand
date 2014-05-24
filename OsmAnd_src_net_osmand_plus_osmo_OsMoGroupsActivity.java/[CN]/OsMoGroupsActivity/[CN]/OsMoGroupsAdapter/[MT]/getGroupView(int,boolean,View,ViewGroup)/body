@@ -7,8 +7,14 @@
   adjustIndicator(groupPosition,isExpanded,row);
   TextView label=(TextView)row.findViewById(R.id.category_name);
   final OsMoGroup model=getGroup(groupPosition);
+  if (selectedObject == model) {
+    row.setBackgroundColor(getResources().getColor(R.color.row_selection_color));
+  }
+ else {
+    row.setBackgroundColor(Color.TRANSPARENT);
+  }
   label.setText(model.getVisibleName(OsMoGroupsActivity.this));
-  if (model.isMainGroup() || model.active) {
+  if (model.isMainGroup() || model.isActive()) {
     label.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
   }
  else {
@@ -16,6 +22,7 @@
   }
   final CompoundButton ch=(CompoundButton)row.findViewById(R.id.check_item);
   ch.setVisibility(model.isMainGroup() ? View.INVISIBLE : View.VISIBLE);
+  ch.setOnCheckedChangeListener(null);
   ch.setChecked(model.enabled);
   ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
     boolean revert=false;
@@ -24,7 +31,7 @@
         revert=false;
         return;
       }
-      if (checkOperationIsNotRunning()) {
+      if (!checkOperationIsNotRunning()) {
         revert=true;
         ch.setChecked(!isChecked);
         return;
