@@ -3,14 +3,25 @@
     return;
   }
   actionMode=startActionMode(new Callback(){
+    private OsMoDevice device;
+    private OsMoGroup group;
     @Override public boolean onCreateActionMode(    ActionMode mode,    Menu menu){
       selectedObject=o;
+      device=(OsMoDevice)(o instanceof OsMoDevice ? o : null);
+      group=(OsMoGroup)(o instanceof OsMoGroup ? o : null);
       createMenuItem(menu,DELETE_ACTION_ID,R.string.default_buttons_delete,R.drawable.ic_action_delete_light,R.drawable.ic_action_delete_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      if (device != null && device.getLastLocation() != null) {
+        createMenuItem(menu,SHOW_ON_MAP_ID,R.string.show_poi_on_map,R.drawable.ic_action_marker_light,R.drawable.ic_action_marker_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      }
+ else       if (group != null) {
+        createMenuItem(menu,SHOW_ON_MAP_ID,R.string.show_poi_on_map,R.drawable.ic_action_marker_light,R.drawable.ic_action_marker_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      }
+      createMenuItem(menu,SHARE_ID,R.string.share_fav,R.drawable.ic_action_gshare_light,R.drawable.ic_action_gshare_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       MenuItem mi=createMenuItem(menu,ON_OFF_ACTION_ID,R.string.default_buttons_ok,0,0,MenuItem.SHOW_AS_ACTION_ALWAYS);
       final LayoutInflater inflater=LayoutInflater.from(OsMoGroupsActivity.this);
       View view=inflater.inflate(R.layout.check_item_rel,null);
       final CompoundButton check=(CompoundButton)view.findViewById(R.id.check_item);
-      check.setChecked(o instanceof OsMoDevice ? ((OsMoDevice)o).isEnabled() : ((OsMoGroup)o).isEnabled());
+      check.setChecked((device != null && device.isEnabled()) || (group != null && group.isEnabled()));
       check.setOnCheckedChangeListener(new OnCheckedChangeListener(){
         @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
           onOffAction(check);
@@ -41,6 +52,15 @@
 );
         bld.setNegativeButton(R.string.default_buttons_no,null);
         bld.show();
+      }
+ else       if (item.getItemId() == SHARE_ID) {
+      }
+ else       if (item.getItemId() == SHOW_ON_MAP_ID) {
+        if (device != null) {
+          Location location=device.getLastLocation();
+          app.getSettings().setMapLocationToShow(location.getLatitude(),location.getLongitude(),app.getSettings().getMapZoomToShow(),null,device.getVisibleName(),device);
+          MapActivity.launchMapActivityMoveToTop(OsMoGroupsActivity.this);
+        }
       }
  else       if (item.getItemId() == ON_OFF_ACTION_ID) {
         CompoundButton bt=((CompoundButton)item.getActionView().findViewById(R.id.check_item));
