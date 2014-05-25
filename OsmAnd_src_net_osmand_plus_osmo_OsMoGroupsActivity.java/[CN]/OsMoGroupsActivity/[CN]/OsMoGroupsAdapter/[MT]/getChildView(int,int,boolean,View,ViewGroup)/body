@@ -15,12 +15,11 @@
   TextView label=(TextView)row.findViewById(R.id.osmo_label);
   TextView labelTime=(TextView)row.findViewById(R.id.osmo_label_time);
   ImageView icon=(ImageView)row.findViewById(R.id.osmo_user_icon);
-  LatLon lnLocation=mapLocation;
   Location location=model.getLastLocation();
   if (model.getTrackerId().equals(osMoPlugin.getService().getMyGroupTrackerId())) {
     location=tracker.getLastSendLocation();
   }
-  if (location == null || lnLocation == null) {
+  if (location == null || mapLocation == null) {
     if (model.isEnabled()) {
       icon.setImageResource(R.drawable.mon_osmo_conn_small);
     }
@@ -32,7 +31,7 @@
  else {
     DirectionDrawable draw=new DirectionDrawable();
     float[] mes=new float[2];
-    net.osmand.Location.distanceBetween(location.getLatitude(),location.getLongitude(),lnLocation.getLatitude(),lnLocation.getLongitude(),mes);
+    net.osmand.Location.distanceBetween(location.getLatitude(),location.getLongitude(),mapLocation.getLatitude(),mapLocation.getLongitude(),mes);
     draw.setAngle(mes[1] - lastCompass + 180);
     draw.setRecent(Math.abs(location.getTime() - System.currentTimeMillis()) < RECENT_THRESHOLD);
     icon.setImageDrawable(draw);

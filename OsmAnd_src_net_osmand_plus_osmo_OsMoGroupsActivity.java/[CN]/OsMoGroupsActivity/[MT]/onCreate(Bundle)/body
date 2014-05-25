@@ -17,9 +17,14 @@
     @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
       if (isChecked) {
         osMoPlugin.getTracker().enableTracker();
+        app.startNavigationService(NavigationService.USED_BY_LIVE);
+        app.getSettings().SERVICE_OFF_INTERVAL.set(0);
       }
  else {
         osMoPlugin.getTracker().disableTracker();
+        if (app.getNavigationService() != null) {
+          app.getNavigationService().stopIfNeeded(app,NavigationService.USED_BY_LIVE);
+        }
       }
       updateStatus();
     }

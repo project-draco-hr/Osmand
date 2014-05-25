@@ -1,0 +1,40 @@
+{
+  Intent intent=new Intent();
+  intent.addCategory(Intent.CATEGORY_DEFAULT);
+  intent.setAction(ZXING_BARCODE_SCANNER_ACTIVITY);
+  ResolveInfo resolved=activity.getPackageManager().resolveActivity(intent,PackageManager.MATCH_DEFAULT_ONLY);
+  if (resolved != null) {
+    intent.putExtra("ENCODE_TYPE",encodeType);
+    if (strEncodeData != null) {
+      intent.putExtra("ENCODE_DATA",strEncodeData);
+    }
+ else {
+      intent.putExtra("ENCODE_DATA",encodeData);
+    }
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+    activity.startActivity(intent);
+  }
+ else {
+    if (Version.isMarketEnabled((OsmandApplication)activity.getApplication())) {
+      AlertDialog.Builder builder=new AccessibleAlertBuilder(activity);
+      builder.setMessage(activity.getString(R.string.zxing_barcode_scanner_not_found));
+      builder.setPositiveButton(activity.getString(R.string.default_buttons_yes),new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse(Version.marketPrefix((OsmandApplication)activity.getApplication()) + ZXING_BARCODE_SCANNER_COMPONENT));
+          try {
+            activity.startActivity(intent);
+          }
+ catch (          ActivityNotFoundException e) {
+          }
+        }
+      }
+);
+      builder.setNegativeButton(activity.getString(R.string.default_buttons_no),null);
+      builder.show();
+    }
+ else {
+      Toast.makeText(activity,R.string.zxing_barcode_scanner_not_found,Toast.LENGTH_LONG).show();
+    }
+  }
+}
