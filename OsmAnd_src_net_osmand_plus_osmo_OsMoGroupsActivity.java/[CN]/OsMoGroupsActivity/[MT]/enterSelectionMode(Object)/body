@@ -9,7 +9,7 @@
       selectedObject=o;
       device=(OsMoDevice)(o instanceof OsMoDevice ? o : null);
       group=(OsMoGroup)(o instanceof OsMoGroup ? o : null);
-      createMenuItem(menu,DELETE_ACTION_ID,R.string.default_buttons_delete,R.drawable.ic_action_delete_light,R.drawable.ic_action_delete_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      MenuItem mi=createMenuItem(menu,ON_OFF_ACTION_ID,R.string.default_buttons_ok,0,0,MenuItem.SHOW_AS_ACTION_ALWAYS);
       if (device != null && device.getLastLocation() != null) {
         createMenuItem(menu,SHOW_ON_MAP_ID,R.string.show_poi_on_map,R.drawable.ic_action_marker_light,R.drawable.ic_action_marker_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
@@ -17,10 +17,13 @@
         createMenuItem(menu,SHOW_ON_MAP_ID,R.string.show_poi_on_map,R.drawable.ic_action_marker_light,R.drawable.ic_action_marker_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
       createMenuItem(menu,SHARE_ID,R.string.share_fav,R.drawable.ic_action_gshare_light,R.drawable.ic_action_gshare_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      if (device != null) {
+        createMenuItem(menu,SETTINGS_ID,R.string.settings,R.drawable.ic_action_settings_light,R.drawable.ic_action_sail_boat_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      }
       if (group != null) {
         createMenuItem(menu,GROUP_INFO,R.string.osmo_group_info,R.drawable.ic_action_info_light,R.drawable.ic_action_info_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
-      MenuItem mi=createMenuItem(menu,ON_OFF_ACTION_ID,R.string.default_buttons_ok,0,0,MenuItem.SHOW_AS_ACTION_ALWAYS);
+      createMenuItem(menu,DELETE_ACTION_ID,R.string.default_buttons_delete,R.drawable.ic_action_delete_light,R.drawable.ic_action_delete_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       final LayoutInflater inflater=LayoutInflater.from(OsMoGroupsActivity.this);
       View view=inflater.inflate(R.layout.check_item_rel,null);
       final CompoundButton check=(CompoundButton)view.findViewById(R.id.check_item);
@@ -41,7 +44,10 @@
       selectedObject=null;
     }
     @Override public boolean onActionItemClicked(    ActionMode mode,    MenuItem item){
-      if (item.getItemId() == DELETE_ACTION_ID) {
+      if (item.getItemId() == SETTINGS_ID) {
+        showSettingsDialog(device);
+      }
+ else       if (item.getItemId() == DELETE_ACTION_ID) {
         Builder bld=new AlertDialog.Builder(OsMoGroupsActivity.this);
         String name=(selectedObject instanceof OsMoDevice) ? ((OsMoDevice)selectedObject).getVisibleName() : ((OsMoGroup)selectedObject).getVisibleName(OsMoGroupsActivity.this);
         bld.setTitle(getString(R.string.delete_confirmation_msg,name));

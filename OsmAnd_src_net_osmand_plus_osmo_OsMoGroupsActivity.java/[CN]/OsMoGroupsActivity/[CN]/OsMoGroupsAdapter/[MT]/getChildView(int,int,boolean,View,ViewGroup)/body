@@ -33,7 +33,19 @@
     float[] mes=new float[2];
     net.osmand.Location.distanceBetween(location.getLatitude(),location.getLongitude(),mapLocation.getLatitude(),mapLocation.getLongitude(),mes);
     draw.setAngle(mes[1] - lastCompass + 180);
-    draw.setRecent(Math.abs(location.getTime() - System.currentTimeMillis()) < RECENT_THRESHOLD);
+    final boolean recent=Math.abs(location.getTime() - System.currentTimeMillis()) < RECENT_THRESHOLD;
+    int color;
+    if (recent) {
+      color=model.getColor();
+      if (color == 0) {
+        color=getRandomColor();
+        osMoPlugin.getGroups().setDeviceProperties(model,model.getVisibleName(),color);
+      }
+    }
+ else {
+      color=getResources().getColor(R.color.color_unknown);
+    }
+    draw.setColor(color);
     icon.setImageDrawable(draw);
     int dist=(int)mes[0];
     long seconds=Math.max(0,(System.currentTimeMillis() - location.getTime()) / 1000);

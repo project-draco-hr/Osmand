@@ -1,0 +1,37 @@
+{
+  Builder bld=new AlertDialog.Builder(OsMoGroupsActivity.this);
+  bld.setTitle(R.string.osmo_edit_device);
+  final LayoutInflater inflater=LayoutInflater.from(this);
+  View view=inflater.inflate(R.layout.osmo_edit_device,null);
+  final EditText name=(EditText)view.findViewById(R.id.Name);
+  final Spinner colorSpinner=(Spinner)view.findViewById(R.id.ColorSpinner);
+  bld.setView(view);
+  name.setText(device.getVisibleName());
+  final TIntArrayList list=new TIntArrayList(pallette);
+  List<String> colorNames=new ArrayList<String>();
+  int selection=-1;
+  int devColor=device.getColor();
+  for (int i=0; i < pallette.length; i++) {
+    colorNames.add(getString(paletteColors[i]));
+    list.add(pallette[i]);
+    if (devColor == pallette[i]) {
+      selection=i;
+    }
+  }
+  if (selection == -1) {
+    list.insert(0,devColor);
+    colorNames.add(0,colorToString(devColor));
+    selection=0;
+  }
+  ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,colorNames);
+  adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+  colorSpinner.setAdapter(adapter);
+  colorSpinner.setSelection(selection);
+  bld.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      osMoPlugin.getGroups().setDeviceProperties(device,name.getText().toString(),list.get(colorSpinner.getSelectedItemPosition()));
+    }
+  }
+);
+  bld.setNegativeButton(R.string.default_buttons_no,null);
+}
