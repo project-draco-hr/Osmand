@@ -7,18 +7,10 @@
     @Override protected GPXUtilities.GPXFile doInBackground(    Void... nothing){
       InputStream is=null;
       try {
-        final ParcelFileDescriptor pFD=application.getContentResolver().openFileDescriptor(kmlFile,"r");
+        final ParcelFileDescriptor pFD=application.getContentResolver().openFileDescriptor(gpxFile,"r");
         if (pFD != null) {
           is=new FileInputStream(pFD.getFileDescriptor());
-          final String result=Kml2Gpx.toGpx(is);
-          if (result != null) {
-            try {
-              return GPXUtilities.loadGPXFile(application,new ByteArrayInputStream(result.getBytes("UTF-8")));
-            }
- catch (            UnsupportedEncodingException e) {
-              return null;
-            }
-          }
+          return GPXUtilities.loadGPXFile(application,is);
         }
       }
  catch (      FileNotFoundException e) {
@@ -32,9 +24,9 @@
       }
       return null;
     }
-    @Override protected void onPostExecute(    GPXUtilities.GPXFile result){
+    @Override protected void onPostExecute(    final GPXUtilities.GPXFile result){
       progress.dismiss();
-      handleResult(result,name);
+      importFavourites(result,fileName,save);
     }
   }
 .execute();
