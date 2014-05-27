@@ -1,10 +1,20 @@
 {
+  final OsMoPlugin plugin=OsMoPlugin.getEnabledPlugin(OsMoPlugin.class);
   if (preference == debugPref) {
     updateDebugPref();
+    Builder bld=new AlertDialog.Builder(this);
+    StringBuilder bs=new StringBuilder();
+    List<String> hs=plugin.getService().getHistoryOfCommands();
+    if (hs != null) {
+      for (int i=hs.size() - 1; i >= 0; i--) {
+        bs.append(hs.get(i)).append("\n");
+      }
+    }
+    bld.setMessage(bs.toString());
+    bld.show();
     return true;
   }
  else   if (preference == trackerId) {
-    final OsMoPlugin plugin=OsMoPlugin.getEnabledPlugin(OsMoPlugin.class);
     OsMoService service=plugin.getService();
     SessionInfo ci=service.getCurrentSessionInfo();
     if (ci == null || ci.trackerId == null) {
