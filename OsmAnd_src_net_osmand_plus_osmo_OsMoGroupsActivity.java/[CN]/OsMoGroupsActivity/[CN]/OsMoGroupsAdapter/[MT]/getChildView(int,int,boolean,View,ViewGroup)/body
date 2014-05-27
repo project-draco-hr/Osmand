@@ -19,32 +19,37 @@
   if (model.getTrackerId().equals(osMoPlugin.getService().getMyGroupTrackerId())) {
     location=tracker.getLastSendLocation();
   }
+  int color=getResources().getColor(R.color.color_unknown);
+  int activeColor=model.getColor();
+  if (activeColor == 0) {
+    activeColor=getRandomColor();
+    osMoPlugin.getGroups().setDeviceProperties(model,model.getVisibleName(),activeColor);
+  }
   if (location == null || mapLocation == null) {
-    if (model.isEnabled()) {
-      icon.setImageResource(R.drawable.mon_osmo_conn_small);
+    NonDirectionDrawable draw;
+    if (icon.getDrawable() instanceof NonDirectionDrawable) {
+      draw=(NonDirectionDrawable)icon.getDrawable();
     }
  else {
-      icon.setImageResource(R.drawable.monitoring_rec_inactive);
+      draw=new NonDirectionDrawable();
     }
+    draw.setColor(model.isEnabled() ? activeColor : color);
+    icon.setImageDrawable(draw);
     label.setText(model.getVisibleName());
   }
  else {
-    DirectionDrawable draw=new DirectionDrawable();
+    DirectionDrawable draw;
+    if (icon.getDrawable() instanceof DirectionDrawable) {
+      draw=(DirectionDrawable)icon.getDrawable();
+    }
+ else {
+      draw=new DirectionDrawable();
+    }
     float[] mes=new float[2];
     net.osmand.Location.distanceBetween(location.getLatitude(),location.getLongitude(),mapLocation.getLatitude(),mapLocation.getLongitude(),mes);
     draw.setAngle(mes[1] - lastCompass + 180);
     final boolean recent=Math.abs(location.getTime() - System.currentTimeMillis()) < RECENT_THRESHOLD;
-    int color;
-    if (recent) {
-      color=model.getColor();
-      if (color == 0) {
-        color=getRandomColor();
-        osMoPlugin.getGroups().setDeviceProperties(model,model.getVisibleName(),color);
-      }
-    }
- else {
-      color=getResources().getColor(R.color.color_unknown);
-    }
+    draw.setColor(recent ? activeColor : color);
     draw.setColor(color);
     icon.setImageDrawable(draw);
     int dist=(int)mes[0];
