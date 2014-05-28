@@ -1,10 +1,26 @@
 {
   boolean sameId=Algorithms.objectEquals(followTrackerId,device.trackerId);
+  boolean sameDestId=Algorithms.objectEquals(followDestinationId,device.trackerId);
   Location l=device.getLastLocation();
+  if (sameDestId && l != null) {
+    TargetPointsHelper targets=map.getMyApplication().getTargetPointsHelper();
+    RoutingHelper rh=map.getMyApplication().getRoutingHelper();
+    double dist=0.1;
+    if (rh.isRouteBeingCalculated()) {
+      dist=100;
+    }
+ else     if (rh.isRouteCalculated()) {
+      dist=30;
+    }
+    LatLon lt=new LatLon(l.getLatitude(),l.getLongitude());
+    if (targets.getPointToNavigate() == null || MapUtils.getDistance(targets.getPointToNavigate(),lt) > dist) {
+      targets.navigateToPoint(lt,true,-1);
+    }
+  }
   if (sameId && !schedule && l != null) {
     schedule=true;
     ContextMenuLayer cl=map.getMapLayers().getContextMenuLayer();
-    final boolean sameObject=Algorithms.objectEquals(device,cl.getFirstSelectedObject());
+    final boolean sameObject=Algorithms.objectEquals(device,cl.getFirstSelectedObject()) && cl.isVisible();
     LatLon mapLoc=new LatLon(map.getMapView().getLatitude(),map.getMapView().getLongitude());
     final boolean centered=Algorithms.objectEquals(followMapLocation,mapLoc);
     if (sameObject || centered) {
