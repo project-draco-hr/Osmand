@@ -1,0 +1,51 @@
+{
+  if (command.equals("REMOTE_CONTROL")) {
+    if (data.equals("BATTERY_INFO")) {
+      String rdata=getBatteryLevel() + "";
+      service.pushCommand("BATTERY_INFO|" + rdata);
+    }
+ else     if (data.equals("VIBRATE")) {
+      Vibrator v=(Vibrator)app.getSystemService(Context.VIBRATOR_SERVICE);
+      v.vibrate(500);
+    }
+ else     if (data.equals("STOP_TRACKING")) {
+      tracker.disableTracker();
+      if (app.getNavigationService() != null) {
+        app.getNavigationService().stopIfNeeded(app,NavigationService.USED_BY_LIVE);
+      }
+    }
+ else     if (data.equals("START_TRACKING")) {
+      tracker.enableTracker();
+      app.startNavigationService(NavigationService.USED_BY_LIVE);
+      app.getSettings().SERVICE_OFF_INTERVAL.set(0);
+    }
+ else     if (data.equals("OSMAND_INFO")) {
+      JSONObject robj=new JSONObject();
+      try {
+        robj.put("full_version",Version.getFullVersion(app));
+        robj.put("version",Version.getAppVersion(app));
+        TargetPointsHelper tg=app.getTargetPointsHelper();
+        if (tg.getPointToNavigate() != null) {
+          addPoint(robj,"target_",tg.getPointToNavigate(),tg.getPointNavigateDescription());
+        }
+        List<String> intermediatePointNames=tg.getIntermediatePointNames();
+        List<LatLon> intermediatePoints=tg.getIntermediatePoints();
+        if (intermediatePointNames.size() > 0) {
+          JSONArray ar=new JSONArray();
+          robj.put("intermediates",ar);
+          for (int i=0; i < intermediatePointNames.size(); i++) {
+            JSONObject js=new JSONObject();
+            ar.put(js);
+            addPoint(js,"",intermediatePoints.get(i),intermediatePointNames.get(i));
+          }
+        }
+        service.pushCommand("OSMAND_INFO|" + robj.toString());
+      }
+ catch (      JSONException e) {
+        e.printStackTrace();
+      }
+    }
+    return true;
+  }
+  return false;
+}
