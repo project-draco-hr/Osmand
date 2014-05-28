@@ -16,9 +16,6 @@
       if (device != null && device.getLastLocation() != null) {
         createMenuItem(menu,SHOW_ON_MAP_ID,R.string.show_poi_on_map,R.drawable.ic_action_marker_light,R.drawable.ic_action_marker_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
- else       if (group != null) {
-        createMenuItem(menu,SHOW_ON_MAP_ID,R.string.show_poi_on_map,R.drawable.ic_action_marker_light,R.drawable.ic_action_marker_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
-      }
       createMenuItem(menu,SHARE_ID,R.string.share_fav,R.drawable.ic_action_gshare_light,R.drawable.ic_action_gshare_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       if (device != null) {
         createMenuItem(menu,SETTINGS_DEV_ID,R.string.settings,R.drawable.ic_action_settings_light,R.drawable.ic_action_settings_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
@@ -26,7 +23,9 @@
       if (group != null) {
         createMenuItem(menu,GROUP_INFO,R.string.osmo_group_info,R.drawable.ic_action_info_light,R.drawable.ic_action_info_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
-      createMenuItem(menu,DELETE_ACTION_ID,R.string.default_buttons_delete,R.drawable.ic_action_delete_light,R.drawable.ic_action_delete_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      if (device == null || device.getGroup().isMainGroup()) {
+        createMenuItem(menu,DELETE_ACTION_ID,R.string.default_buttons_delete,R.drawable.ic_action_delete_light,R.drawable.ic_action_delete_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      }
       if (mi != null) {
         final LayoutInflater inflater=LayoutInflater.from(OsMoGroupsActivity.this);
         View view=inflater.inflate(R.layout.check_item_rel,null);
@@ -82,6 +81,7 @@
         if (device != null) {
           Location location=device.getLastLocation();
           app.getSettings().setMapLocationToShow(location.getLatitude(),location.getLongitude(),app.getSettings().getMapZoomToShow(),null,device.getVisibleName(),device);
+          osMoPlugin.setMapFollowTrackerId(device);
           MapActivity.launchMapActivityMoveToTop(OsMoGroupsActivity.this);
         }
       }

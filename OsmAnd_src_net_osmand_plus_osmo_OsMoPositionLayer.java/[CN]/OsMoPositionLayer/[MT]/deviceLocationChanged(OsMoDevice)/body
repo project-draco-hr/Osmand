@@ -1,0 +1,38 @@
+{
+  boolean sameId=Algorithms.objectEquals(followTrackerId,device.trackerId);
+  Location l=device.getLastLocation();
+  if (sameId && !schedule && l != null) {
+    schedule=true;
+    ContextMenuLayer cl=map.getMapLayers().getContextMenuLayer();
+    final boolean sameObject=Algorithms.objectEquals(device,cl.getFirstSelectedObject());
+    LatLon mapLoc=new LatLon(map.getMapView().getLatitude(),map.getMapView().getLongitude());
+    final boolean centered=Algorithms.objectEquals(followMapLocation,mapLoc);
+    if (sameObject || centered) {
+      if (centered) {
+        followMapLocation=new LatLon(l.getLatitude(),l.getLongitude());
+      }
+ else       if (!map.getMapView().getAnimatedDraggingThread().isAnimating()) {
+        followMapLocation=null;
+      }
+      uiHandler.postDelayed(new Runnable(){
+        @Override public void run(){
+          schedule=false;
+          if (sameObject) {
+            ContextMenuLayer cl=map.getMapLayers().getContextMenuLayer();
+            Location l=device.getLastLocation();
+            cl.setLocation(new LatLon(l.getLatitude(),l.getLongitude()),getObjectDescription(device));
+            cl.setSelectedObject(device);
+          }
+          if (centered) {
+            map.getMapView().setLatLon(followMapLocation.getLatitude(),followMapLocation.getLongitude());
+          }
+          map.getMapView().refreshMap();
+        }
+      }
+,150);
+    }
+ else {
+      followTrackerId=null;
+    }
+  }
+}
