@@ -7,16 +7,24 @@
   final TextView labelName=(TextView)v.findViewById(R.id.LabelName);
   final EditText tracker=(EditText)v.findViewById(R.id.TrackerId);
   final EditText name=(EditText)v.findViewById(R.id.Name);
+  final View mgv=v.findViewById(R.id.MyGroupName);
+  final EditText nickname=(EditText)v.findViewById(R.id.NickName);
+  if (app.getSettings().OSMO_USER_NAME.get().isEmpty()) {
+    app.getSettings().OSMO_USER_NAME.set(getString(R.string.osmo_user_name) + " " + new Random(10));
+  }
+  nickname.setText(app.getSettings().OSMO_USER_NAME.get());
   device.setChecked(true);
   device.setOnCheckedChangeListener(new OnCheckedChangeListener(){
     @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
       if (isChecked) {
         labelTracker.setText(R.string.osmo_connect_to_device_tracker_id);
         labelName.setText(R.string.osmo_connect_to_device_name);
+        mgv.setVisibility(View.GONE);
       }
  else {
         labelTracker.setText(R.string.osmo_connect_to_group_id);
         labelName.setText(R.string.osmo_group_name);
+        mgv.setVisibility(View.VISIBLE);
       }
     }
   }
@@ -27,6 +35,7 @@
     @Override public void onClick(    DialogInterface dialog,    int which){
       final String nameUser=name.getText().toString();
       final String id=tracker.getText().toString();
+      final String nick=nickname.getText().toString();
       if (device.isChecked()) {
         OsMoDevice dev=osMoPlugin.getGroups().addConnectedDevice(id,nameUser,getRandomColor());
         adapter.update(dev.group);
@@ -36,7 +45,10 @@
         if (!checkOperationIsNotRunning()) {
           return;
         }
-        String op=osMoPlugin.getGroups().joinGroup(id,nameUser);
+        String op=osMoPlugin.getGroups().joinGroup(id,nameUser,nick);
+        if (app.getSettings().OSMO_USER_PWD.get() == null) {
+          app.getSettings().OSMO_USER_NAME.set(nick);
+        }
         startLongRunningOperation(op);
       }
     }
