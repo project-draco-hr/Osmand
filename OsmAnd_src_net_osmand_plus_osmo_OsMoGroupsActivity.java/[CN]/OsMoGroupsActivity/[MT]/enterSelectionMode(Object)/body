@@ -20,6 +20,10 @@
       if (device != null) {
         createMenuItem(menu,SETTINGS_DEV_ID,R.string.settings,R.drawable.ic_action_settings_light,R.drawable.ic_action_settings_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
+      if (device != null && device.getLastLocation() != null) {
+        MenuItem menuItem=createMenuItem(menu,TRACK_DEV_ID,R.string.osmo_set_moving_target,R.drawable.ic_action_flage_light,R.drawable.ic_action_flage_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        menuItem.setTitleCondensed(getString(R.string.osmo_follow));
+      }
       if (group != null) {
         createMenuItem(menu,GROUP_INFO,R.string.osmo_group_info,R.drawable.ic_action_info_light,R.drawable.ic_action_info_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
@@ -48,7 +52,13 @@
       selectedObject=null;
     }
     @Override public boolean onActionItemClicked(    ActionMode mode,    MenuItem item){
-      if (item.getItemId() == SETTINGS_DEV_ID) {
+      if (item.getItemId() == TRACK_DEV_ID) {
+        if (device != null) {
+          OsMoPositionLayer.setFollowDestination(device);
+          MapActivity.launchMapActivityMoveToTop(OsMoGroupsActivity.this);
+        }
+      }
+ else       if (item.getItemId() == SETTINGS_DEV_ID) {
         showSettingsDialog(device);
       }
  else       if (item.getItemId() == DELETE_ACTION_ID) {
@@ -81,7 +91,7 @@
         if (device != null) {
           Location location=device.getLastLocation();
           app.getSettings().setMapLocationToShow(location.getLatitude(),location.getLongitude(),app.getSettings().getLastKnownMapZoom(),null,device.getVisibleName(),device);
-          osMoPlugin.setMapFollowTrackerId(device);
+          OsMoPositionLayer.setFollowTrackerId(device);
           MapActivity.launchMapActivityMoveToTop(OsMoGroupsActivity.this);
         }
       }
