@@ -1,13 +1,19 @@
 {
   while (!queueOfMessages.isEmpty()) {
     String cmd=queueOfMessages.poll();
-    log.info("OSMO get:" + cmd);
+    cmd(cmd,false);
     int k=cmd.indexOf('|');
     String header=cmd;
+    String id="";
     String data="";
     if (k >= 0) {
       header=cmd.substring(0,k);
       data=cmd.substring(k + 1);
+    }
+    int ks=header.indexOf(':');
+    if (ks >= 0) {
+      id=header.substring(ks + 1);
+      header=header.substring(0,ks);
     }
     JSONObject obj=null;
     if (data.startsWith("{")) {
@@ -40,13 +46,17 @@
       }
       continue;
     }
+ else     if (header.equalsIgnoreCase(OsMoService.REGENERATE_CMD)) {
+      reconnect=true;
+      continue;
+    }
  else     if (header.equalsIgnoreCase(PING_CMD)) {
       pingSent=0;
       continue;
     }
     boolean processed=false;
     for (    OsMoReactor o : listReactors) {
-      if (o.acceptCommand(header,data,obj,this)) {
+      if (o.acceptCommand(header,id,data,obj,this)) {
         processed=true;
         break;
       }

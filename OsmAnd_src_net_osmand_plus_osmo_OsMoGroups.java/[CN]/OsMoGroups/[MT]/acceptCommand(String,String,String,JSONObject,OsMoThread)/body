@@ -1,0 +1,75 @@
+{
+  boolean processed=false;
+  String operation=command + ":" + gid;
+  OsMoGroup group=null;
+  if (command.equalsIgnoreCase("GP")) {
+    group=storage.getGroup(gid);
+    if (group != null) {
+      List<OsMoDevice> delta=mergeGroup(group,obj,false);
+      for (      OsMoDevice d : delta) {
+        if (d.getDeletedTimestamp() != 0 && d.isEnabled()) {
+          disconnectImpl(d);
+        }
+ else         if (!d.isActive()) {
+          connectDeviceImpl(d);
+        }
+      }
+      storage.save();
+    }
+    processed=true;
+  }
+ else   if (command.equalsIgnoreCase("GROUP_DISCONNECT")) {
+    group=storage.getGroup(gid);
+    if (group != null) {
+      disconnectAllGroupUsers(group);
+    }
+    processed=true;
+  }
+ else   if (command.equalsIgnoreCase("GROUP_CONNECT")) {
+    group=storage.getGroup(gid);
+    if (group != null) {
+      group.users.clear();
+      mergeGroup(group,obj,true);
+      group.active=true;
+      for (      OsMoDevice d : group.getGroupUsers(null)) {
+        connectDeviceImpl(d);
+      }
+      storage.save();
+    }
+    processed=true;
+  }
+ else   if (command.equalsIgnoreCase("GROUP_CREATE") || command.equalsIgnoreCase("GROUP_JOIN")) {
+    if (command.equalsIgnoreCase("GROUP_CREATE")) {
+      operation=command;
+      try {
+        gid=obj.getString(GROUP_ID);
+      }
+ catch (      JSONException e) {
+        e.printStackTrace();
+        service.showErrorMessage(e.getMessage());
+        return true;
+      }
+    }
+    group=storage.getGroup(gid);
+    if (group == null) {
+      group=new OsMoGroup();
+      group.groupId=gid;
+      storage.addGroup(group);
+    }
+    connectGroupImpl(group);
+    storage.save();
+    processed=true;
+  }
+ else   if (command.equals("GROUP_LEAVE")) {
+    group=storage.getGroup(gid);
+    if (group != null) {
+      storage.deleteGroup(group);
+    }
+    storage.save();
+    processed=true;
+  }
+  if (processed && uiListener != null) {
+    uiListener.groupsListChange(operation,group);
+  }
+  return processed;
+}

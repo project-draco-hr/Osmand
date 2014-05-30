@@ -9,32 +9,40 @@
       selectedObject=o;
       device=(OsMoDevice)(o instanceof OsMoDevice ? o : null);
       group=(OsMoGroup)(o instanceof OsMoGroup ? o : null);
-      MenuItem mi=createMenuItem(menu,ON_OFF_ACTION_ID,R.string.default_buttons_ok,0,0,MenuItem.SHOW_AS_ACTION_ALWAYS);
-      if (device != null && device.getLastLocation() != null) {
-        createMenuItem(menu,SHOW_ON_MAP_ID,R.string.show_poi_on_map,R.drawable.ic_action_marker_light,R.drawable.ic_action_marker_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      MenuItem mi=null;
+      if (device == null || device.getGroup().isMainGroup()) {
+        mi=createMenuItem(menu,ON_OFF_ACTION_ID,R.string.default_buttons_ok,0,0,MenuItem.SHOW_AS_ACTION_ALWAYS);
       }
- else       if (group != null) {
+      if (device != null && device.getLastLocation() != null) {
         createMenuItem(menu,SHOW_ON_MAP_ID,R.string.show_poi_on_map,R.drawable.ic_action_marker_light,R.drawable.ic_action_marker_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
       createMenuItem(menu,SHARE_ID,R.string.share_fav,R.drawable.ic_action_gshare_light,R.drawable.ic_action_gshare_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       if (device != null) {
-        createMenuItem(menu,SETTINGS_ID,R.string.settings,R.drawable.ic_action_settings_light,R.drawable.ic_action_settings_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        createMenuItem(menu,SETTINGS_DEV_ID,R.string.settings,R.drawable.ic_action_settings_light,R.drawable.ic_action_settings_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      }
+      if (device != null && device.getLastLocation() != null) {
+        MenuItem menuItem=createMenuItem(menu,TRACK_DEV_ID,R.string.osmo_set_moving_target,R.drawable.ic_action_flage_light,R.drawable.ic_action_flage_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        menuItem.setTitleCondensed(getString(R.string.osmo_follow));
       }
       if (group != null) {
         createMenuItem(menu,GROUP_INFO,R.string.osmo_group_info,R.drawable.ic_action_info_light,R.drawable.ic_action_info_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
-      createMenuItem(menu,DELETE_ACTION_ID,R.string.default_buttons_delete,R.drawable.ic_action_delete_light,R.drawable.ic_action_delete_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
-      final LayoutInflater inflater=LayoutInflater.from(OsMoGroupsActivity.this);
-      View view=inflater.inflate(R.layout.check_item_rel,null);
-      final CompoundButton check=(CompoundButton)view.findViewById(R.id.check_item);
-      check.setChecked((device != null && device.isEnabled()) || (group != null && group.isEnabled()));
-      check.setOnCheckedChangeListener(new OnCheckedChangeListener(){
-        @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
-          onOffAction(check);
-        }
+      if (device == null || device.getGroup().isMainGroup()) {
+        createMenuItem(menu,DELETE_ACTION_ID,R.string.default_buttons_delete,R.drawable.ic_action_delete_light,R.drawable.ic_action_delete_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
+      if (mi != null) {
+        final LayoutInflater inflater=LayoutInflater.from(OsMoGroupsActivity.this);
+        View view=inflater.inflate(R.layout.check_item_rel,null);
+        final CompoundButton check=(CompoundButton)view.findViewById(R.id.check_item);
+        check.setChecked((device != null && device.isActive() && device.isEnabled()) || (group != null && group.isActive() && group.isEnabled()));
+        check.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+          @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
+            onOffAction(check);
+          }
+        }
 );
-      mi.setActionView(view);
+        mi.setActionView(view);
+      }
       return true;
     }
     @Override public boolean onPrepareActionMode(    ActionMode mode,    Menu menu){
@@ -44,7 +52,13 @@
       selectedObject=null;
     }
     @Override public boolean onActionItemClicked(    ActionMode mode,    MenuItem item){
-      if (item.getItemId() == SETTINGS_ID) {
+      if (item.getItemId() == TRACK_DEV_ID) {
+        if (device != null) {
+          OsMoPositionLayer.setFollowDestination(device);
+          MapActivity.launchMapActivityMoveToTop(OsMoGroupsActivity.this);
+        }
+      }
+ else       if (item.getItemId() == SETTINGS_DEV_ID) {
         showSettingsDialog(device);
       }
  else       if (item.getItemId() == DELETE_ACTION_ID) {
@@ -76,7 +90,8 @@
  else       if (item.getItemId() == SHOW_ON_MAP_ID) {
         if (device != null) {
           Location location=device.getLastLocation();
-          app.getSettings().setMapLocationToShow(location.getLatitude(),location.getLongitude(),app.getSettings().getMapZoomToShow(),null,device.getVisibleName(),device);
+          app.getSettings().setMapLocationToShow(location.getLatitude(),location.getLongitude(),app.getSettings().getLastKnownMapZoom(),null,device.getVisibleName(),device);
+          OsMoPositionLayer.setFollowTrackerId(device);
           MapActivity.launchMapActivityMoveToTop(OsMoGroupsActivity.this);
         }
       }
