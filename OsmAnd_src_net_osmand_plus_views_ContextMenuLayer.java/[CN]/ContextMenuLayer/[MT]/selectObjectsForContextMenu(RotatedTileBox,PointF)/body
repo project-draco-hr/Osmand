@@ -1,15 +1,19 @@
 {
   final double lat=tileBox.getLatFromPixel((int)point.x,(int)point.y);
   final double lon=tileBox.getLonFromPixel((int)point.x,(int)point.y);
-  selectedObjects.clear();
+  clearSelectedObjects();
   List<Object> s=new ArrayList<Object>();
   LatLon latLon=null;
-  for (  OsmandMapLayer l : view.getLayers()) {
-    if (l instanceof ContextMenuLayer.IContextMenuProvider) {
+  for (  OsmandMapLayer lt : view.getLayers()) {
+    if (lt instanceof ContextMenuLayer.IContextMenuProvider) {
       s.clear();
-      ((ContextMenuLayer.IContextMenuProvider)l).collectObjectsFromPoint(point,tileBox,s);
+      final IContextMenuProvider l=(ContextMenuLayer.IContextMenuProvider)lt;
+      l.collectObjectsFromPoint(point,tileBox,s);
       for (      Object o : s) {
-        selectedObjects.put(o,((ContextMenuLayer.IContextMenuProvider)l));
+        selectedObjects.put(o,l);
+        if (l instanceof IContextMenuProviderSelection) {
+          ((IContextMenuProviderSelection)l).setSelectedObject(o);
+        }
         if (latLon == null) {
           latLon=((ContextMenuLayer.IContextMenuProvider)l).getObjectLocation(o);
         }

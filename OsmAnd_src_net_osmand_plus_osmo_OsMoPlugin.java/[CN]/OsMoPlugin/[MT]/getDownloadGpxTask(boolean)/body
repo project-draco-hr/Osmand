@@ -1,0 +1,61 @@
+{
+  return new AsyncTask<JSONObject,GPXFile,String>(){
+    @Override protected String doInBackground(    JSONObject... params){
+      final File fl=app.getAppPath(IndexConstants.GPX_INDEX_DIR + "/osmo");
+      if (!fl.exists()) {
+        fl.mkdirs();
+      }
+      String errors="";
+      for (      JSONObject obj : params) {
+        try {
+          File f=new File(fl,obj.getString("name") + ".gpx");
+          long timestamp=obj.getLong("created") * 1000;
+          boolean visible=obj.has("visible");
+          boolean changed=false;
+          if (!f.exists() || (f.lastModified() != timestamp)) {
+            boolean sizeEqual=f.exists() && obj.has("size") && obj.getLong("size") == f.length();
+            if (sizeEqual && !f.setLastModified(timestamp - 1)) {
+            }
+ else {
+              changed=true;
+              String url=obj.getString("url");
+              log.info("Download gpx " + url);
+              DownloadFileHelper df=new DownloadFileHelper(app);
+              InputStream is=df.getInputStreamToDownload(new URL(url),false);
+              FileOutputStream fout=new FileOutputStream(f);
+              byte[] buf=new byte[1024];
+              int k;
+              while ((k=is.read(buf)) >= 0) {
+                fout.write(buf,0,k);
+              }
+              fout.close();
+              is.close();
+              if (!f.setLastModified(timestamp)) {
+                log.error("Timestamp updates are not supported");
+              }
+            }
+          }
+          if (visible && (changed || makeVisible)) {
+            GPXFile selectGPXFile=GPXUtilities.loadGPXFile(app,f);
+            app.setGpxFileToDisplay(selectGPXFile,app.getSettings().SHOW_CURRENT_GPX_TRACK.get());
+          }
+        }
+ catch (        JSONException e) {
+          e.printStackTrace();
+          errors+=e.getMessage() + "\n";
+        }
+catch (        IOException e) {
+          e.printStackTrace();
+          errors+=e.getMessage() + "\n";
+        }
+      }
+      return errors;
+    }
+    @Override protected void onPostExecute(    String result){
+      if (result.length() > 0) {
+        app.showToastMessage(app.getString(R.string.osmo_io_error) + result);
+      }
+    }
+  }
+;
+}
