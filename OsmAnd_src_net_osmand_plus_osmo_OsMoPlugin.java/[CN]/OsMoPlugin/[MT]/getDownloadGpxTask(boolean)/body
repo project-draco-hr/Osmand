@@ -19,6 +19,7 @@
  else {
               changed=true;
               String url=obj.getString("url");
+              log.info("Download gpx " + url);
               DownloadFileHelper df=new DownloadFileHelper(app);
               InputStream is=df.getInputStreamToDownload(new URL(url),false);
               FileOutputStream fout=new FileOutputStream(f);
@@ -29,7 +30,9 @@
               }
               fout.close();
               is.close();
-              f.setLastModified(timestamp);
+              if (!f.setLastModified(timestamp)) {
+                log.error("Timestamp updates are not supported");
+              }
             }
           }
           if (visible && (changed || makeVisible)) {
