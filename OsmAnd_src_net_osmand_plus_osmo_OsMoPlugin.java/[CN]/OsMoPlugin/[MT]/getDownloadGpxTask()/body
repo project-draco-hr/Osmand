@@ -1,0 +1,50 @@
+{
+  return new AsyncTask<JSONObject,GPXFile,String>(){
+    @Override protected String doInBackground(    JSONObject... params){
+      final File fl=app.getAppPath(IndexConstants.GPX_INDEX_DIR + "/osmo");
+      if (!fl.exists()) {
+        fl.mkdirs();
+      }
+      String errors="";
+      for (      JSONObject obj : params) {
+        try {
+          File f=new File(fl,obj.getString("name"));
+          long timestamp=obj.getLong("timestamp");
+          boolean visible=obj.has("visible");
+          if (!f.exists() || fl.lastModified() != timestamp) {
+            String url=obj.getString("url");
+            DownloadFileHelper df=new DownloadFileHelper(app);
+            InputStream is=df.getInputStreamToDownload(new URL(url),false);
+            FileOutputStream fout=new FileOutputStream(f);
+            byte[] buf=new byte[1024];
+            int k;
+            while ((k=is.read(buf)) >= 0) {
+              fout.write(buf,0,k);
+            }
+            fout.close();
+            is.close();
+          }
+          if (visible) {
+            GPXFile selectGPXFile=GPXUtilities.loadGPXFile(app,f);
+            app.setGpxFileToDisplay(selectGPXFile,app.getSettings().SHOW_CURRENT_GPX_TRACK.get());
+          }
+        }
+ catch (        JSONException e) {
+          e.printStackTrace();
+          errors+=e.getMessage() + "\n";
+        }
+catch (        IOException e) {
+          e.printStackTrace();
+          errors+=e.getMessage() + "\n";
+        }
+      }
+      return errors;
+    }
+    @Override protected void onPostExecute(    String result){
+      if (result.length() > 0) {
+        app.showToastMessage(app.getString(R.string.osmo_io_error) + result);
+      }
+    }
+  }
+;
+}
