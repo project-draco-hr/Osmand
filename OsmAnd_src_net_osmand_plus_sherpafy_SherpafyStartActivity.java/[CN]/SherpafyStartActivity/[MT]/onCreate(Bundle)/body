@@ -1,0 +1,41 @@
+{
+  ((OsmandApplication)getApplication()).applyTheme(this);
+  super.onCreate(savedInstanceState);
+  getSherlock().setUiOptions(ActivityInfo.UIOPTION_SPLIT_ACTION_BAR_WHEN_NARROW);
+  getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+  getSupportActionBar().setTitle("Sherpafy");
+  if (!(getMyApplication().getAppCustomization() instanceof SherpafyCustomization)) {
+    getMyApplication().setAppCustomization(new SherpafyCustomization());
+  }
+  customization=(SherpafyCustomization)getMyApplication().getAppCustomization();
+  if (customization.getTourInformations().isEmpty()) {
+    customization.onIndexingFiles(new IProgress(){
+      @Override public void startTask(      String taskName,      int work){
+      }
+      @Override public void startWork(      int work){
+      }
+      @Override public void progress(      int deltaWork){
+      }
+      @Override public void remaining(      int remainingWork){
+      }
+      @Override public void finishTask(){
+      }
+      @Override public boolean isIndeterminate(){
+        return false;
+      }
+      @Override public boolean isInterrupted(){
+        return false;
+      }
+    }
+,new ConcurrentHashMap<String,String>());
+  }
+  if (customization.getSelectedTour() == null) {
+    startProgressDialog=new ProgressDialog(this);
+    getMyApplication().checkApplicationIsBeingInitialized(this,startProgressDialog);
+    updateDefaultView();
+  }
+ else {
+    super.setContentView(R.layout.custom_tour_info);
+    updateTourView();
+  }
+}
