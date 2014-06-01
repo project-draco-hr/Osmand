@@ -39,11 +39,12 @@
  else   if (command.equalsIgnoreCase("GROUP_CONNECT")) {
     group=storage.getGroup(gid);
     if (group != null) {
-      group.users.clear();
       mergeGroup(group,obj,true);
       group.active=true;
       for (      OsMoDevice d : group.getGroupUsers(null)) {
-        connectDeviceImpl(d);
+        if (d.isEnabled()) {
+          connectDeviceImpl(d);
+        }
       }
       storage.save();
     }
