@@ -9,15 +9,19 @@
       StringBuilder b=new StringBuilder();
       for (      OsMoDevice d : delta) {
         if (d.getDeletedTimestamp() != 0 && d.isEnabled()) {
-          b.append(app.getString(R.string.osmo_user_joined,d.getVisibleName(),group.getVisibleName(app))).append("\n");
+          if (group.name != null) {
+            b.append(app.getString(R.string.osmo_user_left,d.getVisibleName(),group.getVisibleName(app))).append("\n");
+          }
           disconnectImpl(d);
         }
  else         if (!d.isActive()) {
-          b.append(app.getString(R.string.osmo_user_left,d.getVisibleName(),group.getVisibleName(app))).append("\n");
+          if (group.name != null) {
+            b.append(app.getString(R.string.osmo_user_joined,d.getVisibleName(),group.getVisibleName(app))).append("\n");
+          }
           connectDeviceImpl(d);
         }
       }
-      if (b.length() > 0 && settings.OSMO_SHOW_GROUP_NOTIFICATIONS.get()) {
+      if (b.length() > 0 && app.getSettings().OSMO_SHOW_GROUP_NOTIFICATIONS.get()) {
         app.showToastMessage(b.toString().trim());
       }
       storage.save();

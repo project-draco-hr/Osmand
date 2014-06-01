@@ -1,13 +1,35 @@
 {
   final int r=getRadiusPoi(tb);
+  long treshold=System.currentTimeMillis() - 15000;
   for (  OsMoDevice t : getTrackingDevices()) {
     Location l=t.getLastLocation();
     if (l != null) {
+      ConcurrentLinkedQueue<Location> plocations=t.getPreviousLocations(treshold);
       int x=(int)tb.getPixXFromLatLon(l.getLatitude(),l.getLongitude());
       int y=(int)tb.getPixYFromLatLon(l.getLatitude(),l.getLongitude());
-      pointAltUI.setColor(t.getColor());
-      canvas.drawCircle(x,y,r + 2,point);
-      canvas.drawCircle(x,y,r - 2,pointAltUI);
+      if (plocations.size() > 0) {
+        pth.rewind();
+        Iterator<Location> it=plocations.iterator();
+        boolean f=true;
+        while (it.hasNext()) {
+          Location lo=it.next();
+          int xt=(int)tb.getPixXFromLatLon(lo.getLatitude(),lo.getLongitude());
+          int yt=(int)tb.getPixYFromLatLon(lo.getLatitude(),lo.getLongitude());
+          if (f) {
+            f=false;
+            pth.moveTo(xt,yt);
+          }
+ else {
+            pth.lineTo(xt,yt);
+          }
+        }
+        pth.lineTo(x,y);
+        paintPath.setColor(t.getColor());
+        canvas.drawPath(pth,paintPath);
+      }
+      pointInnerCircle.setColor(t.getColor());
+      canvas.drawCircle(x,y,r + 2,pointOuter);
+      canvas.drawCircle(x,y,r - 2,pointInnerCircle);
     }
   }
 }
