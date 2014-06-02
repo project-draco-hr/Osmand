@@ -1,0 +1,77 @@
+{
+  img=(ImageView)findViewById(R.id.tour_image);
+  description=(TextView)findViewById(R.id.tour_description);
+  description.setVisibility(View.VISIBLE);
+  fullDescription=(TextView)findViewById(R.id.tour_fulldescription);
+  fullDescription.setVisibility(View.VISIBLE);
+  name=(TextView)findViewById(R.id.tour_name);
+  Button start_tour=(Button)findViewById(R.id.start_tour);
+  Button itenerary=(Button)findViewById(R.id.itenerary);
+  Button settings=(Button)findViewById(R.id.btn_settings);
+  RadioGroup stages=(RadioGroup)findViewById(R.id.stages);
+  start_tour.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View view){
+      MapActivity.launchMapActivityMoveToTop(GetActivity());
+    }
+  }
+);
+  cur_tour=customization.getSelectedTour();
+  stages_info=cur_tour.getStageInformation();
+  stages.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    RadioGroup radioGroup,    int i){
+      customization.selectStage(stages_info.get(i),IProgress.EMPTY_PROGRESS);
+      if (i == 0) {
+        fullDescription.setText(cur_tour.getFulldescription());
+        description.setText((cur_tour.getShortDescription()));
+        prepareBitmap();
+      }
+ else {
+        description.setText(stages_info.get(i).getDescription());
+        fullDescription.setText("");
+      }
+    }
+  }
+);
+  settings.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      Intent intent=new Intent(getApplicationContext(),SherpafyStartActivity.class);
+      intent.putExtra("settings","settings");
+      startActivity(intent);
+    }
+  }
+);
+  final int count=stages_info.size();
+  final RadioButton[] rb=new RadioButton[count];
+  for (int i=0; i < count; i++) {
+    rb[i]=new RadioButton(this);
+    rb[i].setId(i);
+    stages.addView(rb[i]);
+    String stage_name=stages_info.get(i).getName();
+    if (stage_name.length() > 10) {
+      rb[i].setText(stage_name.substring(0,10));
+    }
+ else {
+      rb[i].setText(stage_name);
+    }
+  }
+  TourInformation.StageInformation cur_stage=customization.getSelectedStage();
+  name.setText(cur_tour.getName());
+  if (cur_stage == null) {
+    stages.check(0);
+    description.setText(cur_tour.getShortDescription());
+    fullDescription.setText(cur_tour.getFulldescription());
+    prepareBitmap();
+  }
+ else {
+    int i=0;
+    for (i=0; i < count; i++) {
+      if (cur_stage.equals(stages_info.get(i)))       break;
+    }
+    if (i != count) {
+      stages.check(i);
+    }
+ else {
+      stages.check(0);
+    }
+  }
+}
