@@ -8,16 +8,17 @@
     getMyApplication().setAppCustomization(new SherpafyCustomization());
   }
   customization=(SherpafyCustomization)getMyApplication().getAppCustomization();
-  if (customization.getTourInformations().isEmpty()) {
-    customization.onIndexingFiles(IProgress.EMPTY_PROGRESS,new ConcurrentHashMap<String,String>());
-  }
-  if (customization.getSelectedTour() == null) {
-    startProgressDialog=new ProgressDialog(this);
-    getMyApplication().checkApplicationIsBeingInitialized(this,startProgressDialog);
-    updateDefaultView();
+  ProgressDialog startProgressDialog=new ProgressDialog(this);
+  getMyApplication().checkApplicationIsBeingInitialized(this,startProgressDialog);
+  if (startProgressDialog.isShowing()) {
+    startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
+      @Override public void onDismiss(      DialogInterface dialogInterface){
+        onStartDialogClose();
+      }
+    }
+);
   }
  else {
-    super.setContentView(R.layout.custom_tour_info);
-    updateTourView();
+    onStartDialogClose();
   }
 }
