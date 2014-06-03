@@ -1,40 +1,37 @@
 {
+  setTheme(R.style.OsmandLightTheme);
+  ((OsmandApplication)getApplication()).setLanguage(this);
   super.onCreate(savedInstanceState);
-  ((OsmandApplication)getApplication()).applyTheme(this);
+  getSherlock().setUiOptions(ActivityInfo.UIOPTION_SPLIT_ACTION_BAR_WHEN_NARROW);
   getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+  getSupportActionBar().setTitle(R.string.sherpafy_app_name);
   ProgressDialog startProgressDialog=new ProgressDialog(this);
   getMyApplication().checkApplicationIsBeingInitialized(this,startProgressDialog);
   setContentView(R.layout.custom_tour_info);
-  Button collapser=(Button)findViewById(R.id.collapse);
+  ToggleButton collapser=(ToggleButton)findViewById(R.id.collapse);
   stages=(RadioGroup)findViewById(R.id.stages);
   stages.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener(){
     @Override public void onCheckedChanged(    RadioGroup radioGroup,    int i){
-      if (hack) {
-        return;
-      }
       if (i == 0) {
         customization.selectStage(null,IProgress.EMPTY_PROGRESS);
-        fullDescription.setText(cur_tour.getFulldescription());
-        description.setText((cur_tour.getShortDescription()));
+        fullDescription.setText(curTour.getFulldescription());
+        description.setText((curTour.getShortDescription()));
         prepareBitmap();
       }
  else {
-        customization.selectStage(stages_info.get(i - 1),IProgress.EMPTY_PROGRESS);
-        description.setText(stages_info.get(i - 1).getDescription());
+        customization.selectStage(stagesInfo.get(i - 1),IProgress.EMPTY_PROGRESS);
+        description.setText(stagesInfo.get(i - 1).getDescription());
         fullDescription.setText("");
       }
     }
   }
 );
-  collapser.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View view){
-      Button btn=(Button)view;
-      if (btn.getText().equals("+")) {
-        btn.setText("-");
+  collapser.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
+      if (isChecked) {
         stages.setVisibility(View.VISIBLE);
       }
  else {
-        btn.setText("+");
         stages.setVisibility(View.GONE);
       }
     }
