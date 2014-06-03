@@ -1,6 +1,13 @@
 {
   List<String> warnings=new ArrayList<String>();
   try {
+    try {
+      SpecialPhrases.setLanguage(this,osmandSettings);
+    }
+ catch (    IOException e) {
+      LOG.error("I/O exception",e);
+      warnings.add("Error while reading the special phrases. Restart OsmAnd if possible");
+    }
     if (!Version.isBlackberry(this)) {
       if (osmandSettings.NATIVE_RENDERING_FAILED.get()) {
         osmandSettings.SAFE_MODE.set(true);
@@ -47,26 +54,30 @@
  finally {
 synchronized (OsmandApplication.this) {
       final ProgressDialog toDismiss;
+      final Runnable pb;
       if (startDialog != null) {
         toDismiss=startDialog.getDialog();
+        pb=startDialog.getFinishRunnable();
       }
  else {
         toDismiss=null;
+        pb=null;
       }
       startDialog=null;
-      if (toDismiss != null) {
+      if (toDismiss != null || pb != null) {
         uiHandler.post(new Runnable(){
           @Override public void run(){
+            if (pb != null) {
+            }
             if (toDismiss != null) {
               toDismiss.dismiss();
             }
           }
         }
 );
-        showWarnings(warnings,toDismiss.getContext());
       }
- else {
-        startingWarnings=warnings;
+      if (warnings != null && !warnings.isEmpty()) {
+        showToastMessage(formatWarnings(warnings).toString());
       }
     }
   }

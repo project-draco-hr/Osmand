@@ -1,0 +1,62 @@
+{
+  setContentView(R.layout.sherpafy_start);
+  final Button selectTour=(Button)findViewById(R.id.select_tour);
+  final Button downloadTour=(Button)findViewById(R.id.download_tour);
+  int width=Math.max(downloadTour.getWidth(),selectTour.getWidth());
+  downloadTour.setWidth(width);
+  selectTour.setWidth(width);
+  selectTour.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      AlertDialog.Builder adb=new AlertDialog.Builder(getActivity());
+      final List<TourInformation> tours=customization.getTourInformations();
+      if (customization.getSelectedTour() != null) {
+        String[] tourNames=new String[tours.size()];
+        for (int i=0; i < tours.size(); i++) {
+          tourNames[i]=tours.get(i).getName();
+        }
+        int i;
+        for (i=0; i < tours.size(); i++) {
+          if (customization.getSelectedTour().equals(tours.get(i))) {
+            break;
+          }
+        }
+        adb.setSingleChoiceItems(tourNames,i,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialogInterface,          int i){
+            selectTour(tours.get(i));
+            dialogInterface.dismiss();
+          }
+        }
+);
+      }
+ else {
+        String[] tourNames=new String[tours.size() + 1];
+        tourNames[0]=getString(R.string.none);
+        for (int i=1; i < tours.size() + 1; i++) {
+          tourNames[i]=tours.get(i - 1).getName();
+        }
+        adb.setSingleChoiceItems(tourNames,0,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialogInterface,          int i){
+            if (i == 0) {
+              return;
+            }
+            selectTour(tours.get(i - 1));
+            dialogInterface.dismiss();
+          }
+        }
+);
+      }
+      adb.setTitle(R.string.select_tour);
+      adb.setNegativeButton(R.string.default_buttons_cancel,null);
+      adb.show();
+    }
+  }
+);
+  downloadTour.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      final Intent download=new Intent(v.getContext(),DownloadIndexActivity.class);
+      download.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+      v.getContext().startActivity(download);
+    }
+  }
+);
+}
