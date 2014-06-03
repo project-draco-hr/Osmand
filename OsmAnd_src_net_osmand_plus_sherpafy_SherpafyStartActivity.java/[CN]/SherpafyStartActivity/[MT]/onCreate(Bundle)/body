@@ -1,24 +1,24 @@
 {
-  ((OsmandApplication)getApplication()).applyTheme(this);
+  Intent intent=getIntent();
+  if (intent != null && !intent.hasExtra("SETTINGS") && customization.getSelectedTour() != null) {
+    super.onCreate(savedInstanceState);
+    Intent nintent=new Intent(getApplicationContext(),TourViewActivity.class);
+    startActivity(nintent);
+    finish();
+    return;
+  }
+  setTheme(R.style.OsmandLightTheme);
+  ((OsmandApplication)getApplication()).setLanguage(this);
   super.onCreate(savedInstanceState);
   getSherlock().setUiOptions(ActivityInfo.UIOPTION_SPLIT_ACTION_BAR_WHEN_NARROW);
-  getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-  getSupportActionBar().setTitle("Sherpafy");
+  getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+  getSupportActionBar().setTitle(R.string.sherpafy_app_name);
+  super.setContentView(R.layout.sherpafy_start);
   if (!(getMyApplication().getAppCustomization() instanceof SherpafyCustomization)) {
     getMyApplication().setAppCustomization(new SherpafyCustomization());
   }
   customization=(SherpafyCustomization)getMyApplication().getAppCustomization();
   ProgressDialog startProgressDialog=new ProgressDialog(this);
   getMyApplication().checkApplicationIsBeingInitialized(this,startProgressDialog);
-  if (startProgressDialog.isShowing()) {
-    startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
-      @Override public void onDismiss(      DialogInterface dialogInterface){
-        onStartDialogClose();
-      }
-    }
-);
-  }
- else {
-    onStartDialogClose();
-  }
+  setContentView();
 }
