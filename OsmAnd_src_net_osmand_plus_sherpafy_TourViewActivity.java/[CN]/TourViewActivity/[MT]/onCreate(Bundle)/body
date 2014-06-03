@@ -12,11 +12,23 @@
   getSupportActionBar().setDisplayHomeAsUpEnabled(false);
   getSupportActionBar().setTitle(R.string.sherpafy_app_name);
   setContentView(R.layout.sherpafy_loading);
-  state=STATE_LOADING;
-  getMyApplication().checkApplicationIsBeingInitialized(this,(TextView)findViewById(R.id.ProgressMessage),(ProgressBar)findViewById(R.id.ProgressBar),new Runnable(){
-    @Override public void run(){
-      setMainContent();
+  if (state == STATE_LOADING) {
+    getMyApplication().checkApplicationIsBeingInitialized(this,(TextView)findViewById(R.id.ProgressMessage),(ProgressBar)findViewById(R.id.ProgressBar),new Runnable(){
+      @Override public void run(){
+        if (customization.getSelectedTour() != null) {
+          startTourView();
+        }
+ else {
+          startSettings();
+        }
+      }
     }
-  }
 );
+  }
+ else   if (state == STATE_SELECT_TOUR) {
+    startSettings();
+  }
+ else   if (state == STATE_TOUR_VIEW) {
+    startTourView();
+  }
 }

@@ -1,6 +1,6 @@
 {
-  curTour=customization.getSelectedTour();
-  stagesInfo=curTour.getStageInformation();
+  TourInformation curTour=customization.getSelectedTour();
+  List<StageInformation> stagesInfo=curTour.getStageInformation();
   img=(ImageView)findViewById(R.id.tour_image);
   description=(TextView)findViewById(R.id.tour_description);
   description.setVisibility(View.VISIBLE);
@@ -19,23 +19,17 @@
     stages.addView(rb[i]);
     rb[i].setText(stagesInfo.get(i - 1).getName());
   }
-  TourInformation.StageInformation curStage=customization.getSelectedStage();
-  if (curStage == null) {
-    stages.check(0);
-    description.setText(curTour.getShortDescription());
-    fullDescription.setText(curTour.getFulldescription());
-    prepareBitmap();
+  StageInformation stage=customization.getSelectedStage();
+  int i=0;
+  if (stage != null) {
+    for (i=1; i < count; i++) {
+      if (stage == stagesInfo.get(i - 1))       break;
+    }
+  }
+  if (i != count) {
+    stages.check(i);
   }
  else {
-    int i;
-    for (i=1; i < count; i++) {
-      if (curStage.equals(stagesInfo.get(i - 1)))       break;
-    }
-    if (i != count) {
-      stages.check(i);
-    }
- else {
-      stages.check(0);
-    }
+    stages.check(0);
   }
 }
