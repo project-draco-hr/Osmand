@@ -1,0 +1,37 @@
+{
+  FilterResults results=new FilterResults();
+  if (constraint == null || constraint.length() == 0) {
+    results.values=helper.getFavoriteGroups();
+    results.count=1;
+  }
+ else {
+    TreeMap<String,List<FavouritePoint>> filter=new TreeMap<String,List<FavouritePoint>>(helper.getFavoriteGroups());
+    TreeMap<String,List<FavouritePoint>> filterLists=new TreeMap<String,List<FavouritePoint>>();
+    String cs=constraint.toString().toLowerCase();
+    Iterator<Entry<String,List<FavouritePoint>>> ti=filter.entrySet().iterator();
+    while (ti.hasNext()) {
+      Entry<String,List<FavouritePoint>> next=ti.next();
+      if (next.getKey().toLowerCase().indexOf(cs) == -1) {
+        ti.remove();
+        filterLists.put(next.getKey(),next.getValue());
+      }
+    }
+    ti=filterLists.entrySet().iterator();
+    while (ti.hasNext()) {
+      Entry<String,List<FavouritePoint>> next=ti.next();
+      final List<FavouritePoint> list=next.getValue();
+      LinkedList<FavouritePoint> ll=new LinkedList<FavouritePoint>();
+      for (      FavouritePoint l : list) {
+        if (l.getName().toLowerCase().indexOf(cs) != -1) {
+          ll.add(l);
+        }
+      }
+      if (ll.size() > 0) {
+        filter.put(next.getKey(),ll);
+      }
+    }
+    results.values=filter;
+    results.count=filter.size();
+  }
+  return results;
+}
