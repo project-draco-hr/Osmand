@@ -1,12 +1,8 @@
 {
   setContentView(R.layout.sherpafy_start);
-  final Button downloadTour=(Button)findViewById(R.id.download_tour);
   final Button selectTour=(Button)findViewById(R.id.select_tour);
-  if (customization.getTourInformations().isEmpty()) {
-    ((ViewGroup)selectTour.getParent()).setVisibility(View.GONE);
-  }
- else {
-    ((ViewGroup)selectTour.getParent()).setVisibility(View.VISIBLE);
+  if (!customization.getTourInformations().isEmpty()) {
+    selectTour.setText(R.string.select_tour);
     selectTour.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View v){
         selectTourDialog();
@@ -14,12 +10,13 @@
     }
 );
   }
-  downloadTour.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      final Intent download=new Intent(v.getContext(),DownloadIndexActivity.class);
-      download.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-      v.getContext().startActivity(download);
+ else {
+    selectTour.setText(R.string.download_tour);
+    selectTour.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        startDownloadActivity();
+      }
     }
-  }
 );
+  }
 }
