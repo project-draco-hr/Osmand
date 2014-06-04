@@ -1,0 +1,71 @@
+{
+  float[] calculations=new float[1];
+  float totalElevation=0;
+  int elevationPoints=0;
+  int speedCount=0;
+  double totalSpeedSum=0;
+  points=0;
+  for (  SplitSegment s : splitSegments) {
+    final int numberOfPoints=s.getNumberOfPoints();
+    metricEnd+=s.metricEnd;
+    points+=numberOfPoints;
+    for (int j=0; j < numberOfPoints; j++) {
+      WptPt point=s.get(j);
+      long time=point.time;
+      if (time != 0) {
+        startTime=Math.min(startTime,time);
+        endTime=Math.max(startTime,time);
+      }
+      double elevation=point.ele;
+      if (!Double.isNaN(elevation)) {
+        totalElevation+=elevation;
+        elevationPoints++;
+        minElevation=Math.min(elevation,minElevation);
+        maxElevation=Math.max(elevation,maxElevation);
+      }
+      float speed=(float)point.speed;
+      if (speed > 0) {
+        totalSpeedSum+=speed;
+        maxSpeed=Math.max(speed,maxSpeed);
+        speedCount++;
+      }
+      if (j > 0) {
+        WptPt prev=s.get(j - 1);
+        if (!Double.isNaN(point.ele) && !Double.isNaN(prev.ele)) {
+          double diff=point.ele - prev.ele;
+          if (diff > 0) {
+            diffElevationUp+=diff;
+          }
+ else {
+            diffElevationDown-=diff;
+          }
+        }
+        net.osmand.Location.distanceBetween(prev.lat,prev.lon,point.lat,point.lon,calculations);
+        totalDistance+=calculations[0];
+        if (speed > 0 && point.time != 0 && prev.time != 0) {
+          timeMoving=timeMoving + (point.time - prev.time);
+          totalDistanceMoving+=calculations[0];
+        }
+      }
+    }
+  }
+  if (!isTimeSpecified()) {
+    startTime=filestamp;
+    endTime=filestamp;
+  }
+  timeSpan=endTime - startTime;
+  if (elevationPoints > 0) {
+    avgElevation=elevationPoints / totalElevation;
+  }
+  if (speedCount > 0) {
+    if (timeMoving > 0) {
+      avgSpeed=(float)(totalDistanceMoving / timeMoving * 1000);
+    }
+ else {
+      avgSpeed=(float)(totalSpeedSum / speedCount);
+    }
+  }
+ else {
+    avgSpeed=-1;
+  }
+}

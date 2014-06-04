@@ -1,0 +1,36 @@
+{
+  new AsyncTask<Void,Object,String>(){
+    @Override protected void onPreExecute(){
+      showProgressBar();
+    }
+    @Override protected void onPostExecute(    String result){
+      hideProgressBar();
+      favouritesAdapter.synchronizeGroups();
+      favouritesAdapter.sort(favoritesComparator);
+    }
+    @Override protected void onProgressUpdate(    Object... values){
+      for (      Object o : values) {
+        if (o instanceof FavouritePoint) {
+          favouritesAdapter.deleteFavoritePoint((FavouritePoint)o);
+        }
+ else         if (o instanceof String) {
+          favouritesAdapter.deleteCategory((String)o);
+        }
+      }
+    }
+    @Override protected String doInBackground(    Void... params){
+      for (      FavouritePoint fp : favoritesToDelete) {
+        helper.deleteFavourite(fp);
+        publishProgress(fp);
+      }
+      favoritesToDelete.clear();
+      for (      String group : groupsToDelete) {
+        helper.deleteGroup(group);
+        publishProgress(group);
+      }
+      groupsToDelete.clear();
+      return getString(R.string.favourites_delete_multiple_succesful);
+    }
+  }
+.execute();
+}
