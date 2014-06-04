@@ -1,0 +1,56 @@
+{
+  View v=convertView;
+  final GpxInfo child=(GpxInfo)getChild(groupPosition,childPosition);
+  if (v == null) {
+    LayoutInflater inflater=getActivity().getLayoutInflater();
+    v=inflater.inflate(net.osmand.plus.R.layout.local_index_list_item,parent,false);
+  }
+  TextView viewName=((TextView)v.findViewById(R.id.local_index_name));
+  viewName.setText(child.getName());
+  if (child.isCorrupted()) {
+    viewName.setTextColor(corruptedColor);
+    viewName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+  }
+ else {
+    viewName.setTextColor(defaultColor);
+    viewName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+  }
+  if (child.getSize() >= 0) {
+    String size;
+    if (child.getSize() > 100) {
+      size=formatMb.format(new Object[]{(float)child.getSize() / (1 << 10)});
+    }
+ else {
+      size=child.getSize() + " kB";
+    }
+    ((TextView)v.findViewById(R.id.local_index_size)).setText(size);
+  }
+ else {
+    ((TextView)v.findViewById(R.id.local_index_size)).setText("");
+  }
+  TextView descr=((TextView)v.findViewById(R.id.local_index_descr));
+  if (child.isExpanded()) {
+    descr.setVisibility(View.VISIBLE);
+    descr.setText(child.getDescription());
+  }
+ else {
+    descr.setVisibility(View.GONE);
+  }
+  final CheckBox checkbox=(CheckBox)v.findViewById(R.id.check_local_index);
+  checkbox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
+  if (selectionMode) {
+    checkbox.setChecked(selectedItems.contains(child));
+    checkbox.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        if (checkbox.isChecked()) {
+          selectedItems.add(child);
+        }
+ else {
+          selectedItems.remove(child);
+        }
+      }
+    }
+);
+  }
+  return v;
+}

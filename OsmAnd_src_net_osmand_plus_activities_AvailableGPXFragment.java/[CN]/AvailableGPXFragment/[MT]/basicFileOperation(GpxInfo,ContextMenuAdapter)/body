@@ -1,0 +1,51 @@
+{
+  OnContextMenuClick listener=new OnContextMenuClick(){
+    @Override public void onContextMenuClick(    int resId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      if (resId == R.string.local_index_mi_rename) {
+        renameFile(info);
+      }
+ else       if (resId == R.string.local_index_mi_delete) {
+        Builder confirm=new AlertDialog.Builder(getActivity());
+        confirm.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            new DeleteGpxTask().execute(info);
+          }
+        }
+);
+        confirm.setNegativeButton(R.string.default_buttons_no,null);
+        confirm.setMessage(getString(R.string.delete_confirmation_msg,info.file.getName()));
+        confirm.show();
+      }
+ else       if (resId == R.string.local_index_mi_export) {
+        final Uri fileUri=Uri.fromFile(info.file);
+        final Intent sendIntent=new Intent(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_STREAM,fileUri);
+        sendIntent.setType("application/gpx+xml");
+        startActivity(sendIntent);
+      }
+ else       if (resId == R.string.show_gpx_route) {
+        info.updateGpxInfo(getMyApplication());
+        boolean e=true;
+        if (info != null && info.gpx != null) {
+          WptPt loc=info.gpx.findPointToShow();
+          OsmandSettings settings=getMyApplication().getSettings();
+          if (loc != null) {
+            settings.setMapLocationToShow(loc.lat,loc.lon,settings.getLastKnownMapZoom());
+            e=false;
+            getMyApplication().setGpxFileToDisplay(info.gpx,false);
+            MapActivity.launchMapActivityMoveToTop(getActivity());
+          }
+        }
+        if (e) {
+          AccessibleToast.makeText(getActivity(),R.string.gpx_file_is_empty,Toast.LENGTH_LONG).show();
+        }
+      }
+    }
+  }
+;
+  adapter.item(R.string.show_gpx_route).listen(listener).reg();
+  adapter.item(R.string.local_index_mi_rename).listen(listener).reg();
+  adapter.item(R.string.local_index_mi_delete).listen(listener).reg();
+  adapter.item(R.string.local_index_mi_export).listen(listener).reg();
+  OsmandPlugin.onContextMenuActivity(getSherlockActivity(),this,info,adapter);
+}

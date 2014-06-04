@@ -1,0 +1,50 @@
+{
+  String value=getString(actionResId);
+  if (value.endsWith("...")) {
+    value=value.substring(0,value.length() - 3);
+  }
+  final String actionButton=value;
+  if (listAdapter.getGroupCount() == 0) {
+    AccessibleToast.makeText(getActivity(),getString(R.string.local_index_no_items_to_do,actionButton.toLowerCase()),Toast.LENGTH_SHORT).show();
+    return;
+  }
+  selectionMode=true;
+  selectedItems.clear();
+  actionMode=getSherlockActivity().startActionMode(new Callback(){
+    @Override public boolean onCreateActionMode(    ActionMode mode,    Menu menu){
+      selectionMode=true;
+      MenuItem it=menu.add(actionResId);
+      if (actionIconId != 0) {
+        it.setIcon(actionIconId);
+      }
+      it.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+      return true;
+    }
+    @Override public boolean onPrepareActionMode(    ActionMode mode,    Menu menu){
+      return false;
+    }
+    @Override public boolean onActionItemClicked(    ActionMode mode,    MenuItem item){
+      if (selectedItems.isEmpty()) {
+        AccessibleToast.makeText(getActivity(),getString(R.string.local_index_no_items_to_do,actionButton.toLowerCase()),Toast.LENGTH_SHORT).show();
+        return true;
+      }
+      Builder builder=new AlertDialog.Builder(getActivity());
+      builder.setMessage(getString(R.string.local_index_action_do,actionButton.toLowerCase(),selectedItems.size()));
+      builder.setPositiveButton(actionButton,listener);
+      builder.setNegativeButton(R.string.default_buttons_cancel,null);
+      builder.show();
+      return true;
+    }
+    @Override public void onDestroyActionMode(    ActionMode mode){
+      selectionMode=false;
+      getView().findViewById(R.id.DescriptionText).setVisibility(View.GONE);
+      listAdapter.notifyDataSetChanged();
+    }
+  }
+);
+  if (R.string.local_index_mi_upload_gpx == actionResId) {
+    ((TextView)getView().findViewById(R.id.DescriptionText)).setText(R.string.local_index_upload_gpx_description);
+    ((TextView)getView().findViewById(R.id.DescriptionText)).setVisibility(View.VISIBLE);
+  }
+  listAdapter.notifyDataSetChanged();
+}

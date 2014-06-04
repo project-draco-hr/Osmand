@@ -1,0 +1,19 @@
+{
+  for (  File gpxFile : listFilesSorted(mapPath)) {
+    if (gpxFile.isDirectory()) {
+      String sub=gpxSubfolder.length() == 0 ? gpxFile.getName() : gpxSubfolder + "/" + gpxFile.getName();
+      loadGPXFolder(gpxFile,result,loadTask,progress,sub);
+    }
+ else     if (gpxFile.isFile() && gpxFile.getName().endsWith(".gpx")) {
+      GpxInfo info=new GpxInfo();
+      info.subfolder=gpxSubfolder;
+      info.file=gpxFile;
+      result.add(info);
+      progress.add(info);
+      if (progress.size() > 7) {
+        loadTask.loadFile(progress.toArray(new GpxInfo[progress.size()]));
+        progress.clear();
+      }
+    }
+  }
+}

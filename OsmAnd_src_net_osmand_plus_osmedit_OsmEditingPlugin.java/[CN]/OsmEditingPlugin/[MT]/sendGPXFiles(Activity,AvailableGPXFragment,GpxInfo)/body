@@ -1,0 +1,32 @@
+{
+  String name=settings.USER_NAME.get();
+  String pwd=settings.USER_PASSWORD.get();
+  if (Algorithms.isEmpty(name) || Algorithms.isEmpty(pwd)) {
+    AccessibleToast.makeText(la,R.string.validate_gpx_upload_name_pwd,Toast.LENGTH_LONG).show();
+    return false;
+  }
+  Builder bldr=new AlertDialog.Builder(la);
+  LayoutInflater inflater=(LayoutInflater)la.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+  final View view=inflater.inflate(R.layout.send_gpx_osm,null);
+  final EditText descr=(EditText)view.findViewById(R.id.DescriptionText);
+  if (info.length > 0 && info[0].getFileName() != null) {
+    int dt=info[0].getFileName().indexOf('.');
+    descr.setText(info[0].getFileName().substring(0,dt));
+  }
+  final EditText tags=(EditText)view.findViewById(R.id.TagsText);
+  final Spinner visibility=((Spinner)view.findViewById(R.id.Visibility));
+  EnumAdapter<UploadVisibility> adapter=new EnumAdapter<UploadVisibility>(la,android.R.layout.simple_spinner_item,UploadVisibility.values());
+  adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+  visibility.setAdapter(adapter);
+  visibility.setSelection(0);
+  bldr.setView(view);
+  bldr.setNegativeButton(R.string.default_buttons_no,null);
+  bldr.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      new UploadGPXFilesTask((SherlockActivity)la,descr.getText().toString(),tags.getText().toString(),(UploadVisibility)visibility.getItemAtPosition(visibility.getSelectedItemPosition())).execute(info);
+    }
+  }
+);
+  bldr.show();
+  return true;
+}
