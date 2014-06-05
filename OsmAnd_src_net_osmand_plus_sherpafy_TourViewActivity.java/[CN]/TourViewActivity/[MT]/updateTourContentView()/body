@@ -2,16 +2,24 @@
   if (customization.getSelectedStage() == null) {
     if (customization.getSelectedTour() != null) {
       TourInformation curTour=customization.getSelectedTour();
-      fullDescription.setText(curTour.getFulldescription());
-      description.setText((curTour.getShortDescription()));
+      fullDescription.setText(Html.fromHtml(curTour.getFulldescription()));
+      description.setText(Html.fromHtml(curTour.getShortDescription()));
       setCollapserText(getString(R.string.overview));
       prepareBitmap(curTour.getImageBitmap());
     }
   }
  else {
     StageInformation st=customization.getSelectedStage();
-    description.setText(st.getDescription());
-    fullDescription.setText(st.getFullDescription());
+    description.setText(Html.fromHtml(st.getDescription(),new Html.ImageGetter(){
+      @Override public Drawable getDrawable(      String s){
+        Bitmap file=customization.getSelectedTour().getImageBitmapFromPath(s);
+        Drawable bmp=new BitmapDrawable(getResources(),file);
+        bmp.setBounds(0,0,bmp.getIntrinsicHeight(),bmp.getIntrinsicHeight());
+        return bmp;
+      }
+    }
+,null));
+    fullDescription.setText(Html.fromHtml(st.getFullDescription()));
     setCollapserText(st.getName());
     prepareBitmap(st.getImageBitmap());
   }
