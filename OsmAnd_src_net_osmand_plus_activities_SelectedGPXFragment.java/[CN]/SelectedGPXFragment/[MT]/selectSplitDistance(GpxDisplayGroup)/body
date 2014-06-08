@@ -1,0 +1,43 @@
+{
+  Builder bld=new AlertDialog.Builder(getActivity());
+  int checkedItem=-1;
+  List<String> options=new ArrayList<String>();
+  final TIntArrayList distanceSplit=new TIntArrayList();
+  final TIntArrayList timeSplit=new TIntArrayList();
+  bld.setTitle(R.string.gpx_split_interval);
+  options.add(app.getString(R.string.none));
+  distanceSplit.add(-1);
+  timeSplit.add(-1);
+  addOptionSplit(50,true,options,distanceSplit,timeSplit);
+  addOptionSplit(100,true,options,distanceSplit,timeSplit);
+  addOptionSplit(200,true,options,distanceSplit,timeSplit);
+  addOptionSplit(500,true,options,distanceSplit,timeSplit);
+  addOptionSplit(1000,true,options,distanceSplit,timeSplit);
+  addOptionSplit(2000,true,options,distanceSplit,timeSplit);
+  addOptionSplit(5000,true,options,distanceSplit,timeSplit);
+  addOptionSplit(15,false,options,distanceSplit,timeSplit);
+  addOptionSplit(30,false,options,distanceSplit,timeSplit);
+  addOptionSplit(60,false,options,distanceSplit,timeSplit);
+  addOptionSplit(120,false,options,distanceSplit,timeSplit);
+  addOptionSplit(150,false,options,distanceSplit,timeSplit);
+  addOptionSplit(300,false,options,distanceSplit,timeSplit);
+  addOptionSplit(600,false,options,distanceSplit,timeSplit);
+  addOptionSplit(900,false,options,distanceSplit,timeSplit);
+  bld.setSingleChoiceItems(options.toArray(new String[options.size()]),checkedItem,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (which == 0) {
+        model.noSplit(app);
+      }
+ else       if (distanceSplit.get(which) > 0) {
+        model.splitByDistance(app,distanceSplit.get(which));
+      }
+ else       if (timeSplit.get(which) > 0) {
+        model.splitByTime(app,timeSplit.get(which));
+      }
+      adapter.notifyDataSetChanged();
+      dialog.dismiss();
+    }
+  }
+);
+  bld.show();
+}

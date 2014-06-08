@@ -4,13 +4,35 @@
     LayoutInflater inflater=getActivity().getLayoutInflater();
     row=inflater.inflate(R.layout.gpx_item_list_item,parent,false);
   }
-  TextView label=(TextView)row.findViewById(R.id.name);
-  TextView additional=(TextView)row.findViewById(R.id.additional);
-  TextView description=(TextView)row.findViewById(R.id.description);
-  ImageView icon=(ImageView)row.findViewById(R.id.icon);
   GpxDisplayItem child=getChild(groupPosition,childPosition);
+  TextView label=(TextView)row.findViewById(R.id.name);
+  TextView description=(TextView)row.findViewById(R.id.description);
+  TextView additional=(TextView)row.findViewById(R.id.additional);
+  ImageView icon=(ImageView)row.findViewById(R.id.icon);
+  if (child.splitMetric >= 0) {
+    additional.setVisibility(View.VISIBLE);
+    icon.setVisibility(View.INVISIBLE);
+    if (child.group.isSplitDistance()) {
+      additional.setText(OsmAndFormatter.getFormattedDistance(child.splitMetric,app));
+    }
+ else {
+      additional.setText(Algorithms.formatDuration(child.splitMetric));
+    }
+  }
+ else {
+    icon.setVisibility(View.VISIBLE);
+    additional.setVisibility(View.INVISIBLE);
+    if (child.group.getType() == GpxDisplayItemType.TRACK_SEGMENT) {
+      icon.setImageResource(!lightContent ? R.drawable.ic_action_polygom_dark : R.drawable.ic_action_polygom_light);
+    }
+ else     if (child.group.getType() == GpxDisplayItemType.TRACK_ROUTE_POINTS) {
+      icon.setImageResource(!lightContent ? R.drawable.ic_action_markers_dark : R.drawable.ic_action_markers_light);
+    }
+ else {
+      icon.setImageResource(R.drawable.list_favorite);
+    }
+  }
   row.setTag(child);
-  icon.setImageResource(R.drawable.list_favorite);
   label.setText(Html.fromHtml(child.name.replace("\n","<br/>")));
   if (child.expanded) {
     description.setText(Html.fromHtml(child.description));

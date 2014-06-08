@@ -8,12 +8,32 @@
   final float eleThreshold=3;
   int t=1;
   for (  TrkSegment r : group.track.segments) {
-    if (r.points.size() > 0) {
+    if (r.points.size() == 0) {
+      continue;
+    }
+    GPXTrackAnalysis[] as;
+    boolean split=true;
+    if (group.splitDistance > 0) {
+      as=r.splitByDistance(group.splitDistance).toArray(new GPXTrackAnalysis[0]);
+    }
+ else     if (group.splitTime > 0) {
+      as=r.splitByTime(group.splitTime).toArray(new GPXTrackAnalysis[0]);
+    }
+ else {
+      split=false;
+      as=new GPXTrackAnalysis[]{GPXTrackAnalysis.segment(0,r)};
+    }
+    for (    GPXTrackAnalysis analysis : as) {
       GpxDisplayItem item=new GpxDisplayItem();
       item.group=group;
-      GPXTrackAnalysis analysis=GPXTrackAnalysis.segment(0,r);
+      if (split) {
+        item.splitMetric=analysis.metricEnd;
+      }
       item.description=GpxUiHelper.getDescription(app,analysis);
-      String name=t++ + ". ";
+      String name="";
+      if (group.track.segments.size() > 1) {
+        name+=t++ + ". ";
+      }
       name+=GpxUiHelper.getColorValue(distanceClr,OsmAndFormatter.getFormattedDistance(analysis.totalDistance,app));
       if (analysis.timeSpan > 0 || analysis.timeMoving > 0) {
         long tm=analysis.timeMoving;
