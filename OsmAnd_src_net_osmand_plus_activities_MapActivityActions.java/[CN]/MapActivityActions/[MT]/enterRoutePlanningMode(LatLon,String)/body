@@ -1,11 +1,19 @@
 {
-  final GPXFile gpxFile=mapActivity.getMyApplication().getGpxFileToDisplay();
+  List<SelectedGpxFile> selectedGPXFiles=mapActivity.getMyApplication().getSelectedGpxHelper().getSelectedGPXFiles();
+  GPXFile gpxFile=null;
+  for (  SelectedGpxFile gs : selectedGPXFiles) {
+    if (!gs.isShowCurrentTrack()) {
+      gpxFile=gs.getGpxFile();
+      break;
+    }
+  }
   if (gpxFile != null) {
+    final GPXFile f=gpxFile;
     Builder bld=new AlertDialog.Builder(mapActivity);
     bld.setMessage(R.string.use_displayed_track_for_navigation);
     bld.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
       @Override public void onClick(      DialogInterface dialog,      int which){
-        enterRoutePlanningModeImpl(gpxFile,from,fromName);
+        enterRoutePlanningModeImpl(f,from,fromName);
       }
     }
 );

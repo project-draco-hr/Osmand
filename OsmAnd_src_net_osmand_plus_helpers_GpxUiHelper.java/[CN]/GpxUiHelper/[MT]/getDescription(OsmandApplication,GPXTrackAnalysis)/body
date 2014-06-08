@@ -1,15 +1,46 @@
 {
   StringBuilder description=new StringBuilder();
-  description.append(app.getString(R.string.local_index_gpx_info,analysis.totalTracks,analysis.points,analysis.wptPoints,OsmAndFormatter.getFormattedDistance(analysis.totalDistance,app),analysis.startTime,analysis.endTime));
-  description.append(app.getString(R.string.local_index_gpx_timespan,analysis.getTimeHours(analysis.timeSpan),analysis.getTimeMinutes(analysis.timeSpan),analysis.getTimeSeconds(analysis.timeSpan)));
+  String timeSpanClr=Algorithms.colorToString(app.getResources().getColor(R.color.gpx_time_span_color));
+  String distanceClr=Algorithms.colorToString(app.getResources().getColor(R.color.gpx_distance_color));
+  String speedClr=Algorithms.colorToString(app.getResources().getColor(R.color.gpx_speed));
+  String ascClr=Algorithms.colorToString(app.getResources().getColor(R.color.gpx_altitude_asc));
+  String descClr=Algorithms.colorToString(app.getResources().getColor(R.color.gpx_altitude_desc));
+  description.append(app.getString(R.string.gpx_info_distance,getColorValue(distanceClr,OsmAndFormatter.getFormattedDistance(analysis.totalDistance,app)),getColorValue(distanceClr,analysis.points + "")));
+  if (analysis.totalTracks > 1) {
+    description.append("<br/>").append(app.getString(R.string.gpx_info_subtracks,getColorValue(speedClr,analysis.totalTracks + "")));
+  }
+  if (analysis.wptPoints > 0) {
+    description.append("<br/>").append(app.getString(R.string.gpx_info_waypoints,getColorValue(speedClr,analysis.wptPoints + "")));
+  }
+  if (analysis.isTimeSpecified()) {
+    description.append("<br/>").append(app.getString(R.string.gpx_info_start_time,analysis.startTime));
+    description.append("<br/>").append(app.getString(R.string.gpx_info_end_time,analysis.endTime));
+  }
+  if (analysis.timeSpan > 0 && analysis.timeSpan / 1000 != analysis.timeMoving / 1000) {
+    final String formatDuration=Algorithms.formatDuration((int)(analysis.timeSpan / 1000));
+    description.append("<br/>").append(app.getString(R.string.gpx_timespan,getColorValue(timeSpanClr,formatDuration)));
+  }
   if (analysis.isTimeMoving()) {
-    description.append(app.getString(R.string.local_index_gpx_timemoving,analysis.getTimeHours(analysis.timeMoving),analysis.getTimeMinutes(analysis.timeMoving),analysis.getTimeSeconds(analysis.timeMoving)));
+    final String formatDuration=Algorithms.formatDuration((int)(analysis.timeMoving / 1000));
+    description.append("<br/>").append(app.getString(R.string.gpx_timemoving,getColorValue(timeSpanClr,formatDuration)));
   }
   if (analysis.isElevationSpecified()) {
-    description.append(app.getString(R.string.local_index_gpx_info_elevation,OsmAndFormatter.getFormattedAlt(analysis.avgElevation,app),OsmAndFormatter.getFormattedAlt(analysis.minElevation,app),OsmAndFormatter.getFormattedAlt(analysis.maxElevation,app),OsmAndFormatter.getFormattedAlt(analysis.diffElevationUp,app),OsmAndFormatter.getFormattedAlt(analysis.diffElevationDown,app)));
+    description.append("<br/>");
+    description.append(app.getString(R.string.gpx_info_avg_altitude,getColorValue(speedClr,OsmAndFormatter.getFormattedAlt(analysis.avgElevation,app))));
+    description.append("<br/>");
+    String min=getColorValue(descClr,OsmAndFormatter.getFormattedAlt(analysis.minElevation,app));
+    String max=getColorValue(ascClr,OsmAndFormatter.getFormattedAlt(analysis.maxElevation,app));
+    String asc=getColorValue(ascClr,OsmAndFormatter.getFormattedAlt(analysis.diffElevationUp,app));
+    String desc=getColorValue(descClr,OsmAndFormatter.getFormattedAlt(analysis.diffElevationDown,app));
+    description.append(app.getString(R.string.gpx_info_diff_altitude,min + " - " + max));
+    description.append("<br/>");
+    description.append(app.getString(R.string.gpx_info_asc_altitude,"\u2193 " + desc + "   \u2191 "+ asc+ ""));
   }
   if (analysis.isSpeedSpecified()) {
-    description.append(app.getString(R.string.local_index_gpx_info_speed,OsmAndFormatter.getFormattedSpeed(analysis.avgSpeed,app),OsmAndFormatter.getFormattedSpeed(analysis.maxSpeed,app)));
+    String avg=getColorValue(speedClr,OsmAndFormatter.getFormattedSpeed(analysis.avgSpeed,app));
+    String max=getColorValue(ascClr,OsmAndFormatter.getFormattedSpeed(analysis.maxSpeed,app));
+    description.append("<br/>").append(app.getString(R.string.gpx_info_average_speed,avg));
+    description.append("<br/>").append(app.getString(R.string.gpx_info_maximum_speed,max));
   }
   return description.toString();
 }
