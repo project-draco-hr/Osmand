@@ -1,0 +1,35 @@
+{
+  final ProgressDialog dlg=ProgressDialog.show(activity,activity.getString(R.string.loading),activity.getString(R.string.loading_data));
+  new Thread(new Runnable(){
+    @Override public void run(){
+      final GPXFile[] result=new GPXFile[filename.length + (currentFile == null ? 1 : 0)];
+      int k=0;
+      String w="";
+      if (currentFile != null) {
+        result[k++]=currentFile;
+      }
+      for (      String fname : filename) {
+        final File f=new File(dir,fname);
+        GPXFile res=GPXUtilities.loadGPXFile(activity.getApplication(),f);
+        if (res.warning != null && res.warning.length() > 0) {
+          w+=res.warning + "\n";
+        }
+        result[k++]=res;
+      }
+      dlg.dismiss();
+      final String warn=w;
+      activity.runOnUiThread(new Runnable(){
+        @Override public void run(){
+          if (warn.length() > 0) {
+            AccessibleToast.makeText(activity,warn,Toast.LENGTH_LONG).show();
+          }
+ else {
+            callbackWithObject.processResult(result);
+          }
+        }
+      }
+);
+    }
+  }
+,"Loading gpx").start();
+}
