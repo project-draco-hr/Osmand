@@ -1,0 +1,38 @@
+{
+  selectionMode=true;
+  selectedItems.clear();
+  final Set<GpxInfo> originalSelectedItems=listAdapter.getSelectedGpx();
+  selectedItems.addAll(originalSelectedItems);
+  actionMode=getSherlockActivity().startActionMode(new Callback(){
+    @Override public boolean onCreateActionMode(    ActionMode mode,    Menu menu){
+      selectionMode=true;
+      MenuItem it=menu.add(R.string.show_gpx_route);
+      it.setIcon(!isLightActionBar() ? R.drawable.ic_action_map_marker_dark : R.drawable.ic_action_map_marker_light);
+      it.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+      return true;
+    }
+    @Override public boolean onPrepareActionMode(    ActionMode mode,    Menu menu){
+      return false;
+    }
+    @Override public boolean onActionItemClicked(    ActionMode mode,    MenuItem item){
+      if (selectedItems.isEmpty()) {
+        return true;
+      }
+      runSelection(true);
+      return true;
+    }
+    private void runSelection(    boolean showOnMap){
+      operationTask=new SelectGpxTask(showOnMap);
+      originalSelectedItems.addAll(selectedItems);
+      operationTask.execute(originalSelectedItems.toArray(new GpxInfo[originalSelectedItems.size()]));
+    }
+    @Override public void onDestroyActionMode(    ActionMode mode){
+      selectionMode=false;
+      getView().findViewById(R.id.DescriptionText).setVisibility(View.GONE);
+      runSelection(false);
+      listAdapter.notifyDataSetChanged();
+    }
+  }
+);
+  listAdapter.notifyDataSetChanged();
+}
