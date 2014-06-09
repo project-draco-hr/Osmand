@@ -1,0 +1,95 @@
+{
+  String name=g.path;
+  if (g.showCurrentTrack) {
+    name=getString(R.string.gpx_selection_current_track);
+  }
+ else {
+    int i=name.lastIndexOf('/');
+    if (i >= 0) {
+      name=name.substring(i + 1);
+    }
+    i=name.lastIndexOf('\\');
+    if (i >= 0) {
+      name=name.substring(i + 1);
+    }
+    if (name.endsWith(".gpx")) {
+      name=name.substring(0,name.length() - 4);
+    }
+    name=name.replace('_',' ');
+  }
+  if (g.tracks.size() > 0) {
+    int k=0;
+    for (    Track t : g.tracks) {
+      GpxDisplayGroup group=new GpxDisplayGroup(g);
+      group.setType(GpxDisplayItemType.TRACK_POINTS);
+      group.setTrack(t);
+      String ks=(k++) + "";
+      group.setName(getString(R.string.gpx_selection_track,name,g.tracks.size() == 1 ? "" : ks));
+      String d="";
+      if (t.name != null && t.name.length() > 0) {
+        d=t.name + " " + d;
+      }
+      group.setDescription(d);
+      dg.add(group);
+      processGroupTrack(group);
+    }
+  }
+  if (g.routes.size() > 0) {
+    int k=0;
+    for (    Route route : g.routes) {
+      GpxDisplayGroup group=new GpxDisplayGroup(g);
+      group.setType(GpxDisplayItemType.TRACK_ROUTE_POINTS);
+      String d=getString(R.string.gpx_selection_number_of_points,name,route.points.size());
+      if (route.name != null && route.name.length() > 0) {
+        d=route.name + " " + d;
+      }
+      group.setDescription(d);
+      String ks=(k++) + "";
+      group.setName(getString(R.string.gpx_selection_route_points,name,g.routes.size() == 1 ? "" : ks));
+      dg.add(group);
+      List<GpxDisplayItem> list=group.getModifiableList();
+      int t=0;
+      for (      WptPt r : route.points) {
+        GpxDisplayItem item=new GpxDisplayItem();
+        item.group=group;
+        item.description=r.desc;
+        item.name=r.name;
+        t++;
+        if (Algorithms.isEmpty(item.name)) {
+          item.name=getString(R.string.gpx_selection_point,t + "");
+        }
+        if (Algorithms.isEmpty(item.description)) {
+          item.description=item.name;
+        }
+        item.locationStart=r;
+        item.locationEnd=r;
+        list.add(item);
+      }
+    }
+  }
+  if (g.points.size() > 0) {
+    GpxDisplayGroup group=new GpxDisplayGroup(g);
+    group.setType(GpxDisplayItemType.TRACK_POINTS);
+    group.setDescription(getString(R.string.gpx_selection_number_of_points,g.points.size()));
+    group.setName(getString(R.string.gpx_selection_points,name));
+    dg.add(group);
+    List<GpxDisplayItem> list=group.getModifiableList();
+    int k=0;
+    for (    WptPt r : g.points) {
+      GpxDisplayItem item=new GpxDisplayItem();
+      item.group=group;
+      item.description=r.desc;
+      item.name=r.name;
+      k++;
+      if (Algorithms.isEmpty(item.name)) {
+        item.name=getString(R.string.gpx_selection_point,k + "");
+      }
+      if (Algorithms.isEmpty(item.description)) {
+        item.description=item.name;
+      }
+      item.locationStart=r;
+      item.locationEnd=r;
+      list.add(item);
+    }
+  }
+}
