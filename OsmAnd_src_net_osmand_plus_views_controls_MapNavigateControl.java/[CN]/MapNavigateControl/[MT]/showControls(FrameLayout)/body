@@ -2,28 +2,11 @@
   navigateButton=addButton(parent,R.string.get_directions,R.drawable.map_btn_navigate);
   navigateButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      OsmandApplication app=mapActivity.getMyApplication();
-      RoutingHelper routingHelper=app.getRoutingHelper();
-      if (routingHelper.isFollowingMode()) {
-        routingHelper.setRoutePlanningMode(false);
-        mapActivity.getMapViewTrackingUtilities().switchToRoutePlanningMode();
-      }
- else {
-        OsmandApplication ctx=mapActivity.getMyApplication();
-        if (!ctx.getTargetPointsHelper().checkPointToNavigateShort()) {
-          ri.showDialog();
-        }
- else {
-          mapActivity.getMapViewTrackingUtilities().backToLocationImpl();
-          app.getSettings().FOLLOW_THE_ROUTE.set(true);
-          routingHelper.setFollowingMode(true);
-          routingHelper.setRoutePlanningMode(false);
-          mapActivity.getMapViewTrackingUtilities().switchToRoutePlanningMode();
-          routingHelper.setCurrentLocation(app.getLocationProvider().getLastKnownLocation(),false);
-          app.getRoutingHelper().notifyIfRouteIsCalculated();
-        }
-      }
+      startNavigation();
     }
   }
 );
+  if (!mapActivity.getRoutingHelper().isFollowingMode()) {
+    startCounter();
+  }
 }

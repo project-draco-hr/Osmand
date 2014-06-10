@@ -1,0 +1,56 @@
+{
+  Builder bld=new AlertDialog.Builder(getActivity());
+  int[] checkedItem=new int[]{!model.isSplitDistance() && !model.isSplitTime() ? 0 : -1};
+  List<String> options=new ArrayList<String>();
+  final List<Double> distanceSplit=new ArrayList<Double>();
+  final TIntArrayList timeSplit=new TIntArrayList();
+  bld.setTitle(R.string.gpx_split_interval);
+  options.add(app.getString(R.string.none));
+  distanceSplit.add(-1d);
+  timeSplit.add(-1);
+  addOptionSplit(30,true,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(60,true,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(150,true,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(300,true,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(600,true,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(1500,true,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(3000,true,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(8000,true,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(15,false,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(30,false,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(60,false,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(120,false,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(150,false,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(300,false,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(600,false,options,distanceSplit,timeSplit,checkedItem,model);
+  addOptionSplit(900,false,options,distanceSplit,timeSplit,checkedItem,model);
+  bld.setSingleChoiceItems(options.toArray(new String[options.size()]),checkedItem[0],new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    final int which){
+      dialog.dismiss();
+      new AsyncTask<Void,Void,Void>(){
+        protected void onPostExecute(        Void result){
+          adapter.notifyDataSetChanged();
+          getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+        }
+        protected void onPreExecute(){
+          getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+        }
+        @Override protected Void doInBackground(        Void... params){
+          if (which == 0) {
+            model.noSplit(app);
+          }
+ else           if (distanceSplit.get(which) > 0) {
+            model.splitByDistance(app,distanceSplit.get(which));
+          }
+ else           if (timeSplit.get(which) > 0) {
+            model.splitByTime(app,timeSplit.get(which));
+          }
+          return null;
+        }
+      }
+.execute((Void)null);
+    }
+  }
+);
+  bld.show();
+}

@@ -4,13 +4,51 @@
     LayoutInflater inflater=getActivity().getLayoutInflater();
     row=inflater.inflate(R.layout.gpx_item_list_item,parent,false);
   }
-  TextView label=(TextView)row.findViewById(R.id.name);
-  TextView additional=(TextView)row.findViewById(R.id.additional);
-  TextView description=(TextView)row.findViewById(R.id.description);
-  ImageView icon=(ImageView)row.findViewById(R.id.icon);
   GpxDisplayItem child=getChild(groupPosition,childPosition);
+  TextView label=(TextView)row.findViewById(R.id.name);
+  TextView description=(TextView)row.findViewById(R.id.description);
+  TextView additional=(TextView)row.findViewById(R.id.additional);
+  ImageView icon=(ImageView)row.findViewById(R.id.icon);
+  if (child.splitMetric >= 0) {
+    additional.setVisibility(View.VISIBLE);
+    icon.setVisibility(View.INVISIBLE);
+    if (child.group.isSplitDistance()) {
+      MetricsConstants mc=app.getSettings().METRIC_SYSTEM.get();
+      if (mc == MetricsConstants.KILOMETERS_AND_METERS) {
+        final double sd=child.group.getSplitDistance();
+        int digits=sd < 100 ? 2 : (sd < 1000 ? 1 : 0);
+        int rem1000=(int)(child.splitMetric + 0.5) % 1000;
+        if (rem1000 > 1 && digits < 1) {
+          digits=1;
+        }
+        int rem100=(int)(child.splitMetric + 0.5) % 100;
+        if (rem100 > 1 && digits < 2) {
+          digits=2;
+        }
+        additional.setText(OsmAndFormatter.getFormattedRoundDistanceKm((float)child.splitMetric,digits,app));
+      }
+ else {
+        additional.setText(OsmAndFormatter.getFormattedDistance((float)child.splitMetric,app));
+      }
+    }
+ else {
+      additional.setText(Algorithms.formatDuration((int)child.splitMetric));
+    }
+  }
+ else {
+    icon.setVisibility(View.VISIBLE);
+    additional.setVisibility(View.INVISIBLE);
+    if (child.group.getType() == GpxDisplayItemType.TRACK_SEGMENT) {
+      icon.setImageResource(!lightContent ? R.drawable.ic_action_polygom_dark : R.drawable.ic_action_polygom_light);
+    }
+ else     if (child.group.getType() == GpxDisplayItemType.TRACK_ROUTE_POINTS) {
+      icon.setImageResource(!lightContent ? R.drawable.ic_action_markers_dark : R.drawable.ic_action_markers_light);
+    }
+ else {
+      icon.setImageResource(R.drawable.list_favorite);
+    }
+  }
   row.setTag(child);
-  icon.setImageResource(R.drawable.list_favorite);
   label.setText(Html.fromHtml(child.name.replace("\n","<br/>")));
   if (child.expanded) {
     description.setText(Html.fromHtml(child.description));

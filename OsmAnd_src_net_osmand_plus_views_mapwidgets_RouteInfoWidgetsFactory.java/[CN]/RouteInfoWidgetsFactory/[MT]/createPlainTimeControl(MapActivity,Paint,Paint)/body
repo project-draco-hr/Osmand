@@ -1,0 +1,24 @@
+{
+  final Drawable timeToGo=map.getResources().getDrawable(R.drawable.widget_time_to_distance);
+  final OsmandApplication ctx=map.getMyApplication();
+  final TextInfoWidget plainTimeControl=new TextInfoWidget(map,0,paintText,paintSubText){
+    private long cachedLeftTime=0;
+    @Override public boolean updateInfo(    DrawSettings drawSettings){
+      long time=System.currentTimeMillis();
+      if (time - cachedLeftTime > 5000) {
+        cachedLeftTime=time;
+        if (DateFormat.is24HourFormat(ctx)) {
+          setText(DateFormat.format("k:mm",time).toString(),null);
+        }
+ else {
+          setText(DateFormat.format("h:mm",time).toString(),DateFormat.format("aa",time).toString());
+        }
+      }
+      return false;
+    }
+  }
+;
+  plainTimeControl.setText(null,null);
+  plainTimeControl.setImageDrawable(timeToGo);
+  return plainTimeControl;
+}

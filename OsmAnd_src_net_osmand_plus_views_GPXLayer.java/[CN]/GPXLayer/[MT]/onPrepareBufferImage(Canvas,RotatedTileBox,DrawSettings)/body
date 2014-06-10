@@ -4,9 +4,22 @@
   if (!selectedGPXFiles.isEmpty()) {
     for (    SelectedGpxFile g : selectedGPXFiles) {
       List<List<WptPt>> points=g.getPointsToDisplay();
-      int t=g.getColor();
-      paint.setColor(t == 0 ? clr : t);
+      int fcolor=g.getColor() == 0 ? clr : g.getColor();
+      paint.setColor(fcolor);
       drawSegments(canvas,tileBox,points);
+    }
+    if (tileBox.getZoom() >= startZoom) {
+      final QuadRect latLonBounds=tileBox.getLatLonBounds();
+      for (      SelectedGpxFile g : selectedGPXFiles) {
+        List<WptPt> pts=g.getGpxFile().points;
+        for (        WptPt o : pts) {
+          if (o.lat >= latLonBounds.bottom && o.lat <= latLonBounds.top && o.lon >= latLonBounds.left && o.lon <= latLonBounds.right) {
+            int x=(int)tileBox.getPixXFromLatLon(o.lat,o.lon);
+            int y=(int)tileBox.getPixYFromLatLon(o.lat,o.lon);
+            canvas.drawBitmap(favoriteIcon,x - favoriteIcon.getWidth() / 2,y - favoriteIcon.getHeight(),paint);
+          }
+        }
+      }
     }
   }
 }

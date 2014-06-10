@@ -1,0 +1,26 @@
+{
+  String load=app.getSettings().SELECTED_GPX.get();
+  if (!Algorithms.isEmpty(load)) {
+    try {
+      JSONArray ar=new JSONArray(load);
+      for (int i=0; i < ar.length(); i++) {
+        JSONObject obj=ar.getJSONObject(i);
+        if (obj.has(FILE)) {
+          File fl=new File(obj.getString(FILE));
+          if (p != null) {
+            p.startTask(getString(R.string.loading_smth,fl.getName()),-1);
+          }
+          GPXFile gpx=GPXUtilities.loadGPXFile(app,fl);
+          selectGpxFile(gpx,true);
+        }
+ else         if (obj.has(CURRENT_TRACK)) {
+          selectedGPXFiles.add(savingTrackHelper.getCurrentTrack());
+        }
+      }
+    }
+ catch (    JSONException e) {
+      app.getSettings().SELECTED_GPX.set("");
+      e.printStackTrace();
+    }
+  }
+}
