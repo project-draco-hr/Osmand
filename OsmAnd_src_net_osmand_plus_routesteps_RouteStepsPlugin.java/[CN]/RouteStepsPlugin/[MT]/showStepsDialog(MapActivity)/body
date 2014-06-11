@@ -1,0 +1,29 @@
+{
+  List<String> pointNames=new ArrayList<String>();
+  final List<Boolean> pointsIntermediateState=new ArrayList<Boolean>(pointsStatus);
+  for (  GPXUtilities.WptPt point : pointsList) {
+    pointNames.add(point.name);
+  }
+  AlertDialog.Builder builder=new AlertDialog.Builder(mapActivity);
+  builder.setTitle("All available points");
+  builder.setMultiChoiceItems(pointNames.toArray(new String[pointNames.size()]),toPrimitiveArray(pointsIntermediateState),new DialogInterface.OnMultiChoiceClickListener(){
+    @Override public void onClick(    DialogInterface dialogInterface,    int i,    boolean isChecked){
+      pointsIntermediateState.set(i,isChecked);
+    }
+  }
+);
+  builder.setPositiveButton("OK",new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialogInterface,    int i){
+      for (int j=0; j < pointsIntermediateState.size(); j++) {
+        boolean newValue=pointsIntermediateState.get(j);
+        if (newValue != pointsStatus.get(j)) {
+          setPointStatus(j,newValue);
+        }
+      }
+      pointsStatus=new ArrayList<Boolean>(pointsIntermediateState);
+    }
+  }
+);
+  builder.setNegativeButton("Cancel",null);
+  builder.show();
+}
