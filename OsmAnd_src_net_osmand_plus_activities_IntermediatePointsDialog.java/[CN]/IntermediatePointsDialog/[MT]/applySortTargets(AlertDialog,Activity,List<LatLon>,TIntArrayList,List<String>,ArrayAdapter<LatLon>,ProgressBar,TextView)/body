@@ -10,7 +10,13 @@
             }
             protected int[] doInBackground(            Void[] params){
               ArrayList<LatLon> lt=new ArrayList<LatLon>(intermediates);
-              LatLon start=new LatLon(activity.getMapView().getLatitude(),activity.getMapView().getLongitude());
+              LatLon start;
+              if (activity instanceof MapActivity) {
+                start=new LatLon(((MapActivity)activity).getMapView().getLatitude(),((MapActivity)activity).getMapView().getLongitude());
+              }
+ else {
+                start=lt.get(0);
+              }
               LatLon end=lt.remove(lt.size() - 1);
               return new TspAnt().readGraph(lt,start,end).solve();
             }
