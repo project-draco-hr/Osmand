@@ -10,10 +10,7 @@
   final GpxDisplayGroup model=getGroup(groupPosition);
   label.setText(model.getGroupName());
   final ImageView ch=(ImageView)row.findViewById(R.id.check_item);
-  if (model.getType() != GpxDisplayItemType.TRACK_SEGMENT) {
-    ch.setVisibility(View.INVISIBLE);
-  }
- else {
+  if (model.getType() == GpxDisplayItemType.TRACK_SEGMENT) {
     ch.setVisibility(View.VISIBLE);
     ch.setImageDrawable(getActivity().getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_settings_light : R.drawable.ic_action_settings_dark));
     ch.setOnClickListener(new View.OnClickListener(){
@@ -22,6 +19,19 @@
       }
     }
 );
+  }
+ else   if (model.getType() == GpxDisplayItemType.TRACK_POINTS || model.getType() == GpxDisplayItemType.TRACK_ROUTE_POINTS) {
+    ch.setVisibility(View.VISIBLE);
+    ch.setImageDrawable(getActivity().getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_fav_light : R.drawable.ic_action_fav_dark));
+    ch.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        saveAsFavorites(model);
+      }
+    }
+);
+  }
+ else {
+    ch.setVisibility(View.INVISIBLE);
   }
   return row;
 }
