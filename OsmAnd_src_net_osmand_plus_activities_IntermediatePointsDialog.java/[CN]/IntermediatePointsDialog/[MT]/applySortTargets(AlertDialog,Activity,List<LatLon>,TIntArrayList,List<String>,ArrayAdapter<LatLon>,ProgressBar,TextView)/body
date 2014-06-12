@@ -1,0 +1,52 @@
+{
+  dlg.setOnShowListener(new OnShowListener(){
+    @Override public void onShow(    DialogInterface dialog){
+      ((AlertDialog)dialog).getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        View v){
+          new AsyncTask<Void,Void,int[]>(){
+            protected void onPreExecute(){
+              pb.setVisibility(View.VISIBLE);
+              textInfo.setVisibility(View.VISIBLE);
+            }
+            protected int[] doInBackground(            Void[] params){
+              ArrayList<LatLon> lt=new ArrayList<LatLon>(intermediates);
+              LatLon start;
+              if (activity instanceof MapActivity) {
+                start=new LatLon(((MapActivity)activity).getMapView().getLatitude(),((MapActivity)activity).getMapView().getLongitude());
+              }
+ else {
+                start=lt.get(0);
+              }
+              LatLon end=lt.remove(lt.size() - 1);
+              return new TspAnt().readGraph(lt,start,end).solve();
+            }
+            protected void onPostExecute(            int[] result){
+              pb.setVisibility(View.GONE);
+              List<LatLon> alocs=new ArrayList<LatLon>();
+              List<String> anames=new ArrayList<String>();
+              TIntArrayList newOriginalPositions=new TIntArrayList();
+              for (int i=0; i < result.length; i++) {
+                if (result[i] > 0) {
+                  LatLon loc=intermediates.get(result[i] - 1);
+                  alocs.add(loc);
+                  newOriginalPositions.add(originalPositions.get(intermediates.indexOf(loc)));
+                  anames.add(names.get(result[i] - 1));
+                }
+              }
+              intermediates.clear();
+              intermediates.addAll(alocs);
+              names.clear();
+              names.addAll(anames);
+              originalPositions.clear();
+              originalPositions.addAll(newOriginalPositions);
+              listadapter.notifyDataSetChanged();
+            }
+          }
+.execute(new Void[0]);
+        }
+      }
+);
+    }
+  }
+);
+}

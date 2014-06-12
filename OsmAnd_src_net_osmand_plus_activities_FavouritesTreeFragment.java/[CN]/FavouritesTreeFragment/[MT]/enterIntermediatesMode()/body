@@ -1,0 +1,28 @@
+{
+  actionMode=getSherlockActivity().startActionMode(new Callback(){
+    @Override public boolean onCreateActionMode(    ActionMode mode,    Menu menu){
+      selectionMode=true;
+      createMenuItem(menu,SELECT_DESTINATIONS_ACTION_MODE_ID,R.string.select_destination_and_intermediate_points,R.drawable.ic_action_flage_light,R.drawable.ic_action_flage_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      favoritesSelected.clear();
+      groupsToDelete.clear();
+      favouritesAdapter.notifyDataSetInvalidated();
+      updateSelectionMode(mode);
+      return true;
+    }
+    @Override public boolean onPrepareActionMode(    ActionMode mode,    Menu menu){
+      return false;
+    }
+    @Override public void onDestroyActionMode(    ActionMode mode){
+      selectionMode=false;
+      favouritesAdapter.notifyDataSetInvalidated();
+    }
+    @Override public boolean onActionItemClicked(    ActionMode mode,    MenuItem item){
+      if (item.getItemId() == SELECT_DESTINATIONS_ACTION_MODE_ID) {
+        mode.finish();
+        selectDestinationImpl();
+      }
+      return true;
+    }
+  }
+);
+}
