@@ -1,0 +1,30 @@
+{
+  ViewHolder holder=null;
+  Log.v("ConvertView",String.valueOf(position));
+  if (convertView == null) {
+    LayoutInflater vi=(LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    convertView=vi.inflate(R.layout.route_point_info,null);
+    holder=new ViewHolder();
+    holder.index=(TextView)convertView.findViewById(R.id.index);
+    holder.date=(TextView)convertView.findViewById(R.id.date);
+    holder.name=(TextView)convertView.findViewById(R.id.name);
+    convertView.setTag(holder);
+  }
+ else {
+    holder=(ViewHolder)convertView.getTag();
+  }
+  PointItem point=pointsList.get(position);
+  holder.index.setText(String.valueOf(position));
+  String pointName=point.getName();
+  int pos=pointName.indexOf(":");
+  holder.name.setText(pointName.substring(0,pos));
+  if (point.isSelected()) {
+    holder.name.setTextColor(getResources().getColor(R.color.osmbug_closed));
+    holder.date.setText(String.valueOf(point.getTime()));
+  }
+ else {
+    holder.name.setTextColor(getResources().getColor(R.color.color_update));
+    holder.date.setText("");
+  }
+  return convertView;
+}
