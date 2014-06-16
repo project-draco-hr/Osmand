@@ -1,9 +1,18 @@
 {
   int minimumWidth=view.getResources().getDrawable(R.drawable.map_zoom_in).getMinimumWidth();
+  int minimumHeight=view.getResources().getDrawable(R.drawable.map_zoom_in).getMinimumWidth();
+  vmargin=0;
   zoomInButton=addButton(parent,R.string.zoomIn,R.drawable.map_zoom_in);
-  zoomOutButton=addButton(parent,R.string.zoomOut,R.drawable.map_zoom_out,minimumWidth);
+  if (isBottom()) {
+    zoomOutButton=addButton(parent,R.string.zoomOut,R.drawable.map_zoom_out,minimumWidth);
+  }
+ else {
+    vmargin=minimumHeight;
+    zoomOutButton=addButton(parent,R.string.zoomOut,R.drawable.map_zoom_out);
+  }
   zoomInButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
+      notifyClicked();
       if (view.isZooming()) {
         mapActivity.changeZoom(2);
       }
@@ -17,6 +26,7 @@
   zoomInButton.setOnLongClickListener(listener);
   zoomOutButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
+      notifyClicked();
       mapActivity.changeZoom(-1);
     }
   }

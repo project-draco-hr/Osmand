@@ -1,18 +1,22 @@
 {
   OsmandSettings settings=mapActivity.getMyApplication().getSettings();
-  startCounter.set(settings.DELAY_TO_START_NAVIGATION.get());
-  delayStart=new Runnable(){
-    @Override public void run(){
-      int cnt=startCounter.decrementAndGet();
-      if (cnt == 0) {
-        startNavigation();
+  if (startCounter <= 0) {
+    startCounter=System.currentTimeMillis() + settings.DELAY_TO_START_NAVIGATION.get() * 1000;
+    delayStart=new Runnable(){
+      @Override public void run(){
+        if (startCounter > 0) {
+          if (System.currentTimeMillis() > startCounter) {
+            startCounter=0;
+            startNavigation();
+          }
+ else {
+            mapActivity.refreshMap();
+            showUIHandler.postDelayed(delayStart,1000);
+          }
+        }
       }
- else       if (cnt > 0)       mapActivity.refreshMap();
-      showUIHandler.postDelayed(delayStart,1000);
     }
-  }
 ;
-  if (startCounter.get() > 0) {
     delayStart.run();
   }
 }
