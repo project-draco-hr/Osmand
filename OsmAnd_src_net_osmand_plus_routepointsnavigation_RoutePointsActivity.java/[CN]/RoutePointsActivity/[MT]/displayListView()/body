@@ -1,45 +1,38 @@
 {
   ArrayList<PointItem> pointItemsList=new ArrayList<PointItem>();
-  for (int i=0; i < pointsList.size(); i++) {
-    String pointName=pointsList.get(i).name;
+  for (int i=0; i < sortedPointsList.size(); i++) {
+    String pointName=sortedPointsList.get(i).name;
     if (pointsStatus.get(i) != 0) {
-      String dateString=DateFormat.format("MM/dd/yyyy hh:mm:ss",new Date(pointsStatus.get(i))).toString();
+      String dateString;
+      Date date=new Date(pointsStatus.get(i));
+      if (DateFormat.is24HourFormat(app)) {
+        dateString=DateFormat.format("MM/dd k:mm",date).toString();
+      }
+ else {
+        dateString=DateFormat.format("MM/dd h:mm",date).toString() + DateFormat.format("aa",date).toString();
+      }
       pointItemsList.add(new PointItem(true,pointName,dateString));
     }
  else {
-      pointItemsList.add(new PointItem(false,pointName,""));
+      if (i == 0) {
+        pointItemsList.add(new PointItem(false,pointName,""));
+        continue;
+      }
+      GPXUtilities.WptPt first=sortedPointsList.get(i - 1);
+      GPXUtilities.WptPt second=sortedPointsList.get(i);
+      double d=MapUtils.getDistance(first.lat,first.lon,second.lat,second.lon);
+      String distance=OsmAndFormatter.getFormattedDistance((float)d,app);
+      pointItemsList.add(new PointItem(false,pointName,distance));
     }
   }
   PointItemAdapter adapter=new PointItemAdapter(this,R.layout.route_point_info,pointItemsList);
-  listView=(ListView)findViewById(R.id.pointsListView);
+  ListView listView=getListView();
   listView.setAdapter(adapter);
   listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-    @Override public void onItemClick(    AdapterView<?> adapterView,    View view,    int i,    long l){
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB) @Override public void onItemClick(    AdapterView<?> adapterView,    View view,    int i,    long l){
       selectedItemIndex=i;
-      final PopupMenu popup=new PopupMenu(RoutePointsActivity.this,view);
-      final Menu menu=popup.getMenu();
-      menu.add(getString(R.string.mark_as_current));
-      menu.add(getString(R.string.mark_as_visited));
-      menu.add(getString(R.string.show_on_map));
-      popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener(){
-        @Override public boolean onMenuItemClick(        MenuItem menuItem){
-          if (menuItem.getTitle().equals(getResources().getString(R.string.mark_as_current))) {
-            plugin.setCurrentPoint(pointsList.get(selectedItemIndex));
-          }
- else           if (menuItem.getTitle().equals(getResources().getString(R.string.show_on_map))) {
-            GPXUtilities.WptPt point=pointsList.get(selectedItemIndex);
-            app.getSettings().setMapLocationToShow(point.lat,point.lon,app.getSettings().getMapZoomToShow());
-            finish();
-          }
- else {
-            boolean state=pointsChangedState.get(selectedItemIndex);
-            pointsChangedState.set(selectedItemIndex,!state);
-          }
-          return true;
-        }
-      }
-);
-      popup.show();
+      view.setSelected(true);
+      actionMode=getActivity().startActionMode(mActionModeCallback);
     }
   }
 );
