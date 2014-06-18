@@ -6,8 +6,9 @@
     convertView=vi.inflate(R.layout.route_point_info,null);
     holder=new ViewHolder();
     holder.index=(TextView)convertView.findViewById(R.id.index);
-    holder.date=(TextView)convertView.findViewById(R.id.date);
+    holder.dateOrDistance=(TextView)convertView.findViewById(R.id.date_or_distance);
     holder.name=(TextView)convertView.findViewById(R.id.name);
+    holder.image=(ImageView)convertView.findViewById(R.id.point_icon);
     convertView.setTag(holder);
   }
  else {
@@ -15,16 +16,22 @@
   }
   PointItem point=pointsList.get(position);
   holder.index.setText(String.valueOf(position));
-  String pointName=point.getName();
-  int pos=pointName.indexOf(":");
-  holder.name.setText(pointName.substring(0,pos));
+  holder.name.setText(point.getName());
+  holder.dateOrDistance.setText(String.valueOf(point.getTime()));
   if (point.isSelected()) {
+    holder.image.setImageResource(R.drawable.ic_action_ok_dark);
     holder.name.setTextColor(getResources().getColor(R.color.osmbug_closed));
-    holder.date.setText(String.valueOf(point.getTime()));
+    holder.dateOrDistance.setTextColor(getResources().getColor(R.color.color_unknown));
   }
  else {
+    if (sortedPointsList.get(position).equals(plugin.getCurrentPoint())) {
+      holder.image.setImageResource(R.drawable.ic_action_signpost_dark);
+    }
+ else {
+      holder.image.setImageResource(R.drawable.ic_action_marker_dark);
+    }
     holder.name.setTextColor(getResources().getColor(R.color.color_update));
-    holder.date.setText("");
+    holder.dateOrDistance.setTextColor(getResources().getColor(R.color.osmbug_not_submitted));
   }
   return convertView;
 }
