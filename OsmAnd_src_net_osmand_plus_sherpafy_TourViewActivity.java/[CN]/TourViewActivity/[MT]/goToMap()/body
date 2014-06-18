@@ -1,12 +1,20 @@
 {
   if (customization.getSelectedStage() != null) {
     GPXFile gpx=customization.getSelectedStage().getGpx();
-    getMyApplication().getSelectedGpxHelper().clearAllGpxFileToShow();
-    if (gpx != null && gpx.findPointToShow() != null) {
-      WptPt p=gpx.findPointToShow();
-      getMyApplication().getSettings().setMapLocationToShow(p.lat,p.lon,getMyApplication().getSettings().getLastKnownMapZoom(),null);
-      getMyApplication().getSelectedGpxHelper().setGpxFileToDisplay(gpx);
+    List<SelectedGpxFile> sgpx=getMyApplication().getSelectedGpxHelper().getSelectedGPXFiles();
+    if (gpx == null && sgpx.size() > 0) {
+      getMyApplication().getSelectedGpxHelper().clearAllGpxFileToShow();
+    }
+ else     if (sgpx.size() != 1 || sgpx.get(0).getGpxFile() != gpx) {
+      getMyApplication().getSelectedGpxHelper().clearAllGpxFileToShow();
+      if (gpx != null && gpx.findPointToShow() != null) {
+        WptPt p=gpx.findPointToShow();
+        getMyApplication().getSettings().setMapLocationToShow(p.lat,p.lon,16,null);
+        getMyApplication().getSelectedGpxHelper().setGpxFileToDisplay(gpx);
+      }
     }
   }
-  MapActivity.launchMapActivityMoveToTop(getActivity());
+  Intent newIntent=new Intent(this,customization.getMapActivity());
+  newIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+  this.startActivityForResult(newIntent,0);
 }
