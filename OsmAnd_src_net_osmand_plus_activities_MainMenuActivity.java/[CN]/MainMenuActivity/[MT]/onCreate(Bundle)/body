@@ -1,14 +1,18 @@
 {
-  if (getIntent() != null) {
-    setupCustomization(getIntent());
-  }
-  ((OsmandApplication)getApplication()).applyTheme(this);
+  getMyApplication().applyTheme(this);
   super.onCreate(savedInstanceState);
-  boolean exit=false;
+  if (Version.isSherpafy(getMyApplication())) {
+    final Intent mapIntent=new Intent(this,TourViewActivity.class);
+    getMyApplication().setAppCustomization(new SherpafyCustomization());
+    startActivity(mapIntent);
+    finish();
+    return;
+  }
   if (getIntent() != null) {
     Intent intent=getIntent();
     if (intent.getExtras() != null && intent.getExtras().containsKey(APP_EXIT_KEY)) {
-      exit=true;
+      getMyApplication().closeApplication(this);
+      return;
     }
   }
   requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -59,10 +63,6 @@
   }
 );
   appCustomization.customizeMainMenu(window,this);
-  if (exit) {
-    getMyApplication().closeApplication(activity);
-    return;
-  }
   OsmandApplication app=getMyApplication();
   if (app.getSettings().FOLLOW_THE_ROUTE.get() && !app.getRoutingHelper().isRouteCalculated()) {
     final Intent mapIndent=new Intent(this,appCustomization.getMapActivity());
