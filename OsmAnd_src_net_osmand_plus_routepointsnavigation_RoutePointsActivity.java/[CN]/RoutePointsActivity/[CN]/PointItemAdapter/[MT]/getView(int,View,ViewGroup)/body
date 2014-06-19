@@ -1,0 +1,35 @@
+{
+  ViewHolder holder=null;
+  Log.v("ConvertView",String.valueOf(position));
+  if (convertView == null) {
+    LayoutInflater vi=(LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    convertView=vi.inflate(R.layout.route_point_info,null);
+    holder=new ViewHolder();
+    holder.dateOrDistance=(TextView)convertView.findViewById(R.id.date_or_distance);
+    holder.name=(TextView)convertView.findViewById(R.id.name);
+    holder.image=(ImageView)convertView.findViewById(R.id.point_icon);
+    convertView.setTag(holder);
+  }
+ else {
+    holder=(ViewHolder)convertView.getTag();
+  }
+  PointItem point=pointsList.get(position);
+  holder.name.setText(point.getName());
+  holder.dateOrDistance.setText(String.valueOf(point.getTime()));
+  if (point.isSelected()) {
+    holder.image.setImageResource(R.drawable.ic_action_ok_dark);
+    holder.name.setTextColor(getResources().getColor(R.color.osmbug_closed));
+    holder.dateOrDistance.setTextColor(getResources().getColor(R.color.color_unknown));
+  }
+ else {
+    if (sortedPointsList.get(position).equals(plugin.getCurrentPoint())) {
+      holder.image.setImageResource(R.drawable.ic_action_signpost_dark);
+    }
+ else {
+      holder.image.setImageResource(R.drawable.ic_action_marker_dark);
+    }
+    holder.name.setTextColor(getResources().getColor(R.color.color_update));
+    holder.dateOrDistance.setTextColor(getResources().getColor(R.color.osmbug_not_submitted));
+  }
+  return convertView;
+}
