@@ -1,0 +1,35 @@
+{
+  return new ActionMode.Callback(){
+    @Override public boolean onCreateActionMode(    ActionMode actionMode,    Menu menu){
+      selectedItem=rp;
+      createMenuItem(menu,MARK_AS_CURRENT_ID,R.string.mark_as_current,R.drawable.ic_action_signpost_light,R.drawable.ic_action_signpost_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      createMenuItem(menu,AS_VISITED_ID,!rp.isVisited() ? R.string.mark_as_visited : R.string.mark_as_not_visited,R.drawable.ic_action_ok_light,R.drawable.ic_action_ok_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      createMenuItem(menu,POI_ON_MAP_ID,R.string.show_poi_on_map,R.drawable.ic_action_map_marker_light,R.drawable.ic_action_map_marker_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      return true;
+    }
+    @Override public boolean onPrepareActionMode(    ActionMode actionMode,    Menu menu){
+      return false;
+    }
+    @Override public boolean onActionItemClicked(    ActionMode actionMode,    MenuItem menuItem){
+      if (menuItem.getItemId() == MARK_AS_CURRENT_ID) {
+        plugin.getCurrentRoute().setNextPointToNavigate(rp);
+        saveGPXAsync();
+      }
+ else       if (menuItem.getItemId() == POI_ON_MAP_ID) {
+        LatLon point=rp.getPoint();
+        app.getSettings().setMapLocationToShow(point.getLatitude(),point.getLongitude(),app.getSettings().getMapZoomToShow());
+        finish();
+      }
+ else       if (menuItem.getItemId() == AS_VISITED_ID) {
+        plugin.getCurrentRoute().markPoint(rp,!rp.isVisited());
+        saveGPXAsync();
+      }
+      actionMode.finish();
+      return true;
+    }
+    @Override public void onDestroyActionMode(    ActionMode actionMode){
+      selectedItem=null;
+    }
+  }
+;
+}

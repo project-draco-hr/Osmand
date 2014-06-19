@@ -1,6 +1,5 @@
 {
   ViewHolder holder=null;
-  Log.v("ConvertView",String.valueOf(position));
   if (convertView == null) {
     LayoutInflater vi=(LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     convertView=vi.inflate(R.layout.route_point_info,null);
@@ -13,23 +12,35 @@
  else {
     holder=(ViewHolder)convertView.getTag();
   }
-  PointItem point=pointsList.get(position);
+  RoutePoint point=getItem(position);
   holder.name.setText(point.getName());
-  holder.dateOrDistance.setText(String.valueOf(point.getTime()));
-  if (point.isSelected()) {
+  if (selectedItem == point) {
+    convertView.setBackgroundColor(getResources().getColor(R.color.row_selection_color));
+  }
+ else {
+    convertView.setBackgroundColor(Color.TRANSPARENT);
+  }
+  if (point.isVisited()) {
     holder.image.setImageResource(R.drawable.ic_action_ok_dark);
     holder.name.setTextColor(getResources().getColor(R.color.osmbug_closed));
     holder.dateOrDistance.setTextColor(getResources().getColor(R.color.color_unknown));
+    holder.dateOrDistance.setText(point.getTime());
   }
  else {
-    if (sortedPointsList.get(position).equals(plugin.getCurrentPoint())) {
+    if (point.isNextNavigate()) {
       holder.image.setImageResource(R.drawable.ic_action_signpost_dark);
     }
  else {
       holder.image.setImageResource(R.drawable.ic_action_marker_dark);
     }
+    if (position > 0) {
+      holder.dateOrDistance.setText(point.getDistance(getItem(position - 1)));
+    }
+ else {
+      holder.dateOrDistance.setText("");
+    }
     holder.name.setTextColor(getResources().getColor(R.color.color_update));
-    holder.dateOrDistance.setTextColor(getResources().getColor(R.color.osmbug_not_submitted));
+    holder.dateOrDistance.setTextColor(getResources().getColor(R.color.color_distance));
   }
   return convertView;
 }

@@ -1,0 +1,25 @@
+{
+  this.gpx=gpx;
+  Route rt=getRoute();
+  currentPoints.clear();
+  if (rt != null) {
+    TargetPointsHelper targetPointsHelper=app.getTargetPointsHelper();
+    String locName=targetPointsHelper.getPointNavigateDescription();
+    for (int i=0; i < rt.points.size(); i++) {
+      WptPt wptPt=rt.points.get(i);
+      RoutePoint rtp=new RoutePoint();
+      rtp.gpxOrder=i;
+      String time=wptPt.getExtensionsToRead().get(VISITED_KEY);
+      try {
+        rtp.visitedTime=Long.parseLong(time);
+      }
+ catch (      NumberFormatException e) {
+      }
+      rtp.isNextNavigate=rtp.visitedTime == 0 && locName != null && locName.equals(wptPt.name);
+      if (rtp.isNextNavigate) {
+        locName=null;
+      }
+    }
+    sortPoints();
+  }
+}

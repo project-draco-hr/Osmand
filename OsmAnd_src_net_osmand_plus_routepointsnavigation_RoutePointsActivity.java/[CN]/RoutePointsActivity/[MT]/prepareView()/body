@@ -1,16 +1,25 @@
 {
   TextView gpxName=(TextView)findViewById(R.id.gpx_name);
-  String fileName=getString(R.string.current_route) + " " + gpx.path.substring(gpx.path.lastIndexOf("/") + 1,gpx.path.lastIndexOf("."));
-  gpxName.setText(fileName);
-  gpxName.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View view){
-      getActivity().startActionMode(mGpxActionModeCallback);
+  SelectedRouteGpxFile route=plugin.getCurrentRoute();
+  String fileName;
+  if (route != null) {
+    fileName=getString(R.string.rp_current_route) + " " + route.getName();
+  }
+ else {
+    fileName=getString(R.string.rp_current_route_not_available);
+  }
+  SpannableString content=new SpannableString(fileName);
+  content.setSpan(new ClickableSpan(){
+    @Override public void onClick(    View widget){
+      getSherlock().startActionMode(mGpxActionModeCallback);
     }
   }
-);
+,0,content.length(),0);
+  gpxName.setText(content);
+  gpxName.setMovementMethod(LinkMovementMethod.getInstance());
   TextView visited=(TextView)findViewById(R.id.points_count);
   visited.setText("(" + plugin.getVisitedAllString() + ")");
-  loadCurrentRoute();
-  sortPoints();
-  displayListView();
+  adapter=new PointItemAdapter(this,R.layout.route_point_info,route == null ? new ArrayList<RoutePoint>() : route.getCurrentPoints());
+  ListView listView=getListView();
+  listView.setAdapter(adapter);
 }
