@@ -1,0 +1,38 @@
+{
+  new AsyncTask<GPXUtilities.WptPt,Void,Void>(){
+    private ProgressDialog dlg;
+    protected void onPreExecute(){
+      dlg=new ProgressDialog(getActivity());
+      if (plugin.getPointStatus(point) == 0) {
+        dlg.setTitle(R.string.marking_as_visited);
+      }
+ else {
+        dlg.setTitle(getString(R.string.marking_as_unvisited));
+      }
+      dlg.setMessage(point.name);
+      dlg.show();
+    }
+    @Override protected Void doInBackground(    GPXUtilities.WptPt... params){
+      long status=plugin.getPointStatus(point);
+      if (status == 0) {
+        plugin.setPointStatus(point,true);
+      }
+ else {
+        plugin.setPointStatus(point,false);
+      }
+      GPXUtilities.writeGpxFile(new File(gpx.path),gpx,app);
+      return null;
+    }
+    protected void onPostExecute(    Void result){
+      try {
+        dlg.dismiss();
+      }
+ catch (      Exception ex) {
+        ex.printStackTrace();
+      }
+      sortPoints();
+      displayListView();
+    }
+  }
+.execute(point);
+}
