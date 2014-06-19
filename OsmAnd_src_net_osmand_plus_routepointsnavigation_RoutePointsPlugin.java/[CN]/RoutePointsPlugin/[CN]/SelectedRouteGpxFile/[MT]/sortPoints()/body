@@ -1,3 +1,20 @@
 {
-  Collections.sort(currentPoints);
+  Collections.sort(currentPoints,new Comparator<RoutePoint>(){
+    @Override public int compare(    RoutePoint lhs,    RoutePoint rhs){
+      if (lhs.isNextNavigate || rhs.isNextNavigate) {
+        return lhs.isNextNavigate ? -1 : 1;
+      }
+      if (!lhs.isVisited() || !rhs.isVisited()) {
+        if (lhs.isVisited()) {
+          return 1;
+        }
+        if (rhs.isVisited()) {
+          return -1;
+        }
+        return Integer.compare(lhs.gpxOrder,rhs.gpxOrder);
+      }
+      return -Long.compare(lhs.visitedTime,rhs.visitedTime);
+    }
+  }
+);
 }
