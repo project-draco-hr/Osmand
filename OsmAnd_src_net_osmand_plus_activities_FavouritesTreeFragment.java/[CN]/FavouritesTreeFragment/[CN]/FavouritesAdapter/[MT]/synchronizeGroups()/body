@@ -1,9 +1,27 @@
 {
   favoriteGroups.clear();
   groups.clear();
-  for (  String key : sourceFavoriteGroups.keySet()) {
-    groups.add(key);
-    favoriteGroups.put(key,new ArrayList<FavouritePoint>(sourceFavoriteGroups.get(key)));
+  List<FavoriteGroup> gs=helper.getFavoriteGroups();
+  Set<?> flt=filter;
+  for (  FavoriteGroup key : gs) {
+    boolean empty=true;
+    if (flt == null || flt.contains(key)) {
+      empty=false;
+      favoriteGroups.put(key,new ArrayList<FavouritePoint>(key.points));
+    }
+ else {
+      ArrayList<FavouritePoint> list=new ArrayList<FavouritePoint>();
+      for (      FavouritePoint p : key.points) {
+        if (flt.contains(p)) {
+          list.add(p);
+          empty=false;
+        }
+      }
+      favoriteGroups.put(key,list);
+    }
+    if (!empty) {
+      groups.add(key);
+    }
   }
   notifyDataSetChanged();
 }

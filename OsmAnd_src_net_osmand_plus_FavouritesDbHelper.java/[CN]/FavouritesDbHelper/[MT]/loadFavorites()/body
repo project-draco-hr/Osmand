@@ -1,0 +1,26 @@
+{
+  flatGroups.clear();
+  favoriteGroups.clear();
+  File internalFile=getInternalFile();
+  if (!internalFile.exists()) {
+    File dbPath=context.getDatabasePath(FAVOURITE_DB_NAME);
+    if (dbPath.exists()) {
+      loadAndCheckDatabasePoints();
+      saveCurrentPointsIntoFile();
+    }
+  }
+  Map<String,FavouritePoint> points=new LinkedHashMap<String,FavouritePoint>();
+  Map<String,FavouritePoint> extPoints=new LinkedHashMap<String,FavouritePoint>();
+  loadGPXFile(internalFile,points);
+  loadGPXFile(getExternalFile(),extPoints);
+  boolean changed=merge(extPoints,points);
+  for (  FavouritePoint pns : points.values()) {
+    FavoriteGroup group=getOrCreateGroup(pns,0);
+    group.points.add(pns);
+  }
+  sortAll();
+  recalculateCachedFavPoints();
+  if (changed) {
+    saveCurrentPointsIntoFile();
+  }
+}

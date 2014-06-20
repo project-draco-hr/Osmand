@@ -1,0 +1,23 @@
+{
+  GPXFile res=GPXUtilities.loadGPXFile(context,file);
+  if (res.warning != null) {
+    return res.warning;
+  }
+  for (  WptPt p : res.points) {
+    int c;
+    String name=p.name;
+    String categoryName=p.category != null ? p.category : "";
+    if (name == null) {
+      name="";
+    }
+    if ("".equals(categoryName.trim()) && (c=p.name.lastIndexOf('_')) != -1) {
+      categoryName=p.name.substring(c + 1);
+      name=p.name.substring(0,c);
+    }
+    FavouritePoint fp=new FavouritePoint(p.lat,p.lon,name,categoryName);
+    fp.setColor(p.getColor(0));
+    fp.setVisible(!p.getExtensionsToRead().containsKey(HIDDEN));
+    points.put(getKey(fp),fp);
+  }
+  return null;
+}

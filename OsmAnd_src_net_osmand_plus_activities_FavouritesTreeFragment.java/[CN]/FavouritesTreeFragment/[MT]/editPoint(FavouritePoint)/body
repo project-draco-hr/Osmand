@@ -8,14 +8,18 @@
   editText.setText(point.getName());
   cat.setText(point.getCategory());
   cat.setThreshold(1);
-  cat.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.list_textview,helper.getFavoriteGroups().keySet().toArray(new String[]{})));
+  List<FavoriteGroup> gs=helper.getFavoriteGroups();
+  String[] list=new String[gs.size()];
+  for (int i=0; i < list.length; i++) {
+    list[i]=gs.get(i).name;
+  }
+  cat.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.list_textview,list));
   builder.setNegativeButton(R.string.default_buttons_cancel,null);
   builder.setPositiveButton(R.string.default_buttons_apply,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      boolean editied=helper.editFavouriteName(point,editText.getText().toString().trim(),cat.getText().toString());
-      if (editied) {
+      boolean edited=helper.editFavouriteName(point,editText.getText().toString().trim(),cat.getText().toString());
+      if (edited) {
         favouritesAdapter.synchronizeGroups();
-        favouritesAdapter.sort(favoritesComparator);
       }
     }
   }

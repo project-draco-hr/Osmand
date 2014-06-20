@@ -1,0 +1,24 @@
+{
+  if (p.getName().equals("") && flatGroups.containsKey(p.getCategory())) {
+    return true;
+  }
+  SQLiteConnection db=openConnection(false);
+  if (db != null) {
+    try {
+      db.execSQL("INSERT INTO " + FAVOURITE_TABLE_NAME + " ("+ FAVOURITE_COL_NAME+ ", "+ FAVOURITE_COL_CATEGORY+ ", "+ FAVOURITE_COL_LAT+ ", "+ FAVOURITE_COL_LON+ ")"+ " VALUES (?, ?, ?, ?)",new Object[]{p.getName(),p.getCategory(),p.getLatitude(),p.getLongitude()});
+      FavoriteGroup group=getOrCreateGroup(p,0);
+      if (!p.getName().equals("")) {
+        p.setVisible(group.visible);
+        p.setColor(group.color);
+        group.points.add(p);
+        cachedFavoritePoints.add(p);
+      }
+      saveCurrentPointsIntoFile();
+    }
+  finally {
+      db.close();
+    }
+    return true;
+  }
+  return false;
+}

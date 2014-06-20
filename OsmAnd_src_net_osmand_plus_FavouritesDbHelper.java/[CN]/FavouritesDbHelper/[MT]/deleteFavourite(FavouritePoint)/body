@@ -1,20 +1,11 @@
 {
-  checkFavoritePoints();
-  SQLiteConnection db=openConnection(false);
-  if (db != null) {
-    try {
-      db.execSQL("DELETE FROM " + FAVOURITE_TABLE_NAME + " WHERE category = ? AND "+ whereNameLatLon(),new Object[]{p.getCategory(),p.getName(),p.getLatitude(),p.getLongitude()});
-      FavouritePoint fp=findFavoriteByAllProperties(p.getCategory(),p.getName(),p.getLatitude(),p.getLongitude());
-      if (fp != null) {
-        favoriteGroups.get(p.getCategory()).remove(fp);
-        cachedFavoritePoints.remove(fp);
-      }
-      backupSilently();
+  if (p != null) {
+    FavoriteGroup group=flatGroups.get(p.getCategory());
+    if (group != null) {
+      group.points.remove(p);
     }
-  finally {
-      db.close();
-    }
-    return true;
+    cachedFavoritePoints.remove(p);
   }
-  return false;
+  saveCurrentPointsIntoFile();
+  return true;
 }

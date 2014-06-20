@@ -6,7 +6,12 @@
   builder.setView(v);
   final EditText editText=(EditText)v.findViewById(R.id.Name);
   final AutoCompleteTextView cat=(AutoCompleteTextView)v.findViewById(R.id.Category);
-  cat.setAdapter(new ArrayAdapter<String>(activity,R.layout.list_textview,helper.getFavoriteGroups().keySet().toArray(new String[]{})));
+  List<FavoriteGroup> gs=helper.getFavoriteGroups();
+  String[] list=new String[gs.size()];
+  for (int i=0; i < list.length; i++) {
+    list[i]=gs.get(i).name;
+  }
+  cat.setAdapter(new ArrayAdapter<String>(activity,R.layout.list_textview,list));
   builder.setNegativeButton(R.string.default_buttons_cancel,null);
   builder.setNeutralButton(R.string.update_existing,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
@@ -20,9 +25,12 @@
   builder.setPositiveButton(R.string.default_buttons_add,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       FavouritePoint point=(FavouritePoint)args.getSerializable(KEY_FAVORITE);
-      final FavouritesDbHelper helper=((OsmandApplication)activity.getApplication()).getFavorites();
+      OsmandApplication app=(OsmandApplication)activity.getApplication();
+      String categoryStr=cat.getText().toString().trim();
+      final FavouritesDbHelper helper=app.getFavorites();
+      app.getSettings().LAST_FAV_CATEGORY_ENTERED.set(categoryStr);
       point.setName(editText.getText().toString().trim());
-      point.setCategory(cat.getText().toString().trim());
+      point.setCategory(categoryStr);
       boolean added=helper.addFavourite(point);
       if (added) {
         AccessibleToast.makeText(activity,MessageFormat.format(activity.getString(R.string.add_favorite_dialog_favourite_added_template),point.getName()),Toast.LENGTH_SHORT).show();

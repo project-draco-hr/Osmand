@@ -1,28 +1,14 @@
 {
-  checkFavoritePoints();
-  if (p.getName().equals("") && favoriteGroups.containsKey(p.getCategory())) {
+  if (p.getName().equals("") && flatGroups.containsKey(p.getCategory())) {
     return true;
   }
-  SQLiteConnection db=openConnection(false);
-  if (db != null) {
-    try {
-      db.execSQL("INSERT INTO " + FAVOURITE_TABLE_NAME + " ("+ FAVOURITE_COL_NAME+ ", "+ FAVOURITE_COL_CATEGORY+ ", "+ FAVOURITE_COL_LAT+ ", "+ FAVOURITE_COL_LON+ ")"+ " VALUES (?, ?, ?, ?)",new Object[]{p.getName(),p.getCategory(),p.getLatitude(),p.getLongitude()});
-      if (!favoriteGroups.containsKey(p.getCategory())) {
-        favoriteGroups.put(p.getCategory(),new ArrayList<FavouritePoint>());
-        if (!p.getName().equals("")) {
-          addFavourite(new FavouritePoint(0,0,"",p.getCategory()));
-        }
-      }
-      if (!p.getName().equals("")) {
-        favoriteGroups.get(p.getCategory()).add(p);
-        cachedFavoritePoints.add(p);
-      }
-      backupSilently();
-    }
-  finally {
-      db.close();
-    }
-    return true;
+  FavoriteGroup group=getOrCreateGroup(p,0);
+  if (!p.getName().equals("")) {
+    p.setVisible(group.visible);
+    p.setColor(group.color);
+    group.points.add(p);
+    cachedFavoritePoints.add(p);
   }
-  return false;
+  saveCurrentPointsIntoFile();
+  return true;
 }

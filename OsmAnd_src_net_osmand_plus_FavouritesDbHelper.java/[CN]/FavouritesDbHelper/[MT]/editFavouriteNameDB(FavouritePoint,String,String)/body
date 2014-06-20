@@ -1,0 +1,27 @@
+{
+  SQLiteConnection db=openConnection(false);
+  if (db != null) {
+    try {
+      String oldCategory=p.getCategory();
+      db.execSQL("UPDATE " + FAVOURITE_TABLE_NAME + " SET "+ FAVOURITE_COL_NAME+ " = ?, "+ FAVOURITE_COL_CATEGORY+ "= ? WHERE "+ whereNameLatLon(),new Object[]{newName,category,p.getName(),p.getLatitude(),p.getLongitude()});
+      p.setName(newName);
+      p.setCategory(category);
+      if (!oldCategory.equals(category)) {
+        FavoriteGroup old=flatGroups.get(oldCategory);
+        if (old != null) {
+          old.points.remove(p);
+        }
+        FavoriteGroup pg=getOrCreateGroup(p,0);
+        p.setVisible(pg.visible);
+        p.setColor(pg.color);
+        pg.points.add(p);
+      }
+      sortAll();
+    }
+  finally {
+      db.close();
+    }
+    return true;
+  }
+  return false;
+}

@@ -1,0 +1,33 @@
+{
+  if (favoriteGroups == null) {
+    SQLiteConnection db=openConnection(true);
+    if (db != null) {
+      try {
+        SQLiteCursor query=db.rawQuery("SELECT " + FAVOURITE_COL_NAME + ", "+ FAVOURITE_COL_CATEGORY+ ", "+ FAVOURITE_COL_LAT+ ","+ FAVOURITE_COL_LON+ " FROM "+ FAVOURITE_TABLE_NAME,null);
+        cachedFavoritePoints.clear();
+        if (query.moveToFirst()) {
+          do {
+            String name=query.getString(0);
+            String cat=query.getString(1);
+            FavouritePoint p=new FavouritePoint();
+            p.setName(name);
+            p.setCategory(cat);
+            FavoriteGroup group=getOrCreateGroup(p,0);
+            if (!name.equals("")) {
+              p.setLatitude(query.getDouble(2));
+              p.setLongitude(query.getDouble(3));
+              group.points.add(p);
+            }
+          }
+ while (query.moveToNext());
+        }
+        query.close();
+      }
+  finally {
+        db.close();
+      }
+      sortAll();
+    }
+    recalculateCachedFavPoints();
+  }
+}

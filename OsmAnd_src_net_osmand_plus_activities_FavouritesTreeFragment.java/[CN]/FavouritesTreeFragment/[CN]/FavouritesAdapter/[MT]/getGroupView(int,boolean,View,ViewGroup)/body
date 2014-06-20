@@ -1,23 +1,25 @@
 {
   View row=convertView;
-  if (row == null) {
+  boolean checkBox=row != null && row.findViewById(R.id.check_item) instanceof CheckBox;
+  boolean same=(selectionMode && checkBox) || (!selectionMode && !checkBox);
+  if (row == null || !same) {
     LayoutInflater inflater=getActivity().getLayoutInflater();
-    row=inflater.inflate(R.layout.expandable_list_item_category,parent,false);
+    row=inflater.inflate(selectionMode ? R.layout.expandable_list_item_category : R.layout.expandable_list_item_category_btn,parent,false);
     fixBackgroundRepeat(row);
   }
   adjustIndicator(groupPosition,isExpanded,row);
   TextView label=(TextView)row.findViewById(R.id.category_name);
-  final String model=getGroup(groupPosition);
-  label.setText(model.length() == 0 ? getString(R.string.favourites_activity) : model);
-  final CheckBox ch=(CheckBox)row.findViewById(R.id.check_item);
+  final FavoriteGroup model=getGroup(groupPosition);
+  label.setText(model.name.length() == 0 ? getString(R.string.favourites_activity) : model.name);
   if (selectionMode) {
+    final CheckBox ch=(CheckBox)row.findViewById(R.id.check_item);
     ch.setVisibility(View.VISIBLE);
     ch.setChecked(groupsToDelete.contains(model));
     ch.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View v){
         if (ch.isChecked()) {
           groupsToDelete.add(model);
-          List<FavouritePoint> fvs=helper.getFavoriteGroups().get(model);
+          List<FavouritePoint> fvs=model.points;
           if (fvs != null) {
             favoritesSelected.addAll(fvs);
           }
@@ -32,7 +34,15 @@
 );
   }
  else {
-    ch.setVisibility(View.GONE);
+    final ImageView ch=(ImageView)row.findViewById(R.id.check_item);
+    ch.setVisibility(View.VISIBLE);
+    ch.setImageDrawable(getActivity().getResources().getDrawable(getMyApplication().getSettings().isLightContent() ? R.drawable.ic_action_settings_light : R.drawable.ic_action_settings_dark));
+    ch.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        openChangeGroupDialog();
+      }
+    }
+);
   }
   return row;
 }

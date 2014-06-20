@@ -1,25 +1,18 @@
 {
-  checkFavoritePoints();
-  SQLiteConnection db=openConnection(false);
-  if (db != null) {
-    try {
-      String oldCategory=p.getCategory();
-      db.execSQL("UPDATE " + FAVOURITE_TABLE_NAME + " SET "+ FAVOURITE_COL_NAME+ " = ?, "+ FAVOURITE_COL_CATEGORY+ "= ? WHERE "+ whereNameLatLon(),new Object[]{newName,category,p.getName(),p.getLatitude(),p.getLongitude()});
-      p.setName(newName);
-      p.setCategory(category);
-      if (!oldCategory.equals(category)) {
-        favoriteGroups.get(oldCategory).remove(p);
-        if (!favoriteGroups.containsKey(category)) {
-          addCategoryQuery(category,db);
-          favoriteGroups.put(category,new ArrayList<FavouritePoint>());
-        }
-        favoriteGroups.get(category).add(p);
-      }
+  String oldCategory=p.getCategory();
+  p.setName(newName);
+  p.setCategory(category);
+  if (!oldCategory.equals(category)) {
+    FavoriteGroup old=flatGroups.get(oldCategory);
+    if (old != null) {
+      old.points.remove(p);
     }
-  finally {
-      db.close();
-    }
-    return true;
+    FavoriteGroup pg=getOrCreateGroup(p,0);
+    p.setVisible(pg.visible);
+    p.setColor(pg.color);
+    pg.points.add(p);
   }
-  return false;
+  sortAll();
+  saveCurrentPointsIntoFile();
+  return true;
 }
