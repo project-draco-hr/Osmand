@@ -7,8 +7,10 @@
   if (!selectedGPXFiles.isEmpty()) {
     for (    SelectedGpxFile g : selectedGPXFiles) {
       List<List<WptPt>> points=g.getPointsToDisplay();
+      boolean routePoints=g.isRoutePoints();
       int fcolor=g.getColor() == 0 ? clr : g.getColor();
       paint.setColor(fcolor);
+      paint.setPathEffect(routePoints ? pathEffect : null);
       drawSegments(canvas,tileBox,points);
     }
     canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
@@ -18,11 +20,8 @@
         List<WptPt> pts=getListStarPoints(g);
         int fcolor=g.getColor() == 0 ? defPointColor : g.getColor();
         for (        WptPt o : pts) {
-          int pointColor=o.getColor(fcolor);
-          String visited=o.getExtensionsToRead().get("VISITED_KEY");
-          if (visited != null && !visited.equals("0")) {
-            pointColor=visitedColor;
-          }
+          boolean visit=isPointVisited(o);
+          int pointColor=visit ? visitedColor : o.getColor(fcolor);
           FavoriteImageDrawable fid=FavoriteImageDrawable.getOrCreate(view.getContext(),pointColor);
           if (o.lat >= latLonBounds.bottom && o.lat <= latLonBounds.top && o.lon >= latLonBounds.left && o.lon <= latLonBounds.right) {
             cache.add(o);
