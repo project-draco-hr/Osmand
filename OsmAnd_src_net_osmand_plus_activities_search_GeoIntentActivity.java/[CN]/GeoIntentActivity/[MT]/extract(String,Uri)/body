@@ -49,7 +49,15 @@
     }
  else {
       final String pattern="([\\-0-9.]+),([\\-0-9.]+)(?:,([\\-0-9.]+))?(?:\\?z=([0-9]+))?(?:;.*)?";
-      final Matcher matcher=Pattern.compile(pattern).matcher(schemeSpecific);
+      int indexQ=schemeSpecific.indexOf("&q");
+      final Matcher matcher;
+      if (indexQ != -1) {
+        final String schemeQ=schemeSpecific.substring(0,indexQ);
+        matcher=Pattern.compile(pattern).matcher(schemeQ);
+      }
+ else {
+        matcher=Pattern.compile(pattern).matcher(schemeSpecific);
+      }
       if (matcher.matches()) {
         final double lat=Double.valueOf(matcher.group(1));
         final double lon=Double.valueOf(matcher.group(2));
