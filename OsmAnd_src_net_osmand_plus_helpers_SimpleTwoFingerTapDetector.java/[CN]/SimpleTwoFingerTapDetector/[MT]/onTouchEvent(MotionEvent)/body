@@ -1,0 +1,27 @@
+{
+switch (event.getActionMasked()) {
+case MotionEvent.ACTION_DOWN:
+    if (mFirstDownTime == 0 || event.getEventTime() - mFirstDownTime > TIMEOUT) {
+      reset(event.getDownTime());
+    }
+  break;
+case MotionEvent.ACTION_POINTER_UP:
+if (event.getPointerCount() == 2) {
+  mTwoFingerTapCount++;
+  firstEvent=MotionEvent.obtain(event);
+}
+ else {
+  mFirstDownTime=0;
+  firstEvent=null;
+}
+break;
+case MotionEvent.ACTION_UP:
+if (mTwoFingerTapCount == 1 && event.getEventTime() - mFirstDownTime < TIMEOUT) {
+onTwoFingerTap(firstEvent,event);
+mFirstDownTime=0;
+firstEvent=null;
+return true;
+}
+}
+return false;
+}
