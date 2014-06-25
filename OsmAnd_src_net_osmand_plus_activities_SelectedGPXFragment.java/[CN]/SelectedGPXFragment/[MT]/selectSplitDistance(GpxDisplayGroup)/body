@@ -4,7 +4,7 @@
   List<String> options=new ArrayList<String>();
   final List<Double> distanceSplit=new ArrayList<Double>();
   final TIntArrayList timeSplit=new TIntArrayList();
-  bld.setTitle(R.string.gpx_split_interval);
+  View view=getActivity().getLayoutInflater().inflate(R.layout.selected_track_edit,null);
   options.add(app.getString(R.string.none));
   distanceSplit.add(-1d);
   timeSplit.add(-1);
@@ -24,31 +24,26 @@
   addOptionSplit(300,false,options,distanceSplit,timeSplit,checkedItem,model);
   addOptionSplit(600,false,options,distanceSplit,timeSplit,checkedItem,model);
   addOptionSplit(900,false,options,distanceSplit,timeSplit,checkedItem,model);
-  bld.setSingleChoiceItems(options.toArray(new String[options.size()]),checkedItem[0],new DialogInterface.OnClickListener(){
-    @Override public void onClick(    DialogInterface dialog,    final int which){
-      dialog.dismiss();
-      new AsyncTask<Void,Void,Void>(){
-        protected void onPostExecute(        Void result){
-          adapter.notifyDataSetChanged();
-          getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-        }
-        protected void onPreExecute(){
-          getSherlockActivity().setProgressBarIndeterminateVisibility(true);
-        }
-        @Override protected Void doInBackground(        Void... params){
-          if (which == 0) {
-            model.noSplit(app);
-          }
- else           if (distanceSplit.get(which) > 0) {
-            model.splitByDistance(app,distanceSplit.get(which));
-          }
- else           if (timeSplit.get(which) > 0) {
-            model.splitByTime(app,timeSplit.get(which));
-          }
-          return null;
-        }
+  final CheckBox vis=(CheckBox)view.findViewById(R.id.Visibility);
+  vis.setChecked(true);
+  final Spinner sp=(Spinner)view.findViewById(R.id.Spinner);
+  ArrayAdapter<String> adapter=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_item,options);
+  adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+  sp.setAdapter(adapter);
+  if (checkedItem[0] > 0) {
+    sp.setSelection(checkedItem[0]);
+  }
+  bld.setView(view);
+  bld.setNegativeButton(R.string.default_buttons_cancel,null);
+  bld.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (!vis.isChecked()) {
+        getMyApplication().getSelectedGpxHelper().selectGpxFile(model.getGpx(),false);
+        SelectedGPXFragment.this.adapter.setDisplayGroups(selectedGpxHelper.getDisplayGroups());
       }
-.execute((Void)null);
+ else {
+        updateSplit(model,distanceSplit,timeSplit,sp.getSelectedItemPosition());
+      }
     }
   }
 );
