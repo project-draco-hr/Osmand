@@ -1,5 +1,8 @@
 {
   TextView gpxName=(TextView)findViewById(R.id.gpx_name);
+  TextView visited=(TextView)findViewById(R.id.points_count);
+  String visitedString="(" + plugin.getVisitedAllString() + ")";
+  visited.setText(visitedString);
   SelectedRouteGpxFile route=plugin.getCurrentRoute();
   String fileName;
   if (route != null) {
@@ -8,7 +11,21 @@
  else {
     fileName=getString(R.string.rp_current_route_not_available);
   }
-  SpannableString content=new SpannableString(fileName);
+  DisplayMetrics displaymetrics=new DisplayMetrics();
+  getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+  float screenWight=displaymetrics.widthPixels - visited.getPaint().measureText(visitedString) - 15;
+  Paint textPaint=gpxName.getPaint();
+  String name=fileName;
+  int i=fileName.length() - 1;
+  for (; ; ) {
+    float textSize=textPaint.measureText(name);
+    if (textSize < screenWight) {
+      break;
+    }
+    name=fileName.substring(0,i);
+    i--;
+  }
+  SpannableString content=new SpannableString(name);
   content.setSpan(new ClickableSpan(){
     @Override public void onClick(    View widget){
       selectGPX();
@@ -17,8 +34,6 @@
 ,0,content.length(),0);
   gpxName.setText(content);
   gpxName.setMovementMethod(LinkMovementMethod.getInstance());
-  TextView visited=(TextView)findViewById(R.id.points_count);
-  visited.setText("(" + plugin.getVisitedAllString() + ")");
   adapter=new PointItemAdapter(this,R.layout.route_point_info,route == null ? new ArrayList<RoutePoint>() : route.getCurrentPoints());
   ListView listView=getListView();
   listView.setAdapter(adapter);
