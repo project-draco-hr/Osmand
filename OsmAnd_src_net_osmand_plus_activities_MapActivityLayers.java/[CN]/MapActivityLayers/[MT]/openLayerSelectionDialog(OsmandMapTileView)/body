@@ -27,6 +27,32 @@
       View v=activity.getLayoutInflater().inflate(layout,null);
       TextView tv=(TextView)v.findViewById(R.id.title);
       tv.setText(adapter.getItemName(position));
+      int specialItemId=adapter.getItemId(position);
+      if (specialItemId == R.string.layer_poi || specialItemId == R.string.layer_gpx_layer) {
+        ImageView set=(ImageView)v.findViewById(R.id.icon_settings);
+        if (light) {
+          set.setImageResource(R.drawable.ic_action_settings_light);
+        }
+ else {
+          set.setImageResource(R.drawable.ic_action_settings_dark);
+        }
+        if (specialItemId == R.string.layer_poi) {
+          set.setOnClickListener(new View.OnClickListener(){
+            @Override public void onClick(            View view){
+              selectPOIFilterLayer(mapView);
+            }
+          }
+);
+        }
+ else {
+          set.setOnClickListener(new View.OnClickListener(){
+            @Override public void onClick(            View view){
+              showGPXFileLayer(getAlreadySelectedGpx(),mapView);
+            }
+          }
+);
+        }
+      }
       if (adapter.getImageId(position,light) != 0) {
         tv.setCompoundDrawablesWithIntrinsicBounds(adapter.getImageId(position,light),0,0,0);
       }
