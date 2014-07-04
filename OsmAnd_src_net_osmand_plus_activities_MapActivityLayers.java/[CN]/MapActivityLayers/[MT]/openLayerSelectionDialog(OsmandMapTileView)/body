@@ -27,6 +27,36 @@
       View v=activity.getLayoutInflater().inflate(layout,null);
       TextView tv=(TextView)v.findViewById(R.id.title);
       tv.setText(adapter.getItemName(position));
+      final ImageView settingsImage=(ImageView)v.findViewById(R.id.icon_settings);
+      final int specialItemId=adapter.getItemId(position);
+      if ((specialItemId == R.string.layer_poi || specialItemId == R.string.layer_gpx_layer) && adapter.getSelection(position) > 0) {
+        settingsImage.setVisibility(View.VISIBLE);
+        if (light) {
+          settingsImage.setImageResource(R.drawable.ic_action_settings_light);
+        }
+ else {
+          settingsImage.setImageResource(R.drawable.ic_action_settings_dark);
+        }
+        if (specialItemId == R.string.layer_poi) {
+          settingsImage.setOnClickListener(new View.OnClickListener(){
+            @Override public void onClick(            View view){
+              selectPOIFilterLayer(mapView);
+            }
+          }
+);
+        }
+ else         if (specialItemId == R.string.layer_gpx_layer) {
+          settingsImage.setOnClickListener(new View.OnClickListener(){
+            @Override public void onClick(            View view){
+              if (listener.dialog != null) {
+                listener.dialog.dismiss();
+              }
+              showGPXFileLayer(getAlreadySelectedGpx(),mapView);
+            }
+          }
+);
+        }
+      }
       if (adapter.getImageId(position,light) != 0) {
         tv.setCompoundDrawablesWithIntrinsicBounds(adapter.getImageId(position,light),0,0,0);
       }
@@ -43,6 +73,14 @@
         ch.setChecked(adapter.getSelection(position) > 0);
         ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
           @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
+            if (specialItemId == R.string.layer_poi) {
+              if (isChecked) {
+                settingsImage.setVisibility(View.VISIBLE);
+              }
+ else {
+                settingsImage.setVisibility(View.GONE);
+              }
+            }
             listener.onClick(position,isChecked);
           }
         }
