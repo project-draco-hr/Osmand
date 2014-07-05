@@ -1,5 +1,14 @@
 {
   return new AsyncTask<WptPt,String,String>(){
+    protected void onProgressUpdate(    String... values){
+      if (values != null) {
+        String t="";
+        for (        String s : values) {
+          t+=s + "\n";
+        }
+        app.showToastMessage(t.trim());
+      }
+    }
     @Override protected String doInBackground(    WptPt... params){
       final File fl=app.getAppPath(IndexConstants.GPX_INDEX_DIR + "/osmo");
       if (!fl.exists()) {
@@ -17,6 +26,7 @@
         if (errors == null) {
           errors="";
         }
+        publishProgress(app.getString(R.string.osmo_gpx_points_downloaded,name));
       }
       SelectedGpxFile byPath=app.getSelectedGpxHelper().getSelectedFileByPath(ps.getAbsolutePath());
       if (byPath == null || changed) {
