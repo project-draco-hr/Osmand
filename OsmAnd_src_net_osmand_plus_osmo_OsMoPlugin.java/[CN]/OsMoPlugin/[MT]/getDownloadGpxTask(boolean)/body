@@ -10,6 +10,14 @@
         try {
           File f=new File(fl,obj.getString("name") + ".gpx");
           long timestamp=obj.getLong("created") * 1000;
+          int color=0;
+          if (obj.has("color")) {
+            try {
+              color=Algorithms.parseColor(obj.getString("color"));
+            }
+ catch (            RuntimeException e) {
+            }
+          }
           boolean visible=obj.has("visible");
           boolean changed=false;
           if (!f.exists() || (f.lastModified() != timestamp)) {
@@ -32,6 +40,20 @@
               is.close();
               if (!f.setLastModified(timestamp)) {
                 log.error("Timestamp updates are not supported");
+              }
+            }
+            if (color != 0) {
+              try {
+                GPXFile loaded=GPXUtilities.loadGPXFile(app,f);
+                if (loaded.tracks.size() > 0) {
+                  for (                  Track t : loaded.tracks) {
+                    t.setColor(color);
+                  }
+                  GPXUtilities.writeGpxFile(f,loaded,app);
+                }
+              }
+ catch (              RuntimeException e) {
+                e.printStackTrace();
               }
             }
             publishProgress(app.getString(R.string.osmo_gpx_track_downloaded,obj.getString("name")));
