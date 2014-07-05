@@ -16,12 +16,12 @@
       if (device != null && device.getLastLocation() != null) {
         createMenuItem(menu,SHOW_ON_MAP_ID,R.string.show_poi_on_map,R.drawable.ic_action_marker_light,R.drawable.ic_action_marker_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
-      createMenuItem(menu,SHARE_ID,R.string.share_fav,R.drawable.ic_action_gshare_light,R.drawable.ic_action_gshare_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+      createMenuItem(menu,SHARE_ID,R.string.share_fav,R.drawable.ic_action_gshare_light,R.drawable.ic_action_gshare_dark,device != null && device.getLastLocation() != null ? MenuItem.SHOW_AS_ACTION_NEVER : MenuItem.SHOW_AS_ACTION_IF_ROOM);
       if (device != null) {
-        createMenuItem(menu,SETTINGS_DEV_ID,R.string.settings,R.drawable.ic_action_settings_light,R.drawable.ic_action_settings_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        createMenuItem(menu,SETTINGS_DEV_ID,R.string.settings,R.drawable.ic_action_settings_light,R.drawable.ic_action_settings_dark,device.getLastLocation() != null ? MenuItem.SHOW_AS_ACTION_NEVER : MenuItem.SHOW_AS_ACTION_IF_ROOM);
       }
       if (device != null && device.getLastLocation() != null) {
-        MenuItem menuItem=createMenuItem(menu,TRACK_DEV_ID,R.string.osmo_set_moving_target,R.drawable.ic_action_flage_light,R.drawable.ic_action_flage_dark,MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        MenuItem menuItem=createMenuItem(menu,TRACK_DEV_ID,R.string.osmo_set_moving_target,R.drawable.ic_action_flage_light,R.drawable.ic_action_flage_dark,device.getLastLocation() != null ? MenuItem.SHOW_AS_ACTION_NEVER : MenuItem.SHOW_AS_ACTION_IF_ROOM);
         menuItem.setTitleCondensed(getString(R.string.osmo_follow));
       }
       if (group != null) {
@@ -50,6 +50,7 @@
     }
     @Override public void onDestroyActionMode(    ActionMode mode){
       selectedObject=null;
+      refreshList();
     }
     @Override public boolean onActionItemClicked(    ActionMode mode,    MenuItem item){
       if (item.getItemId() == TRACK_DEV_ID) {

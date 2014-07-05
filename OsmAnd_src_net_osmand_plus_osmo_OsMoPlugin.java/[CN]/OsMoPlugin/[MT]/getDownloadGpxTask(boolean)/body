@@ -1,5 +1,5 @@
 {
-  return new AsyncTask<JSONObject,GPXFile,String>(){
+  return new AsyncTask<JSONObject,String,String>(){
     @Override protected String doInBackground(    JSONObject... params){
       final File fl=app.getAppPath(IndexConstants.GPX_INDEX_DIR + "/osmo");
       if (!fl.exists()) {
@@ -10,6 +10,14 @@
         try {
           File f=new File(fl,obj.getString("name") + ".gpx");
           long timestamp=obj.getLong("created") * 1000;
+          int color=0;
+          if (obj.has("color")) {
+            try {
+              color=Algorithms.parseColor(obj.getString("color"));
+            }
+ catch (            RuntimeException e) {
+            }
+          }
           boolean visible=obj.has("visible");
           boolean changed=false;
           if (!f.exists() || (f.lastModified() != timestamp)) {
@@ -34,6 +42,21 @@
                 log.error("Timestamp updates are not supported");
               }
             }
+            if (color != 0) {
+              try {
+                GPXFile loaded=GPXUtilities.loadGPXFile(app,f);
+                if (loaded.tracks.size() > 0) {
+                  for (                  Track t : loaded.tracks) {
+                    t.setColor(color);
+                  }
+                  GPXUtilities.writeGpxFile(f,loaded,app);
+                }
+              }
+ catch (              RuntimeException e) {
+                e.printStackTrace();
+              }
+            }
+            publishProgress(app.getString(R.string.osmo_gpx_track_downloaded,obj.getString("name")));
           }
           if (visible && (changed || makeVisible)) {
             GPXFile selectGPXFile=GPXUtilities.loadGPXFile(app,f);
@@ -50,6 +73,15 @@ catch (        IOException e) {
         }
       }
       return errors;
+    }
+    protected void onProgressUpdate(    String... values){
+      if (values != null) {
+        String t="";
+        for (        String s : values) {
+          t+=s + "\n";
+        }
+        app.showToastMessage(t.trim());
+      }
     }
     @Override protected void onPostExecute(    String result){
       if (result.length() > 0) {
