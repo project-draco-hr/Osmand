@@ -1,0 +1,41 @@
+{
+  OsmandApplication app=(OsmandApplication)activity.getApplication();
+  if (app.accessibilityEnabled()) {
+    Builder builder=new AlertDialog.Builder(activity);
+    String[] values=qa.getItemNames();
+    builder.setItems(values,new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        OnContextMenuClick clk=qa.getClickAdapter(which);
+        if (clk != null) {
+          clk.onContextMenuClick(qa.getItemId(which),which,false,dialog);
+        }
+      }
+    }
+);
+    builder.show();
+  }
+ else {
+    final QuickAction view=new QuickAction(qa.getAnchor());
+    for (int i=0; i < qa.length(); i++) {
+      ActionItem ai=new ActionItem();
+      int id=qa.getImageId(0,true);
+      if (id != 0) {
+        ai.setIcon(activity.getResources().getDrawable(id));
+      }
+      final int ki=i;
+      ai.setTitle(qa.getItemName(i));
+      ai.setOnClickListener(new OnClickListener(){
+        @Override public void onClick(        View v){
+          if (onShow != null) {
+            onShow.onClick(v);
+          }
+          view.dismiss();
+          qa.getClickAdapter(ki).onContextMenuClick(qa.getItemId(ki),ki,false,null);
+        }
+      }
+);
+      view.addActionItem(ai);
+    }
+    view.show();
+  }
+}
