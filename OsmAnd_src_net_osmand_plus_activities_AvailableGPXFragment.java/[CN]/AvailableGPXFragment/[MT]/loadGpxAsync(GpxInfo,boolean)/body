@@ -1,0 +1,28 @@
+{
+  final boolean selected=isSelected;
+  new AsyncTask<GpxInfo,Void,Void>(){
+    GpxInfo info;
+    @Override protected Void doInBackground(    GpxInfo... params){
+      if (params == null) {
+        return null;
+      }
+      info=params[0];
+      params[0].updateGpxInfo(getMyApplication());
+      return null;
+    }
+    @Override protected void onProgressUpdate(    Void... values){
+    }
+    @Override protected void onPreExecute(){
+      getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+    }
+    @Override protected void onPostExecute(    Void result){
+      getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+      if (info.gpx != null) {
+        getMyApplication().getSelectedGpxHelper().selectGpxFile(info.gpx,selected,true);
+        listAdapter.notifyDataSetChanged();
+        selectedGpxHelper.runUiListeners();
+      }
+    }
+  }
+.execute(info);
+}
