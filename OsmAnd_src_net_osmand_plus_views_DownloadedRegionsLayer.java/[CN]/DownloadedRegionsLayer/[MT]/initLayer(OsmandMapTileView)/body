@@ -35,6 +35,29 @@
 {
       ZOOM_THRESHOLD=2;
     }
+    @Override public void layerOnPostExecute(){
+      view.refreshMap();
+    }
+    public boolean queriedBoxContains(    final RotatedTileBox queriedData,    final RotatedTileBox newBox){
+      if (newBox.getZoom() < ZOOM_TO_SHOW_MAP_NAMES) {
+        if (queriedData != null && queriedData.getZoom() < ZOOM_TO_SHOW_MAP_NAMES) {
+          if (newBox.getZoom() >= ZOOM_TO_SHOW_BORDERS_ST && newBox.getZoom() < ZOOM_TO_SHOW_BORDERS) {
+            return queriedData != null && queriedData.containsTileBox(newBox);
+          }
+          return true;
+        }
+ else {
+          return false;
+        }
+      }
+      List<BinaryMapDataObject> queriedResults=getResults();
+      if (queriedData != null && queriedData.containsTileBox(newBox) && queriedData.getZoom() >= ZOOM_TO_SHOW_MAP_NAMES) {
+        if (queriedResults != null && (queriedResults.isEmpty() || Math.abs(queriedData.getZoom() - newBox.getZoom()) <= 1)) {
+          return true;
+        }
+      }
+      return false;
+    }
     @Override protected List<BinaryMapDataObject> calculateResult(    RotatedTileBox tileBox){
       return queryData(tileBox);
     }

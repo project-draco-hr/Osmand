@@ -2,16 +2,37 @@
   if (tileBox.getZoom() < ZOOM_TO_SHOW_MAP_NAMES) {
     basemapExists=rm.getRenderer().basemapExists();
   }
+  int count=0;
+  RotatedTileBox cb=rm.getRenderer().getCheckedBox();
+  while (cb == null || cb.getZoom() != tileBox.getZoom()) {
+    if (count++ > 7) {
+      return null;
+    }
+    try {
+      Thread.sleep(1000);
+    }
+ catch (    InterruptedException e) {
+      return null;
+    }
+    cb=rm.getRenderer().getCheckedBox();
+  }
+  int cState=rm.getRenderer().getCheckedRenderedState();
+  final boolean empty;
+  if (tileBox.getZoom() < ZOOM_TO_SHOW_MAP_NAMES) {
+    empty=cState == 0;
+  }
+ else {
+    empty=cState <= 1;
+  }
+  noMapsPresent=empty;
+  if (!empty && tileBox.getZoom() >= ZOOM_TO_SHOW_MAP_NAMES) {
+    return Collections.emptyList();
+  }
   List<BinaryMapDataObject> result=null;
   int left=MapUtils.get31TileNumberX(tileBox.getLeftTopLatLon().getLongitude());
   int right=MapUtils.get31TileNumberX(tileBox.getRightBottomLatLon().getLongitude());
   int top=MapUtils.get31TileNumberY(tileBox.getLeftTopLatLon().getLatitude());
   int bottom=MapUtils.get31TileNumberY(tileBox.getRightBottomLatLon().getLatitude());
-  final boolean empty=rm.getRenderer().isLastMapRenderedEmpty(tileBox.getZoom() < 12);
-  noMapsPresent=empty;
-  if (!empty && tileBox.getZoom() >= ZOOM_TO_SHOW_MAP_NAMES) {
-    return Collections.emptyList();
-  }
   try {
     result=osmandRegions.queryBbox(left,right,top,bottom);
   }
