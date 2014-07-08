@@ -1,0 +1,24 @@
+{
+  if (group.isSplitDistance()) {
+    MetricsConstants mc=app.getSettings().METRIC_SYSTEM.get();
+    if (mc == MetricsConstants.KILOMETERS_AND_METERS) {
+      final double sd=group.getSplitDistance();
+      int digits=sd < 100 ? 2 : (sd < 1000 ? 1 : 0);
+      int rem1000=(int)(metricEnd + 0.5) % 1000;
+      if (rem1000 > 1 && digits < 1) {
+        digits=1;
+      }
+      int rem100=(int)(metricEnd + 0.5) % 100;
+      if (rem100 > 1 && digits < 2) {
+        digits=2;
+      }
+      return OsmAndFormatter.getFormattedRoundDistanceKm((float)metricEnd,digits,app);
+    }
+ else {
+      return OsmAndFormatter.getFormattedDistance((float)metricEnd,app);
+    }
+  }
+ else {
+    return Algorithms.formatDuration((int)metricEnd);
+  }
+}

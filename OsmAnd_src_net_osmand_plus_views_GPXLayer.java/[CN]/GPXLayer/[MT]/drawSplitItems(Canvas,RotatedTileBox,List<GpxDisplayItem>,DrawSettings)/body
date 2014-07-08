@@ -1,0 +1,33 @@
+{
+  final QuadRect latLonBounds=tileBox.getLatLonBounds();
+  int r=(int)(12 * tileBox.getDensity());
+  int dr=r * 3 / 2;
+  int px=-1;
+  int py=-1;
+  for (int k=0; k < items.size(); k++) {
+    GpxDisplayItem i=items.get(k);
+    WptPt o=i.locationEnd;
+    if (o != null && o.lat >= latLonBounds.bottom && o.lat <= latLonBounds.top && o.lon >= latLonBounds.left && o.lon <= latLonBounds.right) {
+      int x=(int)tileBox.getPixXFromLatLon(o.lat,o.lon);
+      int y=(int)tileBox.getPixYFromLatLon(o.lat,o.lon);
+      if (px != -1 || py != -1) {
+        if (Math.abs(x - px) <= dr && Math.abs(y - py) <= dr) {
+          continue;
+        }
+      }
+      px=x;
+      py=y;
+      String nm=i.splitName;
+      if (nm != null) {
+        int ind=nm.indexOf(' ');
+        if (ind > 0) {
+          nm=nm.substring(0,ind);
+        }
+        canvas.drawCircle(x,y,r + (float)Math.ceil(tileBox.getDensity()),paintOuter);
+        canvas.drawCircle(x,y,r - (float)Math.ceil(tileBox.getDensity()),paintInnerCircle);
+        paintTextIcon.setTextSize(r);
+        canvas.drawText(nm,x,y + r / 2,paintTextIcon);
+      }
+    }
+  }
+}
