@@ -61,11 +61,16 @@ synchronized (this) {
     lastProjection=locationProjection;
   }
   if (calculateRoute) {
-    recalculateRouteInBackground(false,currentLocation,finalLocation,intermediatePoints,currentGPXRoute,previousRoute.isCalculated() ? previousRoute : null);
+    recalculateRouteInBackground(false,currentLocation,finalLocation,intermediatePoints,currentGPXRoute,previousRoute.isCalculated() ? previousRoute : null,false);
   }
- else   if (currentRunningJob != null && currentRunningJob instanceof RouteRecalculationThread) {
-    RouteRecalculationThread thread=(RouteRecalculationThread)currentRunningJob;
-    thread.stopCalculation();
+ else {
+    Thread job=currentRunningJob;
+    if (job instanceof RouteRecalculationThread) {
+      RouteRecalculationThread thread=(RouteRecalculationThread)job;
+      if (thread.isParamsChanged()) {
+        thread.stopCalculation();
+      }
+    }
   }
   double projectDist=mode != null && mode.hasFastSpeed() ? posTolerance : posTolerance / 2;
   if (returnUpdatedLocation && locationProjection != null && currentLocation.distanceTo(locationProjection) < projectDist) {
