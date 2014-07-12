@@ -95,10 +95,21 @@
         pref.edit().putInt(TIPS_SHOW,++i).commit();
       }
       if (i == 1 || i == 5 || appVersionChanged) {
-        TipsAndTricksActivity tipsActivity=new TipsAndTricksActivity(this);
-        Dialog dlg=tipsActivity.getDialogToShowTips(!appVersionChanged,false);
-        dlg.show();
-        dialogShown=true;
+        if (TIPS_AND_TRICKS) {
+          TipsAndTricksActivity tipsActivity=new TipsAndTricksActivity(this);
+          Dialog dlg=tipsActivity.getDialogToShowTips(!appVersionChanged,false);
+          dlg.show();
+          dialogShown=true;
+        }
+ else {
+          if (appVersionChanged) {
+            final Intent helpIntent=new Intent(activity,HelpActivity.class);
+            helpIntent.putExtra(HelpActivity.TITLE,Version.getAppVersion(getMyApplication()));
+            helpIntent.putExtra(HelpActivity.URL,"changes-1.8.html");
+            activity.startActivity(helpIntent);
+            dialogShown=true;
+          }
+        }
       }
     }
   }
@@ -115,7 +126,7 @@
       checkVectorIndexesDownloaded();
     }
   }
-  if (appCustomization.checkExceptionsOnStart()) {
+  if (appCustomization.checkExceptionsOnStart() && !dialogShown) {
     checkPreviousRunsForExceptions(firstTime);
   }
 }

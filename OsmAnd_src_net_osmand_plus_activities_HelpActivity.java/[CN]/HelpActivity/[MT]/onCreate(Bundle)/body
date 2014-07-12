@@ -1,0 +1,47 @@
+{
+  getMyApplication().applyTheme(this);
+  super.onCreate(savedInstanceState);
+  final WebView wv=new WebView(this);
+  getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+  String title=getString(R.string.help);
+  String url="index.html";
+  if (getIntent() != null) {
+    String tl=getIntent().getStringExtra(TITLE);
+    if (tl != null) {
+      title=tl;
+    }
+    String ul=getIntent().getStringExtra(URL);
+    if (ul != null) {
+      url=ul;
+    }
+  }
+  getSupportActionBar().setTitle(title);
+  setContentView(wv);
+  wv.setFocusable(true);
+  wv.setFocusableInTouchMode(true);
+  wv.requestFocus(View.FOCUS_DOWN);
+  wv.setOnTouchListener(new View.OnTouchListener(){
+    @Override public boolean onTouch(    View v,    MotionEvent event){
+switch (event.getAction()) {
+case MotionEvent.ACTION_DOWN:
+case MotionEvent.ACTION_UP:
+        if (!v.hasFocus()) {
+          v.requestFocus();
+        }
+      break;
+  }
+  return false;
+}
+}
+);
+wv.setWebViewClient(new WebViewClient(){
+@Override public void onPageFinished(WebView view,String url){
+  wv.requestFocus(View.FOCUS_DOWN);
+}
+@Override public void onLoadResource(WebView view,String url){
+  super.onLoadResource(view,url);
+}
+}
+);
+wv.loadUrl("file:///android_asset/help/" + url);
+}
