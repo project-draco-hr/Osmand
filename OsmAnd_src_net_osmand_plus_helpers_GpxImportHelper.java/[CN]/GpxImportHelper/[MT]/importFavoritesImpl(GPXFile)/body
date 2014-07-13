@@ -1,0 +1,25 @@
+{
+  new AsyncTask<Void,Void,GPXUtilities.GPXFile>(){
+    ProgressDialog progress=null;
+    @Override protected void onPreExecute(){
+      progress=ProgressDialog.show(mapActivity,application.getString(R.string.loading_smth,""),application.getString(R.string.loading_data));
+    }
+    @Override protected GPXUtilities.GPXFile doInBackground(    Void... nothing){
+      final List<FavouritePoint> favourites=asFavourites(gpxFile.points);
+      final FavouritesDbHelper favoritesHelper=application.getFavorites();
+      for (      final FavouritePoint favourite : favourites) {
+        favoritesHelper.deleteFavourite(favourite,false);
+        favoritesHelper.addFavourite(favourite,false);
+      }
+      favoritesHelper.saveCurrentPointsIntoFile();
+      AccessibleToast.makeText(mapActivity,R.string.fav_imported_sucessfully,Toast.LENGTH_LONG).show();
+      return null;
+    }
+    @Override protected void onPostExecute(    GPXUtilities.GPXFile result){
+      progress.dismiss();
+      final Intent newIntent=new Intent(mapActivity,application.getAppCustomization().getFavoritesActivity());
+      mapActivity.startActivity(newIntent);
+    }
+  }
+.execute();
+}
