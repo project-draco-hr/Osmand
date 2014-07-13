@@ -10,7 +10,8 @@
       String subtxt=null;
       Drawable d=monitoringInactive;
       long last=lastUpdateTime;
-      if (settings.SAVE_TRACK_TO_GPX.get()) {
+      final boolean globalRecord=settings.SAVE_GLOBAL_TRACK_TO_GPX.get();
+      if (globalRecord || settings.SAVE_TRACK_TO_GPX.get()) {
         float dist=app.getSavingTrackHelper().getDistance();
         last=app.getSavingTrackHelper().getLastTimeUpdated();
         String ds=OsmAndFormatter.getFormattedDistance(dist,map.getMyApplication());
@@ -22,11 +23,13 @@
           txt=ds.substring(0,ls);
           subtxt=ds.substring(ls + 1);
         }
-        d=monitoringBig;
+        if (globalRecord) {
+          d=monitoringBig;
+        }
       }
       setText(txt,subtxt);
       setImageDrawable(d);
-      if (last != lastUpdateTime) {
+      if (last != lastUpdateTime && globalRecord) {
         lastUpdateTime=last;
         blink();
       }
@@ -49,20 +52,7 @@
   monitoringControl.updateInfo(null);
   monitoringControl.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      boolean wasTrackMonitored=settings.SAVE_TRACK_TO_GPX.get();
-      if (!wasTrackMonitored) {
-        app.getSavingTrackHelper().startNewSegment();
-      }
-      settings.SAVE_TRACK_TO_GPX.set(!wasTrackMonitored);
-      if (wasTrackMonitored) {
-        if (app.getNavigationService() != null) {
-          app.getNavigationService().stopIfNeeded(app,NavigationService.USED_BY_GPX);
-        }
-      }
- else {
-        app.startNavigationService(NavigationService.USED_BY_GPX);
-      }
-      monitoringControl.updateInfo(null);
+      controlDialog(map);
     }
   }
 );
