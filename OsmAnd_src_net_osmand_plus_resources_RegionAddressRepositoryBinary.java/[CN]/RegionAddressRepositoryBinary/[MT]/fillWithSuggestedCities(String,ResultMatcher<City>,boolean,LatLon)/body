@@ -35,7 +35,20 @@
     }
     int initialsize=citiesToFill.size();
     if (searchVillages) {
-      List<City> foundCities=file.getCities(region,BinaryMapIndexReader.buildAddressRequest(resultMatcher),new CollatorStringMatcher(name,StringMatcherMode.CHECK_STARTS_FROM_SPACE),useEnglishNames,BinaryMapAddressReaderAdapter.VILLAGES_TYPE);
+      List<City> foundCities=file.getCities(region,BinaryMapIndexReader.buildAddressRequest(new ResultMatcher<City>(){
+        List<City> cache=new ArrayList<City>();
+        @Override public boolean publish(        City c){
+          if (c.getLocation() != null) {
+            City ct=getClosestCity(c.getLocation(),cache);
+            c.setClosestCity(ct);
+          }
+          return resultMatcher.publish(c);
+        }
+        @Override public boolean isCancelled(){
+          return resultMatcher.isCancelled();
+        }
+      }
+),new CollatorStringMatcher(name,StringMatcherMode.CHECK_STARTS_FROM_SPACE),useEnglishNames,BinaryMapAddressReaderAdapter.VILLAGES_TYPE);
       for (      City c : foundCities) {
         citiesToFill.add(c);
         if (resultMatcher.isCancelled()) {
