@@ -1,0 +1,22 @@
+{
+  City closest=null;
+  if (l != null) {
+    int y31=MapUtils.get31TileNumberY(l.getLatitude());
+    int x31=MapUtils.get31TileNumberX(l.getLongitude());
+    int dz=(31 - ZOOM_QTREE);
+    if (cache == null) {
+      cache=new ArrayList<City>();
+    }
+    cache.clear();
+    citiesQtree.queryInBox(new QuadRect((x31 >> dz) - 1,(y31 >> dz) - 1,(x31 >> dz) + 1,(y31 >> dz) + 1),cache);
+    int min=-1;
+    for (    City c : cache) {
+      double d=MapUtils.getDistance(l,c.getLocation());
+      if (min == -1 || d < min) {
+        min=(int)d;
+        closest=c;
+      }
+    }
+  }
+  return closest;
+}

@@ -4,6 +4,13 @@
       List<City> cs=file.getCities(region,BinaryMapIndexReader.buildAddressRequest(resultMatcher),BinaryMapAddressReaderAdapter.CITY_TOWN_TYPE);
       for (      City c : cs) {
         cities.put(c.getId(),c);
+        LatLon loc=c.getLocation();
+        if (loc != null) {
+          int y31=MapUtils.get31TileNumberY(loc.getLatitude());
+          int x31=MapUtils.get31TileNumberX(loc.getLongitude());
+          int dz=(31 - ZOOM_QTREE);
+          citiesQtree.insert(c,new QuadRect((x31 >> dz) - 1,(y31 >> dz) - 1,(x31 >> dz) + 1,(y31 >> dz) + 1));
+        }
       }
     }
  catch (    IOException e) {

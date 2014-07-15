@@ -1,19 +1,17 @@
 {
-  if (time - lastTimeUpdated > settings.SAVE_TRACK_INTERVAL.get()) {
-    execWithClose(updateScript,new Object[]{lat,lon,alt,speed,hdop,time});
-    boolean newSegment=false;
-    if (lastPoint == null || (time - lastTimeUpdated) > 180 * 1000) {
-      lastPoint=new LatLon(lat,lon);
-      newSegment=true;
-    }
- else {
-      float[] lastInterval=new float[1];
-      net.osmand.Location.distanceBetween(lat,lon,lastPoint.getLatitude(),lastPoint.getLongitude(),lastInterval);
-      distance+=lastInterval[0];
-      lastPoint=new LatLon(lat,lon);
-    }
-    lastTimeUpdated=time;
-    WptPt pt=new GPXUtilities.WptPt(lat,lon,time,alt,speed,hdop);
-    addTrackPoint(pt,newSegment);
+  execWithClose(updateScript,new Object[]{lat,lon,alt,speed,hdop,time});
+  boolean newSegment=false;
+  if (lastPoint == null || (time - lastTimeUpdated) > 180 * 1000) {
+    lastPoint=new LatLon(lat,lon);
+    newSegment=true;
   }
+ else {
+    float[] lastInterval=new float[1];
+    net.osmand.Location.distanceBetween(lat,lon,lastPoint.getLatitude(),lastPoint.getLongitude(),lastInterval);
+    distance+=lastInterval[0];
+    lastPoint=new LatLon(lat,lon);
+  }
+  lastTimeUpdated=time;
+  WptPt pt=new GPXUtilities.WptPt(lat,lon,time,alt,speed,hdop);
+  addTrackPoint(pt,newSegment);
 }

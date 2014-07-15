@@ -1,7 +1,16 @@
 {
   long locationTime=System.currentTimeMillis();
   OsmandSettings settings=ctx.getSettings();
-  if (OsmAndLocationProvider.isPointAccurateForRouting(location) && settings.SAVE_TRACK_TO_GPX.get() && OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class) != null) {
+  boolean record=false;
+  if (OsmAndLocationProvider.isPointAccurateForRouting(location) && OsmAndLocationProvider.isNotSimulatedLocation(location) && OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class) != null) {
+    if (settings.SAVE_TRACK_TO_GPX.get() && locationTime - lastTimeUpdated > settings.SAVE_TRACK_INTERVAL.get()) {
+      record=true;
+    }
+ else     if (settings.SAVE_GLOBAL_TRACK_TO_GPX.get() && locationTime - lastTimeUpdated > settings.SAVE_GLOBAL_TRACK_INTERVAL.get()) {
+      record=true;
+    }
+  }
+  if (record) {
     insertData(location.getLatitude(),location.getLongitude(),location.getAltitude(),location.getSpeed(),location.getAccuracy(),locationTime,settings);
   }
 }
