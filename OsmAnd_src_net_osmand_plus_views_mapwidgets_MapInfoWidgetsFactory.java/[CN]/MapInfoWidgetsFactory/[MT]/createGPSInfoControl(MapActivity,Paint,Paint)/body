@@ -18,5 +18,34 @@
 ;
   gpsInfoControl.setImageDrawable(app.getResources().getDrawable(R.drawable.widget_gps_info));
   gpsInfoControl.setText(null,null);
+  gpsInfoControl.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View view){
+      if (app.getNavigationService() != null) {
+        AlertDialog.Builder dlg=new AlertDialog.Builder(map);
+        dlg.setTitle(app.getString(R.string.sleep_mode_stop_dialog));
+        dlg.setPositiveButton(app.getString(R.string.keep_navigation_service),null);
+        dlg.setNegativeButton(app.getString(R.string.stop_navigation_service),new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialogInterface,          int i){
+            Intent serviceIntent=new Intent(app,NavigationService.class);
+            app.stopService(serviceIntent);
+          }
+        }
+);
+        dlg.show();
+      }
+ else {
+        final MonitoringInfoControl.ValueHolder<Integer> vs=new MonitoringInfoControl.ValueHolder<Integer>();
+        vs.value=app.getSettings().SERVICE_OFF_INTERVAL.get();
+        OsmandMonitoringPlugin.showIntervalChooseDialog(map,app.getString(R.string.gps_wake_up_timer) + " : %s",app.getString(R.string.enable_sleep_mode),OsmandMonitoringPlugin.SECONDS,OsmandMonitoringPlugin.MINUTES,vs,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            app.getSettings().SERVICE_OFF_INTERVAL.set(vs.value);
+            app.startNavigationService(NavigationService.USED_BY_GPX);
+          }
+        }
+);
+      }
+    }
+  }
+);
   return gpsInfoControl;
 }
