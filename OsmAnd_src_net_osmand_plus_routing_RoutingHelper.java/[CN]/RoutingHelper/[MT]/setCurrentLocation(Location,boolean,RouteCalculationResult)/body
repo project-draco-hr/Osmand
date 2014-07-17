@@ -1,7 +1,7 @@
 {
   Location locationProjection=currentLocation;
   if (finalLocation == null || currentLocation == null) {
-    makeUturnWhenPossible=false;
+    isDeviatedFromRoute=false;
     return locationProjection;
   }
   float posTolerance=POSITION_TOLERANCE;
@@ -40,11 +40,11 @@ synchronized (this) {
       if (isFollowingMode) {
         announceGpxWaypoints(currentLocation);
         boolean inRecalc=calculateRoute || isRouteBeingCalculated();
-        if (!inRecalc && !uTurnIsNeeded && !wrongMovementDirection) {
+        if (!inRecalc && !wrongMovementDirection) {
           voiceRouter.updateStatus(currentLocation,false);
         }
- else         if (uTurnIsNeeded) {
-          voiceRouter.makeUTStatus();
+ else         if (isDeviatedFromRoute) {
+          voiceRouter.interruptRouteCommands();
         }
       }
       if (currentRoute > 0) {

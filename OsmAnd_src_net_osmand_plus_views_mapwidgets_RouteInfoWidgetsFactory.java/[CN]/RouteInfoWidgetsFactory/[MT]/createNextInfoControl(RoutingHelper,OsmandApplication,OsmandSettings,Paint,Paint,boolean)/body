@@ -6,12 +6,13 @@
       boolean visible=false;
       boolean followingMode=routingHelper.isFollowingMode() || ctx.getLocationProvider().getLocationSimulation().isRouteAnimating();
       if (routingHelper != null && routingHelper.isRouteCalculated() && followingMode) {
-        makeUturnWhenPossible=routingHelper.makeUturnWhenPossible();
-        if (makeUturnWhenPossible) {
+        deviatedFromRoute=routingHelper.isDeviatedFromRoute();
+        if (deviatedFromRoute) {
           visible=true;
           turnImminent=0;
-          turnType=TurnType.valueOf(TurnType.TU,settings.DRIVING_REGION.get().leftHandDriving);
+          turnType=TurnType.valueOf(TurnType.OFFR,settings.DRIVING_REGION.get().leftHandDriving);
           TurnPathHelper.calcTurnPath(pathForTurn,turnType,pathTransform);
+          deviatedPath=routingHelper.getRouteDeviation();
           invalidate();
         }
  else {
