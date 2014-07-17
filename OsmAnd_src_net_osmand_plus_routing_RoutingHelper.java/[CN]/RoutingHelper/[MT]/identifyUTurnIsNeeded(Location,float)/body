@@ -1,9 +1,9 @@
 {
   if (finalLocation == null || currentLocation == null || !route.isCalculated()) {
-    this.makeUturnWhenPossible=false;
-    return makeUturnWhenPossible;
+    this.isDeviatedFromRoute=false;
+    return isDeviatedFromRoute;
   }
-  boolean makeUturnWhenPossible=false;
+  boolean isOffRoute=false;
   if (currentLocation.hasBearing()) {
     float bearingMotion=currentLocation.getBearing();
     Location nextRoutePosition=route.getNextRouteLocation();
@@ -12,18 +12,18 @@
     if (Math.abs(diff) > 135f) {
       float d=currentLocation.distanceTo(nextRoutePosition);
       if (d > posTolerance) {
-        if (makeUTwpDetected == 0) {
-          makeUTwpDetected=System.currentTimeMillis();
+        if (deviateFromRouteDetected == 0) {
+          deviateFromRouteDetected=System.currentTimeMillis();
         }
- else         if ((System.currentTimeMillis() - makeUTwpDetected > 10000)) {
-          makeUturnWhenPossible=true;
+ else         if ((System.currentTimeMillis() - deviateFromRouteDetected > 10000)) {
+          isOffRoute=true;
         }
       }
     }
  else {
-      makeUTwpDetected=0;
+      deviateFromRouteDetected=0;
     }
   }
-  this.makeUturnWhenPossible=makeUturnWhenPossible;
-  return makeUturnWhenPossible;
+  this.isDeviatedFromRoute=isOffRoute;
+  return isOffRoute;
 }
