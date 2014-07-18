@@ -1,7 +1,10 @@
 {
   super.onDraw(canvas);
   if (pathForTurn != null) {
-    if (turnImminent > 0) {
+    if (deviatedFromRoute) {
+      paintRouteDirection.setColor(getResources().getColor(R.color.nav_arrow_distant));
+    }
+ else     if (turnImminent > 0) {
       paintRouteDirection.setColor(getResources().getColor(R.color.nav_arrow));
     }
  else     if (turnImminent == 0) {
@@ -13,13 +16,13 @@
     canvas.translate(0,3 * scaleCoefficient);
     canvas.drawPath(pathForTurn,paintRouteDirection);
     canvas.drawPath(pathForTurn,paintBlack);
-    if (exitOut != null && !horisontalMini && !makeUturnWhenPossible) {
+    if (exitOut != null && !horisontalMini && !deviatedFromRoute) {
       drawShadowText(canvas,exitOut,width / 2 - 7 * scaleCoefficient,height / 2 + textPaint.getTextSize() / 2 - 3 * scaleCoefficient,textPaint);
     }
     String text=OsmAndFormatter.getFormattedDistance(nextTurnDirection,getClientContext());
     String subtext=null;
-    if (makeUturnWhenPossible) {
-      text=getResources().getString(R.string.asap);
+    if (deviatedFromRoute) {
+      text=OsmAndFormatter.getFormattedDistance((float)deviatedPath,(OsmandApplication)getContext().getApplicationContext());
     }
     int ls=text.lastIndexOf(' ');
     float st=0;
