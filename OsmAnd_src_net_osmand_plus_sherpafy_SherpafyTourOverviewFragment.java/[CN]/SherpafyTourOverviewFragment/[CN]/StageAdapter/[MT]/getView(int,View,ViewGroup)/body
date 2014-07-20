@@ -1,0 +1,38 @@
+{
+  View row=convertView;
+  if (row == null) {
+    LayoutInflater inflater=getActivity().getLayoutInflater();
+    row=inflater.inflate(R.layout.sherpafy_stage_list_item,parent,false);
+  }
+  StageItem ti=getItem(position);
+  TextView header=(TextView)row.findViewById(R.id.HeaderText);
+  ImageView img=(ImageView)row.findViewById(R.id.Icon);
+  TextView text=(TextView)row.findViewById(R.id.Text);
+  TextView addtext=(TextView)row.findViewById(R.id.AdditionalText);
+  if (ti.type instanceof StageInformation) {
+    addtext.setText("10 km");
+  }
+ else {
+    addtext.setText("");
+  }
+  if (ti.type == StageItemType.TEXT) {
+    text.setTextColor(ti.stage ? StageImageDrawable.STAGE_COLOR : StageImageDrawable.INFO_COLOR);
+    text.setText(ti.txt);
+    img.setImageDrawable(null);
+    header.setVisibility(View.GONE);
+  }
+ else   if (ti.type instanceof StageInformation) {
+    StageInformation si=(StageInformation)ti.type;
+    header.setVisibility(View.VISIBLE);
+    text.setTextColor(StageImageDrawable.MENU_COLOR);
+    text.setText(ti.txt);
+    img.setImageDrawable(new StageImageDrawable(getActivity(),StageImageDrawable.STAGE_COLOR,(si.getOrder() + 1) + "",0));
+  }
+ else {
+    header.setVisibility(View.VISIBLE);
+    text.setTextColor(StageImageDrawable.MENU_COLOR);
+    text.setText(ti.txt);
+    img.setImageDrawable(new StageImageDrawable(getActivity(),StageImageDrawable.INFO_COLOR,ti.txt.substring(0,1) + "",0));
+  }
+  return row;
+}
