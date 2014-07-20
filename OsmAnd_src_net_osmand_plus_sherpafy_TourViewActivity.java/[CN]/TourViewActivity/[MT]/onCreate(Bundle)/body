@@ -22,33 +22,17 @@
   mDrawerList=(ListView)findViewById(R.id.left_drawer);
   mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow,GravityCompat.START);
   mDrawerLayout.setDrawerTitle(GravityCompat.START,getString(R.string.sherpafy_app_name));
-  drawerAdapter=new ArrayAdapter<Object>(this,android.R.layout.simple_list_item_1){
-    @Override public View getView(    int position,    View convertView,    ViewGroup parent){
-      Object it=getItem(position);
-      if (convertView == null) {
-        convertView=getLayoutInflater().inflate(android.R.layout.simple_list_item_1,null);
-      }
-      if (position == 0) {
-        ((TextView)convertView).setText(R.string.sherpafy_tours);
-      }
- else {
-        ((TextView)convertView).setText(it.toString());
-      }
-      return convertView;
-    }
-  }
-;
+  drawerAdapter=setupAdapter();
   mDrawerList.setAdapter(drawerAdapter);
   mDrawerList.setOnItemClickListener(new OnItemClickListener(){
     @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
       selectMenu(position,drawerAdapter.getItem(position));
-      mDrawerLayout.closeDrawer(mDrawerList);
     }
   }
 );
   displaySize=new Point();
   getWindowManager().getDefaultDisplay().getSize(displaySize);
   FragmentManager fragmentManager=getSupportFragmentManager();
-  fragmentManager.beginTransaction().replace(R.id.content_frame,new SherpafyLoadingFragment(getMyApplication())).commit();
+  fragmentManager.beginTransaction().replace(R.id.content_frame,new SherpafyLoadingFragment()).commit();
   mDrawerToggle=new ActionBarDrawerToggle(this,mDrawerLayout,R.drawable.ic_navigation_drawer_light,R.string.default_buttons_other_actions,R.string.close);
 }
