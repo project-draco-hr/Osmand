@@ -15,23 +15,37 @@
  else {
     addtext.setText("");
   }
-  if (ti.type == StageItemType.TEXT) {
-    text.setTextColor(ti.stage ? StageImageDrawable.STAGE_COLOR : StageImageDrawable.INFO_COLOR);
-    text.setText(ti.txt);
-    img.setImageDrawable(null);
+  if (Algorithms.isEmpty(ti.header)) {
     header.setVisibility(View.GONE);
-  }
- else   if (ti.type instanceof StageInformation) {
-    StageInformation si=(StageInformation)ti.type;
-    header.setVisibility(View.VISIBLE);
-    text.setTextColor(StageImageDrawable.MENU_COLOR);
-    text.setText(ti.txt);
-    img.setImageDrawable(new StageImageDrawable(getActivity(),StageImageDrawable.STAGE_COLOR,(si.getOrder() + 1) + "",0));
   }
  else {
     header.setVisibility(View.VISIBLE);
-    text.setTextColor(StageImageDrawable.MENU_COLOR);
+    header.setText(ti.header);
+  }
+  if (Algorithms.isEmpty(ti.txt)) {
+    text.setVisibility(View.GONE);
+  }
+ else {
+    text.setVisibility(View.VISIBLE);
     text.setText(ti.txt);
+    if (ti.type == StageItemType.TEXT) {
+      text.setTextColor(ti.stage ? StageImageDrawable.STAGE_COLOR : StageImageDrawable.INFO_COLOR);
+    }
+ else {
+      text.setTextColor(StageImageDrawable.MENU_COLOR);
+    }
+  }
+  if (ti.type == StageItemType.TEXT) {
+    img.setVisibility(View.GONE);
+    img.setImageDrawable(null);
+  }
+ else   if (ti.type instanceof StageInformation) {
+    StageInformation si=(StageInformation)ti.type;
+    img.setVisibility(View.VISIBLE);
+    img.setImageDrawable(new StageImageDrawable(getActivity(),StageImageDrawable.STAGE_COLOR,(si.getOrder() + 1) + "",0));
+  }
+ else {
+    img.setVisibility(View.VISIBLE);
     img.setImageDrawable(new StageImageDrawable(getActivity(),StageImageDrawable.INFO_COLOR,ti.txt.substring(0,1) + "",0));
   }
   return row;
