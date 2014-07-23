@@ -2,16 +2,22 @@
   header=getLayoutInflater().inflate(R.layout.osmo_groups_list_header,null);
   getExpandableListView().addHeaderView(header);
   CompoundButton trackr=(CompoundButton)header.findViewById(R.id.enable_tracker);
-  trackr.setChecked(osMoPlugin.getTracker().isEnabledTracker());
+  if (osMoPlugin != null && osMoPlugin.getTracker() != null) {
+    trackr.setChecked(osMoPlugin.getTracker().isEnabledTracker());
+  }
   trackr.setOnCheckedChangeListener(new OnCheckedChangeListener(){
     @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
       if (isChecked) {
-        osMoPlugin.getTracker().enableTracker();
+        if (osMoPlugin != null && osMoPlugin.getTracker() != null) {
+          osMoPlugin.getTracker().enableTracker();
+        }
         app.startNavigationService(NavigationService.USED_BY_LIVE);
         app.getSettings().SERVICE_OFF_INTERVAL.set(0);
       }
  else {
-        osMoPlugin.getTracker().disableTracker();
+        if (osMoPlugin != null && osMoPlugin.getTracker() != null) {
+          osMoPlugin.getTracker().disableTracker();
+        }
         if (app.getNavigationService() != null) {
           app.getNavigationService().stopIfNeeded(app,NavigationService.USED_BY_LIVE);
         }
