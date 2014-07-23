@@ -1,24 +1,12 @@
 {
-  view=inflater.inflate(R.layout.sherpafy_stage_info,container,false);
-  WebView description=(WebView)view.findViewById(R.id.Description);
-  ImageView icon=(ImageView)view.findViewById(R.id.Icon);
-  TextView additional=(TextView)view.findViewById(R.id.AdditionalText);
-  TextView text=(TextView)view.findViewById(R.id.Text);
-  TextView header=(TextView)view.findViewById(R.id.HeaderText);
-  if (stage.getImageBitmap() != null) {
-    icon.setImageBitmap(stage.getImageBitmap());
-  }
- else {
-    icon.setVisibility(View.GONE);
-  }
-  if (stage.getDistance() > 0) {
-    additional.setText(OsmAndFormatter.getFormattedDistance((float)stage.getDistance(),getMyApplication()));
-  }
- else {
-    additional.setText("");
-  }
-  header.setText(stage.getName());
-  text.setText(stage.getShortDescription());
-  description.loadData("<html><body>" + stage.getFullDescription() + "</body></html","text/html","utf-8");
+  view=inflater.inflate(R.layout.tab_content,container,false);
+  tabHost=(TabHost)view.findViewById(android.R.id.tabhost);
+  tabHost.setup();
+  ViewPager mViewPager=(ViewPager)view.findViewById(R.id.pager);
+  mTabsAdapter=new TabsAdapter(getSherlockActivity(),tabHost,mViewPager);
+  mTabsAdapter.addTab(tabHost.newTabSpec("INFO").setIndicator(getString(R.string.sherpafy_stage_tab_info)),SherpafyStageInfoFragment.class,null);
+  mTabsAdapter.addTab(tabHost.newTabSpec("ROUTE").setIndicator(getString(R.string.sherpafy_stage_tab_route)),SherpafyStageItineraryFragment.class,null);
+  mTabsAdapter.addTab(tabHost.newTabSpec("FAV").setIndicator(getString(R.string.sherpafy_stage_tab_fav)),SherpafyStageInfoFragment.class,null);
+  mTabsAdapter.addTab(tabHost.newTabSpec("TARGET").setIndicator(getString(R.string.sherpafy_stage_tab_target)),SherpafyStageItineraryFragment.class,null);
   return view;
 }
