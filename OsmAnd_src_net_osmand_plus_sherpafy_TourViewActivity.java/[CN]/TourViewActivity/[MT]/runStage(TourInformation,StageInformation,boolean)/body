@@ -1,0 +1,32 @@
+{
+  WptPt point=null;
+  GPXFile gpx=null;
+  customization.selectTour(tour,null);
+  customization.selectStage(stage,null);
+  if (customization.getSelectedStage() != null) {
+    gpx=customization.getSelectedStage().getGpx();
+    List<SelectedGpxFile> sgpx=getMyApplication().getSelectedGpxHelper().getSelectedGPXFiles();
+    if (gpx == null && sgpx.size() > 0) {
+      getMyApplication().getSelectedGpxHelper().clearAllGpxFileToShow();
+    }
+ else     if (sgpx.size() != 1 || sgpx.get(0).getGpxFile() != gpx) {
+      getMyApplication().getSelectedGpxHelper().clearAllGpxFileToShow();
+      if (gpx != null && gpx.findPointToShow() != null) {
+        point=gpx.findPointToShow();
+        getMyApplication().getSelectedGpxHelper().setGpxFileToDisplay(gpx);
+      }
+    }
+  }
+  WptPt lp=gpx.getLastPoint();
+  if (lp != null) {
+    TargetPointsHelper targetPointsHelper=getMyApplication().getTargetPointsHelper();
+    targetPointsHelper.navigateToPoint(new LatLon(lp.lat,lp.lon),true,-1,lp.name);
+    getMyApplication().getSettings().navigateDialog();
+  }
+  if (startOver && point != null) {
+    goToMap(new LatLon(point.lat,point.lon));
+  }
+ else {
+    goToMap(null);
+  }
+}
