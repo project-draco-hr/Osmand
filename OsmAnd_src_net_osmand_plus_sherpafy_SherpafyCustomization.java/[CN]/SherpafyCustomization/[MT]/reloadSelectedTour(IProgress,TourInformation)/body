@@ -1,0 +1,19 @@
+{
+  if (progress != null) {
+    progress.startTask(app.getString(R.string.indexing_tour,tourInformation.getName()),-1);
+  }
+  File settingsFile=new File(tourInformation.getFolder(),"settings.props");
+  FileSettingsAPIImpl fapi;
+  try {
+    fapi=new FileSettingsAPIImpl(app,settingsFile);
+    if (!settingsFile.exists()) {
+      fapi.saveFile();
+    }
+    app.getSettings().setSettingsAPI(fapi);
+  }
+ catch (  IOException e) {
+    app.showToastMessage(R.string.settings_file_create_error);
+  }
+  selectedStagePref=app.getSettings().registerStringPreference(SELECTED_STAGE,null).makeGlobal();
+  selectedTour=tourInformation;
+}
