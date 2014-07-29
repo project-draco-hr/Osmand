@@ -12,28 +12,21 @@
   params.gravity=Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
   final LayoutInflater vi=(LayoutInflater)app.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
   View reachedView=vi.inflate(R.layout.waypoint_reached,null);
-  Button btnY=(Button)reachedView.findViewById(R.id.info_yes);
-  btnY.setOnClickListener(new View.OnClickListener(){
+  TextView text=(TextView)reachedView.findViewById(R.id.waypoint_text);
+  text.setText(point != null ? point.name : "Point");
+  text.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View view){
+      final Intent favorites=new Intent(mapActivity,app.getAppCustomization().getFavoritesActivity());
+      favorites.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+      mapActivity.startActivity(favorites);
+      removeDialog(view);
     }
   }
 );
-  Button btnN=(Button)reachedView.findViewById(R.id.info_no);
+  Button btnN=(Button)reachedView.findViewById(R.id.info_close);
   btnN.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View child){
-      if (child == null || child.getParent() == null) {
-        return;
-      }
-      View parent=(View)child.getParent().getParent().getParent();
-      if (parent == null) {
-        return;
-      }
-      if (mainLayout != null) {
-        mainLayout.removeView(parent);
-        if (checkIfDialogExists() && OVERLAP_LAYOUT) {
-          shiftButtons();
-        }
-      }
+    @Override public void onClick(    View view){
+      removeDialog(view);
     }
   }
 );
