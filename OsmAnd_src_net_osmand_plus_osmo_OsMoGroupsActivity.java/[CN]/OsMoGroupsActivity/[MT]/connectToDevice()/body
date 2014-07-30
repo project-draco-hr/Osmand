@@ -16,12 +16,16 @@
       if (isChecked) {
         labelTracker.setText(R.string.osmo_connect_to_device_tracker_id);
         labelName.setText(R.string.osmo_connect_to_device_name);
+        name.setVisibility(View.VISIBLE);
+        labelName.setVisibility(View.VISIBLE);
         mgv.setVisibility(View.GONE);
       }
  else {
         labelTracker.setText(R.string.osmo_connect_to_group_id);
         labelName.setText(R.string.osmo_group_name);
         name.setHint(R.string.osmo_use_server_name);
+        name.setVisibility(View.GONE);
+        labelName.setVisibility(View.GONE);
         mgv.setVisibility(View.VISIBLE);
       }
     }
@@ -34,6 +38,11 @@
       final String nameUser=name.getText().toString();
       final String id=tracker.getText().toString();
       final String nick=nickname.getText().toString();
+      if (id.length() == 0) {
+        app.showToastMessage(R.string.osmo_specify_tracker_id);
+        connectToDevice();
+        return;
+      }
       if (device.isChecked()) {
         OsMoDevice dev=osMoPlugin.getGroups().addConnectedDevice(id,nameUser,ColorDialogs.getRandomColor());
         adapter.update(dev.group);
