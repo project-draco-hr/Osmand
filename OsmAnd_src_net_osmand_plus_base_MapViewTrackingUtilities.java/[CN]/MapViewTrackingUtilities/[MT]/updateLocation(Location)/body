@@ -1,13 +1,14 @@
 {
   showViewAngle=false;
   if (mapView != null) {
+    RotatedTileBox tb=mapView.getCurrentRotatedTileBox();
     if (isMapLinkedToLocation() && location != null) {
       if (settings.AUTO_ZOOM_MAP.get() != AutoZoomMap.NONE) {
         autozoom(location);
       }
       int currentMapRotation=settings.ROTATE_MAP.get();
-      boolean smallSpeed=!location.hasSpeed() || location.getSpeed() < 0.5;
-      showViewAngle=(!location.hasBearing() || smallSpeed);
+      boolean smallSpeed=isSmallSpeedForCompass(location);
+      showViewAngle=(!location.hasBearing() || smallSpeed) && (tb != null && tb.containsLatLon(location.getLatitude(),location.getLongitude()));
       if (currentMapRotation == OsmandSettings.ROTATE_MAP_BEARING) {
         if (location.hasBearing() && !smallSpeed) {
           if (location.getBearing() != 0f) {
@@ -20,6 +21,10 @@
       }
       registerUnregisterSensor(location);
       mapView.setLatLon(location.getLatitude(),location.getLongitude());
+    }
+ else     if (location != null) {
+      showViewAngle=(!location.hasBearing() || isSmallSpeedForCompass(location)) && (tb != null && tb.containsLatLon(location.getLatitude(),location.getLongitude()));
+      registerUnregisterSensor(location);
     }
     RoutingHelper routingHelper=app.getRoutingHelper();
     followingMode=routingHelper.isFollowingMode();
