@@ -5,13 +5,13 @@
     for (    LocationPoint point : locationPointsStates.keySet()) {
       double d1=MapUtils.getDistance(lastLocation.getLatitude(),lastLocation.getLongitude(),point.getLatitude(),point.getLongitude());
       int state=locationPointsStates.get(point);
-      if (state == NOT_ANNOUNCED && app.getRoutingHelper().getVoiceRouter().isDistanceLess(lastLocation.getSpeed(),d1,500)) {
-        nameToAnnounce=(nameToAnnounce == null ? "" : ", ") + point.getName();
-        locationPointsStates.put(point,state + 1);
-      }
- else       if (state == ANNOUNCED_ONCE && app.getRoutingHelper().getVoiceRouter().isDistanceLess(lastLocation.getSpeed(),d1,150)) {
+      if (state <= ANNOUNCED_ONCE && app.getRoutingHelper().getVoiceRouter().isDistanceLess(lastLocation.getSpeed(),d1,150)) {
         nameToAnnounce=(nameToAnnounce == null ? "" : ", ") + point.getName();
         locationPointsStates.remove(point);
+      }
+ else       if (state == NOT_ANNOUNCED && app.getRoutingHelper().getVoiceRouter().isDistanceLess(lastLocation.getSpeed(),d1,500)) {
+        nameToAnnounce=(nameToAnnounce == null ? "" : ", ") + point.getName();
+        locationPointsStates.put(point,state + 1);
       }
     }
     if (nameToAnnounce != null) {
