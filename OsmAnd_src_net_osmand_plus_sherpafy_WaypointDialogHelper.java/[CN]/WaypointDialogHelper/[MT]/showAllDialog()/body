@@ -1,5 +1,5 @@
 {
-  final List<LocationPoint> visibleLocationPoints=targetPointsHelper.getVisibleLocationPoints();
+  final List<LocationPoint> visibleLocationPoints=locationProvider.getVisibleLocationPoints();
   final ArrayAdapter<LocationPoint> listAdapter=new ArrayAdapter<LocationPoint>(mapActivity,R.layout.waypoint_reached,R.id.title,visibleLocationPoints){
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
@@ -22,9 +22,9 @@
       ((ImageButton)remove).setImageDrawable(mapActivity.getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_gremove_light : R.drawable.ic_action_gremove_dark));
       remove.setOnClickListener(new View.OnClickListener(){
         @Override public void onClick(        View view){
-          LocationPoint point=targetPointsHelper.getVisibleLocationPoints().get(position);
+          LocationPoint point=locationProvider.getVisibleLocationPoints().get(position);
           remove(point);
-          targetPointsHelper.removeVisibleLocationPoint(point);
+          locationProvider.removeVisibleLocationPoint(point);
           notifyDataSetChanged();
         }
       }
@@ -46,7 +46,7 @@
   builder.setPositiveButton(R.string.default_buttons_ok,null);
   builder.setNegativeButton(mapActivity.getString(R.string.hide_all_waypoints),new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialogInterface,    int i){
-      targetPointsHelper.removeAllVisiblePoints();
+      locationProvider.clearAllVisiblePoints();
       updateDialog();
     }
   }

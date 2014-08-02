@@ -1,0 +1,16 @@
+{
+  final net.osmand.Location lastLocation=getLastKnownLocation();
+  if (lastLocation != null) {
+    for (    LocationPoint point : notAnnouncedPoints) {
+      double d1=MapUtils.getDistance(lastLocation.getLatitude(),lastLocation.getLongitude(),point.getLatitude(),point.getLongitude());
+      int state=locationPointsStates.get(point);
+      if (d1 <= 300 && (state == NOT_ANNOUNCED || state == ANNOUNCED_ONCE)) {
+        app.getRoutingHelper().getVoiceRouter().announceWaypoint(point.getName());
+        locationPointsStates.put(point,state + 1);
+      }
+ else {
+        notAnnouncedPoints=removeFromList(notAnnouncedPoints,point);
+      }
+    }
+  }
+}
