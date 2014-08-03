@@ -1,28 +1,30 @@
 {
-  objects.clear();
+  List<Amenity> objects=Collections.emptyList();
   if (tileBox.getZoom() >= startZoom) {
-    final QuadRect latLonBounds=tileBox.getLatLonBounds();
-    resourceManager.searchAmenitiesAsync(latLonBounds.top,latLonBounds.left,latLonBounds.bottom,latLonBounds.right,tileBox.getZoom(),filter,objects);
-    int r=getRadiusPoi(tileBox);
-    for (    Amenity o : objects) {
-      int x=(int)tileBox.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
-      int y=(int)tileBox.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
-      canvas.drawCircle(x,y,r,pointAltUI);
-      canvas.drawCircle(x,y,r,point);
-      String id=null;
-      StringBuilder tag=new StringBuilder();
-      StringBuilder value=new StringBuilder();
-      MapRenderingTypes.getDefault().getAmenityTagValue(o.getType(),o.getSubType(),tag,value);
-      if (RenderingIcons.containsIcon(tag + "_" + value)) {
-        id=tag + "_" + value;
-      }
- else       if (RenderingIcons.containsIcon(tag.toString())) {
-        id=tag.toString();
-      }
-      if (id != null) {
-        Bitmap bmp=RenderingIcons.getIcon(view.getContext(),id);
-        if (bmp != null) {
-          canvas.drawBitmap(bmp,x - bmp.getWidth() / 2,y - bmp.getHeight() / 2,paintIcon);
+    data.queryNewData(tileBox);
+    objects=data.getResults();
+    if (objects != null) {
+      int r=getRadiusPoi(tileBox);
+      for (      Amenity o : objects) {
+        int x=(int)tileBox.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+        int y=(int)tileBox.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+        canvas.drawCircle(x,y,r,pointAltUI);
+        canvas.drawCircle(x,y,r,point);
+        String id=null;
+        StringBuilder tag=new StringBuilder();
+        StringBuilder value=new StringBuilder();
+        MapRenderingTypes.getDefault().getAmenityTagValue(o.getType(),o.getSubType(),tag,value);
+        if (RenderingIcons.containsIcon(tag + "_" + value)) {
+          id=tag + "_" + value;
+        }
+ else         if (RenderingIcons.containsIcon(tag.toString())) {
+          id=tag.toString();
+        }
+        if (id != null) {
+          Bitmap bmp=RenderingIcons.getIcon(view.getContext(),id);
+          if (bmp != null) {
+            canvas.drawBitmap(bmp,x - bmp.getWidth() / 2,y - bmp.getHeight() / 2,paintIcon);
+          }
         }
       }
     }
