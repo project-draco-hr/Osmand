@@ -1,0 +1,21 @@
+{
+  final net.osmand.Location lastLocation=getLastKnownLocation();
+  if (lastLocation != null && app.getRoutingHelper().isFollowingMode()) {
+    String nameToAnnounce=null;
+    for (    LocationPoint point : locationPointsStates.keySet()) {
+      double d1=MapUtils.getDistance(lastLocation.getLatitude(),lastLocation.getLongitude(),point.getLatitude(),point.getLongitude());
+      int state=locationPointsStates.get(point);
+      if (state <= ANNOUNCED_ONCE && app.getRoutingHelper().getVoiceRouter().isDistanceLess(lastLocation.getSpeed(),d1,150)) {
+        nameToAnnounce=(nameToAnnounce == null ? "" : ", ") + point.getName();
+        locationPointsStates.remove(point);
+      }
+ else       if (state == NOT_ANNOUNCED && app.getRoutingHelper().getVoiceRouter().isDistanceLess(lastLocation.getSpeed(),d1,500)) {
+        nameToAnnounce=(nameToAnnounce == null ? "" : ", ") + point.getName();
+        locationPointsStates.put(point,state + 1);
+      }
+    }
+    if (nameToAnnounce != null) {
+      app.getRoutingHelper().getVoiceRouter().announceWaypoint(nameToAnnounce);
+    }
+  }
+}
