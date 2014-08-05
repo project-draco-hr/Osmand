@@ -1,0 +1,36 @@
+{
+  searchAmenitiesInProgress=true;
+  final List<Amenity> amenities=new ArrayList<Amenity>();
+  try {
+    if (locations != null && locations.size() > 0) {
+      List<AmenityIndexRepository> repos=new ArrayList<AmenityIndexRepository>();
+      double topLatitude=locations.get(0).getLatitude();
+      double bottomLatitude=locations.get(0).getLatitude();
+      double leftLongitude=locations.get(0).getLongitude();
+      double rightLongitude=locations.get(0).getLongitude();
+      for (      Location l : locations) {
+        topLatitude=Math.max(topLatitude,l.getLatitude());
+        bottomLatitude=Math.min(bottomLatitude,l.getLatitude());
+        leftLongitude=Math.min(leftLongitude,l.getLongitude());
+        rightLongitude=Math.max(rightLongitude,l.getLongitude());
+      }
+      for (      AmenityIndexRepository index : amenityRepositories) {
+        if (index.checkContains(topLatitude,leftLongitude,bottomLatitude,rightLongitude)) {
+          repos.add(index);
+        }
+      }
+      if (!repos.isEmpty()) {
+        for (        AmenityIndexRepository r : repos) {
+          List<Amenity> res=r.searchAmenitiesOnThePath(locations,radius,filter,matcher);
+          if (res != null) {
+            amenities.addAll(res);
+          }
+        }
+      }
+    }
+  }
+  finally {
+    searchAmenitiesInProgress=false;
+  }
+  return amenities;
+}

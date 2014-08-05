@@ -18,7 +18,21 @@ case 0:
         am.setEnName(Junidecode.unidecode(am.getName()));
       }
     req.numberOfAcceptedObjects++;
-  return am;
+  if (req.radius > 0) {
+    LatLon loc=am.getLocation();
+    List<Location> locs=req.tiles.get(req.getTileHashOnPath(loc.getLatitude(),loc.getLongitude()));
+    if (locs == null) {
+      return null;
+    }
+    float d=dist(am.getLocation(),locs);
+    if (d > req.radius) {
+      return null;
+    }
+ else {
+      am.setDeviateDistance(d);
+    }
+  }
+return am;
 case OsmandOdb.OsmAndPoiBoxDataAtom.DX_FIELD_NUMBER:
 x=(codedIS.readSInt32() + (px << (24 - zoom))) << 7;
 break;

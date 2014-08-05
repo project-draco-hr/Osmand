@@ -1,0 +1,47 @@
+{
+  SearchRequest<Amenity> request=new SearchRequest<Amenity>();
+  float coeff=(float)(radius / MapUtils.getTileDistanceWidth(SearchRequest.ZOOM_TO_SEARCH_POI));
+  TIntObjectHashMap<List<Location>> zooms=new TIntObjectHashMap<List<Location>>();
+  for (int i=1; i < route.size(); i++) {
+    Location cr=route.get(i);
+    Location pr=route.get(i - 1);
+    double tx=MapUtils.getTileNumberX(SearchRequest.ZOOM_TO_SEARCH_POI,cr.getLongitude());
+    double ty=MapUtils.getTileNumberY(SearchRequest.ZOOM_TO_SEARCH_POI,cr.getLatitude());
+    double px=MapUtils.getTileNumberX(SearchRequest.ZOOM_TO_SEARCH_POI,pr.getLongitude());
+    double py=MapUtils.getTileNumberY(SearchRequest.ZOOM_TO_SEARCH_POI,pr.getLatitude());
+    double topLeftX=Math.min(tx,px) - coeff;
+    double topLeftY=Math.min(ty,py) - coeff;
+    double bottomRightX=Math.max(tx,px) + coeff;
+    double bottomRightY=Math.max(ty,py) + coeff;
+    for (int x=(int)topLeftX; x <= bottomRightX; x++) {
+      for (int y=(int)topLeftY; y <= bottomRightY; y++) {
+        int hash=(x << SearchRequest.ZOOM_TO_SEARCH_POI) + y;
+        if (!zooms.containsKey(hash)) {
+          zooms.put(hash,new LinkedList<Location>());
+        }
+        List<Location> ll=zooms.get(hash);
+        ll.add(pr);
+        ll.add(cr);
+      }
+    }
+  }
+  int sleft=0, sright=Integer.MAX_VALUE, stop=0, sbottom=Integer.MAX_VALUE;
+  for (  int vl : zooms.keys()) {
+    int x=(vl >> SearchRequest.ZOOM_TO_SEARCH_POI) << (31 - SearchRequest.ZOOM_TO_SEARCH_POI);
+    int y=(vl & ((1 << SearchRequest.ZOOM_TO_SEARCH_POI) - 1)) << (31 - SearchRequest.ZOOM_TO_SEARCH_POI);
+    sleft=Math.min(x,sleft);
+    stop=Math.min(y,stop);
+    sbottom=Math.max(y,sbottom);
+    sright=Math.max(x,sright);
+  }
+  request.radius=radius;
+  request.left=sleft;
+  request.zoom=-1;
+  request.right=sright;
+  request.top=stop;
+  request.bottom=sbottom;
+  request.tiles=zooms;
+  request.poiTypeFilter=poiTypeFilter;
+  request.resultMatcher=resultMatcher;
+  return request;
+}

@@ -1,0 +1,31 @@
+{
+  float radius=1000;
+  long now=System.currentTimeMillis();
+  println("Searching poi on the path...");
+  final List<Location> locations=readGPX(new File(""));
+  SearchRequest<Amenity> req=buildSearchPoiRequest(locations,radius,new SearchPoiTypeFilter(){
+    @Override public boolean accept(    AmenityType type,    String subcategory){
+      if (type == AmenityType.SHOP && subcategory.contains("super")) {
+        return true;
+      }
+      return false;
+    }
+  }
+,null);
+  req.zoom=-1;
+  List<Amenity> results=reader.searchPoi(req);
+  int k=0;
+  println("Search done in " + (System.currentTimeMillis() - now) + " ms ");
+  now=System.currentTimeMillis();
+  for (  Amenity a : results) {
+    final float dds=dist(a.getLocation(),locations);
+    if (dds <= radius) {
+      println("+ " + a.getType() + " "+ a.getSubType()+ " Dist "+ dds+ " (="+ (float)a.getDeviateDistance()+ ") "+ a.getName()+ " "+ a.getLocation());
+      k++;
+    }
+ else {
+      println(a.getType() + " " + a.getSubType()+ " Dist "+ dds+ " "+ a.getName()+ " "+ a.getLocation());
+    }
+  }
+  println("Filtered in " + (System.currentTimeMillis() - now) + "ms "+ k+ " of "+ results.size());
+}
