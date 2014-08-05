@@ -6,6 +6,9 @@
   useIntermediatePointsRTE=builder.useIntermediatePointsRTE;
   boolean announceWaypoints=builder.announceWaypoints;
   builder.calculateOsmAndRoute=false;
+  if (announceWaypoints && !file.points.isEmpty()) {
+    wpt=new ArrayList<LocationPoint>(file.points);
+  }
   if (file.isCloudmadeRouteFile() || OSMAND_ROUTER.equals(file.author)) {
     directions=parseOsmAndGPXRoute(points,file,OSMAND_ROUTER.equals(file.author),builder.leftSide,10);
     if (reverse) {
@@ -32,13 +35,6 @@
     }
     if (reverse) {
       Collections.reverse(points);
-    }
-  }
-  wpt=null;
-  if (announceWaypoints && !file.points.isEmpty()) {
-    wpt=new DataTileManager<WptPt>(17);
-    for (    WptPt w : file.points) {
-      wpt.registerObjectXY(MapUtils.get31TileNumberX(w.lon),MapUtils.get31TileNumberY(w.lat),w);
     }
   }
   return this;

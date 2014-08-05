@@ -1,0 +1,41 @@
+{
+  CommandBuilder p=getNewCommandPlayerToPlay();
+  if (p == null) {
+    return;
+  }
+  String favoritesWaypoints=null;
+  String gpxWaypoints=null;
+  String poiWaypoints=null;
+  double favDistance=-1;
+  double gpxDistance=-1;
+  double poiDistance=-1;
+  for (  LocationPoint point : points) {
+    if (point instanceof GPXUtilities.WptPt) {
+      gpxWaypoints=(favoritesWaypoints == null ? "" : ", ") + point.getName();
+      if (favDistance == -1) {
+        favDistance=MapUtils.getDistance(location.getLatitude(),location.getLongitude(),point.getLatitude(),point.getLongitude());
+      }
+    }
+ else     if (point instanceof FavouritePoint) {
+      favoritesWaypoints=(favoritesWaypoints == null ? "" : ", ") + point.getName();
+      if (gpxDistance == -1) {
+        gpxDistance=MapUtils.getDistance(location.getLatitude(),location.getLongitude(),point.getLatitude(),point.getLongitude());
+      }
+    }
+ else {
+      poiWaypoints=(favoritesWaypoints == null ? "" : ", ") + point.getName();
+      if (poiDistance == -1) {
+        poiDistance=MapUtils.getDistance(location.getLatitude(),location.getLongitude(),point.getLatitude(),point.getLongitude());
+      }
+    }
+  }
+  if (gpxWaypoints != null) {
+    p.goAhead(gpxDistance,null).andArriveAtWayPoint(gpxWaypoints).play();
+  }
+  if (favoritesWaypoints != null) {
+    p.goAhead(favDistance,null).andArriveAtFavorite(favoritesWaypoints).play();
+  }
+  if (poiWaypoints != null) {
+    p.goAhead(poiDistance,null).andArriveAtPoiWaypoint(poiWaypoints).play();
+  }
+}

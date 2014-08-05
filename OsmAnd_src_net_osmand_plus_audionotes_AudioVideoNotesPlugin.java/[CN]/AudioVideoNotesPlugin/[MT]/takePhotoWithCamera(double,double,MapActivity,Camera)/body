@@ -29,7 +29,25 @@ parameters.set("rotation",(90 + 360 - degrees) % 360);
 }
 @Override public void surfaceCreated(SurfaceHolder holder){
 try {
+if (AV_PHOTO_PLAY_SOUND.get()) {
+if (sp == null) sp=new SoundPool(5,AudioManager.STREAM_MUSIC,0);
+log.info("Play sound on photo");
+if (shotId == 0) {
+shotId=sp.load(app.getAssets().openFd("sounds/camera_click.ogg"),1);
+log.debug("loaded file sound ID: " + shotId);
+}
+}
 Parameters parameters=cam.getParameters();
+List<Camera.Size> psps=parameters.getSupportedPictureSizes();
+int index=AV_CAMERA_PICTURE_SIZE.get();
+log.debug("takePhotoWithCamera() index=" + index);
+if (index == AV_PHOTO_SIZE_DEFAULT) {
+index=cameraPictureSizeDefault;
+log.debug("takePhotoWithCamera() Default value of picture size. Set index to cameraPictureSizeDefault. Now index=" + index);
+}
+Camera.Size selectedCamPicSize=psps.get(index);
+parameters.setPictureSize(selectedCamPicSize.width,selectedCamPicSize.height);
+log.debug("takePhotoWithCamera() set Picture size: width=" + selectedCamPicSize.width + " height="+ selectedCamPicSize.height);
 boolean autofocus=true;
 parameters.setGpsLatitude(lat);
 parameters.setGpsLongitude(lon);
@@ -61,14 +79,6 @@ default :
 parameters.setFocusMode(Parameters.FOCUS_MODE_AUTO);
 log.info("Osmand:AudioNotes set camera FOCUS_MODE_AUTO");
 break;
-}
-if (AV_PHOTO_PLAY_SOUND.get()) {
-if (sp == null) sp=new SoundPool(5,AudioManager.STREAM_MUSIC,0);
-log.info("Play sound on photo");
-if (shotId == 0) {
-shotId=sp.load(app.getAssets().openFd("sounds/camera_click.ogg"),1);
-log.debug("loaded file sound ID: " + shotId);
-}
 }
 parameters.setWhiteBalance(Parameters.WHITE_BALANCE_AUTO);
 parameters.setFlashMode(Parameters.FLASH_MODE_AUTO);
