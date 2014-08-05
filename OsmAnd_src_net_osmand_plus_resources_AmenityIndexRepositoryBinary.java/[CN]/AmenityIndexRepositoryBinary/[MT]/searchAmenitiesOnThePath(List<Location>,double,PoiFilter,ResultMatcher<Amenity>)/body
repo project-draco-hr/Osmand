@@ -1,0 +1,22 @@
+{
+  long now=System.currentTimeMillis();
+  SearchPoiTypeFilter poiTypeFilter=new SearchPoiTypeFilter(){
+    @Override public boolean accept(    AmenityType type,    String subcategory){
+      return filter.acceptTypeSubtype(type,subcategory);
+    }
+  }
+;
+  List<Amenity> result=null;
+  SearchRequest<Amenity> req=BinaryMapIndexReader.buildSearchPoiRequest(locations,radius,poiTypeFilter,filter == null ? matcher : filter.getResultMatcher(matcher));
+  try {
+    result=index.searchPoi(req);
+  }
+ catch (  IOException e) {
+    log.error("Error searching amenities",e);
+    return result;
+  }
+  if (log.isDebugEnabled() && result != null) {
+    log.debug(String.format("Search done in %s ms found %s.",(System.currentTimeMillis() - now),result.size()));
+  }
+  return result;
+}

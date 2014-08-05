@@ -1,0 +1,35 @@
+{
+  List<Location> res=new ArrayList<Location>();
+  try {
+    StringBuilder content=new StringBuilder();
+    BufferedReader reader=new BufferedReader(getUTF8Reader(new FileInputStream(f)));
+    DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
+    DocumentBuilder dom=factory.newDocumentBuilder();
+    Document doc=dom.parse(new InputSource(reader));
+    NodeList list=doc.getElementsByTagName("trkpt");
+    Way w=new Way(-1);
+    for (int i=0; i < list.getLength(); i++) {
+      Element item=(Element)list.item(i);
+      try {
+        double lon=Double.parseDouble(item.getAttribute("lon"));
+        double lat=Double.parseDouble(item.getAttribute("lat"));
+        final Location o=new Location("");
+        o.setLatitude(lat);
+        o.setLongitude(lon);
+        res.add(o);
+      }
+ catch (      NumberFormatException e) {
+      }
+    }
+  }
+ catch (  IOException e) {
+    throw new RuntimeException(e);
+  }
+catch (  ParserConfigurationException e) {
+    throw new RuntimeException(e);
+  }
+catch (  SAXException e) {
+    throw new RuntimeException(e);
+  }
+  return res;
+}
