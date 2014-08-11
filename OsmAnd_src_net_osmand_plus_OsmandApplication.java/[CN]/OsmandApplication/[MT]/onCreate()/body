@@ -12,8 +12,6 @@
   }
   super.onCreate();
   new Toast(this);
-  appCustomization=new OsmAndAppCustomization();
-  appCustomization.setup(this);
   sqliteAPI=new SQLiteAPIImpl(this);
   try {
     bRouterServiceConnection=BRouterServiceConnection.connect(this);
@@ -21,7 +19,14 @@
  catch (  Exception e) {
     e.printStackTrace();
   }
-  osmandSettings=appCustomization.createSettings(new net.osmand.plus.api.SettingsAPIImpl(this));
+  if (Version.isSherpafy(this)) {
+    appCustomization=new SherpafyCustomization();
+  }
+ else {
+    appCustomization=new OsmAndAppCustomization();
+  }
+  appCustomization.setup(this);
+  osmandSettings=appCustomization.getOsmandSettings();
   if (!osmandSettings.FOLLOW_THE_ROUTE.get()) {
     osmandSettings.APPLICATION_MODE.set(osmandSettings.DEFAULT_APPLICATION_MODE.get());
   }
