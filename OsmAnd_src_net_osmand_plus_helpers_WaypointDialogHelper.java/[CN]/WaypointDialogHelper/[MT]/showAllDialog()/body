@@ -1,0 +1,55 @@
+{
+  final List<LocationPoint> visibleLocationPoints=waypointHelper.getVisibleLocationPoints();
+  final ArrayAdapter<LocationPoint> listAdapter=new ArrayAdapter<LocationPoint>(mapActivity,R.layout.waypoint_reached,R.id.title,visibleLocationPoints){
+    @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
+      View v=convertView;
+      if (v == null) {
+        v=mapActivity.getLayoutInflater().inflate(R.layout.waypoint_reached,null);
+        int vl=(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,32,mapActivity.getResources().getDisplayMetrics());
+        final LinearLayout.LayoutParams ll=new LinearLayout.LayoutParams(vl,vl);
+        ll.setMargins(vl / 4,vl / 4,vl / 4,vl / 4);
+        v.findViewById(R.id.waypoint_icon).setLayoutParams(ll);
+      }
+      updatePointInfoView(v,getItem(position));
+      TextView text=(TextView)v.findViewById(R.id.waypoint_text);
+      text.setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        View view){
+          showOnMap(visibleLocationPoints.get(position));
+        }
+      }
+);
+      View remove=v.findViewById(R.id.info_close);
+      ((ImageButton)remove).setImageDrawable(mapActivity.getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_gremove_light : R.drawable.ic_action_gremove_dark));
+      remove.setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        View view){
+          LocationPoint point=waypointHelper.getVisibleLocationPoints().get(position);
+          remove(point);
+          waypointHelper.removeVisibleLocationPoint(point);
+          notifyDataSetChanged();
+        }
+      }
+);
+      return v;
+    }
+  }
+;
+  ListView listView=new ListView(mapActivity);
+  listView.setAdapter(listAdapter);
+  listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+    @Override public void onItemClick(    AdapterView<?> adapterView,    View view,    int i,    long l){
+      showOnMap(visibleLocationPoints.get(i));
+    }
+  }
+);
+  AlertDialog.Builder builder=new AlertDialog.Builder(mapActivity);
+  builder.setView(listView);
+  builder.setPositiveButton(R.string.default_buttons_ok,null);
+  builder.setNegativeButton(mapActivity.getString(R.string.hide_all_waypoints),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialogInterface,    int i){
+      waypointHelper.clearAllVisiblePoints();
+      updateDialog();
+    }
+  }
+);
+  builder.show();
+}
