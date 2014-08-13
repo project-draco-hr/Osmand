@@ -44,11 +44,12 @@
   LatLon latLonToShow=settings.getAndClearMapLocationToShow();
   String mapLabelToShow=settings.getAndClearMapLabelToShow();
   Object toShow=settings.getAndClearObjectToShow();
-  if (settings.isRouteToPointNavigateAndClear()) {
+  int status=settings.isRouteToPointNavigateAndClear();
+  if (status != 0) {
     Location loc=new Location("map");
     loc.setLatitude(mapView.getLatitude());
     loc.setLongitude(mapView.getLongitude());
-    getMapActions().enterRoutePlanningMode(null,null);
+    getMapActions().enterRoutePlanningMode(null,null,status == OsmandSettings.NAVIGATE_CURRENT_GPX);
   }
   if (mapLabelToShow != null && latLonToShow != null) {
     mapLayers.getContextMenuLayer().setSelectedObject(toShow);
@@ -82,7 +83,7 @@
               final double lat=Double.valueOf(matcher.group(1));
               final double lon=Double.valueOf(matcher.group(2));
               getMyApplication().getTargetPointsHelper().navigateToPoint(new LatLon(lat,lon),false,-1);
-              getMapActions().enterRoutePlanningMode(null,null);
+              getMapActions().enterRoutePlanningMode(null,null,false);
             }
  catch (            NumberFormatException e) {
               AccessibleToast.makeText(this,getString(R.string.navigation_intent_invalid,schemeSpecificPart),Toast.LENGTH_LONG).show();
