@@ -21,8 +21,17 @@
   if (lp != null) {
     TargetPointsHelper targetPointsHelper=getMyApplication().getTargetPointsHelper();
     targetPointsHelper.navigateToPoint(new LatLon(lp.lat,lp.lon),true,-1,lp.name);
-    getMyApplication().getSettings().navigateDialog();
+    getMyApplication().getSettings().navigateDialog(true);
   }
+  String mode=stage != null ? stage.getMode() : tour.getMode();
+  if (!Algorithms.isEmpty(mode)) {
+    final ApplicationMode def=getMyApplication().getSettings().getApplicationMode();
+    ApplicationMode am=ApplicationMode.valueOfStringKey(mode,def);
+    if (am != def) {
+      getMyApplication().getSettings().APPLICATION_MODE.set(am);
+    }
+  }
+  getMyApplication().getSettings().SHOW_FAVORITES.set(true);
   if (startOver && point != null) {
     goToMap(new LatLon(point.lat,point.lon));
   }

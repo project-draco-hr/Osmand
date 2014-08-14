@@ -14,7 +14,14 @@
  catch (  IOException e) {
     app.showToastMessage(R.string.settings_file_create_error);
   }
-  selectedStagePref=app.getSettings().registerStringPreference(SELECTED_STAGE,null).makeGlobal();
-  visitedStagesPref=app.getSettings().registerStringPreference(VISITED_STAGES,null).makeGlobal();
+  selectedStagePref=app.getSettings().registerIntPreference(SELECTED_STAGE,-1).makeGlobal();
+  visitedStagesPref=app.getSettings().registerIntPreference(VISITED_STAGES,0).makeGlobal();
   selectedTour=tourInformation;
+  Integer it=selectedStagePref.get();
+  while (it >= 0 && isStageVisited(it)) {
+    it++;
+  }
+  if (it >= 0 && it < tourInformation.getStageInformation().size()) {
+    selectedStage=tourInformation.getStageInformation().get(it);
+  }
 }
