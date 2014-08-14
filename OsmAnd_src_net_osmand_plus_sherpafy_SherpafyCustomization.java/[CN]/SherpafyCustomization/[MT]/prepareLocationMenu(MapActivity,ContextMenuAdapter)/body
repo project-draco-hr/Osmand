@@ -1,11 +1,16 @@
 {
-  filter(adapter,R.string.pause_navigation,R.string.continue_navigation,R.string.context_menu_item_directions_to,R.string.context_menu_item_destination_point,R.string.context_menu_item_search,R.string.context_menu_item_share_location,R.string.context_menu_item_add_favorite);
+  filter(adapter,R.string.pause_navigation,R.string.continue_navigation,R.string.context_menu_item_directions_to,R.string.context_menu_item_destination_point,R.string.context_menu_item_search,R.string.context_menu_item_share_location);
   MapActivityLayers layers=mapActivity.getMapLayers();
   if (layers.getContextMenuLayer().getFirstSelectedObject() instanceof FavouritePoint) {
-    FavouritePoint fp=((FavouritePoint)layers.getContextMenuLayer().getFirstSelectedObject());
+    final FavouritePoint fp=((FavouritePoint)layers.getContextMenuLayer().getFirstSelectedObject());
     if (fp.getExtraParam() >= 0 && selectedStage != null) {
-      StageFavorite sf=(StageFavorite)selectedStage.getFavorites().get(fp.getExtraParam());
-      showFavoriteDialog(mapActivity,selectedStage,sf);
+      adapter.item(R.string.show_waypoint_information).icons(R.drawable.ic_action_info_dark,R.drawable.ic_action_info_light).position(0).listen(new OnContextMenuClick(){
+        @Override public void onContextMenuClick(        int itemId,        int pos,        boolean isChecked,        DialogInterface dialog){
+          StageFavorite sf=(StageFavorite)selectedStage.getFavorites().get(fp.getExtraParam());
+          showFavoriteDialog(mapActivity,selectedStage,sf);
+        }
+      }
+).reg();
     }
   }
 }

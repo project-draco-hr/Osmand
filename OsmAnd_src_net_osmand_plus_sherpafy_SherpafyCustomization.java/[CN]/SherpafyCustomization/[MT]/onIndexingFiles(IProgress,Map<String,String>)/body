@@ -2,13 +2,13 @@
   ArrayList<TourInformation> tourPresent=new ArrayList<TourInformation>();
   List<String> warns=new ArrayList<String>();
   selectedTour=null;
+  final HashSet<String> suggestToDownloadMap=new HashSet<String>();
   if (toursFolder.exists()) {
     File[] availableTours=toursFolder.listFiles();
     if (availableTours != null) {
       String selectedName=selectedTourPref.get();
       for (      File tr : availableTours) {
         if (tr.isDirectory()) {
-          boolean selected=selectedName != null && selectedName.equals(tr.getName());
           String date=app.getResourceManager().getDateFormat().format(new Date(DownloadIndexActivity.findFileInDir(tr).lastModified()));
           indexFileNames.put(tr.getName(),date);
           final TourInformation tourInformation=new TourInformation(tr);
@@ -19,6 +19,14 @@
  catch (          Exception e) {
             e.printStackTrace();
           }
+          if (toursIndexed) {
+            for (            String map : tourInformation.getMaps()) {
+              if (!new File(toursFolder.getParentFile(),map + ".obf").exists()) {
+                suggestToDownloadMap.add(map);
+              }
+            }
+          }
+          boolean selected=selectedName != null && selectedName.equals(tourInformation.getName());
           if (selected) {
             reloadSelectedTour(progress,tourInformation);
           }
@@ -28,7 +36,19 @@
         app.getSettings().setSettingsAPI(originalApi);
       }
     }
+    toursIndexed=true;
   }
   this.tourPresent=tourPresent;
+  if (!suggestToDownloadMap.isEmpty()) {
+    final DownloadIndexActivity da=app.getDownloadActivity();
+    if (da != null) {
+      app.runInUIThread(new Runnable(){
+        @Override public void run(){
+          da.showDialogToDownloadMaps(suggestToDownloadMap);
+        }
+      }
+);
+    }
+  }
   return warns;
 }
