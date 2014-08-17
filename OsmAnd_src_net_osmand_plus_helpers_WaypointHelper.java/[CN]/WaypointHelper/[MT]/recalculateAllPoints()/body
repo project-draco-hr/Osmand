@@ -1,0 +1,27 @@
+{
+  ArrayList<List<LocationPointWrapper>> locationPoints=new ArrayList<List<LocationPointWrapper>>();
+  if (route != null && !route.isEmpty()) {
+    if (showFavorites()) {
+      findLocationPoints(route,FAVORITES,getArray(locationPoints,FAVORITES),app.getFavorites().getFavouritePoints(),announceFavorites());
+    }
+    calculateAlarms(getArray(locationPoints,ALARMS));
+    if (showGPXWaypoints()) {
+      findLocationPoints(route,WAYPOINTS,getArray(locationPoints,WAYPOINTS),app.getAppCustomization().getWaypoints(),announceGPXWaypoints());
+      findLocationPoints(route,WAYPOINTS,getArray(locationPoints,WAYPOINTS),route.getLocationPoints(),announceGPXWaypoints());
+    }
+    if (showPOI()) {
+      calculatePoi(locationPoints);
+    }
+  }
+  for (  List<LocationPointWrapper> list : locationPoints) {
+    Collections.sort(list,new Comparator<LocationPointWrapper>(){
+      @Override public int compare(      LocationPointWrapper olhs,      LocationPointWrapper orhs){
+        int lhs=olhs.routeIndex;
+        int rhs=orhs.routeIndex;
+        return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
+      }
+    }
+);
+  }
+  this.locationPoints=locationPoints;
+}
