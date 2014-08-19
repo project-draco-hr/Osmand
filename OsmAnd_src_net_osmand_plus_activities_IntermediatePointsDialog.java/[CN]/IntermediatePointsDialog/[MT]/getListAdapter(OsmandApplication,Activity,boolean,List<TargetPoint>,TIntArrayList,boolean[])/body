@@ -1,0 +1,72 @@
+{
+  final int padding=(int)(12 * activity.getResources().getDisplayMetrics().density + 0.5f);
+  final ArrayAdapter<TargetPoint> listadapter=new ArrayAdapter<TargetPoint>(app,changeOrder ? R.layout.change_order_item : R.layout.list_menu_item,R.id.title,intermediates){
+    @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
+      View v=super.getView(position,convertView,parent);
+      TextView tv=(TextView)v.findViewById(R.id.title);
+      String nm=originalPositions.get(position) + ". ";
+      TargetPoint tp=intermediates.get(position);
+      String distString="";
+      if (activity instanceof MapActivity) {
+        double lat=((MapActivity)activity).getMapView().getLatitude();
+        double lon=((MapActivity)activity).getMapView().getLongitude();
+        double meters=MapUtils.getDistance(tp.point,lat,lon);
+        distString=OsmAndFormatter.getFormattedDistance((float)meters,app);
+      }
+      if (position < intermediates.size() - 1) {
+        nm+=app.getString(R.string.target_point,distString);
+      }
+ else {
+        nm+=app.getString(R.string.destination_point,distString);
+      }
+      String descr=tp.name;
+      if (descr != null && descr.trim().length() > 0) {
+        nm+="\n" + descr;
+      }
+      tv.setText(nm);
+      if (changeOrder) {
+        ((ImageButton)v.findViewById(R.id.up)).setOnClickListener(new View.OnClickListener(){
+          @Override public void onClick(          View v){
+            if (position > 0) {
+              TargetPoint old=intermediates.remove(position - 1);
+              int oldI=originalPositions.removeAt(position - 1);
+              intermediates.add(position,old);
+              originalPositions.insert(position,oldI);
+              notifyDataSetInvalidated();
+            }
+          }
+        }
+);
+        ((ImageButton)v.findViewById(R.id.down)).setOnClickListener(new View.OnClickListener(){
+          @Override public void onClick(          View v){
+            if (position < intermediates.size() - 1) {
+              TargetPoint old=intermediates.remove(position + 1);
+              int oldI=originalPositions.removeAt(position + 1);
+              intermediates.add(position,old);
+              originalPositions.insert(position,oldI);
+              notifyDataSetInvalidated();
+            }
+          }
+        }
+);
+      }
+ else {
+        tv.setCompoundDrawablesWithIntrinsicBounds(position == intermediates.size() - 1 ? R.drawable.list_destination : R.drawable.list_intermediate,0,0,0);
+        tv.setCompoundDrawablePadding(padding);
+        final CheckBox ch=((CheckBox)v.findViewById(R.id.check_item));
+        ch.setVisibility(View.VISIBLE);
+        ch.setOnCheckedChangeListener(null);
+        ch.setChecked(checkedIntermediates[position]);
+        ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+          @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
+            checkedIntermediates[position]=isChecked;
+          }
+        }
+);
+      }
+      return v;
+    }
+  }
+;
+  return listadapter;
+}

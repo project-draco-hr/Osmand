@@ -1,0 +1,26 @@
+{
+  WaypointHelper wh=app.getWaypointHelper();
+  final LocationPoint point=ps.getPoint();
+  TextView text=(TextView)localView.findViewById(R.id.waypoint_text);
+  text.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View view){
+      if (ctx instanceof MapActivity) {
+        showOnMap(app,(MapActivity)ctx,point);
+      }
+    }
+  }
+);
+  TextView textDist=(TextView)localView.findViewById(R.id.waypoint_dist);
+  ((ImageView)localView.findViewById(R.id.waypoint_icon)).setImageDrawable(ps.getDrawable(ctx));
+  Location lastKnownMapLocation=app.getLocationProvider().getLastKnownLocation();
+  String dd="";
+  if (lastKnownMapLocation != null) {
+    int dist=wh.getRouteDistance(ps);
+    dd=OsmAndFormatter.getFormattedDistance(dist,app);
+    if (ps.deviationDistance > 0) {
+      dd+="\n " + OsmAndFormatter.getFormattedDistance(ps.deviationDistance,app);
+    }
+  }
+  textDist.setText(dd);
+  text.setText(point.getName());
+}

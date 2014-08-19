@@ -1,27 +1,16 @@
 {
   TargetPointsHelper tg=map.getMyApplication().getTargetPointsHelper();
-  List<LatLon> intermediatePoints=tg.getIntermediatePointsWithTarget();
-  List<String> names=tg.getIntermediatePointNamesWithTarget();
+  List<TargetPoint> intermediatePoints=tg.getIntermediatePointsWithTarget();
   int r=getRadiusPoi(tileBox);
   for (int i=0; i < intermediatePoints.size(); i++) {
-    LatLon latLon=intermediatePoints.get(i);
-    boolean target=i == intermediatePoints.size() - 1;
+    TargetPoint tp=intermediatePoints.get(i);
+    LatLon latLon=tp.point;
     if (latLon != null) {
       int ex=(int)point.x;
       int ey=(int)point.y;
       int x=(int)tileBox.getPixXFromLatLon(latLon.getLatitude(),latLon.getLongitude());
       int y=(int)tileBox.getPixYFromLatLon(latLon.getLatitude(),latLon.getLongitude());
       if (calculateBelongs(ex,ey,x,y,r)) {
-        TargetPoint tp=new TargetPoint();
-        tp.location=latLon;
-        tp.intermediate=!target;
-        if (target) {
-          tp.name=view.getContext().getString(R.string.destination_point,"") + " : " + names.get(i);
-        }
- else {
-          tp.name=(i + 1) + ". " + view.getContext().getString(R.string.intermediate_point,"")+ " : "+ names.get(i);
-        }
-        tp.index=i;
         o.add(tp);
       }
     }

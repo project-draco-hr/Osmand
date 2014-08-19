@@ -1,9 +1,21 @@
 {
-  if (point != null) {
-    Location destination=new Location("map");
-    destination.setLatitude(point.getLatitude());
-    destination.setLongitude(point.getLongitude());
-    return getDirectionString(destination,heading);
+  if ((currentLocation != null) && (apoint != null)) {
+    Location point=new Location("");
+    point.setLatitude(apoint.getLatitude());
+    point.setLongitude(apoint.getLongitude());
+    RelativeDirection direction=null;
+    String result=distanceString(point);
+    result+=" ";
+    if (currentLocation.hasBearing())     direction=new RelativeDirection(point);
+ else     if (heading != null)     direction=new RelativeDirection(point,heading);
+    if (direction != null) {
+      result+=direction.getString();
+    }
+ else {
+      result+=getString(R.string.towards) + " ";
+      result+=absoluteDirectionString(currentLocation.bearingTo(point));
+    }
+    return result;
   }
   return null;
 }

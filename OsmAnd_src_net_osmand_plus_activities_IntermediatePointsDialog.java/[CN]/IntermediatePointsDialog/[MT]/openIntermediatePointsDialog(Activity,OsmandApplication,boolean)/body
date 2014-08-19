@@ -1,14 +1,13 @@
 {
   TargetPointsHelper targets=app.getTargetPointsHelper();
-  final List<LatLon> intermediates=targets.getIntermediatePointsWithTarget();
+  final List<TargetPoint> intermediates=targets.getIntermediatePointsWithTarget();
   final TIntArrayList originalPositions=new TIntArrayList(intermediates.size());
   for (int j=1; j <= intermediates.size(); j++) {
     originalPositions.add(j);
   }
-  final List<String> names=targets.getIntermediatePointNamesWithTarget();
   final boolean[] checkedIntermediates=new boolean[intermediates.size()];
   Arrays.fill(checkedIntermediates,true);
-  final ArrayAdapter<LatLon> listadapter=getListAdapter(app,activity,changeOrder,intermediates,originalPositions,names,checkedIntermediates);
+  final ArrayAdapter<TargetPoint> listadapter=getListAdapter(app,activity,changeOrder,intermediates,originalPositions,checkedIntermediates);
   ListView lv=new ListView(activity);
   View contentView=lv;
   final ProgressBar pb=new ProgressBar(activity);
@@ -28,7 +27,7 @@
   lv.setOnItemClickListener(new OnItemClickListener(){
     @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
       if (activity instanceof MapActivity) {
-        LatLon pointToNavigate=intermediates.get(position);
+        TargetPoint pointToNavigate=intermediates.get(position);
         int fZoom=((MapActivity)activity).getMapView().getZoom() < 15 ? 15 : ((MapActivity)activity).getMapView().getZoom();
         ((MapActivity)activity).getMapView().setIntZoom(fZoom);
         ((MapActivity)activity).getMapView().setLatLon(pointToNavigate.getLatitude(),pointToNavigate.getLongitude());
@@ -44,7 +43,7 @@
   builder.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (changeOrder) {
-        commitChangePointsOrder(app,intermediates,names);
+        commitChangePointsOrder(app,intermediates);
       }
  else {
         commitPointsRemoval(app,checkedIntermediates);
@@ -69,7 +68,7 @@
   }
   AlertDialog dlg=builder.create();
   if (changeOrder) {
-    applySortTargets(dlg,activity,intermediates,originalPositions,names,listadapter,pb,textInfo);
+    applySortTargets(dlg,activity,intermediates,originalPositions,listadapter,pb,textInfo);
   }
   dlg.show();
 }

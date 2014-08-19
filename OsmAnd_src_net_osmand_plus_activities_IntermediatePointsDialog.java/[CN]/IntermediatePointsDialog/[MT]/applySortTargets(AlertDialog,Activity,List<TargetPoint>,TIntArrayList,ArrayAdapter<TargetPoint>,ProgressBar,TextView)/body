@@ -1,0 +1,53 @@
+{
+  dlg.setOnShowListener(new OnShowListener(){
+    @Override public void onShow(    DialogInterface dialog){
+      ((AlertDialog)dialog).getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        View v){
+          new AsyncTask<Void,Void,int[]>(){
+            protected void onPreExecute(){
+              pb.setVisibility(View.VISIBLE);
+              textInfo.setVisibility(View.VISIBLE);
+            }
+            protected int[] doInBackground(            Void[] params){
+              ArrayList<TargetPoint> lt=new ArrayList<TargetPoint>(intermediates);
+              TargetPoint start;
+              if (activity instanceof MapActivity) {
+                LatLon ll=new LatLon(((MapActivity)activity).getMapView().getLatitude(),((MapActivity)activity).getMapView().getLongitude());
+                start=TargetPoint.create(ll,"");
+              }
+ else {
+                start=lt.get(0);
+              }
+              TargetPoint end=lt.remove(lt.size() - 1);
+              ArrayList<LatLon> al=new ArrayList<LatLon>();
+              for (              TargetPoint p : lt) {
+                al.add(p.point);
+              }
+              return new TspAnt().readGraph(al,start.point,end.point).solve();
+            }
+            protected void onPostExecute(            int[] result){
+              pb.setVisibility(View.GONE);
+              List<TargetPoint> alocs=new ArrayList<TargetPoint>();
+              TIntArrayList newOriginalPositions=new TIntArrayList();
+              for (int i=0; i < result.length; i++) {
+                if (result[i] > 0) {
+                  TargetPoint loc=intermediates.get(result[i] - 1);
+                  alocs.add(loc);
+                  newOriginalPositions.add(originalPositions.get(intermediates.indexOf(loc)));
+                }
+              }
+              intermediates.clear();
+              intermediates.addAll(alocs);
+              originalPositions.clear();
+              originalPositions.addAll(newOriginalPositions);
+              listadapter.notifyDataSetChanged();
+            }
+          }
+.execute(new Void[0]);
+        }
+      }
+);
+    }
+  }
+);
+}

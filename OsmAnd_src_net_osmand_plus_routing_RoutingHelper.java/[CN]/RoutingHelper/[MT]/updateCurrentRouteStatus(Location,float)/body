@@ -53,10 +53,10 @@
     showMessage(app.getString(R.string.arrived_at_intermediate_point));
     route.passIntermediatePoint();
     TargetPointsHelper targets=app.getTargetPointsHelper();
-    List<String> ns=targets.getIntermediatePointNames();
+    List<TargetPoint> ns=targets.getIntermediatePoints();
     int toDel=targets.getIntermediatePoints().size() - route.getIntermediatePointsToPass();
     int currentIndex=toDel - 1;
-    String name=currentIndex < 0 || currentIndex >= ns.size() || ns.get(currentIndex) == null ? "" : ns.get(currentIndex);
+    String name=currentIndex < 0 || currentIndex >= ns.size() || ns.get(currentIndex) == null ? "" : ns.get(currentIndex).name;
     if (isFollowingMode) {
       voiceRouter.arrivedIntermediatePoint(name);
     }
@@ -72,7 +72,8 @@
   if (currentRoute > routeNodes.size() - 3 && currentLocation.distanceTo(lastPoint) < (((float)settings.getApplicationMode().getArrivalDistance()) * settings.ARRIVAL_DISTANCE_FACTOR.get())) {
     showMessage(app.getString(R.string.arrived_at_destination));
     TargetPointsHelper targets=app.getTargetPointsHelper();
-    String description=targets.getPointNavigateDescription();
+    TargetPoint tp=targets.getPointToNavigate();
+    String description=tp == null ? "" : tp.name;
     if (isFollowingMode) {
       voiceRouter.arrivedDestinationPoint(description);
     }
