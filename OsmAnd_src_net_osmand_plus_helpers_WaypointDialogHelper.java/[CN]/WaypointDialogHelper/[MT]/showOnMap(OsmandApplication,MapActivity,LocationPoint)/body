@@ -1,5 +1,15 @@
 {
   AnimateDraggingMapThread thread=ctx.getMapView().getAnimatedDraggingThread();
   int fZoom=ctx.getMapView().getZoom() < 15 ? 15 : ctx.getMapView().getZoom();
-  thread.startMoving(locationPoint.getLatitude(),locationPoint.getLongitude(),fZoom,true);
+  if (thread.isAnimating()) {
+    ctx.getMapView().setIntZoom(fZoom);
+    ctx.getMapView().setLatLon(locationPoint.getLatitude(),locationPoint.getLongitude());
+  }
+ else   if (MapUtils.getDistance(ctx.getMapView().getLatitude(),ctx.getMapView().getLongitude(),locationPoint.getLatitude(),locationPoint.getLongitude()) < 10) {
+    ctx.getMapLayers().getContextMenuLayer().setSelectedObject(locationPoint);
+    ctx.getMapLayers().getContextMenuLayer().setLocation(new LatLon(locationPoint.getLatitude(),locationPoint.getLongitude()),locationPoint.getName(ctx));
+  }
+ else {
+    thread.startMoving(locationPoint.getLatitude(),locationPoint.getLongitude(),fZoom,true);
+  }
 }
