@@ -1,4 +1,20 @@
 {
-  this.route=res;
-  recalculateAllPoints();
+  ArrayList<List<LocationPointWrapper>> locationPoints=new ArrayList<List<LocationPointWrapper>>();
+  if (route != null && !route.isEmpty()) {
+    if (showFavorites()) {
+      findLocationPoints(route,FAVORITES,getArray(locationPoints,FAVORITES),app.getFavorites().getFavouritePoints(),announceFavorites());
+    }
+    calculateAlarms(route,getArray(locationPoints,ALARMS));
+    if (showGPXWaypoints()) {
+      findLocationPoints(route,WAYPOINTS,getArray(locationPoints,WAYPOINTS),app.getAppCustomization().getWaypoints(),announceGPXWaypoints());
+      findLocationPoints(route,WAYPOINTS,getArray(locationPoints,WAYPOINTS),route.getLocationPoints(),announceGPXWaypoints());
+    }
+    if (showPOI()) {
+      calculatePoi(route,locationPoints);
+    }
+  }
+  for (  List<LocationPointWrapper> list : locationPoints) {
+    sortList(list);
+  }
+  setLocationPoints(locationPoints,route);
 }

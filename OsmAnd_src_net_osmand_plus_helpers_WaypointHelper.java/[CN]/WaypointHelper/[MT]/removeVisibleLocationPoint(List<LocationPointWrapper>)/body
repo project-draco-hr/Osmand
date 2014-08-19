@@ -1,0 +1,24 @@
+{
+  List<TargetPoint> ps=app.getTargetPointsHelper().getIntermediatePointsWithTarget();
+  boolean[] checkedIntermediates=null;
+  for (  LocationPointWrapper lp : points) {
+    if (lp.type == TARGETS) {
+      if (checkedIntermediates == null) {
+        checkedIntermediates=new boolean[ps.size()];
+        Arrays.fill(checkedIntermediates,true);
+      }
+      if (((TargetPoint)lp.point).intermediate) {
+        checkedIntermediates[((TargetPoint)lp.point).index]=false;
+      }
+ else {
+        checkedIntermediates[ps.size() - 1]=false;
+      }
+    }
+ else     if (lp.type < locationPoints.size()) {
+      locationPoints.get(lp.type).remove(lp);
+    }
+  }
+  if (checkedIntermediates != null) {
+    IntermediatePointsDialog.commitPointsRemoval(app,checkedIntermediates);
+  }
+}
