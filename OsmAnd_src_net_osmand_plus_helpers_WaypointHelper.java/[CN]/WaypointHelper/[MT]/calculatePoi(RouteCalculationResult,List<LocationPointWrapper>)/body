@@ -1,0 +1,24 @@
+{
+  PoiFilter pf=getPoiFilter();
+  if (pf != null) {
+    final List<Location> locs=route.getImmutableAllLocations();
+    List<Amenity> amenities=app.getResourceManager().searchAmenitiesOnThePath(locs,searchDeviationRadius,pf,new ResultMatcher<Amenity>(){
+      @Override public boolean publish(      Amenity object){
+        return true;
+      }
+      @Override public boolean isCancelled(){
+        return false;
+      }
+    }
+);
+    for (    Amenity a : amenities) {
+      AmenityRoutePoint rp=a.getRoutePoint();
+      int i=locs.indexOf(rp.pointA);
+      if (i >= 0) {
+        LocationPointWrapper lwp=new LocationPointWrapper(route,POI,new AmenityLocationPoint(a),(float)rp.deviateDistance,i);
+        lwp.setAnnounce(announcePOI());
+        locationPoints.add(lwp);
+      }
+    }
+  }
+}
