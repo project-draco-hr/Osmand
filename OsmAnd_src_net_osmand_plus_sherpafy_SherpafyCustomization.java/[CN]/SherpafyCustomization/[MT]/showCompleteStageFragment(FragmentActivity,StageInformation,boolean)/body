@@ -1,0 +1,33 @@
+{
+  File dir=getStageGpxRec(stage);
+  final File[] fs=dir.listFiles();
+  new AsyncTask<Void,Void,List<GPXUtilities.GPXFile>>(){
+    @Override protected List<GPXFile> doInBackground(    Void... params){
+      List<GPXUtilities.GPXFile> gpxs=new ArrayList<GPXUtilities.GPXFile>();
+      if (fs != null) {
+        for (        File f : fs) {
+          if (f.getName().endsWith(".gpx")) {
+            gpxs.add(GPXUtilities.loadGPXFile(app,f));
+          }
+        }
+      }
+      return gpxs;
+    }
+    protected void onPostExecute(    java.util.List<GPXFile> result){
+      CompleteStageFragment csf=new CompleteStageFragment();
+      Bundle bl=new Bundle();
+      bl.putBoolean(CompleteStageFragment.START_OVER,showRestart);
+      if (stage != null) {
+        bl.putInt(CompleteStageFragment.STAGE_PARAM,stage.order);
+        bl.putString(CompleteStageFragment.TOUR_PARAM,stage.tour.getId());
+      }
+      csf.setArguments(bl);
+      app.getSelectedGpxHelper().clearAllGpxFileToShow();
+      for (      GPXFile g : result) {
+        app.getSelectedGpxHelper().selectGpxFile(g,true,false);
+      }
+      activity.getSupportFragmentManager().beginTransaction().add(csf,"DialogFragment").commit();
+    }
+  }
+.execute((Void)null);
+}

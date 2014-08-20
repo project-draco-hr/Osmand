@@ -1,8 +1,42 @@
 {
-  AlertDialog dlg=new AlertDialog.Builder(getActivity()).setMessage("Stage is completed TODO").setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
-    public void onClick(    DialogInterface dialog,    int whichButton){
+  Bundle args=getArguments();
+  OsmandApplication app=(OsmandApplication)getActivity().getApplication();
+  Builder bld=new AlertDialog.Builder(getActivity());
+  if (app.getSelectedGpxHelper().isShowingAnyGpxFiles()) {
+    SelectedGPXFragment sgf=new SelectedGPXFragment();
+    sgf.onAttach(getActivity());
+    bld.setView(sgf.onCreateView(getActivity().getLayoutInflater(),null,null));
+  }
+ else {
+    bld.setMessage(R.string.stage_is_completed);
+  }
+  bld.setTitle(getString(R.string.stage_is_completed_short)).setPositiveButton(R.string.default_buttons_ok,null);
+  if (args != null && args.getBoolean(START_OVER)) {
+    String id=args.getString(TOUR_PARAM);
+    TourInformation tours=null;
+    final SherpafyCustomization sherpafy=(SherpafyCustomization)app.getAppCustomization();
+    for (    TourInformation ti : sherpafy.getTourInformations()) {
+      if (ti.getId().equals(id)) {
+        tours=ti;
+        break;
+      }
+    }
+    int k=args.getInt(STAGE_PARAM);
+    StageInformation stage=null;
+    if (tours != null && tours.getStageInformation().size() > k) {
+      stage=tours.getStageInformation().get(k);
+    }
+    final StageInformation stageInformation=stage;
+    final TourInformation tour=tours;
+    if (stage != null) {
+      bld.setNegativeButton(R.string.restart_stage,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialogInterface,        int i){
+          sherpafy.markStageAsNotCompleted(stageInformation);
+          sherpafy.runStage(getActivity(),tour,stageInformation,true);
+        }
+      }
+);
     }
   }
-).create();
-  return dlg;
+  return bld.create();
 }
