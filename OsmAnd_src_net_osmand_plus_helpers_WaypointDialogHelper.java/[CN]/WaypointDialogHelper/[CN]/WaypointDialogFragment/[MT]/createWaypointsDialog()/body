@@ -18,19 +18,25 @@
         final CompoundButton btn=(CompoundButton)v.findViewById(R.id.check_item);
         btn.setVisibility(waypointHelper.isTypeConfigurable(type) ? View.VISIBLE : View.GONE);
         btn.setOnCheckedChangeListener(null);
-        btn.setChecked(waypointHelper.isTypeEnabled(type));
+        final boolean checked=waypointHelper.isTypeEnabled(type);
+        btn.setChecked(checked);
         btn.setEnabled(running[0] == -1);
         v.findViewById(R.id.ProgressBar).setVisibility(position == running[0] ? View.VISIBLE : View.GONE);
         btn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
           @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
             running[0]=position;
             thisAdapter.notifyDataSetInvalidated();
-            enableType(running,thisAdapter,type,isChecked);
+            if (type == WaypointHelper.POI && isChecked) {
+              selectPoi(running,thisAdapter,type,isChecked);
+            }
+ else {
+              enableType(running,thisAdapter,type,isChecked);
+            }
           }
         }
 );
         TextView tv=(TextView)v.findViewById(R.id.header_text);
-        tv.setText(getHeader(type));
+        tv.setText(getHeader(type,checked));
       }
  else {
         updatePointInfoView(app,ctx,v,(LocationPointWrapper)getItem(position));
@@ -55,7 +61,7 @@
     @Override public void onItemClick(    AdapterView<?> adapterView,    View view,    int item,    long l){
       if (listAdapter.getItem(item) instanceof LocationPointWrapper) {
         LocationPointWrapper ps=(LocationPointWrapper)listAdapter.getItem(item);
-        showOnMap(app,ctx,ps.getPoint(),getDialog());
+        showOnMap(app,ctx,ps.getPoint(),WaypointDialogFragment.this);
       }
     }
   }
