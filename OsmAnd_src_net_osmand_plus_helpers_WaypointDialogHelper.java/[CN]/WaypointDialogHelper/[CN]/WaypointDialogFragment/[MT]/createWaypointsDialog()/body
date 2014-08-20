@@ -1,7 +1,7 @@
 {
-  final WaypointHelper waypointHelper=app.getWaypointHelper();
-  final List<Object> points=getPoints(waypointHelper);
+  final List<Object> points=getPoints();
   final List<LocationPointWrapper> deletedPoints=new ArrayList<WaypointHelper.LocationPointWrapper>();
+  final FragmentActivity ctx=getActivity();
   final ListView listView=new ListView(ctx);
   final int[] running=new int[]{-1};
   final ArrayAdapter<Object> listAdapter=new ArrayAdapter<Object>(ctx,R.layout.waypoint_reached,R.id.title,points){
@@ -19,18 +19,18 @@
         btn.setVisibility(waypointHelper.isTypeConfigurable(type) ? View.VISIBLE : View.GONE);
         btn.setOnCheckedChangeListener(null);
         btn.setChecked(waypointHelper.isTypeEnabled(type));
-        btn.setEnabled(running[0] != -1);
+        btn.setEnabled(running[0] == -1);
         v.findViewById(R.id.ProgressBar).setVisibility(position == running[0] ? View.VISIBLE : View.GONE);
         btn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
           @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
             running[0]=position;
             thisAdapter.notifyDataSetInvalidated();
-            enableType(app,ctx,running,thisAdapter,type,isChecked);
+            enableType(running,thisAdapter,type,isChecked);
           }
         }
 );
         TextView tv=(TextView)v.findViewById(R.id.header_text);
-        tv.setText(getHeader(ctx,waypointHelper,type));
+        tv.setText(getHeader(type));
       }
  else {
         updatePointInfoView(app,ctx,v,(LocationPointWrapper)getItem(position));
@@ -55,16 +55,16 @@
     @Override public void onItemClick(    AdapterView<?> adapterView,    View view,    int item,    long l){
       if (listAdapter.getItem(item) instanceof LocationPointWrapper) {
         LocationPointWrapper ps=(LocationPointWrapper)listAdapter.getItem(item);
-        showOnMap(app,ctx,ps.getPoint());
+        showOnMap(app,ctx,ps.getPoint(),getDialog());
       }
     }
   }
 );
   AlertDialog.Builder builder=new AlertDialog.Builder(ctx);
   builder.setView(listView);
-  builder.setNeutralButton(R.string.flat_list_waypoitns,new OnClickListener(){
+  builder.setNeutralButton(R.string.flat_list_waypoints,new OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      showWaypointsDialogFlat(app,ctx,waypointHelper.getAllPoints());
+      showWaypointsDialogFlat(getActivity());
     }
   }
 );
@@ -75,5 +75,5 @@
   }
 );
   builder.setNegativeButton(ctx.getString(R.string.default_buttons_cancel),null);
-  dialog=builder.show();
+  return builder.create();
 }
