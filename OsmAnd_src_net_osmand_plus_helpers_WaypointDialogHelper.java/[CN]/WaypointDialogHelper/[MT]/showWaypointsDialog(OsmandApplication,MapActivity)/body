@@ -1,17 +1,13 @@
 {
   final WaypointHelper waypointHelper=app.getWaypointHelper();
-  final List<Object> points=new ArrayList<Object>();
-  for (int i=0; i < WaypointHelper.MAX; i++) {
-    List<LocationPointWrapper> tp=waypointHelper.getWaypoints(i);
-    points.add(new Integer(i));
-    if (tp != null && tp.size() > 0) {
-      points.addAll(tp);
-    }
-  }
+  final List<Object> points=getPoints(waypointHelper);
   final List<LocationPointWrapper> deletedPoints=new ArrayList<WaypointHelper.LocationPointWrapper>();
+  final ListView listView=new ListView(ctx);
+  final int[] running=new int[]{-1};
   final ArrayAdapter<Object> listAdapter=new ArrayAdapter<Object>(ctx,R.layout.waypoint_reached,R.id.title,points){
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
+      final ArrayAdapter<Object> thisAdapter=this;
       boolean labelView=(getItem(position) instanceof Integer);
       boolean viewText=v != null && v.findViewById(R.id.info_close) == null;
       if (v == null || viewText != labelView) {
@@ -19,11 +15,17 @@
       }
       if (labelView) {
         final int type=(Integer)getItem(position);
-        CompoundButton btn=(CompoundButton)v.findViewById(R.id.check_item);
-        btn.setVisibility(type == WaypointHelper.TARGETS ? View.GONE : View.VISIBLE);
-        btn.setOnClickListener(new View.OnClickListener(){
-          @Override public void onClick(          View v){
-            enableType(app,ctx,type);
+        final CompoundButton btn=(CompoundButton)v.findViewById(R.id.check_item);
+        btn.setVisibility(waypointHelper.isTypeConfigurable(type) ? View.VISIBLE : View.GONE);
+        btn.setOnCheckedChangeListener(null);
+        btn.setChecked(waypointHelper.isTypeEnabled(type));
+        btn.setEnabled(running[0] != -1);
+        v.findViewById(R.id.ProgressBar).setVisibility(position == running[0] ? View.VISIBLE : View.GONE);
+        btn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+          @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
+            running[0]=position;
+            thisAdapter.notifyDataSetInvalidated();
+            enableType(app,ctx,running,thisAdapter,type,isChecked);
           }
         }
 );
@@ -48,12 +50,11 @@
     }
   }
 ;
-  ListView listView=new ListView(ctx);
   listView.setAdapter(listAdapter);
   listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-    @Override public void onItemClick(    AdapterView<?> adapterView,    View view,    int i,    long l){
-      if (listAdapter.getItem(i) instanceof LocationPointWrapper) {
-        LocationPointWrapper ps=(LocationPointWrapper)listAdapter.getItem(i);
+    @Override public void onItemClick(    AdapterView<?> adapterView,    View view,    int item,    long l){
+      if (listAdapter.getItem(item) instanceof LocationPointWrapper) {
+        LocationPointWrapper ps=(LocationPointWrapper)listAdapter.getItem(item);
         showOnMap(app,ctx,ps.getPoint());
       }
     }
