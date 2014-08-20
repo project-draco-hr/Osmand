@@ -1,0 +1,78 @@
+{
+  final WaypointHelper waypointHelper=app.getWaypointHelper();
+  final List<Object> points=new ArrayList<Object>();
+  for (int i=0; i < WaypointHelper.MAX; i++) {
+    List<LocationPointWrapper> tp=waypointHelper.getWaypoints(i);
+    points.add(new Integer(i));
+    if (tp != null && tp.size() > 0) {
+      points.addAll(tp);
+    }
+  }
+  final List<LocationPointWrapper> deletedPoints=new ArrayList<WaypointHelper.LocationPointWrapper>();
+  final ArrayAdapter<Object> listAdapter=new ArrayAdapter<Object>(ctx,R.layout.waypoint_reached,R.id.title,points){
+    @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
+      View v=convertView;
+      boolean labelView=(getItem(position) instanceof Integer);
+      boolean viewText=v != null && v.findViewById(R.id.info_close) == null;
+      if (v == null || viewText != labelView) {
+        v=ctx.getLayoutInflater().inflate(labelView ? R.layout.waypoint_header : R.layout.waypoint_reached,null);
+      }
+      if (labelView) {
+        final int type=(Integer)getItem(position);
+        CompoundButton btn=(CompoundButton)v.findViewById(R.id.check_item);
+        btn.setVisibility(type == WaypointHelper.TARGETS ? View.GONE : View.VISIBLE);
+        btn.setOnClickListener(new View.OnClickListener(){
+          @Override public void onClick(          View v){
+            enableType(app,ctx,type);
+          }
+        }
+);
+        TextView tv=(TextView)v.findViewById(R.id.header_text);
+        tv.setText(getHeader(ctx,waypointHelper,type));
+      }
+ else {
+        updatePointInfoView(app,ctx,v,(LocationPointWrapper)getItem(position));
+        View remove=v.findViewById(R.id.info_close);
+        ((ImageButton)remove).setImageDrawable(ctx.getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_gremove_light : R.drawable.ic_action_gremove_dark));
+        remove.setOnClickListener(new View.OnClickListener(){
+          @Override public void onClick(          View view){
+            LocationPointWrapper point=(LocationPointWrapper)points.get(position);
+            remove(point);
+            deletedPoints.add(point);
+            notifyDataSetChanged();
+          }
+        }
+);
+      }
+      return v;
+    }
+  }
+;
+  ListView listView=new ListView(ctx);
+  listView.setAdapter(listAdapter);
+  listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+    @Override public void onItemClick(    AdapterView<?> adapterView,    View view,    int i,    long l){
+      if (listAdapter.getItem(i) instanceof LocationPointWrapper) {
+        LocationPointWrapper ps=(LocationPointWrapper)listAdapter.getItem(i);
+        showOnMap(app,ctx,ps.getPoint());
+      }
+    }
+  }
+);
+  AlertDialog.Builder builder=new AlertDialog.Builder(ctx);
+  builder.setView(listView);
+  builder.setNeutralButton(R.string.flat_list_waypoitns,new OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      showWaypointsDialogFlat(app,ctx,waypointHelper.getAllPoints());
+    }
+  }
+);
+  builder.setPositiveButton(R.string.default_buttons_ok,new OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      waypointHelper.removeVisibleLocationPoint(deletedPoints);
+    }
+  }
+);
+  builder.setNegativeButton(ctx.getString(R.string.default_buttons_cancel),null);
+  dialog=builder.show();
+}
