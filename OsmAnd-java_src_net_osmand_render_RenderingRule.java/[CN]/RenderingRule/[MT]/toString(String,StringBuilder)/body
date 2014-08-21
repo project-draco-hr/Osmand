@@ -1,30 +1,20 @@
 {
-  bls.append("RenderingRule [");
-  for (  RenderingRuleProperty p : getProperties()) {
-    bls.append(" ").append(p.getAttrName()).append("= ");
-    if (p.isString()) {
-      bls.append("\"").append(getStringPropertyValue(p.getAttrName())).append("\"");
-    }
- else     if (p.isFloat()) {
-      bls.append(getFloatPropertyValue(p.getAttrName()));
-    }
- else     if (p.isColor()) {
-      bls.append(getColorPropertyValue(p.getAttrName()));
-    }
- else     if (p.isIntParse()) {
-      bls.append(getIntPropertyValue(p.getAttrName()));
-    }
-  }
+  bls.append("test [");
+  printAttrs(bls,true);
   bls.append("]");
-  for (  RenderingRule rc : getIfChildren()) {
-    String cindent=indent + "  [] ";
-    bls.append("\n").append(cindent);
-    rc.toString(indent + "    ",bls);
-  }
+  bls.append(" set [");
+  printAttrs(bls,false);
+  bls.append("]");
+  int k=0;
   for (  RenderingRule rc : getIfElseChildren()) {
-    String cindent=indent + "  +  ";
+    String cindent=indent + (k++ == 0 ? "* if   " : "* elif ");
     bls.append("\n").append(cindent);
-    rc.toString(indent + "    ",bls);
+    rc.toString(indent + "*    ",bls);
+  }
+  for (  RenderingRule rc : getIfChildren()) {
+    String cindent=indent + "* if   ";
+    bls.append("\n").append(cindent);
+    rc.toString(indent + "*    ",bls);
   }
   return bls;
 }
