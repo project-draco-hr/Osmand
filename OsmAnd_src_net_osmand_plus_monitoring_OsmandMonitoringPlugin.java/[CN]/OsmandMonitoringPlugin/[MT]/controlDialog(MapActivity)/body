@@ -15,27 +15,37 @@
  else {
     items.add(R.string.gpx_monitoring_start);
   }
-  items.add(R.string.save_current_track);
+  if (app.getSavingTrackHelper().hasDataToSave()) {
+    items.add(R.string.save_current_track);
+  }
   String[] strings=new String[items.size()];
   for (int i=0; i < strings.length; i++) {
     strings[i]=app.getString(items.get(i));
   }
-  bld.setItems(strings,new OnClickListener(){
-    @Override public void onClick(    DialogInterface dialog,    int which){
+  final int[] holder=new int[]{0};
+  final Runnable run=new Runnable(){
+    public void run(){
+      int which=holder[0];
       int item=items.get(which);
       if (item == R.string.save_current_track) {
         app.getTaskManager().runInBackground(new OsmAndTaskRunnable<Void,Void,Void>(){
           @Override protected Void doInBackground(          Void... params){
-            SavingTrackHelper helper=app.getSavingTrackHelper();
-            helper.saveDataToGpx(app.getAppCustomization().getTracksDir());
-            helper.close();
+            isSaving=true;
+            try {
+              SavingTrackHelper helper=app.getSavingTrackHelper();
+              helper.saveDataToGpx(app.getAppCustomization().getTracksDir());
+              helper.close();
+            }
+  finally {
+              isSaving=false;
+            }
             return null;
           }
         }
 ,(Void)null);
       }
  else       if (item == R.string.gpx_monitoring_start) {
-        startGPXMonitoring();
+        startGPXMonitoring(map);
       }
  else       if (item == R.string.gpx_monitoring_stop) {
         settings.SAVE_GLOBAL_TRACK_TO_GPX.set(false);
@@ -52,7 +62,7 @@
  else       if (item == R.string.live_monitoring_start) {
         final ValueHolder<Integer> vs=new ValueHolder<Integer>();
         vs.value=settings.LIVE_MONITORING_INTERVAL.get();
-        showIntervalChooseDialog(map,app.getString(R.string.live_monitoring_interval) + " : %s",app.getString(R.string.save_track_to_gpx),SECONDS,MINUTES,vs,new OnClickListener(){
+        showIntervalChooseDialog(map,app.getString(R.string.live_monitoring_interval) + " : %s",app.getString(R.string.save_track_to_gpx),SECONDS,MINUTES,null,vs,new OnClickListener(){
           @Override public void onClick(          DialogInterface dialog,          int which){
             settings.LIVE_MONITORING_INTERVAL.set(vs.value);
             settings.LIVE_MONITORING.set(true);
@@ -62,23 +72,19 @@
       }
       monitoringControl.updateInfo(null);
     }
-    private void startGPXMonitoring(){
-      app.getSavingTrackHelper().startNewSegment();
-      final ValueHolder<Integer> vs=new ValueHolder<Integer>();
-      vs.value=settings.SAVE_GLOBAL_TRACK_INTERVAL.get();
-      showIntervalChooseDialog(map,app.getString(R.string.save_track_interval) + " : %s",app.getString(R.string.save_track_to_gpx),SECONDS,MINUTES,vs,new OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          settings.SAVE_GLOBAL_TRACK_INTERVAL.set(vs.value);
-          settings.SAVE_GLOBAL_TRACK_TO_GPX.set(true);
-          if (app.getNavigationService() == null) {
-            settings.SERVICE_OFF_INTERVAL.set(0);
-          }
-          app.startNavigationService(NavigationService.USED_BY_GPX);
-        }
-      }
-);
-    }
   }
+;
+  if (strings.length == 1) {
+    run.run();
+  }
+ else {
+    bld.setItems(strings,new OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        holder[0]=which;
+        run.run();
+      }
+    }
 );
-  bld.show();
+    bld.show();
+  }
 }
