@@ -1,0 +1,30 @@
+{
+  app.getSavingTrackHelper().startNewSegment();
+  final ValueHolder<Integer> vs=new ValueHolder<Integer>();
+  final ValueHolder<Boolean> choice=new ValueHolder<Boolean>();
+  vs.value=settings.SAVE_GLOBAL_TRACK_INTERVAL.get();
+  choice.value=settings.SAVE_GLOBAL_TRACK_REMEMBER.get();
+  final Runnable runnable=new Runnable(){
+    public void run(){
+      settings.SAVE_GLOBAL_TRACK_INTERVAL.set(vs.value);
+      settings.SAVE_GLOBAL_TRACK_TO_GPX.set(true);
+      settings.SAVE_GLOBAL_TRACK_REMEMBER.set(choice.value);
+      if (app.getNavigationService() == null) {
+        settings.SERVICE_OFF_INTERVAL.set(0);
+      }
+      app.startNavigationService(NavigationService.USED_BY_GPX);
+    }
+  }
+;
+  if (choice.value) {
+    runnable.run();
+  }
+ else {
+    showIntervalChooseDialog(map,app.getString(R.string.save_track_interval) + " : %s",app.getString(R.string.save_track_to_gpx),SECONDS,MINUTES,choice,vs,new OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        runnable.run();
+      }
+    }
+);
+  }
+}
