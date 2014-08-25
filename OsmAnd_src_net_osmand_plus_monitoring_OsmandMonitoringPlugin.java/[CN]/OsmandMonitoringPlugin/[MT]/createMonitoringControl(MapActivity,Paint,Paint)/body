@@ -16,8 +16,9 @@
       Drawable d=monitoringInactive;
       long last=lastUpdateTime;
       final boolean globalRecord=settings.SAVE_GLOBAL_TRACK_TO_GPX.get();
-      if (globalRecord || settings.SAVE_TRACK_TO_GPX.get()) {
-        float dist=app.getSavingTrackHelper().getDistance();
+      final boolean isRecording=app.getSavingTrackHelper().getIsRecording();
+      float dist=app.getSavingTrackHelper().getDistance();
+      if (dist > 0) {
         last=app.getSavingTrackHelper().getLastTimeUpdated();
         String ds=OsmAndFormatter.getFormattedDistance(dist,map.getMyApplication());
         int ls=ds.lastIndexOf(' ');
@@ -28,29 +29,37 @@
           txt=ds.substring(0,ls);
           subtxt=ds.substring(ls + 1);
         }
-        if (globalRecord) {
-          d=monitoringBig;
-        }
+      }
+      if (globalRecord) {
+        d=monitoringBig;
+      }
+ else       if (isRecording) {
+        d=monitoringSmall;
+      }
+ else {
+        d=monitoringInactive;
       }
       setText(txt,subtxt);
       setImageDrawable(d);
-      if (last != lastUpdateTime && globalRecord) {
+      if ((last != lastUpdateTime) && (globalRecord || isRecording)) {
         lastUpdateTime=last;
-        blink();
+        setImageDrawable(monitoringInactive);
+        invalidate();
+        postDelayed(new Runnable(){
+          @Override public void run(){
+            if (globalRecord) {
+              setImageDrawable(monitoringBig);
+            }
+ else {
+              setImageDrawable(monitoringSmall);
+            }
+            invalidate();
+          }
+        }
+,500);
       }
       updateVisibility(visible);
       return true;
-    }
-    private void blink(){
-      setImageDrawable(monitoringSmall);
-      invalidate();
-      postDelayed(new Runnable(){
-        @Override public void run(){
-          setImageDrawable(monitoringBig);
-          invalidate();
-        }
-      }
-,500);
     }
   }
 ;
