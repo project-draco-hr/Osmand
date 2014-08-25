@@ -3,8 +3,8 @@
   if (lastKnownLocation != null && app.getRoutingHelper().isFollowingMode()) {
     for (int type=0; type < locationPoints.size(); type++) {
       int currentRoute=route.getCurrentRoute();
-      List<LocationPoint> approachPoints=new ArrayList<LocationPoint>();
-      List<LocationPoint> announcePoints=new ArrayList<LocationPoint>();
+      List<LocationPointWrapper> approachPoints=new ArrayList<LocationPointWrapper>();
+      List<LocationPointWrapper> announcePoints=new ArrayList<LocationPointWrapper>();
       List<LocationPointWrapper> lp=locationPoints.get(type);
       if (lp != null) {
         int kIterator=pointsProgress.get(type);
@@ -18,15 +18,15 @@
             break;
           }
           LocationPoint point=lwp.point;
-          double d1=MapUtils.getDistance(lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude(),point.getLatitude(),point.getLongitude());
+          double d1=MapUtils.getDistance(lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude(),point.getLatitude(),point.getLongitude()) + lwp.getDeviationDistance();
           Integer state=locationPointsStates.get(point);
           if (state != null && state.intValue() == ANNOUNCED_ONCE && getVoiceRouter().isDistanceLess(lastKnownLocation.getSpeed(),d1,SHORT_ANNOUNCE_RADIUS)) {
             locationPointsStates.put(point,ANNOUNCED_DONE);
-            announcePoints.add(point);
+            announcePoints.add(lwp);
           }
  else           if ((state == null || state == NOT_ANNOUNCED) && getVoiceRouter().isDistanceLess(lastKnownLocation.getSpeed(),d1,LONG_ANNOUNCE_RADIUS)) {
             locationPointsStates.put(point,ANNOUNCED_ONCE);
-            approachPoints.add(point);
+            approachPoints.add(lwp);
           }
           kIterator++;
         }
@@ -52,8 +52,8 @@
           }
  else           if (type == ALARMS) {
             EnumSet<AlarmInfoType> ait=EnumSet.noneOf(AlarmInfoType.class);
-            for (            LocationPoint pw : announcePoints) {
-              ait.add(((AlarmInfo)pw).getType());
+            for (            LocationPointWrapper pw : announcePoints) {
+              ait.add(((AlarmInfo)pw.point).getType());
             }
             for (            AlarmInfoType t : ait) {
               app.getRoutingHelper().getVoiceRouter().announceAlarm(t);
