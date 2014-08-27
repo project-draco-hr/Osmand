@@ -1,2 +1,50 @@
 {
+  broadcastReceiver=new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      NavigationService.this.stopSelf();
+    }
+  }
+;
+  registerReceiver(broadcastReceiver,new IntentFilter(OSMAND_STOP_SERVICE_ACTION));
+  Intent notificationIntent=new Intent(OSMAND_STOP_SERVICE_ACTION);
+  Notification notification=new Notification(R.drawable.bgs_icon,"",System.currentTimeMillis());
+  notification.flags=Notification.FLAG_NO_CLEAR;
+  int soi=settings.SERVICE_OFF_INTERVAL.get();
+  String nt=getString(R.string.service_stop_background_service) + ". " + getString(R.string.gps_wake_up_timer)+ ": ";
+  if (soi == 0) {
+    nt=nt + getString(R.string.int_continuosly);
+  }
+ else   if (soi <= 90000) {
+    nt=nt + Integer.toString(soi / 1000) + " "+ getString(R.string.int_seconds);
+  }
+ else {
+    nt=nt + Integer.toString(soi / 1000 / 60) + " "+ getString(R.string.int_min);
+  }
+  notification.setLatestEventInfo(this,Version.getAppName(cl) + " " + getString(R.string.osmand_service),nt,PendingIntent.getBroadcast(this,0,notificationIntent,PendingIntent.FLAG_UPDATE_CURRENT));
+  NotificationManager mNotificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+  if (mStartForeground != null) {
+    Log.d(PlatformUtil.TAG,"invoke startForeground");
+    try {
+      mStartForeground.invoke(this,NOTIFICATION_SERVICE_ID,notification);
+    }
+ catch (    InvocationTargetException e) {
+      Log.d(PlatformUtil.TAG,"invoke startForeground failed");
+    }
+catch (    IllegalAccessException e) {
+      Log.d(PlatformUtil.TAG,"invoke startForeground failed");
+    }
+  }
+ else {
+    Log.d(PlatformUtil.TAG,"invoke setForeground");
+    mNotificationManager.notify(NOTIFICATION_SERVICE_ID,notification);
+    try {
+      mSetForeground.invoke(this,Boolean.TRUE);
+    }
+ catch (    InvocationTargetException e) {
+      Log.d(PlatformUtil.TAG,"invoke setForeground failed");
+    }
+catch (    IllegalAccessException e) {
+      Log.d(PlatformUtil.TAG,"invoke setForeground failed");
+    }
+  }
 }
