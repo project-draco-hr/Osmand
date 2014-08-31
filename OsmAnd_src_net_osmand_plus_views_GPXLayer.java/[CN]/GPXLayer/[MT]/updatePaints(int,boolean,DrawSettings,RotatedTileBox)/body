@@ -1,0 +1,32 @@
+{
+  RenderingRulesStorage rrs=view.getApplication().getRendererRegistry().getCurrentSelectedRenderer();
+  final boolean isNight=nightMode != null && nightMode.isNightMode();
+  int hsh=calculateHash(rrs,routePoints,isNight,tileBox.getZoomScale());
+  if (hsh != cachedHash) {
+    cachedHash=hsh;
+    cachedColor=view.getResources().getColor(R.color.gpx_track);
+    if (rrs != null) {
+      RenderingRuleSearchRequest req=new RenderingRuleSearchRequest(rrs);
+      req.setBooleanFilter(rrs.PROPS.R_NIGHT_MODE,isNight);
+      if (routePoints) {
+        req.setStringFilter(rrs.PROPS.R_ADDITIONAL,"routePoints=true");
+      }
+      if (req.searchRenderingAttribute("gpx")) {
+        RenderingContext rc=new OsmandRenderer.RenderingContext(view.getContext());
+        rc.setDensityValue((float)Math.pow(2,tileBox.getZoomScale()));
+        cachedColor=req.getIntPropertyValue(rrs.PROPS.R_COLOR);
+        osmandRenderer.updatePaint(req,paint,0,false,rc);
+        isPaint2=osmandRenderer.updatePaint(req,paint2,1,false,rc);
+        isPaint_1=osmandRenderer.updatePaint(req,paint_1,-1,false,rc);
+        isShadowPaint=req.isSpecified(rrs.PROPS.R_SHADOW_RADIUS);
+        if (isShadowPaint) {
+          ColorFilter cf=new PorterDuffColorFilter(req.getIntPropertyValue(rrs.PROPS.R_SHADOW_COLOR),Mode.SRC_IN);
+          shadowPaint.setColorFilter(cf);
+          shadowPaint.setStrokeWidth(paint.getStrokeWidth() + 2 * rc.getComplexValue(req,rrs.PROPS.R_SHADOW_RADIUS));
+        }
+      }
+    }
+  }
+  paint.setColor(color == 0 ? cachedColor : color);
+  return cachedColor;
+}
