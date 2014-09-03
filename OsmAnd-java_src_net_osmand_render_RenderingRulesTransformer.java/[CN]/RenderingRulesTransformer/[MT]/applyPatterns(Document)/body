@@ -1,0 +1,22 @@
+{
+  NodeList nl=document.getElementsByTagName("apply");
+  for (int i=0; i < nl.getLength(); ) {
+    Element app=(Element)nl.item(i);
+    String pt=app.getAttribute("pattern");
+    if (!pt.equals("")) {
+      if (!patterns.containsKey(pt)) {
+        throw new IllegalStateException("Pattern '" + pt + "' is not defined");
+      }
+      Element patt=patterns.get(pt);
+      final NodeList pattChildren=patt.getChildNodes();
+      for (int ki=0; ki < pattChildren.getLength(); ki++) {
+        Node ni=patt.getChildNodes().item(ki);
+        app.getParentNode().insertBefore(ni.cloneNode(true),app);
+      }
+      app.getParentNode().removeChild(app);
+    }
+ else {
+      i++;
+    }
+  }
+}
