@@ -1,5 +1,14 @@
 {
-  if (stage.getItineraryBitmap() != null) {
+  app.getResourceManager().getMapTileDownloader().addDownloaderCallback(this);
+  osmandMapTileView.setVisibility(View.VISIBLE);
+  MapVectorLayer mapVectorLayer=new MapVectorLayer(null);
+  osmandMapTileView.addLayer(mapVectorLayer,0.5f);
+  osmandMapTileView.addLayer(new GPXLayer(),0.9f);
+  osmandMapTileView.setMainLayer(mapVectorLayer);
+  mapVectorLayer.setVisible(true);
+  osmandMapTileView.setLatLon(stage.getStartPoint().getLatitude(),stage.getStartPoint().getLongitude());
+  osmandMapTileView.setIntZoom(14);
+  if (stage.getItineraryBitmap() != null && !HIDE_ITINERARY_IMG) {
     icon.setImageBitmap(stage.getItineraryBitmap());
   }
  else {
@@ -16,5 +25,6 @@
     int h=stage.duration / 60;
     ins+="<h4>" + app.getString(R.string.duration) + ": "+ (h == 0 ? "" : h + " " + app.getString(R.string.int_hour)+ " ")+ (min == 0 ? "" : min + " " + app.getString(R.string.int_min))+ "<h4/>";
   }
-  description.loadData("<html><body>" + ins + stage.getItinerary()+ "</body></html","text/html; charset=utf-8","utf-8");
+  String content=HIDE_ITINERARY_IMG ? "" : stage.getItinerary();
+  description.loadData("<html><body>" + ins + content+ "</body></html","text/html; charset=utf-8","utf-8");
 }
