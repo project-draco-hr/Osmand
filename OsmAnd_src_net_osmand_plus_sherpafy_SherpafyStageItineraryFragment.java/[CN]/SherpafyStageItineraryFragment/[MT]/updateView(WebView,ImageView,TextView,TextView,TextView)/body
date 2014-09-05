@@ -1,5 +1,20 @@
 {
-  if (stage.getItineraryBitmap() != null) {
+  app.getResourceManager().getMapTileDownloader().addDownloaderCallback(this);
+  osmandMapTileView.setVisibility(View.VISIBLE);
+  osmandMapTileView.removeAllLayers();
+  MapVectorLayer mapVectorLayer=new MapVectorLayer(null);
+  MapTextLayer mapTextLayer=new MapTextLayer();
+  mapTextLayer.setAlwaysVisible(true);
+  osmandMapTileView.addLayer(mapTextLayer,5.95f);
+  osmandMapTileView.addLayer(mapVectorLayer,0.5f);
+  final GPXLayer gpxLayer=new GPXLayer();
+  gpxLayer.setGivenGpx(stage.getGpx());
+  osmandMapTileView.addLayer(gpxLayer,0.9f);
+  osmandMapTileView.addLayer(new StageFavoritesLayer(app,stage),4.1f);
+  osmandMapTileView.setMainLayer(mapVectorLayer);
+  mapVectorLayer.setVisible(true);
+  calculateLatLon();
+  if (stage.getItineraryBitmap() != null && !HIDE_ITINERARY_IMG) {
     icon.setImageBitmap(stage.getItineraryBitmap());
   }
  else {
@@ -16,5 +31,19 @@
     int h=stage.duration / 60;
     ins+="<h4>" + app.getString(R.string.duration) + ": "+ (h == 0 ? "" : h + " " + app.getString(R.string.int_hour)+ " ")+ (min == 0 ? "" : min + " " + app.getString(R.string.int_min))+ "<h4/>";
   }
-  description.loadData("<html><body>" + ins + stage.getItinerary()+ "</body></html","text/html; charset=utf-8","utf-8");
+  String content=HIDE_ITINERARY_IMG ? "" : stage.getItinerary();
+  description.loadData("<html><body>" + ins + content+ "</body></html","text/html; charset=utf-8","utf-8");
+  new AsyncTask<Void,Void,Void>(){
+    private GPXFile gpx;
+    @Override protected Void doInBackground(    Void... params){
+      gpx=GPXUtilities.loadGPXFile(app,stage.gpxFile);
+      return null;
+    }
+    protected void onPostExecute(    Void result){
+      gpxLayer.setGivenGpx(gpx);
+      calculateLatLon();
+      osmandMapTileView.refreshMap();
+    }
+  }
+.execute((Void)null);
 }

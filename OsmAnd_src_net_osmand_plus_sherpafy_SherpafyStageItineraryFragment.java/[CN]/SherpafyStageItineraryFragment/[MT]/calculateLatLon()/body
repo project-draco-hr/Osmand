@@ -1,0 +1,28 @@
+{
+  WptPt st=stage.getGpx() == null ? null : stage.getGpx().findPointToShow();
+  double llat=st == null ? stage.getStartPoint().getLatitude() : st.lat;
+  double llon=st == null ? stage.getStartPoint().getLongitude() : st.lon;
+  double left=llon, right=llon;
+  double top=llat, bottom=llat;
+  if (stage.getGpx() != null) {
+    for (    List<WptPt> list : stage.getGpx().proccessPoints()) {
+      for (      WptPt l : list) {
+        left=Math.min(left,l.getLongitude());
+        right=Math.max(right,l.getLongitude());
+        top=Math.max(top,l.getLatitude());
+        bottom=Math.min(bottom,l.getLatitude());
+      }
+    }
+  }
+  osmandMapTileView.setIntZoom(15);
+  RotatedTileBox tb=new RotatedTileBox(osmandMapTileView.getCurrentRotatedTileBox());
+  tb.setPixelDimensions(3 * tb.getPixWidth() / 4,3 * tb.getPixHeight() / 4);
+  double clat=bottom / 2 + top / 2;
+  double clon=left / 2 + right / 2;
+  tb.setLatLonCenter(clat,clon);
+  while (tb.getZoom() >= 7 && (!tb.containsLatLon(top,left) || !tb.containsLatLon(bottom,right))) {
+    tb.setZoom(tb.getZoom() - 1);
+  }
+  osmandMapTileView.setLatLon(tb.getCenterLatLon().getLatitude(),tb.getCenterLatLon().getLongitude());
+  osmandMapTileView.setComplexZoom(tb.getZoom(),osmandMapTileView.getSettingsZoomScale());
+}
