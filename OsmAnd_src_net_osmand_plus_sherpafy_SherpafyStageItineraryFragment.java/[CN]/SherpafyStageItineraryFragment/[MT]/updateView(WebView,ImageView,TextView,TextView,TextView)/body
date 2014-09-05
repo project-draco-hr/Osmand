@@ -1,13 +1,18 @@
 {
   app.getResourceManager().getMapTileDownloader().addDownloaderCallback(this);
   osmandMapTileView.setVisibility(View.VISIBLE);
+  osmandMapTileView.removeAllLayers();
   MapVectorLayer mapVectorLayer=new MapVectorLayer(null);
+  MapTextLayer mapTextLayer=new MapTextLayer();
+  osmandMapTileView.addLayer(mapTextLayer,5.95f);
   osmandMapTileView.addLayer(mapVectorLayer,0.5f);
-  osmandMapTileView.addLayer(new GPXLayer(),0.9f);
+  final GPXLayer gpxLayer=new GPXLayer();
+  gpxLayer.setGivenGpx(stage.getGpx());
+  osmandMapTileView.addLayer(gpxLayer,0.9f);
+  osmandMapTileView.addLayer(new StageFavoritesLayer(app,stage),4.1f);
   osmandMapTileView.setMainLayer(mapVectorLayer);
   mapVectorLayer.setVisible(true);
-  osmandMapTileView.setLatLon(stage.getStartPoint().getLatitude(),stage.getStartPoint().getLongitude());
-  osmandMapTileView.setIntZoom(14);
+  calculateLatLon();
   if (stage.getItineraryBitmap() != null && !HIDE_ITINERARY_IMG) {
     icon.setImageBitmap(stage.getItineraryBitmap());
   }
@@ -27,4 +32,16 @@
   }
   String content=HIDE_ITINERARY_IMG ? "" : stage.getItinerary();
   description.loadData("<html><body>" + ins + content+ "</body></html","text/html; charset=utf-8","utf-8");
+  new AsyncTask<Void,Void,Void>(){
+    private GPXFile gpx;
+    @Override protected Void doInBackground(    Void... params){
+      gpx=GPXUtilities.loadGPXFile(app,stage.gpxFile);
+      return null;
+    }
+    protected void onPostExecute(    Void result){
+      gpxLayer.setGivenGpx(gpx);
+      osmandMapTileView.refreshMap();
+    }
+  }
+.execute((Void)null);
 }
