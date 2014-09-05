@@ -5,5 +5,28 @@
     adapter=new SelectedGPXAdapter(getListView());
     setAdapter(adapter);
   }
-  adapter.setDisplayGroups(selectedGpxHelper.getDisplayGroups());
+  List<GpxDisplayGroup> groups=selectedGpxHelper.getDisplayGroups();
+  if (isArgumentTrue(ARG_TO_FILTER_SHORT_TRACKS)) {
+    groups=new ArrayList<GpxSelectionHelper.GpxDisplayGroup>(groups);
+    Iterator<GpxDisplayGroup> it=groups.iterator();
+    while (it.hasNext()) {
+      GpxDisplayGroup group=it.next();
+      Iterator<GpxDisplayItem> item=group.getModifiableList().iterator();
+      while (item.hasNext()) {
+        GpxDisplayItem it2=item.next();
+        if (it2.analysis != null && it2.analysis.totalDistance < 100) {
+          item.remove();
+        }
+      }
+      if (group.getModifiableList().isEmpty()) {
+        it.remove();
+      }
+    }
+  }
+  adapter.setDisplayGroups(groups);
+  if (isArgumentTrue(ARG_TO_EXPAND_TRACK_INFO)) {
+    for (int i=0; i < groups.size(); i++) {
+      getListView().expandGroup(i);
+    }
+  }
 }

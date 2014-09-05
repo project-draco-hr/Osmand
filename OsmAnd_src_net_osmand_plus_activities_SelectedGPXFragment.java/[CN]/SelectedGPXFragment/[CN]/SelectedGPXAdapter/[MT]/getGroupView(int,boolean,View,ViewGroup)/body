@@ -5,12 +5,20 @@
     row=inflater.inflate(R.layout.expandable_list_item_category_btn,parent,false);
     fixBackgroundRepeat(row);
   }
-  adjustIndicator(groupPosition,isExpanded,row);
+  if (isArgumentTrue(ARG_TO_EXPAND_TRACK_INFO)) {
+    row.findViewById(R.id.explist_indicator).setVisibility(View.GONE);
+  }
+ else {
+    adjustIndicator(groupPosition,isExpanded,row);
+  }
   TextView label=(TextView)row.findViewById(R.id.category_name);
   final GpxDisplayGroup model=getGroup(groupPosition);
   label.setText(model.getGroupName());
   final ImageView ch=(ImageView)row.findViewById(R.id.check_item);
-  if (model.getType() == GpxDisplayItemType.TRACK_SEGMENT) {
+  if (isArgumentTrue(ARG_TO_HIDE_CONFIG_BTN)) {
+    ch.setVisibility(View.GONE);
+  }
+ else   if (model.getType() == GpxDisplayItemType.TRACK_SEGMENT) {
     ch.setVisibility(View.VISIBLE);
     ch.setImageDrawable(getMyActivity().getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_settings_light : R.drawable.ic_action_settings_dark));
     ch.setOnClickListener(new View.OnClickListener(){
