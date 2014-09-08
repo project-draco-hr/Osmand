@@ -1,5 +1,5 @@
 {
-  final URI data=URI.create(uri.replaceAll("\\s+","+"));
+  final URI data=URI.create(uri.replaceAll("\\s+","+").replaceAll("%20","+"));
   if ("http".equals(scheme) || "https".equals(scheme)) {
     final String schemeSpecific=data.getSchemeSpecificPart();
     if (schemeSpecific == null) {
@@ -76,7 +76,7 @@
     }
     if (schemeSpecific.startsWith("0,0?")) {
       String query=schemeSpecific.substring("0,0?".length());
-      final String pattern="(?:z=([0-9]{1,2})?)?&?q=([\\-0-9\\.]+)?,([\\-0-9\\.]+)?\\s*(?:\\((.+?)\\))?";
+      final String pattern="(?:z=([0-9]{1,2}))?&?q=([\\-0-9\\.]+)?,([\\-0-9\\.]+)?[\\+]*(?:\\((.+?)\\))?";
       final Matcher matcher=Pattern.compile(pattern).matcher(query);
       if (matcher.matches()) {
         final String z=matcher.group(1);
@@ -92,32 +92,19 @@
       }
     }
  else {
-      final String pattern="([\\-0-9.]+),([\\-0-9.]+)(?:,([\\-0-9.]+))?(?:\\?z=([0-9]+))?(?:;.*)?";
-      int indexQ=schemeSpecific.indexOf("&q");
-      final Matcher matcher;
-      if (indexQ != -1) {
-        final String schemeQ=schemeSpecific.substring(0,indexQ);
-        matcher=Pattern.compile(pattern).matcher(schemeQ);
-      }
- else {
-        matcher=Pattern.compile(pattern).matcher(schemeSpecific);
-      }
-      final String pattern2="([\\-0-9.]+),([\\-0-9.]+)(?:.*)";
-      final Matcher matcher2=Pattern.compile(pattern2).matcher(schemeSpecific);
+      final String pattern="([\\-\\d{1,2}\\.\\d]+),([\\-\\d{1,3}\\.\\d]+)(?:\\?z=(\\d{1,2}))?[\\+]?(?:\\((.*?)\\))?";
+      final Matcher matcher=Pattern.compile(pattern).matcher(schemeSpecific);
       if (matcher.matches()) {
         final double lat=Double.valueOf(matcher.group(1));
         final double lon=Double.valueOf(matcher.group(2));
-        if (matcher.group(4) == null) {
-          return new GeoParsedPoint(lat,lon);
+        final String name=matcher.group(4);
+        int zoom=matcher.group(3) != null ? Integer.parseInt(matcher.group(3)) : GeoParsedPoint.NO_ZOOM;
+        if (zoom != GeoParsedPoint.NO_ZOOM) {
+          return new GeoParsedPoint(lat,lon,zoom,name);
         }
  else {
-          return new GeoParsedPoint(lat,lon,Integer.valueOf(matcher.group(4)));
+          return new GeoParsedPoint(lat,lon,name);
         }
-      }
- else       if (matcher2.matches()) {
-        final double lat=Double.valueOf(matcher2.group(1));
-        final double lon=Double.valueOf(matcher2.group(2));
-        return new GeoParsedPoint(lat,lon);
       }
  else {
         return null;
