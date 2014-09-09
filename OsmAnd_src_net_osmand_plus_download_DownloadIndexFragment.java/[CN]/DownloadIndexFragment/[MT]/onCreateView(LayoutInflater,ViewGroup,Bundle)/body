@@ -1,0 +1,62 @@
+{
+  final List<DownloadActivityType> downloadTypes=getDownloadTypes();
+  getDownloadActivity().setType(downloadTypes.get(0));
+  View view=inflater.inflate(R.layout.download_index,container,false);
+  ExpandableListView listView=(ExpandableListView)view.findViewById(android.R.id.list);
+  List<IndexItem> list=new ArrayList<IndexItem>();
+  listAdapter=new DownloadIndexAdapter(this,list);
+  listView.setAdapter(listAdapter);
+  setListView(listView);
+  indeterminateProgressBar=(ProgressBar)view.findViewById(R.id.IndeterminateProgressBar);
+  determinateProgressBar=(ProgressBar)view.findViewById(R.id.DeterminateProgressBar);
+  progressView=view.findViewById(R.id.ProgressView);
+  progressMessage=(TextView)view.findViewById(R.id.ProgressMessage);
+  progressPercent=(TextView)view.findViewById(R.id.ProgressPercent);
+  cancel=(ImageView)view.findViewById(R.id.Cancel);
+  int d=settings.isLightContent() ? R.drawable.a_1_navigation_cancel_small_light : R.drawable.a_1_navigation_cancel_small_dark;
+  cancel.setImageDrawable(getResources().getDrawable(d));
+  cancel.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      makeSureUserCancelDownload();
+    }
+  }
+);
+  view.findViewById(R.id.DownloadButton).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      downloadFilesCheckFreeVersion();
+    }
+  }
+);
+  filterText=(EditText)view.findViewById(R.id.search_box);
+  textWatcher=new TextWatcher(){
+    @Override public void afterTextChanged(    Editable s){
+    }
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+      if (listAdapter != null) {
+        listAdapter.getFilter().filter(s);
+      }
+    }
+  }
+;
+  filterText.addTextChangedListener(textWatcher);
+  final Intent intent=null;
+  if (intent != null && intent.getExtras() != null) {
+    final String filter=intent.getExtras().getString(FILTER_KEY);
+    if (filter != null) {
+      filterText.setText(filter);
+    }
+    final String filterCat=intent.getExtras().getString(FILTER_CAT);
+    if (filterCat != null) {
+      DownloadActivityType type=DownloadActivityType.getIndexType(filterCat.toLowerCase());
+      if (type != null) {
+        getDownloadActivity().setType(type);
+        downloadTypes.remove(type);
+        downloadTypes.add(0,type);
+      }
+    }
+  }
+  getMyApplication().getAppCustomization().preDownloadActivity(getDownloadActivity(),downloadTypes,getDownloadActivity().getSupportActionBar());
+  return view;
+}
