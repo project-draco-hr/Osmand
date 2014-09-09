@@ -1,0 +1,23 @@
+{
+  double sz=0;
+  List<DownloadEntry> list=downloadListIndexThread.flattenDownloadEntries();
+  for (  DownloadEntry es : list) {
+    sz+=es.sizeMB;
+  }
+  double asz=downloadListIndexThread.getAvailableSpace();
+  if (asz != -1 && asz > 0 && sz / asz > 0.4) {
+    Builder builder=new AlertDialog.Builder(getMyActivity());
+    builder.setMessage(MessageFormat.format(getString(R.string.download_files_question_space),list.size(),sz,asz));
+    builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        downloadListIndexThread.runDownloadFiles();
+      }
+    }
+);
+    builder.setNegativeButton(R.string.default_buttons_no,null);
+    builder.show();
+  }
+ else {
+    downloadListIndexThread.runDownloadFiles();
+  }
+}

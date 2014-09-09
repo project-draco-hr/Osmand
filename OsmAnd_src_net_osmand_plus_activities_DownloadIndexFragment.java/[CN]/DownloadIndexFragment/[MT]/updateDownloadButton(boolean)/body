@@ -1,0 +1,35 @@
+{
+  View view=getView();
+  int x=getExpandableListView().getScrollX();
+  int y=getExpandableListView().getScrollY();
+  if (getEntriesToDownload().isEmpty()) {
+    view.findViewById(R.id.DownloadButton).setVisibility(View.GONE);
+  }
+ else {
+    BasicProgressAsyncTask<?,?,?> task=downloadListIndexThread.getCurrentRunningTask();
+    boolean running=task instanceof DownloadIndexesThread.DownloadIndexesAsyncTask;
+    ((Button)view.findViewById(R.id.DownloadButton)).setEnabled(!running);
+    String text;
+    int downloads=downloadListIndexThread.getDownloads();
+    if (!running) {
+      text=getString(R.string.download_files) + "  (" + downloads+ ")";
+    }
+ else {
+      text=getString(R.string.downloading_file_new) + "  (" + downloads+ ")";
+    }
+    view.findViewById(R.id.DownloadButton).setVisibility(View.VISIBLE);
+    if (Version.isFreeVersion(getMyApplication())) {
+      int countedDownloads=downloadListIndexThread.getDownloads();
+      int left=MAXIMUM_AVAILABLE_FREE_DOWNLOADS - settings.NUMBER_OF_FREE_DOWNLOADS.get() - downloads;
+      boolean excessLimit=left < 0;
+      if (left < 0)       left=0;
+      if (DownloadActivityType.isCountedInDownloads(getType())) {
+        text+=" (" + (excessLimit ? "! " : "") + getString(R.string.files_limit,left).toLowerCase()+ ")";
+      }
+    }
+    ((Button)view.findViewById(R.id.DownloadButton)).setText(text);
+  }
+  if (scroll) {
+    getExpandableListView().scrollTo(x,y);
+  }
+}

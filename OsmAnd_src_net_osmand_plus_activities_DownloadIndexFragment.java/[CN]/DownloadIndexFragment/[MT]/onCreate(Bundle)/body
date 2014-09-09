@@ -1,0 +1,57 @@
+{
+  super.onCreate(savedInstanceState);
+  settings=((OsmandApplication)getMyApplication()).getSettings();
+  if (downloadListIndexThread == null) {
+    downloadListIndexThread=new DownloadIndexesThread(getActivity());
+  }
+  downloadListIndexThread.setUiActivity(this);
+  if (downloadListIndexThread.getCachedIndexFiles() != null && downloadListIndexThread.isDownloadedFromInternet()) {
+    downloadListIndexThread.runCategorization(type);
+  }
+ else {
+    downloadListIndexThread.runReloadIndexFiles();
+  }
+  if (getMyApplication().getResourceManager().getIndexFileNames().isEmpty()) {
+    boolean showedDialog=false;
+    if (Build.VERSION.SDK_INT < OsmandSettings.VERSION_DEFAULTLOCATION_CHANGED) {
+      SuggestExternalDirectoryDialog.showDialog(getActivity(),null,null);
+    }
+    if (!showedDialog) {
+      showDialogOfFreeDownloadsIfNeeded();
+    }
+  }
+ else {
+    showDialogOfFreeDownloadsIfNeeded();
+  }
+  if (Build.VERSION.SDK_INT >= OsmandSettings.VERSION_DEFAULTLOCATION_CHANGED) {
+    final String currentStorage=settings.getExternalStorageDirectory().getAbsolutePath();
+    String primaryStorage=settings.getDefaultExternalStorageLocation();
+    if (!currentStorage.startsWith(primaryStorage)) {
+      boolean currentDirectoryNotWritable=true;
+      for (      String writeableDirectory : settings.getWritableSecondaryStorageDirectorys()) {
+        if (currentStorage.startsWith(writeableDirectory)) {
+          currentDirectoryNotWritable=false;
+          break;
+        }
+      }
+      if (currentDirectoryNotWritable) {
+        currentDirectoryNotWritable=!OsmandSettings.isWritable(settings.getExternalStorageDirectory());
+      }
+      if (currentDirectoryNotWritable) {
+        final String newLoc=settings.getMatchingExternalFilesDir(currentStorage);
+        if (newLoc != null && newLoc.length() != 0) {
+          AccessibleAlertBuilder ab=new AccessibleAlertBuilder(getMyActivity());
+          ab.setMessage(getString(R.string.android_19_location_disabled,settings.getExternalStorageDirectory()));
+          ab.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+            @Override public void onClick(            DialogInterface dialog,            int which){
+              copyFilesForAndroid19(newLoc);
+            }
+          }
+);
+          ab.setNegativeButton(R.string.default_buttons_cancel,null);
+          ab.show();
+        }
+      }
+    }
+  }
+}
