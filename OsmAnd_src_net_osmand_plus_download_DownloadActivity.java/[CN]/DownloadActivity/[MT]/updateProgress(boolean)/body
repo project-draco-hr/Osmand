@@ -1,0 +1,29 @@
+{
+  BasicProgressAsyncTask<?,?,?> basicProgressAsyncTask=DownloadActivity.downloadListIndexThread.getCurrentRunningTask();
+  if (updateOnlyProgress) {
+    if (!basicProgressAsyncTask.isIndeterminate()) {
+      progressPercent.setText(basicProgressAsyncTask.getProgressPercentage() + "%");
+      determinateProgressBar.setProgress(basicProgressAsyncTask.getProgressPercentage());
+    }
+  }
+ else {
+    boolean visible=basicProgressAsyncTask != null && basicProgressAsyncTask.getStatus() != AsyncTask.Status.FINISHED;
+    progressView.setVisibility(visible ? View.VISIBLE : View.GONE);
+    if (visible) {
+      boolean indeterminate=basicProgressAsyncTask.isIndeterminate();
+      indeterminateProgressBar.setVisibility(!indeterminate ? View.GONE : View.VISIBLE);
+      determinateProgressBar.setVisibility(indeterminate ? View.GONE : View.VISIBLE);
+      cancel.setVisibility(indeterminate ? View.GONE : View.VISIBLE);
+      progressPercent.setVisibility(indeterminate ? View.GONE : View.VISIBLE);
+      progressMessage.setText(basicProgressAsyncTask.getDescription());
+      if (!indeterminate) {
+        progressPercent.setText(basicProgressAsyncTask.getProgressPercentage() + "%");
+        determinateProgressBar.setProgress(basicProgressAsyncTask.getProgressPercentage());
+      }
+    }
+    Fragment fragment=mTabsAdapter.getItem(tabHost.getCurrentTab());
+    if (fragment instanceof DownloadIndexFragment) {
+      ((DownloadIndexFragment)fragment).updateDownloadButton(false);
+    }
+  }
+}
