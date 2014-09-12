@@ -1,0 +1,35 @@
+{
+  listAdapter.clear();
+  asyncLoader=new LoadLocalIndexTask();
+  AsyncTask<Void,String,List<String>> task=new AsyncTask<Void,String,List<String>>(){
+    @Override protected void onPostExecute(    List<String> warnings){
+      getDownloadActivity().setProgressBarIndeterminateVisibility(false);
+      if (!warnings.isEmpty()) {
+        final StringBuilder b=new StringBuilder();
+        boolean f=true;
+        for (        String w : warnings) {
+          if (f) {
+            f=false;
+          }
+ else {
+            b.append('\n');
+          }
+          b.append(w);
+        }
+        AccessibleToast.makeText(getDownloadActivity(),b.toString(),Toast.LENGTH_LONG).show();
+      }
+      if (asyncLoader.getStatus() == Status.PENDING) {
+        asyncLoader.execute(getDownloadActivity());
+      }
+    }
+    @Override protected void onPreExecute(){
+      super.onPreExecute();
+      getDownloadActivity().setProgressBarIndeterminateVisibility(true);
+    }
+    @Override protected List<String> doInBackground(    Void... params){
+      return getMyApplication().getResourceManager().reloadIndexes(IProgress.EMPTY_PROGRESS);
+    }
+  }
+;
+  task.execute();
+}
