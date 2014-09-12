@@ -41,4 +41,20 @@
     }
   }
 );
+  final List<DownloadActivityType> downloadTypes=getDownloadTypes();
+  final Intent intent=getIntent();
+  setType(downloadTypes.get(0));
+  if (intent != null && intent.getExtras() != null) {
+    final String filter=intent.getExtras().getString(FILTER_KEY);
+    final String filterCat=intent.getExtras().getString(FILTER_CAT);
+    if (filterCat != null) {
+      DownloadActivityType type=DownloadActivityType.getIndexType(filterCat.toLowerCase());
+      if (type != null) {
+        setType(type);
+        downloadTypes.remove(type);
+        downloadTypes.add(0,type);
+      }
+    }
+  }
+  getSupportActionBar().setHomeButtonEnabled(true);
 }
