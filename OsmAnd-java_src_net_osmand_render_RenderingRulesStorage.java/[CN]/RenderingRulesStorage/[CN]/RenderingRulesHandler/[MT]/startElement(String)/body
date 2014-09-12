@@ -1,6 +1,6 @@
 {
   boolean stateChanged=false;
-  if ("filter".equals(name)) {
+  if (isCase(name)) {
     attrsMap.clear();
     if (stack.size() > 0 && stack.peek() instanceof GroupRules) {
       GroupRules parent=((GroupRules)stack.peek());
@@ -21,7 +21,7 @@
     }
     stack.push(renderingRule);
   }
- else   if ("groupFilter".equals(name)) {
+ else   if (isApply(name)) {
     attrsMap.clear();
     parseAttributes(attrsMap);
     RenderingRule renderingRule=new RenderingRule(attrsMap,RenderingRulesStorage.this);
@@ -33,11 +33,11 @@
       ((RenderingRule)stack.peek()).addIfChildren(renderingRule);
     }
  else {
-      throw new XmlPullParserException("Group filter without parent");
+      throw new XmlPullParserException("Apply (groupFilter) without parent");
     }
     stack.push(renderingRule);
   }
- else   if ("group".equals(name)) {
+ else   if (isSwitch(name)) {
     GroupRules groupRules=new GroupRules();
     if (stack.size() > 0 && stack.peek() instanceof GroupRules) {
       GroupRules parent=((GroupRules)stack.peek());
