@@ -5,20 +5,11 @@
     StatFs fs=new StatFs(dir.getAbsolutePath());
     size=formatGb.format(new Object[]{(float)(fs.getAvailableBlocks()) * fs.getBlockSize() / (1 << 30)});
   }
-  String text=getString(R.string.download_link_and_local_description,size);
+  String text=getString(R.string.local_index_description,size);
   int l=text.indexOf('.');
   if (l == -1) {
     l=text.length();
   }
-  SpannableString content=new SpannableString(text);
-  content.setSpan(new ClickableSpan(){
-    @Override public void onClick(    View widget){
-      asyncLoader.setResult(null);
-      startActivity(new Intent(getDownloadActivity(),DownloadIndexFragment.class));
-    }
-    @Override public void updateDrawState(    TextPaint ds){
-      super.updateDrawState(ds);
-    }
-  }
-,0,l,0);
+  descriptionText.setText(text);
+  descriptionText.setMovementMethod(LinkMovementMethod.getInstance());
 }
