@@ -1,0 +1,38 @@
+{
+  OnContextMenuClick listener=new OnContextMenuClick(){
+    @Override public void onContextMenuClick(    int resId,    int pos,    boolean isChecked,    DialogInterface dialog){
+      if (resId == R.string.local_index_mi_rename) {
+        renameFile(info);
+      }
+ else       if (resId == R.string.local_index_mi_restore) {
+        new LocalIndexOperationTask(RESTORE_OPERATION).execute(info);
+      }
+ else       if (resId == R.string.local_index_mi_delete) {
+        Builder confirm=new AlertDialog.Builder(getActivity());
+        confirm.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            new LocalIndexOperationTask(DELETE_OPERATION).execute(info);
+          }
+        }
+);
+        confirm.setNegativeButton(R.string.default_buttons_no,null);
+        confirm.setMessage(getString(R.string.delete_confirmation_msg,info.getFileName()));
+        confirm.show();
+      }
+ else       if (resId == R.string.local_index_mi_backup) {
+        new LocalIndexOperationTask(BACKUP_OPERATION).execute(info);
+      }
+    }
+  }
+;
+  if (info.getType() == LocalIndexType.MAP_DATA || info.getType() == LocalIndexType.SRTM_DATA) {
+    if (!info.isBackupedData()) {
+      adapter.item(R.string.local_index_mi_backup).listen(listener).position(1).reg();
+    }
+  }
+  if (info.isBackupedData()) {
+    adapter.item(R.string.local_index_mi_restore).listen(listener).position(2).reg();
+  }
+  adapter.item(R.string.local_index_mi_rename).listen(listener).position(3).reg();
+  adapter.item(R.string.local_index_mi_delete).listen(listener).position(4).reg();
+}

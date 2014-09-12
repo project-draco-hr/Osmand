@@ -1,0 +1,17 @@
+{
+  int selected=0;
+  for (int j=0; j < listAdapter.getGroupCount(); j++) {
+    for (int i=0; i < listAdapter.getChildrenCount(j); i++) {
+      IndexItem es=listAdapter.getChild(j,i);
+      if (!getDownloadActivity().getEntriesToDownload().containsKey(es)) {
+        selected++;
+        getDownloadActivity().getEntriesToDownload().put(es,es.createDownloadEntry(getMyApplication(),getDownloadActivity().getType(),new ArrayList<DownloadEntry>(1)));
+      }
+    }
+  }
+  AccessibleToast.makeText(getDownloadActivity(),MessageFormat.format(getString(R.string.items_were_selected),selected),Toast.LENGTH_SHORT).show();
+  listAdapter.notifyDataSetInvalidated();
+  if (selected > 0) {
+    getDownloadActivity().updateDownloadButton(true);
+  }
+}

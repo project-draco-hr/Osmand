@@ -1,0 +1,74 @@
+{
+  View v=convertView;
+  final LocalIndexInfo child=(LocalIndexInfo)getChild(groupPosition,childPosition);
+  if (v == null) {
+    LayoutInflater inflater=(LayoutInflater)getDownloadActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    v=inflater.inflate(net.osmand.plus.R.layout.local_index_list_item,parent,false);
+  }
+  TextView viewName=((TextView)v.findViewById(R.id.local_index_name));
+  String mapDescr=getMapDescription(child.getFileName());
+  String mapName=FileNameTranslationHelper.getFileName(ctx,((OsmandApplication)getDownloadActivity().getApplication()).getResourceManager().getOsmandRegions(),child.getFileName());
+  if (mapDescr.length() > 0) {
+    viewName.setText(mapDescr + " - " + mapName);
+  }
+ else {
+    viewName.setText(mapName);
+  }
+  if (child.isNotSupported()) {
+    viewName.setTextColor(warningColor);
+    viewName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+  }
+ else   if (child.isCorrupted()) {
+    viewName.setTextColor(corruptedColor);
+    viewName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+  }
+ else   if (child.isLoaded()) {
+    viewName.setTextColor(defaultColor);
+    viewName.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
+  }
+ else {
+    viewName.setTextColor(defaultColor);
+    viewName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+    if (child.isBackupedData()) {
+      viewName.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
+    }
+  }
+  if (child.getSize() >= 0) {
+    String size;
+    if (child.getSize() > 100) {
+      size=formatMb.format(new Object[]{(float)child.getSize() / (1 << 10)});
+    }
+ else {
+      size=child.getSize() + " kB";
+    }
+    ((TextView)v.findViewById(R.id.local_index_size)).setText(size);
+  }
+ else {
+    ((TextView)v.findViewById(R.id.local_index_size)).setText("");
+  }
+  TextView descr=((TextView)v.findViewById(R.id.local_index_descr));
+  if (child.isExpanded()) {
+    descr.setVisibility(View.VISIBLE);
+    descr.setText(child.getDescription());
+  }
+ else {
+    descr.setVisibility(View.GONE);
+  }
+  final CheckBox checkbox=(CheckBox)v.findViewById(R.id.check_local_index);
+  checkbox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
+  if (selectionMode) {
+    checkbox.setChecked(selectedItems.contains(child));
+    checkbox.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        if (checkbox.isChecked()) {
+          selectedItems.add(child);
+        }
+ else {
+          selectedItems.remove(child);
+        }
+      }
+    }
+);
+  }
+  return v;
+}

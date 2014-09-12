@@ -5,8 +5,8 @@
       super.onPreExecute();
       currentRunningTask.add(this);
       this.message=ctx.getString(R.string.downloading_list_indexes);
-      if (uiActivity != null) {
-        uiActivity.updateProgress(false);
+      if (uiFragment != null) {
+        uiFragment.updateProgress(false);
       }
     }
     @Override protected List<IndexItem> doInBackground(    Void... params){
@@ -28,14 +28,15 @@
       return filtered;
     }
     @Override protected void onPostExecute(    List<IndexItem> filtered){
-      if (uiActivity != null) {
-        DownloadIndexAdapter a=((DownloadIndexAdapter)uiActivity.getExpandableListAdapter());
+      if (uiFragment != null) {
+        DownloadIndexAdapter a=((DownloadIndexAdapter)uiFragment.getExpandableListAdapter());
         a.setLoadedFiles(indexActivatedFileNames,indexFileNames);
         a.setIndexFiles(filtered,cats);
+        prepareFilesToDownload(filtered);
         a.notifyDataSetChanged();
-        a.getFilter().filter(uiActivity.getFilterText());
+        a.getFilter().filter(uiFragment.getFilterText());
         if ((type == DownloadActivityType.SRTM_COUNTRY_FILE || type == DownloadActivityType.HILLSHADE_FILE) && OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) instanceof SRTMPlugin && !OsmandPlugin.getEnabledPlugin(SRTMPlugin.class).isPaid()) {
-          Builder msg=new AlertDialog.Builder(uiActivity);
+          Builder msg=new AlertDialog.Builder(uiFragment.getDownloadActivity());
           msg.setTitle(R.string.srtm_paid_version_title);
           msg.setMessage(R.string.srtm_paid_version_msg);
           msg.setNegativeButton(R.string.button_upgrade_osmandplus,new DialogInterface.OnClickListener(){
@@ -54,13 +55,13 @@
         }
       }
       currentRunningTask.remove(this);
-      if (uiActivity != null) {
-        uiActivity.updateProgress(false);
+      if (uiFragment != null) {
+        uiFragment.updateProgress(false);
       }
     }
     @Override protected void updateProgress(    boolean updateOnlyProgress){
-      if (uiActivity != null) {
-        uiActivity.updateProgress(updateOnlyProgress);
+      if (uiFragment != null) {
+        uiFragment.updateProgress(updateOnlyProgress);
       }
     }
   }

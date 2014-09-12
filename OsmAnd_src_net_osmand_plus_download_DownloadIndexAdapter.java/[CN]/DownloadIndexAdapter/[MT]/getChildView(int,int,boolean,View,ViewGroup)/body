@@ -1,25 +1,25 @@
 {
   View v=convertView;
   if (v == null) {
-    LayoutInflater inflater=downloadActivity.getLayoutInflater();
+    LayoutInflater inflater=(LayoutInflater)downloadFragment.getDownloadActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     v=inflater.inflate(net.osmand.plus.R.layout.download_index_list_item,parent,false);
   }
   final View row=v;
   TextView item=(TextView)row.findViewById(R.id.download_item);
   TextView description=(TextView)row.findViewById(R.id.download_descr);
   IndexItem e=(IndexItem)getChild(groupPosition,childPosition);
-  OsmandApplication clctx=downloadActivity.getMyApplication();
+  OsmandApplication clctx=downloadFragment.getMyApplication();
   String eName=e.getVisibleDescription(clctx) + "\n" + e.getVisibleName(clctx,osmandRegions);
   item.setText(eName.trim());
   String d=e.getDate(format) + "\n" + e.getSizeDescription(clctx);
   description.setText(d.trim());
   CheckBox ch=(CheckBox)row.findViewById(R.id.check_download_item);
-  ch.setChecked(downloadActivity.getEntriesToDownload().containsKey(e));
+  ch.setChecked(downloadFragment.getDownloadActivity().getEntriesToDownload().containsKey(e));
   ch.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       final CheckBox ch=(CheckBox)v.findViewById(R.id.check_download_item);
       ch.setChecked(!ch.isChecked());
-      downloadActivity.onChildClick(downloadActivity.getListView(),row,groupPosition,childPosition,getChildId(groupPosition,childPosition));
+      downloadFragment.onChildClick(downloadFragment.getExpandableListView(),row,groupPosition,childPosition,getChildId(groupPosition,childPosition));
     }
   }
 );
@@ -45,22 +45,22 @@
  else       if (e.getDate(format) != null) {
         String sfName=e.getTargetFileName();
         if (e.getDate(format).equals(indexActivatedFileNames.get(sfName))) {
-          item.setText(item.getText() + "\n" + downloadActivity.getResources().getString(R.string.local_index_installed)+ " : "+ indexActivatedFileNames.get(sfName));
+          item.setText(item.getText() + "\n" + downloadFragment.getResources().getString(R.string.local_index_installed)+ " : "+ indexActivatedFileNames.get(sfName));
           item.setTextColor(okColor);
           item.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
         }
  else         if (e.getDate(format).equals(indexFileNames.get(sfName))) {
-          item.setText(item.getText() + "\n" + downloadActivity.getResources().getString(R.string.local_index_installed)+ " : "+ indexFileNames.get(sfName));
+          item.setText(item.getText() + "\n" + downloadFragment.getResources().getString(R.string.local_index_installed)+ " : "+ indexFileNames.get(sfName));
           item.setTextColor(okColor);
           item.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
         }
  else         if (indexActivatedFileNames.containsKey(sfName)) {
-          item.setText(item.getText() + "\n" + downloadActivity.getResources().getString(R.string.local_index_installed)+ " : "+ indexActivatedFileNames.get(sfName));
+          item.setText(item.getText() + "\n" + downloadFragment.getResources().getString(R.string.local_index_installed)+ " : "+ indexActivatedFileNames.get(sfName));
           item.setTextColor(updateColor);
           item.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
         }
  else {
-          item.setText(item.getText() + "\n" + downloadActivity.getResources().getString(R.string.local_index_installed)+ " : "+ indexFileNames.get(sfName));
+          item.setText(item.getText() + "\n" + downloadFragment.getResources().getString(R.string.local_index_installed)+ " : "+ indexFileNames.get(sfName));
           item.setTextColor(updateColor);
           item.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
         }
