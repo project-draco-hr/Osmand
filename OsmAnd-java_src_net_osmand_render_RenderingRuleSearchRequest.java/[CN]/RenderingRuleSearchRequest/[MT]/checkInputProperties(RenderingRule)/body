@@ -1,0 +1,22 @@
+{
+  RenderingRuleProperty[] properties=rule.getProperties();
+  for (int i=0; i < properties.length; i++) {
+    RenderingRuleProperty rp=properties[i];
+    if (rp.isInputProperty()) {
+      boolean match;
+      if (rp.isFloat()) {
+        match=rp.accept(rule.getFloatProp(i),fvalues[rp.getId()],this);
+      }
+ else {
+        match=rp.accept(rule.getIntProp(i),values[rp.getId()],this);
+      }
+      if (!match) {
+        return false;
+      }
+    }
+ else     if (rp == storage.PROPS.R_DISABLE) {
+      values[rp.getId()]=rule.getIntProp(i);
+    }
+  }
+  return true;
+}

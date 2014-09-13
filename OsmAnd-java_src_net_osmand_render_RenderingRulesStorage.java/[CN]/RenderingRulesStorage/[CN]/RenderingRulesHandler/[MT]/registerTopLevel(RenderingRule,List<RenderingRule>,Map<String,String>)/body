@@ -1,0 +1,33 @@
+{
+  if (renderingRule.isGroup() && (renderingRule.getIntPropertyValue(RenderingRuleStorageProperties.TAG) == -1 || renderingRule.getIntPropertyValue(RenderingRuleStorageProperties.VALUE) == -1)) {
+    List<RenderingRule> caseChildren=renderingRule.getIfElseChildren();
+    for (    RenderingRule ch : caseChildren) {
+      List<RenderingRule> apply=applyRules;
+      if (!renderingRule.getIfChildren().isEmpty()) {
+        apply=new ArrayList<RenderingRule>();
+        if (applyRules != null) {
+          apply.addAll(applyRules);
+        }
+        apply.addAll(renderingRule.getIfChildren());
+      }
+      Map<String,String> cattrs=new HashMap<String,String>(attrs);
+      cattrs.putAll(renderingRule.getAttributes());
+      registerTopLevel(ch,apply,cattrs);
+    }
+  }
+ else {
+    String tg=null;
+    String vl=null;
+    HashMap<String,String> ns=new HashMap<String,String>(attrs);
+    ns.putAll(renderingRule.getAttributes());
+    tg=ns.remove("tag");
+    vl=ns.remove("value");
+    renderingRule.init(ns);
+    registerGlobalRule(renderingRule,state,tg,vl);
+    if (applyRules != null) {
+      for (      RenderingRule apply : applyRules) {
+        renderingRule.addIfChildren(apply);
+      }
+    }
+  }
+}
