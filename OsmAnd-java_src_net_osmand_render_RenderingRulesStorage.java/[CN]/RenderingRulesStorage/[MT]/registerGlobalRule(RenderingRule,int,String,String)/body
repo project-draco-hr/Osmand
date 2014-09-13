@@ -5,11 +5,13 @@
   int tag=getDictionaryValue(tagS);
   int value=getDictionaryValue(valueS);
   int key=(tag << SHIFT_TAG_VAL) + value;
-  RenderingRule toInsert=rr;
-  RenderingRule previous=tagValueGlobalRules[state].get(key);
-  if (previous != null) {
-    toInsert=createTagValueRootWrapperRule(key,previous);
-    toInsert.addIfElseChildren(rr);
+  RenderingRule insert=tagValueGlobalRules[state].get(key);
+  if (insert != null) {
+    insert=createTagValueRootWrapperRule(key,insert);
+    insert.addIfElseChildren(rr);
   }
-  tagValueGlobalRules[state].put(key,toInsert);
+ else {
+    insert=rr;
+  }
+  tagValueGlobalRules[state].put(key,insert);
 }
