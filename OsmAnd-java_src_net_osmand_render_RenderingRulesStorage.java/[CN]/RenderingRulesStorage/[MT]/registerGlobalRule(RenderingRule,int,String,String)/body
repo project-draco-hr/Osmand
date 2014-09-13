@@ -1,0 +1,15 @@
+{
+  if (tagS == null || valueS == null) {
+    throw new XmlPullParserException("Attribute tag should be specified for root filter " + rr.toString());
+  }
+  int tag=getDictionaryValue(tagS);
+  int value=getDictionaryValue(valueS);
+  int key=(tag << SHIFT_TAG_VAL) + value;
+  RenderingRule toInsert=rr;
+  RenderingRule previous=tagValueGlobalRules[state].get(key);
+  if (previous != null) {
+    toInsert=createTagValueRootWrapperRule(key,previous);
+    toInsert.addIfElseChildren(rr);
+  }
+  tagValueGlobalRules[state].put(key,toInsert);
+}

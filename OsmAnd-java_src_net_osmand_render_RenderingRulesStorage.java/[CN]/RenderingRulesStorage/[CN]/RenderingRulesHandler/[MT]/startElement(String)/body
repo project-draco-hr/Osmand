@@ -1,51 +1,32 @@
 {
   boolean stateChanged=false;
-  if (isCase(name)) {
+  final boolean isCase=isCase(name);
+  final boolean isSwitch=isSwitch(name);
+  if (isCase || isSwitch) {
     attrsMap.clear();
-    if (stack.size() > 0 && stack.peek() instanceof GroupRules) {
-      GroupRules parent=((GroupRules)stack.peek());
-      attrsMap.putAll(parent.groupAttributes);
-    }
+    boolean top=stack.size() == 0 || isTopCase();
     parseAttributes(attrsMap);
-    RenderingRule renderingRule=new RenderingRule(attrsMap,RenderingRulesStorage.this);
-    if (stack.size() > 0 && stack.peek() instanceof GroupRules) {
-      GroupRules parent=((GroupRules)stack.peek());
-      parent.children.add(renderingRule);
+    RenderingRule renderingRule=new RenderingRule(attrsMap,isSwitch,RenderingRulesStorage.this);
+    if (top) {
+      renderingRule.storeAttributes(attrsMap);
     }
- else     if (stack.size() > 0 && stack.peek() instanceof RenderingRule) {
+    if (stack.size() > 0 && stack.peek() instanceof RenderingRule) {
       RenderingRule parent=((RenderingRule)stack.peek());
       parent.addIfElseChildren(renderingRule);
-    }
- else {
-      registerGlobalRule(renderingRule,state,attrsMap);
     }
     stack.push(renderingRule);
   }
  else   if (isApply(name)) {
     attrsMap.clear();
     parseAttributes(attrsMap);
-    RenderingRule renderingRule=new RenderingRule(attrsMap,RenderingRulesStorage.this);
-    if (stack.size() > 0 && stack.peek() instanceof GroupRules) {
-      GroupRules parent=((GroupRules)stack.peek());
-      parent.addGroupFilter(renderingRule);
-    }
- else     if (stack.size() > 0 && stack.peek() instanceof RenderingRule) {
+    RenderingRule renderingRule=new RenderingRule(attrsMap,false,RenderingRulesStorage.this);
+    if (stack.size() > 0 && stack.peek() instanceof RenderingRule) {
       ((RenderingRule)stack.peek()).addIfChildren(renderingRule);
     }
  else {
       throw new XmlPullParserException("Apply (groupFilter) without parent");
     }
     stack.push(renderingRule);
-  }
- else   if (isSwitch(name)) {
-    GroupRules groupRules=new GroupRules();
-    if (stack.size() > 0 && stack.peek() instanceof GroupRules) {
-      GroupRules parent=((GroupRules)stack.peek());
-      groupRules.groupAttributes.putAll(parent.groupAttributes);
-      parent.childrenGroups.add(groupRules);
-    }
-    parseAttributes(groupRules.groupAttributes);
-    stack.push(groupRules);
   }
  else   if ("order".equals(name)) {
     state=ORDER_RULES;
@@ -69,7 +50,7 @@
   }
  else   if ("renderingAttribute".equals(name)) {
     String attr=parser.getAttributeValue("","name");
-    RenderingRule root=new RenderingRule(new HashMap<String,String>(),RenderingRulesStorage.this);
+    RenderingRule root=new RenderingRule(new HashMap<String,String>(),false,RenderingRulesStorage.this);
     renderingAttributes.put(attr,root);
     stack.push(root);
   }
