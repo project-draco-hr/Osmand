@@ -1,0 +1,34 @@
+{
+  if (res.size() > 0) {
+    updateResult(res.get(0),start,true);
+    updateResult(res.get(res.size() - 1),end,false);
+    if (intermediates != null) {
+      int k=1;
+      for (int i=0; i < intermediates.size(); i++) {
+        LatLon ll=intermediates.get(i);
+        int px=MapUtils.get31TileNumberX(ll.getLongitude());
+        int py=MapUtils.get31TileNumberY(ll.getLatitude());
+        for (; k < res.size(); k++) {
+          double currentsDist=projectDistance(res,k,px,py);
+          if (currentsDist < 500 * 500) {
+            for (int k1=k + 1; k1 < res.size(); k1++) {
+              double c2=projectDistance(res,k1,px,py);
+              if (c2 < currentsDist) {
+                k=k1;
+                currentsDist=c2;
+              }
+ else               if (k1 - k > 15) {
+                break;
+              }
+            }
+            updateResult(res.get(k),ll,false);
+            if (k < res.size() - 1) {
+              updateResult(res.get(k + 1),ll,true);
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+}

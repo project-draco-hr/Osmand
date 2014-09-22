@@ -6,7 +6,7 @@
   if (dataObjects.isEmpty()) {
     ctx.loadTileData(px,py,15,dataObjects);
   }
-  RouteSegment road=null;
+  RouteSegmentPoint road=null;
   double sdist=0;
   for (  RouteDataObject r : dataObjects) {
     if (r.getPointsLength() > 1) {
@@ -15,15 +15,13 @@
         double currentsDist=squareDist((int)pr.x,(int)pr.y,px,py);
         if (road == null || currentsDist < sdist) {
           RouteDataObject ro=new RouteDataObject(r);
-          road=new RouteSegment(ro,j);
-          ro.insert(j,(int)pr.x,(int)pr.y);
+          road=new RouteSegmentPoint(ro,j);
+          road.preciseX=(int)pr.x;
+          road.preciseY=(int)pr.y;
           sdist=currentsDist;
         }
       }
     }
-  }
-  if (road != null) {
-    ctx.registerRouteDataObject(road.getRoad());
   }
   return road;
 }
