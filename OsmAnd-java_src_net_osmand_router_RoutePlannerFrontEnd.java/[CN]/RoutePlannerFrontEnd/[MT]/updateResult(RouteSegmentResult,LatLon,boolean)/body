@@ -1,0 +1,53 @@
+{
+  int px=MapUtils.get31TileNumberX(point.getLongitude());
+  int py=MapUtils.get31TileNumberY(point.getLatitude());
+  int pind=st ? routeSegmentResult.getStartPointIndex() : routeSegmentResult.getEndPointIndex();
+  RouteDataObject r=routeSegmentResult.getObject();
+  QuadPoint before=null;
+  QuadPoint after=null;
+  if (pind > 0) {
+    before=MapUtils.getProjectionPoint31(px,py,r.getPoint31XTile(pind - 1),r.getPoint31YTile(pind - 1),r.getPoint31XTile(pind),r.getPoint31YTile(pind));
+  }
+  if (pind < r.getPointsLength() - 1) {
+    after=MapUtils.getProjectionPoint31(px,py,r.getPoint31XTile(pind + 1),r.getPoint31YTile(pind + 1),r.getPoint31XTile(pind),r.getPoint31YTile(pind));
+  }
+  int insert=0;
+  double dd=MapUtils.getDistance(point,MapUtils.get31LatitudeY(r.getPoint31YTile(pind)),MapUtils.get31LongitudeX(r.getPoint31XTile(pind)));
+  double ddBefore=Double.POSITIVE_INFINITY;
+  double ddAfter=Double.POSITIVE_INFINITY;
+  QuadPoint i=null;
+  if (before != null) {
+    ddBefore=MapUtils.getDistance(point,MapUtils.get31LatitudeY((int)before.y),MapUtils.get31LongitudeX((int)before.x));
+    if (ddBefore < dd) {
+      insert=-1;
+      i=before;
+    }
+  }
+  if (after != null) {
+    ddAfter=MapUtils.getDistance(point,MapUtils.get31LatitudeY((int)after.y),MapUtils.get31LongitudeX((int)after.x));
+    if (ddAfter < dd && ddAfter < ddBefore) {
+      insert=1;
+      i=after;
+    }
+  }
+  if (insert != 0) {
+    if (st && routeSegmentResult.getStartPointIndex() < routeSegmentResult.getEndPointIndex()) {
+      routeSegmentResult.setEndPointIndex(routeSegmentResult.getEndPointIndex() + 1);
+    }
+    if (!st && routeSegmentResult.getStartPointIndex() > routeSegmentResult.getEndPointIndex()) {
+      routeSegmentResult.setStartPointIndex(routeSegmentResult.getStartPointIndex() + 1);
+    }
+    if (insert > 0) {
+      r.insert(pind + 1,(int)i.x,(int)i.y);
+      if (st) {
+        routeSegmentResult.setStartPointIndex(routeSegmentResult.getStartPointIndex() + 1);
+      }
+      if (!st) {
+        routeSegmentResult.setEndPointIndex(routeSegmentResult.getEndPointIndex() + 1);
+      }
+    }
+ else {
+      r.insert(pind,(int)i.x,(int)i.y);
+    }
+  }
+}
