@@ -4,7 +4,7 @@
   String s="";
   for (  IndexItem i : DownloadActivity.downloadListIndexThread.getCachedIndexFiles()) {
     for (    String map : maps) {
-      if (i.getFileName().equals(map + ".obf.zip") && i.getType() == DownloadActivityType.NORMAL_FILE) {
+      if ((i.getFileName().equals(map + ".obf.zip") || i.getFileName().equals(map + "_" + IndexConstants.BINARY_MAP_VERSION+ ".obf.zip")) && i.getType() == DownloadActivityType.NORMAL_FILE) {
         final List<DownloadEntry> de=i.createDownloadEntry(getMyApplication(),i.getType(),new ArrayList<DownloadEntry>(1));
         for (        DownloadEntry d : de) {
           count++;
@@ -14,28 +14,28 @@
           s+=", ";
         }
         s+=i.getVisibleName(getMyApplication(),getMyApplication().getResourceManager().getOsmandRegions());
-        getDownloadActivity().getEntriesToDownload().put(i,de);
+        getEntriesToDownload().put(i,de);
       }
     }
   }
   if (count > 0) {
-    Builder builder=new AlertDialog.Builder(getDownloadActivity());
+    AlertDialog.Builder builder=new AlertDialog.Builder(this);
     builder.setMessage(getString(R.string.download_additional_maps,s,sz));
     builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
       @Override public void onClick(      DialogInterface dialog,      int which){
-        getDownloadActivity().downloadFilesCheckInternet();
+        downloadFilesCheckInternet();
       }
     }
 );
     builder.setNegativeButton(R.string.default_buttons_no,new DialogInterface.OnClickListener(){
       @Override public void onClick(      DialogInterface dialog,      int which){
-        getDownloadActivity().getEntriesToDownload().clear();
+        getEntriesToDownload().clear();
       }
     }
 );
     builder.setOnCancelListener(new DialogInterface.OnCancelListener(){
       @Override public void onCancel(      DialogInterface dialog){
-        getDownloadActivity().getEntriesToDownload().clear();
+        getEntriesToDownload().clear();
       }
     }
 );
