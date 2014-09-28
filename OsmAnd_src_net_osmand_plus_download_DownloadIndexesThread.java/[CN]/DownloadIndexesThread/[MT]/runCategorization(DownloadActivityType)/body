@@ -5,8 +5,8 @@
       super.onPreExecute();
       currentRunningTask.add(this);
       this.message=ctx.getString(R.string.downloading_list_indexes);
-      if (uiFragment != null) {
-        uiFragment.updateProgress(false);
+      if (uiActivity != null) {
+        uiActivity.updateProgress(false);
       }
     }
     @Override protected List<IndexItem> doInBackground(    Void... params){
@@ -28,40 +28,16 @@
       return filtered;
     }
     @Override protected void onPostExecute(    List<IndexItem> filtered){
-      if (uiFragment != null) {
-        DownloadIndexAdapter a=((DownloadIndexAdapter)uiFragment.getExpandableListAdapter());
-        a.setLoadedFiles(indexActivatedFileNames,indexFileNames);
-        a.setIndexFiles(filtered,cats);
-        prepareFilesToUpdate(filtered);
-        a.notifyDataSetChanged();
-        a.getFilter().filter(uiFragment.getFilterText());
-        if ((type == DownloadActivityType.SRTM_COUNTRY_FILE || type == DownloadActivityType.HILLSHADE_FILE) && OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) instanceof SRTMPlugin && !OsmandPlugin.getEnabledPlugin(SRTMPlugin.class).isPaid()) {
-          Builder msg=new AlertDialog.Builder(uiFragment.getDownloadActivity());
-          msg.setTitle(R.string.srtm_paid_version_title);
-          msg.setMessage(R.string.srtm_paid_version_msg);
-          msg.setNegativeButton(R.string.button_upgrade_osmandplus,new DialogInterface.OnClickListener(){
-            @Override public void onClick(            DialogInterface dialog,            int which){
-              Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse("market://search?q=pname:net.osmand.srtmPlugin.paid"));
-              try {
-                ctx.startActivity(intent);
-              }
- catch (              ActivityNotFoundException e) {
-              }
-            }
-          }
-);
-          msg.setPositiveButton(R.string.default_buttons_ok,null);
-          msg.show();
-        }
-      }
+      prepareFilesToUpdate();
       currentRunningTask.remove(this);
-      if (uiFragment != null) {
-        uiFragment.updateProgress(false);
+      if (uiActivity != null) {
+        uiActivity.categorizationFinished(filtered,cats);
+        uiActivity.updateProgress(false);
       }
     }
     @Override protected void updateProgress(    boolean updateOnlyProgress){
-      if (uiFragment != null) {
-        uiFragment.updateProgress(updateOnlyProgress);
+      if (uiActivity != null) {
+        uiActivity.updateProgress(updateOnlyProgress);
       }
     }
   }
