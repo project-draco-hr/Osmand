@@ -1,0 +1,71 @@
+{
+  final AssetManager assetManager=_context.getResources().getAssets();
+  PackageInfo packageInfo=null;
+  try {
+    packageInfo=_context.getPackageManager().getPackageInfo(_context.getPackageName(),0);
+  }
+ catch (  NameNotFoundException e) {
+    Log.e(TAG,"Failed to get own package info",e);
+    return false;
+  }
+  _bundleFilename=packageInfo.applicationInfo.sourceDir;
+  Log.i(TAG,"Located own package at '" + _bundleFilename + "'");
+  final List<String> resourcesInBundle=new LinkedList<String>();
+  try {
+    final InputStream resourcesIndexStream=assetManager.open("OsmAndCore_ResourcesBundle.index",AssetManager.ACCESS_BUFFER);
+    final BufferedReader resourcesIndexBufferedReader=new BufferedReader(new InputStreamReader(resourcesIndexStream));
+    String resourceInBundle;
+    while ((resourceInBundle=resourcesIndexBufferedReader.readLine()) != null)     resourcesInBundle.add(resourceInBundle);
+  }
+ catch (  IOException e) {
+    Log.e(TAG,"Failed to read bundle index",e);
+    return false;
+  }
+  Log.i(TAG,"Application contains " + resourcesInBundle.size() + " resources");
+  final Pattern resourceNameWithQualifiersRegExp=Pattern.compile("(?:\\[(.*)\\]/)(.*)");
+  for (  String resourceInBundle : resourcesInBundle) {
+    String pureResourceName=resourceInBundle;
+    String[] qualifiers=null;
+    final Matcher resourceNameComponentsMatcher=resourceNameWithQualifiersRegExp.matcher(resourceInBundle);
+    if (resourceNameComponentsMatcher.matches()) {
+      qualifiers=resourceNameComponentsMatcher.group(1).split(";");
+      pureResourceName=resourceNameComponentsMatcher.group(2);
+    }
+    long declaredSize;
+    long size;
+    long offset;
+    final ResourceData resourceData=new ResourceData();
+    resourceData.offset=0;
+    resourceData.path=((OsmandApplication)_context.getApplicationContext()).getAppPath("OsmAndCore_ResourcesBundle/" + resourceInBundle);
+    resourceData.size=resourceData.path.length();
+    ResourceEntry resourceEntry=_resources.get(pureResourceName);
+    if (resourceEntry == null) {
+      resourceEntry=new ResourceEntry();
+      _resources.put(pureResourceName,resourceEntry);
+    }
+    if (qualifiers == null) {
+      resourceEntry.defaultVariant=resourceData;
+    }
+ else {
+      for (      String qualifier : qualifiers) {
+        final String[] qualifierComponents=qualifier.trim().split("=");
+        if (qualifierComponents.length == 2 && qualifierComponents[0].equals("ddf")) {
+          float ddfValue;
+          try {
+            ddfValue=Float.parseFloat(qualifierComponents[1]);
+          }
+ catch (          NumberFormatException e) {
+            Log.e(TAG,"Unsupported value '" + qualifierComponents[1] + "' for DDF qualifier",e);
+            continue;
+          }
+          if (resourceEntry.variantsByDisplayDensityFactor == null)           resourceEntry.variantsByDisplayDensityFactor=new TreeMap<Float,ResourceData>();
+          resourceEntry.variantsByDisplayDensityFactor.put(ddfValue,resourceData);
+        }
+ else {
+          Log.w(TAG,"Unsupported qualifier '" + qualifier.trim() + "'");
+        }
+      }
+    }
+  }
+  return true;
+}
