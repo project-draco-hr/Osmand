@@ -9,6 +9,33 @@
       }
     }
 );
+    MapWidgetRegistry.MapWidgetRegInfo w=mapInfoControls.registerAppearanceWidget(R.drawable.widget_no_icon,R.string.text_size,"text_size",view.getSettings().TEXT_SCALE);
+    w.setStateChangeListener(new Runnable(){
+      @Override public void run(){
+        AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
+        b.setTitle(R.string.text_size);
+        final Float[] txtValues=new Float[]{0.75f,1f,1.25f,1.5f,2f,3f};
+        int selected=-1;
+        final String[] txtNames=new String[txtValues.length];
+        for (int i=0; i < txtNames.length; i++) {
+          txtNames[i]=(int)(txtValues[i] * 100) + " %";
+          if (view.getSettings().TEXT_SCALE.get() == txtValues[i]) {
+            selected=i;
+          }
+        }
+        b.setSingleChoiceItems(txtNames,selected,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            view.getSettings().TEXT_SCALE.set(txtValues[which]);
+            view.getApplication().getResourceManager().getRenderer().clearCache();
+            view.refreshMap(true);
+            dialog.dismiss();
+          }
+        }
+);
+        b.show();
+      }
+    }
+);
     final MapWidgetRegistry.MapWidgetRegInfo showDestinationArrow=mapInfoControls.registerAppearanceWidget(R.drawable.widget_show_destination_arrow,R.string.map_widget_show_destination_arrow,"show_destination_arrow",view.getSettings().SHOW_DESTINATION_ARROW);
     showDestinationArrow.setStateChangeListener(new Runnable(){
       @Override public void run(){
