@@ -68,7 +68,9 @@
   Log.i(TAG,"Going to prepare OBFs collection");
   _obfsCollection=new ObfsCollection();
   Log.i(TAG,"Will load OBFs from " + Environment.getExternalStorageDirectory() + "/osmand");
-  _obfsCollection.addDirectory(Environment.getExternalStorageDirectory() + "/osmand",false);
+  File directory=getApp().getAppPath("");
+  Log.i(TAG,"Will load OBFs from " + directory.getAbsolutePath());
+  _obfsCollection.addDirectory(directory.getAbsolutePath(),false);
   Log.i(TAG,"Going to prepare all resources for renderer");
   _mapPresentationEnvironment=new MapPresentationEnvironment(_mapStyle,_displayDensityFactor,"en");
   _primitiviser=new Primitiviser(_mapPresentationEnvironment);
@@ -76,6 +78,7 @@
   _binaryMapPrimitivesProvider=new BinaryMapPrimitivesProvider(_binaryMapDataProvider,_primitiviser,_rasterTileSize);
   _binaryMapStaticSymbolsProvider=new BinaryMapStaticSymbolsProvider(_binaryMapPrimitivesProvider,_rasterTileSize);
   _binaryMapRasterBitmapTileProvider=new BinaryMapRasterBitmapTileProvider_Software(_binaryMapPrimitivesProvider);
+  _onlineMapRasterBitmapTileProvider=OnlineTileSources.getBuiltIn().createProviderFor("Mapnik (OsmAnd)");
   Log.i(TAG,"Going to create renderer");
   _mapRenderer=OsmAndCore.createMapRenderer(MapRendererClass.AtlasMapRenderer_OpenGLES2);
   if (_mapRenderer == null) {
@@ -87,7 +90,7 @@
   _mapRenderer.setConfiguration(AtlasMapRendererConfiguration.Casts.downcastTo_MapRendererConfiguration(atlasRendererConfiguration));
   _mapRenderer.addSymbolProvider(_binaryMapStaticSymbolsProvider);
   updateView();
-  _mapRenderer.setRasterLayerProvider(RasterMapLayerId.BaseLayer,_binaryMapRasterBitmapTileProvider);
+  _mapRenderer.setRasterLayerProvider(RasterMapLayerId.BaseLayer,_onlineMapRasterBitmapTileProvider);
   _glSurfaceView=(GLSurfaceView)findViewById(R.id.glSurfaceView);
   _glSurfaceView.setEGLContextClientVersion(2);
   _glSurfaceView.setEGLContextFactory(new EGLContextFactory());
