@@ -1,0 +1,55 @@
+{
+  final String FILE_NAME="route_info.html";
+  File file=null;
+  StringBuilder html=new StringBuilder();
+  html.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
+  html.append("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">");
+  html.append("<head>");
+  html.append("<title>Route info</title>");
+  html.append("<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />");
+  html.append("</head>");
+  html.append("<body>");
+  FileOutputStream fos=null;
+  try {
+    if (!TextUtils.isEmpty(title)) {
+      html.append("<p>");
+      html.append(title);
+      html.append("</p>");
+    }
+    final String NBSP="&nbsp;";
+    for (    RouteDirectionInfo routeDirectionInfo : list) {
+      html.append("<p>");
+      String distance=OsmAndFormatter.getFormattedDistance(routeDirectionInfo.distance,getMyApplication());
+      html.append(distance);
+      html.append(NBSP);
+      String description=routeDirectionInfo.getDescriptionRoute(((OsmandApplication)getApplication()));
+      html.append(description);
+      html.append(NBSP);
+      String timeText=getTimeDescription(routeDirectionInfo);
+      html.append(timeText);
+      html.append("</p>");
+    }
+    html.append("</body>");
+    html.append("</html>");
+    file=new File(((OsmandApplication)getApplication()).getAppCustomization().getExternalStorageDir(),IndexConstants.APP_DIR + FILE_NAME);
+    fos=new FileOutputStream(file);
+    fos.write(html.toString().getBytes("UTF-8"));
+    fos.flush();
+  }
+ catch (  IOException e) {
+    file=null;
+    e.printStackTrace();
+  }
+ finally {
+    if (fos != null) {
+      try {
+        fos.close();
+      }
+ catch (      Exception e) {
+        file=null;
+        e.printStackTrace();
+      }
+    }
+  }
+  return file;
+}

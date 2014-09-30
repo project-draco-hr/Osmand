@@ -1,0 +1,37 @@
+{
+  ArrayList<PageRange> writtenPagesList=new ArrayList<PageRange>();
+  int pagesSize=pages.size();
+  if (pagesSize > 0) {
+    int start=pages.get(0);
+    int end=start;
+    for (int i=1; i < pagesSize; i++) {
+      int page=pages.get(i);
+      if ((page - end) > 1) {
+        PageRange pageRange=new PageRange(start,end);
+        writtenPagesList.add(pageRange);
+        start=page;
+      }
+      end=page;
+    }
+    PageRange lastPageRange=null;
+    int writtenPagesListSize=writtenPagesList.size();
+    if (writtenPagesListSize > 0) {
+      lastPageRange=writtenPagesList.get(writtenPagesListSize - 1);
+    }
+    if (lastPageRange == null) {
+      writtenPagesList.add(PageRange.ALL_PAGES);
+    }
+ else {
+      PageRange pageRange=new PageRange(start,end);
+      if (!lastPageRange.equals(pageRange)) {
+        writtenPagesList.add(pageRange);
+      }
+    }
+  }
+ else {
+    writtenPagesList.add(PageRange.ALL_PAGES);
+  }
+  PageRange[] writtenPages=new PageRange[writtenPagesList.size()];
+  writtenPagesList.toArray(writtenPages);
+  return writtenPages;
+}

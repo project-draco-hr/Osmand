@@ -1,0 +1,64 @@
+{
+  final String FILE_NAME="route_info.pdf";
+  File file=new File(((OsmandApplication)getApplication()).getAppCustomization().getExternalStorageDir(),IndexConstants.APP_DIR + FILE_NAME);
+  PDF pdf=null;
+  InputStream fontInputStream=null;
+  try {
+    pdf=new PDF(new BufferedOutputStream(new FileOutputStream(file)));
+    fontInputStream=getAssets().open("fonts/Roboto-Regular.ttf");
+    Font font=new Font(pdf,fontInputStream,CodePage.UNICODE,true);
+    font.setSize(PDF_FONT_SIZE);
+    Page page=new Page(pdf,A4.PORTRAIT);
+    page.setTextStart();
+    page.setTextFont(font);
+    page.setTextLocation(PDF_DERAULT_MARGINS,PDF_DERAULT_MARGINS);
+    page.setTextLeading(PDF_TEXT_LEADING);
+    float height=page.getHeight() - 2 * PDF_DERAULT_MARGINS;
+    int linesPerPage=(int)(height / PDF_FONT_SIZE + PDF_TEXT_LEADING);
+    int lines=0;
+    if (!TextUtils.isEmpty(title)) {
+      page.println(title);
+      lines++;
+    }
+    for (    RouteDirectionInfo routeDirectionInfo : list) {
+      if (lines > linesPerPage) {
+        page.setTextEnd();
+        page=new Page(pdf,A4.PORTRAIT);
+        page.setTextStart();
+        page.setTextFont(font);
+        page.setTextLocation(PDF_DERAULT_MARGINS,PDF_DERAULT_MARGINS);
+        page.setTextLeading(PDF_TEXT_LEADING);
+        lines=0;
+      }
+      String distance=OsmAndFormatter.getFormattedDistance(routeDirectionInfo.distance,getMyApplication());
+      String description=routeDirectionInfo.getDescriptionRoute(((OsmandApplication)getApplication()));
+      String timeText=getTimeDescription(routeDirectionInfo);
+      page.println(distance + " " + description+ " "+ timeText);
+      lines++;
+    }
+    page.setTextEnd();
+  }
+ catch (  Exception e) {
+    file=null;
+  }
+ finally {
+    if (pdf != null) {
+      try {
+        pdf.close();
+      }
+ catch (      Exception e) {
+        file=null;
+        e.printStackTrace();
+      }
+    }
+    if (fontInputStream != null) {
+      try {
+        fontInputStream.close();
+      }
+ catch (      Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+  return file;
+}
