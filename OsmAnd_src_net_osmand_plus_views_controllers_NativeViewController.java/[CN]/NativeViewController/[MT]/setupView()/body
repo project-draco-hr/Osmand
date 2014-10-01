@@ -1,0 +1,99 @@
+{
+  WindowManager mgr=(WindowManager)mapActivity.getSystemService(Context.WINDOW_SERVICE);
+  DisplayMetrics dm=new DisplayMetrics();
+  mgr.getDefaultDisplay().getMetrics(dm);
+  currentViewport=new RotatedTileBox.RotatedTileBoxBuilder().setLocation(settings.getLastKnownMapLocation().getLatitude(),settings.getLastKnownMapLocation().getLongitude()).setZoomAndScale(settings.getLastKnownMapZoom(),0).setPixelDimensions(dm.widthPixels,dm.heightPixels).build();
+  currentViewport.setDensity(dm.density);
+  gestureDetector=new GestureDetector(mapActivity,new GestureDetector.OnGestureListener(){
+    @Override public boolean onSingleTapUp(    MotionEvent e){
+      return false;
+    }
+    @Override public void onShowPress(    MotionEvent e){
+    }
+    @Override public boolean onScroll(    MotionEvent e1,    MotionEvent e2,    float distanceX,    float distanceY){
+      final QuadPoint cp=currentViewport.getCenterPixelPoint();
+      final LatLon latlon=currentViewport.getLatLonFromPixel(cp.x + distanceX,cp.y + distanceY);
+      currentViewport.setLatLonCenter(latlon.getLatitude(),latlon.getLongitude());
+      updateView();
+      return false;
+    }
+    @Override public void onLongPress(    MotionEvent e){
+    }
+    @Override public boolean onFling(    MotionEvent e1,    MotionEvent e2,    float velocityX,    float velocityY){
+      return false;
+    }
+    @Override public boolean onDown(    MotionEvent e){
+      return false;
+    }
+  }
+);
+  gestureDetector.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener(){
+    @Override public boolean onSingleTapConfirmed(    MotionEvent e){
+      return false;
+    }
+    @Override public boolean onDoubleTapEvent(    MotionEvent e){
+      return false;
+    }
+    @Override public boolean onDoubleTap(    MotionEvent e){
+      currentViewport.setZoom(currentViewport.getZoom() + 1);
+      updateView();
+      return true;
+    }
+  }
+);
+  DisplayMetrics displayMetrics=new DisplayMetrics();
+  mapActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+  displayDensityFactor=displayMetrics.densityDpi / 160.0f;
+  referenceTileSize=(int)(256 * displayDensityFactor);
+  rasterTileSize=Integer.highestOneBit(referenceTileSize - 1) * 2;
+  Log.i(NATIVE_TAG,"displayDensityFactor = " + displayDensityFactor);
+  Log.i(NATIVE_TAG,"referenceTileSize = " + referenceTileSize);
+  Log.i(NATIVE_TAG,"rasterTileSize = " + rasterTileSize);
+  Log.i(NATIVE_TAG,"Initializing core...");
+  coreResources=CoreResourcesFromAndroidAssets.loadFromCurrentApplication(mapActivity);
+  OsmAndCore.InitializeCore(coreResources);
+  File directory=mapActivity.getMyApplication().getAppPath("");
+  fileLogSink=QIODeviceLogSink.createFileLogSink(directory.getAbsolutePath() + "osmandcore.log");
+  Logger.get().addLogSink(fileLogSink);
+  Log.i(NATIVE_TAG,"Going to resolve default embedded style...");
+  mapStylesCollection=new MapStylesCollection();
+  mapStyle=mapStylesCollection.getResolvedStyleByName("default");
+  if (mapStyle == null) {
+    Log.e(NATIVE_TAG,"Failed to resolve style 'default'");
+    System.exit(0);
+  }
+  Log.i(NATIVE_TAG,"Going to prepare OBFs collection");
+  obfsCollection=new ObfsCollection();
+  Log.i(NATIVE_TAG,"Will load OBFs from " + Environment.getExternalStorageDirectory() + "/osmand");
+  Log.i(NATIVE_TAG,"Will load OBFs from " + directory.getAbsolutePath());
+  obfsCollection.addDirectory(directory.getAbsolutePath(),false);
+  Log.i(NATIVE_TAG,"Going to prepare all resources for renderer");
+  mapPresentationEnvironment=new MapPresentationEnvironment(mapStyle,displayDensityFactor,"en");
+  primitiviser=new Primitiviser(mapPresentationEnvironment);
+  binaryMapDataProvider=new BinaryMapDataProvider(obfsCollection);
+  binaryMapPrimitivesProvider=new BinaryMapPrimitivesProvider(binaryMapDataProvider,primitiviser,rasterTileSize);
+  binaryMapStaticSymbolsProvider=new BinaryMapStaticSymbolsProvider(binaryMapPrimitivesProvider,rasterTileSize);
+  binaryMapRasterBitmapTileProvider=new BinaryMapRasterBitmapTileProvider_Software(binaryMapPrimitivesProvider);
+  onlineMapRasterBitmapTileProvider=OnlineTileSources.getBuiltIn().createProviderFor("Mapnik (OsmAnd)");
+  Log.i(NATIVE_TAG,"Going to create renderer");
+  mapRenderer=OsmAndCore.createMapRenderer(MapRendererClass.AtlasMapRenderer_OpenGLES2);
+  if (mapRenderer == null) {
+    Log.e(NATIVE_TAG,"Failed to create map renderer 'AtlasMapRenderer_OpenGLES2'");
+    System.exit(0);
+  }
+  AtlasMapRendererConfiguration atlasRendererConfiguration=AtlasMapRendererConfiguration.Casts.upcastFrom(mapRenderer.getConfiguration());
+  atlasRendererConfiguration.setReferenceTileSizeOnScreenInPixels(referenceTileSize);
+  mapRenderer.setConfiguration(AtlasMapRendererConfiguration.Casts.downcastTo_MapRendererConfiguration(atlasRendererConfiguration));
+  mapRenderer.addSymbolProvider(binaryMapStaticSymbolsProvider);
+  updateView();
+  if (offlineMap) {
+    mapRenderer.setRasterLayerProvider(RasterMapLayerId.BaseLayer,binaryMapRasterBitmapTileProvider);
+  }
+ else {
+    mapRenderer.setRasterLayerProvider(RasterMapLayerId.BaseLayer,onlineMapRasterBitmapTileProvider);
+  }
+  glSurfaceView.setEGLContextClientVersion(2);
+  glSurfaceView.setEGLContextFactory(new EGLContextFactory());
+  glSurfaceView.setRenderer(new NativeRenderer(mapRenderer));
+  glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+}
