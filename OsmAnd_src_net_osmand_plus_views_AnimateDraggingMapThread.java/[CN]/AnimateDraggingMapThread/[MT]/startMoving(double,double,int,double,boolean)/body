@@ -1,0 +1,55 @@
+{
+  stopAnimatingSync();
+  double startLat=tileView.getLatitude();
+  double startLon=tileView.getLongitude();
+  float rotate=tileView.getRotate();
+  final int startZoom=tileView.getZoom();
+  final RotatedTileBox rb=tileView.getCurrentRotatedTileBox().copy();
+  final double zoomScale=rb.getZoomScale();
+  boolean skipAnimation=false;
+  float mStX=rb.getPixXFromLatLon(startLat,startLon) - rb.getPixXFromLatLon(finalLat,finalLon);
+  float mStY=rb.getPixYFromLatLon(startLat,startLon) - rb.getPixYFromLatLon(finalLat,finalLon);
+  while (Math.abs(mStX) + Math.abs(mStY) > 1200) {
+    rb.setZoom(rb.getZoom() - 1);
+    if (rb.getZoom() <= 4) {
+      skipAnimation=true;
+    }
+    mStX=rb.getPixXFromLatLon(startLat,startLon) - rb.getPixXFromLatLon(finalLat,finalLon);
+    mStY=rb.getPixYFromLatLon(startLat,startLon) - rb.getPixYFromLatLon(finalLat,finalLon);
+  }
+  final int moveZoom=rb.getZoom();
+  skipAnimation=skipAnimation || (Math.abs(moveZoom - startZoom) >= 3 || Math.abs(endZoom - moveZoom) > 3);
+  if (skipAnimation) {
+    tileView.setLatLonAnimate(finalLat,finalLon,notifyListener);
+    tileView.setZoomAnimate(endZoom,endZoomScale,notifyListener);
+    return;
+  }
+  final float mMoveX=rb.getPixXFromLatLon(startLat,startLon) - rb.getPixXFromLatLon(finalLat,finalLon);
+  final float mMoveY=rb.getPixYFromLatLon(startLat,startLon) - rb.getPixYFromLatLon(finalLat,finalLon);
+  final float animationTime=Math.max(450,(Math.abs(mStX) + Math.abs(mStY)) / 1200f * MOVE_MOVE_ANIMATION_TIME);
+  startThreadAnimating(new Runnable(){
+    @Override public void run(){
+      setTargetValues(endZoom,endZoomScale,finalLat,finalLon);
+      if (moveZoom != startZoom) {
+        animatingZoomInThread(startZoom + zoomScale,moveZoom,zoomScale,ZOOM_MOVE_ANIMATION_TIME,notifyListener);
+      }
+      if (!stopped) {
+        animatingMoveInThread(mMoveX,mMoveY,animationTime,notifyListener);
+      }
+      if (!stopped) {
+        tileView.setLatLonAnimate(finalLat,finalLon,notifyListener);
+      }
+      if (!stopped && moveZoom != endZoom) {
+        animatingZoomInThread(moveZoom + zoomScale,endZoom,endZoomScale,ZOOM_MOVE_ANIMATION_TIME,notifyListener);
+      }
+      if (!stopped) {
+        tileView.setZoomAnimate(endZoom,endZoomScale,notifyListener);
+      }
+ else {
+        tileView.setZoomAnimate(endZoom,endZoomScale,notifyListener);
+      }
+      pendingRotateAnimation();
+    }
+  }
+);
+}
