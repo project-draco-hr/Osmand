@@ -56,7 +56,8 @@
   Log.i(TAG,"Initializing core...");
   _coreResources=CoreResourcesFromAndroidAssets.loadFromCurrentApplication(this);
   OsmAndCore.InitializeCore(_coreResources);
-  _fileLogSink=QIODeviceLogSink.createFileLogSink(Environment.getExternalStorageDirectory() + "/osmand/osmandcore.log");
+  File directory=getApp().getAppPath("");
+  _fileLogSink=QIODeviceLogSink.createFileLogSink(directory.getAbsolutePath() + "osmandcore.log");
   Logger.get().addLogSink(_fileLogSink);
   Log.i(TAG,"Going to resolve default embedded style...");
   _mapStylesCollection=new MapStylesCollection();
@@ -68,7 +69,6 @@
   Log.i(TAG,"Going to prepare OBFs collection");
   _obfsCollection=new ObfsCollection();
   Log.i(TAG,"Will load OBFs from " + Environment.getExternalStorageDirectory() + "/osmand");
-  File directory=getApp().getAppPath("");
   Log.i(TAG,"Will load OBFs from " + directory.getAbsolutePath());
   _obfsCollection.addDirectory(directory.getAbsolutePath(),false);
   Log.i(TAG,"Going to prepare all resources for renderer");
@@ -90,7 +90,7 @@
   _mapRenderer.setConfiguration(AtlasMapRendererConfiguration.Casts.downcastTo_MapRendererConfiguration(atlasRendererConfiguration));
   _mapRenderer.addSymbolProvider(_binaryMapStaticSymbolsProvider);
   updateView();
-  _mapRenderer.setRasterLayerProvider(RasterMapLayerId.BaseLayer,_onlineMapRasterBitmapTileProvider);
+  _mapRenderer.setRasterLayerProvider(RasterMapLayerId.BaseLayer,_binaryMapRasterBitmapTileProvider);
   _glSurfaceView=(GLSurfaceView)findViewById(R.id.glSurfaceView);
   _glSurfaceView.setEGLContextClientVersion(2);
   _glSurfaceView.setEGLContextFactory(new EGLContextFactory());
