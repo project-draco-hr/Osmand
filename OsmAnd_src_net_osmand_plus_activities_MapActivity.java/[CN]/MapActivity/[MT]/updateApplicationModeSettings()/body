@@ -10,16 +10,16 @@
   }
   mapViewTrackingUtilities.updateSettings();
   app.getRoutingHelper().setAppMode(settings.getApplicationMode());
-  if (mapLayers.getMapInfoLayer() != null) {
+  if (mapLayers.getMapInfoLayer() != null && !settings.USE_NATIVE_RENDER.get()) {
     mapLayers.getMapInfoLayer().recreateControls();
   }
-  mapLayers.updateLayers(mapView);
-  mapView.setComplexZoom(mapView.getZoom(),mapView.getSettingsZoomScale());
+  mapViewController.updateLayers(mapLayers);
+  mapViewController.setComplexZoom();
   app.getDaynightHelper().startSensorIfNeeded(new StateChangedListener<Boolean>(){
     @Override public void stateChanged(    Boolean change){
-      getMapView().refreshMap(true);
+      mapViewController.refreshMap(true);
     }
   }
 );
-  getMapView().refreshMap(true);
+  mapViewController.refreshMap(true);
 }
