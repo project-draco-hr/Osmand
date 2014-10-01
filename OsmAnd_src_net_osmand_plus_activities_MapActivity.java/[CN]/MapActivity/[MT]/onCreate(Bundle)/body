@@ -10,9 +10,13 @@
   startProgressDialog.setCancelable(true);
   app.checkApplicationIsBeingInitialized(this,startProgressDialog);
   parseLaunchIntentLocation();
-  if (settings.USE_NATIVE_RENDER.get()) {
+  if (settings.USE_NATIVE_RENDER.get() && !settings.CPP_RENDER_FAILED.get()) {
+    settings.CPP_RENDER_FAILED.set(true);
+    settings.USE_NATIVE_RENDER.set(false);
     setContentView(R.layout.activity_gl);
     mapViewController=new NativeViewController((GLSurfaceView)findViewById(R.id.glSurfaceView),this);
+    settings.CPP_RENDER_FAILED.set(false);
+    settings.USE_NATIVE_RENDER.set(true);
   }
  else {
     setContentView(R.layout.main);
