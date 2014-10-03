@@ -11,7 +11,13 @@
   ResourceData resourceData=resourceDataEntry.getValue();
   Log.d(TAG,"Using ddf=" + resourceDataEntry.getKey() + " while looking for "+ displayDensityFactor+ " of '"+ name+ "'");
   System.out.println(resourceData.path.getAbsolutePath());
-  final SWIGTYPE_p_QByteArray data=SwigUtilities.qDecompress(SwigUtilities.readEntireFile(resourceData.path.getAbsolutePath()));
+  final SWIGTYPE_p_QByteArray data;
+  if (resourceData.offset == 0) {
+    data=SwigUtilities.qDecompress(SwigUtilities.readEntireFile(resourceData.path.getAbsolutePath()));
+  }
+ else {
+    data=SwigUtilities.qDecompress(SwigUtilities.readPartOfFile(resourceData.path.getAbsolutePath(),resourceData.offset,resourceData.size));
+  }
   if (data == null) {
     Log.e(TAG,"Failed to load data of '" + name + "'");
     if (ok != null)     ok.assign(false);

@@ -31,13 +31,35 @@
       qualifiers=resourceNameComponentsMatcher.group(1).split(";");
       pureResourceName=resourceNameComponentsMatcher.group(2);
     }
-    long declaredSize;
-    long size;
-    long offset;
+    final File res=((OsmandApplication)_context.getApplicationContext()).getAppPath("OsmAndCore_ResourcesBundle/" + resourceInBundle + ".qz");
     final ResourceData resourceData=new ResourceData();
-    resourceData.offset=0;
-    resourceData.path=((OsmandApplication)_context.getApplicationContext()).getAppPath("OsmAndCore_ResourcesBundle/" + resourceInBundle + ".qz");
-    resourceData.size=resourceData.path.length();
+    if (!res.exists()) {
+      try {
+        final AssetFileDescriptor resourceFd=assetManager.openFd("OsmAndCore_ResourcesBundle/" + resourceInBundle);
+        long declaredSize=resourceFd.getDeclaredLength();
+        resourceData.size=resourceFd.getLength();
+        resourceData.offset=resourceFd.getStartOffset();
+        if (resourceData.offset == 0) {
+          Log.e(NATIVE_TAG,"Offset 0 is not properly supported!");
+          continue;
+        }
+        resourceData.path=new File(_bundleFilename);
+        resourceFd.close();
+        if (declaredSize != resourceData.size) {
+          Log.e(NATIVE_TAG,"Declared size does not match size for '" + resourceInBundle + "'");
+          continue;
+        }
+      }
+ catch (      IOException e) {
+        Log.e(NATIVE_TAG,"Failed to locate '" + resourceInBundle + "'",e);
+        continue;
+      }
+    }
+ else {
+      resourceData.offset=0;
+      resourceData.path=res;
+      resourceData.size=resourceData.path.length();
+    }
     ResourceEntry resourceEntry=_resources.get(pureResourceName);
     if (resourceEntry == null) {
       resourceEntry=new ResourceEntry();
