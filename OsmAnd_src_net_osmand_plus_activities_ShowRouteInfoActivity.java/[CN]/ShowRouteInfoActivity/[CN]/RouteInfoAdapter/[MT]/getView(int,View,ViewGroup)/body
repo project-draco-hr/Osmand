@@ -8,13 +8,17 @@
   TextView label=(TextView)row.findViewById(R.id.description);
   TextView distanceLabel=(TextView)row.findViewById(R.id.distance);
   TextView timeLabel=(TextView)row.findViewById(R.id.time);
+  TextView cumulativeDistanceLabel=(TextView)row.findViewById(R.id.cumulative_distance);
+  TextView cumulativeTimeLabel=(TextView)row.findViewById(R.id.cumulative_time);
   ImageView icon=(ImageView)row.findViewById(R.id.direction);
   TurnPathHelper.RouteDrawable drawable=new TurnPathHelper.RouteDrawable(getResources());
   drawable.setRouteType(model.getTurnType());
   icon.setImageDrawable(drawable);
   distanceLabel.setText(OsmAndFormatter.getFormattedDistance(model.distance,getMyApplication()));
-  label.setText(model.getDescriptionRoute(((OsmandApplication)getApplication())));
-  String timeText=getTimeDescription(model);
-  timeLabel.setText(timeText);
+  timeLabel.setText(getTimeDescription(model));
+  label.setText(model.getDescriptionRoutePart());
+  CumulativeInfo cumulativeInfo=getRouteDirectionCumulativeInfo(position);
+  cumulativeDistanceLabel.setText(OsmAndFormatter.getFormattedDistance(cumulativeInfo.distance,getMyApplication()));
+  cumulativeTimeLabel.setText(Algorithms.formatDuration(cumulativeInfo.time));
   return row;
 }
