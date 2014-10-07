@@ -6,38 +6,34 @@
   mapActions=new MapActivityActions(this);
   mapLayers=new MapActivityLayers(this);
   requestWindowFeature(Window.FEATURE_NO_TITLE);
+  setContentView(R.layout.main);
   startProgressDialog=new ProgressDialog(this);
   startProgressDialog.setCancelable(true);
   app.checkApplicationIsBeingInitialized(this,startProgressDialog);
   parseLaunchIntentLocation();
-  if (settings.USE_NATIVE_RENDER.get() && !settings.CPP_RENDER_FAILED.get()) {
-    settings.CPP_RENDER_FAILED.set(true);
-    settings.USE_NATIVE_RENDER.set(false);
-    setContentView(R.layout.activity_gl);
-    mapViewController=new NativeViewController((GLSurfaceView)findViewById(R.id.glSurfaceView),this);
-    settings.CPP_RENDER_FAILED.set(false);
-    settings.USE_NATIVE_RENDER.set(true);
-  }
- else {
-    setContentView(R.layout.main);
-    mapViewController=new JavaViewController((OsmandMapTileView)findViewById(R.id.MapView),this);
-  }
-  mapViewController.setTrackBallDelegate(new JavaViewController.OnTrackBallListener(){
+  mapView=(OsmandMapTileView)findViewById(R.id.MapView);
+  mapView.setTrackBallDelegate(new OsmandMapTileView.OnTrackBallListener(){
     @Override public boolean onTrackBallEvent(    MotionEvent e){
       showAndHideMapPosition();
       return MapActivity.this.onTrackballEvent(e);
     }
   }
 );
-  mapViewController.setAccessibilityActions(new MapAccessibilityActions(this));
+  mapView.setAccessibilityActions(new MapAccessibilityActions(this));
   if (mapViewTrackingUtilities == null) {
     mapViewTrackingUtilities=new MapViewTrackingUtilities(app);
   }
-  mapViewController.setTrackingUtilities(mapViewTrackingUtilities);
+  mapViewTrackingUtilities.setMapView(mapView);
+  if (settings.USE_NATIVE_RENDER.get() && NativeQtLibrary.isInit()) {
+    glSurfaceView=(GLSurfaceView)findViewById(R.id.glSurfaceView);
+    glSurfaceView.setVisibility(View.VISIBLE);
+    NativeQtLibrary.initView(glSurfaceView);
+    mapView.setMapRender(NativeQtLibrary.getMapRenderer());
+  }
   startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
     @Override public void onDismiss(    DialogInterface dialog){
       app.getResourceManager().getRenderer().clearCache();
-      mapViewController.refreshMap(true);
+      mapView.refreshMap(true);
     }
   }
 );
@@ -48,29 +44,27 @@
         mgr.tileDownloaded(request);
       }
       if (request == null || !request.error) {
-        mapViewController.tileDownloaded(request);
+        mapView.tileDownloaded(request);
       }
     }
   }
 );
   createProgressBarForRouting();
-  mapViewController.createLayers(mapLayers);
+  mapLayers.createLayers(mapView);
   if (settings.FOLLOW_THE_ROUTE.get() && !app.getRoutingHelper().isRouteCalculated() && !app.getRoutingHelper().isRouteBeingCalculated()) {
     FailSafeFuntions.restoreRoutingMode(this);
   }
   if (!settings.isLastKnownMapLocation()) {
     net.osmand.Location location=app.getLocationProvider().getFirstTimeRunDefaultLocation();
     if (location != null) {
-      mapViewController.setLatLon(location.getLatitude(),location.getLongitude());
-      mapViewController.setIntZoom(14);
+      mapView.setLatLon(location.getLatitude(),location.getLongitude());
+      mapView.setIntZoom(14);
     }
   }
   addDialogProvider(mapActions);
   OsmandPlugin.onMapActivityCreate(this);
   if (lockView != null) {
-    mapViewController.addView(lockView);
+    ((FrameLayout)mapView.getParent()).addView(lockView);
   }
   gpxImportHelper=new GpxImportHelper(this,getMyApplication(),getMapView());
-  mDrawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
-  mDrawerToggle=new ActionBarDrawerToggle(this,mDrawerLayout,R.drawable.ic_navigation_drawer_light,R.string.default_buttons_other_actions,R.string.close);
 }

@@ -10,6 +10,19 @@
       warnings.add("Error while reading the special phrases. Restart OsmAnd if possible");
     }
     if (!"qnx".equals(System.getProperty("os.name"))) {
+      if (osmandSettings.USE_NATIVE_RENDER.get()) {
+        if (!osmandSettings.CPP_RENDER_FAILED.get()) {
+          osmandSettings.CPP_RENDER_FAILED.set(true);
+          boolean success=NativeQtLibrary.tryCatchInit(this);
+          if (success) {
+            osmandSettings.CPP_RENDER_FAILED.set(false);
+          }
+        }
+ else {
+          osmandSettings.CPP_RENDER_FAILED.set(false);
+          warnings.add("Native OpenGL library is not supported. Please try again after exit");
+        }
+      }
       if (osmandSettings.NATIVE_RENDERING_FAILED.get()) {
         osmandSettings.SAFE_MODE.set(true);
         osmandSettings.NATIVE_RENDERING_FAILED.set(false);

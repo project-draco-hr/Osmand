@@ -1,7 +1,9 @@
 {
   super.onResume();
-  mapViewController.resume();
   cancelNotification();
+  if (getSupportActionBar() != null) {
+    getSupportActionBar().hide();
+  }
   if (settings.MAP_SCREEN_ORIENTATION.get() != getRequestedOrientation()) {
     setRequestedOrientation(settings.MAP_SCREEN_ORIENTATION.get());
   }
@@ -34,22 +36,22 @@
   app.getLocationProvider().resumeAllUpdates();
   if (settings != null && settings.isLastKnownMapLocation()) {
     LatLon l=settings.getLastKnownMapLocation();
-    mapViewController.setLatLon(l.getLatitude(),l.getLongitude());
-    mapViewController.setIntZoom(settings.getLastKnownMapZoom());
+    mapView.setLatLon(l.getLatitude(),l.getLongitude());
+    mapView.setIntZoom(settings.getLastKnownMapZoom());
   }
   settings.MAP_ACTIVITY_ENABLED.set(true);
   app.setMapActivity(this);
   checkExternalStorage();
   showAndHideMapPosition();
-  LatLon cur=new LatLon(mapViewController.getLatitude(),mapViewController.getLongitude());
+  LatLon cur=new LatLon(mapView.getLatitude(),mapView.getLongitude());
   LatLon latLonToShow=settings.getAndClearMapLocationToShow();
   String mapLabelToShow=settings.getAndClearMapLabelToShow();
   Object toShow=settings.getAndClearObjectToShow();
   int status=settings.isRouteToPointNavigateAndClear();
   if (status != 0) {
     Location loc=new Location("map");
-    loc.setLatitude(mapViewController.getLatitude());
-    loc.setLongitude(mapViewController.getLongitude());
+    loc.setLatitude(mapView.getLatitude());
+    loc.setLongitude(mapView.getLongitude());
     getMapActions().enterRoutePlanningMode(null,null,status == OsmandSettings.NAVIGATE_CURRENT_GPX);
   }
   if (mapLabelToShow != null && latLonToShow != null) {
@@ -57,7 +59,7 @@
     mapLayers.getContextMenuLayer().setLocation(latLonToShow,mapLabelToShow);
   }
   if (latLonToShow != null && !latLonToShow.equals(cur)) {
-    mapViewController.startMoving(latLonToShow.getLatitude(),latLonToShow.getLongitude(),settings.getMapZoomToShow(),true);
+    mapView.getAnimatedDraggingThread().startMoving(latLonToShow.getLatitude(),latLonToShow.getLongitude(),settings.getMapZoomToShow(),true);
   }
   if (latLonToShow != null) {
     mapViewTrackingUtilities.setMapLinkedToLocation(false);
@@ -103,5 +105,8 @@
     app.getResourceManager().setBusyIndicator(new BusyIndicator(this,progress));
   }
   OsmandPlugin.onMapActivityResume(this);
-  mapViewController.refreshMap(true);
+  mapView.refreshMap(true);
+  if (glSurfaceView != null) {
+    glSurfaceView.onResume();
+  }
 }

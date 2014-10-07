@@ -1,0 +1,46 @@
+{
+  WindowManager mgr=(WindowManager)app.getSystemService(Context.WINDOW_SERVICE);
+  DisplayMetrics dm=new DisplayMetrics();
+  mgr.getDefaultDisplay().getMetrics(dm);
+  DisplayMetrics displayMetrics=app.getResources().getDisplayMetrics();
+  float displayDensityFactor=displayMetrics.densityDpi / 160.0f;
+  int referenceTileSize=(int)(256 * displayDensityFactor);
+  int rasterTileSize=Integer.highestOneBit(referenceTileSize - 1) * 2;
+  Log.i(NATIVE_TAG,"displayDensityFactor = " + displayDensityFactor + " referenceTileSize = "+ referenceTileSize+ " rasterTileSize = "+ rasterTileSize);
+  Log.i(NATIVE_TAG,"Initializing core...");
+  CoreResourcesFromAndroidAssetsCustom coreResources=notGc(CoreResourcesFromAndroidAssetsCustom.loadFromCurrentApplication(app));
+  OsmAndCore.InitializeCore(coreResources);
+  File directory=app.getAppPath("");
+  QIODeviceLogSink fileLogSink=notGc(QIODeviceLogSink.createFileLogSink(directory.getAbsolutePath() + "osmandcore.log"));
+  Logger.get().addLogSink(fileLogSink);
+  Log.i(NATIVE_TAG,"Going to resolve default embedded style...");
+  MapStylesCollection mapStylesCollection=notGc(new MapStylesCollection());
+  ResolvedMapStyle mapStyle=mapStylesCollection.getResolvedStyleByName("default");
+  if (mapStyle == null) {
+    throw new IllegalStateException("Failed to resolve style 'default'");
+  }
+  Log.i(NATIVE_TAG,"Will load OBFs from " + directory.getAbsolutePath());
+  ObfsCollection obfsCollection=notGc(new ObfsCollection());
+  obfsCollection.addDirectory(directory.getAbsolutePath(),false);
+  Log.i(NATIVE_TAG,"Going to prepare all resources for renderer");
+  Log.i(NATIVE_TAG,"Going to create renderer");
+  mapRenderer=OsmAndCore.createMapRenderer(MapRendererClass.AtlasMapRenderer_OpenGLES2);
+  if (mapRenderer == null) {
+    throw new IllegalArgumentException("Failed to create map renderer 'AtlasMapRenderer_OpenGLES2'");
+  }
+  AtlasMapRendererConfiguration atlasRendererConfiguration=AtlasMapRendererConfiguration.Casts.upcastFrom(mapRenderer.getConfiguration());
+  atlasRendererConfiguration.setReferenceTileSizeOnScreenInPixels(referenceTileSize);
+  mapRenderer.setConfiguration(AtlasMapRendererConfiguration.Casts.downcastTo_MapRendererConfiguration(atlasRendererConfiguration));
+  if (OFFLINE_MAP) {
+    MapPresentationEnvironment presentation=notGc(new MapPresentationEnvironment(mapStyle,displayDensityFactor,"en"));
+    BinaryMapPrimitivesProvider binaryMapPrimitivesProvider=notGc(new BinaryMapPrimitivesProvider(notGc(new BinaryMapDataProvider(obfsCollection)),notGc(new Primitiviser(presentation)),rasterTileSize));
+    BinaryMapRasterBitmapTileProvider_Software binaryMapRasterBitmapTileProvider=notGc(new BinaryMapRasterBitmapTileProvider_Software(binaryMapPrimitivesProvider));
+    mapRenderer.setRasterLayerProvider(RasterMapLayerId.BaseLayer,binaryMapRasterBitmapTileProvider);
+    BinaryMapStaticSymbolsProvider binaryMapStaticSymbolsProvider=notGc(new BinaryMapStaticSymbolsProvider(binaryMapPrimitivesProvider,rasterTileSize));
+    mapRenderer.addSymbolProvider(binaryMapStaticSymbolsProvider);
+  }
+ else {
+    OnlineRasterMapTileProvider onlineMapRasterBitmapTileProvider=notGc(OnlineTileSources.getBuiltIn().createProviderFor("Mapnik (OsmAnd)"));
+    mapRenderer.setRasterLayerProvider(RasterMapLayerId.BaseLayer,onlineMapRasterBitmapTileProvider);
+  }
+}
