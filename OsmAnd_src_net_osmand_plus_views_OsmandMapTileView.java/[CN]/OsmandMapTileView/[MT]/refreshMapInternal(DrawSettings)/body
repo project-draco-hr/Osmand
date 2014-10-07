@@ -1,28 +1,30 @@
 {
-  SurfaceHolder holder=getHolder();
-  long ms=SystemClock.elapsedRealtime();
+  final float ratioy=mapPosition == OsmandSettings.BOTTOM_CONSTANT ? 0.85f : 0.5f;
+  final int cy=(int)(ratioy * view.getHeight());
+  if (currentViewport.getPixWidth() != view.getWidth() || currentViewport.getPixHeight() != view.getHeight() || currentViewport.getCenterPixelY() != cy) {
+    currentViewport.setPixelDimensions(view.getWidth(),view.getHeight(),0.5f,ratioy);
+    refreshBufferImage(drawSettings);
+  }
+  if (view instanceof SurfaceView) {
+    SurfaceHolder holder=((SurfaceView)view).getHolder();
+    long ms=SystemClock.elapsedRealtime();
 synchronized (holder) {
-    Canvas canvas=holder.lockCanvas();
-    if (canvas != null) {
-      try {
-        final float ratioy=mapPosition == OsmandSettings.BOTTOM_CONSTANT ? 0.85f : 0.5f;
-        final int cy=(int)(ratioy * getHeight());
-        if (currentViewport.getPixWidth() != getWidth() || currentViewport.getPixHeight() != getHeight() || currentViewport.getCenterPixelY() != cy) {
-          currentViewport.setPixelDimensions(getWidth(),getHeight(),0.5f,ratioy);
-          refreshBufferImage(drawSettings);
+      Canvas canvas=holder.lockCanvas();
+      if (canvas != null) {
+        try {
+          RotatedTileBox viewportToDraw=currentViewport.copy();
+          drawOverMap(canvas,viewportToDraw,drawSettings);
         }
-        RotatedTileBox viewportToDraw=currentViewport.copy();
-        if (mapRenderer != null) {
-          fillCanvas(canvas,drawSettings);
-        }
-        drawOverMap(canvas,viewportToDraw,drawSettings);
-      }
   finally {
-        holder.unlockCanvasAndPost(canvas);
+          holder.unlockCanvasAndPost(canvas);
+        }
+      }
+      if (MEASURE_FPS) {
+        main.calculateFPS(ms,SystemClock.elapsedRealtime());
       }
     }
-    if (MEASURE_FPS) {
-      main.calculateFPS(ms,SystemClock.elapsedRealtime());
-    }
+  }
+ else {
+    view.invalidate();
   }
 }

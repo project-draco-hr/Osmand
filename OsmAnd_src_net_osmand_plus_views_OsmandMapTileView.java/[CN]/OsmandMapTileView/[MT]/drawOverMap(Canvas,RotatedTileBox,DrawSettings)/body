@@ -1,7 +1,10 @@
 {
+  if (mapRenderer == null) {
+    fillCanvas(canvas,drawSettings);
+  }
   final QuadPoint c=tileBox.getCenterPixelPoint();
 synchronized (this) {
-    if (bufferBitmap != null && !bufferBitmap.isRecycled()) {
+    if (bufferBitmap != null && !bufferBitmap.isRecycled() && mapRenderer == null) {
       canvas.save();
       canvas.rotate(tileBox.getRotate(),c.x,c.y);
       drawBasemap(canvas);
@@ -14,6 +17,9 @@ synchronized (this) {
       canvas.save();
       if (!layer.drawInScreenPixels()) {
         canvas.rotate(tileBox.getRotate(),c.x,c.y);
+      }
+      if (mapRenderer != null) {
+        layer.onPrepareBufferImage(canvas,tileBox,drawSettings);
       }
       layer.onDraw(canvas,tileBox,drawSettings);
       canvas.restore();

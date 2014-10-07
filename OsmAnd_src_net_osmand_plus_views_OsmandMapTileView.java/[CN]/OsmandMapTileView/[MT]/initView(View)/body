@@ -1,4 +1,6 @@
 {
+  application=(OsmandApplication)view.getContext().getApplicationContext();
+  this.view=view;
   paintGrayFill=new Paint();
   paintGrayFill.setColor(Color.GRAY);
   paintGrayFill.setStyle(Style.FILL);
@@ -18,19 +20,18 @@
   paintCenter.setAntiAlias(true);
   paintImg=new Paint();
   paintImg.setFilterBitmap(true);
-  setClickable(true);
-  setLongClickable(true);
-  setFocusable(true);
+  view.setClickable(true);
+  view.setLongClickable(true);
+  view.setFocusable(true);
   handler=new Handler();
   baseHandler=new Handler(application.getResourceManager().getRenderingBufferImageThread().getLooper());
-  getHolder().addCallback(this);
   animatedDraggingThread=new AnimateDraggingMapThread(this);
-  gestureDetector=new GestureDetector(getContext(),new MapExplorer(this,new MapTileViewOnGestureListener()));
-  multiTouchSupport=new MultiTouchSupport(getContext(),new MapTileViewMultiTouchZoomListener());
+  gestureDetector=new GestureDetector(view.getContext(),new MapExplorer(this,new MapTileViewOnGestureListener()));
+  multiTouchSupport=new MultiTouchSupport(view.getContext(),new MapTileViewMultiTouchZoomListener());
   gestureDetector.setOnDoubleTapListener(new MapTileViewOnDoubleTapListener());
-  WindowManager mgr=(WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE);
+  WindowManager mgr=(WindowManager)view.getContext().getSystemService(Context.WINDOW_SERVICE);
   dm=new DisplayMetrics();
   mgr.getDefaultDisplay().getMetrics(dm);
-  currentViewport=new RotatedTileBox.RotatedTileBoxBuilder().setLocation(0,0).setZoomAndScale(3,0).setPixelDimensions(getWidth(),getHeight()).build();
+  currentViewport=new RotatedTileBox.RotatedTileBoxBuilder().setLocation(0,0).setZoomAndScale(3,0).setPixelDimensions(view.getWidth(),view.getHeight()).build();
   currentViewport.setDensity(dm.density);
 }
