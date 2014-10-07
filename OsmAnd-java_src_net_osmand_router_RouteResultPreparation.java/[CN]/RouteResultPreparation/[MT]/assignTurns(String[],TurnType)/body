@@ -1,0 +1,48 @@
+{
+  for (int i=0; i < splitLaneOptions.length; i++) {
+    String[] laneOptions=splitLaneOptions[i].split(";");
+    for (int j=0; j < laneOptions.length; j++) {
+      int turn;
+      if (laneOptions[j].equals("none") || laneOptions[j].equals("through")) {
+        turn=TurnType.C;
+      }
+ else       if (laneOptions[j].equals("slight_right")) {
+        turn=TurnType.TSLR;
+      }
+ else       if (laneOptions[j].equals("slight_left")) {
+        turn=TurnType.TSLL;
+      }
+ else       if (laneOptions[j].equals("right")) {
+        turn=TurnType.TR;
+      }
+ else       if (laneOptions[j].equals("left")) {
+        turn=TurnType.TL;
+      }
+ else       if (laneOptions[j].equals("sharp_right")) {
+        turn=TurnType.TSHR;
+      }
+ else       if (laneOptions[j].equals("sharp_left")) {
+        turn=TurnType.TSHL;
+      }
+ else       if (laneOptions[j].equals("reverse")) {
+        turn=TurnType.TU;
+      }
+ else {
+        continue;
+      }
+      if (TurnType.getPrimaryTurn(t.getLanes()[i]) == 0) {
+        t.setPrimaryTurn(i,turn);
+      }
+ else {
+        if (turn == t.getValue()) {
+          t.setSecondaryTurn(i,TurnType.getPrimaryTurn(t.getLanes()[i]));
+          t.setPrimaryTurn(i,turn);
+        }
+ else {
+          t.setSecondaryTurn(i,turn);
+        }
+        break;
+      }
+    }
+  }
+}
