@@ -7,7 +7,7 @@
       for (      Amenity a : tempResults) {
         LatLon l=a.getLocation();
         if (l != null && l.getLatitude() <= topLatitude && l.getLatitude() >= bottomLatitude && l.getLongitude() >= leftLongitude && l.getLongitude() <= rightLongitude) {
-          if (matcher.publish(a)) {
+          if (matcher == null || matcher.publish(a)) {
             amenities.add(a);
           }
         }
@@ -18,14 +18,16 @@
       for (      AmenityIndexRepository index : amenityRepositories) {
         if (index.checkContains(topLatitude,leftLongitude,bottomLatitude,rightLongitude)) {
           index.searchAmenities(MapUtils.get31TileNumberY(topLatitude),MapUtils.get31TileNumberX(leftLongitude),MapUtils.get31TileNumberY(bottomLatitude),MapUtils.get31TileNumberX(rightLongitude),zoom,filter,amenities,new ResultMatcher<Amenity>(){
-            @Override public boolean publish(            Amenity object){
-              if (checkNameFilter(object,filterByName)) {
-                return matcher.publish(object);
+            @Override public boolean publish(            Amenity a){
+              if (checkNameFilter(a,filterByName)) {
+                if (matcher == null || matcher.publish(a)) {
+                  amenities.add(a);
+                }
               }
               return false;
             }
             @Override public boolean isCancelled(){
-              return matcher.isCancelled();
+              return matcher != null && matcher.isCancelled();
             }
           }
 );
