@@ -11,6 +11,7 @@
     XmlPullParser parser=PlatformUtil.newXMLPullParser();
     int tok;
     parser.setInput(is,"UTF-8");
+    String parentCategory=null;
     String poiParentCategory=null;
     String poiParentPrefix=null;
     String order=null;
@@ -18,13 +19,14 @@
       if (tok == XmlPullParser.START_TAG) {
         String name=parser.getName();
         if (name.equals("category")) {
+          parentCategory=parser.getAttributeValue("","name");
           poiParentCategory=parser.getAttributeValue("","poi_category");
           poiParentPrefix=parser.getAttributeValue("","poi_prefix");
           order=parser.getAttributeValue("","order");
           parseCategoryFromXml(parser,poiParentCategory,poiParentPrefix);
         }
  else         if (name.equals("type")) {
-          parseTypeFromXML(parser,poiParentCategory,poiParentPrefix,order);
+          parseTypeFromXML(parser,parentCategory,poiParentCategory,poiParentPrefix,order);
         }
  else         if (name.equals("routing_type")) {
           parseRouteTagFromXML(parser);
