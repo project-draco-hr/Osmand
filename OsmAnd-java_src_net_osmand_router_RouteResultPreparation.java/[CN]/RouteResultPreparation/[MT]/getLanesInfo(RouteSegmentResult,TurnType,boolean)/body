@@ -1,0 +1,42 @@
+{
+  int lanes=prevSegm.getObject().getLanes();
+  if (prevSegm.getObject().getOneway() == 0) {
+    lanes=countLanes(prevSegm,lanes);
+  }
+  if (lanes <= 0) {
+    return;
+  }
+  String turnLanes=getTurnLanesString(prevSegm);
+  if (turnLanes == null) {
+    return;
+  }
+  String[] splitLaneOptions=turnLanes.split("\\|",-1);
+  if (splitLaneOptions.length != lanes) {
+    return;
+  }
+  int[] lanesArray=new int[lanes];
+  t.setLanes(lanesArray);
+  assignTurns(splitLaneOptions,t);
+  if (leftSide) {
+    if (t.getValue() == TurnType.TL && TurnType.getPrimaryTurn(lanesArray[0]) != TurnType.TL && TurnType.getPrimaryTurn(lanesArray[0]) != TurnType.TSLL && TurnType.getPrimaryTurn(lanesArray[0]) != TurnType.TSHL) {
+      if (TurnType.getPrimaryTurn(lanesArray[0]) != 0) {
+        t.setSecondaryTurn(0,TurnType.getPrimaryTurn(lanesArray[0]));
+        t.setPrimaryTurn(0,TurnType.TL);
+      }
+    }
+  }
+ else {
+    int lastIndex=lanesArray.length - 1;
+    if (t.getValue() == TurnType.TR && TurnType.getPrimaryTurn(lanesArray[lastIndex]) != TurnType.TR && TurnType.getPrimaryTurn(lanesArray[lastIndex]) != TurnType.TSLR && TurnType.getPrimaryTurn(lanesArray[lastIndex]) != TurnType.TSHR) {
+      if (TurnType.getPrimaryTurn(lanesArray[lastIndex]) != 0) {
+        t.setSecondaryTurn(lastIndex,TurnType.getPrimaryTurn(lanesArray[lastIndex]));
+        t.setPrimaryTurn(lastIndex,TurnType.TR);
+      }
+    }
+  }
+  for (int i=0; i < lanesArray.length; i++) {
+    if (TurnType.getPrimaryTurn(lanesArray[i]) == t.getValue()) {
+      lanesArray[i]|=1;
+    }
+  }
+}
