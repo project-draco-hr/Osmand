@@ -9,7 +9,36 @@
     return;
   }
   if (t.getLanes().length != lanes) {
-    return;
+    List<Integer> sourceLanes=new ArrayList<Integer>();
+    int outgoingLanesIndex=0;
+    int sourceLanesIndex=0;
+    while (outgoingLanesIndex < t.getLanes().length && sourceLanesIndex < lanes) {
+      if (splitLaneOptions[sourceLanesIndex].contains(";")) {
+        int options=countOccurrences(splitLaneOptions[sourceLanesIndex],';');
+        if (options == 1) {
+          if (outgoingLanesIndex + 1 >= t.getLanes().length) {
+            return;
+          }
+          int usability=t.getLanes()[outgoingLanesIndex] | t.getLanes()[outgoingLanesIndex + 1];
+          sourceLanes.add(usability);
+          outgoingLanesIndex+=2;
+          sourceLanesIndex++;
+        }
+ else {
+          return;
+        }
+      }
+ else {
+        sourceLanes.add(t.getLanes()[outgoingLanesIndex]);
+        outgoingLanesIndex++;
+        sourceLanesIndex++;
+      }
+    }
+    int[] newLanes=new int[sourceLanes.size()];
+    for (int i=0; i < sourceLanes.size(); i++) {
+      newLanes[i]=sourceLanes.get(i);
+    }
+    t.setLanes(newLanes);
   }
   assignTurns(splitLaneOptions,t);
 }
