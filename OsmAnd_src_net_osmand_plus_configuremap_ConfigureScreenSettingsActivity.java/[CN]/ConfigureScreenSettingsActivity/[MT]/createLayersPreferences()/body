@@ -28,8 +28,20 @@
   mapLayersCategory.addPreference(p);
   p=createCheckBoxPreference(settings.SHOW_FAVORITES,R.string.layer_favorites,R.drawable.ic_action_fav_dark,R.drawable.ic_action_fav_light);
   mapLayersCategory.addPreference(p);
-  p=createCheckBoxPreference(settings.SHOW_POI_LABEL,R.string.layer_gpx_layer,R.drawable.ic_action_polygom_dark,R.drawable.ic_action_polygom_light);
-  mapLayersCategory.addPreference(p);
+  final CheckBoxPreference gpx=new CheckBoxPreference(this);
+  gpx.setTitle(R.string.layer_gpx_layer);
+  addIcon(gpx,R.drawable.ic_action_polygom_light,R.drawable.ic_action_polygom_dark);
+  gpx.setChecked(getMyApplication().getSelectedGpxHelper().isShowingAnyGpxFiles());
+  gpx.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener(){
+    @Override public boolean onPreferenceClick(    Preference preference){
+      if (gpx.isChecked()) {
+        showGPXFileDialog(getAlreadySelectedGpx());
+      }
+      return true;
+    }
+  }
+);
+  mapLayersCategory.addPreference(gpx);
   p=createCheckBoxPreference(settings.SHOW_TRANSPORT_OVER_MAP,R.string.layer_transport,R.drawable.ic_action_bus_dark,R.drawable.ic_action_bus_light);
   mapLayersCategory.addPreference(p);
   if (TransportRouteHelper.getInstance().routeIsCalculated()) {

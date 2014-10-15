@@ -1,0 +1,28 @@
+{
+  CallbackWithObject<GPXUtilities.GPXFile[]> callbackWithObject=new CallbackWithObject<GPXUtilities.GPXFile[]>(){
+    @Override public boolean processResult(    GPXUtilities.GPXFile[] result){
+      GPXUtilities.WptPt locToShow=null;
+      for (      GPXUtilities.GPXFile g : result) {
+        if (g.showCurrentTrack) {
+          if (!settings.SAVE_TRACK_TO_GPX.get() && !settings.SAVE_GLOBAL_TRACK_TO_GPX.get()) {
+            AccessibleToast.makeText(getActivity(),R.string.gpx_monitoring_disabled_warn,Toast.LENGTH_SHORT).show();
+          }
+          break;
+        }
+        if (!g.showCurrentTrack || locToShow == null) {
+          locToShow=g.findPointToShow();
+        }
+      }
+      getMyApplication().getSelectedGpxHelper().setGpxFileToDisplay(result);
+      createAllCategories();
+      return true;
+    }
+  }
+;
+  if (files == null) {
+    GpxUiHelper.selectGPXFile(getActivity(),true,true,callbackWithObject);
+  }
+ else {
+    GpxUiHelper.selectGPXFile(files,getActivity(),true,true,callbackWithObject);
+  }
+}
