@@ -1,0 +1,75 @@
+{
+  PreferenceCategory renderingCategory=new PreferenceCategory(this);
+  renderingCategory.setTitle(R.string.map_widget_map_rendering);
+  PreferenceScreen grp=getPreferenceScreen();
+  grp.addPreference(renderingCategory);
+  Preference p=new Preference(this);
+  p.setTitle(R.string.map_widget_renderer);
+  p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener(){
+    @Override public boolean onPreferenceClick(    Preference preference){
+      AlertDialog.Builder bld=new AlertDialog.Builder(getActivity());
+      bld.setTitle(R.string.renderers);
+      Collection<String> rendererNames=getMyApplication().getRendererRegistry().getRendererNames();
+      final String[] items=rendererNames.toArray(new String[rendererNames.size()]);
+      final String[] visibleNames=new String[items.length];
+      int selected=-1;
+      final String selectedName=getMyApplication().getRendererRegistry().getCurrentSelectedRenderer().getName();
+      for (int j=0; j < items.length; j++) {
+        if (items[j].equals(selectedName)) {
+          selected=j;
+        }
+        visibleNames[j]=items[j].replace('_',' ').replace('-',' ');
+      }
+      bld.setSingleChoiceItems(visibleNames,selected,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          String renderer=items[which];
+          RenderingRulesStorage loaded=getMyApplication().getRendererRegistry().getRenderer(renderer);
+          if (loaded != null) {
+            getMyApplication().getSettings().RENDERER.set(renderer);
+            getMyApplication().getRendererRegistry().setCurrentSelectedRender(loaded);
+            getMyApplication().getResourceManager().getRenderer().clearCache();
+          }
+ else {
+            AccessibleToast.makeText(getMyApplication(),R.string.renderer_load_exception,Toast.LENGTH_SHORT).show();
+          }
+          dialog.dismiss();
+          createAllCategories();
+        }
+      }
+);
+      bld.show();
+      return true;
+    }
+  }
+);
+  grp.addPreference(p);
+  p=new Preference(this);
+  p.setTitle(R.string.map_widget_day_night);
+  p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener(){
+    @Override public boolean onPreferenceClick(    Preference preference){
+      AlertDialog.Builder bld=new AlertDialog.Builder(getActivity());
+      bld.setTitle(R.string.daynight);
+      final String[] items=new String[OsmandSettings.DayNightMode.values().length];
+      for (int i=0; i < items.length; i++) {
+        items[i]=OsmandSettings.DayNightMode.values()[i].toHumanString(getMyApplication());
+      }
+      int i=getMyApplication().getSettings().DAYNIGHT_MODE.get().ordinal();
+      bld.setSingleChoiceItems(items,i,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          getMyApplication().getSettings().DAYNIGHT_MODE.set(OsmandSettings.DayNightMode.values()[which]);
+          getMyApplication().getResourceManager().getRenderer().clearCache();
+          dialog.dismiss();
+        }
+      }
+);
+      bld.show();
+      return true;
+    }
+  }
+);
+  grp.addPreference(p);
+  RenderingRulesStorage renderer=getMyApplication().getRendererRegistry().getCurrentSelectedRenderer();
+  if (renderer != null && AppearanceWidgetsFactory.EXTRA_SETTINGS) {
+    createMapRenderingPreferences();
+  }
+}

@@ -1,0 +1,85 @@
+{
+  final List<PoiFilter> userDefined=new ArrayList<PoiFilter>();
+  OsmandApplication app=(OsmandApplication)getApplication();
+  final PoiFiltersHelper poiFilters=app.getPoiFilters();
+  final ContextMenuAdapter adapter=new ContextMenuAdapter(this);
+  ContextMenuAdapter.Item is=adapter.item(getString(R.string.any_poi));
+  if (RenderingIcons.containsBigIcon("null")) {
+    is.icon(RenderingIcons.getBigIconResourceId("null"));
+  }
+  is.reg();
+  adapter.item(getString(R.string.poi_filter_custom_filter)).icon(RenderingIcons.getBigIconResourceId("user_defined")).reg();
+  for (  PoiFilter f : poiFilters.getUserDefinedPoiFilters()) {
+    ContextMenuAdapter.Item it=adapter.item(f.getName());
+    if (RenderingIcons.containsBigIcon(f.getSimplifiedId())) {
+      it.icon(RenderingIcons.getBigIconResourceId(f.getSimplifiedId()));
+    }
+ else {
+      it.icon(RenderingIcons.getBigIconResourceId("user_defined"));
+    }
+    it.reg();
+    userDefined.add(f);
+  }
+  final AmenityType[] categories=AmenityType.getCategories();
+  for (  AmenityType t : categories) {
+    ContextMenuAdapter.Item it=adapter.item(OsmAndFormatter.toPublicString(t,getMyApplication()));
+    if (RenderingIcons.containsBigIcon(t.toString().toLowerCase())) {
+      it.icon(RenderingIcons.getBigIconResourceId(t.toString().toLowerCase()));
+    }
+    it.reg();
+  }
+  final AlertDialog.Builder builder=new AlertDialog.Builder(this);
+  ListAdapter listAdapter;
+  if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+    listAdapter=adapter.createListAdapter(this,R.layout.list_menu_item,app.getSettings().isLightContentMenu());
+  }
+ else {
+    listAdapter=adapter.createListAdapter(this,R.layout.list_menu_item_native,app.getSettings().isLightContentMenu());
+  }
+  builder.setAdapter(listAdapter,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (which == 1) {
+        String filterId=PoiFilter.CUSTOM_FILTER_ID;
+        getMyApplication().getSettings().setPoiFilterForMap(filterId);
+        Intent newIntent=new Intent(getApplication(),EditPOIFilterActivity.class);
+        newIntent.putExtra(EditPOIFilterActivity.AMENITY_FILTER,filterId);
+        getActivity().startActivity(newIntent);
+      }
+ else {
+        String filterId;
+        if (which == 0) {
+          filterId=PoiFiltersHelper.getOsmDefinedFilterId(null);
+        }
+ else         if (which <= userDefined.size() + 1) {
+          filterId=userDefined.get(which - 2).getFilterId();
+        }
+ else {
+          filterId=PoiFiltersHelper.getOsmDefinedFilterId(categories[which - userDefined.size() - 2]);
+        }
+        getMyApplication().getSettings().setPoiFilterForMap(filterId);
+        PoiFilter f=poiFilters.getFilterById(filterId);
+        if (f != null) {
+          f.clearNameFilter();
+        }
+        if (selected != null && selected.length > 0) {
+          selected[0]=f;
+        }
+        createAllCategories();
+      }
+    }
+  }
+);
+  builder.setOnKeyListener(new DialogInterface.OnKeyListener(){
+    @Override public boolean onKey(    DialogInterface dialogInterface,    int i,    KeyEvent event){
+      if (i == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
+        dialogInterface.cancel();
+        settings.SHOW_POI_OVER_MAP.set(false);
+        createAllCategories();
+        return true;
+      }
+      return false;
+    }
+  }
+);
+  return builder.show();
+}
