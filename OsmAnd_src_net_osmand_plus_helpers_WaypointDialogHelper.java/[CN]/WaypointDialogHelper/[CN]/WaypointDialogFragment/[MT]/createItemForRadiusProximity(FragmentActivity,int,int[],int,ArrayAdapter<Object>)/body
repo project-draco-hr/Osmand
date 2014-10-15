@@ -1,0 +1,34 @@
+{
+  View v;
+  v=ctx.getLayoutInflater().inflate(R.layout.drawer_list_radius,null);
+  final TextView radius=(TextView)v.findViewById(R.id.descr);
+  radius.setText(OsmAndFormatter.getFormattedDistance(waypointHelper.getSearchDeviationRadius(type),app));
+  radius.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View view){
+      int length=WaypointHelper.SEARCH_RADIUS_VALUES.length;
+      String[] names=new String[length];
+      int selected=0;
+      for (int i=0; i < length; i++) {
+        names[i]=OsmAndFormatter.getFormattedDistance(WaypointHelper.SEARCH_RADIUS_VALUES[i],app);
+        if (WaypointHelper.SEARCH_RADIUS_VALUES[i] == waypointHelper.getSearchDeviationRadius(type)) {
+          selected=i;
+        }
+      }
+      new AlertDialog.Builder(getActivity()).setSingleChoiceItems(names,selected,new OnClickListener(){
+        @Override public void onClick(        DialogInterface dialogInterface,        int i){
+          int value=WaypointHelper.SEARCH_RADIUS_VALUES[i];
+          if (waypointHelper.getSearchDeviationRadius(type) != value) {
+            running[0]=position;
+            waypointHelper.setSearchDeviationRadius(type,value);
+            radius.setText(OsmAndFormatter.getFormattedDistance(value,app));
+            recalculatePoints(running,thisAdapter,WaypointHelper.POI);
+            dialogInterface.dismiss();
+          }
+        }
+      }
+).setTitle(app.getString(R.string.search_radius_proximity)).setNegativeButton(R.string.default_buttons_cancel,null).show();
+    }
+  }
+);
+  return v;
+}

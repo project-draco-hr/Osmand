@@ -10,35 +10,15 @@
       final ArrayAdapter<Object> thisAdapter=this;
       boolean labelView=(getItem(position) instanceof Integer);
       boolean viewText=v != null && v.findViewById(R.id.info_close) == null;
-      if (v == null || viewText != labelView) {
-        v=ctx.getLayoutInflater().inflate(labelView ? R.layout.waypoint_header : R.layout.waypoint_reached,null);
+      if (getItem(position) instanceof RadiusItem) {
+        final int type=((RadiusItem)getItem(position)).type;
+        v=createItemForRadiusProximity(ctx,type,running,position,thisAdapter);
       }
-      if (labelView) {
-        final int type=(Integer)getItem(position);
-        final CompoundButton btn=(CompoundButton)v.findViewById(R.id.check_item);
-        btn.setVisibility(waypointHelper.isTypeConfigurable(type) ? View.VISIBLE : View.GONE);
-        btn.setOnCheckedChangeListener(null);
-        final boolean checked=waypointHelper.isTypeEnabled(type);
-        btn.setChecked(checked);
-        btn.setEnabled(running[0] == -1);
-        v.findViewById(R.id.ProgressBar).setVisibility(position == running[0] ? View.VISIBLE : View.GONE);
-        btn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-          @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
-            running[0]=position;
-            thisAdapter.notifyDataSetInvalidated();
-            if (type == WaypointHelper.POI && isChecked) {
-              selectPoi(running,thisAdapter,type,isChecked);
-            }
- else {
-              enableType(running,thisAdapter,type,isChecked);
-            }
-          }
-        }
-);
-        TextView tv=(TextView)v.findViewById(R.id.header_text);
-        tv.setText(getHeader(type,checked));
+ else       if (labelView) {
+        v=createItemForCategory(ctx,(Integer)getItem(position),running,position,thisAdapter);
       }
  else {
+        v=ctx.getLayoutInflater().inflate(R.layout.waypoint_reached,null);
         updatePointInfoView(app,ctx,v,(LocationPointWrapper)getItem(position),WaypointDialogFragment.this);
         View remove=v.findViewById(R.id.info_close);
         ((ImageButton)remove).setImageDrawable(ctx.getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_gremove_light : R.drawable.ic_action_gremove_dark));

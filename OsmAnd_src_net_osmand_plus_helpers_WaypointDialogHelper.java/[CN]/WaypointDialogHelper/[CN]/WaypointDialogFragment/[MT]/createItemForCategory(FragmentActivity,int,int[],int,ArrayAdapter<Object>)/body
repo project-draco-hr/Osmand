@@ -1,0 +1,43 @@
+{
+  View v;
+  v=ctx.getLayoutInflater().inflate(R.layout.waypoint_header,null);
+  ImageView sort=(ImageView)v.findViewById(R.id.sort);
+  if (type == 0 && sort != null) {
+    sort.setVisibility(View.VISIBLE);
+    if (app.getSettings().isLightContent()) {
+      sort.setImageResource(R.drawable.ic_sort_waypoint_white);
+    }
+ else {
+      sort.setImageResource(R.drawable.ic_sort_waypoint_dark);
+    }
+    sort.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View view){
+        IntermediatePointsDialog.openIntermediatePointsDialog(ctx,app,true);
+      }
+    }
+);
+  }
+  final CompoundButton btn=(CompoundButton)v.findViewById(R.id.check_item);
+  btn.setVisibility(waypointHelper.isTypeConfigurable(type) ? View.VISIBLE : View.GONE);
+  btn.setOnCheckedChangeListener(null);
+  final boolean checked=waypointHelper.isTypeEnabled(type);
+  btn.setChecked(checked);
+  btn.setEnabled(running[0] == -1);
+  v.findViewById(R.id.ProgressBar).setVisibility(position == running[0] ? View.VISIBLE : View.GONE);
+  btn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
+      running[0]=position;
+      thisAdapter.notifyDataSetInvalidated();
+      if (type == WaypointHelper.POI && isChecked) {
+        selectPoi(running,thisAdapter,type,isChecked);
+      }
+ else {
+        enableType(running,thisAdapter,type,isChecked);
+      }
+    }
+  }
+);
+  TextView tv=(TextView)v.findViewById(R.id.header_text);
+  tv.setText(getHeader(type,checked));
+  return v;
+}
