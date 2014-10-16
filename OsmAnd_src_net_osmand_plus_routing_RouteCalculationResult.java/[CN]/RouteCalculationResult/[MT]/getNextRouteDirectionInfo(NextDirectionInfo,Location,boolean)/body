@@ -1,7 +1,6 @@
 {
   int dirInfo=currentDirectionInfo;
   if (dirInfo < directions.size()) {
-    int dist=listDistance[currentRoute];
     int nextInd=dirInfo + 1;
     if (toSpeak) {
       while (nextInd < directions.size()) {
@@ -12,12 +11,14 @@
         nextInd++;
       }
     }
+    int dist=listDistance[currentRoute];
     if (fromLoc != null) {
       dist+=fromLoc.distanceTo(locations.get(currentRoute));
     }
     if (nextInd < directions.size()) {
       info.directionInfo=directions.get(nextInd);
-      dist-=listDistance[directions.get(nextInd).routePointOffset];
+      if (directions.get(nextInd).routePointOffset <= currentRoute && currentRoute <= directions.get(nextInd).routeEndPointOffset)       dist-=listDistance[directions.get(nextInd).routeEndPointOffset];
+ else       dist-=listDistance[directions.get(nextInd).routePointOffset];
     }
     if (intermediatePoints != null && nextIntermediate < intermediatePoints.length) {
       info.intermediatePoint=intermediatePoints[nextIntermediate] == nextInd;
