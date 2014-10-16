@@ -1,19 +1,12 @@
 {
-  PreferenceCategory renderingCategory=new PreferenceCategory(this);
-  renderingCategory.setTitle(R.string.map_widget_vector_attributes);
-  PreferenceScreen grp=getPreferenceScreen();
-  grp.addPreference(renderingCategory);
-  RenderingRulesStorage renderer=getMyApplication().getRendererRegistry().getCurrentSelectedRenderer();
-  final OsmandApplication app=getMyApplication();
+  RenderingRulesStorage renderer=app.getRendererRegistry().getCurrentSelectedRenderer();
   List<RenderingRuleProperty> customRules=renderer.PROPS.getCustomRules();
   for (  final RenderingRuleProperty p : customRules) {
     String propertyName=SettingsActivity.getStringPropertyName(getActivity(),p.getAttrName(),p.getName());
     final String propertyDescr=SettingsActivity.getStringPropertyDescription(getActivity(),p.getAttrName(),p.getName());
     if (p.isBoolean()) {
-      final OsmandSettings.CommonPreference<Boolean> pref=getMyApplication().getSettings().getCustomRenderBooleanProperty(p.getAttrName());
-      CheckBoxPreference preference=createCheckBoxPreference(pref);
+      final OsmandSettings.CommonPreference<Boolean> pref=app.getSettings().getCustomRenderBooleanProperty(p.getAttrName());
       preference.setTitle(propertyName);
-      renderingCategory.addPreference(preference);
       preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener(){
         @Override public boolean onPreferenceClick(        Preference preference){
           pref.set(!pref.get());
