@@ -21,12 +21,37 @@
     lastUpdateTime=last;
     blink(status,big,small);
   }
+  View logOffLayout=header.findViewById(R.id.osmo_log_off_layout);
+  CompoundButton login=(CompoundButton)header.findViewById(R.id.osmo_login_logoff);
   if (service.isConnected()) {
     header.findViewById(R.id.motd).setVisibility(View.VISIBLE);
     header.findViewById(R.id.enable_tracker).setVisibility(View.VISIBLE);
+    logOffLayout.setVisibility(View.VISIBLE);
+    TextView userNameTextView=(TextView)header.findViewById(R.id.osmo_user_name_text_view);
+    Button hintBtn=(Button)header.findViewById(R.id.osmo_login_hint_button);
+    if (service.isLoggedIn()) {
+      String text=getString(R.string.logged_as,app.getSettings().OSMO_USER_NAME.get());
+      userNameTextView.setText(text);
+      hintBtn.setVisibility(View.GONE);
+      if (!login.isChecked()) {
+        login.setOnCheckedChangeListener(null);
+        login.setChecked(true);
+        login.setOnCheckedChangeListener(new LoginOnCheckedChangeListener());
+      }
+    }
+ else {
+      userNameTextView.setText(R.string.anonymous_user);
+      hintBtn.setVisibility(View.VISIBLE);
+      if (login.isChecked()) {
+        login.setOnCheckedChangeListener(null);
+        login.setChecked(false);
+        login.setOnCheckedChangeListener(new LoginOnCheckedChangeListener());
+      }
+    }
   }
  else {
     header.findViewById(R.id.motd).setVisibility(View.GONE);
     header.findViewById(R.id.enable_tracker).setVisibility(View.GONE);
+    logOffLayout.setVisibility(View.GONE);
   }
 }

@@ -81,6 +81,116 @@
     storage.save();
     processed=true;
   }
+ else   if (command.equals("GROUP_GET_ALL")) {
+    try {
+      JSONArray arr=new JSONArray(data);
+      int arrLength=arr.length();
+      if (arrLength > 0) {
+        Map<String,OsMoGroup> resivedGroups=new HashMap<String,OsMoGroupsStorage.OsMoGroup>();
+        for (int i=0; i < arrLength; i++) {
+          JSONObject o=arr.getJSONObject(i);
+          OsMoGroup parsedGroup=parseGroup(o);
+          resivedGroups.put(parsedGroup.getGroupId(),parsedGroup);
+        }
+        storage.mergeGroups(resivedGroups);
+        storage.save();
+      }
+      processed=true;
+      for (      OsMoGroup g : storage.getGroups()) {
+        if (!g.isMainGroup() && g.isEnabled()) {
+          connectGroupImpl(g);
+        }
+      }
+    }
+ catch (    JSONException e) {
+      e.printStackTrace();
+      service.showErrorMessage(e.getMessage());
+      return processed;
+    }
+  }
+ else   if (command.equals("DEVICE_GET_ALL")) {
+    try {
+      JSONArray arr=new JSONArray(data);
+      int arrLength=arr.length();
+      if (arrLength > 0) {
+        OsMoGroup mainGroup=storage.getMainGroup();
+        String mid=service.getMyTrackerId();
+        Set<String> toDelete=new HashSet<String>(mainGroup.users.keySet());
+        for (int i=0; i < arrLength; i++) {
+          JSONObject o=arr.getJSONObject(i);
+          OsMoDevice device=parseDevice(o);
+          device.group=mainGroup;
+          String trackerId=device.getTrackerId();
+          if (!mid.equals(trackerId)) {
+            if (toDelete.contains(trackerId)) {
+              toDelete.remove(trackerId);
+            }
+ else {
+              mainGroup.users.put(trackerId,device);
+            }
+          }
+        }
+        for (        String id : toDelete) {
+          mainGroup.users.remove(id);
+        }
+        storage.save();
+        for (        OsMoDevice d : mainGroup.getGroupUsers(null)) {
+          if (d.isEnabled() && !d.isActive()) {
+            connectDeviceImpl(d);
+          }
+        }
+      }
+      processed=true;
+    }
+ catch (    JSONException e) {
+      e.printStackTrace();
+      service.showErrorMessage(e.getMessage());
+      return processed;
+    }
+  }
+ else   if (command.equals("SUBSCRIBE")) {
+    OsMoGroup mainGroup=storage.getMainGroup();
+    OsMoDevice device=mainGroup.users.get(gid);
+    if (device != null) {
+      if (OK.equals(data)) {
+        connectDeviceImpl(device);
+      }
+ else {
+        mainGroup.users.remove(gid);
+        storage.save();
+        if (obj != null) {
+          String errorDescription=obj.optString("error_description");
+          if (!TextUtils.isEmpty(errorDescription)) {
+            app.showToastMessage(errorDescription);
+          }
+        }
+ else {
+          app.showToastMessage(app.getString(R.string.osmo_device_not_found));
+        }
+      }
+    }
+    processed=true;
+  }
+ else   if (command.equals("UNSUBSCRIBE")) {
+    OsMoGroup mainGroup=storage.getMainGroup();
+    OsMoDevice device=mainGroup.users.get(gid);
+    if (device != null) {
+      mainGroup.users.remove(gid);
+      storage.save();
+    }
+    if (!OK.equals(data)) {
+      if (obj != null) {
+        String errorDescription=obj.optString("error_description");
+        if (!TextUtils.isEmpty(errorDescription)) {
+          app.showToastMessage(errorDescription);
+        }
+      }
+ else {
+        app.showToastMessage(app.getString(R.string.osmo_device_not_found));
+      }
+    }
+    processed=true;
+  }
   if (processed && uiListener != null) {
     uiListener.groupsListChange(operation,group);
   }
