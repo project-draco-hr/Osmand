@@ -1,7 +1,7 @@
 {
   final ContextMenuAdapter cm=createOptionsMenu();
-  final DrawerLayout mDrawerLayout=(DrawerLayout)mapActivity.findViewById(R.id.drawer_layout);
-  final ListView mDrawerList=(ListView)mapActivity.findViewById(R.id.left_drawer);
+  mDrawerLayout=(DrawerLayout)mapActivity.findViewById(R.id.drawer_layout);
+  mDrawerList=(ListView)mapActivity.findViewById(R.id.left_drawer);
   mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow,GravityCompat.START);
   ListAdapter listAdapter;
   if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
@@ -21,9 +21,13 @@
     @Override public void onItemClick(    AdapterView<?> parent,    View view,    int which,    long id){
       OnContextMenuClick click=cm.getClickAdapter(which);
       if (click != null) {
-        click.onContextMenuClick(cm.getItemId(which),which,false,null);
+        if (click.onContextMenuClick(cm.getItemId(which),which,false,null)) {
+          mDrawerLayout.closeDrawer(mDrawerList);
+        }
       }
-      mDrawerLayout.closeDrawer(mDrawerList);
+ else {
+        mDrawerLayout.closeDrawer(mDrawerList);
+      }
     }
   }
 );
