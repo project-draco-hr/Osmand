@@ -38,6 +38,9 @@
         if (app.getNavigationService() != null) {
           app.getNavigationService().stopIfNeeded(app,NavigationService.USED_BY_LIVE);
         }
+        if (getExpandableListView().getFooterViewsCount() > 0) {
+          getExpandableListView().removeFooterView(footer);
+        }
       }
       setSupportProgressBarIndeterminateVisibility(true);
       header.postDelayed(new Runnable(){
@@ -63,4 +66,14 @@
   if (visible) {
     mtd.setText(si.motd);
   }
+  CompoundButton login=(CompoundButton)header.findViewById(R.id.osmo_login_logoff);
+  login.setChecked(osMoPlugin.getService().isLoggedIn());
+  login.setOnCheckedChangeListener(new LoginOnCheckedChangeListener());
+  Button hintBtn=(Button)header.findViewById(R.id.osmo_login_hint_button);
+  hintBtn.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      showHint();
+    }
+  }
+);
 }

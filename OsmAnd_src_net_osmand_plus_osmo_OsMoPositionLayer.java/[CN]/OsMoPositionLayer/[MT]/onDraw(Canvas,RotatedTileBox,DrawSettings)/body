@@ -34,6 +34,25 @@
       int x=(int)tileBox.getPixXFromLatLon(l.getLatitude(),l.getLongitude());
       int y=(int)tileBox.getPixYFromLatLon(l.getLatitude(),l.getLongitude());
       pointInnerCircle.setColor(t.getColor());
+      pointOuter.setColor(POINT_OUTER_COLOR);
+      paintTextIcon.setColor(PAINT_TEXT_ICON_COLOR);
+      Location lastLocation=t.getLastLocation();
+      if (lastLocation != null) {
+        long now=System.currentTimeMillis();
+        boolean recent=Math.abs(now - lastLocation.getTime()) < OsMoGroupsActivity.RECENT_THRESHOLD;
+        if (!recent) {
+          int color=t.getNonActiveColor();
+          pointInnerCircle.setColor(color);
+          pointOuter.setColor(Color.argb(Color.alpha(color),Color.red(POINT_OUTER_COLOR),Color.green(POINT_OUTER_COLOR),Color.blue(POINT_OUTER_COLOR)));
+          paintTextIcon.setColor(Color.argb(Color.alpha(color),Color.red(PAINT_TEXT_ICON_COLOR),Color.green(PAINT_TEXT_ICON_COLOR),Color.blue(PAINT_TEXT_ICON_COLOR)));
+        }
+      }
+ else {
+        int color=t.getNonActiveColor();
+        pointInnerCircle.setColor(color);
+        pointOuter.setColor(Color.argb(Color.alpha(color),Color.red(POINT_OUTER_COLOR),Color.green(POINT_OUTER_COLOR),Color.blue(POINT_OUTER_COLOR)));
+        paintTextIcon.setColor(Color.argb(Color.alpha(color),Color.red(PAINT_TEXT_ICON_COLOR),Color.green(PAINT_TEXT_ICON_COLOR),Color.blue(PAINT_TEXT_ICON_COLOR)));
+      }
       canvas.drawCircle(x,y,r + (float)Math.ceil(tileBox.getDensity()),pointOuter);
       canvas.drawCircle(x,y,r - (float)Math.ceil(tileBox.getDensity()),pointInnerCircle);
       paintTextIcon.setTextSize(r * 3 / 2);
