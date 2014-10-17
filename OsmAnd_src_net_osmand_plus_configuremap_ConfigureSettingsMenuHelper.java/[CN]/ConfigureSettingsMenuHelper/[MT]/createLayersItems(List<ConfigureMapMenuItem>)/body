@@ -1,51 +1,11 @@
 {
-  items.add(new ConfigureMapMenuItem(HEADER,-1,-1,R.string.show));
-  grp.addPreference(mapLayersCategory);
-  final CheckBoxPreference poi=new CheckBoxPreference(this);
-  poi.setTitle(R.string.layer_poi);
-  poi.setChecked(settings.SHOW_POI_OVER_MAP.get());
-  addIcon(poi,R.drawable.ic_action_info_light,R.drawable.ic_action_info_dark);
-  poi.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener(){
-    @Override public boolean onPreferenceClick(    Preference preference){
-      settings.SHOW_POI_OVER_MAP.set(!settings.SHOW_POI_OVER_MAP.get());
-      if (settings.SHOW_POI_OVER_MAP.get()) {
-        selectPOIFilterLayer(null);
-      }
- else {
-        poi.setSummary("");
-      }
-      return true;
-    }
-  }
-);
-  if (settings.SHOW_POI_OVER_MAP.get()) {
-    poi.setSummary(settings.getPoiFilterForMap());
-  }
-  mapLayersCategory.addPreference(poi);
-  CheckBoxPreference p=createCheckBoxPreference(settings.SHOW_POI_LABEL,R.string.layer_amenity_label,R.drawable.ic_action_text_dark,R.drawable.ic_action_text_light);
-  mapLayersCategory.addPreference(p);
-  p=createCheckBoxPreference(settings.SHOW_FAVORITES,R.string.layer_favorites,R.drawable.ic_action_fav_dark,R.drawable.ic_action_fav_light);
-  mapLayersCategory.addPreference(p);
-  final CheckBoxPreference gpx=new CheckBoxPreference(this);
-  gpx.setTitle(R.string.layer_gpx_layer);
-  addIcon(gpx,R.drawable.ic_action_polygom_light,R.drawable.ic_action_polygom_dark);
-  gpx.setChecked(getMyApplication().getSelectedGpxHelper().isShowingAnyGpxFiles());
-  gpx.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener(){
-    @Override public boolean onPreferenceClick(    Preference preference){
-      if (gpx.isChecked()) {
-        showGPXFileDialog(getAlreadySelectedGpx());
-      }
-      return true;
-    }
-  }
-);
-  mapLayersCategory.addPreference(gpx);
-  p=createCheckBoxPreference(settings.SHOW_TRANSPORT_OVER_MAP,R.string.layer_transport,R.drawable.ic_action_bus_dark,R.drawable.ic_action_bus_light);
-  mapLayersCategory.addPreference(p);
+  items.add(new ConfigureMapMenuItem(HEADER,-1,-1,-1,"Show:"));
+  items.add(new ConfigureMapMenuItem(LAYER,R.string.layer_poi,R.drawable.ic_action_info_dark,R.drawable.ic_action_info_light,app.getSettings().SHOW_POI_OVER_MAP));
+  items.add(new ConfigureMapMenuItem(LAYER,R.string.layer_amenity_label,R.drawable.ic_action_text_dark,R.drawable.ic_action_text_light,app.getSettings().SHOW_POI_LABEL));
+  items.add(new ConfigureMapMenuItem(LAYER,R.string.layer_favorites,R.drawable.ic_action_fav_dark,R.drawable.ic_action_fav_light,app.getSettings().SHOW_FAVORITES));
+  items.add(new ConfigureMapMenuItem(LAYER,R.string.layer_gpx_layer,R.drawable.ic_action_polygom_dark,R.drawable.ic_action_polygom_light,null));
+  items.add(new ConfigureMapMenuItem(LAYER,R.string.layer_transport,R.drawable.ic_action_bus_dark,R.drawable.ic_action_bus_light,app.getSettings().SHOW_TRANSPORT_OVER_MAP));
   if (TransportRouteHelper.getInstance().routeIsCalculated()) {
-    p=new CheckBoxPreference(this);
-    p.setChecked(true);
-    addIcon(p,R.drawable.ic_action_bus_light,R.drawable.ic_action_bus_dark);
-    mapLayersCategory.addPreference(p);
+    items.add(new ConfigureMapMenuItem(R.string.layer_transport,LAYER,R.drawable.ic_action_bus_dark,R.drawable.ic_action_bus_light,1));
   }
 }

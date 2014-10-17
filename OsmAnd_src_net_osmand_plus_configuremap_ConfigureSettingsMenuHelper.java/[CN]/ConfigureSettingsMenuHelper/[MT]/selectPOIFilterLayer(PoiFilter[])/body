@@ -1,14 +1,13 @@
 {
   final List<PoiFilter> userDefined=new ArrayList<PoiFilter>();
-  OsmandApplication app=(OsmandApplication)getApplication();
   final PoiFiltersHelper poiFilters=app.getPoiFilters();
-  final ContextMenuAdapter adapter=new ContextMenuAdapter(this);
-  ContextMenuAdapter.Item is=adapter.item(getString(R.string.any_poi));
+  final ContextMenuAdapter adapter=new ContextMenuAdapter(app.getMapActivity());
+  ContextMenuAdapter.Item is=adapter.item(app.getString(R.string.any_poi));
   if (RenderingIcons.containsBigIcon("null")) {
     is.icon(RenderingIcons.getBigIconResourceId("null"));
   }
   is.reg();
-  adapter.item(getString(R.string.poi_filter_custom_filter)).icon(RenderingIcons.getBigIconResourceId("user_defined")).reg();
+  adapter.item(app.getString(R.string.poi_filter_custom_filter)).icon(RenderingIcons.getBigIconResourceId("user_defined")).reg();
   for (  PoiFilter f : poiFilters.getUserDefinedPoiFilters()) {
     ContextMenuAdapter.Item it=adapter.item(f.getName());
     if (RenderingIcons.containsBigIcon(f.getSimplifiedId())) {
@@ -22,28 +21,28 @@
   }
   final AmenityType[] categories=AmenityType.getCategories();
   for (  AmenityType t : categories) {
-    ContextMenuAdapter.Item it=adapter.item(OsmAndFormatter.toPublicString(t,getMyApplication()));
+    ContextMenuAdapter.Item it=adapter.item(OsmAndFormatter.toPublicString(t,app));
     if (RenderingIcons.containsBigIcon(t.toString().toLowerCase())) {
       it.icon(RenderingIcons.getBigIconResourceId(t.toString().toLowerCase()));
     }
     it.reg();
   }
-  final AlertDialog.Builder builder=new AlertDialog.Builder(this);
+  final AlertDialog.Builder builder=new AlertDialog.Builder(app.getMapActivity());
   ListAdapter listAdapter;
   if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-    listAdapter=adapter.createListAdapter(this,R.layout.list_menu_item,app.getSettings().isLightContentMenu());
+    listAdapter=adapter.createListAdapter(app.getMapActivity(),R.layout.list_menu_item,app.getSettings().isLightContentMenu());
   }
  else {
-    listAdapter=adapter.createListAdapter(this,R.layout.list_menu_item_native,app.getSettings().isLightContentMenu());
+    listAdapter=adapter.createListAdapter(app.getMapActivity(),R.layout.list_menu_item_native,app.getSettings().isLightContentMenu());
   }
   builder.setAdapter(listAdapter,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       if (which == 1) {
         String filterId=PoiFilter.CUSTOM_FILTER_ID;
-        getMyApplication().getSettings().setPoiFilterForMap(filterId);
-        Intent newIntent=new Intent(getApplication(),EditPOIFilterActivity.class);
+        app.getSettings().setPoiFilterForMap(filterId);
+        Intent newIntent=new Intent(app,EditPOIFilterActivity.class);
         newIntent.putExtra(EditPOIFilterActivity.AMENITY_FILTER,filterId);
-        getActivity().startActivity(newIntent);
+        app.getMapActivity().startActivity(newIntent);
       }
  else {
         String filterId;
@@ -56,7 +55,7 @@
  else {
           filterId=PoiFiltersHelper.getOsmDefinedFilterId(categories[which - userDefined.size() - 2]);
         }
-        getMyApplication().getSettings().setPoiFilterForMap(filterId);
+        app.getSettings().setPoiFilterForMap(filterId);
         PoiFilter f=poiFilters.getFilterById(filterId);
         if (f != null) {
           f.clearNameFilter();
@@ -64,7 +63,7 @@
         if (selected != null && selected.length > 0) {
           selected[0]=f;
         }
-        createAllCategories();
+        createSettingsAdapter();
       }
     }
   }
@@ -73,8 +72,8 @@
     @Override public boolean onKey(    DialogInterface dialogInterface,    int i,    KeyEvent event){
       if (i == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
         dialogInterface.cancel();
-        settings.SHOW_POI_OVER_MAP.set(false);
-        createAllCategories();
+        app.getSettings().SHOW_POI_OVER_MAP.set(false);
+        createSettingsAdapter();
         return true;
       }
       return false;
