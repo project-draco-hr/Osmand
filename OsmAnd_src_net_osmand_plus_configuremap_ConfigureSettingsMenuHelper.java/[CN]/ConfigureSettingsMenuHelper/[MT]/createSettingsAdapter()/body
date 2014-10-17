@@ -1,6 +1,6 @@
 {
   List<ConfigureMapMenuItem> items=new ArrayList<ConfigureMapMenuItem>();
-  items.add(new ConfigureMapMenuItem(BACK_HEADER,R.string.configure_map,R.drawable.ic_action_undo_dark,R.drawable.ic_action_undo_light,null));
+  items.add(new ConfigureMapMenuItem(BACK_HEADER,R.string.configure_map,R.drawable.ic_back_drawer_dark,R.drawable.ic_back_drawer_white,null));
   createLayersItems(items);
   createRenderingAttributeItems(items);
   return new ArrayAdapter<ConfigureMapMenuItem>(app,R.layout.map_settings_item,items){
@@ -25,6 +25,7 @@
  else       if (item.type == MAP_REDNDER) {
         ((TextView)convertView.findViewById(R.id.name)).setText(item.nameId);
         if (item.nameId == R.string.map_widget_renderer) {
+          ((TextView)convertView.findViewById(R.id.descr)).setText(app.getSettings().RENDERER.get());
           convertView.setOnClickListener(new View.OnClickListener(){
             @Override public void onClick(            View view){
               AlertDialog.Builder bld=new AlertDialog.Builder(app.getMapActivity());
@@ -63,6 +64,7 @@
 );
         }
  else         if (item.nameId == R.string.map_widget_day_night) {
+          ((TextView)convertView.findViewById(R.id.descr)).setText(app.getSettings().DAYNIGHT_MODE.get().toHumanString(app));
           convertView.setOnClickListener(new View.OnClickListener(){
             @Override public void onClick(            View view){
               AlertDialog.Builder bld=new AlertDialog.Builder(app.getMapActivity());
@@ -135,6 +137,7 @@
       return convertView;
     }
     private void prepareView(    View convertView,    ConfigureMapMenuItem item){
+      ((TextView)convertView.findViewById(R.id.descr)).setTypeface(null,Typeface.ITALIC);
       int type=item.type;
       if (type == BACK_HEADER) {
         TextView header=(TextView)convertView.findViewById(R.id.name);
@@ -147,7 +150,9 @@
         header.setTypeface(Typeface.DEFAULT_BOLD);
       }
  else {
-        ((TextView)convertView.findViewById(R.id.name)).setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
+        TextView header=((TextView)convertView.findViewById(R.id.name));
+        header.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
+        header.setTypeface(Typeface.DEFAULT);
       }
       if (type == BACK_HEADER) {
         convertView.findViewById(R.id.back).setVisibility(View.VISIBLE);
@@ -172,6 +177,7 @@
  else       if (type == MAP_REDNDER) {
         convertView.findViewById(R.id.icon).setVisibility(View.GONE);
         convertView.findViewById(R.id.check).setVisibility(View.GONE);
+        convertView.findViewById(R.id.descr).setVisibility(View.VISIBLE);
       }
  else       if (type == RENDERING_PROPERTY) {
         final RenderingRuleProperty p=(RenderingRuleProperty)item.preference;
@@ -203,6 +209,7 @@
             }
  else {
               pref.set(b);
+              app.getMapActivity().getMapView().refreshMap(true);
             }
           }
         }
@@ -228,6 +235,7 @@
         check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
           @Override public void onCheckedChanged(          CompoundButton compoundButton,          boolean b){
             pref.set(b);
+            app.getMapActivity().getMapView().refreshMap(true);
           }
         }
 );
