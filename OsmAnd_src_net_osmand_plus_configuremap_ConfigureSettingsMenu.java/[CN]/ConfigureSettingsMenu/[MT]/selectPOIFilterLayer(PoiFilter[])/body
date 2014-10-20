@@ -28,7 +28,7 @@
     it.reg();
   }
   final AlertDialog.Builder builder=new AlertDialog.Builder(app.getMapActivity());
-  ListAdapter listAdapter;
+  final ListAdapter listAdapter;
   if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
     listAdapter=adapter.createListAdapter(app.getMapActivity(),R.layout.list_menu_item,app.getSettings().isLightContentMenu());
   }
@@ -42,6 +42,8 @@
         app.getSettings().setPoiFilterForMap(filterId);
         Intent newIntent=new Intent(app,EditPOIFilterActivity.class);
         newIntent.putExtra(EditPOIFilterActivity.AMENITY_FILTER,filterId);
+        newIntent.putExtra(EditPOIFilterActivity.SEARCH_LAT,app.getMapActivity().getMapView().getLatitude());
+        newIntent.putExtra(EditPOIFilterActivity.SEARCH_LON,app.getMapActivity().getMapView().getLongitude());
         app.getMapActivity().startActivity(newIntent);
       }
  else {
@@ -60,10 +62,12 @@
         if (f != null) {
           f.clearNameFilter();
         }
+        app.getMapActivity().getMapLayers().setPoiFilter(f);
+        app.getMapActivity().getMapView().refreshMap();
         if (selected != null && selected.length > 0) {
           selected[0]=f;
         }
-        createSettingsAdapter();
+        listView.setAdapter(createSettingsAdapter());
       }
     }
   }
@@ -73,7 +77,7 @@
       if (i == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
         dialogInterface.cancel();
         app.getSettings().SHOW_POI_OVER_MAP.set(false);
-        createSettingsAdapter();
+        listView.setAdapter(createSettingsAdapter());
         return true;
       }
       return false;

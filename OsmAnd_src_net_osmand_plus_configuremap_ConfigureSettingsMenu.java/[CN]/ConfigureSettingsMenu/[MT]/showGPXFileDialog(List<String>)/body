@@ -14,15 +14,29 @@
         }
       }
       app.getSelectedGpxHelper().setGpxFileToDisplay(result);
-      createSettingsAdapter();
+      listView.setAdapter(createSettingsAdapter());
       return true;
     }
   }
 ;
+  AlertDialog dialog;
   if (files == null) {
-    GpxUiHelper.selectGPXFile(app.getMapActivity(),true,true,callbackWithObject);
+    dialog=GpxUiHelper.selectGPXFile(app.getMapActivity(),true,true,callbackWithObject);
   }
  else {
-    GpxUiHelper.selectGPXFile(files,app.getMapActivity(),true,true,callbackWithObject);
+    dialog=GpxUiHelper.selectGPXFile(files,app.getMapActivity(),true,true,callbackWithObject);
+  }
+  if (dialog != null) {
+    dialog.setOnKeyListener(new DialogInterface.OnKeyListener(){
+      @Override public boolean onKey(      DialogInterface dialogInterface,      int i,      KeyEvent event){
+        if (i == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
+          dialogInterface.cancel();
+          listView.setAdapter(createSettingsAdapter());
+          return true;
+        }
+        return false;
+      }
+    }
+);
   }
 }
