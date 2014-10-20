@@ -1,0 +1,47 @@
+{
+  final OsmandMapTileView view=activity.getMapView();
+  adapter.item(R.string.map_widget_vector_attributes).setCategory(true);
+  final OsmandApplication app=view.getApplication();
+  List<RenderingRuleProperty> customRules=renderer.PROPS.getCustomRules();
+  for (  final RenderingRuleProperty p : customRules) {
+    String propertyName=SettingsActivity.getStringPropertyName(view.getContext(),p.getAttrName(),p.getName());
+    final String propertyDescr=SettingsActivity.getStringPropertyDescription(view.getContext(),p.getAttrName(),p.getName());
+    if (p.isBoolean()) {
+      final OsmandSettings.CommonPreference<Boolean> pref=view.getApplication().getSettings().getCustomRenderBooleanProperty(p.getAttrName());
+      adapter.item(propertyName).listen(new OnContextMenuClick(){
+        @Override public boolean onContextMenuClick(        int itemId,        int pos,        boolean isChecked){
+          pref.set(!pref.get());
+          refreshMapComplete(activity);
+          return false;
+        }
+      }
+).selected(pref.get() ? 1 : 0).reg();
+    }
+ else {
+      final OsmandSettings.CommonPreference<String> pref=view.getApplication().getSettings().getCustomRenderProperty(p.getAttrName());
+      adapter.item(propertyName).listen(new OnContextMenuClick(){
+        @Override public boolean onContextMenuClick(        int itemId,        int pos,        boolean isChecked){
+          AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
+          b.setTitle(propertyDescr);
+          int i=Arrays.asList(p.getPossibleValues()).indexOf(pref.get());
+          String[] possibleValuesString=new String[p.getPossibleValues().length];
+          for (int j=0; j < p.getPossibleValues().length; j++) {
+            possibleValuesString[j]=SettingsActivity.getStringPropertyValue(view.getContext(),p.getPossibleValues()[j]);
+          }
+          b.setSingleChoiceItems(possibleValuesString,i,new DialogInterface.OnClickListener(){
+            @Override public void onClick(            DialogInterface dialog,            int which){
+              pref.set(p.getPossibleValues()[which]);
+              app.getResourceManager().getRenderer().clearCache();
+              view.refreshMap(true);
+              dialog.dismiss();
+            }
+          }
+);
+          b.show();
+          return false;
+        }
+      }
+).reg();
+    }
+  }
+}
