@@ -1,0 +1,140 @@
+{
+  items.clear();
+  items.add(new ConfigureMapMenuItem(BACK_HEADER,R.string.configure_map,R.drawable.ic_back_drawer_dark,R.drawable.ic_back_drawer_white,null));
+  createLayersItems(items);
+  createRenderingAttributeItems(items);
+  return new ArrayAdapter<ConfigureMapMenuItem>(app,R.layout.map_settings_item,items){
+    @Override public View getView(    int position,    View convertView,    ViewGroup parent){
+      if (convertView == null) {
+        convertView=app.getMapActivity().getLayoutInflater().inflate(R.layout.map_settings_item,null);
+      }
+      final ConfigureMapMenuItem item=getItem(position);
+      prepareView(convertView,item);
+      if (item.type == BACK_HEADER) {
+        ((TextView)convertView.findViewById(R.id.name)).setText(item.nameId);
+        ImageButton button=(ImageButton)convertView.findViewById(R.id.back);
+        button.setImageResource(getIcon(item));
+        button.setOnClickListener(new View.OnClickListener(){
+          @Override public void onClick(          View view){
+            app.getMapActivity().getMapActions().createOptionsMenuAsDrawer(false);
+          }
+        }
+);
+      }
+ else       if (item.type == HEADER) {
+        ((TextView)convertView.findViewById(R.id.name)).setText((String)item.preference);
+      }
+ else       if (item.type == LAYER) {
+        ((TextView)convertView.findViewById(R.id.name)).setText(item.nameId);
+        final CheckBox ch=(CheckBox)convertView.findViewById(R.id.check);
+        ch.setOnClickListener(new View.OnClickListener(){
+          @Override public void onClick(          View view){
+            onMenuItemClick(item,null);
+          }
+        }
+);
+        if (item.nameId == R.string.layer_gpx_layer) {
+          ch.setChecked(app.getSelectedGpxHelper().isShowingAnyGpxFiles());
+        }
+ else {
+          OsmandSettings.OsmandPreference<Boolean> pref=(OsmandSettings.OsmandPreference<Boolean>)item.preference;
+          ch.setChecked(pref.get());
+        }
+      }
+ else       if (item.type == MAP_REDNDER) {
+        ((TextView)convertView.findViewById(R.id.name)).setText(item.nameId);
+        if (item.nameId == R.string.map_widget_renderer) {
+          ((TextView)convertView.findViewById(R.id.descr)).setText(app.getSettings().RENDERER.get());
+        }
+ else         if (item.nameId == R.string.map_widget_day_night) {
+          ((TextView)convertView.findViewById(R.id.descr)).setText(app.getSettings().DAYNIGHT_MODE.get().toHumanString(app));
+        }
+      }
+ else       if (item.type == RENDERING_PROPERTY) {
+        convertView.findViewById(R.id.icon).setVisibility(View.GONE);
+        final RenderingRuleProperty p=(RenderingRuleProperty)item.preference;
+        String propertyName=SettingsActivity.getStringPropertyName(app,p.getAttrName(),p.getName());
+        TextView header=(TextView)convertView.findViewById(R.id.name);
+        header.setText(propertyName);
+        header.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
+        convertView.findViewById(R.id.icon).setVisibility(View.GONE);
+        final String propertyDescription=SettingsActivity.getStringPropertyDescription(app,p.getAttrName(),p.getName());
+        if (p.isBoolean()) {
+          OsmandSettings.CommonPreference<Boolean> pref=app.getSettings().getCustomRenderBooleanProperty(p.getAttrName());
+          final CheckBox ch=(CheckBox)convertView.findViewById(R.id.check);
+          ch.setChecked(pref.get());
+          ch.setOnClickListener(new View.OnClickListener(){
+            @Override public void onClick(            View view){
+              onMenuItemClick(item,null);
+            }
+          }
+);
+        }
+      }
+      return convertView;
+    }
+    private void prepareView(    View convertView,    ConfigureMapMenuItem item){
+      ((TextView)convertView.findViewById(R.id.descr)).setTypeface(null,Typeface.ITALIC);
+      int type=item.type;
+      if (type == BACK_HEADER) {
+        TextView header=(TextView)convertView.findViewById(R.id.name);
+        header.setTextSize(TypedValue.COMPLEX_UNIT_SP,22);
+        header.setTypeface(Typeface.DEFAULT_BOLD);
+      }
+ else       if (type == HEADER) {
+        TextView header=(TextView)convertView.findViewById(R.id.name);
+        header.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
+        header.setTypeface(Typeface.DEFAULT_BOLD);
+      }
+ else {
+        TextView header=((TextView)convertView.findViewById(R.id.name));
+        header.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
+        header.setTypeface(Typeface.DEFAULT);
+      }
+      if (type == BACK_HEADER) {
+        convertView.findViewById(R.id.back).setVisibility(View.VISIBLE);
+      }
+ else {
+        convertView.findViewById(R.id.back).setVisibility(View.GONE);
+      }
+      if (type == BACK_HEADER) {
+        convertView.findViewById(R.id.check).setVisibility(View.GONE);
+        convertView.findViewById(R.id.descr).setVisibility(View.GONE);
+        convertView.findViewById(R.id.icon).setVisibility(View.GONE);
+      }
+ else       if (type == HEADER) {
+        convertView.findViewById(R.id.icon).setVisibility(View.GONE);
+        convertView.findViewById(R.id.check).setVisibility(View.GONE);
+        convertView.findViewById(R.id.descr).setVisibility(View.GONE);
+      }
+ else       if (type == LAYER) {
+        ((ImageView)convertView.findViewById(R.id.icon)).setImageResource(getIcon(item));
+        convertView.findViewById(R.id.icon).setVisibility(View.VISIBLE);
+        convertView.findViewById(R.id.check).setVisibility(View.VISIBLE);
+      }
+ else       if (type == MAP_REDNDER) {
+        convertView.findViewById(R.id.icon).setVisibility(View.GONE);
+        convertView.findViewById(R.id.check).setVisibility(View.GONE);
+        convertView.findViewById(R.id.descr).setVisibility(View.VISIBLE);
+      }
+ else       if (type == RENDERING_PROPERTY) {
+        final RenderingRuleProperty p=(RenderingRuleProperty)item.preference;
+        if (p.isBoolean()) {
+          convertView.findViewById(R.id.check).setVisibility(View.VISIBLE);
+        }
+ else {
+          convertView.findViewById(R.id.check).setVisibility(View.GONE);
+        }
+      }
+    }
+    private int getIcon(    ConfigureMapMenuItem item){
+      if (app.getSettings().isLightContent()) {
+        return item.lightIcon;
+      }
+ else {
+        return item.darkIcon;
+      }
+    }
+  }
+;
+}
