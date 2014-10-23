@@ -1,5 +1,6 @@
 {
   adapter.item(R.string.map_widget_map_rendering).setCategory(true).layout(R.layout.drawer_list_sub_header).reg();
+  String descr=activity.getMyApplication().getRendererRegistry().getCurrentSelectedRenderer().getName();
   adapter.item(R.string.map_widget_renderer).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    int itemId,    int pos,    boolean isChecked){
       AlertDialog.Builder bld=new AlertDialog.Builder(activity);
@@ -37,7 +38,7 @@
       return false;
     }
   }
-).layout(R.layout.drawer_list_rendering).reg();
+).description(descr).layout(R.layout.drawer_list_rendering).reg();
   adapter.item(R.string.map_widget_day_night).description(activity.getMyApplication().getSettings().DAYNIGHT_MODE.get().toHumanString(activity)).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    int itemId,    int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
@@ -61,6 +62,7 @@
     }
   }
 ).layout(R.layout.drawer_list_rendering).reg();
+  int scale=(int)(activity.getMyApplication().getSettings().TEXT_SCALE.get() * 100);
   adapter.item(R.string.text_size).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    int itemId,    int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
@@ -86,7 +88,7 @@
       return false;
     }
   }
-).layout(R.layout.drawer_list_rendering).reg();
+).description(scale + " %").layout(R.layout.drawer_list_rendering).reg();
   RenderingRulesStorage renderer=activity.getMyApplication().getRendererRegistry().getCurrentSelectedRenderer();
   if (renderer != null) {
     createCustomRenderingProperties(renderer,adapter,activity);
