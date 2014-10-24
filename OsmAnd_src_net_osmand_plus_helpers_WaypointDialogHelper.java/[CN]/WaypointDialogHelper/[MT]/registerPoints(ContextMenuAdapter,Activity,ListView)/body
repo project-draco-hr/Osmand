@@ -1,0 +1,94 @@
+{
+  final int[] running=new int[]{-1};
+  for (int i=0; i < WaypointHelper.MAX; i++) {
+    List<LocationPointWrapper> tp=waypointHelper.getWaypoints(i);
+    if (waypointHelper.isTypeVisible(i)) {
+      final boolean checked=waypointHelper.isTypeEnabled(i);
+      final int type=i;
+      adapter.item(getHeader(ctx,i,checked)).enabled(checked).layout(R.layout.drawer_list_poi_header).listen(new ContextMenuAdapter.OnContextMenuClick(){
+        @Override public boolean onContextMenuClick(        int itemId,        int pos,        boolean isChecked){
+          running[0]=pos;
+          adapter.notifyDataSetChanged();
+          if (type == WaypointHelper.POI && isChecked) {
+            selectPoi(running,adapter,type,isChecked,mapActivity,drawerList);
+          }
+ else {
+            enableType(running,adapter,type,isChecked,drawerList);
+          }
+          return false;
+        }
+      }
+).reg();
+      if (i == WaypointHelper.POI && waypointHelper.isTypeEnabled(WaypointHelper.POI)) {
+        adapter.item(ctx.getString(R.string.search_radius_proximity)).listen(new ContextMenuAdapter.OnContextMenuClick(){
+          @Override public boolean onContextMenuClick(          int itemId,          final int pos,          boolean isChecked){
+            int length=WaypointHelper.SEARCH_RADIUS_VALUES.length;
+            String[] names=new String[length];
+            int selected=0;
+            for (int i=0; i < length; i++) {
+              names[i]=OsmAndFormatter.getFormattedDistance(WaypointHelper.SEARCH_RADIUS_VALUES[i],app);
+              if (WaypointHelper.SEARCH_RADIUS_VALUES[i] == waypointHelper.getPoiSearchDeviationRadius()) {
+                selected=i;
+              }
+            }
+            new AlertDialog.Builder(ctx).setSingleChoiceItems(names,selected,new OnClickListener(){
+              @Override public void onClick(              DialogInterface dialogInterface,              int i){
+                int value=WaypointHelper.SEARCH_RADIUS_VALUES[i];
+                if (waypointHelper.getPoiSearchDeviationRadius() != value) {
+                  running[0]=pos;
+                  adapter.notifyDataSetChanged();
+                  waypointHelper.setPoiSearchDeviationRadius(value);
+                  recalculatePoints(running,adapter,WaypointHelper.POI,drawerList);
+                  dialogInterface.dismiss();
+                }
+              }
+            }
+).setTitle(app.getString(R.string.search_radius_proximity) + " " + app.getString(R.string.poi)).setNegativeButton(R.string.default_buttons_cancel,null).show();
+            return false;
+          }
+        }
+).reg();
+      }
+ else       if (i == WaypointHelper.FAVORITES && waypointHelper.isTypeEnabled(WaypointHelper.FAVORITES)) {
+        adapter.item(ctx.getString(R.string.search_radius_proximity)).listen(new ContextMenuAdapter.OnContextMenuClick(){
+          @Override public boolean onContextMenuClick(          int itemId,          final int pos,          boolean isChecked){
+            int length=WaypointHelper.SEARCH_RADIUS_VALUES.length;
+            String[] names=new String[length];
+            int selected=0;
+            for (int i=0; i < length; i++) {
+              names[i]=OsmAndFormatter.getFormattedDistance(WaypointHelper.SEARCH_RADIUS_VALUES[i],app);
+              if (WaypointHelper.SEARCH_RADIUS_VALUES[i] == waypointHelper.getSearchDeviationRadius()) {
+                selected=i;
+              }
+            }
+            new AlertDialog.Builder(ctx).setSingleChoiceItems(names,selected,new OnClickListener(){
+              @Override public void onClick(              DialogInterface dialogInterface,              int i){
+                int value=WaypointHelper.SEARCH_RADIUS_VALUES[i];
+                if (waypointHelper.getSearchDeviationRadius() != value) {
+                  running[0]=pos;
+                  waypointHelper.setSearchDeviationRadius(value);
+                  recalculatePoints(running,adapter,-1,drawerList);
+                  dialogInterface.dismiss();
+                }
+              }
+            }
+).setTitle(app.getString(R.string.search_radius_proximity)).setNegativeButton(R.string.default_buttons_cancel,null).show();
+            return false;
+          }
+        }
+).reg();
+      }
+      if (tp != null && tp.size() > 0) {
+        for (        LocationPointWrapper p : tp) {
+          WaypointHelper wh=app.getWaypointHelper();
+          int dist=wh.getRouteDistance(p);
+          String dd=OsmAndFormatter.getFormattedDistance(dist,app);
+          if (p.deviationDistance > 0) {
+            dd+="\n+" + OsmAndFormatter.getFormattedDistance(p.deviationDistance,app);
+          }
+          adapter.item(p.getPoint().getName(ctx)).icon(p.getDrawableId(ctx)).description(dd).layout(R.layout.drawer_list_waypoint).reg();
+        }
+      }
+    }
+  }
+}
