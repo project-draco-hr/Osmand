@@ -3,7 +3,7 @@
   if (!input) {
     return false;
   }
-  if (!loadOutput) {
+  if (!loadOutput && !rule.isGroup()) {
     return true;
   }
   if (!rule.isGroup()) {
@@ -16,14 +16,14 @@
       break;
     }
   }
-  if (match || !rule.isGroup()) {
+  boolean fit=(match || !rule.isGroup());
+  if (fit && loadOutput) {
     if (rule.isGroup()) {
       loadOutputProperties(rule,false);
     }
     for (    RenderingRule rr : rule.getIfChildren()) {
       visitRule(rr,loadOutput);
     }
-    return true;
   }
-  return false;
+  return fit;
 }
