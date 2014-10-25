@@ -1,8 +1,8 @@
 {
   adapter.item(R.string.map_widget_map_rendering).setCategory(true).layout(R.layout.drawer_list_sub_header).reg();
-  String descr=activity.getMyApplication().getRendererRegistry().getCurrentSelectedRenderer().getName();
+  String descr=getRenderDescr(activity);
   adapter.item(R.string.map_widget_renderer).listen(new OnContextMenuClick(){
-    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+    @Override public boolean onContextMenuClick(    final ArrayAdapter<?> ad,    int itemId,    final int pos,    boolean isChecked){
       AlertDialog.Builder bld=new AlertDialog.Builder(activity);
       bld.setTitle(R.string.renderers);
       final OsmandApplication app=activity.getMyApplication();
@@ -30,6 +30,8 @@
  else {
             AccessibleToast.makeText(app,R.string.renderer_load_exception,Toast.LENGTH_SHORT).show();
           }
+          adapter.setItemDescription(pos,getRenderDescr(activity));
+          ad.notifyDataSetInvalidated();
           dialog.dismiss();
         }
       }
@@ -39,8 +41,8 @@
     }
   }
 ).description(descr).layout(R.layout.drawer_list_doubleitem).reg();
-  adapter.item(R.string.map_widget_day_night).description(activity.getMyApplication().getSettings().DAYNIGHT_MODE.get().toHumanString(activity)).listen(new OnContextMenuClick(){
-    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+  adapter.item(R.string.map_widget_day_night).description(getDayNightDescr(activity)).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    final ArrayAdapter<?> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder bld=new AlertDialog.Builder(view.getContext());
       bld.setTitle(R.string.daynight);
@@ -54,6 +56,8 @@
           view.getSettings().DAYNIGHT_MODE.set(OsmandSettings.DayNightMode.values()[which]);
           refreshMapComplete(activity);
           dialog.dismiss();
+          adapter.setItemDescription(pos,getDayNightDescr(activity));
+          ad.notifyDataSetInvalidated();
         }
       }
 );
@@ -62,9 +66,8 @@
     }
   }
 ).layout(R.layout.drawer_list_doubleitem).reg();
-  int scale=(int)(activity.getMyApplication().getSettings().TEXT_SCALE.get() * 100);
   adapter.item(R.string.text_size).listen(new OnContextMenuClick(){
-    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+    @Override public boolean onContextMenuClick(    final ArrayAdapter<?> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
       b.setTitle(R.string.text_size);
@@ -81,6 +84,8 @@
         @Override public void onClick(        DialogInterface dialog,        int which){
           view.getSettings().TEXT_SCALE.set(txtValues[which]);
           refreshMapComplete(activity);
+          adapter.setItemDescription(pos,getScale(activity));
+          ad.notifyDataSetInvalidated();
         }
       }
 );
@@ -88,7 +93,7 @@
       return false;
     }
   }
-).description(scale + " %").layout(R.layout.drawer_list_doubleitem).reg();
+).description(getScale(activity)).layout(R.layout.drawer_list_doubleitem).reg();
   RenderingRulesStorage renderer=activity.getMyApplication().getRendererRegistry().getCurrentSelectedRenderer();
   if (renderer != null) {
     createCustomRenderingProperties(renderer,adapter,activity);
