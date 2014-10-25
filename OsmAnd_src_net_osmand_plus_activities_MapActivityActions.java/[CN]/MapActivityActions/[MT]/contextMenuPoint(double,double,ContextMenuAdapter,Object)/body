@@ -18,13 +18,13 @@
   OsmandPlugin.registerMapContextMenu(mapActivity,latitude,longitude,adapter,selectedObj);
   getMyApplication().getAppCustomization().prepareLocationMenu(mapActivity,adapter);
   final Builder builder=new AlertDialog.Builder(mapActivity);
-  ListAdapter listAdapter=adapter.createListAdapter(mapActivity,getMyApplication().getSettings().isLightContentMenu());
+  final ArrayAdapter<?> listAdapter=adapter.createListAdapter(mapActivity,getMyApplication().getSettings().isLightContentMenu());
   builder.setAdapter(listAdapter,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       int standardId=adapter.getElementId(which);
       OnContextMenuClick click=adapter.getClickAdapter(which);
       if (click != null) {
-        click.onContextMenuClick(standardId,which,false);
+        click.onContextMenuClick(listAdapter,standardId,which,false);
       }
  else       if (standardId == R.string.context_menu_item_search) {
         Intent intent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getSearchActivity());
