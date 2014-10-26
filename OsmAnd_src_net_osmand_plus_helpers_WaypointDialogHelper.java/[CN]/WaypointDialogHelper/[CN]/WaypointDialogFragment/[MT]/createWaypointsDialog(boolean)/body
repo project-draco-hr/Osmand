@@ -4,13 +4,16 @@
   final FragmentActivity ctx=getActivity();
   final ListView listView=new ListView(ctx);
   final int[] running=new int[]{-1};
+  final AlertDialog[] srcDialog=new AlertDialog[1];
   final ArrayAdapter<Object> listAdapter=new ArrayAdapter<Object>(ctx,R.layout.waypoint_reached,R.id.title,points){
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
       final ArrayAdapter<Object> thisAdapter=this;
       boolean labelView=(getItem(position) instanceof Integer);
-      boolean viewText=v != null && v.findViewById(R.id.info_close) == null;
-      if (getItem(position) instanceof RadiusItem) {
+      if (position == 0) {
+        v=createDialogHeader(ctx,edit,false,srcDialog[0]);
+      }
+ else       if (getItem(position) instanceof RadiusItem) {
         final int type=((RadiusItem)getItem(position)).type;
         v=createItemForRadiusProximity(ctx,type,running,position,thisAdapter);
       }
@@ -18,19 +21,27 @@
         v=createItemForCategory(ctx,(Integer)getItem(position),running,position,thisAdapter);
       }
  else {
-        v=ctx.getLayoutInflater().inflate(R.layout.waypoint_reached,null);
+        if (v == null || v.findViewById(R.id.info_close) == null) {
+          v=ctx.getLayoutInflater().inflate(R.layout.waypoint_reached,null);
+        }
         updatePointInfoView(app,ctx,v,(LocationPointWrapper)getItem(position),WaypointDialogFragment.this);
         View remove=v.findViewById(R.id.info_close);
-        ((ImageButton)remove).setImageDrawable(ctx.getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_gremove_light : R.drawable.ic_action_gremove_dark));
-        remove.setOnClickListener(new View.OnClickListener(){
-          @Override public void onClick(          View view){
-            LocationPointWrapper point=(LocationPointWrapper)points.get(position);
-            remove(point);
-            deletedPoints.add(point);
-            notifyDataSetChanged();
-          }
+        if (!edit) {
+          remove.setVisibility(View.GONE);
         }
+ else {
+          remove.setVisibility(View.VISIBLE);
+          ((ImageButton)remove).setImageDrawable(ctx.getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_gremove_light : R.drawable.ic_action_gremove_dark));
+          remove.setOnClickListener(new View.OnClickListener(){
+            @Override public void onClick(            View view){
+              LocationPointWrapper point=(LocationPointWrapper)points.get(position);
+              remove(point);
+              deletedPoints.add(point);
+              notifyDataSetChanged();
+            }
+          }
 );
+        }
       }
       return v;
     }
@@ -43,23 +54,30 @@
         LocationPointWrapper ps=(LocationPointWrapper)listAdapter.getItem(item);
         showOnMap(app,ctx,ps.getPoint(),WaypointDialogFragment.this);
       }
+ else       if (new Integer(WaypointHelper.TARGETS).equals(listAdapter.getItem(item))) {
+        IntermediatePointsDialog.openIntermediatePointsDialog(getActivity(),app,true);
+        if (srcDialog[0] != null) {
+          srcDialog[0].dismiss();
+        }
+      }
+ else       if (listAdapter.getItem(item) instanceof RadiusItem) {
+        selectDifferentRadius(((RadiusItem)listAdapter.getItem(item)).type,running,item,listAdapter);
+      }
     }
   }
 );
   AlertDialog.Builder builder=new AlertDialog.Builder(ctx);
   builder.setView(listView);
-  builder.setNeutralButton(R.string.flat_list_waypoints,new OnClickListener(){
-    @Override public void onClick(    DialogInterface dialog,    int which){
-      showWaypointsDialogFlat(getActivity());
-    }
-  }
-);
   builder.setPositiveButton(R.string.default_buttons_ok,new OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       waypointHelper.removeVisibleLocationPoint(deletedPoints);
     }
   }
 );
-  builder.setNegativeButton(ctx.getString(R.string.default_buttons_cancel),null);
-  return builder.create();
+  if (edit) {
+    builder.setNegativeButton(ctx.getString(R.string.default_buttons_cancel),null);
+  }
+  AlertDialog dlg=builder.create();
+  srcDialog[0]=dlg;
+  return dlg;
 }

@@ -1,24 +1,34 @@
 {
   final List<LocationPointWrapper> deletedPoints=new ArrayList<WaypointHelper.LocationPointWrapper>();
   final FragmentActivity ctx=getActivity();
+  final AlertDialog[] srcDialog=new AlertDialog[1];
   final ArrayAdapter<LocationPointWrapper> listAdapter=new ArrayAdapter<LocationPointWrapper>(ctx,R.layout.waypoint_reached,R.id.title,points){
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
+      if (position == 0) {
+        return createDialogHeader(ctx,edit,true,srcDialog[0]);
+      }
       if (v == null) {
         v=ctx.getLayoutInflater().inflate(R.layout.waypoint_reached,null);
       }
       updatePointInfoView(app,ctx,v,getItem(position),WaypointDialogFragment.this);
       View remove=v.findViewById(R.id.info_close);
-      ((ImageButton)remove).setImageDrawable(ctx.getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_gremove_light : R.drawable.ic_action_gremove_dark));
-      remove.setOnClickListener(new View.OnClickListener(){
-        @Override public void onClick(        View view){
-          LocationPointWrapper point=points.get(position);
-          remove(point);
-          deletedPoints.add(point);
-          notifyDataSetChanged();
-        }
+      if (!edit) {
+        remove.setVisibility(View.GONE);
       }
+ else {
+        remove.setVisibility(View.VISIBLE);
+        ((ImageButton)remove).setImageDrawable(ctx.getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_gremove_light : R.drawable.ic_action_gremove_dark));
+        remove.setOnClickListener(new View.OnClickListener(){
+          @Override public void onClick(          View view){
+            LocationPointWrapper point=points.get(position);
+            remove(point);
+            deletedPoints.add(point);
+            notifyDataSetChanged();
+          }
+        }
 );
+      }
       return v;
     }
   }
@@ -40,6 +50,10 @@
     }
   }
 );
-  builder.setNegativeButton(ctx.getString(R.string.default_buttons_cancel),null);
-  return builder.create();
+  if (edit) {
+    builder.setNegativeButton(ctx.getString(R.string.default_buttons_cancel),null);
+  }
+  AlertDialog dlg=builder.create();
+  srcDialog[0]=dlg;
+  return dlg;
 }
