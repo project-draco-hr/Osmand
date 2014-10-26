@@ -1,0 +1,32 @@
+{
+  final OsmandSettings settings=view.getSettings();
+  ContextMenuAdapter cm=new ContextMenuAdapter(view.getContext());
+  cm.setDefaultLayoutId(R.layout.drawer_list_item);
+  cm.item(R.string.layer_map_appearance).icons(R.drawable.ic_back_drawer_dark,R.drawable.ic_back_drawer_white).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      map.getMapActions().prepareStartOptionsMenu();
+      return false;
+    }
+  }
+).reg();
+  cm.item(R.string.map_widget_reset).icons(R.drawable.widget_reset_to_default_dark,R.drawable.widget_reset_to_default_light).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      mapInfoControls.resetToDefault();
+      recreateControls();
+      adapter.notifyDataSetInvalidated();
+      return false;
+    }
+  }
+).reg();
+  final ApplicationMode mode=settings.getApplicationMode();
+  cm.item(R.string.map_widget_top).setCategory(true).layout(R.layout.drawer_list_sub_header).reg();
+  addControls(cm,mapInfoControls.getTop(),mode);
+  cm.item(R.string.map_widget_right).setCategory(true).layout(R.layout.drawer_list_sub_header).reg();
+  addControls(cm,mapInfoControls.getRight(),mode);
+  cm.item(R.string.map_widget_left).setCategory(true).layout(R.layout.drawer_list_sub_header).reg();
+  addControls(cm,mapInfoControls.getLeft(),mode);
+  cm.item(R.string.map_widget_appearance_rem).setCategory(true).layout(R.layout.drawer_list_sub_header).reg();
+  addControls(cm,mapInfoControls.getAppearanceWidgets(),mode);
+  final Set<ApplicationMode> selected=new LinkedHashSet<ApplicationMode>();
+  return cm;
+}

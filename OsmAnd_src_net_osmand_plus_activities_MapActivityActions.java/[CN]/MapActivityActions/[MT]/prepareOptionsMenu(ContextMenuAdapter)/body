@@ -1,0 +1,32 @@
+{
+  final ArrayAdapter<?> listAdapter=cm.createListAdapter(mapActivity,getMyApplication().getSettings().isLightContentMenu());
+  mDrawerList.setAdapter(listAdapter);
+  mDrawerList.setDivider(mapActivity.getResources().getDrawable(R.drawable.drawer_divider));
+  mDrawerList.setBackgroundColor(cm.getBackgroundColor(mapActivity,getMyApplication().getSettings().isLightContentMenu()));
+  mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+    @Override public void onItemClick(    AdapterView<?> parent,    View view,    int which,    long id){
+      OnContextMenuClick click=cm.getClickAdapter(which);
+      if (click instanceof OnRowItemClick) {
+        boolean cl=((OnRowItemClick)click).onRowItemClick(listAdapter,view,cm.getElementId(which),which);
+        if (cl) {
+          mDrawerLayout.closeDrawer(mDrawerList);
+        }
+      }
+ else       if (click != null) {
+        CompoundButton btn=(CompoundButton)view.findViewById(R.id.check_item);
+        if (btn != null && btn.getVisibility() == View.VISIBLE) {
+          btn.setChecked(!btn.isChecked());
+        }
+ else {
+          if (click.onContextMenuClick(listAdapter,cm.getElementId(which),which,false)) {
+            mDrawerLayout.closeDrawer(mDrawerList);
+          }
+        }
+      }
+ else {
+        mDrawerLayout.closeDrawer(mDrawerList);
+      }
+    }
+  }
+);
+}

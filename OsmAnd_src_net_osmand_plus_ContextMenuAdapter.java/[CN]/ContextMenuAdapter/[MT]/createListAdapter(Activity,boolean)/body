@@ -1,0 +1,68 @@
+{
+  final int layoutId=defaultLayoutId;
+  ArrayAdapter<String> listAdapter=new ArrayAdapter<String>(activity,layoutId,R.id.title,getItemNames()){
+    @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
+      View v=convertView;
+      Integer lid=getLayoutId(position);
+      if (v == null || (v.getTag() != lid)) {
+        v=activity.getLayoutInflater().inflate(lid,null);
+        v.setTag(lid);
+      }
+      TextView tv=(TextView)v.findViewById(R.id.title);
+      tv.setText(isCategory(position) ? getItemName(position).toUpperCase() : getItemName(position));
+      int imageId=getImageId(position,holoLight);
+      if (imageId != 0) {
+        ((ImageView)v.findViewById(R.id.icon)).setImageResource(imageId);
+        v.findViewById(R.id.icon).setVisibility(View.VISIBLE);
+      }
+ else       if (v.findViewById(R.id.icon) != null) {
+        v.findViewById(R.id.icon).setVisibility(View.GONE);
+      }
+      if (isCategory(position)) {
+        tv.setTypeface(Typeface.DEFAULT_BOLD);
+      }
+ else {
+        tv.setTypeface(null);
+      }
+      if (v.findViewById(R.id.check_item) != null) {
+        CompoundButton ch=(CompoundButton)v.findViewById(R.id.check_item);
+        if (selectedList.get(position) != -1) {
+          ch.setOnCheckedChangeListener(null);
+          ch.setVisibility(View.VISIBLE);
+          ch.setChecked(selectedList.get(position) > 0);
+          final ArrayAdapter<String> la=this;
+          ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+            @Override public void onCheckedChanged(            CompoundButton buttonView,            boolean isChecked){
+              OnContextMenuClick ca=getClickAdapter(position);
+              if (ca != null) {
+                ca.onContextMenuClick(la,getElementId(position),position,isChecked);
+              }
+              selectedList.set(position,isChecked ? 1 : 0);
+            }
+          }
+);
+          ch.setVisibility(View.VISIBLE);
+        }
+ else         if (ch != null) {
+          ch.setVisibility(View.GONE);
+        }
+      }
+      if (v.findViewById(R.id.ProgressBar) != null) {
+        ProgressBar bar=(ProgressBar)v.findViewById(R.id.ProgressBar);
+        if (loadingList.get(position) == 1) {
+          bar.setVisibility(View.VISIBLE);
+        }
+ else {
+          bar.setVisibility(View.INVISIBLE);
+        }
+      }
+      String itemDescr=getItemDescr(position);
+      if (v.findViewById(R.id.descr) != null) {
+        ((TextView)v.findViewById(R.id.descr)).setText(itemDescr);
+      }
+      return v;
+    }
+  }
+;
+  return listAdapter;
+}

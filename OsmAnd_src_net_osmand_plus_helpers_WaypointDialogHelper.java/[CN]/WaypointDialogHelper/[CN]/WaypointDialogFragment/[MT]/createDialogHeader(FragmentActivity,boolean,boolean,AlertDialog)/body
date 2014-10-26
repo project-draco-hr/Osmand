@@ -1,0 +1,66 @@
+{
+  View v;
+  v=ctx.getLayoutInflater().inflate(R.layout.waypoint_title,null);
+  ImageButton edit=(ImageButton)v.findViewById(R.id.edit);
+  ImageButton sort=(ImageButton)v.findViewById(R.id.sort);
+  ImageButton all=(ImageButton)v.findViewById(R.id.all);
+  edit.setImageResource(app.getSettings().isLightContent() ? R.drawable.ic_action_edit_light : R.drawable.ic_action_edit_dark);
+  edit.setVisibility(editF ? View.GONE : View.VISIBLE);
+  edit.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (flat) {
+        showWaypointsDialogFlat(ctx,true);
+      }
+ else {
+        showWaypointsDialog(ctx,true);
+      }
+      if (dlg != null) {
+        dlg.dismiss();
+      }
+    }
+  }
+);
+  if (app.getTargetPointsHelper().getIntermediatePoints().size() > 0) {
+    sort.setVisibility(View.VISIBLE);
+    sort.setImageResource(app.getSettings().isLightContent() ? R.drawable.ic_sort_waypoint_white : R.drawable.ic_sort_waypoint_dark);
+    sort.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        IntermediatePointsDialog.openIntermediatePointsDialog(getActivity(),app,true);
+        if (dlg != null) {
+          dlg.dismiss();
+        }
+      }
+    }
+);
+  }
+ else {
+    sort.setVisibility(View.GONE);
+  }
+  if (waypointHelper.isRouteCalculated()) {
+    all.setVisibility(View.GONE);
+  }
+ else {
+    all.setVisibility(View.VISIBLE);
+    if (flat) {
+      all.setImageResource(app.getSettings().isLightContent() ? R.drawable.ic_action_gdown_light : R.drawable.ic_action_gdown_dark);
+    }
+ else {
+      all.setImageResource(app.getSettings().isLightContent() ? R.drawable.ic_action_gup_light : R.drawable.ic_action_gup_dark);
+    }
+    all.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        if (flat) {
+          showWaypointsDialog(ctx,editF);
+        }
+ else {
+          showWaypointsDialogFlat(ctx,editF);
+        }
+        if (dlg != null) {
+          dlg.dismiss();
+        }
+      }
+    }
+);
+  }
+  return v;
+}

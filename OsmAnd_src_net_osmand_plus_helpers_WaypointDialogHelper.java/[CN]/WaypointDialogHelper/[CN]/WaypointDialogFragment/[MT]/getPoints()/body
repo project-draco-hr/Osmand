@@ -1,9 +1,20 @@
 {
   final List<Object> points=new ArrayList<Object>();
+  boolean rc=waypointHelper.isRouteCalculated();
+  points.add("");
   for (int i=0; i < WaypointHelper.MAX; i++) {
     List<LocationPointWrapper> tp=waypointHelper.getWaypoints(i);
-    if (waypointHelper.isTypeVisible(i)) {
-      points.add(new Integer(i));
+    if (!rc && i != WaypointHelper.WAYPOINTS && i != WaypointHelper.TARGETS) {
+    }
+ else     if (waypointHelper.isTypeVisible(i)) {
+      if (i != WaypointHelper.TARGETS) {
+        points.add(new Integer(i));
+      }
+      if ((i == WaypointHelper.POI || i == WaypointHelper.FAVORITES || i == WaypointHelper.WAYPOINTS) && rc) {
+        if (waypointHelper.isTypeEnabled(i)) {
+          points.add(new RadiusItem(i));
+        }
+      }
       if (tp != null && tp.size() > 0) {
         points.addAll(tp);
       }
