@@ -2,11 +2,11 @@
   int lanes=prevSegm.getObject().getLanes();
   String turnLanes=getTurnLanesString(prevSegm);
   if (turnLanes == null) {
-    return;
+    return t;
   }
   String[] splitLaneOptions=turnLanes.split("\\|",-1);
   if (splitLaneOptions.length != lanes) {
-    return;
+    return t;
   }
   if (t.getLanes().length != lanes) {
     List<Integer> sourceLanes=new ArrayList<Integer>();
@@ -17,7 +17,7 @@
         int options=countOccurrences(splitLaneOptions[sourceLanesIndex],';');
         if (options == 1) {
           if (outgoingLanesIndex + 1 >= t.getLanes().length) {
-            return;
+            return t;
           }
           int usability=t.getLanes()[outgoingLanesIndex] | t.getLanes()[outgoingLanesIndex + 1];
           sourceLanes.add(usability);
@@ -25,7 +25,7 @@
           sourceLanesIndex++;
         }
  else {
-          return;
+          return t;
         }
       }
  else {
@@ -41,4 +41,6 @@
     t.setLanes(newLanes);
   }
   assignTurns(splitLaneOptions,t);
+  t=inferTurnFromLanes(t,leftSide);
+  return t;
 }
