@@ -1,13 +1,19 @@
 {
-  final List<WaypointHelper.LocationPointWrapper> deletedPoints=new ArrayList<WaypointHelper.LocationPointWrapper>();
-  final List<Object> points=getPoints();
+  final List<Object> points;
+  if (flat) {
+    points=new ArrayList<Object>(waypointHelper.getAllPoints());
+    points.add(0,new LocationPointWrapper());
+  }
+ else {
+    points=getPoints();
+  }
   return new ArrayAdapter<Object>(ctx,R.layout.waypoint_reached,R.id.title,points){
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
       final ArrayAdapter<Object> thisAdapter=this;
       boolean labelView=(getItem(position) instanceof Integer);
       if (position == 0) {
-        v=createDrawerHeader(ctx,edit);
+        v=createDialogHeader(ctx,false,flat,null);
       }
  else       if (getItem(position) instanceof RadiusItem) {
         final int type=((RadiusItem)getItem(position)).type;
@@ -22,22 +28,7 @@
         }
         updatePointInfoView(app,ctx,v,(LocationPointWrapper)getItem(position),null);
         View remove=v.findViewById(R.id.info_close);
-        if (!edit) {
-          remove.setVisibility(View.GONE);
-        }
- else {
-          remove.setVisibility(View.VISIBLE);
-          ((ImageButton)remove).setImageDrawable(ctx.getResources().getDrawable(app.getSettings().isLightContent() ? R.drawable.ic_action_gremove_light : R.drawable.ic_action_gremove_dark));
-          remove.setOnClickListener(new View.OnClickListener(){
-            @Override public void onClick(            View view){
-              LocationPointWrapper point=(LocationPointWrapper)points.get(position);
-              remove(point);
-              deletedPoints.add(point);
-              notifyDataSetChanged();
-            }
-          }
-);
-        }
+        remove.setVisibility(View.GONE);
       }
       return v;
     }
