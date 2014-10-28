@@ -1,34 +1,11 @@
 {
-  List<ApplicationMode> visible=new ArrayList<ApplicationMode>();
-  getVisibleModes(values,selected,visible);
-  LinearLayout ll=(LinearLayout)a.getLayoutInflater().inflate(R.layout.mode_toggles,null);
-  final ToggleButton[] buttons=createDrawerToggles(visible,values,a,ll);
-  final boolean[] selectionChangeLoop=new boolean[]{false};
-  for (int i=0; i < buttons.length - 1; i++) {
-    if (buttons[i] != null) {
-      final int ind=i;
-      ToggleButton b=buttons[i];
-      final ApplicationMode buttonAppMode=values.get(i);
-      b.setChecked(selected.contains(buttonAppMode));
-      b.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-        @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
-          if (selectionChangeLoop[0]) {
-            return;
-          }
-          selectionChangeLoop[0]=true;
-          try {
-            handleSelection(values,selected,true,buttons,ind,buttonAppMode,isChecked);
-            if (onClickListener != null) {
-              onClickListener.onClick(null);
-            }
-          }
-  finally {
-            selectionChangeLoop[0]=false;
-          }
-        }
-      }
-);
-    }
+  OsmandSettings settings=((OsmandApplication)a.getApplication()).getSettings();
+  final List<ApplicationMode> values=new ArrayList<ApplicationMode>(ApplicationMode.values(settings));
+  selected.add(settings.getApplicationMode());
+  if (values.size() > 4) {
+    return prepareAppModeDrawerView(a,visible,values,selected,onClickListener);
   }
-  return ll;
+ else {
+    return prepareAppModeView(a,values,selected,null,true,onClickListener);
+  }
 }
