@@ -4,6 +4,18 @@
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
       Integer lid=getLayoutId(position);
+      if (lid == R.layout.mode_toggles) {
+        final Set<ApplicationMode> selected=new LinkedHashSet<ApplicationMode>();
+        return AppModeDialog.prepareAppModeView(activity,selected,true,null,true,new View.OnClickListener(){
+          @Override public void onClick(          View view){
+            if (selected.size() > 0) {
+              ((OsmandApplication)activity.getApplication()).getSettings().APPLICATION_MODE.set(selected.iterator().next());
+              notifyDataSetChanged();
+            }
+          }
+        }
+);
+      }
       if (v == null || (v.getTag() != lid)) {
         v=activity.getLayoutInflater().inflate(lid,null);
         v.setTag(lid);

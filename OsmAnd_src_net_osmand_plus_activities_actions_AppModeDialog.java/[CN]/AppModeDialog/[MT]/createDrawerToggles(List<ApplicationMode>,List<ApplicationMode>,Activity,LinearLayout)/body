@@ -1,0 +1,43 @@
+{
+  ToggleButton[] buttons=createToggles(visible,ll,a);
+  ToggleButton[] newButtons=new ToggleButton[buttons.length + 1];
+  for (int i=0; i < buttons.length; i++) {
+    newButtons[i]=buttons[i];
+  }
+  ToggleButton tb=new ToggleButton(a);
+  newButtons[buttons.length]=tb;
+  tb.setTextOn("");
+  tb.setTextOff("");
+  int left=(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,10,a.getResources().getDisplayMetrics());
+  int metrics=(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,64,a.getResources().getDisplayMetrics());
+  tb.setButtonDrawable(R.drawable.ic_other_modes);
+  LayoutParams lp=new LayoutParams(metrics,metrics);
+  lp.setMargins(left,0,0,0);
+  tb.setChecked(false);
+  tb.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View view){
+      CompoundButton compoundButton=(CompoundButton)view;
+      compoundButton.setChecked(false);
+      AlertDialog.Builder builder=new AlertDialog.Builder(a);
+      final Set<ApplicationMode> selected=new LinkedHashSet<ApplicationMode>(visible);
+      View v=AppModeDialog.prepareAppModeView(a,modes,selected,null,false,new View.OnClickListener(){
+        @Override public void onClick(        View v){
+          StringBuilder vls=new StringBuilder(ApplicationMode.DEFAULT.getStringKey() + ",");
+          for (          ApplicationMode mode : modes) {
+            if (selected.contains(mode)) {
+              vls.append(mode.getStringKey() + ",");
+            }
+          }
+        }
+      }
+);
+      builder.setTitle(R.string.profile_settings);
+      builder.setPositiveButton(R.string.default_buttons_ok,null);
+      builder.setView(v);
+      builder.show();
+    }
+  }
+);
+  ll.addView(tb,lp);
+  return newButtons;
+}
