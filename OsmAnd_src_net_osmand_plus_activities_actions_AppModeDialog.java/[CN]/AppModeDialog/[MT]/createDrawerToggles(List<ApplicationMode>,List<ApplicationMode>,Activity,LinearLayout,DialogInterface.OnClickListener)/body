@@ -18,23 +18,33 @@
     @Override public void onClick(    View view){
       CompoundButton compoundButton=(CompoundButton)view;
       compoundButton.setChecked(false);
-      AlertDialog.Builder builder=new AlertDialog.Builder(a);
+      final AlertDialog.Builder builder=new AlertDialog.Builder(a);
       final Set<ApplicationMode> selected=new LinkedHashSet<ApplicationMode>(visible);
-      View v=AppModeDialog.prepareAppModeView(a,modes,selected,null,false,new View.OnClickListener(){
-        @Override public void onClick(        View v){
-          StringBuilder vls=new StringBuilder(ApplicationMode.DEFAULT.getStringKey() + ",");
-          for (          ApplicationMode mode : modes) {
-            if (selected.contains(mode)) {
-              vls.append(mode.getStringKey() + ",");
-            }
+      builder.setTitle(R.string.profile_settings);
+      builder.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialogInterface,        int i){
+          visible.clear();
+          visible.addAll(selected);
+          if (onDialogOk != null) {
+            onDialogOk.onClick(dialogInterface,i);
           }
         }
       }
 );
-      builder.setTitle(R.string.profile_settings);
-      builder.setPositiveButton(R.string.default_buttons_ok,null);
-      builder.setView(v);
-      builder.show();
+      final AlertDialog dialog=builder.create();
+      View v=AppModeDialog.prepareAppModeView(a,modes,selected,null,false,new View.OnClickListener(){
+        @Override public void onClick(        View v){
+          if (selected.size() == 3) {
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+          }
+ else {
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+          }
+        }
+      }
+);
+      dialog.setView(v);
+      dialog.show();
     }
   }
 );
