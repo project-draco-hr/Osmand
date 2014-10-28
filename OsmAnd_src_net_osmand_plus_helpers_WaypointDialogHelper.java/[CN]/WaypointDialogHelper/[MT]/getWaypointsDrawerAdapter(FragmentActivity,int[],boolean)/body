@@ -1,0 +1,37 @@
+{
+  final List<Object> points;
+  if (flat) {
+    points=new ArrayList<Object>(waypointHelper.getAllPoints());
+    points.add(0,new LocationPointWrapper());
+  }
+ else {
+    points=getPoints();
+  }
+  return new ArrayAdapter<Object>(ctx,R.layout.waypoint_reached,R.id.title,points){
+    @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
+      View v=convertView;
+      final ArrayAdapter<Object> thisAdapter=this;
+      boolean labelView=(getItem(position) instanceof Integer);
+      if (position == 0) {
+        v=createDialogHeader(ctx,false,flat,null);
+      }
+ else       if (getItem(position) instanceof RadiusItem) {
+        final int type=((RadiusItem)getItem(position)).type;
+        v=createItemForRadiusProximity(ctx,type,running,position,thisAdapter);
+      }
+ else       if (labelView) {
+        v=createItemForCategory(ctx,(Integer)getItem(position),running,position,thisAdapter);
+      }
+ else {
+        if (v == null || v.findViewById(R.id.info_close) == null) {
+          v=ctx.getLayoutInflater().inflate(R.layout.waypoint_reached,null);
+        }
+        updatePointInfoView(app,ctx,v,(LocationPointWrapper)getItem(position),null);
+        View remove=v.findViewById(R.id.info_close);
+        remove.setVisibility(View.GONE);
+      }
+      return v;
+    }
+  }
+;
+}
