@@ -1,0 +1,36 @@
+{
+  if (allowDirection && graphSegments.isEmpty()) {
+    if (pnt.others != null) {
+      Iterator<RouteSegmentPoint> pntIterator=pnt.others.iterator();
+      while (pntIterator.hasNext()) {
+        RouteSegmentPoint next=pntIterator.next();
+        boolean visitedAlready=false;
+        if (next.getSegmentStart() > 0 && visited.containsKey(calculateRoutePointId(next,false))) {
+          visitedAlready=true;
+        }
+ else         if (next.getSegmentStart() < next.getRoad().getPointsLength() - 1 && visited.containsKey(calculateRoutePointId(next,true))) {
+          visitedAlready=true;
+        }
+        pntIterator.remove();
+        if (!visitedAlready) {
+          float estimatedDistance=(float)estimatedDistance(ctx,ctx.targetX,ctx.targetY,ctx.startX,ctx.startY);
+          RouteSegment pos=next.initRouteSegment(true);
+          RouteSegment neg=next.initRouteSegment(false);
+          if (pos != null) {
+            pos.distanceToEnd=estimatedDistance;
+            graphSegments.add(pos);
+          }
+          if (neg != null) {
+            neg.distanceToEnd=estimatedDistance;
+            graphSegments.add(neg);
+          }
+          println("Reiterate point with new start/destination " + next.getRoad());
+          break;
+        }
+      }
+      if (graphSegments.isEmpty()) {
+        throw new IllegalArgumentException(msg);
+      }
+    }
+  }
+}
