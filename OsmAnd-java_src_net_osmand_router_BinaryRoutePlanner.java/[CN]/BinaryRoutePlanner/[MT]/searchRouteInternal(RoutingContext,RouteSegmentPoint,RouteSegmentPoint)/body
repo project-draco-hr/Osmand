@@ -47,12 +47,8 @@
       processRouteSegment(ctx,true,graphReverseSegments,visitedOppositeSegments,segment,visitedDirectSegments,doNotAddIntersections);
     }
     updateCalculationProgress(ctx,graphDirectSegments,graphReverseSegments);
-    if (ctx.getPlanRoadDirection() <= 0 && graphReverseSegments.isEmpty()) {
-      throw new IllegalArgumentException("Route is not found to selected target point.");
-    }
-    if (ctx.getPlanRoadDirection() >= 0 && graphDirectSegments.isEmpty()) {
-      throw new IllegalArgumentException("Route is not found from selected start point.");
-    }
+    checkIfGraphIsEmpty(ctx,ctx.getPlanRoadDirection() <= 0,graphReverseSegments,end,visitedOppositeSegments,"Route is not found to selected target point.");
+    checkIfGraphIsEmpty(ctx,ctx.getPlanRoadDirection() >= 0,graphDirectSegments,start,visitedDirectSegments,"Route is not found from selected start point.");
     if (ctx.planRouteIn2Directions()) {
       forwardSearch=(nonHeuristicSegmentsComparator.compare(graphDirectSegments.peek(),graphReverseSegments.peek()) < 0);
     }
