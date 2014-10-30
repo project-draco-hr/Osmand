@@ -1,0 +1,22 @@
+{
+  handler.post(new Runnable(){
+    @Override public void run(){
+synchronized (voiceMessageListeners) {
+        for (        final VoiceMessageListener voiceMessageListener : voiceMessageListeners) {
+          Runnable closure=new Runnable(){
+            public void run(){
+synchronized (voiceMessageListeners) {
+                if (voiceMessageListeners.contains(voiceMessageListener)) {
+                  voiceMessageListener.onVoiceMessage();
+                }
+              }
+            }
+          }
+;
+          handler.post(closure);
+        }
+      }
+    }
+  }
+);
+}
