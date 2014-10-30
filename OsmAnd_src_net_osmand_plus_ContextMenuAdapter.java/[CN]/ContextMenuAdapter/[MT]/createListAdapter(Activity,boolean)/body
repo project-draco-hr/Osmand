@@ -6,32 +6,15 @@
       Integer lid=getLayoutId(position);
       if (lid == R.layout.mode_toggles) {
         final Set<ApplicationMode> selected=new LinkedHashSet<ApplicationMode>();
-        return AppModeDialog.prepareAppModeDrawerView(activity,visibleModes,selected,new View.OnClickListener(){
+        return AppModeDialog.prepareAppModeDrawerView(activity,visibleModes,selected,allModes,new View.OnClickListener(){
           @Override public void onClick(          View view){
             if (selected.size() > 0) {
               ((OsmandApplication)activity.getApplication()).getSettings().APPLICATION_MODE.set(selected.iterator().next());
               notifyDataSetChanged();
             }
             if (changeAppModeListener != null) {
-              changeAppModeListener.onClick(view);
+              changeAppModeListener.onClick(allModes.getResult());
             }
-          }
-        }
-,new DialogInterface.OnClickListener(){
-          @Override public void onClick(          DialogInterface dialogInterface,          int i){
-            OsmandSettings settings=((OsmandApplication)activity.getApplication()).getSettings();
-            ApplicationMode currentMode=settings.APPLICATION_MODE.get();
-            boolean selected=false;
-            for (            ApplicationMode mode : visibleModes) {
-              if (mode.equals(currentMode)) {
-                selected=true;
-                break;
-              }
-            }
-            if (!selected) {
-              settings.APPLICATION_MODE.set(visibleModes.get(0));
-            }
-            notifyDataSetChanged();
           }
         }
 );
