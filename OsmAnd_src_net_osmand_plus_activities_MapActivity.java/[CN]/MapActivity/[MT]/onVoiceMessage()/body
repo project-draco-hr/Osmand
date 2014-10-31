@@ -1,6 +1,6 @@
 {
   if (settings.WAKE_ON_VOICE.get()) {
-    lastWakeOnTime=System.currentTimeMillis();
+    uiHandler.removeCallbacks(releaseWakeLocksRunnable);
     if (wakeLock == null) {
       PowerManager pm=(PowerManager)getSystemService(POWER_SERVICE);
       wakeLock=pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,"OsmAndOnVoiceWakeupTag");
@@ -11,11 +11,6 @@
       keyguardLock=km.newKeyguardLock("OsmAndKeyguardLock");
       keyguardLock.disableKeyguard();
     }
-    uiHandler.postDelayed(new Runnable(){
-      @Override public void run(){
-        releaseWakeLocks();
-      }
-    }
-,WAKE_ON_VOICE_INTERVAL);
+    uiHandler.postDelayed(releaseWakeLocksRunnable,WAKE_ON_VOICE_INTERVAL);
   }
 }
