@@ -1,0 +1,39 @@
+{
+  final ArrayList<RouteDataObject> points=new ArrayList<RouteDataObject>();
+  points.add(new RouteDataObject((RouteRegion)null));
+  points.addAll(missingRoads);
+  final LatLon mapLocation=ctx.getMapLocation();
+  return new ArrayAdapter<RouteDataObject>(ctx,R.layout.waypoint_reached,R.id.title,points){
+    @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
+      View v=convertView;
+      if (position == 0) {
+        TextView tv=new TextView(ctx);
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
+        v=tv;
+      }
+ else {
+        if (v == null || v.findViewById(R.id.info_close) == null) {
+          v=ctx.getLayoutInflater().inflate(R.layout.waypoint_reached,null);
+        }
+        final RouteDataObject obj=getItem(position);
+        v.findViewById(R.id.all_points).setVisibility(View.GONE);
+        ((ImageView)v.findViewById(R.id.waypoint_icon)).setImageResource(app.getSettings().isLightContentMenu() ? R.drawable.ic_action_road_works_light : R.drawable.ic_action_road_works_dark);
+        double dist=MapUtils.getDistance(mapLocation,MapUtils.get31LatitudeY(obj.getPoint31YTile(0)),MapUtils.get31LongitudeX(obj.getPoint31XTile(0)));
+        ((TextView)v.findViewById(R.id.waypoint_dist)).setText(OsmAndFormatter.getFormattedDistance((float)dist,app));
+        ((TextView)v.findViewById(R.id.waypoint_text)).setText(getText(obj));
+        View remove=v.findViewById(R.id.info_close);
+        remove.setVisibility(View.VISIBLE);
+        remove.setOnClickListener(new View.OnClickListener(){
+          @Override public void onClick(          View v){
+            remove(obj);
+            getBuilder().removeImpassableRoad(obj);
+            notifyDataSetChanged();
+          }
+        }
+);
+      }
+      return v;
+    }
+  }
+;
+}
