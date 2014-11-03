@@ -7,8 +7,9 @@
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
       if (position == 0) {
-        TextView tv=new TextView(ctx);
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
+        TextView tv=(TextView)ctx.getLayoutInflater().inflate(R.layout.list_textview,null);
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP,18);
+        tv.setText(app.getString(R.string.select_impassable_road));
         v=tv;
       }
  else {
@@ -28,6 +29,10 @@
             remove(obj);
             getBuilder().removeImpassableRoad(obj);
             notifyDataSetChanged();
+            RoutingHelper rh=app.getRoutingHelper();
+            if (rh.isRouteCalculated() || rh.isRouteBeingCalculated()) {
+              rh.recalculateRouteDueToSettingsChange();
+            }
           }
         }
 );
