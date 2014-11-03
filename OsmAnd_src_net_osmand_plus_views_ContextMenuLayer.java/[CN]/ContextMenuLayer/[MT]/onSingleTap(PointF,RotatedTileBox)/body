@@ -1,6 +1,14 @@
 {
   boolean nativeMode=(Build.VERSION.SDK_INT >= 14) || view.getSettings().SCROLL_MAP_BY_GESTURES.get();
   int val=pressedInTextView(tileBox,point.x,point.y);
+  if (selectOnMap != null) {
+    LatLon latlon=tileBox.getLatLonFromPixel(point.x,point.y);
+    CallbackWithObject<LatLon> cb=selectOnMap;
+    selectOnMap=null;
+    cb.processResult(latlon);
+    setLocation(latlon,null);
+    return true;
+  }
   if (val == 2) {
     setLocation(null,"");
     view.refreshMap();

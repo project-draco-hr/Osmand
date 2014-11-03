@@ -1,0 +1,18 @@
+{
+  new AsyncTask<LatLon,Void,RouteDataObject>(){
+    @Override protected RouteDataObject doInBackground(    LatLon... params){
+      return app.getLocationProvider().findRoute(loc.getLatitude(),loc.getLongitude());
+    }
+    protected void onPostExecute(    RouteDataObject result){
+      if (result != null) {
+        getBuilder().addImpassableRoad(result);
+        RoutingHelper rh=app.getRoutingHelper();
+        if (rh.isRouteCalculated() || rh.isRouteBeingCalculated()) {
+          rh.recalculateRouteDueToSettingsChange();
+        }
+        showDialog(activity);
+      }
+    }
+  }
+.execute(loc);
+}
