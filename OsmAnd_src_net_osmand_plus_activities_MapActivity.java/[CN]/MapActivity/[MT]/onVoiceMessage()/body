@@ -1,15 +1,15 @@
 {
   if (settings.WAKE_ON_VOICE.get()) {
     uiHandler.removeCallbacks(releaseWakeLocksRunnable);
-    if (wakeLock == null) {
+    if (!active && (wakeLock == null)) {
       PowerManager pm=(PowerManager)getSystemService(POWER_SERVICE);
       wakeLock=pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,"OsmAndOnVoiceWakeupTag");
       wakeLock.acquire();
-    }
-    if (keyguardLock == null) {
-      KeyguardManager km=(KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
-      keyguardLock=km.newKeyguardLock("OsmAndKeyguardLock");
-      keyguardLock.disableKeyguard();
+      if (keyguardLock == null) {
+        KeyguardManager km=(KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
+        keyguardLock=km.newKeyguardLock("OsmAndKeyguardLock");
+        keyguardLock.disableKeyguard();
+      }
     }
     uiHandler.postDelayed(releaseWakeLocksRunnable,WAKE_ON_VOICE_INTERVAL);
   }

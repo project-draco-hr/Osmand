@@ -5,9 +5,11 @@ synchronized (voiceMessageListeners) {
         for (        final VoiceMessageListener voiceMessageListener : voiceMessageListeners) {
           Runnable closure=new Runnable(){
             public void run(){
+              if (settings.WAKE_ON_VOICE.get()) {
 synchronized (voiceMessageListeners) {
-                if (voiceMessageListeners.contains(voiceMessageListener)) {
-                  voiceMessageListener.onVoiceMessage();
+                  if (voiceMessageListeners.contains(voiceMessageListener) && settings.WAKE_ON_VOICE.get()) {
+                    voiceMessageListener.onVoiceMessage();
+                  }
                 }
               }
             }
