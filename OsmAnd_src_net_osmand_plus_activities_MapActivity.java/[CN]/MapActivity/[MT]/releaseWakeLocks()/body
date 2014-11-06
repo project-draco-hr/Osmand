@@ -1,10 +1,20 @@
 {
-  if (keyguardLock != null) {
-    keyguardLock.reenableKeyguard();
-    keyguardLock=null;
-  }
   if (wakeLock != null) {
     wakeLock.release();
     wakeLock=null;
+  }
+  if (mDevicePolicyManager != null && mDeviceAdmin != null) {
+    final Integer screenPowerSave=settings.WAKE_ON_VOICE_INT.get();
+    if (screenPowerSave > 0) {
+      if (mDevicePolicyManager.isAdminActive(mDeviceAdmin)) {
+        try {
+          mDevicePolicyManager.lockNow();
+        }
+ catch (        SecurityException e) {
+        }
+      }
+ else {
+      }
+    }
   }
 }
