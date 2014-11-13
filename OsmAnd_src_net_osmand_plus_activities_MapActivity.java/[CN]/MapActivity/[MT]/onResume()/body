@@ -1,8 +1,5 @@
 {
   super.onResume();
-  if ((wakeLock != null) || (keyguardLock != null)) {
-    return;
-  }
   cancelNotification();
   if (getSupportActionBar() != null) {
     getSupportActionBar().hide();
@@ -17,6 +14,7 @@
  else {
     setVolumeControlStream(AudioManager.STREAM_MUSIC);
   }
+  changeKeyguardFlags();
   applicationModeListener=new StateChangedListener<ApplicationMode>(){
     @Override public void stateChanged(    ApplicationMode change){
       updateApplicationModeSettings();
@@ -33,7 +31,7 @@
   mapLayers.getPoiMapLayer().setFilter(poiFilter);
   TargetPointsHelper targets=app.getTargetPointsHelper();
   RoutingHelper routingHelper=app.getRoutingHelper();
-  if (routingHelper.isFollowingMode() && (!Algorithms.objectEquals(targets.getPointToNavigate(),routingHelper.getFinalLocation()) || !Algorithms.objectEquals(targets.getIntermediatePoints(),routingHelper.getIntermediatePoints()))) {
+  if (routingHelper.isFollowingMode() && (!Algorithms.objectEquals(targets.getPointToNavigate().point,routingHelper.getFinalLocation()) || !Algorithms.objectEquals(targets.getIntermediatePointsLatLon(),routingHelper.getIntermediatePoints()))) {
     targets.updateRouteAndReferesh(true);
   }
   app.getLocationProvider().resumeAllUpdates();
