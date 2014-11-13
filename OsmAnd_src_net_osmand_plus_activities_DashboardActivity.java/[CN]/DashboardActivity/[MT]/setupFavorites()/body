@@ -1,31 +1,34 @@
 {
   final FavouritesDbHelper helper=getMyApplication().getFavorites();
   final List<FavouritePoint> points=helper.getFavouritePoints();
+  if (points.size() == 0) {
+    (findViewById(R.id.main_fav)).setVisibility(View.GONE);
+    return;
+  }
   if (points.size() > 3) {
     while (points.size() != 3) {
       points.remove(3);
     }
   }
   LinearLayout favorites=(LinearLayout)findViewById(R.id.favorites);
-  for (int i=0; i < 3; i++) {
+  for (  final FavouritePoint point : points) {
     LayoutInflater inflater=getLayoutInflater();
     View view=inflater.inflate(R.layout.dash_fav_list,null,false);
     TextView name=(TextView)view.findViewById(R.id.name);
     TextView label=(TextView)view.findViewById(R.id.distance);
     ImageView icon=(ImageView)view.findViewById(R.id.icon);
-    final FavouritePoint model=points.get(i);
-    name.setText(model.getName());
-    icon.setImageDrawable(FavoriteImageDrawable.getOrCreate(DashboardActivity.this,model.getColor()));
+    name.setText(point.getName());
+    icon.setImageDrawable(FavoriteImageDrawable.getOrCreate(DashboardActivity.this,point.getColor()));
     LatLon lastKnownMapLocation=getMyApplication().getSettings().getLastKnownMapLocation();
-    int dist=(int)(MapUtils.getDistance(model.getLatitude(),model.getLongitude(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
+    int dist=(int)(MapUtils.getDistance(point.getLatitude(),point.getLongitude(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
     String distance=OsmAndFormatter.getFormattedDistance(dist,getMyApplication()) + "  ";
     label.setText(distance,TextView.BufferType.SPANNABLE);
-    label.setTypeface(Typeface.DEFAULT,model.isVisible() ? Typeface.NORMAL : Typeface.ITALIC);
+    label.setTypeface(Typeface.DEFAULT,point.isVisible() ? Typeface.NORMAL : Typeface.ITALIC);
     view.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View view){
         final Intent mapIndent=new Intent(DashboardActivity.this,getMyApplication().getAppCustomization().getMapActivity());
-        mapIndent.putExtra(MapActivity.START_LAT,model.getLatitude());
-        mapIndent.putExtra(MapActivity.START_LON,model.getLongitude());
+        mapIndent.putExtra(MapActivity.START_LAT,point.getLatitude());
+        mapIndent.putExtra(MapActivity.START_LON,point.getLongitude());
         startActivityForResult(mapIndent,0);
       }
     }
