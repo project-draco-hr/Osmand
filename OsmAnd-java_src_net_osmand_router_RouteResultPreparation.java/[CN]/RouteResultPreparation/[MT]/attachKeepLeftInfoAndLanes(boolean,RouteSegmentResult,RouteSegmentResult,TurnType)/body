@@ -11,6 +11,7 @@
   int right=0;
   boolean speak=false;
   int speakPriority=Math.max(highwaySpeakPriority(prevSegm.getObject().getHighway()),highwaySpeakPriority(currentSegm.getObject().getHighway()));
+  boolean otherRoutesExist=false;
   if (attachedRoutes != null) {
     for (    RouteSegmentResult attached : attachedRoutes) {
       double ex=MapUtils.degreesDiff(attached.getBearingBegin(),currentSegm.getBearingBegin());
@@ -45,6 +46,9 @@
           }
           speak=speak || rsSpeakPriority <= speakPriority;
         }
+ else         if (mpi >= TURN_DEGREE_MIN) {
+          otherRoutesExist=true;
+        }
       }
     }
   }
@@ -76,13 +80,36 @@
   }
   double devation=Math.abs(MapUtils.degreesDiff(prevSegm.getBearingEnd(),currentSegm.getBearingBegin()));
   boolean makeSlightTurn=devation > 5 && (!isMotorway(prevSegm) || !isMotorway(currentSegm));
-  if (kl) {
+  if (kl && kr) {
+    t=TurnType.valueOf(TurnType.C,leftSide);
+    t.setSkipToSpeak(!speak);
+  }
+ else   if (kl) {
     t=TurnType.valueOf(makeSlightTurn ? TurnType.TSLL : TurnType.KL,leftSide);
     t.setSkipToSpeak(!speak);
   }
-  if (kr) {
+ else   if (kr) {
     t=TurnType.valueOf(makeSlightTurn ? TurnType.TSLR : TurnType.KR,leftSide);
     t.setSkipToSpeak(!speak);
+  }
+ else   if (otherRoutesExist && getTurnLanesString(prevSegm) != null) {
+    t=TurnType.valueOf(TurnType.C,leftSide);
+    t.setSkipToSpeak(true);
+    int prevLanes=prevSegm.getObject().getLanes();
+    if (prevSegm.getObject().getOneway() == 0) {
+      prevLanes=countLanes(prevSegm,prevLanes);
+    }
+    if (prevLanes <= 0) {
+      prevLanes=1;
+    }
+    t.setLanes(new int[prevLanes]);
+    t=attachTurnLanesData(leftSide,prevSegm,t);
+    for (int i=0; i < t.getLanes().length; i++) {
+      if (TurnType.getPrimaryTurn(t.getLanes()[i]) == TurnType.C) {
+        t.getLanes()[i]|=1;
+      }
+    }
+    return t;
   }
   if (t != null && lanes != null) {
     t.setLanes(lanes);

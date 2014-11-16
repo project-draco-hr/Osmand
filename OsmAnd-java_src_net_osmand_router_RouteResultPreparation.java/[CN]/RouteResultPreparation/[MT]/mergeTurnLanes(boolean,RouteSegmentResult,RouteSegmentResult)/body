@@ -1,0 +1,34 @@
+{
+  boolean isUsingTurnLanes=TurnType.getPrimaryTurn(currentSegment.getTurnType().getLanes()[0]) != 0 && TurnType.getPrimaryTurn(nextSegment.getTurnType().getLanes()[0]) != 0;
+  if (isUsingTurnLanes) {
+    int[] lanes=new int[currentSegment.getTurnType().getLanes().length];
+    for (int i=0; i < lanes.length; i++) {
+      lanes[i]=currentSegment.getTurnType().getLanes()[i] & ~1;
+    }
+    int matchingIndex=0;
+    int maxMatchedLanes=0;
+    for (int i=0; i < lanes.length; i++) {
+      int matchedLanes=0;
+      for (int j=0; j < nextSegment.getTurnType().getLanes().length - i; j++) {
+        if (TurnType.getPrimaryTurn(nextSegment.getTurnType().getLanes()[j]) == TurnType.getPrimaryTurn(currentSegment.getTurnType().getLanes()[i + j])) {
+          matchedLanes++;
+        }
+ else {
+          break;
+        }
+      }
+      if (matchedLanes > maxMatchedLanes) {
+        matchingIndex=i;
+        maxMatchedLanes=matchedLanes;
+      }
+    }
+    if (maxMatchedLanes <= 1) {
+      return;
+    }
+    for (int i=matchingIndex; i - matchingIndex < nextSegment.getTurnType().getLanes().length; i++) {
+      lanes[i]|=nextSegment.getTurnType().getLanes()[i - matchingIndex] & 1;
+    }
+    currentSegment.getTurnType().setLanes(lanes);
+    currentSegment.setTurnType(inferTurnFromLanes(currentSegment.getTurnType(),leftSide));
+  }
+}

@@ -57,4 +57,21 @@
       dist+=result.get(i).getDistance();
     }
   }
+  for (int i=result.size() - 2; i >= 0; i--) {
+    RouteSegmentResult currentSegment=result.get(i);
+    RouteSegmentResult nextSegment=null;
+    for (int j=i + 1; j < result.size(); j++) {
+      RouteSegmentResult possibleSegment=result.get(j);
+      if (possibleSegment.getTurnType() != null && possibleSegment.getTurnType().getLanes() != null) {
+        nextSegment=possibleSegment;
+        break;
+      }
+    }
+    if (currentSegment.getTurnType() == null || currentSegment.getTurnType().getLanes() == null || nextSegment == null) {
+      continue;
+    }
+    if (currentSegment.getDistance() < 60 && nextSegment.getTurnType().getLanes().length <= currentSegment.getTurnType().getLanes().length && (currentSegment.getTurnType().getValue() == TurnType.C || currentSegment.getTurnType().getValue() == TurnType.TSLL || currentSegment.getTurnType().getValue() == TurnType.TSLR || currentSegment.getTurnType().getValue() == TurnType.KL || currentSegment.getTurnType().getValue() == TurnType.KR)) {
+      mergeTurnLanes(leftside,currentSegment,nextSegment);
+    }
+  }
 }
