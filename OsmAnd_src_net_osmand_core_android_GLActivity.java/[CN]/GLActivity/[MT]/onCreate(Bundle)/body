@@ -72,11 +72,11 @@
   _obfsCollection.addDirectory(directory.getAbsolutePath(),false);
   Log.i(TAG,"Going to prepare all resources for renderer");
   _mapPresentationEnvironment=new MapPresentationEnvironment(_mapStyle,_displayDensityFactor,"en");
-  _primitiviser=new Primitiviser(_mapPresentationEnvironment);
-  _binaryMapDataProvider=new BinaryMapDataProvider(_obfsCollection);
-  _binaryMapPrimitivesProvider=new BinaryMapPrimitivesProvider(_binaryMapDataProvider,_primitiviser,_rasterTileSize);
-  _binaryMapStaticSymbolsProvider=new BinaryMapStaticSymbolsProvider(_binaryMapPrimitivesProvider,_rasterTileSize);
-  _binaryMapRasterLayerProvider=new BinaryMapRasterLayerProvider_Software(_binaryMapPrimitivesProvider);
+  _mapPrimitiviser=new MapPrimitiviser(_mapPresentationEnvironment);
+  _obfMapObjectsProvider=new ObfMapObjectsProvider(_obfsCollection);
+  _mapPrimitivesProvider=new MapPrimitivesProvider(_obfMapObjectsProvider,_mapPrimitiviser,_rasterTileSize);
+  _mapObjectsSymbolsProvider=new MapObjectsSymbolsProvider(_mapPrimitivesProvider,_rasterTileSize);
+  _mapRasterLayerProvider=new MapRasterLayerProvider_Software(_mapPrimitivesProvider);
   _onlineMapRasterLayerProvider=OnlineTileSources.getBuiltIn().createProviderFor("Mapnik (OsmAnd)");
   Log.i(TAG,"Going to create renderer");
   _mapRenderer=OsmAndCore.createMapRenderer(MapRendererClass.AtlasMapRenderer_OpenGLES2);
@@ -87,9 +87,9 @@
   AtlasMapRendererConfiguration atlasRendererConfiguration=AtlasMapRendererConfiguration.Casts.upcastFrom(_mapRenderer.getConfiguration());
   atlasRendererConfiguration.setReferenceTileSizeOnScreenInPixels(_referenceTileSize);
   _mapRenderer.setConfiguration(AtlasMapRendererConfiguration.Casts.downcastTo_MapRendererConfiguration(atlasRendererConfiguration));
-  _mapRenderer.addSymbolsProvider(_binaryMapStaticSymbolsProvider);
+  _mapRenderer.addSymbolsProvider(_mapObjectsSymbolsProvider);
   updateView();
-  _mapRenderer.setMapLayerProvider(0,_binaryMapRasterLayerProvider);
+  _mapRenderer.setMapLayerProvider(0,_mapRasterLayerProvider);
   _glSurfaceView=(GLSurfaceView)findViewById(R.id.glSurfaceView);
   _glSurfaceView.setEGLContextClientVersion(2);
   _glSurfaceView.setEGLContextFactory(new EGLContextFactory());
