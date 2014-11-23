@@ -1,0 +1,30 @@
+{
+  String turnLanes=getTurnLanesString(prevSegm);
+  if (turnLanes == null) {
+    return null;
+  }
+  String[] splitLaneOptions=turnLanes.split("\\|",-1);
+  if (splitLaneOptions.length != countLanesMinOne(prevSegm)) {
+    return null;
+  }
+  int[] lanesArray=calculateRawTurnLanes(splitLaneOptions,mainTurnType);
+  boolean isSet=setAllowedLanes(mainTurnType,lanesArray);
+  if (!isSet && lanesArray.length > 0) {
+    int ind=leftTurn ? 0 : lanesArray.length - 1;
+    final int tt=TurnType.getPrimaryTurn(lanesArray[ind]);
+    if (leftTurn) {
+      if (!TurnType.isLeftTurn(tt)) {
+        TurnType.setSecondaryTurn(lanesArray,ind,tt);
+        TurnType.setPrimaryTurn(lanesArray,ind,TurnType.TL);
+      }
+    }
+ else {
+      if (!TurnType.isRightTurn(tt)) {
+        TurnType.setSecondaryTurn(lanesArray,ind,tt);
+        TurnType.setPrimaryTurn(lanesArray,ind,TurnType.TR);
+      }
+    }
+    setAllowedLanes(lanesArray[ind],lanesArray);
+  }
+  return lanesArray;
+}
