@@ -1,7 +1,7 @@
 {
   return new AsyncTask<WptPt,String,String>(){
     protected void onProgressUpdate(    String... values){
-      if (values != null) {
+      if (values != null && generateToast) {
         String t="";
         for (        String s : values) {
           t+=s + "\n";
@@ -26,7 +26,9 @@
         if (errors == null) {
           errors="";
         }
-        publishProgress(app.getString(R.string.osmo_gpx_points_downloaded,name));
+        if (generateToast) {
+          publishProgress(app.getString(R.string.osmo_gpx_points_downloaded,name));
+        }
       }
       SelectedGpxFile byPath=app.getSelectedGpxHelper().getSelectedFileByPath(ps.getAbsolutePath());
       if (byPath == null || changed) {
@@ -39,7 +41,7 @@
       return errors;
     }
     @Override protected void onPostExecute(    String result){
-      if (result.length() > 0) {
+      if (result.length() > 0 && generateToast) {
         app.showToastMessage(app.getString(R.string.osmo_io_error) + result);
       }
     }
