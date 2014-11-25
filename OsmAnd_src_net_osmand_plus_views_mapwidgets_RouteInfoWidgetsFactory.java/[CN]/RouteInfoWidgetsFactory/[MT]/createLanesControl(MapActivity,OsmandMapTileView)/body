@@ -11,9 +11,11 @@
   paintRouteDirection.setColor(view.getResources().getColor(R.color.nav_arrow));
   paintRouteDirection.setAntiAlias(true);
   final float w=72 * scaleCoefficient / miniCoeff;
+  final MapViewTrackingUtilities trackingUtilities=map.getMapViewTrackingUtilities();
+  final OsmAndLocationProvider locationProvider=map.getMyApplication().getLocationProvider();
+  final RoutingHelper rh=map.getMyApplication().getRoutingHelper();
   final BaseMapWidget lanesControl=new BaseMapWidget(view.getContext()){
     int[] lanes=null;
-    private TurnType turn;
     boolean imminent=false;
     @Override protected void onMeasure(    int widthMeasureSpec,    int heightMeasureSpec){
       int ls=(int)(lanes == null ? 0 : lanes.length * w);
@@ -45,13 +47,19 @@
       boolean visible=false;
       int locimminent=-1;
       int[] loclanes=null;
-      TurnType primary=null;
-      if (routingHelper != null && routingHelper.isRouteCalculated() && view.getSettings().SHOW_LANES.get()) {
-        if (routingHelper.isFollowingMode()) {
-          NextDirectionInfo r=routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(),false);
+      if ((rh == null || !rh.isFollowingMode()) && trackingUtilities.isMapLinkedToLocation() && view.getSettings().SHOW_LANES.get()) {
+        RouteDataObject ro=locationProvider.getLastKnownRouteSegment();
+        Location lp=locationProvider.getLastKnownLocation();
+        if (ro != null) {
+          float degree=lp == null || !lp.hasBearing() ? 0 : lp.getBearing();
+          loclanes=RouteResultPreparation.parseTurnLanes(ro,degree / 180 * Math.PI);
+        }
+      }
+ else       if (rh != null && rh.isRouteCalculated()) {
+        if (rh.isFollowingMode() && view.getSettings().SHOW_LANES.get()) {
+          NextDirectionInfo r=rh.getNextRouteDirectionInfo(new NextDirectionInfo(),false);
           if (r != null && r.directionInfo != null && r.directionInfo.getTurnType() != null) {
             loclanes=r.directionInfo.getTurnType().getLanes();
-            primary=r.directionInfo.getTurnType();
             locimminent=r.imminent;
             if ((r.distanceTo > 700 && r.directionInfo.getTurnType().isSkipToSpeak()) || r.distanceTo > 1200) {
               loclanes=null;
@@ -60,11 +68,10 @@
         }
  else {
           int di=MapRouteInfoControl.getDirectionInfo();
-          if (di >= 0 && MapRouteInfoControl.isControlVisible() && di < routingHelper.getRouteDirections().size()) {
-            RouteDirectionInfo next=routingHelper.getRouteDirections().get(di);
+          if (di >= 0 && MapRouteInfoControl.isControlVisible() && di < rh.getRouteDirections().size()) {
+            RouteDirectionInfo next=rh.getRouteDirections().get(di);
             if (next != null) {
               loclanes=next.getTurnType().getLanes();
-              primary=next.getTurnType();
             }
           }
         }
@@ -73,7 +80,6 @@
       if (visible) {
         if (!Arrays.equals(lanes,loclanes)) {
           lanes=loclanes;
-          turn=primary;
           requestLayout();
           invalidate();
         }
