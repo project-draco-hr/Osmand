@@ -28,7 +28,14 @@
     for (int i=matchingIndex; i - matchingIndex < nextSegment.getTurnType().getLanes().length; i++) {
       lanes[i]|=nextSegment.getTurnType().getLanes()[i - matchingIndex] & 1;
     }
-    currentSegment.getTurnType().setLanes(lanes);
-    currentSegment.setTurnType(inferTurnFromLanes(currentSegment.getTurnType(),leftSide));
+    TurnType t=currentSegment.getTurnType();
+    t.setLanes(lanes);
+    int turn=inferTurnFromLanes(lanes);
+    if (turn != 0 && turn != t.getValue()) {
+      TurnType newTurnType=TurnType.valueOf(turn,leftSide);
+      newTurnType.setLanes(lanes);
+      newTurnType.setSkipToSpeak(t.isSkipToSpeak());
+      currentSegment.setTurnType(newTurnType);
+    }
   }
 }
