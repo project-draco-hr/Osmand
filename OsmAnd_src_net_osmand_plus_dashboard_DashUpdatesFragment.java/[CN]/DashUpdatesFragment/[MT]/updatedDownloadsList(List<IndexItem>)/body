@@ -3,6 +3,9 @@
   if (mainView == null) {
     return;
   }
+  progressBars.clear();
+  baseNames.clear();
+  downloadButtons.clear();
   if (list.size() > 0) {
     mainView.setVisibility(View.VISIBLE);
   }
@@ -26,12 +29,18 @@
     ((TextView)view.findViewById(R.id.map_name)).setText(eName);
     ((TextView)view.findViewById(R.id.map_descr)).setText(d);
     final ProgressBar progressBar=(ProgressBar)view.findViewById(R.id.ProgressBar);
-    (view.findViewById(R.id.btn_download)).setOnClickListener(new View.OnClickListener(){
+    View downloadButton=(view.findViewById(R.id.btn_download));
+    downloadButton.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View view){
-        getDownloadActivity().startDownload(progressBar,item);
+        getDownloadActivity().startDownload(item);
+        currentProgress=progressBar;
       }
     }
 );
+    downloadButtons.add(downloadButton);
+    baseNames.add(item.getBasename());
+    progressBars.add(progressBar);
     updates.addView(view);
   }
+  updateProgress(BaseDownloadActivity.downloadListIndexThread.getCurrentRunningTask(),true);
 }
