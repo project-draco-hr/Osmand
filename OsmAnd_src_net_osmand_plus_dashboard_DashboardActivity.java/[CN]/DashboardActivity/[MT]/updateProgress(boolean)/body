@@ -1,0 +1,22 @@
+{
+  if (progressBar == null) {
+    return;
+  }
+  BasicProgressAsyncTask<?,?,?> basicProgressAsyncTask=BaseDownloadActivity.downloadListIndexThread.getCurrentRunningTask();
+  if (updateOnlyProgress) {
+    if (!basicProgressAsyncTask.isIndeterminate()) {
+      progressBar.setProgress(basicProgressAsyncTask.getProgressPercentage());
+    }
+  }
+ else {
+    boolean visible=basicProgressAsyncTask != null && basicProgressAsyncTask.getStatus() != AsyncTask.Status.FINISHED;
+    if (!visible) {
+      return;
+    }
+    boolean intermediate=basicProgressAsyncTask.isIndeterminate();
+    progressBar.setVisibility(intermediate ? View.GONE : View.VISIBLE);
+    if (!intermediate) {
+      progressBar.setProgress(basicProgressAsyncTask.getProgressPercentage());
+    }
+  }
+}
