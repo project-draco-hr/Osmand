@@ -1,0 +1,24 @@
+{
+  boolean netOsmandWasInstalled=false;
+  try {
+    ApplicationInfo applicationInfo=getPackageManager().getApplicationInfo("net.osmand",PackageManager.GET_META_DATA);
+    netOsmandWasInstalled=applicationInfo != null && !Version.isFreeVersion(getMyApplication());
+  }
+ catch (  NameNotFoundException e) {
+    netOsmandWasInstalled=false;
+  }
+  if (netOsmandWasInstalled) {
+  }
+ else {
+    Builder builder=new AccessibleAlertBuilder(this);
+    builder.setMessage(R.string.first_time_msg);
+    builder.setPositiveButton(R.string.first_time_download,new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        startActivity(new Intent(DashboardActivity.this,getMyApplication().getAppCustomization().getDownloadIndexActivity()));
+      }
+    }
+);
+    builder.setNegativeButton(R.string.first_time_continue,null);
+    builder.show();
+  }
+}
