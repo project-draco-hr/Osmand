@@ -1,0 +1,34 @@
+{
+  if (basicProgressAsyncTask == null) {
+    return;
+  }
+  if (currentProgress == null) {
+    getProgressIfPossible(basicProgressAsyncTask.getDescription());
+    if (currentProgress == null) {
+      return;
+    }
+  }
+  if (updateOnlyProgress) {
+    if (!basicProgressAsyncTask.isIndeterminate()) {
+      currentProgress.setProgress(basicProgressAsyncTask.getProgressPercentage());
+    }
+  }
+ else {
+    boolean visible=basicProgressAsyncTask.getStatus() != AsyncTask.Status.FINISHED;
+    if (!visible) {
+      return;
+    }
+    cancelButton.setImageResource(R.drawable.cancel_button);
+    cancelButton.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View view){
+        getDownloadActivity().makeSureUserCancelDownload();
+      }
+    }
+);
+    boolean intermediate=basicProgressAsyncTask.isIndeterminate();
+    currentProgress.setVisibility(intermediate ? View.GONE : View.VISIBLE);
+    if (!intermediate) {
+      currentProgress.setProgress(basicProgressAsyncTask.getProgressPercentage());
+    }
+  }
+}
