@@ -1,0 +1,41 @@
+{
+  final FavouritesDbHelper helper=getMyApplication().getFavorites();
+  final List<FavouritePoint> points=helper.getFavouritePoints();
+  LinearLayout favorites=(LinearLayout)findViewById(R.id.favorites);
+  favorites.removeAllViews();
+  if (points.size() == 0) {
+    (findViewById(R.id.main_fav)).setVisibility(View.GONE);
+    return;
+  }
+  if (points.size() > 3) {
+    while (points.size() != 3) {
+      points.remove(3);
+    }
+  }
+  for (  final FavouritePoint point : points) {
+    LayoutInflater inflater=getLayoutInflater();
+    View view=inflater.inflate(R.layout.dash_fav_list,null,false);
+    TextView name=(TextView)view.findViewById(R.id.name);
+    TextView label=(TextView)view.findViewById(R.id.distance);
+    ImageView icon=(ImageView)view.findViewById(R.id.icon);
+    name.setText(point.getName());
+    icon.setImageDrawable(FavoriteImageDrawable.getOrCreate(DashboardActivity.this,point.getColor()));
+    LatLon lastKnownMapLocation=getMyApplication().getSettings().getLastKnownMapLocation();
+    int dist=(int)(MapUtils.getDistance(point.getLatitude(),point.getLongitude(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
+    String distance=OsmAndFormatter.getFormattedDistance(dist,getMyApplication()) + "  ";
+    label.setText(distance,TextView.BufferType.SPANNABLE);
+    label.setTypeface(Typeface.DEFAULT,point.isVisible() ? Typeface.NORMAL : Typeface.ITALIC);
+    view.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View view){
+        final Intent mapIntent=new Intent(DashboardActivity.this,getMyApplication().getAppCustomization().getMapActivity());
+        getMyApplication().getSettings().setLastKnownMapLocation(point.getLatitude(),point.getLongitude());
+        startActivity(mapIntent);
+      }
+    }
+);
+    int height=(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,50,getResources().getDisplayMetrics());
+    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,height);
+    view.setLayoutParams(lp);
+    favorites.addView(view);
+  }
+}
