@@ -1,0 +1,53 @@
+{
+  View mainView=getView();
+  final FavouritesDbHelper helper=getMyApplication().getFavorites();
+  final List<FavouritePoint> points=new ArrayList<FavouritePoint>(helper.getFavouritePoints());
+  if (points.size() == 0) {
+    (mainView.findViewById(R.id.main_fav)).setVisibility(View.GONE);
+    return;
+  }
+ else {
+    (mainView.findViewById(R.id.main_fav)).setVisibility(View.VISIBLE);
+  }
+  Collections.sort(points,new Comparator<FavouritePoint>(){
+    @Override public int compare(    FavouritePoint point,    FavouritePoint point2){
+      LatLon lastKnownMapLocation=getMyApplication().getSettings().getLastKnownMapLocation();
+      int dist=(int)(MapUtils.getDistance(point.getLatitude(),point.getLongitude(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
+      int dist2=(int)(MapUtils.getDistance(point2.getLatitude(),point2.getLongitude(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
+      return (dist - dist2);
+    }
+  }
+);
+  LinearLayout favorites=(LinearLayout)mainView.findViewById(R.id.favorites);
+  favorites.removeAllViews();
+  if (points.size() > 3) {
+    while (points.size() != 3) {
+      points.remove(3);
+    }
+  }
+  for (  final FavouritePoint point : points) {
+    LayoutInflater inflater=getActivity().getLayoutInflater();
+    View view=inflater.inflate(R.layout.dash_favorites_item,null,false);
+    TextView name=(TextView)view.findViewById(R.id.name);
+    TextView label=(TextView)view.findViewById(R.id.distance);
+    ImageView icon=(ImageView)view.findViewById(R.id.icon);
+    name.setText(point.getName());
+    icon.setImageDrawable(FavoriteImageDrawable.getOrCreate(getActivity(),point.getColor()));
+    LatLon lastKnownMapLocation=getMyApplication().getSettings().getLastKnownMapLocation();
+    int dist=(int)(MapUtils.getDistance(point.getLatitude(),point.getLongitude(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
+    String distance=OsmAndFormatter.getFormattedDistance(dist,getMyApplication()) + "  ";
+    label.setText(distance,TextView.BufferType.SPANNABLE);
+    label.setTypeface(Typeface.DEFAULT,point.isVisible() ? Typeface.NORMAL : Typeface.ITALIC);
+    view.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View view){
+        getMyApplication().getSettings().setMapLocationToShow(point.getLatitude(),point.getLongitude(),15,null,point.getName(),point);
+        MapActivity.launchMapActivityMoveToTop(getActivity());
+      }
+    }
+);
+    int height=(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,50,getResources().getDisplayMetrics());
+    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,height);
+    view.setLayoutParams(lp);
+    favorites.addView(view);
+  }
+}
