@@ -10,7 +10,12 @@ synchronized (NativeOsmandLibrary.class) {
           System.loadLibrary("cpufeatures_proxy");
           if (android.os.Build.VERSION.SDK_INT >= 8) {
             log.debug("Loading jnigraphics, since Android >= 2.2 ...");
-            System.loadLibrary("jnigraphics");
+            try {
+              System.loadLibrary("jnigraphics");
+            }
+ catch (            UnsatisfiedLinkError e) {
+              log.debug("Failed to load jnigraphics: " + e);
+            }
           }
           final String libCpuSuffix=cpuHasNeonSupport() ? "_neon" : "";
           log.debug("Loading native libraries...");

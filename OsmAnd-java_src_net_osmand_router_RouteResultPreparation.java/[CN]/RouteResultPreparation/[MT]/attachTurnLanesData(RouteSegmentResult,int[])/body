@@ -1,0 +1,18 @@
+{
+  String turnLanes=getTurnLanesString(prevSegm);
+  if (turnLanes == null) {
+    return outgoingCalcLanes;
+  }
+  String[] splitLaneOptions=turnLanes.split("\\|",-1);
+  if (splitLaneOptions.length != countLanesMinOne(prevSegm)) {
+    return outgoingCalcLanes;
+  }
+  int[] usableLanes=mergeOutgoingLanesUsingTurnLanes(outgoingCalcLanes,splitLaneOptions);
+  int[] rawLanes=calculateRawTurnLanes(splitLaneOptions,0);
+  for (int k=0; k < splitLaneOptions.length; k++) {
+    if ((usableLanes[k] & 1) != 0) {
+      rawLanes[k]|=1;
+    }
+  }
+  return rawLanes;
+}
