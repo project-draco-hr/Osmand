@@ -1,0 +1,33 @@
+{
+  ContextMenuAdapter adapter=new ContextMenuAdapter(ma,allModes);
+  adapter.setDefaultLayoutId(R.layout.drawer_list_item);
+  adapter.item(R.string.configure_map).icons(R.drawable.ic_back_drawer_dark,R.drawable.ic_back_drawer_white).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      ma.getMapActions().prepareStartOptionsMenu();
+      return false;
+    }
+  }
+).reg();
+  adapter.item(R.string.app_modes_choose).layout(R.layout.mode_toggles).reg();
+  adapter.setChangeAppModeListener(new OnClickListener(){
+    @Override public void onClick(    boolean result){
+      allModes=true;
+      ma.getMapActions().prepareOptionsMenu(createListAdapter(ma,advanced));
+    }
+  }
+);
+  createLayersItems(adapter,ma);
+  if (!advanced) {
+    adapter.item(R.string.btn_advanced_mode).icons(R.drawable.ic_action_settings_dark,R.drawable.ic_action_settings_light).selected(advanced ? 1 : 0).listen(new OnContextMenuClick(){
+      @Override public boolean onContextMenuClick(      ArrayAdapter<?> adapter,      int itemId,      int pos,      boolean isChecked){
+        ma.getMapActions().prepareOptionsMenu(createListAdapter(ma,isChecked));
+        return false;
+      }
+    }
+).reg();
+  }
+  if (advanced) {
+    createRenderingAttributeItems(adapter,ma);
+  }
+  return adapter;
+}

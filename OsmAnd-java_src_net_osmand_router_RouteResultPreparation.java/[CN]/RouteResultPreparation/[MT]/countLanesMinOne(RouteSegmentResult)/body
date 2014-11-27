@@ -1,0 +1,25 @@
+{
+  final boolean oneway=attached.getObject().getOneway() != 0;
+  int lns=attached.getObject().getLanes();
+  if (lns == 0) {
+    String tls=getTurnLanesString(attached);
+    if (tls != null) {
+      return Math.max(1,countOccurrences(tls,'|'));
+    }
+  }
+  if (oneway) {
+    return Math.max(1,lns);
+  }
+  try {
+    if (attached.isForwardDirection() && attached.getObject().getValue("lanes:forward") != null) {
+      return Integer.parseInt(attached.getObject().getValue("lanes:forward"));
+    }
+ else     if (!attached.isForwardDirection() && attached.getObject().getValue("lanes:backward") != null) {
+      return Integer.parseInt(attached.getObject().getValue("lanes:backward"));
+    }
+  }
+ catch (  NumberFormatException e) {
+    e.printStackTrace();
+  }
+  return Math.max(1,(lns + 1) / 2);
+}

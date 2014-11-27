@@ -1,0 +1,47 @@
+{
+  InputStream is;
+  try {
+    if (resourceName == null) {
+      is=MapRenderingTypes.class.getResourceAsStream("poi_types.xml");
+    }
+ else {
+      is=new FileInputStream(resourceName);
+    }
+    long time=System.currentTimeMillis();
+    XmlPullParser parser=PlatformUtil.newXMLPullParser();
+    int tok;
+    parser.setInput(is,"UTF-8");
+    String parentCategory=null;
+    String poiParentCategory=null;
+    String poiParentPrefix=null;
+    String order=null;
+    while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
+      if (tok == XmlPullParser.START_TAG) {
+        String name=parser.getName();
+        if (name.equals("category")) {
+          parentCategory=parser.getAttributeValue("","name");
+          poiParentCategory=parser.getAttributeValue("","poi_category");
+          poiParentPrefix=parser.getAttributeValue("","poi_prefix");
+          order=parser.getAttributeValue("","order");
+        }
+      }
+    }
+    log.info("Time to init " + (System.currentTimeMillis() - time));
+    is.close();
+  }
+ catch (  IOException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw new RuntimeException(e);
+  }
+catch (  RuntimeException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw e;
+  }
+catch (  XmlPullParserException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw new RuntimeException(e);
+  }
+}
