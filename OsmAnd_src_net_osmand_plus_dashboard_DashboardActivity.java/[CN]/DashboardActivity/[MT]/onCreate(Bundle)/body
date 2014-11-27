@@ -18,26 +18,73 @@
   ColorDrawable color=new ColorDrawable(Color.parseColor("#ff8f00"));
   getSupportActionBar().setBackgroundDrawable(color);
   getSupportActionBar().setIcon(android.R.color.transparent);
-  android.support.v4.app.FragmentManager manager=getSupportFragmentManager();
-  android.support.v4.app.FragmentTransaction fragmentTransaction=manager.beginTransaction();
-  if (manager.findFragmentByTag(DashSearchFragment.TAG) == null) {
-    DashSearchFragment searchFragment=new DashSearchFragment();
-    fragmentTransaction.add(R.id.content,searchFragment,DashSearchFragment.TAG);
+  addFragments();
+  final OsmAndAppCustomization appCustomization=getMyApplication().getAppCustomization();
+  final Activity activity=this;
+  OsmandApplication app=getMyApplication();
+  if (app.getSettings().FOLLOW_THE_ROUTE.get() && !app.getRoutingHelper().isRouteCalculated()) {
+    final Intent mapIndent=new Intent(this,appCustomization.getMapActivity());
+    startActivityForResult(mapIndent,0);
+    return;
   }
-  if (manager.findFragmentByTag(DashMapFragment.TAG) == null) {
-    DashMapFragment mapFragment=new DashMapFragment();
-    fragmentTransaction.add(R.id.content,mapFragment,DashMapFragment.TAG);
+  startProgressDialog=new ProgressDialog(this);
+  getMyApplication().checkApplicationIsBeingInitialized(this,startProgressDialog);
+  boolean dialogShown=false;
+  boolean firstTime=false;
+  SharedPreferences pref=getPreferences(MODE_WORLD_WRITEABLE);
+  boolean appVersionChanged=false;
+  if (!pref.contains(FIRST_TIME_APP_RUN)) {
+    firstTime=true;
+    pref.edit().putBoolean(FIRST_TIME_APP_RUN,true).commit();
+    pref.edit().putString(VERSION_INSTALLED,Version.getFullVersion(app)).commit();
   }
-  if (manager.findFragmentByTag(DashFavoritesFragment.TAG) == null) {
-    DashFavoritesFragment favoritesFragment=new DashFavoritesFragment();
-    fragmentTransaction.add(R.id.content,favoritesFragment,DashFavoritesFragment.TAG);
+ else   if (!Version.getFullVersion(app).equals(pref.getString(VERSION_INSTALLED,""))) {
+    pref.edit().putString(VERSION_INSTALLED,Version.getFullVersion(app)).commit();
+    appVersionChanged=true;
   }
-  if (manager.findFragmentByTag(DashUpdatesFragment.TAG) == null) {
-    DashUpdatesFragment updatesFragment=new DashUpdatesFragment();
-    fragmentTransaction.add(R.id.content,updatesFragment,DashUpdatesFragment.TAG);
+  if (appCustomization.showFirstTimeRunAndTips(firstTime,appVersionChanged)) {
+    if (firstTime) {
+      applicationInstalledFirstTime();
+      dialogShown=true;
+    }
+ else {
+      int i=pref.getInt(TIPS_SHOW,0);
+      if (i < 7) {
+        pref.edit().putInt(TIPS_SHOW,++i).commit();
+      }
+      if (i == 1 || i == 5 || appVersionChanged) {
+        if (TIPS_AND_TRICKS) {
+          TipsAndTricksActivity tipsActivity=new TipsAndTricksActivity(this);
+          Dialog dlg=tipsActivity.getDialogToShowTips(!appVersionChanged,false);
+          dlg.show();
+          dialogShown=true;
+        }
+ else {
+          if (appVersionChanged) {
+            final Intent helpIntent=new Intent(activity,HelpActivity.class);
+            helpIntent.putExtra(HelpActivity.TITLE,Version.getAppVersion(getMyApplication()));
+            helpIntent.putExtra(HelpActivity.URL,"changes-1.9.html");
+            activity.startActivity(helpIntent);
+            dialogShown=true;
+          }
+        }
+      }
+    }
   }
-  if (manager.findFragmentByTag(DashPluginsFragment.TAG) == null) {
-    DashPluginsFragment pluginsFragment=new DashPluginsFragment();
-    fragmentTransaction.add(R.id.content,pluginsFragment,DashPluginsFragment.TAG).commit();
+  if (!dialogShown && appCustomization.checkBasemapDownloadedOnStart()) {
+    if (startProgressDialog.isShowing()) {
+      startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
+        @Override public void onDismiss(        DialogInterface dialog){
+          checkVectorIndexesDownloaded();
+        }
+      }
+);
+    }
+ else {
+      checkVectorIndexesDownloaded();
+    }
+  }
+  if (appCustomization.checkExceptionsOnStart() && !dialogShown) {
+    checkPreviousRunsForExceptions(firstTime);
   }
 }
