@@ -1,16 +1,18 @@
 {
-  boolean isUsingTurnLanes=TurnType.getPrimaryTurn(currentSegment.getTurnType().getLanes()[0]) != 0 && TurnType.getPrimaryTurn(nextSegment.getTurnType().getLanes()[0]) != 0;
+  TurnType currentTurn=currentSegment.getTurnType();
+  TurnType nextTurn=nextSegment.getTurnType();
+  boolean isUsingTurnLanes=TurnType.getPrimaryTurn(currentTurn.getLanes()[0]) != 0 && TurnType.getPrimaryTurn(nextTurn.getLanes()[0]) != 0;
   if (isUsingTurnLanes) {
-    int[] lanes=new int[currentSegment.getTurnType().getLanes().length];
+    int[] lanes=new int[currentTurn.getLanes().length];
     for (int i=0; i < lanes.length; i++) {
-      lanes[i]=currentSegment.getTurnType().getLanes()[i] & ~1;
+      lanes[i]=currentTurn.getLanes()[i] & ~1;
     }
     int matchingIndex=0;
     int maxMatchedLanes=0;
     for (int i=0; i < lanes.length; i++) {
       int matchedLanes=0;
-      for (int j=0; j < nextSegment.getTurnType().getLanes().length - i; j++) {
-        if (TurnType.getPrimaryTurn(nextSegment.getTurnType().getLanes()[j]) == TurnType.getPrimaryTurn(currentSegment.getTurnType().getLanes()[i + j])) {
+      for (int j=0; j < nextTurn.getLanes().length - i; j++) {
+        if (TurnType.getPrimaryTurn(nextTurn.getLanes()[j]) == TurnType.getPrimaryTurn(currentTurn.getLanes()[i + j])) {
           matchedLanes++;
         }
  else {
@@ -25,16 +27,15 @@
     if (maxMatchedLanes <= 1) {
       return;
     }
-    for (int i=matchingIndex; i - matchingIndex < nextSegment.getTurnType().getLanes().length; i++) {
-      lanes[i]|=nextSegment.getTurnType().getLanes()[i - matchingIndex] & 1;
+    for (int i=matchingIndex; i - matchingIndex < nextTurn.getLanes().length; i++) {
+      lanes[i]|=nextTurn.getLanes()[i - matchingIndex] & 1;
     }
-    TurnType t=currentSegment.getTurnType();
-    t.setLanes(lanes);
+    currentTurn.setLanes(lanes);
     int turn=inferTurnFromLanes(lanes);
-    if (turn != 0 && turn != t.getValue()) {
+    if (turn != 0 && turn != currentTurn.getValue()) {
       TurnType newTurnType=TurnType.valueOf(turn,leftSide);
       newTurnType.setLanes(lanes);
-      newTurnType.setSkipToSpeak(t.isSkipToSpeak());
+      newTurnType.setSkipToSpeak(currentTurn.isSkipToSpeak());
       currentSegment.setTurnType(newTurnType);
     }
   }
