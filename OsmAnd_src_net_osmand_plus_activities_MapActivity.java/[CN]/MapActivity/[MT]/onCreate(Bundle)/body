@@ -11,14 +11,16 @@
   startProgressDialog.setCancelable(true);
   app.checkApplicationIsBeingInitialized(this,startProgressDialog);
   parseLaunchIntentLocation();
-  if (settings.USE_NATIVE_RENDER.get() && NativeQtLibrary.isInit()) {
-    ViewStub stub=(ViewStub)findViewById(R.id.glSurfaceStub);
-    glSurfaceView=(GLSurfaceView)stub.inflate();
+  if (settings.USE_NATIVE_RENDER.get() && NativeCoreContext.isInit()) {
+    ViewStub stub=(ViewStub)findViewById(R.id.atlasMapRendererViewStub);
+    atlasMapRendererView=(AtlasMapRendererView)stub.inflate();
     OsmAndMapLayersView ml=(OsmAndMapLayersView)findViewById(R.id.MapLayersView);
     ml.setVisibility(View.VISIBLE);
-    NativeQtLibrary.initView(glSurfaceView);
+    atlasMapRendererView.setAzimuth(0);
+    atlasMapRendererView.setElevationAngle(90);
+    NativeCoreContext.getMapRendererContext().setMapRendererView(atlasMapRendererView);
     mapView=ml.getMapView();
-    mapView.setMapRender(NativeQtLibrary.getMapRenderer());
+    mapView.setMapRender(atlasMapRendererView);
   }
  else {
     OsmAndMapSurfaceView surf=(OsmAndMapSurfaceView)findViewById(R.id.MapView);
