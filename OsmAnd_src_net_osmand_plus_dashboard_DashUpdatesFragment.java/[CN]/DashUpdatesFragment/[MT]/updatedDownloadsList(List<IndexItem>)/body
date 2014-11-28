@@ -1,0 +1,44 @@
+{
+  View mainView=getView();
+  if (mainView == null) {
+    return;
+  }
+  progressBars.clear();
+  baseNames.clear();
+  downloadButtons.clear();
+  mainView.findViewById(R.id.main_progress).setVisibility(View.GONE);
+  ((TextView)mainView.findViewById(R.id.update_count)).setText(String.valueOf(list.size()));
+  if (list.size() < 1) {
+    return;
+  }
+  LinearLayout updates=(LinearLayout)mainView.findViewById(R.id.updates_items);
+  updates.removeAllViews();
+  for (int i=0; i < list.size(); i++) {
+    final IndexItem item=list.get(i);
+    if (i > 2) {
+      break;
+    }
+    LayoutInflater inflater=getActivity().getLayoutInflater();
+    View view=inflater.inflate(R.layout.dash_updates_item,null,false);
+    String name=item.getVisibleName(getMyApplication(),getMyApplication().getResourceManager().getOsmandRegions());
+    String d=item.getDate(getMyApplication().getResourceManager().getDateFormat()) + ", " + item.getSizeDescription(getMyApplication());
+    String eName=name.replace("\n"," ");
+    ((TextView)view.findViewById(R.id.map_name)).setText(eName);
+    ((TextView)view.findViewById(R.id.map_descr)).setText(d);
+    final ProgressBar progressBar=(ProgressBar)view.findViewById(R.id.ProgressBar);
+    View downloadButton=(view.findViewById(R.id.btn_download));
+    downloadButton.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View view){
+        getDownloadActivity().startDownload(item);
+        currentProgress=progressBar;
+        cancelButton=(ImageButton)view;
+      }
+    }
+);
+    downloadButtons.add((ImageButton)downloadButton);
+    baseNames.add(item.getBasename());
+    progressBars.add(progressBar);
+    updates.addView(view);
+  }
+  updateProgress(BaseDownloadActivity.downloadListIndexThread.getCurrentRunningTask(),false);
+}

@@ -1,0 +1,27 @@
+{
+  LinearLayout layout=(LinearLayout)parent;
+  LayoutInflater inflater=getActivity().getLayoutInflater();
+  List<OsmandPlugin> availablePlugins=OsmandPlugin.getAvailablePlugins();
+  List<OsmandPlugin> enabledPlugins=OsmandPlugin.getEnabledPlugins();
+  for (int i=0; i < availablePlugins.size(); i++) {
+    if (i > 2) {
+      break;
+    }
+    final OsmandPlugin plugin=availablePlugins.get(i);
+    View view=inflater.inflate(R.layout.dash_plugin_item,null,false);
+    ((TextView)view.findViewById(R.id.plugin_name)).setText(plugin.getName());
+    ((TextView)view.findViewById(R.id.plugin_descr)).setText(plugin.getDescription());
+    CompoundButton check=(CompoundButton)view.findViewById(R.id.check_item);
+    check.setChecked(enabledPlugins.contains(plugin));
+    check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+      @Override public void onCheckedChanged(      CompoundButton compoundButton,      boolean b){
+        OsmandPlugin.enablePlugin(getMyApplication(),plugin,b);
+      }
+    }
+);
+    int height=(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,50,getResources().getDisplayMetrics());
+    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,height);
+    view.setLayoutParams(lp);
+    layout.addView(view);
+  }
+}
