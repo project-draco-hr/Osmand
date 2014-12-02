@@ -1,0 +1,13 @@
+{
+  OsmandSettings settings=app.getSettings();
+  final Integer screenPowerSave=settings.WAKE_ON_VOICE_INT.get();
+  if (screenPowerSave > 0) {
+    uiHandler.removeCallbacks(releaseWakeLocksRunnable);
+    if (!active && wakeLock == null) {
+      PowerManager pm=(PowerManager)app.getSystemService(Context.POWER_SERVICE);
+      wakeLock=pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,"OsmAndOnVoiceWakeupTag");
+      wakeLock.acquire();
+    }
+    uiHandler.postDelayed(releaseWakeLocksRunnable,screenPowerSave * 1000L);
+  }
+}

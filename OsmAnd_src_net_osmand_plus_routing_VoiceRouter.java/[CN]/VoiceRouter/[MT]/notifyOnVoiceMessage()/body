@@ -1,24 +1,12 @@
 {
-  handler.post(new Runnable(){
-    @Override public void run(){
-synchronized (voiceMessageListeners) {
-        for (        final VoiceMessageListener voiceMessageListener : voiceMessageListeners) {
-          Runnable closure=new Runnable(){
-            public void run(){
-              if (settings.WAKE_ON_VOICE_INT.get() > 0) {
-synchronized (voiceMessageListeners) {
-                  if (voiceMessageListeners.contains(voiceMessageListener) && (settings.WAKE_ON_VOICE_INT.get() > 0)) {
-                    voiceMessageListener.onVoiceMessage();
-                  }
-                }
-              }
-            }
-          }
-;
-          handler.post(closure);
+  if (settings.WAKE_ON_VOICE_INT.get() > 0) {
+    router.getApplication().runInUIThread(new Runnable(){
+      @Override public void run(){
+        for (        VoiceMessageListener lnt : voiceMessageListeners.keySet()) {
+          lnt.onVoiceMessage();
         }
       }
     }
-  }
 );
+  }
 }

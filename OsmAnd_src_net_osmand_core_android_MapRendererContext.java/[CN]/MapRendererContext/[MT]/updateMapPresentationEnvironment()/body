@@ -1,12 +1,23 @@
 {
-  _mapPresentationEnvironment=new MapPresentationEnvironment(_mapStyle,_displayDensityFactor,_localeLanguageId,_languagePreference);
-  if (_mapStyleSettings != null) {
-    QStringStringHash convertedStyleSettings=new QStringStringHash();
-    for (Iterator<Map.Entry<String,String>> itSetting=_mapStyleSettings.entrySet().iterator(); itSetting.hasNext(); ) {
-      Map.Entry<String,String> setting=itSetting.next();
-      convertedStyleSettings.set(setting.getKey(),setting.getValue());
-    }
-    _mapPresentationEnvironment.setSettings(convertedStyleSettings);
+  float displayDensityFactor=getDisplayDensityFactor();
+  String langId=app.getSettings().MAP_PREFERRED_LOCALE.get();
+  LanguagePreference langPref=LanguagePreference.LocalizedOrNative;
+  String rendName=app.getSettings().RENDERER.get();
+  if (rendName.length() == 0 || rendName.equals(RendererRegistry.DEFAULT_RENDER)) {
+    rendName="default";
   }
-  if (_mapPrimitiviser != null)   updateMapPrimitiviser();
+  if (!mapStyles.containsKey(rendName)) {
+    mapStyles.put(rendName,mapStylesCollection.getResolvedStyleByName(rendName));
+  }
+  ResolvedMapStyle mapStyle=mapStyles.get(rendName);
+  CachedMapPresentation pres=new CachedMapPresentation(langId,langPref,mapStyle,displayDensityFactor);
+  if (this.presentationObjectParams == null || !this.presentationObjectParams.equalsFields(pres)) {
+    this.presentationObjectParams=pres;
+    mapPresentationEnvironment=new MapPresentationEnvironment(mapStyle,displayDensityFactor,langId,langPref);
+  }
+  QStringStringHash convertedStyleSettings=getMapStyleSettings();
+  mapPresentationEnvironment.setSettings(convertedStyleSettings);
+  if (obfMapRasterLayerProvider != null || obfMapSymbolsProvider != null) {
+    recreateRasterAndSymbolsProvider();
+  }
 }

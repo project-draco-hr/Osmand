@@ -1,6 +1,27 @@
 {
-synchronized (_syncObject) {
-    if (_mapStyleSettings == null)     return null;
-    return Collections.unmodifiableMap(_mapStyleSettings);
+  OsmandSettings prefs=app.getSettings();
+  RenderingRulesStorage storage=app.getRendererRegistry().getCurrentSelectedRenderer();
+  Map<String,String> props=new HashMap<String,String>();
+  for (  RenderingRuleProperty customProp : storage.PROPS.getCustomRules()) {
+    if (customProp.isBoolean()) {
+      CommonPreference<Boolean> pref=prefs.getCustomRenderBooleanProperty(customProp.getAttrName());
+      props.put(customProp.getAttrName(),pref.get() + "");
+    }
+ else {
+      CommonPreference<String> settings=prefs.getCustomRenderProperty(customProp.getAttrName());
+      String res=settings.get();
+      if (!Algorithms.isEmpty(res)) {
+        props.put(customProp.getAttrName(),res);
+      }
+    }
   }
+  QStringStringHash convertedStyleSettings=new QStringStringHash();
+  for (Iterator<Map.Entry<String,String>> itSetting=props.entrySet().iterator(); itSetting.hasNext(); ) {
+    Map.Entry<String,String> setting=itSetting.next();
+    convertedStyleSettings.set(setting.getKey(),setting.getValue());
+  }
+  if (nightMode) {
+    convertedStyleSettings.set("nightMode","true");
+  }
+  return convertedStyleSettings;
 }
