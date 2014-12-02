@@ -1,0 +1,22 @@
+{
+  super.onViewCreated(view,savedInstanceState);
+  if (app.isApplicationInitializing()) {
+    app.checkApplicationIsBeingInitialized(getActivity(),(TextView)view.findViewById(R.id.ProgressMessage),(ProgressBar)view.findViewById(R.id.ProgressBar),new Runnable(){
+      @Override public void run(){
+        (view.findViewById(R.id.ProgressMessage)).setVisibility(View.GONE);
+        view.findViewById(R.id.ProgressBar).setVisibility(View.GONE);
+        DashboardActivity dashboardActivity=((DashboardActivity)getSherlockActivity());
+        dashboardActivity.getSupportFragmentManager().beginTransaction().detach(DashLoadingFragment.this);
+        dashboardActivity.updateDownloads();
+        dashboardActivity.addFragments();
+      }
+    }
+);
+  }
+ else {
+    DashboardActivity dashboardActivity=((DashboardActivity)getSherlockActivity());
+    dashboardActivity.getSupportFragmentManager().beginTransaction().detach(DashLoadingFragment.this);
+    dashboardActivity.updateDownloads();
+    dashboardActivity.addFragments();
+  }
+}

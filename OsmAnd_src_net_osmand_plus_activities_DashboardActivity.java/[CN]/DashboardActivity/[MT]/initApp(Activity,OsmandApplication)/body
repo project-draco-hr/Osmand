@@ -5,9 +5,6 @@
     startActivityForResult(mapIndent,0);
     return;
   }
-  startProgressDialog=new ProgressDialog(this);
-  getMyApplication().checkApplicationIsBeingInitialized(this,startProgressDialog);
-  boolean dialogShown=false;
   boolean firstTime=false;
   SharedPreferences pref=getPreferences(MODE_WORLD_WRITEABLE);
   boolean appVersionChanged=false;
@@ -23,7 +20,6 @@
   if (appCustomization.showFirstTimeRunAndTips(firstTime,appVersionChanged)) {
     if (firstTime) {
       applicationInstalledFirstTime();
-      dialogShown=true;
     }
  else {
       int i=pref.getInt(TIPS_SHOW,0);
@@ -35,7 +31,6 @@
           TipsAndTricksActivity tipsActivity=new TipsAndTricksActivity(this);
           Dialog dlg=tipsActivity.getDialogToShowTips(!appVersionChanged,false);
           dlg.show();
-          dialogShown=true;
         }
  else {
           if (appVersionChanged) {
@@ -43,28 +38,12 @@
             helpIntent.putExtra(HelpActivity.TITLE,Version.getAppVersion(getMyApplication()));
             helpIntent.putExtra(HelpActivity.URL,"changes-1.9.html");
             activity.startActivity(helpIntent);
-            dialogShown=true;
           }
         }
       }
     }
   }
-  if (!dialogShown && appCustomization.checkBasemapDownloadedOnStart()) {
-    if (startProgressDialog.isShowing()) {
-      startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
-        @Override public void onDismiss(        DialogInterface dialog){
-          checkVectorIndexesDownloaded();
-          updateDownloads();
-        }
-      }
-);
-    }
- else {
-      checkVectorIndexesDownloaded();
-      updateDownloads();
-    }
-  }
-  if (appCustomization.checkExceptionsOnStart() && !dialogShown) {
+  if (appCustomization.checkExceptionsOnStart()) {
     checkPreviousRunsForExceptions(firstTime);
   }
 }
