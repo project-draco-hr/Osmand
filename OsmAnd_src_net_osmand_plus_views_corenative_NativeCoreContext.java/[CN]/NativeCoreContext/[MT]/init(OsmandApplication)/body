@@ -1,0 +1,19 @@
+{
+  if (!init && NativeCore.isAvailable()) {
+    if (!NativeCore.isLoaded())     NativeCore.load(CoreResourcesFromAndroidAssetsCustom.loadFromCurrentApplication(app));
+    if (NativeCore.isLoaded()) {
+      File directory=app.getAppPath("");
+      Logger.get().addLogSink(QIODeviceLogSink.createFileLogSink(directory.getAbsolutePath() + "osmandcore.log"));
+      WindowManager mgr=(WindowManager)app.getSystemService(Context.WINDOW_SERVICE);
+      DisplayMetrics dm=new DisplayMetrics();
+      mgr.getDefaultDisplay().getMetrics(dm);
+      float density=Math.max(0,dm.density - 1);
+      ObfsCollection obfsCollection=new ObfsCollection();
+      obfsCollection.addDirectory(directory.getAbsolutePath(),false);
+      MapStylesCollection mapStylesCollection=setupMapStyleCollection(app);
+      mapRendererContext=new MapRendererContext(app,density);
+      mapRendererContext.setupObfMap(mapStylesCollection,obfsCollection);
+      init=true;
+    }
+  }
+}

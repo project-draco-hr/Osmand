@@ -1,0 +1,23 @@
+{
+  float displayDensityFactor=getDisplayDensityFactor();
+  String langId=app.getSettings().MAP_PREFERRED_LOCALE.get();
+  LanguagePreference langPref=LanguagePreference.LocalizedOrNative;
+  String rendName=app.getSettings().RENDERER.get();
+  if (rendName.length() == 0 || rendName.equals(RendererRegistry.DEFAULT_RENDER)) {
+    rendName="default";
+  }
+  if (!mapStyles.containsKey(rendName)) {
+    mapStyles.put(rendName,mapStylesCollection.getResolvedStyleByName(rendName));
+  }
+  ResolvedMapStyle mapStyle=mapStyles.get(rendName);
+  CachedMapPresentation pres=new CachedMapPresentation(langId,langPref,mapStyle,displayDensityFactor);
+  if (this.presentationObjectParams == null || !this.presentationObjectParams.equalsFields(pres)) {
+    this.presentationObjectParams=pres;
+    mapPresentationEnvironment=new MapPresentationEnvironment(mapStyle,displayDensityFactor,langId,langPref);
+  }
+  QStringStringHash convertedStyleSettings=getMapStyleSettings();
+  mapPresentationEnvironment.setSettings(convertedStyleSettings);
+  if (obfMapRasterLayerProvider != null || obfMapSymbolsProvider != null) {
+    recreateRasterAndSymbolsProvider();
+  }
+}
