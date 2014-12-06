@@ -1,0 +1,26 @@
+{
+  int end=include_last ? n + 1 : n;
+  end<<=1;
+  double cosphi=Math.cos(phi);
+  double cosphi1=Math.cos(phi1);
+  double sinphi1=Math.sin(phi1);
+  double ldiff=lambda - lambda0;
+  double p2diff=Math.sin(((phi - phi1) / 2));
+  double l2diff=Math.sin((ldiff) / 2);
+  double c=2.0f * Math.asin(Math.sqrt(p2diff * p2diff + cosphi1 * cosphi * l2diff* l2diff));
+  double Az=Math.atan2(cosphi * Math.sin(ldiff),(cosphi1 * Math.sin(phi) - sinphi1 * cosphi * Math.cos(ldiff)));
+  double cosAz=Math.cos(Az);
+  double sinAz=Math.sin(Az);
+  double[] points=new double[end];
+  points[0]=phi1;
+  points[1]=lambda0;
+  double inc=c / n;
+  c=inc;
+  for (int i=2; i < end; i+=2, c+=inc) {
+    double sinc=Math.sin(c);
+    double cosc=Math.cos(c);
+    points[i]=Math.asin(sinphi1 * cosc + cosphi1 * sinc * cosAz);
+    points[i + 1]=Math.atan2(sinc * sinAz,cosphi1 * cosc - sinphi1 * sinc * cosAz) + lambda0;
+  }
+  return points;
+}

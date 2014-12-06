@@ -1,0 +1,57 @@
+{
+  if (mgrsString == null || mgrsString.length() == 0) {
+    throw new NumberFormatException("MGRSPoint coverting from nothing");
+  }
+  mgrsString=mgrsString.toUpperCase();
+  int length=mgrsString.length();
+  String hunK=null;
+  StringBuffer sb=new StringBuffer();
+  char testChar;
+  int i=0;
+  while (!Character.isLetter(testChar=mgrsString.charAt(i))) {
+    if (i >= 2) {
+      throw new NumberFormatException("MGRSPoint bad conversion from: " + mgrsString + ", first two characters need to be a number between 1-60.");
+    }
+    sb.append(testChar);
+    i++;
+  }
+  zone_number=Integer.parseInt(sb.toString());
+  if (zone_number < 1 || zone_number > 60) {
+    throw new NumberFormatException("MGRSPoint bad conversion from: " + mgrsString + ", first two characters need to be a number between 1-60.");
+  }
+  if (i == 0 || i + 3 > length) {
+    throw new NumberFormatException("MGRSPoint bad conversion from: " + mgrsString + ", MGRS string must be at least 4-5 digits long");
+  }
+  zone_letter=mgrsString.charAt(i++);
+  if (zone_letter <= 'A' || zone_letter == 'B' || zone_letter == 'Y' || zone_letter >= 'Z' || zone_letter == 'I' || zone_letter == 'O') {
+    throw new NumberFormatException("MGRSPoint zone letter " + zone_letter + " not handled: "+ mgrsString);
+  }
+  hunK=mgrsString.substring(i,i+=2);
+  char char1=hunK.charAt(0);
+  char char2=hunK.charAt(1);
+  if (char1 < 'A' || char2 < 'A' || char1 > 'Z' || char2 > 'Z' || char1 == 'I' || char2 == 'I' || char1 == 'O' || char2 == 'O') {
+    throw new NumberFormatException("MGRSPoint bad conversion from " + mgrsString + ", invalid 100k designator");
+  }
+  int set=get100kSetForZone(zone_number);
+  float east100k=getEastingFromChar(char1,set);
+  float north100k=getNorthingFromChar(char2,set);
+  while (north100k < getMinNorthing(zone_letter)) {
+    north100k+=2000000;
+  }
+  int remainder=length - i;
+  if (remainder % 2 != 0) {
+    throw new NumberFormatException("MGRSPoint has to have an even number \nof digits after the zone letter and two 100km letters - front \nhalf for easting meters, second half for \nnorthing meters" + mgrsString);
+  }
+  int sep=remainder / 2;
+  float sepEasting=0f;
+  float sepNorthing=0f;
+  if (sep > 0) {
+    float accuracyBonus=100000f / (float)Math.pow(10,sep);
+    String sepEastingString=mgrsString.substring(i,i + sep);
+    sepEasting=Float.parseFloat(sepEastingString) * accuracyBonus;
+    String sepNorthingString=mgrsString.substring(i + sep);
+    sepNorthing=Float.parseFloat(sepNorthingString) * accuracyBonus;
+  }
+  easting=sepEasting + east100k;
+  northing=sepNorthing + north100k;
+}

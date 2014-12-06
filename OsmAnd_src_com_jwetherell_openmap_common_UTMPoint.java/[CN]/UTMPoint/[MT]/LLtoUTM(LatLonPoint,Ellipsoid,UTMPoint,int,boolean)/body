@@ -1,0 +1,34 @@
+{
+  double a=ellip.radius;
+  double k0=0.9996;
+  double eccSquared=ellip.eccsq;
+  double eccPrimeSquared=(eccSquared) / (1 - eccSquared);
+  double eccSquared2=eccSquared * eccSquared;
+  double eccSquared3=eccSquared2 * eccSquared;
+  double N, T, C, A, M;
+  double LatRad=llpoint.getRadLat();
+  double LongRad=llpoint.getRadLon();
+  double LongOrigin=(zoneNumber - 1) * 6 - 180 + 3;
+  double LongOriginRad=Math.toRadians(LongOrigin);
+  double tanLatRad=Math.tan(LatRad);
+  double sinLatRad=Math.sin(LatRad);
+  double cosLatRad=Math.cos(LatRad);
+  N=a / Math.sqrt(1 - eccSquared * sinLatRad * sinLatRad);
+  T=tanLatRad * tanLatRad;
+  C=eccPrimeSquared * cosLatRad * cosLatRad;
+  A=cosLatRad * (LongRad - LongOriginRad);
+  M=a * ((1 - eccSquared / 4 - 3 * eccSquared2 / 64 - 5 * eccSquared3 / 256) * LatRad - (3 * eccSquared / 8 + 3 * eccSquared2 / 32 + 45 * eccSquared3 / 1024) * Math.sin(2 * LatRad) + (15 * eccSquared2 / 256 + 45 * eccSquared3 / 1024) * Math.sin(4 * LatRad) - (35 * eccSquared3 / 3072) * Math.sin(6 * LatRad));
+  double UTMEasting=(k0 * N * (A + (1 - T + C) * A * A* A / 6.0d + (5 - 18 * T + T * T + 72 * C - 58 * eccPrimeSquared) * A * A* A* A* A / 120.0d) + 500000.0d);
+  double UTMNorthing=(k0 * (M + N * Math.tan(LatRad) * (A * A / 2 + (5 - T + 9 * C + 4 * C * C) * A * A* A* A / 24.0d + (61 - 58 * T + T * T + 600 * C - 330 * eccPrimeSquared) * A * A* A* A* A* A / 720.0d)));
+  if (!isNorthern) {
+    UTMNorthing+=10000000.0f;
+  }
+  if (utmPoint == null) {
+    utmPoint=new UTMPoint();
+  }
+  utmPoint.northing=UTMNorthing;
+  utmPoint.easting=UTMEasting;
+  utmPoint.zone_number=zoneNumber;
+  utmPoint.zone_letter=isNorthern ? 'N' : 'S';
+  return utmPoint;
+}
