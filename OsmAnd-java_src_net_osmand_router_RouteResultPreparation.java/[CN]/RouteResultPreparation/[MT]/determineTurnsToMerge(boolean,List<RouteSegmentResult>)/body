@@ -1,0 +1,24 @@
+{
+  for (int i=result.size() - 2; i >= 0; i--) {
+    RouteSegmentResult currentSegment=result.get(i);
+    RouteSegmentResult nextSegment=null;
+    for (int j=i + 1; j < result.size(); j++) {
+      RouteSegmentResult possibleSegment=result.get(j);
+      if (possibleSegment.getTurnType() != null && possibleSegment.getTurnType().getLanes() != null) {
+        nextSegment=possibleSegment;
+        break;
+      }
+    }
+    if (nextSegment == null) {
+      continue;
+    }
+    TurnType currentTurn=currentSegment.getTurnType();
+    TurnType nextTurn=nextSegment.getTurnType();
+    if (currentTurn == null || currentTurn.getLanes() == null || nextTurn == null || nextTurn.getLanes() == null) {
+      continue;
+    }
+    if (currentSegment.getDistance() < 60 && nextTurn.getLanes().length <= currentTurn.getLanes().length && TurnType.isSlightTurn(currentTurn.getValue())) {
+      mergeTurnLanes(leftside,currentSegment,nextSegment);
+    }
+  }
+}
