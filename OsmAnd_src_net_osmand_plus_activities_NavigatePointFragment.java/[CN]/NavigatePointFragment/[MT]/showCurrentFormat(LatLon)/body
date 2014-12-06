@@ -1,0 +1,23 @@
+{
+  final EditText latEdit=((EditText)view.findViewById(R.id.LatitudeEdit));
+  final EditText lonEdit=((EditText)view.findViewById(R.id.LongitudeEdit));
+  boolean utm=currentFormat == UTM_FORMAT;
+  view.findViewById(R.id.easting_row).setVisibility(utm ? View.VISIBLE : View.GONE);
+  view.findViewById(R.id.northing_row).setVisibility(utm ? View.VISIBLE : View.GONE);
+  view.findViewById(R.id.zone_row).setVisibility(utm ? View.VISIBLE : View.GONE);
+  view.findViewById(R.id.lat_row).setVisibility(!utm ? View.VISIBLE : View.GONE);
+  view.findViewById(R.id.lon_row).setVisibility(!utm ? View.VISIBLE : View.GONE);
+  if (currentFormat == UTM_FORMAT) {
+    final EditText northingEdit=((EditText)view.findViewById(R.id.NorthingEdit));
+    final EditText eastingEdit=((EditText)view.findViewById(R.id.EastingEdit));
+    final EditText zoneEdit=((EditText)view.findViewById(R.id.ZoneEdit));
+    UTMPoint pnt=new UTMPoint(new LatLonPoint(loc.getLatitude(),loc.getLongitude()));
+    zoneEdit.setText(pnt.zone_number + "" + pnt.zone_letter);
+    northingEdit.setText(((long)pnt.northing) + "");
+    eastingEdit.setText(((long)pnt.easting) + "");
+  }
+ else {
+    latEdit.setText(convert(MapUtils.checkLatitude(loc.getLatitude()),currentFormat));
+    lonEdit.setText(convert(MapUtils.checkLongitude(loc.getLongitude()),currentFormat));
+  }
+}
