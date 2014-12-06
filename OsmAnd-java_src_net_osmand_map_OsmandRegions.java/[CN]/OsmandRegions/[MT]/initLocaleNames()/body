@@ -1,15 +1,23 @@
 {
+  final Map<String,BinaryMapDataObject> downloadNamesPrefix=new LinkedHashMap<String,BinaryMapDataObject>();
   final ResultMatcher<BinaryMapDataObject> resultMatcher=new ResultMatcher<BinaryMapDataObject>(){
     @Override public boolean publish(    BinaryMapDataObject object){
       initTypes(object);
       String downloadName=object.getNameByType(downloadNameType).toLowerCase();
-      String prefix=object.getNameByType(prefixType);
+      String prefix=getPrefix(object);
+      String keyName=getKeyName(object);
       if (prefix == null) {
         prefix="";
       }
       String locName=getLocaleName(object);
       if (locName != null && locName.length() > 0) {
+        String kn=keyName.toLowerCase();
+        if (prefix.length() > 0) {
+          downloadNamesPrefix.put(downloadName,object);
+          kn=prefix.toLowerCase() + "_" + keyName;
+        }
         downloadNamesToLocaleNames.put(downloadName,locName);
+        downloadNamesToLocaleNames.put(kn,locName);
       }
       MapIndex mi=object.getMapIndex();
       TIntObjectIterator<String> it=object.getObjectNames().iterator();
@@ -35,4 +43,14 @@
   }
 ;
   iterateOverAllObjects(resultMatcher);
+  for (  Map.Entry<String,BinaryMapDataObject> e : downloadNamesPrefix.entrySet()) {
+    String downloadName=e.getKey();
+    BinaryMapDataObject o=e.getValue();
+    String prefix=getPrefix(o).toLowerCase();
+    String locPrefix=downloadNamesToLocaleNames.get(prefix);
+    String locName=downloadNamesToLocaleNames.get(downloadName);
+    downloadNamesToLocaleNames.put(downloadName,locPrefix + " " + locName);
+    String index=downloadNamesToLowercaseIndex.get(downloadName);
+    downloadNamesToLowercaseIndex.put(downloadName,index + " " + prefix+ " "+ locPrefix.toLowerCase());
+  }
 }
