@@ -1,0 +1,38 @@
+{
+  Builder bld=new AlertDialog.Builder(activity);
+  boolean[] checkedItems=new boolean[prefs.size()];
+  for (int i=0; i < prefs.size(); i++) {
+    checkedItems[i]=prefs.get(i).get();
+  }
+  final boolean[] tempPrefs=new boolean[prefs.size()];
+  for (int i=0; i < prefs.size(); i++) {
+    tempPrefs[i]=prefs.get(i).get();
+  }
+  final String[] vals=new String[ps.size()];
+  for (int i=0; i < ps.size(); i++) {
+    RenderingRuleProperty p=ps.get(i);
+    String propertyName=SettingsActivity.getStringPropertyName(activity,p.getAttrName(),p.getName());
+    vals[i]=propertyName;
+  }
+  bld.setMultiChoiceItems(vals,checkedItems,new OnMultiChoiceClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which,    boolean isChecked){
+      tempPrefs[which]=isChecked;
+    }
+  }
+);
+  bld.setTitle(category);
+  bld.setNegativeButton(R.string.default_buttons_cancel,null);
+  bld.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
+    public void onClick(    DialogInterface dialog,    int whichButton){
+      for (int i=0; i < prefs.size(); i++) {
+        prefs.get(i).set(tempPrefs[i]);
+      }
+      adapter.setItemDescription(pos,getDescription(prefs));
+      a.notifyDataSetInvalidated();
+      refreshMapComplete(activity);
+      activity.getMapLayers().updateLayers(activity.getMapView());
+    }
+  }
+);
+  bld.show();
+}
