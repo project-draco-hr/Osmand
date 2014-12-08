@@ -1,15 +1,24 @@
 {
-  List<RenderingRuleProperty> ps=new ArrayList<RenderingRuleProperty>();
+  final List<RenderingRuleProperty> ps=new ArrayList<RenderingRuleProperty>();
+  final List<OsmandSettings.CommonPreference<Boolean>> prefs=new ArrayList<OsmandSettings.CommonPreference<Boolean>>();
   Iterator<RenderingRuleProperty> it=customRules.iterator();
   while (it.hasNext()) {
     RenderingRuleProperty p=it.next();
-    if (cat.equals(p.getCategory())) {
+    if (cat.equals(p.getCategory()) && p.isBoolean()) {
       ps.add(p);
+      final OsmandSettings.CommonPreference<Boolean> pref=activity.getMyApplication().getSettings().getCustomRenderBooleanProperty(p.getAttrName());
+      prefs.add(pref);
       it.remove();
     }
   }
-  if (ps.size() > 0) {
-    adapter.item(strId).setCategory(true).layout(R.layout.drawer_list_sub_header).reg();
-    createCustomRenderingProperties(adapter,activity,ps);
+  if (prefs.size() > 0) {
+    final String descr=getDescription(prefs);
+    adapter.item(strId).description(descr).layout(R.layout.drawer_list_doubleitem).listen(new OnContextMenuClick(){
+      @Override public boolean onContextMenuClick(      ArrayAdapter<?> a,      int itemId,      int pos,      boolean isChecked){
+        showPreferencesDialog(adapter,a,pos,activity,activity.getString(strId),ps,prefs);
+        return false;
+      }
+    }
+).reg();
   }
 }
