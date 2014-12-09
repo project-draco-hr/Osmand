@@ -1,6 +1,15 @@
 {
   super.onResume();
-  LinearLayout layout=(LinearLayout)getView().findViewById(R.id.plugins);
-  layout.removeAllViews();
-  addPlugins(layout);
+  for (int i=0; i < checks.size(); i++) {
+    final CompoundButton ch=checks.get(i);
+    final OsmandPlugin o=showedPlugins.get(i);
+    ch.setOnCheckedChangeListener(null);
+    ch.setChecked(OsmandPlugin.getEnabledPlugins().contains(o));
+    ch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+      @Override public void onCheckedChanged(      CompoundButton compoundButton,      boolean b){
+        OsmandPlugin.enablePlugin(getMyApplication(),o,b);
+      }
+    }
+);
+  }
 }
