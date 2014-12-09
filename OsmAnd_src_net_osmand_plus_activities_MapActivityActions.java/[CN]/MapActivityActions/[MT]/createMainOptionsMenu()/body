@@ -3,6 +3,15 @@
   final OsmandApplication app=mapActivity.getMyApplication();
   ContextMenuAdapter optionsMenuHelper=new ContextMenuAdapter(app);
   currentDrawer=DrawerType.MAIN_MENU;
+  optionsMenuHelper.item(R.string.home_button).icons(R.drawable.ic_action_quit_dark,R.drawable.ic_action_quit_light).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      Intent newIntent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getMainMenuActivity());
+      newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+      mapActivity.startActivity(newIntent);
+      return true;
+    }
+  }
+).reg();
   optionsMenuHelper.item(R.string.where_am_i).icons(R.drawable.ic_action_gloc_dark,R.drawable.ic_action_gloc_light).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
       if (getMyApplication().accessibilityEnabled()) {
@@ -170,10 +179,11 @@
     }
   }
   OsmandPlugin.registerOptionsMenu(mapActivity,optionsMenuHelper);
-  optionsMenuHelper.item(R.string.home_button).icons(R.drawable.ic_action_quit_dark,R.drawable.ic_action_quit_light).listen(new OnContextMenuClick(){
+  optionsMenuHelper.item(R.string.exit_Button).icons(R.drawable.ic_action_quit_dark,R.drawable.ic_action_quit_light).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
       Intent newIntent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getMainMenuActivity());
       newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+      newIntent.putExtra(MainMenuActivity.APP_EXIT_KEY,MainMenuActivity.APP_EXIT_CODE);
       mapActivity.startActivity(newIntent);
       return true;
     }
