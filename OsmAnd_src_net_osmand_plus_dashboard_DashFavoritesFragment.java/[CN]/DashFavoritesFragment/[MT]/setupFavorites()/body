@@ -1,7 +1,8 @@
 {
   View mainView=getView();
   final FavouritesDbHelper helper=getMyApplication().getFavorites();
-  final List<FavouritePoint> points=new ArrayList<FavouritePoint>(helper.getFavouritePoints());
+  points=new ArrayList<FavouritePoint>(helper.getFavouritePoints());
+  arrows.clear();
   if (points.size() == 0) {
     (mainView.findViewById(R.id.main_fav)).setVisibility(View.GONE);
     return;
@@ -31,6 +32,12 @@
     TextView name=(TextView)view.findViewById(R.id.name);
     TextView label=(TextView)view.findViewById(R.id.distance);
     ImageView icon=(ImageView)view.findViewById(R.id.icon);
+    ImageView direction=(ImageView)view.findViewById(R.id.direction);
+    if (location != null) {
+      direction.setVisibility(View.VISIBLE);
+      updateArrow(point,direction);
+      arrows.add(direction);
+    }
     name.setText(point.getName());
     icon.setImageDrawable(FavoriteImageDrawable.getOrCreate(getActivity(),point.getColor()));
     LatLon lastKnownMapLocation=getMyApplication().getSettings().getLastKnownMapLocation();
