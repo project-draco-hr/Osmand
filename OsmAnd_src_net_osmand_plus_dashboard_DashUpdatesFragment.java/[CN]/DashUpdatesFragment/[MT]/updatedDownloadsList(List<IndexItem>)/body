@@ -40,7 +40,13 @@
     View downloadButton=(view.findViewById(R.id.btn_download));
     downloadButton.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View view){
-        getDownloadActivity().startDownload(item);
+        if (getDownloadActivity().isInQueue(item)) {
+          getDownloadActivity().removeFromQueue(item);
+          ((ImageButton)view).setImageResource(R.drawable.download_button);
+        }
+ else         if (!getDownloadActivity().startDownload(item)) {
+          ((ImageButton)view).setImageResource(R.drawable.cancel_button);
+        }
       }
     }
 );
