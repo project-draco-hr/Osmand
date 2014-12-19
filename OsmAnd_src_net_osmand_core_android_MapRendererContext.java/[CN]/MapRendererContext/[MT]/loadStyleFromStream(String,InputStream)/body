@@ -1,0 +1,38 @@
+{
+  if (RendererRegistry.DEFAULT_RENDER.equals(name)) {
+    if (source != null) {
+      try {
+        source.close();
+      }
+ catch (      IOException e) {
+      }
+    }
+    return;
+  }
+  Log.d(TAG,"Going to pass '" + name + "' style content to native");
+  byte[] content;
+  try {
+    ByteArrayOutputStream intermediateBuffer=new ByteArrayOutputStream();
+    int nRead;
+    byte[] data=new byte[16384];
+    while ((nRead=source.read(data,0,data.length)) != -1) {
+      intermediateBuffer.write(data,0,nRead);
+    }
+    intermediateBuffer.flush();
+    content=intermediateBuffer.toByteArray();
+  }
+ catch (  IOException e) {
+    Log.e(TAG,"Failed to read style content",e);
+    return;
+  }
+ finally {
+    try {
+      source.close();
+    }
+ catch (    IOException e) {
+    }
+  }
+  if (!mapStylesCollection.addStyleFromByteArray(SwigUtilities.createQByteArrayAsCopyOf(content),name)) {
+    Log.w(TAG,"Failed to add style from byte array");
+  }
+}
