@@ -27,8 +27,10 @@ synchronized (this) {
           calculateRoute=true;
         }
         if (dist > 350) {
-          voiceRouter.announceOffRoute(dist);
-          announceBackOnRoute=true;
+          if (isFollowingMode) {
+            voiceRouter.announceOffRoute(dist);
+            announceBackOnRoute=true;
+          }
         }
       }
       Location next=route.getNextRouteLocation();
@@ -70,7 +72,7 @@ synchronized (this) {
       if (!thread.isParamsChanged()) {
         thread.stopCalculation();
       }
-      if (announceBackOnRoute) {
+      if (announceBackOnRoute && isFollowingMode) {
         voiceRouter.announceBackOnRoute();
         announceBackOnRoute=false;
       }
