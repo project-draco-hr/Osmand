@@ -17,7 +17,7 @@
   }
   LinearLayout notesLayout=(LinearLayout)mainView.findViewById(R.id.notes);
   notesLayout.removeAllViews();
-  if (notes.size() > 3 && !allNotes) {
+  if (notes.size() > 3) {
     while (notes.size() != 3) {
       notes.remove(3);
     }
@@ -25,34 +25,11 @@
   for (  final AudioVideoNotesPlugin.Recording recording : notes) {
     LayoutInflater inflater=getActivity().getLayoutInflater();
     View view=inflater.inflate(R.layout.dash_note_item,null,false);
-    if (recording.name != null) {
-      ((TextView)view.findViewById(R.id.name)).setText(recording.name);
-      ((TextView)view.findViewById(R.id.descr)).setText(recording.getDescription(getActivity()));
-    }
- else {
-      ((TextView)view.findViewById(R.id.name)).setText(recording.getDescription(getActivity()));
-      view.findViewById(R.id.descr).setVisibility(View.GONE);
-    }
-    ImageView icon=(ImageView)view.findViewById(R.id.icon);
-    if (recording.isAudio()) {
-      icon.setImageResource(R.drawable.ic_type_audio);
-    }
- else     if (recording.isVideo()) {
-      icon.setImageResource(R.drawable.ic_type_video);
-    }
- else {
-      icon.setImageResource(R.drawable.ic_type_img);
-    }
+    getNoteView(recording,view,getActivity(),plugin);
     view.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View v){
         getMyApplication().getSettings().setMapLocationToShow(recording.getLatitude(),recording.getLongitude(),15,null,recording.name != null ? recording.name : recording.getDescription(getActivity()),recording);
         MapActivity.launchMapActivityMoveToTop(getActivity());
-      }
-    }
-);
-    view.findViewById(R.id.play).setOnClickListener(new View.OnClickListener(){
-      @Override public void onClick(      View v){
-        plugin.playRecording(getActivity(),recording);
       }
     }
 );
