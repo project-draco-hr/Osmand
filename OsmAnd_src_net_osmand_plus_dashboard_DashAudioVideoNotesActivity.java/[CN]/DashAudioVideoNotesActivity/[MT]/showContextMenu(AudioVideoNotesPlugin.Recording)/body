@@ -1,0 +1,35 @@
+{
+  AlertDialog.Builder builder=new AlertDialog.Builder(this);
+  final ContextMenuAdapter adapter=new ContextMenuAdapter(this);
+  ContextMenuAdapter.OnContextMenuClick listener=new ContextMenuAdapter.OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    final ArrayAdapter<?> adapter,    int resId,    int pos,    boolean isChecked){
+      if (resId == R.string.local_index_mi_delete) {
+        AlertDialog.Builder confirm=new AlertDialog.Builder(DashAudioVideoNotesActivity.this);
+        confirm.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            plugin.deleteRecording(recording);
+            items.remove(recording);
+            listAdapter.notifyDataSetChanged();
+          }
+        }
+);
+        confirm.setNegativeButton(R.string.default_buttons_no,null);
+        confirm.setMessage(getString(R.string.delete_confirmation_msg,recording.file.getName()));
+        confirm.show();
+      }
+      return true;
+    }
+  }
+;
+  adapter.item(R.string.local_index_mi_delete).listen(listener).position(0).reg();
+  builder.setItems(adapter.getItemNames(),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      ContextMenuAdapter.OnContextMenuClick clk=adapter.getClickAdapter(which);
+      if (clk != null) {
+        clk.onContextMenuClick(null,adapter.getElementId(which),which,false);
+      }
+    }
+  }
+);
+  builder.show();
+}
