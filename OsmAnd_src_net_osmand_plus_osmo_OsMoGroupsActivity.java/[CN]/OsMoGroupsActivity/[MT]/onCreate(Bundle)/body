@@ -1,6 +1,5 @@
 {
-  requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-  getSherlock().setUiOptions(ActivityInfo.UIOPTION_SPLIT_ACTION_BAR_WHEN_NARROW);
+  supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
   super.onCreate(icicle);
   app=(OsmandApplication)getApplication();
   osMoPlugin=OsmandPlugin.getEnabledPlugin(OsMoPlugin.class);
@@ -23,4 +22,17 @@
   white.setColor(getResources().getColor(R.color.color_unknown));
   white.setAntiAlias(true);
   updateStatus();
+  setOnChildClickListener(new ExpandableListView.OnChildClickListener(){
+    @Override public boolean onChildClick(    ExpandableListView parent,    View v,    int groupPosition,    int childPosition,    long id){
+      OsMoDevice model=adapter.getChild(groupPosition,childPosition);
+      if (model != selectedObject) {
+        enterSelectionMode(model);
+      }
+ else {
+        quitSelectionMode();
+      }
+      return true;
+    }
+  }
+);
 }
