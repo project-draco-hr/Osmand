@@ -1,5 +1,4 @@
 {
-  boolean fl=true;
   boolean emoticons=false;
   String index="";
   int number=0;
@@ -9,9 +8,10 @@
   if (name.length() != p.getName().length()) {
     emoticons=true;
   }
+  boolean fl=true;
   while (fl) {
     fl=false;
-    for (    FavouritePoint fp : cachedFavoritePoints) {
+    for (    FavouritePoint fp : fdb.getFavouritePoints()) {
       if (fp.getName().equals(name)) {
         number++;
         index=" (" + number + ")";
@@ -21,17 +21,18 @@
       }
     }
   }
-  if ((index.length() > 0 || emoticons) && context.getMapActivity() != null) {
-    AlertDialog.Builder builder=new AlertDialog.Builder(context.getMapActivity());
+  if ((index.length() > 0 || emoticons)) {
+    AlertDialog.Builder builder=new AlertDialog.Builder(uiContext);
     builder.setTitle(R.string.fav_point_dublicate);
     if (emoticons) {
-      builder.setMessage(context.getString(R.string.fav_point_emoticons_message,name));
+      builder.setMessage(uiContext.getString(R.string.fav_point_emoticons_message,name));
     }
  else {
-      builder.setMessage(context.getString(R.string.fav_point_dublicate_message,name));
+      builder.setMessage(uiContext.getString(R.string.fav_point_dublicate_message,name));
     }
     builder.setPositiveButton(R.string.default_buttons_ok,null);
     p.setName(name);
-    builder.show();
+    return builder;
   }
+  return null;
 }
