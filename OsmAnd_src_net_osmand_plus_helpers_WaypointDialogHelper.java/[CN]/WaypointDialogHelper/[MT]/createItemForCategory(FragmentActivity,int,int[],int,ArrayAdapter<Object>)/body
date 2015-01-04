@@ -47,7 +47,17 @@
       if (type == WaypointHelper.POI && btn.isChecked()) {
         running[0]=position;
         thisAdapter.notifyDataSetInvalidated();
-        selectPoi(running,thisAdapter,type,true,ctx);
+        MapActivity map=(MapActivity)ctx;
+        final PoiFilter[] selected=new PoiFilter[1];
+        AlertDialog dlg=map.getMapLayers().selectPOIFilterLayer(map.getMapView(),selected);
+        dlg.setOnDismissListener(new OnDismissListener(){
+          @Override public void onDismiss(          DialogInterface dialog){
+            if (selected != null) {
+              enableType(running,thisAdapter,type,true);
+            }
+          }
+        }
+);
       }
     }
   }
