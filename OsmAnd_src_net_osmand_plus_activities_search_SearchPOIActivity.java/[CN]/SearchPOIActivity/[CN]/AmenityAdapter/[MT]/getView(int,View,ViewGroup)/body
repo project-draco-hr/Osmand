@@ -35,39 +35,54 @@
     DirectionDrawable draw=new DirectionDrawable(SearchPOIActivity.this,width,height,false);
     Float h=heading;
     float a=h != null ? h : 0;
-    draw.setAngle(mes[1] - a + 180);
-    draw.setOpenedColor(opened);
-    direction.setImageDrawable(draw);
-  }
+    int screenOrientation=((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+    private static final int ORIENTATION_0=0;
+    private static final int ORIENTATION_90=3;
+    private static final int ORIENTATION_270=1;
+switch (screenOrientation) {
+case ORIENTATION_0:
+      screenOrientation=0;
+    break;
+case ORIENTATION_90:
+  screenOrientation=90;
+break;
+case ORIENTATION_270:
+screenOrientation=270;
+break;
+}
+draw.setAngle(mes[1] - a + 180 + screenOrientation);
+draw.setOpenedColor(opened);
+direction.setImageDrawable(draw);
+}
  else {
-    if (opened == -1) {
-      direction.setImageResource(R.drawable.poi);
-    }
- else     if (opened == 0) {
-      direction.setImageResource(R.drawable.opened_poi);
-    }
+if (opened == -1) {
+direction.setImageResource(R.drawable.poi);
+}
+ else if (opened == 0) {
+direction.setImageResource(R.drawable.opened_poi);
+}
  else {
-      direction.setImageResource(R.drawable.closed_poi);
-    }
-  }
-  StringBuilder tag=new StringBuilder();
-  StringBuilder value=new StringBuilder();
-  MapRenderingTypes.getDefault().getAmenityTagValue(amenity.getType(),amenity.getSubType(),tag,value);
-  if (RenderingIcons.containsBigIcon(tag + "_" + value)) {
-    icon.setImageResource(RenderingIcons.getBigIconResourceId(tag + "_" + value));
-  }
- else   if (RenderingIcons.containsBigIcon(value.toString())) {
-    icon.setImageResource(RenderingIcons.getBigIconResourceId(value.toString()));
-  }
+direction.setImageResource(R.drawable.closed_poi);
+}
+}
+StringBuilder tag=new StringBuilder();
+StringBuilder value=new StringBuilder();
+MapRenderingTypes.getDefault().getAmenityTagValue(amenity.getType(),amenity.getSubType(),tag,value);
+if (RenderingIcons.containsBigIcon(tag + "_" + value)) {
+icon.setImageResource(RenderingIcons.getBigIconResourceId(tag + "_" + value));
+}
+ else if (RenderingIcons.containsBigIcon(value.toString())) {
+icon.setImageResource(RenderingIcons.getBigIconResourceId(value.toString()));
+}
  else {
-    icon.setImageDrawable(null);
-  }
-  String distance="  ";
-  if (mes != null) {
-    distance=" " + OsmAndFormatter.getFormattedDistance((int)mes[0],getMyApplication()) + "  ";
-  }
-  String poiType=OsmAndFormatter.getPoiStringWithoutType(amenity,settings.usingEnglishNames());
-  label.setText(distance + poiType,TextView.BufferType.SPANNABLE);
-  ((Spannable)label.getText()).setSpan(new ForegroundColorSpan(getResources().getColor(R.color.color_distance)),0,distance.length() - 1,0);
-  return (row);
+icon.setImageDrawable(null);
+}
+String distance="  ";
+if (mes != null) {
+distance=" " + OsmAndFormatter.getFormattedDistance((int)mes[0],getMyApplication()) + "  ";
+}
+String poiType=OsmAndFormatter.getPoiStringWithoutType(amenity,settings.usingEnglishNames());
+label.setText(distance + poiType,TextView.BufferType.SPANNABLE);
+((Spannable)label.getText()).setSpan(new ForegroundColorSpan(getResources().getColor(R.color.color_distance)),0,distance.length() - 1,0);
+return (row);
 }
