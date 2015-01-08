@@ -34,8 +34,8 @@
   if (!Algorithms.isEmpty(order)) {
     rtype.order=Integer.parseInt(order);
   }
- else   if (!Algorithms.isEmpty(parentOrder)) {
-    rtype.order=Integer.parseInt(parentOrder);
+ else   if (parentCategory != null) {
+    rtype.order=parentCategory.order;
   }
   String applyTo=parser.getAttributeValue("","apply_to");
   String applyValue=parser.getAttributeValue("","apply_value");
@@ -46,13 +46,14 @@
   if (!rtype.onlyMap) {
     rtype=registerRuleType(rtype);
   }
-  rtype.category=parentCategory;
-  if (poiParentCategory != null && poiParentCategory.length() > 0) {
-    rtype.poiCategory=AmenityType.getAndRegisterType(poiParentCategory);
-    rtype.poiSpecified=true;
-  }
-  if (poiParentPrefix != null) {
-    rtype.poiPrefix=poiParentPrefix;
+  rtype.category=parentCategory == null ? null : parentCategory.category;
+  if (parentCategory != null) {
+    if (parentCategory.poiCategory != null) {
+      rtype.poiCategory=parentCategory.poiCategory;
+      rtype.poiSpecified=true;
+    }
+    rtype.poiPrefix=parentCategory.poiPrefix;
+    rtype.poiWithNameOnly=parentCategory.poiWithNameOnly;
   }
   String poiCategory=parser.getAttributeValue("","poi_category");
   if (poiCategory != null) {
@@ -64,7 +65,10 @@
       rtype.poiCategory=AmenityType.getAndRegisterType(poiCategory);
     }
   }
-  rtype.poiWithNameOnly=Boolean.parseBoolean(parser.getAttributeValue("","poi_with_name"));
+  String poiWithName=parser.getAttributeValue("","poi_with_name");
+  if (poiWithName != null) {
+    rtype.poiWithNameOnly=Boolean.parseBoolean(poiWithName);
+  }
   String poiPrefix=parser.getAttributeValue("","poi_prefix");
   if (poiPrefix != null) {
     rtype.poiPrefix=poiPrefix;
