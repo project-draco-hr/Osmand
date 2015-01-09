@@ -1,0 +1,38 @@
+{
+  boolean emoticons=false;
+  String index="";
+  int number=0;
+  String name=checkEmoticons(p.getName());
+  String category=checkEmoticons(p.getCategory());
+  p.setCategory(category);
+  if (name.length() != p.getName().length()) {
+    emoticons=true;
+  }
+  boolean fl=true;
+  while (fl) {
+    fl=false;
+    for (    FavouritePoint fp : fdb.getFavouritePoints()) {
+      if (fp.getName().equals(name)) {
+        number++;
+        index=" (" + number + ")";
+        name=p.getName() + index;
+        fl=true;
+        break;
+      }
+    }
+  }
+  if ((index.length() > 0 || emoticons)) {
+    AlertDialog.Builder builder=new AlertDialog.Builder(uiContext);
+    builder.setTitle(R.string.fav_point_dublicate);
+    if (emoticons) {
+      builder.setMessage(uiContext.getString(R.string.fav_point_emoticons_message,name));
+    }
+ else {
+      builder.setMessage(uiContext.getString(R.string.fav_point_dublicate_message,name));
+    }
+    builder.setPositiveButton(R.string.default_buttons_ok,null);
+    p.setName(name);
+    return builder;
+  }
+  return null;
+}
