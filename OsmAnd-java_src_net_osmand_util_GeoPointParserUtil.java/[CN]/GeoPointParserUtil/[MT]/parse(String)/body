@@ -54,6 +54,16 @@
           return new GeoParsedPoint(lat,lon,zoom);
         }
       }
+ else       if (schemeSpecific.startsWith("//map.baidu.")) {
+        Pattern p=Pattern.compile(".*[/?&]l=(\\d{1,2}).*&c=([+-]?\\d+),([+-]?\\d+).*");
+        Matcher matcher=p.matcher(schemeSpecific);
+        if (matcher.matches()) {
+          double lat=Integer.valueOf(matcher.group(2)) / 100000.;
+          double lon=Integer.valueOf(matcher.group(3)) / 100000.;
+          int zoom=parseZoom(matcher.group(1));
+          return new GeoParsedPoint(lat,lon,zoom);
+        }
+      }
     }
  catch (    IllegalStateException e) {
       e.printStackTrace();
