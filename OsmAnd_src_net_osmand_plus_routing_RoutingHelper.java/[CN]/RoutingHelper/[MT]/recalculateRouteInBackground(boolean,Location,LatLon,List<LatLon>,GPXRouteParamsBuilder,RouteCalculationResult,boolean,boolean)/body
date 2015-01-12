@@ -2,8 +2,8 @@
   if (start == null || end == null) {
     return;
   }
-  if (currentRunningJob == null) {
-    if (force || System.currentTimeMillis() - lastTimeEvaluatedRoute > evalWaitInterval) {
+  if (currentRunningJob == null || force) {
+    if (System.currentTimeMillis() - lastTimeEvaluatedRoute > evalWaitInterval || force) {
       RouteCalculationParams params=new RouteCalculationParams();
       params.start=start;
       params.end=end;
@@ -21,7 +21,12 @@
         updateProgress(params.calculationProgress);
       }
 synchronized (this) {
-        currentRunningJob=new RouteRecalculationThread("Calculating route",params,paramsChanged);
+        final Thread prevRunningJob=currentRunningJob;
+        RouteRecalculationThread newThread=new RouteRecalculationThread("Calculating route",params,paramsChanged);
+        currentRunningJob=newThread;
+        if (prevRunningJob != null) {
+          newThread.setWaitPrevJob(prevRunningJob);
+        }
         currentRunningJob.start();
       }
     }
