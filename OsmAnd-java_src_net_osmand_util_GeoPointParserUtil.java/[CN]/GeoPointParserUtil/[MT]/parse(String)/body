@@ -4,22 +4,65 @@
   if (scheme == null)   return null;
  else   scheme=scheme.toLowerCase(Locale.US);
   if ("http".equals(scheme) || "https".equals(scheme)) {
+    String host=uri.getHost();
+    if (host == null)     return null;
+ else     host=host.toLowerCase(Locale.US);
     final String schemeSpecific=uri.getSchemeSpecificPart();
-    if (schemeSpecific == null) {
-      return null;
-    }
+    if (schemeSpecific == null)     return null;
     final String[] osmandNetSite={"//download.osmand.net/go?"};
     final String[] osmandNetPattern={"lat=([+-]?\\d+(?:\\.\\d+)?)&lon=([+-]?\\d+(?:\\.\\d+)?)&?(z=\\d{1,2})"};
-    final String[] openstreetmapOrgSite={"//openstreetmap.org/","//www.openstreetmap.org/"};
-    final String[] openstreetmapOrgPattern={"(?:.*)(?:map=)(\\d{1,2})/([+-]?\\d+(?:\\.\\d+)?)/([+-]?\\d+(?:\\.\\d+)?)(?:.*)"};
     final String[] openstreetmapDeSite={"//openstreetmap.de/","//www.openstreetmap.de/"};
     final String[] openstreetmapDePattern={"(?:.*)zoom=(\\d{1,2})&lat=([+-]?\\d+(?:\\.\\d+)?)&lon=([+-]?\\d+(?:\\.\\d+)?)(?:.*)","(?:.*)lat=([+-]?\\d+(?:\\.\\d+)?)&lon=([+-]?\\d+(?:\\.\\d+)?)&?(z(?:oom)?=\\d{1,2})(?:.*)"};
     final String[] googleComSite={"//www.google.com/maps/","//maps.google.com/maps","//maps.google.com"};
     final String[] googleComPattern={"(?:.*)[@/]([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?),(\\d{1,2}z)(?:.*)","(?:.*)ll=([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)(?:.+)(z=\\d{1,2})(?:.*)","(?:.*)q=([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)(?:.*)&?(z=\\d{1,2})","(?:.*)(q=)([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)(?:.*)","(?:.*)q=loc:([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)&?(z=\\d{1,2})(?:.*)","(?:.*)(q=loc:)([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)(?:.*)","(.*)daddr=([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)(?:.*)","(.*)/([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)(?:.*)"};
     final String[] yandexRuSite={"//maps.yandex.ru/"};
     final String[] yandexRuPattern={"(?:.*)ll=([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)(?:.+)(z=\\d{1,2})(?:.*)"};
-    final String sites[][]={osmandNetSite,openstreetmapOrgSite,openstreetmapDeSite,googleComSite,yandexRuSite};
-    final String patterns[][]={osmandNetPattern,openstreetmapOrgPattern,openstreetmapDePattern,googleComPattern,yandexRuPattern};
+    final String sites[][]={osmandNetSite,openstreetmapDeSite,googleComSite,yandexRuSite};
+    final String patterns[][]={osmandNetPattern,openstreetmapDePattern,googleComPattern,yandexRuPattern};
+    try {
+      if (host.equals("osm.org") || host.endsWith("openstreetmap.org")) {
+        Pattern p;
+        Matcher matcher;
+        String path=uri.getPath();
+        if ("go".equals(path)) {
+          p=Pattern.compile("(?:.*)(?:map=)(\\d{1,2})/([+-]?\\d+(?:\\.\\d+)?)/([+-]?\\d+(?:\\.\\d+)?)(?:.*)");
+          matcher=p.matcher(schemeSpecific);
+        }
+ else {
+          String lat="0";
+          String lon="0";
+          String zoom=String.valueOf(GeoParsedPoint.NO_ZOOM);
+          String fragment=uri.getFragment();
+          if (fragment != null) {
+            p=Pattern.compile("(?:map=)?(\\d{1,2})/([+-]?\\d+(?:\\.\\d+)?)/([+-]?\\d+(?:\\.\\d+)?)(?:.*)");
+            matcher=p.matcher(fragment);
+            if (matcher.matches()) {
+              zoom=matcher.group(1);
+              lat=matcher.group(2);
+              lon=matcher.group(3);
+            }
+          }
+          String query=uri.getQuery();
+          if (query != null) {
+            p=Pattern.compile("(?:.*)mlat=([+-]?\\d+(?:\\.\\d+)?)(?:.*)&mlon=([+-]?\\d+(?:\\.\\d+)?)(?:.*)?");
+            matcher=p.matcher(query);
+            if (matcher.matches()) {
+              lat=matcher.group(1);
+              lon=matcher.group(2);
+            }
+          }
+          return new GeoParsedPoint(lat,lon,zoom);
+        }
+      }
+    }
+ catch (    IllegalStateException e) {
+      e.printStackTrace();
+      return null;
+    }
+catch (    NumberFormatException e) {
+      e.printStackTrace();
+      return null;
+    }
     for (int s=0; s < sites.length; s++) {
       for (int si=0; si < sites[s].length; si++) {
         if (schemeSpecific.startsWith(sites[s][si])) {
@@ -82,7 +125,7 @@
     }
     return null;
   }
-  if ("geo".equals(scheme) || "osmand.geo".equals(scheme)) {
+ else   if ("geo".equals(scheme) || "osmand.geo".equals(scheme)) {
     String schemeSpecific=uri.getSchemeSpecificPart();
     if (schemeSpecific == null) {
       return null;
