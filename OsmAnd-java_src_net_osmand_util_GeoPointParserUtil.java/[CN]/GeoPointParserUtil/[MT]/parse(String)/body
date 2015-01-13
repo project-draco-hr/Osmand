@@ -24,9 +24,12 @@
         Pattern p;
         Matcher matcher;
         String path=uri.getPath();
-        if ("go".equals(path)) {
-          p=Pattern.compile("(?:.*)(?:map=)(\\d{1,2})/([+-]?\\d+(?:\\.\\d+)?)/([+-]?\\d+(?:\\.\\d+)?)(?:.*)");
-          matcher=p.matcher(schemeSpecific);
+        if (path != null && path.startsWith("/go/")) {
+          p=Pattern.compile("^/go/([A-Za-z0-9_@~]+-*)(?:.*)");
+          matcher=p.matcher(uri.getPath());
+          if (matcher.matches()) {
+            return MapUtils.decodeShortLinkString(matcher.group(1));
+          }
         }
  else {
           String lat="0";
