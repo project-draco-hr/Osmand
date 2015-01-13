@@ -5,6 +5,7 @@
   final FavouritesDbHelper helper=((OsmandApplication)activity.getApplication()).getFavorites();
   builder.setView(v);
   final EditText editText=(EditText)v.findViewById(R.id.Name);
+  final EditText description=(EditText)v.findViewById(R.id.descr);
   final AutoCompleteTextView cat=(AutoCompleteTextView)v.findViewById(R.id.Category);
   List<FavoriteGroup> gs=helper.getFavoriteGroups();
   String[] list=new String[gs.size()];
@@ -24,13 +25,28 @@
 );
   builder.setPositiveButton(R.string.default_buttons_add,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      FavouritePoint point=(FavouritePoint)args.getSerializable(KEY_FAVORITE);
+      final FavouritePoint point=(FavouritePoint)args.getSerializable(KEY_FAVORITE);
       OsmandApplication app=(OsmandApplication)activity.getApplication();
       String categoryStr=cat.getText().toString().trim();
       final FavouritesDbHelper helper=app.getFavorites();
       app.getSettings().LAST_FAV_CATEGORY_ENTERED.set(categoryStr);
       point.setName(editText.getText().toString().trim());
+      point.setDescription(description.getText().toString().trim());
       point.setCategory(categoryStr);
+      Builder bld=FavouritesDbHelper.checkDublicates(point,helper,activity);
+      if (bld != null) {
+        bld.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            addFavorite(activity,point,helper);
+          }
+        }
+);
+      }
+ else {
+        addFavorite(activity,point,helper);
+      }
+    }
+    protected void addFavorite(    final Activity activity,    FavouritePoint point,    final FavouritesDbHelper helper){
       boolean added=helper.addFavourite(point);
       if (added) {
         AccessibleToast.makeText(activity,MessageFormat.format(activity.getString(R.string.add_favorite_dialog_favourite_added_template),point.getName()),Toast.LENGTH_SHORT).show();

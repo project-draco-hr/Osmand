@@ -1,0 +1,34 @@
+{
+  try {
+    isAnimatingZoom=true;
+    int threshold=((int)(zoomFloatEnd * 2));
+    double beginZoom=zoomStart + zoomFloatStart;
+    double endZoom=zoomEnd + zoomFloatEnd;
+    double curZoom=beginZoom;
+    animationTime*=Math.abs(endZoom - beginZoom);
+    LinearInterpolator interpolator=new LinearInterpolator();
+    long timeMillis=SystemClock.uptimeMillis();
+    float normalizedTime=0f;
+    while (!stopped) {
+      normalizedTime=(SystemClock.uptimeMillis() - timeMillis) / animationTime;
+      if (normalizedTime > 1f) {
+        break;
+      }
+      float interpolation=interpolator.getInterpolation(normalizedTime);
+      curZoom=interpolation * (endZoom - beginZoom) + beginZoom;
+      int baseZoom=(int)Math.round(curZoom - 0.5 * threshold);
+      double zaAnimate=curZoom - baseZoom;
+      tileView.zoomToAnimate(baseZoom,zaAnimate,notifyListener);
+      try {
+        Thread.sleep(DEFAULT_SLEEP_TO_REDRAW);
+      }
+ catch (      InterruptedException e) {
+        stopped=true;
+      }
+    }
+    tileView.setFractionalZoom(zoomEnd,zoomFloatEnd,notifyListener);
+  }
+  finally {
+    isAnimatingZoom=false;
+  }
+}
