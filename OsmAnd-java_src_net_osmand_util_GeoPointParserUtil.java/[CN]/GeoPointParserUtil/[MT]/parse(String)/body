@@ -223,6 +223,43 @@
         }
         if (x != null && y != null)         return new GeoParsedPoint(y,x,z,label);
       }
+ else       if (host.equals("maps.apple.com")) {
+        Map<String,String> params=getQueryParameters(uri);
+        String z=String.valueOf(GeoParsedPoint.NO_ZOOM);
+        String label=null;
+        if (params.containsKey("q")) {
+          label=params.get("q");
+        }
+        if (params.containsKey("near")) {
+          label=params.get("near");
+        }
+        if (params.containsKey("z")) {
+          z=params.get("z");
+        }
+        String ll=params.get("ll");
+        if (ll != null) {
+          Matcher matcher=commaSeparatedPairPattern.matcher(ll);
+          if (matcher.matches()) {
+            return new GeoParsedPoint(matcher.group(1),matcher.group(2),z,label);
+          }
+        }
+        String sll=params.get("sll");
+        if (sll != null) {
+          Matcher matcher=commaSeparatedPairPattern.matcher(sll);
+          if (matcher.matches()) {
+            return new GeoParsedPoint(matcher.group(1),matcher.group(2),z,label);
+          }
+        }
+        if (params.containsKey("q")) {
+          return new GeoParsedPoint(params.get("q"));
+        }
+        if (params.containsKey("daddr")) {
+          return new GeoParsedPoint(params.get("daddr"));
+        }
+        if (params.containsKey("saddr")) {
+          return new GeoParsedPoint(params.get("saddr"));
+        }
+      }
     }
  catch (    RuntimeException e) {
       e.printStackTrace();
