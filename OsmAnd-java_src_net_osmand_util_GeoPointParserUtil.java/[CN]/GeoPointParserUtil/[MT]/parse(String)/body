@@ -1,5 +1,11 @@
 {
-  final URI uri=URI.create(uriString.replaceAll("\\s+","+").replaceAll("%20","+").replaceAll("%2C",","));
+  URI uri;
+  try {
+    uri=URI.create(uriString.replaceAll("\\s+","+").replaceAll("%20","+").replaceAll("%2C",",").replaceAll("\\|",";"));
+  }
+ catch (  IllegalArgumentException e) {
+    return null;
+  }
   String scheme=uri.getScheme();
   if (scheme == null)   return null;
  else   scheme=scheme.toLowerCase(Locale.US);
@@ -114,6 +120,26 @@
           if (path.contains(pref)) {
             path=path.substring(path.lastIndexOf(pref) + pref.length());
             return parseGoogleMapsPath(path,params);
+          }
+        }
+      }
+ else       if (host.endsWith(".amap.com")) {
+        final String subString=uri.toString().substring(scheme.length() + host.length() + 4);
+        Pattern p;
+        Matcher matcher;
+        final String[] patterns={".*q=([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?).*&radius=(\\d+).*",".*q=([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?).*",".*p=(?:[A-Z0-9]+),([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?).*"};
+        for (int i=0; i < patterns.length; i++) {
+          p=Pattern.compile(patterns[i]);
+          matcher=p.matcher(subString);
+          if (matcher.matches()) {
+            if (matcher.groupCount() == 3) {
+              float radius=Float.valueOf(matcher.group(3));
+              long zoom=Math.round(23. - Math.log(radius) / Math.log(2.0));
+              return new GeoParsedPoint(matcher.group(1),matcher.group(2),String.valueOf(zoom));
+            }
+ else             if (matcher.groupCount() == 2) {
+              return new GeoParsedPoint(matcher.group(1),matcher.group(2));
+            }
           }
         }
       }
