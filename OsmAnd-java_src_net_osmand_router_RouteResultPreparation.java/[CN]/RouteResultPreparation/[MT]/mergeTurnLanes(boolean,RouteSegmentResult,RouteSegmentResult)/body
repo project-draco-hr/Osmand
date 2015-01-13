@@ -4,31 +4,70 @@
   boolean isUsingTurnLanes=TurnType.getPrimaryTurn(currentTurn.getLanes()[0]) != 0 && TurnType.getPrimaryTurn(nextTurn.getLanes()[0]) != 0;
   if (isUsingTurnLanes) {
     int[] lanes=new int[currentTurn.getLanes().length];
+    int activeIndex=-1;
+    int activeLen=0;
     for (int i=0; i < lanes.length; i++) {
-      lanes[i]=currentTurn.getLanes()[i] & ~1;
-    }
-    int matchingIndex=0;
-    int maxMatchedLanes=0;
-    for (int i=0; i < lanes.length; i++) {
-      int matchedLanes=0;
-      for (int j=0; j < nextTurn.getLanes().length - i; j++) {
-        if (TurnType.getPrimaryTurn(nextTurn.getLanes()[j]) == TurnType.getPrimaryTurn(currentTurn.getLanes()[i + j])) {
-          matchedLanes++;
+      int ln=currentTurn.getLanes()[i];
+      lanes[i]=ln & ~1;
+      if ((ln & 1) > 0) {
+        if (activeIndex == -1) {
+          activeIndex=i;
+          activeLen++;
         }
  else {
-          break;
+          activeLen++;
         }
       }
-      if (matchedLanes > maxMatchedLanes) {
-        matchingIndex=i;
-        maxMatchedLanes=matchedLanes;
-      }
     }
-    if (maxMatchedLanes <= 1) {
+    if (activeLen < 2) {
       return;
     }
-    for (int i=matchingIndex; i - matchingIndex < nextTurn.getLanes().length; i++) {
-      lanes[i]|=nextTurn.getLanes()[i - matchingIndex] & 1;
+    int targetActiveIndex=-1;
+    int targetActiveLen=0;
+    int[] nextLanes=nextTurn.getLanes();
+    for (int i=0; i < nextLanes.length; i++) {
+      int ln=nextLanes[i];
+      if ((ln & 1) > 0) {
+        if (targetActiveIndex == -1) {
+          targetActiveIndex=i;
+          targetActiveLen++;
+        }
+ else {
+          targetActiveLen++;
+        }
+      }
+    }
+    if (targetActiveIndex == -1) {
+      return;
+    }
+    boolean changed=false;
+    if (targetActiveIndex == 0) {
+      if (targetActiveLen <= activeLen) {
+        activeLen=targetActiveLen;
+        changed=true;
+      }
+    }
+ else     if (targetActiveIndex + targetActiveLen == nextLanes.length) {
+      if (targetActiveLen <= activeLen) {
+        activeIndex+=(activeLen - targetActiveLen);
+        changed=true;
+      }
+    }
+ else {
+      if (nextLanes.length >= activeLen) {
+        float ratio=(nextLanes.length / (float)activeLen);
+        activeLen=(int)Math.ceil(targetActiveLen * ratio);
+        activeIndex=(int)Math.floor(targetActiveIndex / ratio);
+        changed=true;
+      }
+    }
+    if (!changed) {
+      return;
+    }
+    for (int i=0; i < lanes.length; i++) {
+      if (i >= activeIndex && i < activeIndex + activeLen) {
+        lanes[i]|=1;
+      }
     }
     currentTurn.setLanes(lanes);
     int turn=inferTurnFromLanes(lanes);
