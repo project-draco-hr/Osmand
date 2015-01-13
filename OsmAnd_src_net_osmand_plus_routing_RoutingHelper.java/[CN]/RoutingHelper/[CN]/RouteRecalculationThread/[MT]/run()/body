@@ -1,7 +1,25 @@
 {
+synchronized (RoutingHelper.this) {
+    currentRunningJob=this;
+  }
+  if (prevRunningJob != null) {
+    while (prevRunningJob.isAlive()) {
+      try {
+        Thread.sleep(50);
+      }
+ catch (      InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+synchronized (RoutingHelper.this) {
+      currentRunningJob=this;
+    }
+  }
   RouteCalculationResult res=provider.calculateRouteImpl(params);
   if (params.calculationProgress.isCancelled) {
-    currentRunningJob=null;
+synchronized (RoutingHelper.this) {
+      currentRunningJob=null;
+    }
     return;
   }
   final boolean onlineSourceWithoutInternet=!res.isCalculated() && params.type.isOnline() && !settings.isInternetConnectionAvailable();

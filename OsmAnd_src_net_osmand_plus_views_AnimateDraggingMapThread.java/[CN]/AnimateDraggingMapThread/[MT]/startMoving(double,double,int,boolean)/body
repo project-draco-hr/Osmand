@@ -1,10 +1,11 @@
 {
   stopAnimatingSync();
-  double startLat=tileView.getLatitude();
-  double startLon=tileView.getLongitude();
-  float rotate=tileView.getRotate();
-  final int startZoom=tileView.getZoom();
   final RotatedTileBox rb=tileView.getCurrentRotatedTileBox().copy();
+  double startLat=rb.getLatitude();
+  double startLon=rb.getLongitude();
+  float rotate=rb.getRotate();
+  final int startZoom=rb.getZoom();
+  final double startZoomFP=rb.getZoomFloatPart();
   boolean skipAnimation=false;
   float mStX=rb.getPixXFromLatLon(startLat,startLon) - rb.getPixXFromLatLon(finalLat,finalLon);
   float mStY=rb.getPixYFromLatLon(startLat,startLon) - rb.getPixYFromLatLon(finalLat,finalLon);
@@ -20,7 +21,7 @@
   skipAnimation=skipAnimation || (Math.abs(moveZoom - startZoom) >= 3 || Math.abs(endZoom - moveZoom) > 3);
   if (skipAnimation) {
     tileView.setLatLonAnimate(finalLat,finalLon,notifyListener);
-    tileView.setZoomAnimate(endZoom,notifyListener);
+    tileView.setFractionalZoom(endZoom,0,notifyListener);
     return;
   }
   final float mMoveX=rb.getPixXFromLatLon(startLat,startLon) - rb.getPixXFromLatLon(finalLat,finalLon);
@@ -30,7 +31,7 @@
     @Override public void run(){
       setTargetValues(endZoom,finalLat,finalLon);
       if (moveZoom != startZoom) {
-        animatingZoomInThread(startZoom,moveZoom,ZOOM_MOVE_ANIMATION_TIME,notifyListener);
+        animatingZoomInThread(startZoom,startZoomFP,moveZoom,startZoomFP,ZOOM_MOVE_ANIMATION_TIME,notifyListener);
       }
       if (!stopped) {
         animatingMoveInThread(mMoveX,mMoveY,animationTime,notifyListener);
@@ -38,10 +39,10 @@
       if (!stopped) {
         tileView.setLatLonAnimate(finalLat,finalLon,notifyListener);
       }
-      if (!stopped && moveZoom != endZoom) {
-        animatingZoomInThread(moveZoom,endZoom,ZOOM_MOVE_ANIMATION_TIME,notifyListener);
+      if (!stopped && (moveZoom != endZoom || startZoomFP != 0)) {
+        animatingZoomInThread(moveZoom,startZoomFP,endZoom,0,ZOOM_MOVE_ANIMATION_TIME,notifyListener);
       }
-      tileView.setZoomAnimate(endZoom,notifyListener);
+      tileView.setFractionalZoom(endZoom,0,notifyListener);
       pendingRotateAnimation();
     }
   }
