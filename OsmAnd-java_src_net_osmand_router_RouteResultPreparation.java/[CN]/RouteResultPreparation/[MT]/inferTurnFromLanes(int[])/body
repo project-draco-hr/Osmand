@@ -31,7 +31,17 @@
     }
   }
   if (possibleTurns.size() == 1) {
-    return possibleTurns.iterator().next();
+    int infer=possibleTurns.iterator().next();
+    for (int i=0; i < oLanes.length; i++) {
+      if (TurnType.getSecondaryTurn(oLanes[i]) == infer) {
+        int pt=TurnType.getPrimaryTurn(oLanes[i]);
+        int en=oLanes[i] & 1;
+        TurnType.setPrimaryTurnAndReset(oLanes,i,infer);
+        oLanes[i]|=en;
+        TurnType.setSecondaryTurn(oLanes,i,pt);
+      }
+    }
+    return infer;
   }
   return 0;
 }
