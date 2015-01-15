@@ -1,81 +1,48 @@
 {
+  MergeTurnLaneTurn active=new MergeTurnLaneTurn(currentSegment);
+  MergeTurnLaneTurn target=new MergeTurnLaneTurn(nextSegment);
+  if (active.activeLen < 2) {
+    return;
+  }
+  if (target.activeStartIndex == -1) {
+    return;
+  }
+  boolean changed=false;
+  if (target.isActiveTurnMostLeft()) {
+    if (target.activeLen <= active.activeLen) {
+      active.activeEndIndex-=(active.activeLen - target.activeLen);
+      changed=true;
+    }
+  }
+ else   if (target.isActiveTurnMostRight()) {
+    if (target.activeLen < active.activeLen) {
+      active.activeStartIndex+=(active.activeLen - target.activeLen);
+      changed=true;
+    }
+  }
+ else {
+    if (target.originalLanes.length >= active.activeLen) {
+      float ratio=(target.originalLanes.length / (float)active.activeLen);
+      active.activeEndIndex=(int)Math.ceil(target.activeEndIndex * ratio);
+      active.activeStartIndex=(int)Math.floor(target.activeStartIndex / ratio);
+      changed=true;
+    }
+  }
+  if (!changed) {
+    return;
+  }
+  for (int i=0; i < active.disabledLanes.length; i++) {
+    if (i >= active.activeStartIndex && i <= active.activeEndIndex) {
+      active.disabledLanes[i]|=1;
+    }
+  }
   TurnType currentTurn=currentSegment.getTurnType();
-  TurnType nextTurn=nextSegment.getTurnType();
-  boolean isUsingTurnLanes=TurnType.getPrimaryTurn(currentTurn.getLanes()[0]) != 0 && TurnType.getPrimaryTurn(nextTurn.getLanes()[0]) != 0;
-  if (isUsingTurnLanes) {
-    int[] lanes=new int[currentTurn.getLanes().length];
-    int activeIndex=-1;
-    int activeLen=0;
-    for (int i=0; i < lanes.length; i++) {
-      int ln=currentTurn.getLanes()[i];
-      lanes[i]=ln & ~1;
-      if ((ln & 1) > 0) {
-        if (activeIndex == -1) {
-          activeIndex=i;
-          activeLen++;
-        }
- else {
-          activeLen++;
-        }
-      }
-    }
-    if (activeLen < 2) {
-      return;
-    }
-    int targetActiveIndex=-1;
-    int targetActiveLen=0;
-    int[] nextLanes=nextTurn.getLanes();
-    for (int i=0; i < nextLanes.length; i++) {
-      int ln=nextLanes[i];
-      if ((ln & 1) > 0) {
-        if (targetActiveIndex == -1) {
-          targetActiveIndex=i;
-          targetActiveLen++;
-        }
- else {
-          targetActiveLen++;
-        }
-      }
-    }
-    if (targetActiveIndex == -1) {
-      return;
-    }
-    boolean changed=false;
-    if (targetActiveIndex == 0) {
-      if (targetActiveLen <= activeLen) {
-        activeLen=targetActiveLen;
-        changed=true;
-      }
-    }
- else     if (targetActiveIndex + targetActiveLen == nextLanes.length) {
-      if (targetActiveLen <= activeLen) {
-        activeIndex+=(activeLen - targetActiveLen);
-        changed=true;
-      }
-    }
- else {
-      if (nextLanes.length >= activeLen) {
-        float ratio=(nextLanes.length / (float)activeLen);
-        activeLen=(int)Math.ceil(targetActiveLen * ratio);
-        activeIndex=(int)Math.floor(targetActiveIndex / ratio);
-        changed=true;
-      }
-    }
-    if (!changed) {
-      return;
-    }
-    for (int i=0; i < lanes.length; i++) {
-      if (i >= activeIndex && i < activeIndex + activeLen) {
-        lanes[i]|=1;
-      }
-    }
-    currentTurn.setLanes(lanes);
-    int turn=inferTurnFromLanes(lanes);
-    if (turn != 0 && turn != currentTurn.getValue()) {
-      TurnType newTurnType=TurnType.valueOf(turn,leftSide);
-      newTurnType.setLanes(lanes);
-      newTurnType.setSkipToSpeak(currentTurn.isSkipToSpeak());
-      currentSegment.setTurnType(newTurnType);
-    }
+  currentTurn.setLanes(active.disabledLanes);
+  int turn=inferTurnFromLanes(active.disabledLanes);
+  if (turn != 0 && turn != currentTurn.getValue()) {
+    TurnType newTurnType=TurnType.valueOf(turn,leftSide);
+    newTurnType.setLanes(active.disabledLanes);
+    newTurnType.setSkipToSpeak(currentTurn.isSkipToSpeak());
+    currentSegment.setTurnType(newTurnType);
   }
 }
