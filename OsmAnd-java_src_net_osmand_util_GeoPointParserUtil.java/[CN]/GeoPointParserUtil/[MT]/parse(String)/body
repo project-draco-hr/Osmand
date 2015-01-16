@@ -17,13 +17,15 @@
     if (path == null) {
       path="";
     }
- else     if (path.startsWith("/")) {
-      path=path.substring(1);
-    }
     String fragment=uri.getFragment();
     String query=uri.getQuery();
     if (query == null) {
-      query=path;
+      if (path.startsWith("/")) {
+        query=path.substring(1);
+      }
+ else {
+        query=path;
+      }
     }
     Map<String,String> params=new HashMap<String,String>();
     for (    String vl : query.split("&")) {
@@ -42,9 +44,9 @@
       if (host.equals("osm.org") || host.endsWith("openstreetmap.org")) {
         Pattern p;
         Matcher matcher;
-        if (path.startsWith("go/")) {
+        if (path.startsWith("/go/")) {
           p=Pattern.compile("^/go/([A-Za-z0-9_@~]+-*)(?:.*)");
-          matcher=p.matcher(uri.getPath());
+          matcher=p.matcher(path);
           if (matcher.matches()) {
             return MapUtils.decodeShortLinkString(matcher.group(1));
           }
