@@ -1,0 +1,17 @@
+{
+  if (!ctx.getRouter().restrictionsAware()) {
+    return false;
+  }
+  RouteDataObject road=segment.getRoad();
+  RouteSegment parent=getParentDiffId(segment);
+  if (!reverseWay && road.getRestrictionLength() == 0 && (parent == null || parent.getRoad().getRestrictionLength() == 0)) {
+    return false;
+  }
+  ctx.segmentsToVisitPrescripted.clear();
+  ctx.segmentsToVisitNotForbidden.clear();
+  processRestriction(ctx,inputNext,reverseWay,false,road);
+  if (parent != null) {
+    processRestriction(ctx,inputNext,reverseWay,true,parent.getRoad());
+  }
+  return true;
+}
