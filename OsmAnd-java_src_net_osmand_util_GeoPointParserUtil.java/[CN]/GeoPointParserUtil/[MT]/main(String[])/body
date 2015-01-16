@@ -5,6 +5,39 @@
   final String name="Treasure Island";
   int z=GeoParsedPoint.NO_ZOOM;
   String url;
+  String noQueryParameters[]={"geo:0,0","geo:0,0?","http://download.osmand.net/go","http://download.osmand.net/go?"};
+  for (  String s : noQueryParameters) {
+    URI uri=URI.create(s);
+    Map<String,String> map=getQueryParameters(uri);
+    System.out.print(s + " map: " + map.size()+ "...");
+    if (map.size() != 0) {
+      System.out.println("");
+      throw new RuntimeException("Map should be 0 but is " + map.size());
+    }
+    System.out.println(" Passed!");
+  }
+  String oneQueryParameter[]={"geo:0,0?m","geo:0,0?m=","geo:0,0?m=foo","http://download.osmand.net/go?lat","http://download.osmand.net/go?lat=","http://download.osmand.net/go?lat=34.99393"};
+  for (  String s : oneQueryParameter) {
+    URI uri=URI.create(s);
+    Map<String,String> map=getQueryParameters(uri);
+    System.out.print(s + " map: " + map.size()+ "...");
+    if (map.size() != 1) {
+      System.out.println("");
+      throw new RuntimeException("Map should be 1 but is " + map.size());
+    }
+    System.out.println(" Passed!");
+  }
+  String twoQueryParameters[]={"geo:0,0?z=11&q=Lots+Of+Stuff","http://download.osmand.net/go?lat=34.99393&lon=-110.12345","http://download.osmand.net/go?lat=34.99393&lon=-110.12345#this+should+be+ignored"};
+  for (  String s : twoQueryParameters) {
+    URI uri=URI.create(s);
+    Map<String,String> map=getQueryParameters(uri);
+    System.out.print(s + " map: " + map.size()+ "...");
+    if (map.size() != 2) {
+      System.out.println("");
+      throw new RuntimeException("Map should be 2 but is " + map.size());
+    }
+    System.out.println(" Passed!");
+  }
   url="geo:" + ilat + ","+ ilon;
   System.out.println("url: " + url);
   GeoParsedPoint actual=GeoPointParserUtil.parse(url);

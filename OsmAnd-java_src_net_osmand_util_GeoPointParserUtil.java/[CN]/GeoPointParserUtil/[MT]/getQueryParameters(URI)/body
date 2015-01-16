@@ -1,0 +1,26 @@
+{
+  final LinkedHashMap<String,String> map=new LinkedHashMap<String,String>();
+  String query=null;
+  if (uri.isOpaque()) {
+    String schemeSpecificPart=uri.getSchemeSpecificPart();
+    int pos=schemeSpecificPart.indexOf("?");
+    if (pos == schemeSpecificPart.length()) {
+      query="";
+    }
+ else     if (pos > -1) {
+      query=schemeSpecificPart.substring(pos + 1);
+    }
+  }
+ else {
+    query=uri.getQuery();
+  }
+  if (query != null && !query.equals("")) {
+    String[] params=query.split("&");
+    for (    String p : params) {
+      String[] keyValue=p.split("=");
+      if (keyValue.length == 1)       map.put(keyValue[0],"");
+ else       if (keyValue.length > 1)       map.put(keyValue[0],keyValue[1]);
+    }
+  }
+  return map;
+}
