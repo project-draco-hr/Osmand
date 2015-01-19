@@ -1,0 +1,30 @@
+{
+  List<PoiLegacyFilter> filters=PoiFilterDbHelper.this.getFilters(conn);
+  List<PoiLegacyFilter> def=getUserDefinedDefaultFilters();
+  for (  PoiLegacyFilter f : filters) {
+    PoiLegacyFilter std=null;
+    for (    PoiLegacyFilter d : def) {
+      if (f.getFilterId().equals(d.getFilterId())) {
+        std=d;
+        break;
+      }
+    }
+    for (    String toDel : DEL) {
+      if (f.getFilterId().equals(toDel)) {
+        deleteFilter(conn,f);
+      }
+    }
+    if (std != null) {
+      if (!onlyAdd) {
+        editFilter(conn,std);
+      }
+ else {
+        updateName(conn,std);
+      }
+      def.remove(std);
+    }
+  }
+  for (  PoiLegacyFilter d : def) {
+    addFilter(d,conn,false);
+  }
+}
