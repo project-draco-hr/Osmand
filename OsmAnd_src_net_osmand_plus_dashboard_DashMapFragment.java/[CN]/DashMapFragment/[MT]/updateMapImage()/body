@@ -1,11 +1,23 @@
 {
   MapRenderRepositories repositories=getMyApplication().getResourceManager().getRenderer();
-  LatLon lm=getMyApplication().getSettings().getLastKnownMapLocation();
-  int zm=getMyApplication().getSettings().getLastKnownMapZoom();
-  WindowManager wm=(WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE);
-  Display display=wm.getDefaultDisplay();
-  int height=(int)getActivity().getResources().getDimension(R.dimen.dashMapHeight);
-  int width=display.getWidth();
-  RotatedTileBox rotatedTileBox=new RotatedTileBox.RotatedTileBoxBuilder().setZoom(zm).setLocation(lm.getLatitude(),lm.getLongitude()).setPixelDimensions(width,height).build();
-  repositories.loadMap(rotatedTileBox,getMyApplication().getResourceManager().getMapTileDownloader().getDownloaderCallbacks());
+  if (repositories.getBitmap() != null) {
+    setMapImage(repositories.getBitmap());
+  }
+ else {
+    LatLon lm=getMyApplication().getSettings().getLastKnownMapLocation();
+    int zm=getMyApplication().getSettings().getLastKnownMapZoom();
+    WindowManager wm=(WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE);
+    Display display=wm.getDefaultDisplay();
+    final Point pnt=new Point();
+    display.getSize(pnt);
+    int height=pnt.y;
+    int width=pnt.x;
+    WindowManager mgr=(WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE);
+    DisplayMetrics dm=new DisplayMetrics();
+    mgr.getDefaultDisplay().getMetrics(dm);
+    RotatedTileBox currentViewport=new RotatedTileBox.RotatedTileBoxBuilder().setZoom(zm).setLocation(lm.getLatitude(),lm.getLongitude()).setPixelDimensions(width,height).build();
+    currentViewport.setDensity(dm.density);
+    currentViewport.setMapDensity(getSettingsMapDensity(dm.density));
+    repositories.loadMap(currentViewport,getMyApplication().getResourceManager().getMapTileDownloader().getDownloaderCallbacks());
+  }
 }

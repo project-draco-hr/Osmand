@@ -1,0 +1,18 @@
+{
+  List<RouteSegmentResult> attachedRoutes=currentSegm.getAttachedRoutes(currentSegm.getStartPointIndex());
+  if (attachedRoutes == null || attachedRoutes.size() == 0) {
+    return null;
+  }
+  RoadSplitStructure rs=calculateRoadSplitStructure(prevSegm,currentSegm,attachedRoutes);
+  if (rs.roadsOnLeft + rs.roadsOnRight == 0) {
+    return null;
+  }
+  String turnLanes=getTurnLanesString(prevSegm);
+  if (turnLanes != null) {
+    return createKeepLeftRightTurnBasedOnTurnTypes(rs,prevSegm,currentSegm,turnLanes,leftSide);
+  }
+  if (rs.keepLeft || rs.keepRight) {
+    return createSimpleKeepLeftRightTurn(leftSide,prevSegm,currentSegm,rs);
+  }
+  return null;
+}
