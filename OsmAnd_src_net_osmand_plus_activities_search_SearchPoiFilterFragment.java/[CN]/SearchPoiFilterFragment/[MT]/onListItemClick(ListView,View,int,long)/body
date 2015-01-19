@@ -1,0 +1,19 @@
+{
+  final PoiFilter filter=((AmenityAdapter)getListAdapter()).getItem(position);
+  if (filter.getFilterId().equals(PoiFilter.CUSTOM_FILTER_ID)) {
+    filter.clearFilter();
+    showEditActivity(filter);
+    return;
+  }
+  if (!(filter instanceof NameFinderPoiFilter)) {
+    ResourceManager rm=getApp().getResourceManager();
+    if (!rm.containsAmenityRepositoryToSearch(filter instanceof SearchByNameFilter)) {
+      AccessibleToast.makeText(getActivity(),R.string.data_to_search_poi_not_available,Toast.LENGTH_LONG);
+      return;
+    }
+  }
+  final Intent newIntent=new Intent(getActivity(),SearchPOIActivity.class);
+  newIntent.putExtra(SearchPOIActivity.AMENITY_FILTER,filter.getFilterId());
+  updateIntentToLaunch(newIntent);
+  startActivityForResult(newIntent,0);
+}

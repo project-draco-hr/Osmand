@@ -30,15 +30,20 @@
     View view=inflater.inflate(R.layout.dash_favorites_item,null,false);
     TextView name=(TextView)view.findViewById(R.id.name);
     TextView label=(TextView)view.findViewById(R.id.distance);
-    ImageView icon=(ImageView)view.findViewById(R.id.icon);
     ImageView direction=(ImageView)view.findViewById(R.id.direction);
+    if (point.getCategory().length() > 0) {
+      ((TextView)view.findViewById(R.id.group_name)).setText(point.getCategory());
+    }
+ else {
+      view.findViewById(R.id.group_image).setVisibility(View.GONE);
+    }
+    ((ImageView)view.findViewById(R.id.icon)).setImageDrawable(FavoriteImageDrawable.getOrCreate(getActivity(),point.getColor()));
     if (loc != null) {
       direction.setVisibility(View.VISIBLE);
       updateArrow(point,direction);
     }
     arrows.add(direction);
     name.setText(point.getName());
-    icon.setImageDrawable(FavoriteImageDrawable.getOrCreate(getActivity(),point.getColor()));
     int dist=(int)(MapUtils.getDistance(point.getLatitude(),point.getLongitude(),loc.getLatitude(),loc.getLongitude()));
     String distance=OsmAndFormatter.getFormattedDistance(dist,getMyApplication()) + "  ";
     view.findViewById(R.id.navigate_to).setOnClickListener(new View.OnClickListener(){
