@@ -1,0 +1,42 @@
+{
+  TurnType t=TurnType.valueOf(TurnType.C,leftSide);
+  int[] rawLanes=calculateRawTurnLanes(turnLanes,TurnType.C);
+  if (rs.keepLeft || rs.keepRight) {
+    String[] splitLaneOptions=turnLanes.split("\\|",-1);
+    int activeBeginIndex=findActiveIndex(rawLanes,splitLaneOptions,rs.leftLanes,true,rs.roadsOnLeft,rs.addRoadsOnLeft);
+    int activeEndIndex=findActiveIndex(rawLanes,splitLaneOptions,rs.rightLanes,false,rs.roadsOnRight,rs.addRoadsOnRight);
+    if (activeBeginIndex == -1 || activeEndIndex == -1 || activeBeginIndex > activeEndIndex) {
+      return createSimpleKeepLeftRightTurn(leftSide,prevSegm,currentSegm,rs);
+    }
+    for (int k=0; k < rawLanes.length; k++) {
+      if (k >= activeBeginIndex && k <= activeEndIndex) {
+        rawLanes[k]|=1;
+      }
+    }
+    int tp=inferTurnFromLanes(rawLanes);
+    if (tp != t.getValue() && tp != 0) {
+      t=TurnType.valueOf(tp,leftSide);
+    }
+  }
+ else {
+    for (int k=0; k < rawLanes.length; k++) {
+      int turn=rawLanes[k];
+      boolean active=false;
+      if (TurnType.getPrimaryTurn(turn) == TurnType.C) {
+        active=true;
+      }
+ else       if (TurnType.isRightTurn(turn) && rs.roadsOnRight == 0) {
+        active=true;
+      }
+ else       if (TurnType.isLeftTurn(turn) && rs.roadsOnLeft == 0) {
+        active=true;
+      }
+      if (active) {
+        rawLanes[k]|=1;
+      }
+    }
+  }
+  t.setSkipToSpeak(!rs.speak);
+  t.setLanes(rawLanes);
+  return t;
+}
