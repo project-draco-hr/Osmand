@@ -40,6 +40,7 @@
     simpleDomains.add("download.osmand.net");
     simpleDomains.add("openstreetmap.de");
     simpleDomains.add("www.openstreetmap.de");
+    final Pattern commaSeparatedPairPattern=Pattern.compile("([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)");
     try {
       if (host.equals("osm.org") || host.endsWith("openstreetmap.org")) {
         Pattern p;
@@ -171,6 +172,61 @@
             return new GeoParsedPoint(matcher.group(1),matcher.group(2),z,matcher.group(3));
           }
         }
+      }
+ else       if (host.endsWith(".qq.com")) {
+        Map<String,String> queryMap=getQueryParameters(uri);
+        String x=null;
+        String y=null;
+        String z=String.valueOf(GeoParsedPoint.NO_ZOOM);
+        String label=null;
+        if (queryMap.containsKey("city")) {
+          label=queryMap.get("city");
+        }
+ else         if (queryMap.containsKey("key")) {
+          label=queryMap.get("key");
+        }
+ else         if (queryMap.containsKey("a")) {
+          label=queryMap.get("a");
+        }
+ else         if (queryMap.containsKey("n")) {
+          label=queryMap.get("n");
+        }
+        String m=queryMap.get("m");
+        if (m != null) {
+          Matcher matcher=commaSeparatedPairPattern.matcher(m);
+          if (matcher.matches()) {
+            x=matcher.group(2);
+            y=matcher.group(1);
+          }
+        }
+        String c=queryMap.get("c");
+        if (c != null) {
+          Matcher matcher=commaSeparatedPairPattern.matcher(c);
+          if (matcher.matches()) {
+            x=matcher.group(2);
+            y=matcher.group(1);
+          }
+ else {
+            x=c.replaceAll(".*\"lng\":\\s*([+\\-]?[0-9.]+).*","$1");
+            if (x == null)             x=c.replaceAll(".*\"lon\":\\s*([+\\-]?[0-9.]+).*","$1");
+            y=c.replaceAll(".*\"lat\":\\s*([+\\-]?[0-9.]+).*","$1");
+            z=c.replaceAll(".*\"l\":\\s*([+-]?[0-9.]+).*","$1");
+            return new GeoParsedPoint(y,x,z,label);
+          }
+        }
+        for (        String key : new String[]{"centerX","x","x1","x2"}) {
+          if (queryMap.containsKey(key)) {
+            x=queryMap.get(key);
+            break;
+          }
+        }
+        for (        String key : new String[]{"centerY","y","y1","y2"}) {
+          if (queryMap.containsKey(key)) {
+            y=queryMap.get(key);
+            break;
+          }
+        }
+        if (x != null && y != null)         return new GeoParsedPoint(y,x,z,label);
       }
     }
  catch (    RuntimeException e) {
