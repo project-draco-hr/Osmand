@@ -145,6 +145,33 @@
           }
         }
       }
+ else       if (host.equals("here.com") || host.endsWith(".here.com")) {
+        Map<String,String> queryMap=getQueryParameters(uri);
+        String z=String.valueOf(GeoParsedPoint.NO_ZOOM);
+        String label=null;
+        if (queryMap.containsKey("msg")) {
+          label=queryMap.get("msg");
+        }
+        if (queryMap.containsKey("z")) {
+          z=queryMap.get("z");
+        }
+        if (queryMap.containsKey("map")) {
+          String[] mapArray=queryMap.get("map").split(",");
+          if (mapArray.length > 2) {
+            return new GeoParsedPoint(mapArray[0],mapArray[1],mapArray[2],label);
+          }
+ else           if (mapArray.length > 1) {
+            return new GeoParsedPoint(mapArray[0],mapArray[1],z,label);
+          }
+        }
+        if (path.startsWith("/l/")) {
+          Pattern p=Pattern.compile("^/l/([+-]?\\d+(?:\\.\\d+)),([+-]?\\d+(?:\\.\\d+)),(.*)");
+          Matcher matcher=p.matcher(path);
+          if (matcher.matches()) {
+            return new GeoParsedPoint(matcher.group(1),matcher.group(2),z,matcher.group(3));
+          }
+        }
+      }
     }
  catch (    RuntimeException e) {
       e.printStackTrace();
