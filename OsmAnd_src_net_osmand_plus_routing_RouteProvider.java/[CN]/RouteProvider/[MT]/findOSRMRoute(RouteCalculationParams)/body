@@ -1,7 +1,10 @@
 {
   List<Location> res=new ArrayList<Location>();
   StringBuilder uri=new StringBuilder();
-  uri.append("http://router.project-osrm.org/viaroute?alt=false");
+  String scheme="";
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)   scheme="https";
+ else   scheme="http";
+  uri.append(scheme + "://router.project-osrm.org/viaroute?alt=false");
   uri.append("&loc=").append(String.valueOf(params.start.getLatitude()));
   uri.append(",").append(String.valueOf(params.start.getLongitude()));
   if (params.intermediates != null && params.intermediates.size() > 0) {
@@ -12,8 +15,7 @@
   appendOSRMLoc(uri,params.end);
   uri.append("&output=gpx");
   log.info("URL route " + uri);
-  URL url=new URL(uri.toString());
-  URLConnection connection=url.openConnection();
+  URLConnection connection=NetworkUtils.getHttpURLConnection(uri.toString());
   connection.setRequestProperty("User-Agent",Version.getFullVersion(params.ctx));
   final InputStream inputStream=connection.getInputStream();
   GPXFile gpxFile=GPXUtilities.loadGPXFile(params.ctx,inputStream);
