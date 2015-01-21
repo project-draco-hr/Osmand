@@ -1,0 +1,34 @@
+{
+  View mainView=getView();
+  final File dir=getMyApplication().getAppPath(IndexConstants.GPX_INDEX_DIR);
+  final List<String> list=GpxUiHelper.getSortedGPXFilenames(dir);
+  if (list.size() == 0) {
+    (mainView.findViewById(R.id.main_fav)).setVisibility(View.GONE);
+    return;
+  }
+ else {
+    (mainView.findViewById(R.id.main_fav)).setVisibility(View.VISIBLE);
+  }
+  LinearLayout tracks=(LinearLayout)mainView.findViewById(R.id.items);
+  tracks.removeAllViews();
+  if (list.size() > 3) {
+    while (list.size() != 3) {
+      list.remove(3);
+    }
+  }
+  for (  String filename : list) {
+    final File f=new File(dir,filename);
+    GPXUtilities.GPXFile res=GPXUtilities.loadGPXFile(getMyApplication(),f);
+    LayoutInflater inflater=getActivity().getLayoutInflater();
+    View view=inflater.inflate(R.layout.dash_gpx_track_item,null,false);
+    ((TextView)view.findViewById(R.id.name)).setText(filename);
+    ((TextView)view.findViewById(R.id.points_count)).setText(res.points.size() + " " + getActivity().getString(R.string.points));
+    String description=GpxUiHelper.getDescription(getMyApplication(),res,f,true);
+    int startindex=description.indexOf(">");
+    int endindex=description.indexOf("</font>");
+    String distnace=description.substring(startindex + 1,endindex);
+    ((TextView)view.findViewById(R.id.distance)).setText(distnace);
+    view.findViewById(R.id.time_icon).setVisibility(View.GONE);
+    tracks.addView(view);
+  }
+}
