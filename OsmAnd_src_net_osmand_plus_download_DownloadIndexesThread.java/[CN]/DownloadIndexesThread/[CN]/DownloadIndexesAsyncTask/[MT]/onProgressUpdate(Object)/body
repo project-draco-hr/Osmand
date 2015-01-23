@@ -4,6 +4,16 @@
       if (uiActivity != null) {
         uiActivity.downloadListUpdated();
         uiActivity.updateDownloadButton(false);
+        DownloadEntry item=(DownloadEntry)o;
+        String name=item.assetName != null ? item.assetName.substring(item.assetName.lastIndexOf("/") + 1) : item.baseName;
+        long count=dbHelper.getCount(name) + 1;
+        DownloadFrequencyHelper.HistoryEntry entry=new DownloadFrequencyHelper.HistoryEntry(name,count);
+        if (count == 1) {
+          dbHelper.add(entry);
+        }
+ else {
+          dbHelper.update(entry);
+        }
       }
     }
  else     if (o instanceof IndexItem) {
@@ -11,6 +21,9 @@
       if (uiActivity != null) {
         uiActivity.downloadListUpdated();
         uiActivity.updateDownloadButton(false);
+        IndexItem item=(IndexItem)o;
+        long count=dbHelper.getCount(item.fileName) + 1;
+        dbHelper.add(new DownloadFrequencyHelper.HistoryEntry(item.fileName,count));
       }
     }
  else     if (o instanceof String) {
