@@ -1,24 +1,25 @@
 {
-  for (int i=result.size() - 2; i >= 0; i--) {
+  RouteSegmentResult nextSegment=null;
+  double dist=0;
+  for (int i=result.size() - 1; i >= 0; i--) {
     RouteSegmentResult currentSegment=result.get(i);
-    RouteSegmentResult nextSegment=null;
-    for (int j=i + 1; j < result.size(); j++) {
-      RouteSegmentResult possibleSegment=result.get(j);
-      if (possibleSegment.getTurnType() != null && possibleSegment.getTurnType().getLanes() != null) {
-        nextSegment=possibleSegment;
-        break;
-      }
-    }
-    if (nextSegment == null) {
-      continue;
-    }
     TurnType currentTurn=currentSegment.getTurnType();
-    TurnType nextTurn=nextSegment.getTurnType();
-    if (currentTurn == null || currentTurn.getLanes() == null || nextTurn == null || nextTurn.getLanes() == null) {
-      continue;
+    dist+=currentSegment.getDistance();
+    if (currentTurn == null || currentTurn.getLanes() == null) {
     }
-    if (currentSegment.getDistance() < 60 && nextTurn.getLanes().length <= currentTurn.getLanes().length && TurnType.isSlightTurn(currentTurn.getValue())) {
-      mergeTurnLanes(leftside,currentSegment,nextSegment);
+ else {
+      if (nextSegment != null) {
+        String hw=currentSegment.getObject().getHighway();
+        double mergeDistance=200;
+        if (hw != null && (hw.startsWith("trunk") || hw.startsWith("motorway"))) {
+          mergeDistance=400;
+        }
+        if (dist < mergeDistance) {
+          mergeTurnLanes(leftside,currentSegment,nextSegment);
+        }
+      }
+      nextSegment=currentSegment;
+      dist=0;
     }
   }
 }

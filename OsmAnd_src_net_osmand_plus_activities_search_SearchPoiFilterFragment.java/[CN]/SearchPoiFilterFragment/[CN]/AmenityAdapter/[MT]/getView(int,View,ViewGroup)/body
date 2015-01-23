@@ -1,0 +1,39 @@
+{
+  View row=convertView;
+  if (row == null) {
+    LayoutInflater inflater=getActivity().getLayoutInflater();
+    row=inflater.inflate(R.layout.searchpoifolder_list,parent,false);
+  }
+  TextView label=(TextView)row.findViewById(R.id.folder_label);
+  ImageView icon=(ImageView)row.findViewById(R.id.folder_icon);
+  final PoiLegacyFilter model=getItem(position);
+  label.setText(model.getName());
+  if (model.getFilterId().equals(PoiLegacyFilter.CUSTOM_FILTER_ID)) {
+    icon.setImageResource(android.R.drawable.ic_input_get);
+  }
+ else   if (model.getFilterId().equals(PoiLegacyFilter.BY_NAME_FILTER_ID)) {
+    icon.setImageResource(android.R.drawable.ic_search_category_default);
+  }
+ else {
+    if (RenderingIcons.containsBigIcon(model.getSimplifiedId())) {
+      icon.setImageDrawable(RenderingIcons.getBigIcon(getActivity(),model.getSimplifiedId()));
+    }
+ else {
+      icon.setImageResource(R.drawable.mx_user_defined);
+    }
+  }
+  ImageView editIcon=(ImageView)row.findViewById(R.id.folder_edit_icon);
+  if (model.isStandardFilter()) {
+    editIcon.setVisibility(View.GONE);
+  }
+ else {
+    editIcon.setVisibility(View.VISIBLE);
+  }
+  editIcon.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      showEditActivity(model);
+    }
+  }
+);
+  return (row);
+}

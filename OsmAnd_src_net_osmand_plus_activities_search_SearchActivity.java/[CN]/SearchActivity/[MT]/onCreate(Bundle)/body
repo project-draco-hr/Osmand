@@ -2,7 +2,6 @@
   ((OsmandApplication)getApplication()).applyTheme(this);
   super.onCreate(savedInstanceState);
   long t=System.currentTimeMillis();
-  getSherlock().setUiOptions(ActivityInfo.UIOPTION_SPLIT_ACTION_BAR_WHEN_NARROW);
   getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
   setContentView(R.layout.search_main);
   settings=((OsmandApplication)getApplication()).getSettings();
@@ -10,32 +9,31 @@
   showOnlyOneTab=getIntent() != null && getIntent().getBooleanExtra(SHOW_ONLY_ONE_TAB,false);
   getSupportActionBar().setDisplayHomeAsUpEnabled(true);
   getSupportActionBar().setTitle("");
+  getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#39464d")));
   if (!showOnlyOneTab) {
-    final TextView tabinfo=(TextView)findViewById(R.id.textViewADesc);
-    TabWidget tabs=(TabWidget)findViewById(android.R.id.tabs);
-    tabs.setBackgroundResource(R.drawable.tab_icon_background);
-    TabHost tabHost=(TabHost)findViewById(android.R.id.tabhost);
-    tabHost.setup();
-    ViewPager mViewPager=(ViewPager)findViewById(R.id.pager);
-    mTabsAdapter=new TabsAdapter(this,tabHost,tabinfo,mViewPager,settings);
-    TabSpec poiTab=tabHost.newTabSpec(SEARCH_POI).setIndicator(getTabIndicator(tabHost,R.drawable.tab_search_poi_icon,R.string.poi));
-    mTabsAdapter.addTab(poiTab,getFragment(POI_TAB_INDEX),null);
-    TabSpec addressSpec=tabHost.newTabSpec(SEARCH_ADDRESS).setIndicator(getTabIndicator(tabHost,R.drawable.tab_search_address_icon,R.string.address));
-    mTabsAdapter.addTab(addressSpec,getFragment(ADDRESS_TAB_INDEX),null);
-    TabSpec locationTab=tabHost.newTabSpec(SEARCH_LOCATION).setIndicator(getTabIndicator(tabHost,R.drawable.tab_search_location_icon,R.string.search_tabs_location));
-    mTabsAdapter.addTab(locationTab,getFragment(LOCATION_TAB_INDEX),null);
-    TabSpec favoriteTab=tabHost.newTabSpec(SEARCH_FAVORITES).setIndicator(getTabIndicator(tabHost,R.drawable.tab_search_favorites_icon,R.string.favorite));
-    mTabsAdapter.addTab(favoriteTab,getFragment(FAVORITES_TAB_INDEX),null);
-    TabSpec historyTab=tabHost.newTabSpec(SEARCH_HISTORY).setIndicator(getTabIndicator(tabHost,R.drawable.tab_search_history_icon,R.string.history));
-    mTabsAdapter.addTab(historyTab,getFragment(HISTORY_TAB_INDEX),null);
-    TabSpec transportTab=tabHost.newTabSpec(SEARCH_TRANSPORT).setIndicator(getTabIndicator(tabHost,R.drawable.tab_search_transport_icon,R.string.transport));
-    mTabsAdapter.addTab(transportTab,getFragment(TRANSPORT_TAB_INDEX),null);
-    tabHost.setCurrentTab(tab);
+    mViewPager=(ViewPager)findViewById(R.id.pager);
+    mSlidingTabLayout=(SlidingTabLayout)findViewById(R.id.sliding_tabs);
+    mTabs.add(getTabIndicator(R.drawable.tab_search_poi_icon,R.string.poi,getFragment(POI_TAB_INDEX)));
+    mTabs.add(getTabIndicator(R.drawable.tab_search_address_icon,R.string.address,getFragment(ADDRESS_TAB_INDEX)));
+    mTabs.add(getTabIndicator(R.drawable.tab_search_location_icon,R.string.search_tabs_location,getFragment(LOCATION_TAB_INDEX)));
+    mTabs.add(getTabIndicator(R.drawable.tab_search_favorites_icon,R.string.favorite,getFragment(FAVORITES_TAB_INDEX)));
+    mTabs.add(getTabIndicator(R.drawable.tab_search_history_icon,R.string.history,getFragment(HISTORY_TAB_INDEX)));
+    mViewPager.setAdapter(new SearchFragmentPagerAdapter(getSupportFragmentManager()));
+    mSlidingTabLayout.setViewPager(mViewPager);
+    mViewPager.setCurrentItem(Math.min(tab,HISTORY_TAB_INDEX));
+    mSlidingTabLayout.setOnPageChangeListener(new OnPageChangeListener(){
+      @Override public void onPageSelected(      int arg0){
+        settings.SEARCH_TAB.set(arg0);
+      }
+      @Override public void onPageScrolled(      int arg0,      float arg1,      int arg2){
+      }
+      @Override public void onPageScrollStateChanged(      int arg0){
+      }
+    }
+);
   }
  else {
-    FrameLayout fl=new FrameLayout(this);
-    fl.setId(R.id.layout);
-    setContentView(fl);
+    setContentView(R.layout.search_activity_single);
     Class<?> cl=getFragment(tab);
     try {
       getSupportFragmentManager().beginTransaction().replace(R.id.layout,(Fragment)cl.newInstance()).commit();

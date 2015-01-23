@@ -1,8 +1,12 @@
 {
+  String YANDEX_BASE_URL;
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)   YANDEX_BASE_URL="https://jgo.maps.yandex.net";
+ else   YANDEX_BASE_URL="http://jgo.maps.yandex.net";
   if (mTimestamp == null || (System.currentTimeMillis() - lastTimestampUpdated) > DELTA) {
     log.info("Updating timestamp");
     try {
-      BufferedInputStream in=new BufferedInputStream(new URL("http://jgo.maps.yandex.net/trf/stat.js").openStream(),1024);
+      URLConnection connection=NetworkUtils.getHttpURLConnection(YANDEX_BASE_URL + "/trf/stat.js");
+      BufferedInputStream in=new BufferedInputStream(connection.getInputStream(),1024);
       ByteArrayOutputStream dataStream=new ByteArrayOutputStream();
       BufferedOutputStream out=new BufferedOutputStream(dataStream,1024);
       Algorithms.streamCopy(in,out);
@@ -22,7 +26,7 @@
       log.info("Timestamp updated to " + newTimestamp);
       if (!newTimestamp.equals(mTimestamp)) {
         mTimestamp=newTimestamp;
-        TileSourceTemplate template=new TileSourceTemplate(YANDEX_PREFFIX + mTimestamp,"http://jgo.maps.yandex.net/1.1/tiles?l=trf,trfe&x={1}&y={2}&z={0}&tm=" + mTimestamp,".png",17,7,256,8,18000);
+        TileSourceTemplate template=new TileSourceTemplate(YANDEX_PREFFIX + mTimestamp,YANDEX_BASE_URL + "/1.1/tiles?l=trf,trfe&x={1}&y={2}&z={0}&tm=" + mTimestamp,".png",17,7,256,8,18000);
         template.setEllipticYTile(true);
         template.setExpirationTimeMinutes(20);
         clearCache();

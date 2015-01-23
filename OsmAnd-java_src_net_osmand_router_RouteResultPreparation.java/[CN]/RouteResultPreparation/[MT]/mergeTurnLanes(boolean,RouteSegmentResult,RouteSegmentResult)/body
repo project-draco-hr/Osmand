@@ -1,42 +1,48 @@
 {
-  TurnType currentTurn=currentSegment.getTurnType();
-  TurnType nextTurn=nextSegment.getTurnType();
-  boolean isUsingTurnLanes=TurnType.getPrimaryTurn(currentTurn.getLanes()[0]) != 0 && TurnType.getPrimaryTurn(nextTurn.getLanes()[0]) != 0;
-  if (isUsingTurnLanes) {
-    int[] lanes=new int[currentTurn.getLanes().length];
-    for (int i=0; i < lanes.length; i++) {
-      lanes[i]=currentTurn.getLanes()[i] & ~1;
+  MergeTurnLaneTurn active=new MergeTurnLaneTurn(currentSegment);
+  MergeTurnLaneTurn target=new MergeTurnLaneTurn(nextSegment);
+  if (active.activeLen < 2) {
+    return;
+  }
+  if (target.activeStartIndex == -1) {
+    return;
+  }
+  boolean changed=false;
+  if (target.isActiveTurnMostLeft()) {
+    if (target.activeLen <= active.activeLen) {
+      active.activeEndIndex-=(active.activeLen - target.activeLen);
+      changed=true;
     }
-    int matchingIndex=0;
-    int maxMatchedLanes=0;
-    for (int i=0; i < lanes.length; i++) {
-      int matchedLanes=0;
-      for (int j=0; j < nextTurn.getLanes().length - i; j++) {
-        if (TurnType.getPrimaryTurn(nextTurn.getLanes()[j]) == TurnType.getPrimaryTurn(currentTurn.getLanes()[i + j])) {
-          matchedLanes++;
-        }
+  }
+ else   if (target.isActiveTurnMostRight()) {
+    if (target.activeLen < active.activeLen) {
+      active.activeStartIndex+=(active.activeLen - target.activeLen);
+      changed=true;
+    }
+  }
  else {
-          break;
-        }
-      }
-      if (matchedLanes > maxMatchedLanes) {
-        matchingIndex=i;
-        maxMatchedLanes=matchedLanes;
-      }
+    if (target.activeLen < active.activeLen) {
+      float ratio=(active.activeLen - target.activeLen) / 2f;
+      active.activeEndIndex=(int)Math.ceil(active.activeEndIndex - ratio);
+      active.activeStartIndex=(int)Math.floor(active.activeStartIndex + ratio);
+      changed=true;
     }
-    if (maxMatchedLanes <= 1) {
-      return;
+  }
+  if (!changed) {
+    return;
+  }
+  for (int i=0; i < active.disabledLanes.length; i++) {
+    if (i >= active.activeStartIndex && i <= active.activeEndIndex) {
+      active.disabledLanes[i]|=1;
     }
-    for (int i=matchingIndex; i - matchingIndex < nextTurn.getLanes().length; i++) {
-      lanes[i]|=nextTurn.getLanes()[i - matchingIndex] & 1;
-    }
-    currentTurn.setLanes(lanes);
-    int turn=inferTurnFromLanes(lanes);
-    if (turn != 0 && turn != currentTurn.getValue()) {
-      TurnType newTurnType=TurnType.valueOf(turn,leftSide);
-      newTurnType.setLanes(lanes);
-      newTurnType.setSkipToSpeak(currentTurn.isSkipToSpeak());
-      currentSegment.setTurnType(newTurnType);
-    }
+  }
+  TurnType currentTurn=currentSegment.getTurnType();
+  currentTurn.setLanes(active.disabledLanes);
+  int turn=inferTurnFromLanes(active.disabledLanes);
+  if (turn != 0 && turn != currentTurn.getValue()) {
+    TurnType newTurnType=TurnType.valueOf(turn,leftSide);
+    newTurnType.setLanes(active.disabledLanes);
+    newTurnType.setSkipToSpeak(currentTurn.isSkipToSpeak());
+    currentSegment.setTurnType(newTurnType);
   }
 }

@@ -1,9 +1,9 @@
 {
   getMyApplication().applyTheme(this);
+  supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
   super.onCreate(savedInstanceState);
   updateDownloads();
-  requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-  setProgressBarIndeterminateVisibility(false);
+  setSupportProgressBarIndeterminateVisibility(false);
   setContentView(R.layout.tab_content);
   singleTab=getIntent() != null && getIntent().getBooleanExtra(SINGLE_TAB,false);
   int currentTab=0;
@@ -58,9 +58,8 @@
     }
   }
 );
-  final List<DownloadActivityType> downloadTypes=getDownloadTypes();
+  downloadTypes=createDownloadTypes();
   final Intent intent=getIntent();
-  setType(downloadTypes.get(0));
   if (intent != null && intent.getExtras() != null) {
     final String filter=intent.getExtras().getString(FILTER_KEY);
     if (filter != null) {
@@ -70,12 +69,12 @@
     if (filterCat != null) {
       DownloadActivityType type=DownloadActivityType.getIndexType(filterCat.toLowerCase());
       if (type != null) {
-        setType(type);
         downloadTypes.remove(type);
         downloadTypes.add(0,type);
       }
     }
   }
+  changeType(downloadTypes.get(0));
   getSupportActionBar().setHomeButtonEnabled(true);
   getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 }

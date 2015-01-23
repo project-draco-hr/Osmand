@@ -4,12 +4,20 @@
   float dy=cp.y - initialMultiTouchCenterPoint.y;
   final RotatedTileBox calc=initialViewport.copy();
   calc.setLatLonCenter(initialCenterLatLon.getLatitude(),initialCenterLatLon.getLongitude());
-  double calcZoom=initialViewport.getZoom() + dz;
   float calcRotate=calc.getRotate() + angle;
   calc.setRotate(calcRotate);
-  calc.setZoomAnimation(dz);
+  calc.setZoomAndAnimation(initialViewport.getZoom(),dz,initialViewport.getZoomFloatPart());
   final LatLon r=calc.getLatLonFromPixel(cp.x + dx,cp.y + dy);
   setLatLon(r.getLatitude(),r.getLongitude());
-  zoomToAnimate((float)calcZoom,true);
+  int baseZoom=initialViewport.getZoom();
+  while (initialViewport.getZoomFloatPart() + dz > 1) {
+    dz--;
+    baseZoom++;
+  }
+  while (initialViewport.getZoomFloatPart() + dz < 0) {
+    dz++;
+    baseZoom--;
+  }
+  zoomToAnimate(baseZoom,dz,true);
   rotateToAnimate(calcRotate);
 }

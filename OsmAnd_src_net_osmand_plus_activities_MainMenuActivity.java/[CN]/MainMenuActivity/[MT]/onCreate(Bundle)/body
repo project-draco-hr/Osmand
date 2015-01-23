@@ -15,56 +15,35 @@
     return;
   }
   setContentView(R.layout.dashboard);
-  lp=getMyApplication().getLocationProvider();
   String textVersion=Version.getFullVersion(getMyApplication());
-  if (textVersion.indexOf("#") != -1) {
+  if (textVersion.contains("#")) {
     textVersion=textVersion.substring(0,textVersion.indexOf("#") + 1);
   }
-  getSupportActionBar().setTitle(textVersion);
-  ColorDrawable color=new ColorDrawable(getResources().getColor(R.color.actionbar_color));
-  getSupportActionBar().setBackgroundDrawable(color);
-  getSupportActionBar().setIcon(android.R.color.transparent);
+  ActionBar actionBar=getSupportActionBar();
+  actionBar.setTitle(textVersion);
+  actionBar.setIcon(android.R.color.transparent);
+  actionBarBackground=new ColorDrawable(Color.argb(180,0,0,0));
+  actionBarBackground.setAlpha(START_ALPHA);
+  actionBar.setBackgroundDrawable(actionBarBackground);
+  ((NotifyingScrollView)findViewById(R.id.main_scroll)).setOnScrollChangedListener(onScrollChangedListener);
+  if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+    actionBarBackground.setCallback(mDrawableCallback);
+  }
   boolean firstTime=initApp(this,getMyApplication());
   if (getMyApplication().getAppCustomization().checkExceptionsOnStart()) {
     checkPreviousRunsForExceptions(firstTime);
   }
-  setupContributionVersion();
   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-    final FloatingActionButton fabButton=new FloatingActionButton.Builder(this).withDrawable(getResources().getDrawable(R.drawable.ic_action_map)).withButtonColor(Color.parseColor("#ff8f00")).withGravity(Gravity.BOTTOM | Gravity.RIGHT).withMargins(0,0,16,16).create();
+    fabButton=new FloatingActionButton.Builder(this).withDrawable(getResources().getDrawable(R.drawable.ic_action_map)).withButtonColor(Color.parseColor("#ff8f00")).withGravity(Gravity.BOTTOM | Gravity.RIGHT).withMargins(0,0,16,16).create();
     fabButton.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View view){
         startMapActivity();
       }
     }
 );
-    final ScrollView mainScroll=(ScrollView)findViewById(R.id.main_scroll);
-    if (mainScroll == null) {
-      return;
-    }
-    mainScroll.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener(){
-      private int previousScroll=0;
-      @Override public void onScrollChanged(){
-        int scrollY=mainScroll.getScrollY();
-        if (previousScroll == scrollY || mainScroll.getChildCount() == 0) {
-          return;
-        }
-        if (scrollY > previousScroll && previousScroll >= 0) {
-          if (!fabButton.isHidden()) {
-            fabButton.hideFloatingActionButton();
-          }
-        }
- else {
-          int layoutHeight=mainScroll.getChildAt(0).getMeasuredHeight();
-          int scrollHeight=scrollY + mainScroll.getHeight();
-          if (fabButton.isHidden() && scrollHeight < layoutHeight) {
-            fabButton.showFloatingActionButton();
-          }
-        }
-        previousScroll=scrollY;
-      }
-    }
-);
   }
+  fabButton.hideFloatingActionButton();
   getLocationProvider().addCompassListener(this);
   getLocationProvider().registerOrUnregisterCompassListener(true);
+  defaultMargin=(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,-40,getResources().getDisplayMetrics());
 }
