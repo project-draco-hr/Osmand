@@ -1,0 +1,29 @@
+{
+  List<HistoryEntry> entries=new ArrayList<HistoryEntry>();
+  SQLiteAPI.SQLiteConnection db=openConnection(true);
+  if (db != null) {
+    try {
+      SQLiteAPI.SQLiteCursor query;
+switch (type) {
+case DOWNLOAD_ENTRY:
+        query=db.rawQuery("SELECT " + HISTORY_COL_NAME + " FROM "+ DOWNLOADS_TABLE_NAME+ " ORDER BY "+ HISTORY_COL_COUNT+ " DESC",null);
+case FAVORITES_ENTRY:
+      query=db.rawQuery("SELECT " + HISTORY_COL_NAME + " FROM "+ FAVORITES_TABLE_NAME+ " ORDER BY "+ HISTORY_COL_COUNT+ " DESC",null);
+default :
+    query=db.rawQuery("not supported",null);
+}
+if (query.moveToFirst()) {
+  do {
+    HistoryEntry e=new HistoryEntry(query.getString(0),query.getInt(1));
+    entries.add(e);
+  }
+ while (query.moveToNext());
+}
+query.close();
+}
+  finally {
+db.close();
+}
+}
+return entries;
+}
