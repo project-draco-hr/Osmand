@@ -1,0 +1,31 @@
+{
+  tabsContainer.removeAllViews();
+  tabCount=pager.getAdapter().getCount();
+  View tabView;
+  for (int i=0; i < tabCount; i++) {
+    if (pager.getAdapter() instanceof CustomTabProvider) {
+      tabView=((CustomTabProvider)pager.getAdapter()).getCustomTabView(this,i);
+    }
+ else {
+      tabView=LayoutInflater.from(getContext()).inflate(R.layout.tab,this,false);
+    }
+    CharSequence title=pager.getAdapter().getPageTitle(i);
+    addTab(i,title,tabView);
+  }
+  updateTabStyles();
+  getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener(){
+    @SuppressWarnings("deprecation") @SuppressLint("NewApi") @Override public void onGlobalLayout(){
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+        getViewTreeObserver().removeGlobalOnLayoutListener(this);
+      }
+ else {
+        getViewTreeObserver().removeOnGlobalLayoutListener(this);
+      }
+      currentPosition=pager.getCurrentItem();
+      currentPositionOffset=0f;
+      scrollToChild(currentPosition,0);
+      updateSelection(currentPosition);
+    }
+  }
+);
+}
