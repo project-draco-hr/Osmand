@@ -1,71 +1,10 @@
 {
   Builder dlg=new AlertDialog.Builder(uiCtx);
   dlg.setTitle(title);
-  LinearLayout ll=new LinearLayout(uiCtx);
-  final TextView tv=new TextView(uiCtx);
-  tv.setPadding(7,3,7,0);
-  tv.setText(String.format(patternMsg,uiCtx.getString(R.string.int_continuosly)));
-  SeekBar sp=new SeekBar(uiCtx);
-  sp.setPadding(7,5,7,0);
-  final int secondsLength=seconds.length;
-  final int minutesLength=minutes.length;
-  sp.setMax(secondsLength + minutesLength - 1);
-  sp.setOnSeekBarChangeListener(new OnSeekBarChangeListener(){
-    @Override public void onStopTrackingTouch(    SeekBar seekBar){
-    }
-    @Override public void onStartTrackingTouch(    SeekBar seekBar){
-    }
-    @Override public void onProgressChanged(    SeekBar seekBar,    int progress,    boolean fromUser){
-      String s;
-      if (progress == 0) {
-        s=uiCtx.getString(R.string.int_continuosly);
-        v.value=0;
-      }
- else {
-        if (progress < secondsLength) {
-          s=seconds[progress] + " " + uiCtx.getString(R.string.int_seconds);
-          v.value=seconds[progress] * 1000;
-        }
- else {
-          s=minutes[progress - secondsLength] + " " + uiCtx.getString(R.string.int_min);
-          v.value=minutes[progress - secondsLength] * 60 * 1000;
-        }
-      }
-      tv.setText(String.format(patternMsg,s));
-    }
-  }
-);
-  for (int i=0; i < secondsLength + minutesLength - 1; i++) {
-    if (i < secondsLength) {
-      if (v.value <= seconds[i] * 1000) {
-        sp.setProgress(i);
-        break;
-      }
-    }
- else {
-      if (v.value <= minutes[i - secondsLength] * 1000 * 60) {
-        sp.setProgress(i);
-        break;
-      }
-    }
-  }
-  ll.setOrientation(LinearLayout.VERTICAL);
-  ll.addView(tv);
-  ll.addView(sp);
-  if (choice != null) {
-    final CheckBox cb=new CheckBox(uiCtx);
-    cb.setText(R.string.remember_choice);
-    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT);
-    lp.setMargins(7,10,7,0);
-    cb.setLayoutParams(lp);
-    cb.setOnCheckedChangeListener(new OnCheckedChangeListener(){
-      @Override public void onCheckedChanged(      CompoundButton buttonView,      boolean isChecked){
-        choice.value=isChecked;
-      }
-    }
-);
-    ll.addView(cb);
-  }
+  WindowManager mgr=(WindowManager)uiCtx.getSystemService(Context.WINDOW_SERVICE);
+  DisplayMetrics dm=new DisplayMetrics();
+  mgr.getDefaultDisplay().getMetrics(dm);
+  LinearLayout ll=createIntervalChooseLayout(uiCtx,patternMsg,seconds,minutes,choice,v,dm);
   dlg.setView(ll);
   dlg.setPositiveButton(R.string.default_buttons_ok,onclick);
   dlg.setNegativeButton(R.string.default_buttons_cancel,null);

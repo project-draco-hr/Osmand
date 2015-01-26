@@ -46,13 +46,35 @@
  else {
         final MonitoringInfoControl.ValueHolder<Integer> vs=new MonitoringInfoControl.ValueHolder<Integer>();
         vs.value=app.getSettings().SERVICE_OFF_INTERVAL.get();
-        OsmandMonitoringPlugin.showIntervalChooseDialog(map,app.getString(R.string.gps_wake_up_timer) + " : %s",app.getString(R.string.enable_sleep_mode),OsmandMonitoringPlugin.SECONDS,OsmandMonitoringPlugin.MINUTES,null,vs,new DialogInterface.OnClickListener(){
+        final AlertDialog[] dlgshow=new AlertDialog[1];
+        Builder dlg=new AlertDialog.Builder(map);
+        dlg.setTitle(app.getString(R.string.enable_sleep_mode));
+        WindowManager mgr=(WindowManager)map.getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics dm=new DisplayMetrics();
+        mgr.getDefaultDisplay().getMetrics(dm);
+        LinearLayout ll=OsmandMonitoringPlugin.createIntervalChooseLayout(map,app.getString(R.string.gps_wake_up_timer) + " : %s",OsmandMonitoringPlugin.SECONDS,OsmandMonitoringPlugin.MINUTES,null,vs,dm);
+        if (Version.isGpsStatusEnabled(app)) {
+          Button sp=new Button(map);
+          sp.setPadding((int)(7 * dm.density),(int)(5 * dm.density),(int)(7 * dm.density),0);
+          sp.setOnClickListener(new View.OnClickListener(){
+            @Override public void onClick(            View v){
+              dlgshow[0].dismiss();
+              new StartGPSStatus(map).run();
+            }
+          }
+);
+          ll.addView(sp);
+        }
+        dlg.setView(ll);
+        dlg.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
           @Override public void onClick(          DialogInterface dialog,          int which){
             app.getSettings().SERVICE_OFF_INTERVAL.set(vs.value);
             app.startNavigationService(NavigationService.USED_BY_GPX);
           }
         }
 );
+        dlg.setNegativeButton(R.string.default_buttons_cancel,null);
+        dlgshow[0]=dlg.show();
       }
     }
   }
