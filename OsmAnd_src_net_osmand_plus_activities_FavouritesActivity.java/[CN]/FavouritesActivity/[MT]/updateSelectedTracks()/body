@@ -1,18 +1,20 @@
 {
-  if (selectedTrack != null) {
-    GpxSelectionHelper gpx=((OsmandApplication)getApplication()).getSelectedGpxHelper();
-    String vl=getString(R.string.selected_track);
-    if (gpx.isShowingAnyGpxFiles()) {
-      vl+=" (" + gpx.getSelectedGPXFiles().size() + ")";
-    }
+  for (  WeakReference<Fragment> ref : fragList) {
+    Fragment f=ref.get();
+    if (f instanceof SelectedGPXFragment && !f.isDetached()) {
+      GpxSelectionHelper gpx=((OsmandApplication)getApplication()).getSelectedGpxHelper();
+      String vl=getString(R.string.selected_track);
+      if (gpx.isShowingAnyGpxFiles()) {
+        vl+=" (" + gpx.getSelectedGPXFiles().size() + ")";
+      }
  else {
-      vl+=" (0)";
+        vl+=" (0)";
+      }
+      try {
+        ((TextView)f.getView().findViewById(android.R.id.title)).setText(vl);
+      }
+ catch (      NullPointerException e) {
+      }
     }
-    try {
-      ((TextView)tabHost.getTabWidget().getChildAt(2).findViewById(android.R.id.title)).setText(vl);
-    }
- catch (    Exception e) {
-    }
-    mTabsAdapter.notifyDataSetChanged();
   }
 }
