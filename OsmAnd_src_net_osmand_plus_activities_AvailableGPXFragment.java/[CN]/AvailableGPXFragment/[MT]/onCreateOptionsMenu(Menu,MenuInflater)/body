@@ -1,12 +1,4 @@
 {
-  int orientation=ScreenOrientationHelper.getScreenOrientation(getActivity());
-  boolean portrait=orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT || orientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-  if (portrait) {
-    menu=((FavouritesActivity)getActivity()).getClearToolbar(true).getMenu();
-  }
- else {
-    ((FavouritesActivity)getActivity()).getClearToolbar(false);
-  }
   MenuItem mi=createMenuItem(menu,SEARCH_ID,R.string.search_poi_filter,R.drawable.ic_action_search_dark,R.drawable.ic_action_search_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS | MenuItemCompat.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
   searchView=new SearchView(getActivity());
   MenuItemCompat.setActionView(mi,searchView);
@@ -21,6 +13,12 @@
     }
   }
 );
+  if (isOrientationPortrait()) {
+    menu=((FavouritesActivity)getActivity()).getClearToolbar(true).getMenu();
+  }
+ else {
+    ((FavouritesActivity)getActivity()).getClearToolbar(false);
+  }
   optionsMenuAdapter=new ContextMenuAdapter(getActivity());
   OnContextMenuClick listener=new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    final int itemId,    int pos,    boolean isChecked){
@@ -52,7 +50,7 @@
     item=menu.add(0,optionsMenuAdapter.getElementId(j),j + 1,optionsMenuAdapter.getItemName(j));
     MenuItemCompat.setShowAsAction(item,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
     if (optionsMenuAdapter.getImageId(j,isLightActionBar()) != 0) {
-      item.setIcon(optionsMenuAdapter.getImageId(j,isLightActionBar()));
+      item.setIcon(optionsMenuAdapter.getImageId(j,false));
     }
   }
 }
