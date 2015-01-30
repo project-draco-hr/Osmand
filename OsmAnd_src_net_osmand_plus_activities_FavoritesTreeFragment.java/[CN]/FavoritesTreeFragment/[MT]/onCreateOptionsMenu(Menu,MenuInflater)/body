@@ -1,0 +1,41 @@
+{
+  MenuItem mi=createMenuItem(menu,SEARCH_ID,R.string.search_poi_filter,R.drawable.ic_action_search_dark,R.drawable.ic_action_search_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS | MenuItemCompat.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+  searchView=new SearchView(getActivity());
+  MenuItemCompat.setActionView(mi,searchView);
+  searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
+    @Override public boolean onQueryTextSubmit(    String query){
+      favouritesAdapter.getFilter().filter(query);
+      return true;
+    }
+    @Override public boolean onQueryTextChange(    String newText){
+      favouritesAdapter.getFilter().filter(newText);
+      return true;
+    }
+  }
+);
+  MenuItemCompat.setOnActionExpandListener(mi,new MenuItemCompat.OnActionExpandListener(){
+    @Override public boolean onMenuItemActionExpand(    MenuItem item){
+      return true;
+    }
+    @Override public boolean onMenuItemActionCollapse(    MenuItem item){
+      favouritesAdapter.setFilterResults(null);
+      favouritesAdapter.synchronizeGroups();
+      favouritesAdapter.notifyDataSetChanged();
+      return true;
+    }
+  }
+);
+  int orientation=ScreenOrientationHelper.getScreenOrientation(getActivity());
+  boolean portrait=orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT || orientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+  if (portrait) {
+    menu=((FavoritesActivity)getActivity()).getClearToolbar(true).getMenu();
+  }
+ else {
+    ((FavoritesActivity)getActivity()).getClearToolbar(false);
+  }
+  if (!MenuItemCompat.isActionViewExpanded(mi)) {
+    createMenuItem(menu,SHARE_ID,R.string.share_fav,R.drawable.ic_action_gshare_dark,R.drawable.ic_action_gshare_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+    createMenuItem(menu,SELECT_DESTINATIONS_ID,R.string.select_destination_and_intermediate_points,R.drawable.ic_action_flage_dark,R.drawable.ic_action_flage_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+    createMenuItem(menu,DELETE_ID,R.string.default_buttons_delete,R.drawable.ic_action_delete_dark,R.drawable.ic_action_delete_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+  }
+}

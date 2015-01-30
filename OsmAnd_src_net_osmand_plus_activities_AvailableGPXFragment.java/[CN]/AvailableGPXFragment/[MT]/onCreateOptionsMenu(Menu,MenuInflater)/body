@@ -1,6 +1,5 @@
 {
-  menu=((FavouritesActivity)getActivity()).getClearToolbar(true).getMenu();
-  MenuItem mi=createMenuItem(menu,SEARCH_ID,R.string.search_poi_filter,R.drawable.ic_action_search_light,R.drawable.ic_action_search_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS | MenuItemCompat.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+  MenuItem mi=createMenuItem(menu,SEARCH_ID,R.string.search_poi_filter,R.drawable.ic_action_search_dark,R.drawable.ic_action_search_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS | MenuItemCompat.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
   searchView=new SearchView(getActivity());
   MenuItemCompat.setActionView(mi,searchView);
   searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
@@ -14,6 +13,12 @@
     }
   }
 );
+  if (isOrientationPortrait()) {
+    menu=((FavoritesActivity)getActivity()).getClearToolbar(true).getMenu();
+  }
+ else {
+    ((FavoritesActivity)getActivity()).getClearToolbar(false);
+  }
   optionsMenuAdapter=new ContextMenuAdapter(getActivity());
   OnContextMenuClick listener=new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    final int itemId,    int pos,    boolean isChecked){
@@ -25,7 +30,7 @@
         openShowOnMapMode();
       }
  else       if (itemId == R.string.local_index_mi_delete) {
-        openSelectionMode(itemId,R.drawable.ic_action_delete_dark,R.drawable.ic_action_delete_light,new DialogInterface.OnClickListener(){
+        openSelectionMode(itemId,R.drawable.ic_action_delete_dark,R.drawable.ic_action_delete_dark,new DialogInterface.OnClickListener(){
           @Override public void onClick(          DialogInterface dialog,          int which){
             doAction(itemId);
           }
@@ -36,16 +41,25 @@
     }
   }
 ;
-  optionsMenuAdapter.item(R.string.show_gpx_route).icons(R.drawable.ic_action_map_marker_dark,R.drawable.ic_action_map_marker_light).listen(listener).reg();
-  optionsMenuAdapter.item(R.string.local_index_mi_delete).icons(R.drawable.ic_action_delete_dark,R.drawable.ic_action_delete_light).listen(listener).reg();
-  optionsMenuAdapter.item(R.string.local_index_mi_reload).icons(R.drawable.ic_action_refresh_dark,R.drawable.ic_action_refresh_light).listen(listener).reg();
+  optionsMenuAdapter.item(R.string.show_gpx_route).icons(R.drawable.ic_action_map_marker_dark,R.drawable.ic_action_map_marker_dark).listen(listener).reg();
+  optionsMenuAdapter.item(R.string.local_index_mi_delete).icons(R.drawable.ic_action_delete_dark,R.drawable.ic_action_delete_dark).listen(listener).reg();
+  optionsMenuAdapter.item(R.string.local_index_mi_reload).icons(R.drawable.ic_action_refresh_dark,R.drawable.ic_action_refresh_dark).listen(listener).reg();
   OsmandPlugin.onOptionsMenuActivity(getActivity(),this,optionsMenuAdapter);
   for (int j=0; j < optionsMenuAdapter.length(); j++) {
-    MenuItem item;
+    final MenuItem item;
     item=menu.add(0,optionsMenuAdapter.getElementId(j),j + 1,optionsMenuAdapter.getItemName(j));
     MenuItemCompat.setShowAsAction(item,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+    if (isOrientationPortrait()) {
+      item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+        @Override public boolean onMenuItemClick(        MenuItem menuItem){
+          onOptionsItemSelected(item);
+          return true;
+        }
+      }
+);
+    }
     if (optionsMenuAdapter.getImageId(j,isLightActionBar()) != 0) {
-      item.setIcon(optionsMenuAdapter.getImageId(j,isLightActionBar()));
+      item.setIcon(optionsMenuAdapter.getImageId(j,false));
     }
   }
 }
