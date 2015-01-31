@@ -1,0 +1,27 @@
+{
+  final boolean isEnabled=OsmandPlugin.getEnabledPlugins().contains(plugin);
+  final Class<? extends Activity> settingsActivity=plugin.getSettingsActivity();
+  final PopupMenu optionsMenu=new PopupMenu(this,v);
+  MenuItem enableDisableItem=optionsMenu.getMenu().add(isEnabled ? R.string.disable_plugin : R.string.enable_plugin);
+  enableDisableItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      enableDisablePlugin(plugin,!isEnabled);
+      optionsMenu.dismiss();
+      return true;
+    }
+  }
+);
+  if (settingsActivity != null) {
+    MenuItem settingsItem=optionsMenu.getMenu().add(R.string.settings);
+    settingsItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+      @Override public boolean onMenuItemClick(      MenuItem item){
+        startActivity(new Intent(PluginsActivity.this,settingsActivity));
+        optionsMenu.dismiss();
+        return true;
+      }
+    }
+);
+    settingsItem.setEnabled(isEnabled);
+  }
+  optionsMenu.show();
+}
