@@ -1,2 +1,40 @@
 {
+  if ((zoomControls.isVisible() && zoomControls.isShowZoomLevel()) || !mapActivity.getMyApplication().getSettings().SHOW_RULER.get()) {
+    return;
+  }
+  OsmandMapTileView view=mapActivity.getMapView();
+  if (view.isZooming()) {
+    cacheRulerText=null;
+  }
+ else   if (((tb.getZoom()) != cacheRulerZoom || Math.abs(tb.getCenterTileX() - cacheRulerTileX) + Math.abs(tb.getCenterTileY() - cacheRulerTileY) > 1) && tb.getPixWidth() > 0) {
+    cacheRulerZoom=(tb.getZoom());
+    cacheRulerTileX=tb.getCenterTileX();
+    cacheRulerTileY=tb.getCenterTileY();
+    final double dist=tb.getDistance(0,tb.getPixHeight() / 2,tb.getPixWidth(),tb.getPixHeight() / 2);
+    double pixDensity=tb.getPixWidth() / dist;
+    double roundedDist=OsmAndFormatter.calculateRoundedDist(dist * screenRulerPercent,view.getApplication());
+    int cacheRulerDistPix=(int)(pixDensity * roundedDist);
+    cacheRulerText=ShadowText.create(OsmAndFormatter.getFormattedDistance((float)roundedDist,view.getApplication()));
+    cacheRulerTextLen=rulerTextPaint.measureText(cacheRulerText.getText());
+    Rect bounds=rulerDrawable.getBounds();
+    bounds.right=(int)(view.getWidth() - 7 * scaleCoefficient);
+    bounds.left=bounds.right - cacheRulerDistPix;
+    rulerDrawable.setBounds(bounds);
+    rulerDrawable.invalidateSelf();
+  }
+  if (cacheRulerText != null) {
+    boolean isNight=nightMode == null ? false : nightMode.isNightMode();
+    Rect bounds=rulerDrawable.getBounds();
+    int bottom=(int)(view.getHeight() - vmargin);
+    if (bounds.bottom != bottom) {
+      bounds.bottom=bottom;
+      bounds.top=bounds.bottom - rulerDrawable.getMinimumHeight();
+      rulerDrawable.setBounds(bounds);
+      rulerDrawable.invalidateSelf();
+    }
+    rulerDrawable=(isNight ? mapActivity.getResources().getDrawable(R.drawable.ruler_night) : mapActivity.getResources().getDrawable(R.drawable.ruler));
+    rulerDrawable.draw(canvas);
+    int shadowColor=isNight == true ? 0xdc262626 : Color.WHITE;
+    cacheRulerText.draw(canvas,bounds.left + (bounds.width() - cacheRulerTextLen) / 2,bounds.bottom - 8 * scaleCoefficient,rulerTextPaint,shadowColor);
+  }
 }
