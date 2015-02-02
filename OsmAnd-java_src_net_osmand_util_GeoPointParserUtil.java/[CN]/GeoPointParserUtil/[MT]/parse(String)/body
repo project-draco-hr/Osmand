@@ -91,14 +91,14 @@
           return new GeoParsedPoint(lat,lon,zoom);
         }
       }
- else       if (host.equals("maps.yandex.ru") || host.equals("yandex.ru") || host.equals("www.yandex.ru")) {
+ else       if (host.matches("(?:www\\.)?(?:maps\\.)?yandex\\.[a-z]+")) {
         Map<String,String> params=getQueryParameters(uri);
         String ll=params.get("ll");
         if (ll != null) {
           Matcher matcher=commaSeparatedPairPattern.matcher(ll);
           if (matcher.matches()) {
             String z=String.valueOf(parseZoom(params.get("z")));
-            return new GeoParsedPoint(matcher.group(1),matcher.group(2),z);
+            return new GeoParsedPoint(matcher.group(1),matcher.group(2),z,params.get("text"));
           }
         }
       }
