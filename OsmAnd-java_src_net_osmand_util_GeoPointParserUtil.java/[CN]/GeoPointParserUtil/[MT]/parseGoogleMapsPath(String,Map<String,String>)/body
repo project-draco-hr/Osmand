@@ -1,0 +1,45 @@
+{
+  String zmPart="";
+  String descr="";
+  String path=opath;
+  if (path.contains("&")) {
+    String[] vls=path.split("&");
+    path=vls[0];
+    for (int i=1; i < vls.length; i++) {
+      int ik=vls[i].indexOf('=');
+      if (ik > 0) {
+        params.put(vls[i].substring(0,ik),vls[i].substring(ik + 1));
+      }
+    }
+  }
+  if (path.contains("+")) {
+    path=path.substring(0,path.indexOf("+"));
+    descr=path.substring(path.indexOf("+") + 1);
+    if (descr.contains(")")) {
+      descr=descr.substring(0,descr.indexOf(")"));
+    }
+  }
+  if (params.containsKey("z")) {
+    zmPart=params.get("z");
+  }
+  String[] vls=silentSplit(path,",");
+  if (vls.length >= 2) {
+    double lat=parseSilentDouble(vls[0]);
+    double lon=parseSilentDouble(vls[1]);
+    int zoom=GeoParsedPoint.NO_ZOOM;
+    if (vls.length >= 3 || zmPart.length() > 0) {
+      if (zmPart.length() == 0) {
+        zmPart=vls[2];
+      }
+      if (zmPart.startsWith("z=")) {
+        zmPart=zmPart.substring(2);
+      }
+ else       if (zmPart.contains("z")) {
+        zmPart=zmPart.substring(0,zmPart.indexOf('z'));
+      }
+      zoom=parseZoom(zmPart);
+    }
+    return new GeoParsedPoint(lat,lon,zoom);
+  }
+  return new GeoParsedPoint(opath);
+}

@@ -3,10 +3,11 @@
     return;
   }
   OsmandMapTileView view=mapActivity.getMapView();
+  boolean isNight=nightMode == null ? false : nightMode.isNightMode();
   if (view.isZooming()) {
     cacheRulerText=null;
   }
- else   if (((tb.getZoom()) != cacheRulerZoom || Math.abs(tb.getCenterTileX() - cacheRulerTileX) + Math.abs(tb.getCenterTileY() - cacheRulerTileY) > 1) && tb.getPixWidth() > 0) {
+ else   if (((isNight != isNightRemembered) || (tb.getZoom() != cacheRulerZoom) || Math.abs(tb.getCenterTileX() - cacheRulerTileX) + Math.abs(tb.getCenterTileY() - cacheRulerTileY) > 1) && tb.getPixWidth() > 0) {
     cacheRulerZoom=(tb.getZoom());
     cacheRulerTileX=tb.getCenterTileX();
     cacheRulerTileY=tb.getCenterTileY();
@@ -16,6 +17,7 @@
     int cacheRulerDistPix=(int)(pixDensity * roundedDist);
     cacheRulerText=ShadowText.create(OsmAndFormatter.getFormattedDistance((float)roundedDist,view.getApplication()));
     cacheRulerTextLen=rulerTextPaint.measureText(cacheRulerText.getText());
+    rulerDrawable=(isNight ? mapActivity.getResources().getDrawable(R.drawable.ruler_night) : mapActivity.getResources().getDrawable(R.drawable.ruler));
     Rect bounds=rulerDrawable.getBounds();
     bounds.right=(int)(view.getWidth() - 7 * scaleCoefficient);
     bounds.left=bounds.right - cacheRulerDistPix;
@@ -32,6 +34,8 @@
       rulerDrawable.invalidateSelf();
     }
     rulerDrawable.draw(canvas);
+    int shadowColor=isNight == true ? mapActivity.getResources().getColor(R.color.widgettext_shadow_night) : Color.WHITE;
     cacheRulerText.draw(canvas,bounds.left + (bounds.width() - cacheRulerTextLen) / 2,bounds.bottom - 8 * scaleCoefficient,rulerTextPaint,shadowColor);
   }
+  isNightRemembered=isNight;
 }
