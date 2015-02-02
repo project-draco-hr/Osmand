@@ -1,0 +1,29 @@
+{
+  String uriString;
+  if (isGeoPoint()) {
+    String latlon=formatDouble(lat) + "," + formatDouble(lon);
+    uriString="geo:" + latlon;
+    LinkedHashMap<String,String> map=new LinkedHashMap<String,String>();
+    if (zoom != NO_ZOOM)     map.put("z",String.valueOf(zoom));
+    if (query != null)     map.put("q",URLEncoder.encode(query));
+    if (label != null)     if (query == null)     map.put("q",latlon + "(" + URLEncoder.encode(label)+ ")");
+    if (map.size() > 0)     uriString+="?";
+    int i=0;
+    for (    String key : map.keySet()) {
+      if (i > 0)       uriString+="&";
+      uriString+=key + "=" + map.get(key);
+      i++;
+    }
+    return uriString;
+  }
+  if (isGeoAddress()) {
+    uriString="geo:0,0";
+    if (query != null) {
+      uriString+="?";
+      if (zoom != NO_ZOOM)       uriString+="z=" + zoom + "&";
+      uriString+="q=" + URLEncoder.encode(query);
+    }
+    return uriString;
+  }
+  return null;
+}
