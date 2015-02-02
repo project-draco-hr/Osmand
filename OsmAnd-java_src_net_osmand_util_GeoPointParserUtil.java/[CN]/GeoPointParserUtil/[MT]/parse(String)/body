@@ -1,5 +1,11 @@
 {
-  final URI uri=URI.create(uriString.replaceAll("\\s+","+").replaceAll("%20","+").replaceAll("%2C",","));
+  URI uri;
+  try {
+    uri=URI.create(uriString.replaceAll("\\s+","+").replaceAll("%20","+").replaceAll("%2C",",").replaceAll("\\|",";"));
+  }
+ catch (  IllegalArgumentException e) {
+    return null;
+  }
   String scheme=uri.getScheme();
   if (scheme == null)   return null;
  else   scheme=scheme.toLowerCase(Locale.US);
@@ -11,34 +17,21 @@
     if (path == null) {
       path="";
     }
- else     if (path.startsWith("/")) {
-      path=path.substring(1);
-    }
     String fragment=uri.getFragment();
-    String query=uri.getQuery();
-    if (query == null) {
-      query=path;
-    }
-    Map<String,String> params=new HashMap<String,String>();
-    for (    String vl : query.split("&")) {
-      int i=vl.indexOf('=');
-      if (i > 0) {
-        params.put(vl.substring(0,i),vl.substring(i + 1));
-      }
-    }
     Set<String> simpleDomains=new HashSet<String>();
     simpleDomains.add("osmand.net");
     simpleDomains.add("www.osmand.net");
     simpleDomains.add("download.osmand.net");
     simpleDomains.add("openstreetmap.de");
     simpleDomains.add("www.openstreetmap.de");
+    final Pattern commaSeparatedPairPattern=Pattern.compile("([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)");
     try {
       if (host.equals("osm.org") || host.endsWith("openstreetmap.org")) {
         Pattern p;
         Matcher matcher;
-        if (path.startsWith("go/")) {
+        if (path.startsWith("/go/")) {
           p=Pattern.compile("^/go/([A-Za-z0-9_@~]+-*)(?:.*)");
-          matcher=p.matcher(uri.getPath());
+          matcher=p.matcher(path);
           if (matcher.matches()) {
             return MapUtils.decodeShortLinkString(matcher.group(1));
           }
@@ -58,14 +51,19 @@
               lon=parseSilentDouble(vls[2]);
             }
           }
-          if (params.containsKey("mlat") && params.containsKey("mlon")) {
-            lat=parseSilentDouble(params.get("mlat"));
-            lon=parseSilentDouble(params.get("mlon"));
+          String mlat=getQueryParameter("mlat",uri);
+          if (mlat != null) {
+            lat=parseSilentDouble(mlat);
+          }
+          String mlon=getQueryParameter("mlon",uri);
+          if (mlon != null) {
+            lon=parseSilentDouble(mlon);
           }
           return new GeoParsedPoint(lat,lon,zoom);
         }
       }
  else       if (host.startsWith("map.baidu.")) {
+        Map<String,String> params=getQueryParameters(uri);
         String zm=params.get("l");
         String[] vls=silentSplit(params.get("c"),",");
         if (vls != null && vls.length >= 2) {
@@ -76,6 +74,10 @@
         }
       }
  else       if (simpleDomains.contains(host)) {
+        Map<String,String> params=getQueryParameters(uri);
+        if (uri.getQuery() == null && params.size() == 0) {
+          params=getQueryParameters(path.substring(1));
+        }
         if (params.containsKey("lat") && params.containsKey("lon")) {
           final double lat=parseSilentDouble(params.get("lat"));
           final double lon=parseSilentDouble(params.get("lon"));
@@ -89,17 +91,19 @@
           return new GeoParsedPoint(lat,lon,zoom);
         }
       }
- else       if (host.equals("maps.yandex.ru") || host.equals("yandex.ru") || host.equals("www.yandex.ru")) {
-        String zm=params.get("z");
-        String[] vls=silentSplit(params.get("ll"),",");
-        if (vls != null && vls.length >= 2) {
-          double lat=parseSilentDouble(vls[0]);
-          double lon=parseSilentDouble(vls[1]);
-          int zoom=parseZoom(zm);
-          return new GeoParsedPoint(lat,lon,zoom);
+ else       if (host.matches("(?:www\\.)?(?:maps\\.)?yandex\\.[a-z]+")) {
+        Map<String,String> params=getQueryParameters(uri);
+        String ll=params.get("ll");
+        if (ll != null) {
+          Matcher matcher=commaSeparatedPairPattern.matcher(ll);
+          if (matcher.matches()) {
+            String z=String.valueOf(parseZoom(params.get("z")));
+            return new GeoParsedPoint(matcher.group(1),matcher.group(2),z,params.get("text"));
+          }
         }
       }
- else       if (host.equals("maps.google.com") || host.equals("google.com") || host.equals("www.google.com")) {
+ else       if (host.matches("(?:www\\.)?(?:maps\\.)?google\\.[a-z]+")) {
+        Map<String,String> params=getQueryParameters(uri);
         if (params.containsKey("daddr")) {
           return parseGoogleMapsPath(params.get("daddr"),params);
         }
@@ -115,6 +119,145 @@
             path=path.substring(path.lastIndexOf(pref) + pref.length());
             return parseGoogleMapsPath(path,params);
           }
+        }
+      }
+ else       if (host.endsWith(".amap.com")) {
+        final String subString=uri.toString().substring(scheme.length() + host.length() + 4);
+        Pattern p;
+        Matcher matcher;
+        final String[] patterns={".*q=([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?).*&radius=(\\d+).*",".*q=([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?).*",".*p=(?:[A-Z0-9]+),([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?).*"};
+        for (int i=0; i < patterns.length; i++) {
+          p=Pattern.compile(patterns[i]);
+          matcher=p.matcher(subString);
+          if (matcher.matches()) {
+            if (matcher.groupCount() == 3) {
+              float radius=Float.valueOf(matcher.group(3));
+              long zoom=Math.round(23. - Math.log(radius) / Math.log(2.0));
+              return new GeoParsedPoint(matcher.group(1),matcher.group(2),String.valueOf(zoom));
+            }
+ else             if (matcher.groupCount() == 2) {
+              return new GeoParsedPoint(matcher.group(1),matcher.group(2));
+            }
+          }
+        }
+      }
+ else       if (host.equals("here.com") || host.endsWith(".here.com")) {
+        Map<String,String> params=getQueryParameters(uri);
+        String z=String.valueOf(GeoParsedPoint.NO_ZOOM);
+        String label=null;
+        if (params.containsKey("msg")) {
+          label=params.get("msg");
+        }
+        if (params.containsKey("z")) {
+          z=params.get("z");
+        }
+        if (params.containsKey("map")) {
+          String[] mapArray=params.get("map").split(",");
+          if (mapArray.length > 2) {
+            return new GeoParsedPoint(mapArray[0],mapArray[1],mapArray[2],label);
+          }
+ else           if (mapArray.length > 1) {
+            return new GeoParsedPoint(mapArray[0],mapArray[1],z,label);
+          }
+        }
+        if (path.startsWith("/l/")) {
+          Pattern p=Pattern.compile("^/l/([+-]?\\d+(?:\\.\\d+)),([+-]?\\d+(?:\\.\\d+)),(.*)");
+          Matcher matcher=p.matcher(path);
+          if (matcher.matches()) {
+            return new GeoParsedPoint(matcher.group(1),matcher.group(2),z,matcher.group(3));
+          }
+        }
+      }
+ else       if (host.endsWith(".qq.com")) {
+        Map<String,String> params=getQueryParameters(uri);
+        String x=null;
+        String y=null;
+        String z=String.valueOf(GeoParsedPoint.NO_ZOOM);
+        String label=null;
+        if (params.containsKey("city")) {
+          label=params.get("city");
+        }
+ else         if (params.containsKey("key")) {
+          label=params.get("key");
+        }
+ else         if (params.containsKey("a")) {
+          label=params.get("a");
+        }
+ else         if (params.containsKey("n")) {
+          label=params.get("n");
+        }
+        String m=params.get("m");
+        if (m != null) {
+          Matcher matcher=commaSeparatedPairPattern.matcher(m);
+          if (matcher.matches()) {
+            x=matcher.group(2);
+            y=matcher.group(1);
+          }
+        }
+        String c=params.get("c");
+        if (c != null) {
+          Matcher matcher=commaSeparatedPairPattern.matcher(c);
+          if (matcher.matches()) {
+            x=matcher.group(2);
+            y=matcher.group(1);
+          }
+ else {
+            x=c.replaceAll(".*\"lng\":\\s*([+\\-]?[0-9.]+).*","$1");
+            if (x == null)             x=c.replaceAll(".*\"lon\":\\s*([+\\-]?[0-9.]+).*","$1");
+            y=c.replaceAll(".*\"lat\":\\s*([+\\-]?[0-9.]+).*","$1");
+            z=c.replaceAll(".*\"l\":\\s*([+-]?[0-9.]+).*","$1");
+            return new GeoParsedPoint(y,x,z,label);
+          }
+        }
+        for (        String key : new String[]{"centerX","x","x1","x2"}) {
+          if (params.containsKey(key)) {
+            x=params.get(key);
+            break;
+          }
+        }
+        for (        String key : new String[]{"centerY","y","y1","y2"}) {
+          if (params.containsKey(key)) {
+            y=params.get(key);
+            break;
+          }
+        }
+        if (x != null && y != null)         return new GeoParsedPoint(y,x,z,label);
+      }
+ else       if (host.equals("maps.apple.com")) {
+        Map<String,String> params=getQueryParameters(uri);
+        String z=String.valueOf(GeoParsedPoint.NO_ZOOM);
+        String label=null;
+        if (params.containsKey("q")) {
+          label=params.get("q");
+        }
+        if (params.containsKey("near")) {
+          label=params.get("near");
+        }
+        if (params.containsKey("z")) {
+          z=params.get("z");
+        }
+        String ll=params.get("ll");
+        if (ll != null) {
+          Matcher matcher=commaSeparatedPairPattern.matcher(ll);
+          if (matcher.matches()) {
+            return new GeoParsedPoint(matcher.group(1),matcher.group(2),z,label);
+          }
+        }
+        String sll=params.get("sll");
+        if (sll != null) {
+          Matcher matcher=commaSeparatedPairPattern.matcher(sll);
+          if (matcher.matches()) {
+            return new GeoParsedPoint(matcher.group(1),matcher.group(2),z,label);
+          }
+        }
+        if (params.containsKey("q")) {
+          return new GeoParsedPoint(params.get("q"));
+        }
+        if (params.containsKey("daddr")) {
+          return new GeoParsedPoint(params.get("daddr"));
+        }
+        if (params.containsKey("saddr")) {
+          return new GeoParsedPoint(params.get("saddr"));
         }
       }
     }
