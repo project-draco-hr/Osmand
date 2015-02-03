@@ -1,12 +1,30 @@
 {
-  View view=getActivity().getLayoutInflater().inflate(R.layout.dash_plugins_fragment,container,false);
-  view.findViewById(R.id.show_all).setOnClickListener(new View.OnClickListener(){
+  View contentView=inflater.inflate(R.layout.dash_plugins_fragment,container,false);
+  contentView.findViewById(R.id.show_all).setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View view){
-      startActivityForResult(new Intent(getActivity(),getMyApplication().getAppCustomization().getPluginsActivity()),1);
+      startActivity(new Intent(getActivity(),getMyApplication().getAppCustomization().getPluginsActivity()));
     }
   }
 );
-  LinearLayout layout=(LinearLayout)view.findViewById(R.id.plugins);
-  addPlugins(inflater,layout);
-  return view;
+  LinearLayout pluginsContainer=(LinearLayout)contentView.findViewById(R.id.plugins);
+  List<OsmandPlugin> enabledPlugins=OsmandPlugin.getEnabledPlugins();
+  for (  OsmandPlugin plugin : enabledPlugins) {
+    if (plugin instanceof OsmandDevelopmentPlugin) {
+      continue;
+    }
+    inflatePluginView(inflater,pluginsContainer,plugin);
+  }
+  for (  OsmandPlugin plugin : OsmandPlugin.getAvailablePlugins()) {
+    if (pluginsContainer.getChildCount() > 2) {
+      break;
+    }
+    if (plugin instanceof OsmandDevelopmentPlugin) {
+      continue;
+    }
+    if (enabledPlugins.contains(plugin)) {
+      continue;
+    }
+    inflatePluginView(inflater,pluginsContainer,plugin);
+  }
+  return contentView;
 }
