@@ -1,15 +1,16 @@
 {
   super.onResume();
-  for (int i=0; i < checks.size(); i++) {
-    final CompoundButton ch=checks.get(i);
-    final OsmandPlugin o=showedPlugins.get(i);
-    ch.setOnCheckedChangeListener(null);
-    ch.setChecked(OsmandPlugin.getEnabledPlugins().contains(o));
-    ch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-      @Override public void onCheckedChanged(      CompoundButton compoundButton,      boolean b){
-        OsmandPlugin.enablePlugin(getMyApplication(),o,b);
-      }
-    }
-);
+  View contentView=getView();
+  if (contentView == null) {
+    return;
+  }
+  LinearLayout pluginsContainer=(LinearLayout)contentView.findViewById(R.id.plugins);
+  List<OsmandPlugin> enabledPlugins=OsmandPlugin.getEnabledPlugins();
+  for (int pluginIndex=0; pluginIndex < pluginsContainer.getChildCount(); pluginIndex++) {
+    View pluginView=pluginsContainer.getChildAt(pluginIndex);
+    OsmandPlugin plugin=(OsmandPlugin)pluginView.getTag();
+    boolean isEnabled=enabledPlugins.contains(plugin);
+    CompoundButton enableDisableButton=(CompoundButton)pluginView.findViewById(R.id.check_item);
+    enableDisableButton.setChecked(isEnabled);
   }
 }
