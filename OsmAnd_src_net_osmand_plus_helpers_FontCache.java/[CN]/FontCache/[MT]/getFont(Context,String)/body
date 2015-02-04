@@ -1,10 +1,14 @@
 {
-  if (fontMap.containsKey(fontName)) {
-    return fontMap.get(fontName);
+  Typeface typeface=fontMap.get(fontName);
+  if (typeface != null)   return typeface;
+  try {
+    typeface=Typeface.createFromAsset(context.getAssets(),fontName);
   }
- else {
-    Typeface tf=Typeface.createFromAsset(context.getAssets(),fontName);
-    fontMap.put(fontName,tf);
-    return tf;
+ catch (  Exception e) {
+    Log.e(TAG,"Failed to create typeface from asset '" + fontName + "'",e);
+    return null;
   }
+  if (typeface == null)   return null;
+  fontMap.put(fontName,typeface);
+  return typeface;
 }
