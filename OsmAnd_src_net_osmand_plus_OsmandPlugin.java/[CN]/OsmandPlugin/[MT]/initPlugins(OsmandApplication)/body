@@ -1,33 +1,25 @@
 {
   OsmandSettings settings=app.getSettings();
   OsmandRasterMapsPlugin rasterMapsPlugin=new OsmandRasterMapsPlugin(app);
-  installedPlugins.add(rasterMapsPlugin);
-  installedPlugins.add(new OsmandMonitoringPlugin(app));
-  installedPlugins.add(new OsMoPlugin(app));
-  installedPlugins.add(new AudioVideoNotesPlugin(app));
-  installedPlugins.add(new DistanceCalculatorPlugin(app));
-  installedPlugins.add(new AccessibilityPlugin(app));
-  if (!installPlugin(SRTM_PLUGIN_COMPONENT_PAID,SRTMPlugin.ID,app,new SRTMPlugin(app,true))) {
-    installPlugin(SRTM_PLUGIN_COMPONENT,SRTMPlugin.FREE_ID,app,new SRTMPlugin(app,false));
-  }
-  final ParkingPositionPlugin parking=new ParkingPositionPlugin(app);
-  boolean f=installPlugin(PARKING_PLUGIN_COMPONENT,ParkingPositionPlugin.ID,app,parking);
-  if (!f && Version.isParkingPluginInlined(app)) {
-    installedPlugins.add(parking);
-  }
   Set<String> enabledPlugins=settings.getEnabledPlugins();
-  if (Version.isRouteNavPluginInlined(app)) {
-    RoutePointsPlugin routePointsPlugin=new RoutePointsPlugin(app);
-    installedPlugins.add(routePointsPlugin);
-    enabledPlugins.add(routePointsPlugin.getId());
-  }
-  installedPlugins.add(new OsmEditingPlugin(app));
-  installedPlugins.add(new OsmandDevelopmentPlugin(app));
-  for (  OsmandPlugin plugin : installedPlugins) {
-    if (enabledPlugins.contains(plugin.getId())) {
+  allPlugins.add(rasterMapsPlugin);
+  allPlugins.add(new OsmandMonitoringPlugin(app));
+  allPlugins.add(new OsMoPlugin(app));
+  checkMarketPlugin(app,new SRTMPlugin(app),true,SRTM_PLUGIN_COMPONENT_PAID,SRTM_PLUGIN_COMPONENT);
+  checkMarketPlugin(app,new ParkingPositionPlugin(app),false,ParkingPositionPlugin.PARKING_PLUGIN_COMPONENT,null);
+  allPlugins.add(new AudioVideoNotesPlugin(app));
+  checkMarketPlugin(app,new RoutePointsPlugin(app),false,RoutePointsPlugin.ROUTE_POINTS_PLUGIN_COMPONENT,null);
+  checkMarketPlugin(app,new OpenSeaMapsPlugin(app),false,OpenSeaMapsPlugin.COMPONENT,null);
+  checkMarketPlugin(app,new SkiMapsPlugin(app),false,SkiMapsPlugin.COMPONENT,null);
+  allPlugins.add(new DistanceCalculatorPlugin(app));
+  allPlugins.add(new AccessibilityPlugin(app));
+  allPlugins.add(new OsmEditingPlugin(app));
+  allPlugins.add(new OsmandDevelopmentPlugin(app));
+  for (  OsmandPlugin plugin : allPlugins) {
+    if (enabledPlugins.contains(plugin.getId()) || plugin.isActive()) {
       try {
         if (plugin.init(app)) {
-          activePlugins.add(plugin);
+          plugin.setActive(true);
         }
       }
  catch (      Exception e) {

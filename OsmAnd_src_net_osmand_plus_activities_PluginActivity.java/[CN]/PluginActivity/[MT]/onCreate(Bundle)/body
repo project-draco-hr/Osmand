@@ -22,7 +22,6 @@
     finish();
     return;
   }
-  boolean isEnabled=OsmandPlugin.getEnabledPlugins().contains(plugin);
   setContentView(R.layout.plugin);
   getSupportActionBar().setTitle(plugin.getName());
   TextView descriptionView=(TextView)findViewById(R.id.plugin_description);
@@ -33,7 +32,7 @@
     settingsButton.setVisibility(View.GONE);
   }
  else {
-    settingsButton.setEnabled(isEnabled);
+    settingsButton.setEnabled(plugin.isActive());
     settingsButton.setVisibility(View.VISIBLE);
     settingsButton.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View view){
@@ -43,11 +42,10 @@
 );
   }
   CompoundButton enableDisableButton=(CompoundButton)findViewById(R.id.plugin_enable_disable);
-  enableDisableButton.setChecked(isEnabled);
+  enableDisableButton.setChecked(plugin.isActive());
   enableDisableButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
     @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
-      boolean isEnabled=OsmandPlugin.getEnabledPlugins().contains(plugin);
-      if (isEnabled == isChecked) {
+      if (plugin.isActive() == isChecked) {
         return;
       }
       boolean ok=OsmandPlugin.enablePlugin((OsmandApplication)getApplication(),plugin,isChecked);
