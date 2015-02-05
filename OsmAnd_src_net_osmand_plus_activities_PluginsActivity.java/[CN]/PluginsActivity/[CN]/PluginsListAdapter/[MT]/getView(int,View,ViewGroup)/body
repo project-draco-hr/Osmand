@@ -5,8 +5,22 @@
   }
   final OsmandPlugin plugin=getItem(position);
   view.setTag(plugin);
-  ImageView pluginLogo=(ImageView)view.findViewById(R.id.plugin_logo);
+  ImageButton pluginLogo=(ImageButton)view.findViewById(R.id.plugin_logo);
   pluginLogo.setImageResource(plugin.getLogoResourceId());
+  if (plugin.isActive()) {
+    pluginLogo.setBackgroundResource(R.drawable.bg_plugin_logo_enabled);
+  }
+ else {
+    TypedArray attributes=getTheme().obtainStyledAttributes(new int[]{R.attr.bg_plugin_logo_disabled});
+    pluginLogo.setBackgroundDrawable(attributes.getDrawable(0));
+    attributes.recycle();
+  }
+  pluginLogo.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      enableDisablePlugin(plugin,!plugin.isActive());
+    }
+  }
+);
   TextView pluginName=(TextView)view.findViewById(R.id.plugin_name);
   pluginName.setText(plugin.getName());
   pluginName.setContentDescription(plugin.getName() + " " + getString(plugin.isActive() ? R.string.item_checked : R.string.item_unchecked));
