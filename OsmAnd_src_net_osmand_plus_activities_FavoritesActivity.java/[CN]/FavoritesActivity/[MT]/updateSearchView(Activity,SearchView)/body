@@ -1,15 +1,21 @@
 {
   OsmandApplication app=(OsmandApplication)activity.getApplication();
-  if (app.getSettings().isLightContent()) {
-    try {
-      ImageView cancelIcon=(ImageView)searchView.findViewById(R.id.search_close_btn);
-      cancelIcon.setImageResource(R.drawable.ic_action_gremove_dark);
-      ImageView searchIcon=(ImageView)searchView.findViewById(R.id.search_voice_btn);
-      searchIcon.setImageResource(R.drawable.ic_action_search_dark);
-      SearchView.SearchAutoComplete searchBadge=(SearchView.SearchAutoComplete)searchView.findViewById(R.id.search_src_text);
-      searchBadge.setTextColor(activity.getResources().getColor(R.color.color_white));
-    }
- catch (    NullPointerException e) {
-    }
+  if (!app.getSettings().isLightContent()) {
+    return;
+  }
+  try {
+    ImageView cancelIcon=(ImageView)searchView.findViewById(R.id.search_close_btn);
+    cancelIcon.setImageResource(R.drawable.ic_action_gremove_dark);
+    SearchView.SearchAutoComplete searchEdit=(SearchView.SearchAutoComplete)searchView.findViewById(R.id.search_src_text);
+    searchEdit.setTextColor(activity.getResources().getColor(R.color.color_white));
+    SpannableStringBuilder stopHint=new SpannableStringBuilder("   ");
+    Float rawTextSize=searchEdit.getTextSize();
+    int textSize=(int)(rawTextSize * 1.25);
+    Drawable searchIcon=activity.getResources().getDrawable(R.drawable.ic_action_search_dark);
+    searchIcon.setBounds(0,0,textSize,textSize);
+    stopHint.setSpan(new ImageSpan(searchIcon),1,2,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    searchEdit.setHint(stopHint);
+  }
+ catch (  Exception e) {
   }
 }
