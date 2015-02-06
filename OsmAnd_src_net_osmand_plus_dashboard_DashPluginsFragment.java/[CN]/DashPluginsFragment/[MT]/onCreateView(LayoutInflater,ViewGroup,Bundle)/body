@@ -7,21 +7,20 @@
   }
 );
   LinearLayout pluginsContainer=(LinearLayout)contentView.findViewById(R.id.plugins);
-  List<OsmandPlugin> enabledPlugins=OsmandPlugin.getAvailablePlugins();
-  for (  OsmandPlugin plugin : enabledPlugins) {
+  List<OsmandPlugin> notActivePlugins=OsmandPlugin.getNotEnabledPlugins();
+  Collections.shuffle(notActivePlugins);
+  for (  OsmandPlugin plugin : notActivePlugins) {
     if (plugin instanceof OsmandDevelopmentPlugin) {
       continue;
     }
     inflatePluginView(inflater,pluginsContainer,plugin);
+    break;
   }
-  for (  OsmandPlugin plugin : OsmandPlugin.getAvailablePlugins()) {
-    if (pluginsContainer.getChildCount() > 2) {
+  for (  OsmandPlugin plugin : OsmandPlugin.getEnabledPlugins()) {
+    if (pluginsContainer.getChildCount() >= 5) {
       break;
     }
     if (plugin instanceof OsmandDevelopmentPlugin) {
-      continue;
-    }
-    if (enabledPlugins.contains(plugin)) {
       continue;
     }
     inflatePluginView(inflater,pluginsContainer,plugin);

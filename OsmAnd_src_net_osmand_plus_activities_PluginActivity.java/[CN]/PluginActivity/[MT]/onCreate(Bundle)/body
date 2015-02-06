@@ -26,31 +26,33 @@
   getSupportActionBar().setTitle(plugin.getName());
   TextView descriptionView=(TextView)findViewById(R.id.plugin_description);
   descriptionView.setText(plugin.getDescription());
-  final Class<? extends Activity> settingsActivity=plugin.getSettingsActivity();
-  final Button settingsButton=(Button)findViewById(R.id.plugin_settings);
-  if (settingsActivity == null) {
-    settingsButton.setVisibility(View.GONE);
-  }
- else {
-    settingsButton.setEnabled(plugin.isActive());
-    settingsButton.setVisibility(View.VISIBLE);
-    settingsButton.setOnClickListener(new View.OnClickListener(){
-      @Override public void onClick(      View view){
-        startActivity(new Intent(PluginActivity.this,settingsActivity));
-      }
+  Button settingsButton=(Button)findViewById(R.id.plugin_settings);
+  settingsButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View view){
+      startActivity(new Intent(PluginActivity.this,plugin.getSettingsActivity()));
     }
-);
   }
+);
   CompoundButton enableDisableButton=(CompoundButton)findViewById(R.id.plugin_enable_disable);
-  enableDisableButton.setChecked(plugin.isActive());
   enableDisableButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
     @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
       if (plugin.isActive() == isChecked) {
         return;
       }
       boolean ok=OsmandPlugin.enablePlugin((OsmandApplication)getApplication(),plugin,isChecked);
-      settingsButton.setEnabled(isChecked && ok);
+      if (!ok) {
+        return;
+      }
+      updateState();
     }
   }
 );
+  Button getButton=(Button)findViewById(R.id.plugin_get);
+  getButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(plugin.getInstallURL())));
+    }
+  }
+);
+  updateState();
 }
