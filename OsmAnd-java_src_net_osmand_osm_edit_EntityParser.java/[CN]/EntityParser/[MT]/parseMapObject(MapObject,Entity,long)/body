@@ -1,0 +1,27 @@
+{
+  mo.setId(e.getId());
+  if (mo instanceof Amenity) {
+    mo.setId((e.getId() << 1) + ((e instanceof Node) ? 0 : 1));
+  }
+  if (mo.getName().length() == 0) {
+    mo.setName(e.getTag(OSMTagKey.NAME));
+  }
+  if (mo.getEnName().length() == 0) {
+    mo.setEnName(e.getTag(OSMTagKey.NAME_EN));
+    if (mo.getName().length() == 0) {
+      mo.setName(mo.getEnName());
+    }
+  }
+  if (mo.getLocation() == null) {
+    LatLon l=OsmMapUtils.getCenter(e);
+    if (l != null) {
+      mo.setLocation(l.getLatitude(),l.getLongitude());
+    }
+  }
+  if (mo.getName().length() == 0) {
+    setNameFromOperator(mo,e);
+  }
+  if (mo.getName().length() == 0) {
+    setNameFromRef(mo,e);
+  }
+}
