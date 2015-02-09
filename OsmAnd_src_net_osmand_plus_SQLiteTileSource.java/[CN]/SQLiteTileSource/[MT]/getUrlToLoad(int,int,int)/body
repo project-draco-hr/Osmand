@@ -4,5 +4,20 @@
   if (db == null || db.isReadOnly() || urlTemplate == null) {
     return null;
   }
-  return MessageFormat.format(urlTemplate,zoom + "",x + "",y + "");
+  if (TileSourceManager.RULE_BEANSHELL.equalsIgnoreCase(rule)) {
+    try {
+      if (bshInterpreter == null) {
+        bshInterpreter=new Interpreter();
+        bshInterpreter.eval(urlTemplate);
+      }
+      return (String)bshInterpreter.eval("getTileUrl(" + zoom + ","+ x+ ","+ y+ ");");
+    }
+ catch (    bsh.EvalError e) {
+      log.error(e.getMessage(),e);
+      return null;
+    }
+  }
+ else {
+    return MessageFormat.format(urlTemplate,zoom + "",x + "",y + "");
+  }
 }
