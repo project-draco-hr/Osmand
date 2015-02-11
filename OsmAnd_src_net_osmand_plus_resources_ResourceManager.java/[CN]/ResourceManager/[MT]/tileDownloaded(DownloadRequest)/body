@@ -2,22 +2,5 @@
   if (request instanceof TileLoadDownloadRequest) {
     TileLoadDownloadRequest req=((TileLoadDownloadRequest)request);
     imagesOnFS.put(req.tileId,Boolean.TRUE);
-    if (req.fileToSave != null && req.tileSource instanceof SQLiteTileSource) {
-      try {
-        ((SQLiteTileSource)req.tileSource).insertImage(req.xTile,req.yTile,req.zoom,req.fileToSave);
-      }
- catch (      IOException e) {
-        log.warn("File " + req.fileToSave.getName() + " couldn't be read",e);
-      }
-      req.fileToSave.delete();
-      String[] l=req.fileToSave.getParentFile().list();
-      if (l == null || l.length == 0) {
-        req.fileToSave.getParentFile().delete();
-        l=req.fileToSave.getParentFile().getParentFile().list();
-        if (l == null || l.length == 0) {
-          req.fileToSave.getParentFile().getParentFile().delete();
-        }
-      }
-    }
   }
 }
