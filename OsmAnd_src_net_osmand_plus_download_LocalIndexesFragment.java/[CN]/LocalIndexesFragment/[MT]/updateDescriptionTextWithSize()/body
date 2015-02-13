@@ -1,10 +1,13 @@
 {
   File dir=getMyApplication().getAppPath("").getParentFile();
   String size=formatGb.format(new Object[]{0});
+  int percent=0;
   if (dir.canRead()) {
     StatFs fs=new StatFs(dir.getAbsolutePath());
     size=formatGb.format(new Object[]{(float)(fs.getAvailableBlocks()) * fs.getBlockSize() / (1 << 30)});
+    percent=(int)(fs.getAvailableBytes() * 100 / fs.getTotalBytes());
   }
+  sizeProgress.setProgress(percent);
   String text=getString(R.string.free,size);
   int l=text.indexOf('.');
   if (l == -1) {
