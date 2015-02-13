@@ -4,7 +4,8 @@
     LayoutInflater inflater=getActivity().getLayoutInflater();
     row=inflater.inflate(R.layout.favourites_list_item,parent,false);
   }
-  TextView label=(TextView)row.findViewById(R.id.favourite_label);
+  TextView name=(TextView)row.findViewById(R.id.favourite_label);
+  TextView distanceText=(TextView)row.findViewById(R.id.distance);
   ImageView icon=(ImageView)row.findViewById(R.id.favourite_icon);
   final FavouritePoint model=(FavouritePoint)getChild(groupPosition,childPosition);
   row.setTag(model);
@@ -12,9 +13,16 @@
   LatLon lastKnownMapLocation=getMyApplication().getSettings().getLastKnownMapLocation();
   int dist=(int)(MapUtils.getDistance(model.getLatitude(),model.getLongitude(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
   String distance=OsmAndFormatter.getFormattedDistance(dist,getMyApplication()) + "  ";
-  label.setText(distance + model.getName(),TextView.BufferType.SPANNABLE);
-  label.setTypeface(Typeface.DEFAULT,model.isVisible() ? Typeface.NORMAL : Typeface.ITALIC);
-  ((Spannable)label.getText()).setSpan(new ForegroundColorSpan(getResources().getColor(R.color.color_distance)),0,distance.length() - 1,0);
+  name.setText(model.getName(),TextView.BufferType.SPANNABLE);
+  name.setTypeface(Typeface.DEFAULT,model.isVisible() ? Typeface.NORMAL : Typeface.ITALIC);
+  distanceText.setText(distance);
+  distanceText.setTextColor(getResources().getColor(R.color.color_distance));
+  row.findViewById(R.id.group_image).setVisibility(View.GONE);
+  if (loc != null) {
+    ImageView direction=(ImageView)row.findViewById(R.id.direction);
+    direction.setVisibility(View.VISIBLE);
+    DashLocationFragment.updateArrow(getActivity(),loc,new LatLon(model.getLatitude(),model.getLongitude()),direction,10,R.drawable.ic_destination_arrow,heading);
+  }
   final CheckBox ch=(CheckBox)row.findViewById(R.id.check_item);
   if (selectionMode) {
     ch.setVisibility(View.VISIBLE);
