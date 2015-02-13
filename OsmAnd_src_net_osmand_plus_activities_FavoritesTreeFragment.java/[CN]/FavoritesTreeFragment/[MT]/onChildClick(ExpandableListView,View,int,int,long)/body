@@ -12,36 +12,32 @@
     updateSelectionMode(actionMode);
   }
  else {
+    final FavouritePoint point=(FavouritePoint)favouritesAdapter.getChild(groupPosition,childPosition);
     ContextMenuAdapter qa=new ContextMenuAdapter(v.getContext());
     qa.setAnchor(v);
     final OsmandSettings settings=getMyApplication().getSettings();
-    final FavouritePoint point=(FavouritePoint)favouritesAdapter.getChild(groupPosition,childPosition);
     String name=getString(R.string.favorite) + ": " + point.getName();
     LatLon location=new LatLon(point.getLatitude(),point.getLongitude());
-    OnClickListener onshow=new OnClickListener(){
-      @Override public void onClick(      View v){
-        settings.SHOW_FAVORITES.set(true);
-      }
-    }
-;
-    DirectionsDialogs.createDirectionsActions(qa,location,point,name,settings.getLastKnownMapZoom(),getActivity(),true,false);
-    Item edit=qa.item(R.string.favourites_context_menu_edit).icons(R.drawable.ic_action_edit_dark,R.drawable.ic_action_edit_light);
-    edit.listen(new OnContextMenuClick(){
-      @Override public boolean onContextMenuClick(      ArrayAdapter<?> adapter,      int itemId,      int pos,      boolean isChecked){
+    final PopupMenu optionsMenu=new PopupMenu(getActivity(),v);
+    DirectionsDialogs.createDirectionActionsPopUpMenu(optionsMenu,location,point,name,settings.getLastKnownMapZoom(),getActivity(),true,false);
+    boolean light=getMyApplication().getSettings().isLightContent();
+    MenuItem item=optionsMenu.getMenu().add(R.string.favourites_context_menu_edit).setIcon(light ? R.drawable.ic_action_edit_light : R.drawable.ic_action_edit_dark);
+    item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+      @Override public boolean onMenuItemClick(      MenuItem item){
         editPoint(point);
         return true;
       }
     }
-).reg();
-    Item delete=qa.item(R.string.favourites_context_menu_delete).icons(R.drawable.ic_action_delete_dark,R.drawable.ic_action_delete_light);
-    delete.listen(new OnContextMenuClick(){
-      @Override public boolean onContextMenuClick(      ArrayAdapter<?> adapter,      int itemId,      int pos,      boolean isChecked){
+);
+    item=optionsMenu.getMenu().add(R.string.favourites_context_menu_delete).setIcon(light ? R.drawable.ic_action_delete_light : R.drawable.ic_action_delete_dark);
+    item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+      @Override public boolean onMenuItemClick(      MenuItem item){
         deletePoint(point);
         return true;
       }
     }
-).reg();
-    MapActivityActions.showObjectContextMenu(qa,getActivity(),onshow);
+);
+    optionsMenu.show();
   }
   return true;
 }
