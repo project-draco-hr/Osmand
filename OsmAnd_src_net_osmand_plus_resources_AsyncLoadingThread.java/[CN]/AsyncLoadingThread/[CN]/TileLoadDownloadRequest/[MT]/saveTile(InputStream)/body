@@ -1,0 +1,23 @@
+{
+  if (tileSource instanceof SQLiteTileSource) {
+    ByteArrayOutputStream stream=null;
+    try {
+      stream=new ByteArrayOutputStream(inputStream.available());
+      Algorithms.streamCopy(inputStream,stream);
+      stream.flush();
+      try {
+        ((SQLiteTileSource)tileSource).insertImage(xTile,yTile,zoom,stream.toByteArray());
+      }
+ catch (      IOException e) {
+        log.warn("Tile x=" + xTile + " y="+ yTile+ " z="+ zoom+ " couldn't be read",e);
+      }
+    }
+  finally {
+      Algorithms.closeStream(inputStream);
+      Algorithms.closeStream(stream);
+    }
+  }
+ else {
+    super.saveTile(inputStream);
+  }
+}
