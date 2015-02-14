@@ -1,0 +1,18 @@
+{
+  SQLiteConnection db=getDatabase();
+  if (db == null || db.isReadOnly() || onlyReadonlyAvailable) {
+    return;
+  }
+  String query=timeSupported ? "INSERT OR REPLACE INTO tiles(x,y,z,s,image,time) VALUES(?, ?, ?, ?, ?, ?)" : "INSERT OR REPLACE INTO tiles(x,y,z,s,image) VALUES(?, ?, ?, ?, ?)";
+  net.osmand.plus.api.SQLiteAPI.SQLiteStatement statement=db.compileStatement(query);
+  statement.bindLong(1,x);
+  statement.bindLong(2,y);
+  statement.bindLong(3,getFileZoom(zoom));
+  statement.bindLong(4,0);
+  statement.bindBlob(5,dataToSave);
+  if (timeSupported) {
+    statement.bindLong(6,System.currentTimeMillis());
+  }
+  statement.execute();
+  statement.close();
+}

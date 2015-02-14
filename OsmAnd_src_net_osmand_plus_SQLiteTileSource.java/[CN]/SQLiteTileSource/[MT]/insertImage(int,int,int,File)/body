@@ -1,11 +1,4 @@
 {
-  SQLiteConnection db=getDatabase();
-  if (db == null || db.isReadOnly() || onlyReadonlyAvailable) {
-    return;
-  }
-  if (exists(x,y,zoom)) {
-    return;
-  }
   ByteBuffer buf=ByteBuffer.allocate((int)fileToSave.length());
   FileInputStream is=new FileInputStream(fileToSave);
   int i=0;
@@ -13,17 +6,6 @@
   while ((i=is.read(b,0,BUF_SIZE)) > -1) {
     buf.put(b,0,i);
   }
-  String query=timeSupported ? "INSERT INTO tiles(x,y,z,s,image,time) VALUES(?, ?, ?, ?, ?, ?)" : "INSERT INTO tiles(x,y,z,s,image) VALUES(?, ?, ?, ?, ?)";
-  net.osmand.plus.api.SQLiteAPI.SQLiteStatement statement=db.compileStatement(query);
-  statement.bindLong(1,x);
-  statement.bindLong(2,y);
-  statement.bindLong(3,getFileZoom(zoom));
-  statement.bindLong(4,0);
-  statement.bindBlob(5,buf.array());
-  if (timeSupported) {
-    statement.bindLong(6,System.currentTimeMillis());
-  }
-  statement.execute();
-  statement.close();
+  insertImage(x,y,zoom,buf.array());
   is.close();
 }

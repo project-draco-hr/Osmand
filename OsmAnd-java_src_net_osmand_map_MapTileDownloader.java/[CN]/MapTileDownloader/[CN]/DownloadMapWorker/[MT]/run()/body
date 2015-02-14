@@ -9,24 +9,15 @@
       log.debug("Start downloading tile : " + request.url);
     }
     long time=System.currentTimeMillis();
+    request.setError(false);
     try {
-      request.fileToSave.getParentFile().mkdirs();
       URL url=new URL(request.url);
       URLConnection connection=url.openConnection();
       connection.setRequestProperty("User-Agent",USER_AGENT);
       connection.setConnectTimeout(CONNECTION_TIMEOUT);
       connection.setReadTimeout(CONNECTION_TIMEOUT);
       BufferedInputStream inputStream=new BufferedInputStream(connection.getInputStream(),8 * 1024);
-      FileOutputStream stream=null;
-      try {
-        stream=new FileOutputStream(request.fileToSave);
-        Algorithms.streamCopy(inputStream,stream);
-        stream.flush();
-      }
-  finally {
-        Algorithms.closeStream(inputStream);
-        Algorithms.closeStream(stream);
-      }
+      request.saveTile(inputStream);
       if (log.isDebugEnabled()) {
         log.debug("Downloading tile : " + request.url + " successfull "+ (System.currentTimeMillis() - time)+ " ms");
       }
