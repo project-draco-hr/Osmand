@@ -1,0 +1,36 @@
+{
+  boolean light=getMyApplication().getSettings().isLightContent();
+  final PopupMenu optionsMenu=new PopupMenu(getActivity(),v);
+  DirectionsDialogs.setupPopUpMenuIcon(optionsMenu);
+  final boolean restore=info.isBackupedData();
+  Drawable backup=getActivity().getResources().getDrawable(R.drawable.ic_type_archive);
+  backup.mutate();
+  if (light) {
+    backup.setColorFilter(0xff727272,PorterDuff.Mode.MULTIPLY);
+  }
+  MenuItem item=optionsMenu.getMenu().add(restore ? R.string.local_index_mi_restore : R.string.local_index_mi_backup).setIcon(backup);
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      performBasicOperation(restore ? R.string.local_index_mi_restore : R.string.local_index_mi_backup,info);
+      return true;
+    }
+  }
+);
+  item=optionsMenu.getMenu().add(R.string.favourites_context_menu_edit).setIcon(light ? R.drawable.ic_action_edit_light : R.drawable.ic_action_edit_dark);
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      performBasicOperation(R.string.local_index_mi_rename,info);
+      return true;
+    }
+  }
+);
+  item=optionsMenu.getMenu().add(R.string.favourites_context_menu_delete).setIcon(light ? R.drawable.ic_action_delete_light : R.drawable.ic_action_delete_dark);
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      performBasicOperation(R.string.local_index_mi_delete,info);
+      return true;
+    }
+  }
+);
+  optionsMenu.show();
+}
