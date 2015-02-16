@@ -8,18 +8,19 @@
   TextView description=(TextView)v.findViewById(R.id.download_descr);
   final CheckBox ch=(CheckBox)v.findViewById(R.id.check_download_item);
   IndexItem e=items.get(position);
-  if (e.getFileName() == getString(R.string.everything_up_to_date)) {
+  if (e.getFileName().equals(getString(R.string.everything_up_to_date))) {
     name.setText(e.getFileName());
     description.setText("");
     ch.setVisibility(View.INVISIBLE);
+    setSelectAllVisibility(false);
     return v;
   }
  else {
     ch.setVisibility(View.VISIBLE);
   }
   String eName=e.getVisibleName(getMyApplication(),osmandRegions);
-  name.setText(eName.trim());
-  String d=e.getDate(format) + "\n" + e.getSizeDescription(getMyApplication());
+  name.setText(eName.trim().replace('\n',' '));
+  String d=e.getDate(format) + "  " + e.getSizeDescription(getMyApplication());
   description.setText(d);
   ch.setChecked(getDownloadActivity().getEntriesToDownload().containsKey(e));
   ch.setOnClickListener(new View.OnClickListener(){
@@ -29,31 +30,5 @@
     }
   }
 );
-  if (e.getDate(format) != null) {
-    Map<String,String> indexActivatedFileNames=getDownloadActivity().getIndexActivatedFileNames();
-    Map<String,String> indexFileNames=getDownloadActivity().getIndexFileNames();
-    if (indexActivatedFileNames != null && indexFileNames != null) {
-      String sfName=e.getTargetFileName();
-      final boolean updatableResource=indexActivatedFileNames.containsKey(sfName);
-      if (updatableResource && !DownloadActivity.downloadListIndexThread.checkIfItemOutdated(e)) {
-        name.setText(name.getText() + "\n" + getResources().getString(R.string.local_index_installed)+ " : "+ indexActivatedFileNames.get(sfName));
-        name.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
-      }
- else       if (e.getDate(format).equals(indexFileNames.get(sfName))) {
-        name.setText(name.getText() + "\n" + getResources().getString(R.string.local_index_installed)+ " : "+ indexFileNames.get(sfName));
-        name.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
-      }
- else       if (updatableResource) {
-        name.setText(name.getText() + "\n" + getResources().getString(R.string.local_index_installed)+ " : "+ indexActivatedFileNames.get(sfName));
-        name.setTextColor(updateColor);
-        name.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
-      }
- else {
-        name.setText(name.getText() + "\n" + getResources().getString(R.string.local_index_installed)+ " : "+ indexFileNames.get(sfName));
-        name.setTextColor(updateColor);
-        name.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
-      }
-    }
-  }
   return v;
 }
