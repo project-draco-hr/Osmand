@@ -1,21 +1,15 @@
 {
   View view=inflater.inflate(R.layout.update_index,container,false);
-  CheckBox selectAll=(CheckBox)view.findViewById(R.id.select_all);
-  selectAll.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
-      for (      IndexItem item : indexItems) {
-        if (isChecked) {
-          List<DownloadEntry> download=item.createDownloadEntry(getMyApplication(),item.getType(),new ArrayList<DownloadEntry>());
-          if (download.size() > 0) {
-            getDownloadActivity().getEntriesToDownload().put(item,download);
-            getDownloadActivity().updateDownloadButton(true);
-          }
-        }
- else {
-          getDownloadActivity().getEntriesToDownload().remove(item);
-          getDownloadActivity().updateDownloadButton(true);
-        }
+  final CheckBox selectAll=(CheckBox)view.findViewById(R.id.select_all);
+  selectAll.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (selectAll.isChecked()) {
+        selectAll();
       }
+ else {
+        deselectAll();
+      }
+      listAdapter.notifyDataSetInvalidated();
     }
   }
 );
