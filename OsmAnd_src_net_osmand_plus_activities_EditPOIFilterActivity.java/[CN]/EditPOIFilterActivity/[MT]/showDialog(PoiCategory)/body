@@ -1,0 +1,87 @@
+{
+  ListView lv=EditPOIFilterActivity.this.getListView();
+  final int index=lv.getFirstVisiblePosition();
+  View v=lv.getChildAt(0);
+  final int top=(v == null) ? 0 : v.getTop();
+  Builder builder=new AlertDialog.Builder(this);
+  ScrollView scroll=new ScrollView(this);
+  ListView listView=new ListView(this);
+  final LinkedHashMap<String,String> subCategories=new LinkedHashMap<String,String>();
+  Set<String> acceptedCategories=filter.getAcceptedSubtypes(poiCategory);
+  if (acceptedCategories != null) {
+    for (    String s : acceptedCategories) {
+      subCategories.put(s,Algorithms.capitalizeFirstLetterAndLowercase(s));
+    }
+  }
+  for (  PoiType pt : poiCategory.getPoiTypes()) {
+    subCategories.put(pt.getKeyName(),pt.getTranslation());
+  }
+  final String[] array=subCategories.keySet().toArray(new String[0]);
+  final Collator cl=Collator.getInstance();
+  cl.setStrength(Collator.SECONDARY);
+  Arrays.sort(array,0,array.length,new Comparator<String>(){
+    @Override public int compare(    String object1,    String object2){
+      String v1=subCategories.get(object1);
+      String v2=subCategories.get(object2);
+      return cl.compare(v1,v2);
+    }
+  }
+);
+  final String[] visibleNames=new String[array.length];
+  final boolean[] selected=new boolean[array.length];
+  for (int i=0; i < array.length; i++) {
+    final String subcategory=array[i];
+    visibleNames[i]=subCategories.get(subcategory);
+    if (acceptedCategories == null) {
+      selected[i]=true;
+    }
+ else {
+      selected[i]=acceptedCategories.contains(subcategory);
+    }
+  }
+  scroll.addView(listView);
+  builder.setView(scroll);
+  builder.setNeutralButton(EditPOIFilterActivity.this.getText(R.string.close),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      LinkedHashSet<String> accepted=new LinkedHashSet<String>();
+      for (int i=0; i < selected.length; i++) {
+        if (selected[i]) {
+          accepted.add(array[i]);
+        }
+      }
+      if (subCategories.size() == accepted.size()) {
+        filter.selectSubTypesToAccept(poiCategory,null);
+      }
+ else       if (accepted.size() == 0) {
+        filter.setTypeToAccept(poiCategory,false);
+      }
+ else {
+        filter.selectSubTypesToAccept(poiCategory,accepted);
+      }
+      helper.editPoiFilter(filter);
+      ListView lv=EditPOIFilterActivity.this.getListView();
+      AmenityAdapter la=(AmenityAdapter)EditPOIFilterActivity.this.getListAdapter();
+      la.notifyDataSetInvalidated();
+      lv.setSelectionFromTop(index,top);
+    }
+  }
+);
+  builder.setPositiveButton(EditPOIFilterActivity.this.getText(R.string.default_buttons_selectall),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      filter.selectSubTypesToAccept(poiCategory,null);
+      helper.editPoiFilter(filter);
+      ListView lv=EditPOIFilterActivity.this.getListView();
+      AmenityAdapter la=(AmenityAdapter)EditPOIFilterActivity.this.getListAdapter();
+      la.notifyDataSetInvalidated();
+      lv.setSelectionFromTop(index,top);
+    }
+  }
+);
+  builder.setMultiChoiceItems(visibleNames,selected,new DialogInterface.OnMultiChoiceClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int item,    boolean isChecked){
+      selected[item]=isChecked;
+    }
+  }
+);
+  builder.show();
+}
