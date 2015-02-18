@@ -1,7 +1,13 @@
 {
   File f=new File(info.getPathToData());
   if (info.getType() == LocalIndexType.MAP_DATA) {
-    updateObfFileInformation(info,f);
+    Map<String,String> ifns=app.getResourceManager().getIndexFileNames();
+    if (ifns.containsKey(info.getFileName())) {
+      info.setDescription(ifns.get(info.getFileName()));
+    }
+ else {
+      info.setDescription(getInstalledDate(f));
+    }
   }
  else   if (info.getType() == LocalIndexType.VOICE_DATA) {
     info.setDescription(getInstalledDate(f));
@@ -10,17 +16,9 @@
     info.setDescription(getInstalledDate(f));
   }
  else   if (info.getType() == LocalIndexType.TILES_DATA) {
-    Set<Integer> zooms=new TreeSet<Integer>();
     ITileSource template;
     if (f.isDirectory() && TileSourceManager.isTileSourceMetaInfoExist(f)) {
       template=TileSourceManager.createTileSourceTemplate(new File(info.getPathToData()));
-      for (      String s : f.list()) {
-        try {
-          zooms.add(Integer.parseInt(s));
-        }
- catch (        NumberFormatException e) {
-        }
-      }
     }
  else     if (f.isFile() && f.getName().endsWith(SQLiteTileSource.EXT)) {
       template=new SQLiteTileSource(app,f,TileSourceManager.getKnownSourceTemplates());
@@ -33,10 +31,6 @@
     if (template.getExpirationTimeMinutes() >= 0) {
       descr+="\n" + app.getString(R.string.local_index_tile_data_expire,template.getExpirationTimeMinutes());
     }
-    descr+="\n" + app.getString(R.string.local_index_tile_data_zooms,zooms.toString());
     info.setDescription(descr);
-  }
- else {
-    OsmandPlugin.onUpdateLocalIndexDescription(info);
   }
 }
