@@ -2,15 +2,15 @@
   ArrayList<PoiLegacyFilter> list=new ArrayList<PoiLegacyFilter>();
   if (conn != null) {
     SQLiteCursor query=conn.rawQuery("SELECT " + CATEGORIES_FILTER_ID + ", "+ CATEGORIES_COL_CATEGORY+ ","+ CATEGORIES_COL_SUBCATEGORY+ " FROM "+ CATEGORIES_NAME,null);
-    Map<String,Map<AmenityType,LinkedHashSet<String>>> map=new LinkedHashMap<String,Map<AmenityType,LinkedHashSet<String>>>();
+    Map<String,Map<PoiCategory,LinkedHashSet<String>>> map=new LinkedHashMap<String,Map<PoiCategory,LinkedHashSet<String>>>();
     if (query.moveToFirst()) {
       do {
         String filterId=query.getString(0);
         if (!map.containsKey(filterId)) {
-          map.put(filterId,new LinkedHashMap<AmenityType,LinkedHashSet<String>>());
+          map.put(filterId,new LinkedHashMap<PoiCategory,LinkedHashSet<String>>());
         }
-        Map<AmenityType,LinkedHashSet<String>> m=map.get(filterId);
-        AmenityType a=AmenityType.findOrCreateTypeNoReg(query.getString(1));
+        Map<PoiCategory,LinkedHashSet<String>> m=map.get(filterId);
+        PoiCategory a=poiTypes.getPoiCategoryByName(query.getString(1));
         String subCategory=query.getString(2);
         if (subCategory == null) {
           m.put(a,null);

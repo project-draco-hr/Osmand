@@ -4,7 +4,7 @@
     String key=e.getKey();
     String vl=e.getValue();
     if (Amenity.DESCRIPTION.equals(key)) {
-      if (amenity.getType() == AmenityType.OSMWIKI && shortDescription) {
+      if (amenity.getType().isWiki() && shortDescription) {
         continue;
       }
     }
@@ -15,17 +15,21 @@
       d.append(ctx.getString(R.string.phone) + ": ");
     }
  else     if (Amenity.WEBSITE.equals(key)) {
-      if (amenity.getType() == AmenityType.OSMWIKI) {
+      if (amenity.getType().isWiki()) {
         continue;
       }
       d.append(ctx.getString(R.string.website) + ": ");
     }
  else {
-      vl=SpecialPhrases.getSpecialPhrase(e.getKey() + "_" + e.getValue(),null);
-      if (vl == null) {
-        vl=SpecialPhrases.getSpecialPhrase(e.getKey(),Algorithms.capitalizeFirstLetterAndLowercase(e.getKey())) + ": ";
-        vl+=SpecialPhrases.getSpecialPhrase(e.getValue(),e.getValue());
+      PoiCategory pc=amenity.getType();
+      PoiType pt=pc.getPoiTypeByKeyName(e.getKey());
+      if (pt != null) {
+        vl=pt.getTranslation();
       }
+ else {
+        vl=Algorithms.capitalizeFirstLetterAndLowercase(e.getKey());
+      }
+      vl+=": " + e.getValue();
     }
     d.append(vl).append('\n');
   }

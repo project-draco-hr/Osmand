@@ -4,6 +4,7 @@
     data.queryNewData(tileBox);
     objects=data.getResults();
     if (objects != null) {
+      MapPoiTypes poiTypes=view.getApplication().getPoiTypes();
       int r=getRadiusPoi(tileBox);
       for (      Amenity o : objects) {
         int x=(int)tileBox.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
@@ -11,14 +12,17 @@
         canvas.drawCircle(x,y,r,pointAltUI);
         canvas.drawCircle(x,y,r,point);
         String id=null;
-        StringBuilder tag=new StringBuilder();
-        StringBuilder value=new StringBuilder();
-        MapRenderingTypes.getDefault().getAmenityTagValue(o.getType(),o.getSubType(),tag,value);
-        if (RenderingIcons.containsIcon(tag + "_" + value)) {
-          id=tag + "_" + value;
-        }
- else         if (RenderingIcons.containsIcon(tag.toString())) {
-          id=tag.toString();
+        PoiType st=o.getType().getPoiTypeByKeyName(o.getSubType());
+        if (st != null) {
+          if (RenderingIcons.containsIcon(st.getKeyName())) {
+            id=st.getKeyName();
+          }
+ else           if (RenderingIcons.containsIcon(st.getOsmTag() + "_" + st.getOsmValue())) {
+            id=st.getOsmTag() + "_" + st.getOsmValue();
+          }
+ else           if (RenderingIcons.containsIcon(st.getOsmValue())) {
+            id=st.getOsmValue();
+          }
         }
         if (id != null) {
           Bitmap bmp=RenderingIcons.getIcon(view.getContext(),id);

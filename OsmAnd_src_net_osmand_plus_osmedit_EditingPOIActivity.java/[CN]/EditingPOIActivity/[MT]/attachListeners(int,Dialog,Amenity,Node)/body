@@ -22,11 +22,11 @@
     @Override public void afterTextChanged(    Editable s){
       String str=s.toString();
       a.setSubType(str);
-      AmenityType t=MapRenderingTypes.getDefault().getAmenityNameToType().get(str);
-      if (t != null && a.getType() != t) {
-        a.setType(t);
-        typeButton.setText(OsmAndFormatter.toPublicString(t,ctx.getMyApplication()));
-        updateSubTypesAdapter(t);
+      PoiType st=allTranslatedSubTypes.get(str);
+      if (st != null && a.getType() != st.getCategory() && st.getCategory() != null) {
+        a.setType(st.getCategory());
+        typeButton.setText(st.getCategory().getTranslation());
+        updateSubTypesAdapter(st.getCategory());
       }
     }
     @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
@@ -84,11 +84,17 @@
       Resources resources=v.getResources();
       final String msg=n.getId() == -1 ? resources.getString(R.string.poi_action_add) : resources.getString(R.string.poi_action_change);
       OsmPoint.Action action=n.getId() == -1 ? OsmPoint.Action.CREATE : OsmPoint.Action.MODIFY;
-      StringBuilder tag=new StringBuilder();
-      StringBuilder value=new StringBuilder();
       String subType=typeText.getText().toString();
-      MapRenderingTypes.getDefault().getAmenityTagValue(a.getType(),subType,tag,value);
-      n.putTag(tag.toString(),value.toString());
+      if (allTranslatedSubTypes.get(subType) != null) {
+        PoiType pt=allTranslatedSubTypes.get(subType);
+        n.putTag(pt.getOsmTag(),pt.getOsmValue());
+        if (pt.getOsmTag2() != null) {
+          n.putTag(pt.getOsmTag2(),pt.getOsmValue2());
+        }
+      }
+ else {
+        n.putTag(a.getType().getDefaultTag(),subType);
+      }
       String name=nameText.getText().toString();
       if (name.length() > 0) {
         n.putTag(OSMTagKey.NAME.getValue(),name);
