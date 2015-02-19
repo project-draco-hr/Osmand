@@ -22,6 +22,8 @@
   item=optionsMenu.getMenu().add(R.string.search_shown_on_map).setIcon(light ? R.drawable.ic_action_map_marker_light : R.drawable.ic_action_map_marker_dark);
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
+      getMyApplication().getSettings().setMapLocationToShow(recording.getLatitude(),recording.getLongitude(),15,null,recording.getName(),recording);
+      MapActivity.launchMapActivityMoveToTop(getActivity());
       return true;
     }
   }
@@ -29,6 +31,23 @@
   item=optionsMenu.getMenu().add(R.string.share_fav).setIcon(light ? R.drawable.ic_action_gshare_light : R.drawable.ic_action_gshare_dark);
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
+      Intent sharingIntent=new Intent(Intent.ACTION_SEND);
+      if (recording.isPhoto()) {
+        Uri screenshotUri=Uri.parse(recording.file.getAbsolutePath());
+        sharingIntent.setType("image/*");
+        sharingIntent.putExtra(Intent.EXTRA_STREAM,screenshotUri);
+      }
+ else       if (recording.isAudio()) {
+        Uri audioUri=Uri.parse(recording.file.getAbsolutePath());
+        sharingIntent.setType("audio/*");
+        sharingIntent.putExtra(Intent.EXTRA_STREAM,audioUri);
+      }
+ else       if (recording.isVideo()) {
+        Uri videoUri=Uri.parse(recording.file.getAbsolutePath());
+        sharingIntent.setType("video/*");
+        sharingIntent.putExtra(Intent.EXTRA_STREAM,videoUri);
+      }
+      startActivity(Intent.createChooser(sharingIntent,getString(R.string.share_note)));
       return true;
     }
   }
@@ -36,6 +55,7 @@
   item=optionsMenu.getMenu().add(R.string.local_index_mi_rename).setIcon(light ? R.drawable.ic_action_edit_light : R.drawable.ic_action_edit_dark);
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
+      editNote(recording);
       return true;
     }
   }
@@ -43,7 +63,17 @@
   item=optionsMenu.getMenu().add(R.string.recording_context_menu_delete).setIcon(light ? R.drawable.ic_action_delete_light : R.drawable.ic_action_delete_dark);
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
-      plugin.deleteRecording(recording);
+      AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
+      builder.setMessage(R.string.recording_delete_confirm);
+      builder.setPositiveButton(R.string.default_buttons_yes,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          plugin.deleteRecording(recording);
+          listAdapter.remove(recording);
+        }
+      }
+);
+      builder.setNegativeButton(R.string.default_buttons_cancel,null);
+      builder.show();
       return true;
     }
   }
