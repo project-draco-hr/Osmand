@@ -31,6 +31,23 @@
   item=optionsMenu.getMenu().add(R.string.share_fav).setIcon(light ? R.drawable.ic_action_gshare_light : R.drawable.ic_action_gshare_dark);
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
+      Intent sharingIntent=new Intent(Intent.ACTION_SEND);
+      if (recording.isPhoto()) {
+        Uri screenshotUri=Uri.parse(recording.file.getAbsolutePath());
+        sharingIntent.setType("image/*");
+        sharingIntent.putExtra(Intent.EXTRA_STREAM,screenshotUri);
+      }
+ else       if (recording.isAudio()) {
+        Uri audioUri=Uri.parse(recording.file.getAbsolutePath());
+        sharingIntent.setType("audio/*");
+        sharingIntent.putExtra(Intent.EXTRA_STREAM,audioUri);
+      }
+ else       if (recording.isVideo()) {
+        Uri videoUri=Uri.parse(recording.file.getAbsolutePath());
+        sharingIntent.setType("video/*");
+        sharingIntent.putExtra(Intent.EXTRA_STREAM,videoUri);
+      }
+      startActivity(Intent.createChooser(sharingIntent,getString(R.string.share_note)));
       return true;
     }
   }
