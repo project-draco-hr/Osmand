@@ -5,15 +5,21 @@
     row=inflater.inflate(R.layout.note,parent,false);
   }
   final AudioVideoNotesPlugin.Recording recording=getItem(position);
-  if (recording.getName() != null) {
-    ((TextView)row.findViewById(R.id.name)).setText(recording.getName());
-    ((TextView)row.findViewById(R.id.descr)).setText(recording.getDescription(getActivity()));
-    row.findViewById(R.id.descr).setVisibility(View.VISIBLE);
+  String name=recording.getName();
+  TextView nameText=((TextView)row.findViewById(R.id.name));
+  if (name != null) {
+    nameText.setText(name);
   }
- else {
-    ((TextView)row.findViewById(R.id.name)).setText(recording.getDescription(getActivity()));
-    row.findViewById(R.id.descr).setVisibility(View.GONE);
+ else   if (recording.isAudio()) {
+    nameText.setText(R.string.audio);
   }
+ else   if (recording.isVideo()) {
+    nameText.setText(R.string.video);
+  }
+ else   if (recording.isPhoto()) {
+    nameText.setText(R.string.photo);
+  }
+  ((TextView)row.findViewById(R.id.descr)).setText(recording.getDescription(getActivity()));
   ImageView icon=(ImageView)row.findViewById(R.id.icon);
   if (recording.isAudio()) {
     icon.setImageResource(R.drawable.ic_type_audio);
@@ -28,6 +34,12 @@
   options.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       openPopUpMenu(v,recording);
+    }
+  }
+);
+  row.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      showOnMap(recording);
     }
   }
 );
