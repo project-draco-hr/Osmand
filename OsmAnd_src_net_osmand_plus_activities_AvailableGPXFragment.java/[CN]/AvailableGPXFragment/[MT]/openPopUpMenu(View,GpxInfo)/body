@@ -17,13 +17,17 @@
     }
   }
 );
-  item=optionsMenu.getMenu().add(R.string.export).setIcon(light ? R.drawable.ic_action_gup_light : R.drawable.ic_action_gup_dark);
-  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
-    @Override public boolean onMenuItemClick(    MenuItem item){
-      return true;
+  final OsmEditingPlugin osmEditingPlugin=OsmandPlugin.getEnabledPlugin(OsmEditingPlugin.class);
+  if (osmEditingPlugin != null && osmEditingPlugin.isActive()) {
+    item=optionsMenu.getMenu().add(R.string.export).setIcon(light ? R.drawable.ic_action_gup_light : R.drawable.ic_action_gup_dark);
+    item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+      @Override public boolean onMenuItemClick(      MenuItem item){
+        osmEditingPlugin.sendGPXFiles(getActivity(),AvailableGPXFragment.this,gpxInfo);
+        return true;
+      }
     }
-  }
 );
+  }
   item=optionsMenu.getMenu().add(R.string.edit_filter_delete_menu_item).setIcon(light ? R.drawable.ic_action_delete_light : R.drawable.ic_action_delete_dark);
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
