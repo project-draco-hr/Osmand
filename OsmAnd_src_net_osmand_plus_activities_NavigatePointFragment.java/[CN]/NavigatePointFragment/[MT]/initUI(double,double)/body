@@ -1,5 +1,4 @@
 {
-  currentFormat=Location.FORMAT_DEGREES;
   showCurrentFormat(new LatLon(latitude,longitude));
   final Spinner format=((Spinner)view.findViewById(R.id.Format));
   ArrayAdapter<String> adapter=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_item,new String[]{getString(R.string.navigate_point_format_D),getString(R.string.navigate_point_format_DM),getString(R.string.navigate_point_format_DMS),"UTM"});
@@ -11,20 +10,21 @@
       int newFormat=currentFormat;
       String itm=(String)format.getItemAtPosition(position);
       if (getString(R.string.navigate_point_format_D).equals(itm)) {
-        newFormat=Location.FORMAT_DEGREES;
+        newFormat=PointDescription.FORMAT_DEGREES;
       }
  else       if (getString(R.string.navigate_point_format_DM).equals(itm)) {
-        newFormat=Location.FORMAT_MINUTES;
+        newFormat=PointDescription.FORMAT_MINUTES;
       }
  else       if (getString(R.string.navigate_point_format_DMS).equals(itm)) {
-        newFormat=Location.FORMAT_SECONDS;
+        newFormat=PointDescription.FORMAT_SECONDS;
       }
- else       if (position == UTM_FORMAT) {
-        newFormat=UTM_FORMAT;
+ else       if (position == PointDescription.UTM_FORMAT) {
+        newFormat=PointDescription.UTM_FORMAT;
       }
       try {
         LatLon loc=parseLocation();
         currentFormat=newFormat;
+        app.getSettings().COORDINATES_FORMAT.set(currentFormat);
         view.findViewById(R.id.ValidateTextView).setVisibility(View.INVISIBLE);
         showCurrentFormat(loc);
       }

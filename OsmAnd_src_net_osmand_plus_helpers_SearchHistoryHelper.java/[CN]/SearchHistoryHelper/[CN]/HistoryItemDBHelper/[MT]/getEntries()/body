@@ -3,11 +3,25 @@
   SQLiteConnection db=openConnection(true);
   if (db != null) {
     try {
-      SQLiteCursor query=db.rawQuery("SELECT " + HISTORY_COL_NAME + ", "+ HISTORY_COL_LAT+ ","+ HISTORY_COL_LON+ " FROM "+ HISTORY_TABLE_NAME+ " ORDER BY "+ HISTORY_COL_TIME+ " DESC",null);
+      SQLiteCursor query=db.rawQuery("SELECT " + HISTORY_COL_NAME + ", "+ HISTORY_COL_LAT+ ","+ HISTORY_COL_LON+ ", "+ HISTORY_COL_TIME+ ", "+ HISTORY_COL_FREQ_INTERVALS+ ", "+ HISTORY_COL_FREQ_VALUES+ " FROM "+ HISTORY_TABLE_NAME,null);
+      Map<String,HistoryEntry> st=new TreeMap<String,HistoryEntry>();
       if (query.moveToFirst()) {
         do {
-          HistoryEntry e=new HistoryEntry(query.getDouble(1),query.getDouble(2),query.getString(0));
+          String name=query.getString(0);
+          HistoryEntry prev=st.get(name);
+          HistoryEntry e=new HistoryEntry(query.getDouble(1),query.getDouble(2),PointDescription.deserializeFromString(name));
+          long time=query.getLong(3);
+          e.setLastAccessTime(time);
+          e.setFrequency(query.getString(4),query.getString(5));
+          if (prev != null) {
+            entries.remove(prev);
+          }
+          if (prev != null || !Algorithms.objectEquals(name,e.getSerializedName())) {
+            removeQuery(name,db);
+            insert(e,db);
+          }
           entries.add(e);
+          st.put(name,e);
         }
  while (query.moveToNext());
       }
