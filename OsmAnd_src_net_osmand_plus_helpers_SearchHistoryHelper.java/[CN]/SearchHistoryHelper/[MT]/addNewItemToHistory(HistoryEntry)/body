@@ -1,0 +1,20 @@
+{
+  HistoryItemDBHelper helper=checkLoadedEntries();
+  if (mp.containsKey(model.getName())) {
+    model=mp.get(model.getName());
+    model.markAsAccessed(System.currentTimeMillis());
+    helper.update(model);
+  }
+ else {
+    loadedEntries.add(model);
+    mp.put(model.getName(),model);
+    model.markAsAccessed(System.currentTimeMillis());
+    helper.add(model);
+  }
+  Collections.sort(loadedEntries,historyEntryComparator);
+  if (loadedEntries.size() > HISTORY_LIMIT) {
+    if (helper.remove(loadedEntries.get(loadedEntries.size() - 1))) {
+      loadedEntries.remove(loadedEntries.size() - 1);
+    }
+  }
+}
