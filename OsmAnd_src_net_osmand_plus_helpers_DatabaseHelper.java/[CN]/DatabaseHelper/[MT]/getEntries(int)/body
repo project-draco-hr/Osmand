@@ -1,5 +1,5 @@
 {
-  List<HistoryEntry> entries=new ArrayList<HistoryEntry>();
+  List<HistoryDownloadEntry> entries=new ArrayList<HistoryDownloadEntry>();
   SQLiteAPI.SQLiteConnection db=openConnection(true);
   if (db != null) {
     try {
@@ -8,19 +8,16 @@ switch (type) {
 case DOWNLOAD_ENTRY:
         query=db.rawQuery("SELECT " + HISTORY_COL_NAME + " FROM "+ DOWNLOADS_TABLE_NAME+ " ORDER BY "+ HISTORY_COL_COUNT+ " DESC",null);
       break;
-case FAVORITES_ENTRY:
-    query=db.rawQuery("SELECT " + HISTORY_COL_NAME + " FROM "+ FAVORITES_TABLE_NAME+ " ORDER BY "+ HISTORY_COL_COUNT+ " DESC",null);
-  break;
 default :
-query=null;
-break;
+    query=null;
+  break;
 }
 if (query != null) {
 if (query.moveToFirst()) {
-do {
-HistoryEntry e=new HistoryEntry(query.getString(0),query.getInt(1));
-entries.add(e);
-}
+  do {
+    HistoryDownloadEntry e=new HistoryDownloadEntry(query.getString(0),query.getInt(1));
+    entries.add(e);
+  }
  while (query.moveToNext());
 }
 query.close();
