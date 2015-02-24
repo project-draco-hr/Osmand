@@ -1,12 +1,19 @@
 {
-  if (recording.getName() != null) {
-    ((TextView)view.findViewById(R.id.name)).setText(recording.getName());
-    ((TextView)view.findViewById(R.id.descr)).setText(recording.getDescription(ctx));
+  String name=recording.getName();
+  TextView nameText=((TextView)view.findViewById(R.id.name));
+  if (name != null) {
+    nameText.setText(name);
   }
- else {
-    ((TextView)view.findViewById(R.id.name)).setText(recording.getDescription(ctx));
-    view.findViewById(R.id.descr).setVisibility(View.GONE);
+ else   if (recording.isAudio()) {
+    nameText.setText(R.string.audio);
   }
+ else   if (recording.isVideo()) {
+    nameText.setText(R.string.video);
+  }
+ else   if (recording.isPhoto()) {
+    nameText.setText(R.string.photo);
+  }
+  ((TextView)view.findViewById(R.id.descr)).setText(recording.getDescription(ctx));
   ImageView icon=(ImageView)view.findViewById(R.id.icon);
   if (recording.isAudio()) {
     icon.setImageResource(R.drawable.ic_type_audio);
@@ -17,10 +24,4 @@
  else {
     icon.setImageResource(R.drawable.ic_type_img);
   }
-  view.findViewById(R.id.play).setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      plugin.playRecording(ctx,recording);
-    }
-  }
-);
 }
