@@ -4,11 +4,22 @@
   final View v=getActivity().getLayoutInflater().inflate(R.layout.note_edit_dialog,getListView(),false);
   final EditText editText=(EditText)v.findViewById(R.id.name);
   builder.setView(v);
-  editText.setText(recording.getName());
+  String fileName=recording.getName();
+  int extInd=recording.getName().lastIndexOf(".");
+  final String extension;
+  if (extInd >= 0) {
+    extension=fileName.substring(extInd,fileName.length());
+  }
+ else {
+    extension="";
+  }
+  editText.setText(recording.getName().substring(0,extInd));
   builder.setNegativeButton(R.string.default_buttons_cancel,null);
   builder.setPositiveButton(R.string.default_buttons_apply,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      recording.setName(editText.getText().toString());
+      if (!recording.setName(editText.getText().toString() + extension)) {
+        Toast.makeText(getActivity(),R.string.rename_failed,Toast.LENGTH_SHORT).show();
+      }
       recording.setDescription();
       listAdapter.notifyDataSetInvalidated();
     }
