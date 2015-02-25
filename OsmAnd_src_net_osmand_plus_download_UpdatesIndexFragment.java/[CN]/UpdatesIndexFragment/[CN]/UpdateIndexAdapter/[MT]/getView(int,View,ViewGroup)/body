@@ -6,6 +6,7 @@
   }
   TextView name=(TextView)v.findViewById(R.id.download_item);
   TextView description=(TextView)v.findViewById(R.id.download_descr);
+  TextView updateDescr=(TextView)v.findViewById(R.id.update_descr);
   final CheckBox ch=(CheckBox)v.findViewById(R.id.check_download_item);
   IndexItem e=items.get(position);
   if (e.getFileName().equals(getString(R.string.everything_up_to_date))) {
@@ -22,6 +23,20 @@
   name.setText(eName.trim().replace('\n',' ').replace("TTS",""));
   String d=getMapDescription(e);
   description.setText(d);
+  String sfName=e.getTargetFileName();
+  Map<String,String> indexActivatedFileNames=getMyApplication().getResourceManager().getIndexFileNames();
+  String dt=indexActivatedFileNames.get(sfName);
+  updateDescr.setText("");
+  if (dt != null) {
+    try {
+      Date tm=format.parse(dt);
+      long days=Math.max(1,(e.getTimestamp() - tm.getTime()) / (24 * 60 * 60* 1000) + 1);
+      updateDescr.setText(days + " " + getString(R.string.days_behind));
+    }
+ catch (    ParseException e1) {
+      e1.printStackTrace();
+    }
+  }
   ch.setChecked(getDownloadActivity().getEntriesToDownload().containsKey(e));
   ch.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){

@@ -13,36 +13,20 @@
       }
     }
   }
-  if (!hasGpx) {
-    setContentView(R.layout.search_activity_single);
-    getSupportFragmentManager().beginTransaction().add(R.id.layout,new FavoritesTreeFragment()).commit();
-  }
- else {
-    setContentView(R.layout.tab_content);
-    PagerSlidingTabStrip mSlidingTabLayout=(PagerSlidingTabStrip)findViewById(R.id.sliding_tabs);
-    OsmandSettings settings=((OsmandApplication)getApplication()).getSettings();
-    Integer tab=settings.FAVORITES_TAB.get();
-    ViewPager mViewPager=(ViewPager)findViewById(R.id.pager);
-    List<TabItem> mTabs=new ArrayList<TabItem>();
-    mTabs.add(getTabIndicator(R.string.my_favorites,FavoritesTreeFragment.class));
-    AudioVideoNotesPlugin audioVideoNotesPlugin=OsmandPlugin.getEnabledPlugin(AudioVideoNotesPlugin.class);
-    if (audioVideoNotesPlugin != null && audioVideoNotesPlugin.isActive() && audioVideoNotesPlugin.getAllRecordings().size() > 0) {
-      mTabs.add(getTabIndicator(R.string.notes,NotesFragment.class));
-    }
+  setContentView(R.layout.tab_content);
+  PagerSlidingTabStrip mSlidingTabLayout=(PagerSlidingTabStrip)findViewById(R.id.sliding_tabs);
+  OsmandSettings settings=((OsmandApplication)getApplication()).getSettings();
+  ViewPager mViewPager=(ViewPager)findViewById(R.id.pager);
+  List<TabItem> mTabs=new ArrayList<TabItem>();
+  mTabs.add(getTabIndicator(R.string.my_favorites,FavoritesTreeFragment.class));
+  if (hasGpx) {
     mTabs.add(getTabIndicator(R.string.my_tracks,AvailableGPXFragment.class));
     mTabs.add(getTabIndicator(R.string.selected_track,SelectedGPXFragment.class));
-    setViewPagerAdapter(mViewPager,mTabs);
-    mSlidingTabLayout.setViewPager(mViewPager);
-    Intent intent=getIntent();
-    if (intent != null) {
-      int tt=intent.getIntExtra(TAB_PARAM,-1);
-      if (tt >= 0) {
-        mViewPager.setCurrentItem(tt);
-      }
-    }
- else {
-      mViewPager.setCurrentItem(tab);
-    }
-    updateSelectedTracks();
   }
+  OsmandPlugin.addMyPlacesTabPlugins(this,mTabs,getIntent());
+  Integer tab=settings.FAVORITES_TAB.get();
+  setViewPagerAdapter(mViewPager,mTabs);
+  mSlidingTabLayout.setViewPager(mViewPager);
+  mViewPager.setCurrentItem(tab);
+  updateSelectedTracks();
 }
