@@ -3,12 +3,21 @@
   try {
     ResourceManager rm=app.getResourceManager();
     String tileFilename=rm.calculateTileId(tileSource,tileId.getX(),tileId.getY(),zoom.swigValue());
-    if (!rm.tileExistOnFileSystem(tileFilename,tileSource,tileId.getX(),tileId.getY(),zoom.swigValue())) {
-      Bitmap loadedBitmap=null;
-      while (loadedBitmap == null) {
-        loadedBitmap=rm.getTileImageForMapSync(tileFilename,tileSource,tileId.getX(),tileId.getY(),zoom.swigValue(),true);
+    final TileReadyCallback tileReadyCallback=new TileReadyCallback(tileSource,tileId.getX(),tileId.getY(),zoom.swigValue());
+    rm.getMapTileDownloader().addDownloaderCallback(tileReadyCallback);
+    while (rm.getTileImageForMapAsync(tileFilename,tileSource,tileId.getX(),tileId.getY(),zoom.swigValue(),true) == null) {
+synchronized (tileReadyCallback.getSync()) {
+        if (tileReadyCallback.isReady()) {
+          break;
+        }
+        try {
+          tileReadyCallback.getSync().wait(250);
+        }
+ catch (        InterruptedException e) {
+        }
       }
     }
+    rm.getMapTileDownloader().removeDownloaderCallback(tileReadyCallback);
     image=tileSource.getBytes(tileId.getX(),tileId.getY(),zoom.swigValue(),app.getAppPath(IndexConstants.TILES_INDEX_DIR).getAbsolutePath());
   }
  catch (  IOException e) {
