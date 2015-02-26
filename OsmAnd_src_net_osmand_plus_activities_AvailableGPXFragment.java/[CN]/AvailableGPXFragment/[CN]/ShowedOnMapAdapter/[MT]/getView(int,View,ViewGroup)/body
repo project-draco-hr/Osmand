@@ -4,7 +4,7 @@
     LayoutInflater inflater=getActivity().getLayoutInflater();
     v=inflater.inflate(R.layout.dash_gpx_track_item,parent,false);
   }
-  GpxInfo gpxInfo=getItem(position);
+  final GpxInfo gpxInfo=getItem(position);
   TextView viewName=((TextView)v.findViewById(R.id.name));
   viewName.setText(gpxInfo.getName());
   v.findViewById(R.id.show_on_map).setVisibility(View.GONE);
@@ -17,7 +17,25 @@
     String distnace=description.substring(startindex + 1,endindex);
     ((TextView)v.findViewById(R.id.distance)).setText(distnace);
   }
-  CompoundButton check=(CompoundButton)v.findViewById(R.id.check);
+  final CompoundButton check=(CompoundButton)v.findViewById(R.id.check_item);
   check.setVisibility(View.VISIBLE);
+  if (selectedGpxHelper.getSelectedFileByName(gpxInfo.getFileName()) != null) {
+    check.setChecked(true);
+  }
+ else {
+    check.setChecked(false);
+  }
+  check.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (gpxInfo.gpx == null) {
+        loadGpxAsync(gpxInfo,check.isChecked());
+      }
+ else {
+        selectedGpxHelper.selectGpxFile(gpxInfo.gpx,check.isChecked(),true);
+      }
+      allGpxAdapter.notifyDataSetChanged();
+    }
+  }
+);
   return v;
 }
