@@ -4,12 +4,16 @@
   DirectionsDialogs.setupPopUpMenuIcon(optionsMenu);
   MenuItem item;
   boolean isPhoto=recording.isPhoto();
-  final int playIcon;
+  Drawable playIcon;
   if (isPhoto) {
-    playIcon=light ? R.drawable.ic_action_eye_light : R.drawable.ic_action_eye_dark;
+    playIcon=getResources().getDrawable(R.drawable.ic_action_view);
+    if (light) {
+      playIcon=playIcon.mutate();
+      playIcon.setColorFilter(getResources().getColor(R.color.icon_color_light),Mode.MULTIPLY);
+    }
   }
  else {
-    playIcon=light ? R.drawable.ic_play_light : R.drawable.ic_play_dark;
+    playIcon=getResources().getDrawable(light ? R.drawable.ic_play_light : R.drawable.ic_play_dark);
   }
   item=optionsMenu.getMenu().add(isPhoto ? R.string.watch : R.string.recording_context_menu_play).setIcon(playIcon);
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
@@ -19,7 +23,12 @@
     }
   }
 );
-  item=optionsMenu.getMenu().add(R.string.search_shown_on_map).setIcon(light ? R.drawable.ic_action_map_marker_light : R.drawable.ic_action_map_marker_dark);
+  Drawable showOnMap=getResources().getDrawable(R.drawable.ic_show_on_map);
+  if (light) {
+    showOnMap=showOnMap.mutate();
+    showOnMap.setColorFilter(getResources().getColor(R.color.icon_color_light),Mode.MULTIPLY);
+  }
+  item=optionsMenu.getMenu().add(R.string.search_shown_on_map).setIcon(showOnMap);
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
       showOnMap(recording);
