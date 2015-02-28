@@ -1,10 +1,15 @@
 {
-  int index=file.getAbsolutePath().lastIndexOf("/") + 1;
-  if (index < 0) {
-    return false;
+  File directory=file.getParentFile();
+  String fileName=getFileName();
+  final String hashAndExtension;
+  int hashInd=fileName.lastIndexOf('_');
+  if (hashInd == -1) {
+    hashAndExtension="_" + fileName;
   }
-  File directory=new File(file.getAbsolutePath().substring(0,index));
-  File to=new File(directory,name.trim());
+ else {
+    hashAndExtension=fileName.substring(hashInd,fileName.length());
+  }
+  File to=new File(directory,name + hashAndExtension);
   if (file.renameTo(to)) {
     file=to;
     return true;
