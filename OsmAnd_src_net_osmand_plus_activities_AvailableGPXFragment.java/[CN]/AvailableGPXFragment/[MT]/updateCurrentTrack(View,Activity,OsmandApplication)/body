@@ -1,0 +1,45 @@
+{
+  if (v == null) {
+    return;
+  }
+  final OsmandMonitoringPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
+  final boolean isRecording=app.getSettings().SAVE_GLOBAL_TRACK_TO_GPX.get();
+  Drawable icon=app.getResources().getDrawable(isRecording ? R.drawable.ic_action_rec_stop : R.drawable.ic_play_dark).mutate();
+  if (app.getSettings().isLightContent()) {
+    icon.setColorFilter(app.getResources().getColor(R.color.icon_color_light),PorterDuff.Mode.MULTIPLY);
+  }
+  if (isRecording) {
+    v.findViewById(R.id.show_on_map).setVisibility(View.VISIBLE);
+  }
+ else {
+    v.findViewById(R.id.show_on_map).setVisibility(View.GONE);
+  }
+  ImageButton stop=((ImageButton)v.findViewById(R.id.stop));
+  stop.setImageDrawable(icon);
+  stop.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (isRecording) {
+        final OsmandMonitoringPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
+        plugin.stopRecording();
+      }
+ else {
+        plugin.startGPXMonitoring(ctx);
+      }
+    }
+  }
+);
+  if (isRecording) {
+    GpxSelectionHelper.SelectedGpxFile currentTrack=app.getSavingTrackHelper().getCurrentTrack();
+    String description=GpxUiHelper.getDescription(app,currentTrack.getGpxFile(),null,true);
+    int startindex=description.indexOf(">");
+    int endindex=description.indexOf("</font>");
+    String distance=description.substring(startindex + 1,endindex);
+    String points=String.valueOf(currentTrack.getGpxFile().points.size());
+    ((TextView)v.findViewById(R.id.points_count)).setText(points);
+    ((TextView)v.findViewById(R.id.distance)).setText(distance);
+  }
+ else {
+    v.findViewById(R.id.points_count).setVisibility(View.GONE);
+    v.findViewById(R.id.distance).setVisibility(View.GONE);
+  }
+}
