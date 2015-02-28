@@ -3,46 +3,10 @@
   final GpxInfo child=getChild(groupPosition,childPosition);
   if (v == null) {
     LayoutInflater inflater=getActivity().getLayoutInflater();
-    v=inflater.inflate(net.osmand.plus.R.layout.local_index_list_item,parent,false);
+    v=inflater.inflate(R.layout.dash_gpx_track_item,parent,false);
   }
-  TextView viewName=((TextView)v.findViewById(R.id.local_index_name));
-  viewName.setText(child.getName());
-  if (child.isCorrupted()) {
-    viewName.setTextColor(corruptedColor);
-    viewName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
-  }
- else   if (selectedGpxHelper.getSelectedFileByName(child.getFileName()) != null) {
-    viewName.setTextColor(okColor);
-    viewName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
-  }
- else {
-    viewName.setTextColor(defaultColor);
-    viewName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
-  }
-  TextView sizeText=(TextView)v.findViewById(R.id.local_index_size);
-  if (child.getSize() >= 0) {
-    String size;
-    if (child.getSize() > 100) {
-      size=formatMb.format(new Object[]{(float)child.getSize() / (1 << 10)});
-    }
- else {
-      size=child.getSize() + " kB";
-    }
-    sizeText.setText(size);
-  }
- else {
-    sizeText.setText("");
-  }
-  TextView descr=((TextView)v.findViewById(R.id.local_index_descr));
-  if (child.isExpanded()) {
-    descr.setVisibility(View.VISIBLE);
-    descr.setText(child.getHtmlDescription());
-    sizeText.setVisibility(View.GONE);
-  }
- else {
-    descr.setVisibility(View.GONE);
-    sizeText.setVisibility(View.VISIBLE);
-  }
+  udpateGpxInfoView(v,child,app,gpxNormal,gpxOnMap,false);
+  ImageView icon=(ImageView)v.findViewById(R.id.icon);
   ImageButton options=(ImageButton)v.findViewById(R.id.options);
   options.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
@@ -52,7 +16,6 @@
 );
   final CheckBox checkbox=(CheckBox)v.findViewById(R.id.check_local_index);
   checkbox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
-  ImageView icon=(ImageView)v.findViewById(R.id.icon);
   if (selectionMode) {
     checkbox.setChecked(selectedItems.contains(child));
     checkbox.setOnClickListener(new View.OnClickListener(){
