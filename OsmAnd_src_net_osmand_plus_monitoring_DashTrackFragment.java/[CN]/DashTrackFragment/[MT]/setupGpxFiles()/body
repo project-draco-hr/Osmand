@@ -1,7 +1,32 @@
 {
   View mainView=getView();
   final File dir=getMyApplication().getAppPath(IndexConstants.GPX_INDEX_DIR);
-  final List<String> list=GpxUiHelper.getSortedGPXFilenames(dir);
+  final OsmandApplication app=getMyApplication();
+  SavingTrackHelper savingTrackHelper=app.getSavingTrackHelper();
+  final List<String> list=new ArrayList<String>();
+  for (  SelectedGpxFile sg : app.getSelectedGpxHelper().getSelectedGPXFiles()) {
+    if (!sg.isShowCurrentTrack()) {
+      GPXFile gpxFile=sg.getGpxFile();
+      if (gpxFile != null) {
+        list.add(gpxFile.path);
+      }
+    }
+  }
+  int totalCount=3 + list.size() / 2;
+  if (app.getSettings().SAVE_GLOBAL_TRACK_TO_GPX.get()) {
+    totalCount--;
+  }
+  if (list.size() < totalCount) {
+    final List<String> res=GpxUiHelper.getSortedGPXFilenamesByDate(dir);
+    for (    String r : res) {
+      if (!list.contains(r)) {
+        list.add(r);
+        if (list.size() >= totalCount) {
+          break;
+        }
+      }
+    }
+  }
   if (list.size() == 0) {
     (mainView.findViewById(R.id.main_fav)).setVisibility(View.GONE);
     return;
@@ -11,15 +36,7 @@
   }
   LinearLayout tracks=(LinearLayout)mainView.findViewById(R.id.items);
   tracks.removeAllViews();
-  if (list.size() > 3) {
-    while (list.size() != 3) {
-      list.remove(3);
-    }
-  }
-  final OsmandApplication app=getMyApplication();
-  SavingTrackHelper savingTrackHelper=app.getSavingTrackHelper();
   if (app.getSettings().SAVE_GLOBAL_TRACK_TO_GPX.get()) {
-    list.remove(2);
     LayoutInflater inflater=getActivity().getLayoutInflater();
     View view=inflater.inflate(R.layout.dash_gpx_track_item,null,false);
     AvailableGPXFragment.createCurrentTrackView(view,app);
@@ -32,15 +49,8 @@
   }
   for (  String filename : list) {
     final File f=new File(dir,filename);
-    boolean haveInfo=false;
-    GpxSelectionHelper.SelectedGpxFile selectedGpxFile=app.getSelectedGpxHelper().getSelectedFileByPath(f.getAbsolutePath());
-    GPXUtilities.GPXTrackAnalysis trackAnalysis=null;
-    if (selectedGpxFile != null) {
-      trackAnalysis=selectedGpxFile.getTrackAnalysis();
-    }
     AvailableGPXFragment.GpxInfo info=new AvailableGPXFragment.GpxInfo();
     info.subfolder="";
-    info.setAnalysis(trackAnalysis);
     info.file=f;
     LayoutInflater inflater=getActivity().getLayoutInflater();
     View view=inflater.inflate(R.layout.dash_gpx_track_item,null,false);
