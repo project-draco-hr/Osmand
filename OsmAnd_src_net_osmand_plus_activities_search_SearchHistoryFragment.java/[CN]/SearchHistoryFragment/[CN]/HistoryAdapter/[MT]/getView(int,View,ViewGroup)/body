@@ -10,16 +10,38 @@
   ImageView arrow=(ImageView)row.findViewById(R.id.direction);
   arrow.setImageDrawable(arrowImage);
   ImageButton options=(ImageButton)row.findViewById(R.id.options);
-  final HistoryEntry model=getItem(position);
+  final HistoryEntry historyEntry=getItem(position);
   if (location != null) {
-    int dist=(int)(MapUtils.getDistance(location,model.getLat(),model.getLon()));
+    int dist=(int)(MapUtils.getDistance(location,historyEntry.getLat(),historyEntry.getLon()));
     distance=OsmAndFormatter.getFormattedDistance(dist,(OsmandApplication)getActivity().getApplication()) + "  ";
   }
   distanceText.setText(distance);
-  nameText.setText(model.getName().getName(),BufferType.SPANNABLE);
+  nameText.setText(historyEntry.getName().getName(),BufferType.SPANNABLE);
+  ImageView icon=((ImageView)row.findViewById(R.id.icon));
+  if (historyEntry.getName().isAddress()) {
+    icon.setImageDrawable(addressIcon);
+  }
+ else   if (historyEntry.getName().isFavorite()) {
+    icon.setImageDrawable(favoriteIcon);
+  }
+ else   if (historyEntry.getName().isLocation()) {
+    icon.setImageDrawable(locationIcon);
+  }
+ else   if (historyEntry.getName().isPoi()) {
+    icon.setImageDrawable(poiIcon);
+  }
+ else   if (historyEntry.getName().isWpt()) {
+    icon.setImageDrawable(wptIcon);
+  }
+ else   if (historyEntry.getName().isAvNote()) {
+    icon.setImageDrawable(noteIcon);
+  }
+ else {
+    icon.setImageDrawable(addressIcon);
+  }
   options.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      selectModel(model,v);
+      selectModel(historyEntry,v);
     }
   }
 );
