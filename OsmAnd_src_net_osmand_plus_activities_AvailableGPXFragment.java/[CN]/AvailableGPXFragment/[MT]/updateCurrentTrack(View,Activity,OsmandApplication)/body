@@ -2,7 +2,6 @@
   if (v == null) {
     return;
   }
-  final OsmandMonitoringPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
   final boolean isRecording=app.getSettings().SAVE_GLOBAL_TRACK_TO_GPX.get();
   Drawable icon=app.getResources().getDrawable(isRecording ? R.drawable.ic_action_rec_stop : R.drawable.ic_play_dark).mutate();
   if (app.getSettings().isLightContent()) {
@@ -18,8 +17,8 @@
   stop.setImageDrawable(icon);
   stop.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
+      final OsmandMonitoringPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
       if (isRecording) {
-        final OsmandMonitoringPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
         plugin.stopRecording();
       }
  else {
@@ -28,18 +27,11 @@
     }
   }
 );
-  if (isRecording) {
-    GpxSelectionHelper.SelectedGpxFile currentTrack=app.getSavingTrackHelper().getCurrentTrack();
-    String description=GpxUiHelper.getDescription(app,currentTrack.getGpxFile(),null,true);
-    int startindex=description.indexOf(">");
-    int endindex=description.indexOf("</font>");
-    String distance=description.substring(startindex + 1,endindex);
-    String points=String.valueOf(currentTrack.getGpxFile().points.size());
-    ((TextView)v.findViewById(R.id.points_count)).setText(points);
-    ((TextView)v.findViewById(R.id.distance)).setText(distance);
-  }
- else {
-    v.findViewById(R.id.points_count).setVisibility(View.GONE);
-    v.findViewById(R.id.distance).setVisibility(View.GONE);
-  }
+  SavingTrackHelper sth=app.getSavingTrackHelper();
+  ((TextView)v.findViewById(R.id.points_count)).setText(sth.getPoints() + "");
+  ((TextView)v.findViewById(R.id.distance)).setText(OsmAndFormatter.getFormattedDistance(sth.getDistance(),app));
+  v.findViewById(R.id.points_count).setVisibility(View.VISIBLE);
+  v.findViewById(R.id.points_icon).setVisibility(View.VISIBLE);
+  v.findViewById(R.id.distance).setVisibility(View.VISIBLE);
+  v.findViewById(R.id.distance_icon).setVisibility(View.VISIBLE);
 }
