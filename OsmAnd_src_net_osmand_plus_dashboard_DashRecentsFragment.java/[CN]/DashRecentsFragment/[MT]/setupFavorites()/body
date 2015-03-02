@@ -1,0 +1,51 @@
+{
+  View mainView=getView();
+  SearchHistoryHelper helper=SearchHistoryHelper.getInstance((OsmandApplication)getActivity().getApplicationContext());
+  points=helper.getHistoryEntries();
+  arrows.clear();
+  if (points.size() == 0) {
+    (mainView.findViewById(R.id.main_fav)).setVisibility(View.GONE);
+    return;
+  }
+ else {
+    (mainView.findViewById(R.id.main_fav)).setVisibility(View.VISIBLE);
+  }
+  LinearLayout favorites=(LinearLayout)mainView.findViewById(R.id.items);
+  favorites.removeAllViews();
+  if (points.size() > 3) {
+    points=points.subList(0,3);
+  }
+  for (  final HistoryEntry point : points) {
+    LayoutInflater inflater=getActivity().getLayoutInflater();
+    View view=inflater.inflate(R.layout.dash_favorites_item,null,false);
+    TextView name=(TextView)view.findViewById(R.id.name);
+    TextView label=(TextView)view.findViewById(R.id.distance);
+    ImageView direction=(ImageView)view.findViewById(R.id.direction);
+    view.findViewById(R.id.group_image).setVisibility(View.GONE);
+    ((ImageView)view.findViewById(R.id.icon)).setImageDrawable(FavoriteImageDrawable.getOrCreate(getActivity(),Color.BLUE));
+    if (loc != null) {
+      direction.setVisibility(View.VISIBLE);
+      updateArrow(getActivity(),loc,new LatLon(point.getLat(),point.getLon()),direction,10,R.drawable.ic_destination_arrow,heading);
+    }
+    arrows.add(direction);
+    name.setText(point.getName().getName());
+    int dist=(int)(MapUtils.getDistance(point.getLat(),point.getLon(),loc.getLatitude(),loc.getLongitude()));
+    String distance=OsmAndFormatter.getFormattedDistance(dist,getMyApplication()) + "  ";
+    view.findViewById(R.id.navigate_to).setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View view){
+        DirectionsDialogs.directionsToDialogAndLaunchMap(getActivity(),point.getLat(),point.getLon(),point.getName());
+      }
+    }
+);
+    label.setText(distance,TextView.BufferType.SPANNABLE);
+    view.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View view){
+        getMyApplication().getSettings().setMapLocationToShow(point.getLat(),point.getLon(),15,point.getName(),true,point);
+        MapActivity.launchMapActivityMoveToTop(getActivity());
+      }
+    }
+);
+    favorites.addView(view);
+  }
+  updateLocation(location);
+}
