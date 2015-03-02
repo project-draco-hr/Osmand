@@ -25,7 +25,7 @@
   addOptionSplit(600,false,options,distanceSplit,timeSplit,checkedItem,model);
   addOptionSplit(900,false,options,distanceSplit,timeSplit,checkedItem,model);
   final CheckBox vis=(CheckBox)view.findViewById(R.id.Visibility);
-  vis.setChecked(true);
+  vis.setChecked(app.getSelectedGpxHelper().getSelectedFileByPath(getGpx().path) != null);
   final Spinner sp=(Spinner)view.findViewById(R.id.Spinner);
   ArrayAdapter<String> adapter=new ArrayAdapter<String>(getMyActivity(),android.R.layout.simple_spinner_item,options);
   adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -37,14 +37,8 @@
   bld.setNegativeButton(R.string.default_buttons_cancel,null);
   bld.setPositiveButton(R.string.default_buttons_ok,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      if (!vis.isChecked()) {
-        app.getSelectedGpxHelper().selectGpxFile(model.getGpx(),false,false);
-        SelectedGPXFragment.this.adapter.setDisplayGroups(selectedGpxHelper.getDisplayGroups());
-        app.getSelectedGpxHelper().runUiListeners();
-      }
- else {
-        updateSplit(model,distanceSplit,timeSplit,sp.getSelectedItemPosition());
-      }
+      app.getSelectedGpxHelper().selectGpxFile(model.getGpx(),vis.isChecked(),true);
+      updateSplit(model,distanceSplit,timeSplit,sp.getSelectedItemPosition());
     }
   }
 );

@@ -1,0 +1,33 @@
+{
+  ((OsmandApplication)getApplication()).applyTheme(this);
+  super.onCreate(icicle);
+  Intent intent=getIntent();
+  if (intent == null || !intent.hasExtra(TRACK_FILE_NAME)) {
+    Log.e("TrackActivity","Required extra '" + TRACK_FILE_NAME + "' is missing");
+    finish();
+    return;
+  }
+  file=new File(intent.getStringExtra(TRACK_FILE_NAME));
+  String fn=file.getName().replace(".gpx","").replace("/"," ").replace("_"," ");
+  getSupportActionBar().setTitle(fn);
+  getSupportActionBar().setElevation(0);
+  setContentView(R.layout.tab_content);
+  PagerSlidingTabStrip mSlidingTabLayout=(PagerSlidingTabStrip)findViewById(R.id.sliding_tabs);
+  final ViewPager mViewPager=(ViewPager)findViewById(R.id.pager);
+  setViewPagerAdapter(mViewPager,new ArrayList<TabActivity.TabItem>());
+  mSlidingTabLayout.setViewPager(mViewPager);
+  new AsyncTask<Void,Void,GPXFile>(){
+    protected void onPreExecute(){
+      setSupportProgressBarIndeterminateVisibility(true);
+    }
+    @Override protected GPXFile doInBackground(    Void... params){
+      return GPXUtilities.loadGPXFile(TrackActivity.this,file);
+    }
+    protected void onPostExecute(    GPXFile result){
+      setSupportProgressBarIndeterminateVisibility(false);
+      setResult(result);
+      ((OsmandFragmentPagerAdapter)mViewPager.getAdapter()).addTab(getTabIndicator(R.string.selected_track,SelectedGPXFragment.class));
+    }
+  }
+.execute((Void)null);
+}
