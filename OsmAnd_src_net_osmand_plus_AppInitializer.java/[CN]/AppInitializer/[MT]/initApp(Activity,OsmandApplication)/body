@@ -1,11 +1,11 @@
 {
   final OsmAndAppCustomization appCustomization=app.getAppCustomization();
   if (app.getSettings().FOLLOW_THE_ROUTE.get() && !app.getRoutingHelper().isRouteCalculated()) {
-    startMapActivity();
+    startMapActivity(activity);
     return false;
   }
   boolean firstTime=false;
-  SharedPreferences pref=getPreferences(MODE_WORLD_WRITEABLE);
+  SharedPreferences pref=activity.getPreferences(Context.MODE_WORLD_WRITEABLE);
   boolean appVersionChanged=false;
   if (!pref.contains(FIRST_TIME_APP_RUN)) {
     firstTime=true;
@@ -18,7 +18,7 @@
   }
   if (appCustomization.showFirstTimeRunAndTips(firstTime,appVersionChanged)) {
     if (firstTime) {
-      applicationInstalledFirstTime();
+      applicationInstalledFirstTime(activity);
     }
  else {
       int i=pref.getInt(TIPS_SHOW,0);
@@ -27,14 +27,14 @@
       }
       if (i == 1 || i == 5 || appVersionChanged) {
         if (TIPS_AND_TRICKS) {
-          TipsAndTricksActivity tipsActivity=new TipsAndTricksActivity(this);
+          TipsAndTricksActivity tipsActivity=new TipsAndTricksActivity(activity);
           Dialog dlg=tipsActivity.getDialogToShowTips(!appVersionChanged,false);
           dlg.show();
         }
  else {
           if (appVersionChanged) {
             final Intent helpIntent=new Intent(activity,HelpActivity.class);
-            helpIntent.putExtra(HelpActivity.TITLE,Version.getAppVersion(getMyApplication()));
+            helpIntent.putExtra(HelpActivity.TITLE,Version.getAppVersion((OsmandApplication)activity.getApplication()));
             helpIntent.putExtra(HelpActivity.URL,LATEST_CHANGES_URL);
             activity.startActivity(helpIntent);
           }
