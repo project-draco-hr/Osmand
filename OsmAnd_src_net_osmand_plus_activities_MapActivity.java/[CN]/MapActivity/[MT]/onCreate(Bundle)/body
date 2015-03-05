@@ -21,7 +21,17 @@
   }
   startProgressDialog=new ProgressDialog(this);
   startProgressDialog.setCancelable(true);
-  app.checkApplicationIsBeingInitialized(this,startProgressDialog);
+  if (getMyApplication().isApplicationInitializing()) {
+    getMyApplication().checkApplicationIsBeingInitialized(this,(TextView)findViewById(R.id.ProgressMessage),(ProgressBar)findViewById(R.id.ProgressBar),new Runnable(){
+      @Override public void run(){
+        applicationInitialized();
+      }
+    }
+);
+  }
+ else {
+    applicationInitialized();
+  }
   parseLaunchIntentLocation();
   if (settings.USE_OPENGL_RENDER.get() && NativeCoreContext.isInit()) {
     ViewStub stub=(ViewStub)findViewById(R.id.atlasMapRendererViewStub);
