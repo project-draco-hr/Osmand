@@ -3,12 +3,15 @@
     if (!NativeCore.isLoaded())     NativeCore.load(CoreResourcesFromAndroidAssetsCustom.loadFromCurrentApplication(app));
     if (NativeCore.isLoaded()) {
       File directory=app.getAppPath("");
-      Logger.get().addLogSink(QIODeviceLogSink.createFileLogSink(directory.getAbsolutePath() + "osmandcore.log"));
+      Logger.get().addLogSink(QIODeviceLogSink.createFileLogSink(directory.getAbsolutePath() + "/osmandcore.log"));
       WindowManager mgr=(WindowManager)app.getSystemService(Context.WINDOW_SERVICE);
       DisplayMetrics dm=new DisplayMetrics();
       mgr.getDefaultDisplay().getMetrics(dm);
       ObfsCollection obfsCollection=new ObfsCollection();
       obfsCollection.addDirectory(directory.getAbsolutePath(),false);
+      if (OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) != null) {
+        obfsCollection.addDirectory(app.getAppPath(IndexConstants.SRTM_INDEX_DIR).getAbsolutePath(),false);
+      }
       mapRendererContext=new MapRendererContext(app,dm.density);
       mapRendererContext.setupObfMap(new MapStylesCollection(),obfsCollection);
       app.getRendererRegistry().setRendererLoadedEventListener(mapRendererContext);
