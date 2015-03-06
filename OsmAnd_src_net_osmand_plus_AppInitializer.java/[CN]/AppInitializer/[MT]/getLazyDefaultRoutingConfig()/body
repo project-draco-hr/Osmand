@@ -1,0 +1,26 @@
+{
+  long tm=System.currentTimeMillis();
+  try {
+    File routingXml=app.getAppPath(IndexConstants.ROUTING_XML_FILE);
+    if (routingXml.exists() && routingXml.canRead()) {
+      try {
+        return RoutingConfiguration.parseFromInputStream(new FileInputStream(routingXml));
+      }
+ catch (      XmlPullParserException e) {
+        throw new IllegalStateException(e);
+      }
+catch (      IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+ else {
+      return RoutingConfiguration.getDefault();
+    }
+  }
+  finally {
+    long te=System.currentTimeMillis();
+    if (te - tm > 30) {
+      System.err.println("Defalt routing config init took " + (te - tm) + " ms");
+    }
+  }
+}
