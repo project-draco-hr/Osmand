@@ -11,10 +11,23 @@
   dashboardOnMap.createDashboardView();
   if (app.isApplicationInitializing()) {
     dashboardOnMap.setDashboardVisibility(true);
+    findViewById(R.id.init_progress).setVisibility(View.GONE);
+    initListener=new AppInitializeListener(){
+      @Override public void onProgress(      AppInitializer init,      InitEvents event){
+        String tn=init.getCurrentInitTaskName();
+        if (tn != null) {
+          ((TextView)findViewById(R.id.ProgressMessage)).setText(tn);
+        }
+      }
+      @Override public void onFinish(      AppInitializer init){
+        applicationInitialized();
+      }
+    }
+;
+    getMyApplication().checkApplicationIsBeingInitialized(this,initListener);
   }
-  startProgressDialog=new ProgressDialog(this);
-  startProgressDialog.setCancelable(true);
-  app.checkApplicationIsBeingInitialized(this,startProgressDialog);
+ else {
+  }
   parseLaunchIntentLocation();
   if (settings.USE_OPENGL_RENDER.get() && NativeCoreContext.isInit()) {
     ViewStub stub=(ViewStub)findViewById(R.id.atlasMapRendererViewStub);
@@ -44,13 +57,6 @@
     mapViewTrackingUtilities=new MapViewTrackingUtilities(app);
   }
   mapViewTrackingUtilities.setMapView(mapView);
-  startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
-    @Override public void onDismiss(    DialogInterface dialog){
-      app.getResourceManager().getRenderer().clearCache();
-      mapView.refreshMap(true);
-    }
-  }
-);
   app.getResourceManager().getMapTileDownloader().addDownloaderCallback(new IMapDownloaderCallback(){
     @Override public void tileDownloaded(    DownloadRequest request){
       if (request != null && !request.error && request.fileToSave != null) {

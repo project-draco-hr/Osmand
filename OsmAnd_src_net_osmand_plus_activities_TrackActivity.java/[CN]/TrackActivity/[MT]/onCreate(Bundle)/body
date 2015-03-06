@@ -13,7 +13,7 @@
   getSupportActionBar().setElevation(0);
   setContentView(R.layout.tab_content);
   PagerSlidingTabStrip mSlidingTabLayout=(PagerSlidingTabStrip)findViewById(R.id.sliding_tabs);
-  final ViewPager mViewPager=(ViewPager)findViewById(R.id.pager);
+  mViewPager=(ViewPager)findViewById(R.id.pager);
   setViewPagerAdapter(mViewPager,new ArrayList<TabActivity.TabItem>());
   mSlidingTabLayout.setViewPager(mViewPager);
   new AsyncTask<Void,Void,GPXFile>(){
@@ -27,7 +27,12 @@
       setSupportProgressBarIndeterminateVisibility(false);
       setResult(result);
       ((OsmandFragmentPagerAdapter)mViewPager.getAdapter()).addTab(getTabIndicator(R.string.track_segments,TrackSegmentFragment.class));
-      ((OsmandFragmentPagerAdapter)mViewPager.getAdapter()).addTab(getTabIndicator(R.string.track_points,TrackPointFragment.class));
+      if (isHavingTrackPoints()) {
+        ((OsmandFragmentPagerAdapter)mViewPager.getAdapter()).addTab(getTabIndicator(R.string.track_points,TrackPointFragment.class));
+      }
+      if (isHavingRoutePoints()) {
+        ((OsmandFragmentPagerAdapter)mViewPager.getAdapter()).addTab(getTabIndicator(R.string.route_points,TrackRoutePointFragment.class));
+      }
     }
   }
 .execute((Void)null);
