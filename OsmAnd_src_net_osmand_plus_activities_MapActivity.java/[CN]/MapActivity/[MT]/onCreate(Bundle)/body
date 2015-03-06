@@ -1,4 +1,5 @@
 {
+  long tm=System.currentTimeMillis();
   app=getMyApplication();
   settings=app.getSettings();
   app.applyTheme(this);
@@ -11,22 +12,24 @@
   dashboardOnMap.createDashboardView();
   if (app.isApplicationInitializing()) {
     dashboardOnMap.setDashboardVisibility(true);
-    findViewById(R.id.init_progress).setVisibility(View.GONE);
+    findViewById(R.id.init_progress).setVisibility(View.VISIBLE);
     initListener=new AppInitializeListener(){
       @Override public void onProgress(      AppInitializer init,      InitEvents event){
         String tn=init.getCurrentInitTaskName();
         if (tn != null) {
           ((TextView)findViewById(R.id.ProgressMessage)).setText(tn);
         }
+        if (event == InitEvents.MAPS_INITIALIZED) {
+          mapView.refreshMap(true);
+        }
       }
       @Override public void onFinish(      AppInitializer init){
         applicationInitialized();
+        mapView.refreshMap();
       }
     }
 ;
     getMyApplication().checkApplicationIsBeingInitialized(this,initListener);
-  }
- else {
   }
   parseLaunchIntentLocation();
   if (settings.USE_OPENGL_RENDER.get() && NativeCoreContext.isInit()) {
@@ -89,4 +92,7 @@
   gpxImportHelper=new GpxImportHelper(this,getMyApplication(),getMapView());
   mapActions.prepareStartOptionsMenu();
   wakeLockHelper=new WakeLockHelper(getMyApplication());
+  if (System.currentTimeMillis() - tm > 50) {
+    System.err.println("OnCreate for MapActivity took " + (System.currentTimeMillis() - tm) + " ms");
+  }
 }
