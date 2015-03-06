@@ -11,6 +11,17 @@
   getButton.setOnClickListener(getListener);
   enableDisableButton.setOnCheckedChangeListener(null);
   updatePluginState(view);
-  enableDisableButton.setOnCheckedChangeListener(enableDisableListener);
+  final View pluginView=view;
+  enableDisableButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
+      if (plugin.isActive() == isChecked || plugin.needsInstallation()) {
+        return;
+      }
+      if (OsmandPlugin.enablePlugin(getActivity(),getMyApplication(),plugin,isChecked)) {
+        updatePluginState(pluginView);
+      }
+    }
+  }
+);
   container.addView(view);
 }
