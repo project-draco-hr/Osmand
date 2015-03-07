@@ -9,21 +9,25 @@
   LinearLayout pluginsContainer=(LinearLayout)contentView.findViewById(R.id.plugins);
   List<OsmandPlugin> notActivePlugins=OsmandPlugin.getNotEnabledPlugins();
   Collections.shuffle(notActivePlugins);
+  plugins=new ArrayList<OsmandPlugin>();
   for (  OsmandPlugin plugin : notActivePlugins) {
     if (plugin instanceof OsmandDevelopmentPlugin) {
       continue;
     }
-    inflatePluginView(inflater,pluginsContainer,plugin);
+    plugins.add(plugin);
     break;
   }
   for (  OsmandPlugin plugin : OsmandPlugin.getEnabledPlugins()) {
-    if (pluginsContainer.getChildCount() >= 5) {
+    if (plugins.size() >= 5) {
       break;
     }
     if (plugin instanceof OsmandDevelopmentPlugin) {
       continue;
     }
-    inflatePluginView(inflater,pluginsContainer,plugin);
+    plugins.add(plugin);
+  }
+  for (  OsmandPlugin p : plugins) {
+    inflatePluginView(inflater,pluginsContainer,p);
   }
   return contentView;
 }
