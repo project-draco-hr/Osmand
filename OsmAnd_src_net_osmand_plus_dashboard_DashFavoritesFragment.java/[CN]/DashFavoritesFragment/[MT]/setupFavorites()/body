@@ -27,17 +27,18 @@
   }
   for (  final FavouritePoint point : points) {
     LayoutInflater inflater=getActivity().getLayoutInflater();
-    View view=inflater.inflate(R.layout.dash_favorites_item,null,false);
-    TextView name=(TextView)view.findViewById(R.id.name);
+    View view=inflater.inflate(R.layout.favorites_list_item,null,false);
+    TextView name=(TextView)view.findViewById(R.id.favourite_label);
     TextView label=(TextView)view.findViewById(R.id.distance);
     ImageView direction=(ImageView)view.findViewById(R.id.direction);
+    view.findViewById(R.id.divider).setVisibility(View.VISIBLE);
     if (point.getCategory().length() > 0) {
       ((TextView)view.findViewById(R.id.group_name)).setText(point.getCategory());
     }
  else {
       view.findViewById(R.id.group_image).setVisibility(View.GONE);
     }
-    ((ImageView)view.findViewById(R.id.icon)).setImageDrawable(FavoriteImageDrawable.getOrCreate(getActivity(),point.getColor()));
+    ((ImageView)view.findViewById(R.id.favourite_icon)).setImageDrawable(FavoriteImageDrawable.getOrCreate(getActivity(),point.getColor()));
     if (loc != null) {
       direction.setVisibility(View.VISIBLE);
       updateArrow(getActivity(),loc,new LatLon(point.getLatitude(),point.getLongitude()),direction,10,R.drawable.ic_destination_arrow,heading);
@@ -46,6 +47,7 @@
     name.setText(point.getName());
     int dist=(int)(MapUtils.getDistance(point.getLatitude(),point.getLongitude(),loc.getLatitude(),loc.getLongitude()));
     String distance=OsmAndFormatter.getFormattedDistance(dist,getMyApplication()) + "  ";
+    view.findViewById(R.id.navigate_to).setVisibility(View.VISIBLE);
     view.findViewById(R.id.navigate_to).setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View view){
         DirectionsDialogs.directionsToDialogAndLaunchMap(getActivity(),point.getLatitude(),point.getLongitude(),new PointDescription(PointDescription.POINT_TYPE_FAVORITE,point.getName()));

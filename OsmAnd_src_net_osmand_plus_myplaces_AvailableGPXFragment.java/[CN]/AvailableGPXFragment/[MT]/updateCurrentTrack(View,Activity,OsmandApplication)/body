@@ -3,18 +3,8 @@
     return;
   }
   final boolean isRecording=app.getSettings().SAVE_GLOBAL_TRACK_TO_GPX.get();
-  Drawable icon=app.getResources().getDrawable(isRecording ? R.drawable.ic_action_rec_stop : R.drawable.ic_play_dark).mutate();
-  if (app.getSettings().isLightContent()) {
-    icon.setColorFilter(app.getResources().getColor(R.color.icon_color_light),PorterDuff.Mode.MULTIPLY);
-  }
-  if (isRecording) {
-    v.findViewById(R.id.show_on_map).setVisibility(View.VISIBLE);
-  }
- else {
-    v.findViewById(R.id.show_on_map).setVisibility(View.GONE);
-  }
   ImageButton stop=((ImageButton)v.findViewById(R.id.stop));
-  stop.setImageDrawable(icon);
+  stop.setImageDrawable(app.getIconsCache().getContentIcon(isRecording ? R.drawable.ic_action_rec_stop : R.drawable.ic_play_dark));
   stop.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       final OsmandMonitoringPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
@@ -28,6 +18,27 @@
   }
 );
   SavingTrackHelper sth=app.getSavingTrackHelper();
+  ImageButton save=((ImageButton)v.findViewById(R.id.show_on_map));
+  save.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      Runnable run=new Runnable(){
+        @Override public void run(){
+          final OsmandMonitoringPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
+          plugin.saveCurrentTrack();
+        }
+      }
+;
+      run.run();
+    }
+  }
+);
+  if (sth.getPoints() > 0 || sth.getDistance() > 0) {
+    save.setVisibility(View.VISIBLE);
+  }
+ else {
+    save.setVisibility(View.GONE);
+  }
+  save.setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.ic_action_gsave_dark));
   ((TextView)v.findViewById(R.id.points_count)).setText(sth.getPoints() + "");
   ((TextView)v.findViewById(R.id.distance)).setText(OsmAndFormatter.getFormattedDistance(sth.getDistance(),app));
   v.findViewById(R.id.points_count).setVisibility(View.VISIBLE);
