@@ -1,4 +1,18 @@
 {
   menu.clear();
   ((TrackActivity)getActivity()).getClearToolbar(false);
+  if (getGpx().path != null) {
+    MenuItem item=menu.add(R.string.share_fav).setIcon(R.drawable.ic_action_gshare_dark).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+      @Override public boolean onMenuItemClick(      MenuItem item){
+        final Uri fileUri=Uri.fromFile(new File(getGpx().path));
+        final Intent sendIntent=new Intent(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_STREAM,fileUri);
+        sendIntent.setType("application/gpx+xml");
+        startActivity(sendIntent);
+        return true;
+      }
+    }
+);
+    MenuItemCompat.setShowAsAction(item,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+  }
 }
