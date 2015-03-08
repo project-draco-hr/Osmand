@@ -8,6 +8,9 @@
   setContentView(R.layout.main);
   mapActions=new MapActivityActions(this);
   mapLayers=new MapActivityLayers(this);
+  if (mapViewTrackingUtilities == null) {
+    mapViewTrackingUtilities=new MapViewTrackingUtilities(app);
+  }
   dashboardOnMap.createDashboardView();
   if (app.isApplicationInitializing() || DashboardOnMap.staticVisible) {
     dashboardOnMap.setDashboardVisibility(true);
@@ -30,11 +33,12 @@
         }
       }
       @Override public void onFinish(      AppInitializer init){
-        applicationInitialized();
         if (!openGlSetup) {
           setupOpenGLView();
         }
-        mapView.refreshMap();
+        mapView.refreshMap(true);
+        findViewById(R.id.init_progress).setVisibility(View.GONE);
+        findViewById(R.id.ParentLayout).invalidate();
       }
     }
 ;
@@ -55,9 +59,6 @@
   }
 );
   mapView.setAccessibilityActions(new MapAccessibilityActions(this));
-  if (mapViewTrackingUtilities == null) {
-    mapViewTrackingUtilities=new MapViewTrackingUtilities(app);
-  }
   mapViewTrackingUtilities.setMapView(mapView);
   app.getResourceManager().getMapTileDownloader().addDownloaderCallback(new IMapDownloaderCallback(){
     @Override public void tileDownloaded(    DownloadRequest request){

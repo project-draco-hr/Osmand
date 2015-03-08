@@ -2,6 +2,11 @@
   this.visible=visible;
   DashboardOnMap.staticVisible=visible;
   if (visible) {
+    mapViewLocation=mapActivity.getMapLocation();
+    mapRotation=mapActivity.getMapRotate();
+    mapLinkedToLocation=mapActivity.getMapViewTrackingUtilities().isMapLinkedToLocation();
+    myLocation=mapActivity.getMyApplication().getLocationProvider().getLastKnownLocation();
+    mapActivity.getMapViewTrackingUtilities().setDashboard(this);
     addOrUpdateDashboardFragments();
     setupActionBar();
     dashboardView.setVisibility(View.VISIBLE);
@@ -10,9 +15,11 @@
     mapActivity.getMapActions().disableDrawer();
     mapActivity.findViewById(R.id.MapInfoControls).setVisibility(View.GONE);
     mapActivity.findViewById(R.id.MapButtons).setVisibility(View.GONE);
+    updateLocation(true,true,false);
   }
  else {
     mapActivity.getMapActions().enableDrawer();
+    mapActivity.getMapViewTrackingUtilities().setDashboard(null);
     hide(dashboardView.findViewById(R.id.animateContent));
     mapActivity.findViewById(R.id.MapInfoControls).setVisibility(View.VISIBLE);
     mapActivity.findViewById(R.id.MapButtons).setVisibility(View.VISIBLE);
