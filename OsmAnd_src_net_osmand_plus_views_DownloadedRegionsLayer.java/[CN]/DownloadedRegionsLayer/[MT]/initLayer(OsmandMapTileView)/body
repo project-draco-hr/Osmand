@@ -16,36 +16,15 @@
   textPaint.setStrokeWidth(21 * dm.scaledDensity);
   textPaint.setAntiAlias(true);
   textPaint.setTextAlign(Paint.Align.CENTER);
-  FrameLayout fl=(FrameLayout)view.getParent();
-  downloadBtn=new Button(view.getContext());
-  downloadBtn.setVisibility(View.GONE);
-  downloadBtn.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      final Intent intent=new Intent(view.getContext(),view.getApplication().getAppCustomization().getDownloadIndexActivity());
-      intent.putExtra(DownloadActivity.FILTER_KEY,filter.toString());
-      intent.putExtra(DownloadActivity.TAB_TO_OPEN,DownloadActivity.DOWNLOAD_TAB);
-      view.getContext().startActivity(intent);
-    }
-  }
-);
-  final FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-  lp.gravity=Gravity.CENTER;
-  fl.addView(downloadBtn,lp);
   path=new Path();
   data=new MapLayerData<List<BinaryMapDataObject>>(){
-{
-      ZOOM_THRESHOLD=2;
-    }
     @Override public void layerOnPostExecute(){
       view.refreshMap();
     }
     public boolean queriedBoxContains(    final RotatedTileBox queriedData,    final RotatedTileBox newBox){
-      if (newBox.getZoom() < ZOOM_TO_SHOW_MAP_NAMES) {
-        if (queriedData != null && queriedData.getZoom() < ZOOM_TO_SHOW_MAP_NAMES) {
-          if (newBox.getZoom() >= ZOOM_TO_SHOW_BORDERS_ST && newBox.getZoom() < ZOOM_TO_SHOW_BORDERS) {
-            return queriedData != null && queriedData.containsTileBox(newBox);
-          }
-          return true;
+      if (newBox.getZoom() < ZOOM_TO_SHOW_BORDERS) {
+        if (queriedData != null && queriedData.getZoom() < ZOOM_TO_SHOW_BORDERS) {
+          return queriedData != null && queriedData.containsTileBox(newBox);
         }
  else {
           return false;
