@@ -8,8 +8,9 @@
  else {
     (mainView.findViewById(R.id.main_fav)).setVisibility(View.VISIBLE);
   }
-  points=showAll ? Collections.singletonList(helper.getPointToNavigate()) : helper.getIntermediatePointsWithTarget();
-  ((Button)mainView.findViewById(R.id.show_all)).setText(showAll ? getString(R.string.shared_string_collapse) : getString(R.string.shared_string_show_all));
+  points=SHOW_ALL ? helper.getIntermediatePointsWithTarget() : Collections.singletonList(helper.getPointToNavigate());
+  ((Button)mainView.findViewById(R.id.show_all)).setText(SHOW_ALL ? getString(R.string.shared_string_collapse) : getString(R.string.shared_string_show_all));
+  ((Button)mainView.findViewById(R.id.show_all)).setVisibility(helper.getIntermediatePoints().size() == 0 ? View.INVISIBLE : View.VISIBLE);
   ((TextView)mainView.findViewById(R.id.fav_text)).setText(getString(R.string.waypoints) + " (" + helper.getIntermediatePointsWithTarget().size()+ ")");
   LinearLayout favorites=(LinearLayout)mainView.findViewById(R.id.items);
   favorites.removeAllViews();
@@ -29,10 +30,20 @@
     DashLocationView dv=new DashLocationView(direction,label,new LatLon(point.getLatitude(),point.getLongitude()));
     distances.add(dv);
     name.setText(PointDescription.getSimpleName(point,getActivity()));
-    view.findViewById(R.id.navigate_to).setVisibility(View.VISIBLE);
-    view.findViewById(R.id.navigate_to).setOnClickListener(new View.OnClickListener(){
+    ImageButton options=((ImageButton)view.findViewById(R.id.options));
+    options.setVisibility(View.VISIBLE);
+    options.setImageDrawable(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_overflow_menu_white));
+    options.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View view){
         selectModel(point,view);
+      }
+    }
+);
+    ImageButton navigate=((ImageButton)view.findViewById(R.id.navigate_to));
+    navigate.setImageDrawable(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_gdirections_dark));
+    navigate.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View view){
+        dashboard.navigationAction();
       }
     }
 );
