@@ -1,4 +1,5 @@
 {
+  long tm=System.currentTimeMillis();
   app=getMyApplication();
   settings=app.getSettings();
   app.applyTheme(this);
@@ -7,48 +8,49 @@
   setContentView(R.layout.main);
   mapActions=new MapActivityActions(this);
   mapLayers=new MapActivityLayers(this);
-  dashboardOnMap=new DashboardOnMap(this);
+  if (mapViewTrackingUtilities == null) {
+    mapViewTrackingUtilities=new MapViewTrackingUtilities(app);
+  }
   dashboardOnMap.createDashboardView();
-  if (getMyApplication().isApplicationInitializing()) {
-    AppInitializer initializer=new AppInitializer();
-    boolean firstTime=initializer.initApp(this,getMyApplication());
-    if (getMyApplication().getAppCustomization().checkExceptionsOnStart()) {
-      if (initializer.checkPreviousRunsForExceptions(this,firstTime)) {
-        dashboardOnMap.addErrorFragment();
-      }
-    }
+  if (app.isApplicationInitializing() || DashboardOnMap.staticVisible) {
     dashboardOnMap.setDashboardVisibility(true);
   }
-  startProgressDialog=new ProgressDialog(this);
-  startProgressDialog.setCancelable(true);
-  if (getMyApplication().isApplicationInitializing()) {
-    getMyApplication().checkApplicationIsBeingInitialized(this,(TextView)findViewById(R.id.ProgressMessage),(ProgressBar)findViewById(R.id.ProgressBar),new Runnable(){
-      @Override public void run(){
-        applicationInitialized();
+  if (app.isApplicationInitializing()) {
+    findViewById(R.id.init_progress).setVisibility(View.VISIBLE);
+    initListener=new AppInitializeListener(){
+      boolean openGlSetup=false;
+      @Override public void onProgress(      AppInitializer init,      InitEvents event){
+        String tn=init.getCurrentInitTaskName();
+        if (tn != null) {
+          ((TextView)findViewById(R.id.ProgressMessage)).setText(tn);
+        }
+        if (event == InitEvents.NATIVE_INITIALIZED) {
+          setupOpenGLView();
+          openGlSetup=true;
+        }
+        if (event == InitEvents.MAPS_INITIALIZED) {
+          mapView.refreshMap(true);
+        }
+      }
+      @Override public void onFinish(      AppInitializer init){
+        if (!openGlSetup) {
+          setupOpenGLView();
+        }
+        mapView.refreshMap(true);
+        findViewById(R.id.init_progress).setVisibility(View.GONE);
+        findViewById(R.id.ParentLayout).invalidate();
       }
     }
-);
+;
+    getMyApplication().checkApplicationIsBeingInitialized(this,initListener);
   }
  else {
-    applicationInitialized();
+    setupOpenGLView();
   }
   parseLaunchIntentLocation();
-  if (settings.USE_OPENGL_RENDER.get() && NativeCoreContext.isInit()) {
-    ViewStub stub=(ViewStub)findViewById(R.id.atlasMapRendererViewStub);
-    atlasMapRendererView=(AtlasMapRendererView)stub.inflate();
-    OsmAndMapLayersView ml=(OsmAndMapLayersView)findViewById(R.id.MapLayersView);
-    ml.setVisibility(View.VISIBLE);
-    atlasMapRendererView.setAzimuth(0);
-    atlasMapRendererView.setElevationAngle(90);
-    NativeCoreContext.getMapRendererContext().setMapRendererView(atlasMapRendererView);
-    mapView=ml.getMapView();
-    mapView.setMapRender(atlasMapRendererView);
-  }
- else {
-    OsmAndMapSurfaceView surf=(OsmAndMapSurfaceView)findViewById(R.id.MapView);
-    surf.setVisibility(View.VISIBLE);
-    mapView=surf.getMapView();
-  }
+  OsmAndMapSurfaceView surf=(OsmAndMapSurfaceView)findViewById(R.id.MapView);
+  surf.setVisibility(View.VISIBLE);
+  mapView=surf.getMapView();
   mapView.setTrackBallDelegate(new OsmandMapTileView.OnTrackBallListener(){
     @Override public boolean onTrackBallEvent(    MotionEvent e){
       showAndHideMapPosition();
@@ -57,17 +59,7 @@
   }
 );
   mapView.setAccessibilityActions(new MapAccessibilityActions(this));
-  if (mapViewTrackingUtilities == null) {
-    mapViewTrackingUtilities=new MapViewTrackingUtilities(app);
-  }
   mapViewTrackingUtilities.setMapView(mapView);
-  startProgressDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
-    @Override public void onDismiss(    DialogInterface dialog){
-      app.getResourceManager().getRenderer().clearCache();
-      mapView.refreshMap(true);
-    }
-  }
-);
   app.getResourceManager().getMapTileDownloader().addDownloaderCallback(new IMapDownloaderCallback(){
     @Override public void tileDownloaded(    DownloadRequest request){
       if (request != null && !request.error && request.fileToSave != null) {
@@ -100,4 +92,7 @@
   gpxImportHelper=new GpxImportHelper(this,getMyApplication(),getMapView());
   mapActions.prepareStartOptionsMenu();
   wakeLockHelper=new WakeLockHelper(getMyApplication());
+  if (System.currentTimeMillis() - tm > 50) {
+    System.err.println("OnCreate for MapActivity took " + (System.currentTimeMillis() - tm) + " ms");
+  }
 }

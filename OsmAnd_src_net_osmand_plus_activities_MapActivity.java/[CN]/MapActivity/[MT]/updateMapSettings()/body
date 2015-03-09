@@ -1,14 +1,26 @@
 {
-  RendererRegistry registry=app.getRendererRegistry();
-  RenderingRulesStorage newRenderer=registry.getRenderer(settings.RENDERER.get());
-  if (newRenderer == null) {
-    newRenderer=registry.defaultRender();
+  if (app.isApplicationInitializing()) {
+    return;
   }
-  if (mapView.getMapRenderer() != null) {
-    NativeCoreContext.getMapRendererContext().updateMapSettings();
+  new AsyncTask<Void,Void,Void>(){
+    @Override protected Void doInBackground(    Void... params){
+      RendererRegistry registry=app.getRendererRegistry();
+      RenderingRulesStorage newRenderer=registry.getRenderer(settings.RENDERER.get());
+      if (newRenderer == null) {
+        newRenderer=registry.defaultRender();
+      }
+      if (mapView.getMapRenderer() != null) {
+        NativeCoreContext.getMapRendererContext().updateMapSettings();
+      }
+      if (registry.getCurrentSelectedRenderer() != newRenderer) {
+        registry.setCurrentSelectedRender(newRenderer);
+        app.getResourceManager().getRenderer().clearCache();
+        mapView.refreshMap(true);
+      }
+      return null;
+    }
+    protected void onPostExecute(    Void result){
+    }
   }
-  if (registry.getCurrentSelectedRenderer() != newRenderer) {
-    registry.setCurrentSelectedRender(newRenderer);
-    app.getResourceManager().getRenderer().clearCache();
-  }
+.execute((Void)null);
 }

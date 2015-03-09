@@ -1,0 +1,34 @@
+{
+  boolean light=getMyApplication().getSettings().isLightContent();
+  final PopupMenu optionsMenu=new PopupMenu(getActivity(),v);
+  DirectionsDialogs.setupPopUpMenuIcon(optionsMenu);
+  final boolean restore=info.isBackupedData();
+  MenuItem item;
+  if (info.getType() == LocalIndexType.MAP_DATA) {
+    item=optionsMenu.getMenu().add(restore ? R.string.local_index_mi_restore : R.string.local_index_mi_backup).setIcon(backup);
+    item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+      @Override public boolean onMenuItemClick(      MenuItem item){
+        performBasicOperation(restore ? R.string.local_index_mi_restore : R.string.local_index_mi_backup,info);
+        return true;
+      }
+    }
+);
+  }
+  item=optionsMenu.getMenu().add(R.string.shared_string_rename).setIcon(light ? R.drawable.ic_action_edit_light : R.drawable.ic_action_edit_dark);
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      performBasicOperation(R.string.shared_string_rename,info);
+      return true;
+    }
+  }
+);
+  item=optionsMenu.getMenu().add(R.string.shared_string_delete).setIcon(light ? R.drawable.ic_action_delete_light : R.drawable.ic_action_delete_dark);
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      performBasicOperation(R.string.shared_string_delete,info);
+      return true;
+    }
+  }
+);
+  optionsMenu.show();
+}

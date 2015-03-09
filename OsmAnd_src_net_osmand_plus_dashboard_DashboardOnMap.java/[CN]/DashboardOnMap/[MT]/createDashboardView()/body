@@ -1,5 +1,6 @@
 {
-  dashboardView=(FrameLayout)ma.getLayoutInflater().inflate(R.layout.dashboard_over_map,null,false);
+  landscape=!ScreenOrientationHelper.isOrientationPortrait(mapActivity);
+  dashboardView=(FrameLayout)mapActivity.getLayoutInflater().inflate(R.layout.dashboard_over_map,null,false);
   dashboardView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
   View.OnClickListener listener=new View.OnClickListener(){
     @Override public void onClick(    View v){
@@ -7,21 +8,34 @@
     }
   }
 ;
-  dashboardView.findViewById(R.id.content).setOnClickListener(listener);
+  dashboardView.findViewById(R.id.animateContent).setOnClickListener(listener);
   dashboardView.setOnClickListener(listener);
-  ((FrameLayout)ma.findViewById(R.id.ParentLayout)).addView(dashboardView);
+  ((FrameLayout)mapActivity.findViewById(R.id.ParentLayout)).addView(dashboardView);
+  dashboardView.findViewById(R.id.map_layers_button).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      setDashboardVisibility(false);
+      mapActivity.getMapActions().prepareConfigureMap();
+      mapActivity.getMapActions().toggleDrawer();
+    }
+  }
+);
   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-    fabButton=new FloatingActionButton.Builder(ma).withDrawable(ma.getResources().getDrawable(R.drawable.ic_action_map)).withButtonColor(Color.parseColor("#ff8f00")).withGravity(Gravity.BOTTOM | Gravity.RIGHT).withMargins(0,0,16,16).create();
+    fabButton=new FloatingActionButton.Builder(mapActivity).withDrawable(mapActivity.getResources().getDrawable(R.drawable.ic_action_map)).withButtonColor(mapActivity.getResources().getColor(R.color.color_myloc_distance)).withGravity(landscape ? Gravity.BOTTOM | Gravity.RIGHT : Gravity.TOP | Gravity.RIGHT).withMargins(0,landscape ? 0 : 160,16,landscape ? 16 : 0).create();
     fabButton.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View view){
+        if (getMyApplication().accessibilityEnabled()) {
+          mapActivity.getMapActions().whereAmIDialog();
+        }
+ else {
+          mapActivity.getMapViewTrackingUtilities().backToLocationImpl();
+        }
         setDashboardVisibility(false);
-        fabButton.hideFloatingActionButton();
       }
     }
 );
     fabButton.hideFloatingActionButton();
   }
-  if (ScreenOrientationHelper.isOrientationPortrait(ma)) {
+  if (ScreenOrientationHelper.isOrientationPortrait(mapActivity)) {
     ((NotifyingScrollView)dashboardView.findViewById(R.id.main_scroll)).setOnScrollChangedListener(onScrollChangedListener);
   }
 }

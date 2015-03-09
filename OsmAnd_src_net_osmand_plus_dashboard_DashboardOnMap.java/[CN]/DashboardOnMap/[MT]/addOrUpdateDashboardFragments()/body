@@ -1,0 +1,25 @@
+{
+  Iterator<WeakReference<DashBaseFragment>> it=fragList.iterator();
+  while (it.hasNext()) {
+    WeakReference<DashBaseFragment> df=it.next();
+    if (df.get() != null) {
+      if (df.get().getView() != null) {
+        df.get().onOpenDash();
+      }
+    }
+ else {
+      it.remove();
+    }
+  }
+  FragmentManager manager=mapActivity.getSupportFragmentManager();
+  FragmentTransaction fragmentTransaction=manager.beginTransaction();
+  showFragment(manager,fragmentTransaction,DashErrorFragment.TAG,DashErrorFragment.class,mapActivity.getMyApplication().getAppInitializer().checkPreviousRunsForExceptions(mapActivity));
+  showFragment(manager,fragmentTransaction,DashSearchFragment.TAG,DashSearchFragment.class);
+  showFragment(manager,fragmentTransaction,DashRecentsFragment.TAG,DashRecentsFragment.class);
+  showFragment(manager,fragmentTransaction,DashFavoritesFragment.TAG,DashFavoritesFragment.class);
+  showFragment(manager,fragmentTransaction,DashAudioVideoNotesFragment.TAG,DashAudioVideoNotesFragment.class);
+  showFragment(manager,fragmentTransaction,DashTrackFragment.TAG,DashTrackFragment.class);
+  showFragment(manager,fragmentTransaction,DashPluginsFragment.TAG,DashPluginsFragment.class);
+  showFragment(manager,fragmentTransaction,DashSimulateFragment.TAG,DashSimulateFragment.class,OsmandPlugin.getEnabledPlugin(OsmandDevelopmentPlugin.class) != null);
+  fragmentTransaction.commit();
+}

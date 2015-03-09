@@ -1,16 +1,17 @@
 {
   Set<GpxInfo> originalSelectedItems=new HashSet<>();
+  SelectedGpxFile track=selectedGpxHelper.getSelectedCurrentRecordingTrack();
+  if (track != null && track.getGpxFile() != null) {
+    if (track.getGpxFile().showCurrentTrack) {
+      originalSelectedItems.add(currentRecording);
+    }
+  }
   for (  List<GpxInfo> l : data.values()) {
     if (l != null) {
       for (      GpxInfo g : l) {
-        boolean add;
-        if (g.gpx != null && g.gpx.showCurrentTrack) {
-          add=selectedGpxHelper.getSelectedCurrentRecordingTrack() != null;
-        }
- else {
-          add=selectedGpxHelper.getSelectedFileByName(g.getFileName()) != null;
-        }
-        if (add) {
+        SelectedGpxFile sgpx=selectedGpxHelper.getSelectedFileByName(g.getFileName());
+        if (sgpx != null) {
+          g.gpx=sgpx.getGpxFile();
           originalSelectedItems.add(g);
         }
       }

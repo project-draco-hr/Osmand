@@ -1,48 +1,6 @@
 {
-  final int zoom=tileBox.getZoom();
-  if (downloadBtn.getVisibility() == View.VISIBLE) {
-    downloadBtn.setVisibility(View.GONE);
-  }
   if (view.getMainLayer() instanceof MapTileLayer) {
     return;
   }
   data.queryNewData(tileBox);
-  RotatedTileBox queriedBox=data.getQueriedBox();
-  final List<BinaryMapDataObject> currentObjects=data.results;
-  if (osmandRegions.isInitialized() && queriedBox != null) {
-    if (zoom < ZOOM_TO_SHOW_MAP_NAMES && !basemapExists) {
-      filter.setLength(0);
-      filter.append("basemap");
-      downloadBtn.setVisibility(View.VISIBLE);
-      downloadBtn.setText(view.getResources().getString(R.string.download_files) + " " + view.getResources().getString(R.string.base_world_map));
-    }
- else     if (zoom >= ZOOM_TO_SHOW_MAP_NAMES && noMapsPresent && Math.abs(queriedBox.getZoom() - zoom) <= ZOOM_THRESHOLD && currentObjects != null) {
-      StringBuilder s=new StringBuilder(view.getResources().getString(R.string.download_files));
-      filter.setLength(0);
-      Set<String> set=new TreeSet<String>();
-      if ((currentObjects != null && currentObjects.size() > 0)) {
-        for (int i=0; i < currentObjects.size(); i++) {
-          final BinaryMapDataObject o=currentObjects.get(i);
-          String name=osmandRegions.getLocaleName(o);
-          if (!set.add(name)) {
-            continue;
-          }
-          if (set.size() > 1) {
-            s.append(" ").append(view.getResources().getString(R.string.default_or)).append(" ");
-            filter.append(", ");
-          }
- else {
-            s.append(" ");
-          }
-          filter.append(name);
-          if (osmandRegions.getPrefix(o) != null) {
-            name=Algorithms.capitalizeFirstLetterAndLowercase(osmandRegions.getPrefix(o)) + " " + name;
-          }
-          s.append(name);
-        }
-      }
-      downloadBtn.setVisibility(View.VISIBLE);
-      downloadBtn.setText(s.toString());
-    }
-  }
 }
