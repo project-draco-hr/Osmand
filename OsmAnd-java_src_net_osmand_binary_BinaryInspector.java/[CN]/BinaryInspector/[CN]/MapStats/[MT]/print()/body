@@ -1,0 +1,30 @@
+{
+  MapObjectStat st=req.stat;
+  println("MAP BLOCK INFO:");
+  long b=0;
+  b+=out("Header",st.lastBlockHeaderInfo);
+  b+=out("String table",st.lastBlockStringTableSize);
+  b+=out("Map Objects",st.lastObjectSize);
+  out("TOTAL",b);
+  println("\nMAP OBJECTS INFO:");
+  b=0;
+  b+=out("Header",lastObjectHeaderInfo);
+  b+=out("Coordinates",lastObjectCoordinates);
+  b+=out("Coordinates Count(pair)",lastObjectCoordinatesCount);
+  b+=out("Types",lastObjectTypes);
+  b+=out("Additonal Types",lastObjectAdditionalTypes);
+  b+=out("Ids",lastObjectIdSize);
+  b+=out("String names",lastStringNamesSize);
+  out("TOTAL",b);
+  println("\n\nOBJECT BY TYPE STATS: ");
+  ArrayList<MapStatKey> stats=new ArrayList<MapStatKey>(types.values());
+  Collections.sort(stats,new Comparator<MapStatKey>(){
+    @Override public int compare(    MapStatKey o1,    MapStatKey o2){
+      return -Long.compare(o1.statObjectSize,o2.statObjectSize);
+    }
+  }
+);
+  for (  MapStatKey s : stats) {
+    println(s.key + " (" + s.count+ ") \t "+ s.statObjectSize+ " bytes \t coord="+ s.statCoordinatesCount+ " ("+ s.statCoordinates+ " bytes) "+ " names "+ s.namesLength+ " bytes");
+  }
+}
