@@ -1,0 +1,17 @@
+{
+  PointDescription name=model.getOriginalPointDescription();
+  boolean light=((OsmandApplication)getActivity().getApplication()).getSettings().isLightContent();
+  final PopupMenu optionsMenu=new PopupMenu(getActivity(),v);
+  OsmandSettings settings=((OsmandApplication)getActivity().getApplication()).getSettings();
+  DirectionsDialogs.createDirectionsActionsPopUpMenu(optionsMenu,new LatLon(model.getLatitude(),model.getLongitude()),model,name,settings.getLastKnownMapZoom(),getActivity(),true);
+  MenuItem item=optionsMenu.getMenu().add(R.string.shared_string_delete).setIcon(light ? R.drawable.ic_action_delete_light : R.drawable.ic_action_delete_dark);
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      getMyApplication().getTargetPointsHelper().removeWayPoint(true,model.index);
+      setupTargets();
+      return true;
+    }
+  }
+);
+  optionsMenu.show();
+}
