@@ -6,6 +6,10 @@
   }
   req.cacheCoordinates.clear();
   int size=codedIS.readRawVarint32();
+  if (READ_STATS) {
+    req.stat.lastObjectCoordinates+=size;
+    req.stat.addTagHeader(OsmandOdb.MapData.COORDINATES_FIELD_NUMBER,size);
+  }
   int old=codedIS.pushLimit(size);
   int px=tree.left & MASK_TO_READ;
   int py=tree.top & MASK_TO_READ;
@@ -64,6 +68,10 @@ innercoordinates.add(polygon);
 px=tree.left & MASK_TO_READ;
 py=tree.top & MASK_TO_READ;
 size=codedIS.readRawVarint32();
+if (READ_STATS) {
+req.stat.lastObjectCoordinates+=size;
+req.stat.addTagHeader(OsmandOdb.MapData.POLYGONINNERCOORDINATES_FIELD_NUMBER,size);
+}
 old=codedIS.pushLimit(size);
 while (codedIS.getBytesUntilLimit() > 0) {
 int x=(codedIS.readSInt32() << SHIFT_COORDINATES) + px;
@@ -79,6 +87,10 @@ case OsmandOdb.MapData.ADDITIONALTYPES_FIELD_NUMBER:
 additionalTypes=new TIntArrayList();
 int sizeL=codedIS.readRawVarint32();
 old=codedIS.pushLimit(sizeL);
+if (READ_STATS) {
+req.stat.lastObjectAdditionalTypes+=sizeL;
+req.stat.addTagHeader(OsmandOdb.MapData.ADDITIONALTYPES_FIELD_NUMBER,sizeL);
+}
 while (codedIS.getBytesUntilLimit() > 0) {
 additionalTypes.add(codedIS.readRawVarint32());
 }
@@ -88,6 +100,10 @@ case OsmandOdb.MapData.TYPES_FIELD_NUMBER:
 req.cacheTypes.clear();
 sizeL=codedIS.readRawVarint32();
 old=codedIS.pushLimit(sizeL);
+if (READ_STATS) {
+req.stat.addTagHeader(OsmandOdb.MapData.TYPES_FIELD_NUMBER,sizeL);
+req.stat.lastObjectTypes+=sizeL;
+}
 while (codedIS.getBytesUntilLimit() > 0) {
 req.cacheTypes.add(codedIS.readRawVarint32());
 }
@@ -104,6 +120,10 @@ req.numberOfAcceptedObjects++;
 break;
 case OsmandOdb.MapData.ID_FIELD_NUMBER:
 id=codedIS.readSInt64();
+if (READ_STATS) {
+req.stat.addTagHeader(OsmandOdb.MapData.ID_FIELD_NUMBER,0);
+req.stat.lastObjectIdSize+=CodedOutputStream.computeSInt64SizeNoTag(id);
+}
 break;
 case OsmandOdb.MapData.STRINGNAMES_FIELD_NUMBER:
 stringNames=new TIntObjectHashMap<String>();
@@ -117,6 +137,10 @@ stringNames.put(stag,((char)pId) + "");
 stringOrder.add(stag);
 }
 codedIS.popLimit(old);
+if (READ_STATS) {
+req.stat.addTagHeader(OsmandOdb.MapData.STRINGNAMES_FIELD_NUMBER,sizeL);
+req.stat.lastStringNamesSize+=sizeL;
+}
 break;
 default :
 skipUnknownField(t);

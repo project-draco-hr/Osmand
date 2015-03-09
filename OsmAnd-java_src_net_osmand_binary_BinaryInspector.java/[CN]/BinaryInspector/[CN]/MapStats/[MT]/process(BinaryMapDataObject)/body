@@ -1,0 +1,21 @@
+{
+  MapObjectStat st=req.stat;
+  this.lastStringNamesSize+=st.lastStringNamesSize;
+  this.lastObjectIdSize+=st.lastObjectIdSize;
+  this.lastObjectHeaderInfo+=st.lastObjectHeaderInfo;
+  this.lastObjectAdditionalTypes+=st.lastObjectAdditionalTypes;
+  this.lastObjectTypes+=st.lastObjectTypes;
+  this.lastObjectCoordinates+=st.lastObjectCoordinates;
+  this.lastObjectCoordinatesCount+=obj.getPointsLength();
+  if (obj.getPolygonInnerCoordinates() != null) {
+    for (    int[] i : obj.getPolygonInnerCoordinates()) {
+      this.lastObjectCoordinatesCount+=i.length;
+    }
+  }
+  for (int i=0; i < obj.getTypes().length; i++) {
+    int tp=obj.getTypes()[i];
+    TagValuePair pair=obj.mapIndex.decodeType(tp);
+    processKey(pair.toSimpleString(),st,obj.getObjectNames());
+  }
+  st.clearObjectStats();
+}
