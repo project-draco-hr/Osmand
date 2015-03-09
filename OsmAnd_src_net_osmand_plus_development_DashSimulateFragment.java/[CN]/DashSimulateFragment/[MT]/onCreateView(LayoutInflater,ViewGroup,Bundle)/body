@@ -1,0 +1,24 @@
+{
+  View view=getActivity().getLayoutInflater().inflate(R.layout.dash_common_fragment,container,false);
+  Typeface typeface=FontCache.getRobotoMedium(getActivity());
+  TextView header=(TextView)view.findViewById(R.id.fav_text);
+  header.setTypeface(typeface);
+  header.setText(R.string.simulate_your_location);
+  ((Button)view.findViewById(R.id.show_all)).setVisibility(View.GONE);
+  LinearLayout tracks=(LinearLayout)view.findViewById(R.id.items);
+  View item=inflater.inflate(R.layout.dash_simulate_item,null,false);
+  tracks.addView(item);
+  final OsmAndLocationProvider loc=getMyApplication().getLocationProvider();
+  ((ImageButton)item.findViewById(R.id.stop)).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (getActivity() instanceof MapActivity) {
+        loc.getLocationSimulation().startStopRouteAnimation((MapActivity)getActivity());
+        dashboard.setDashboardVisibility(false);
+      }
+    }
+  }
+);
+  ((TextView)item.findViewById(R.id.name)).setText(R.string.animate_route);
+  item.findViewById(R.id.divider).setVisibility(View.VISIBLE);
+  return view;
+}
