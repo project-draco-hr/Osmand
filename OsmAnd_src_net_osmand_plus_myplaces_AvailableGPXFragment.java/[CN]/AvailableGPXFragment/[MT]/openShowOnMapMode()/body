@@ -1,5 +1,6 @@
 {
   enableSelectionMode(true);
+  showOnMapMode=true;
   selectedItems.clear();
   final Set<GpxInfo> originalSelectedItems=allGpxAdapter.getSelectedGpx();
   selectedItems.addAll(originalSelectedItems);
@@ -7,9 +8,10 @@
     @Override public boolean onCreateActionMode(    ActionMode mode,    Menu menu){
       enableSelectionMode(true);
       updateSelectionMode(mode);
-      MenuItem it=menu.add(R.string.show_gpx_route);
+      MenuItem it=menu.add(R.string.shared_string_show_on_map);
       it.setIcon(R.drawable.ic_action_done);
       MenuItemCompat.setShowAsAction(it,MenuItemCompat.SHOW_AS_ACTION_IF_ROOM | MenuItemCompat.SHOW_AS_ACTION_WITH_TEXT);
+      updateCurrentTrack();
       return true;
     }
     @Override public boolean onPrepareActionMode(    ActionMode mode,    Menu menu){
@@ -28,7 +30,9 @@
       operationTask.execute(originalSelectedItems.toArray(new GpxInfo[originalSelectedItems.size()]));
     }
     @Override public void onDestroyActionMode(    ActionMode mode){
+      showOnMapMode=false;
       enableSelectionMode(false);
+      updateCurrentTrack();
       allGpxAdapter.notifyDataSetChanged();
     }
   }

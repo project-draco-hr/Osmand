@@ -1,38 +1,16 @@
 {
-  if (tileBox.getZoom() < ZOOM_TO_SHOW_MAP_NAMES) {
-    basemapExists=rm.getRenderer().basemapExists();
-  }
-  int count=0;
-  RotatedTileBox cb=rm.getRenderer().getCheckedBox();
-  while (cb == null || cb.getZoom() != tileBox.getZoom() || !cb.containsLatLon(tileBox.getCenterLatLon())) {
-    if (count++ > 7) {
-      return null;
+  if (tileBox.getZoom() >= ZOOM_AFTER_BASEMAP) {
+    if (!checkIfMapEmpty(tileBox)) {
+      return Collections.emptyList();
     }
-    try {
-      Thread.sleep(1000);
-    }
- catch (    InterruptedException e) {
-      return null;
-    }
-    cb=rm.getRenderer().getCheckedBox();
   }
-  int cState=rm.getRenderer().getCheckedRenderedState();
-  final boolean empty;
-  if (tileBox.getZoom() < ZOOM_TO_SHOW_MAP_NAMES) {
-    empty=cState == 0;
-  }
- else {
-    empty=cState <= 1;
-  }
-  noMapsPresent=empty;
-  if (!empty && tileBox.getZoom() >= ZOOM_TO_SHOW_MAP_NAMES) {
-    return Collections.emptyList();
-  }
+  LatLon lt=tileBox.getLeftTopLatLon();
+  LatLon rb=tileBox.getRightBottomLatLon();
   List<BinaryMapDataObject> result=null;
-  int left=MapUtils.get31TileNumberX(tileBox.getLeftTopLatLon().getLongitude());
-  int right=MapUtils.get31TileNumberX(tileBox.getRightBottomLatLon().getLongitude());
-  int top=MapUtils.get31TileNumberY(tileBox.getLeftTopLatLon().getLatitude());
-  int bottom=MapUtils.get31TileNumberY(tileBox.getRightBottomLatLon().getLatitude());
+  int left=MapUtils.get31TileNumberX(lt.getLongitude());
+  int right=MapUtils.get31TileNumberX(rb.getLongitude());
+  int top=MapUtils.get31TileNumberY(lt.getLatitude());
+  int bottom=MapUtils.get31TileNumberY(rb.getLatitude());
   try {
     result=osmandRegions.queryBbox(left,right,top,bottom);
   }

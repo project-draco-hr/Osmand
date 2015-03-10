@@ -17,13 +17,23 @@ case 0:
     return;
 case MapDataBlock.BASEID_FIELD_NUMBER:
   baseId=codedIS.readUInt64();
+if (READ_STATS) {
+  req.stat.addBlockHeader(MapDataBlock.BASEID_FIELD_NUMBER,0);
+}
 break;
 case MapDataBlock.DATAOBJECTS_FIELD_NUMBER:
 int length=codedIS.readRawVarint32();
 int oldLimit=codedIS.pushLimit(length);
+if (READ_STATS) {
+req.stat.lastObjectSize+=length;
+req.stat.addBlockHeader(MapDataBlock.DATAOBJECTS_FIELD_NUMBER,length);
+}
 BinaryMapDataObject mapObject=readMapDataObject(tree,req,root);
 if (mapObject != null) {
 mapObject.setId(mapObject.getId() + baseId);
+if (READ_STATS) {
+req.publish(mapObject);
+}
 if (tempResults == null) {
 tempResults=new ArrayList<BinaryMapDataObject>();
 }
@@ -34,6 +44,10 @@ break;
 case MapDataBlock.STRINGTABLE_FIELD_NUMBER:
 length=codedIS.readRawVarint32();
 oldLimit=codedIS.pushLimit(length);
+if (READ_STATS) {
+req.stat.addBlockHeader(MapDataBlock.STRINGTABLE_FIELD_NUMBER,length);
+req.stat.lastBlockStringTableSize+=length;
+}
 if (tempResults != null) {
 List<String> stringTable=readStringTable();
 for (int i=0; i < tempResults.size(); i++) {

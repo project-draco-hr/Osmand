@@ -5,7 +5,7 @@
     LayoutInflater inflater=getActivity().getLayoutInflater();
     v=inflater.inflate(R.layout.dash_gpx_track_item,parent,false);
   }
-  udpateGpxInfoView(v,child,app,gpxNormal,gpxOnMap,false);
+  udpateGpxInfoView(v,child,app,false);
   ImageView icon=(ImageView)v.findViewById(R.id.icon);
   ImageButton options=(ImageButton)v.findViewById(R.id.options);
   options.setOnClickListener(new View.OnClickListener(){
@@ -45,16 +45,19 @@
  else {
     checkItem.setVisibility(View.GONE);
   }
-  final SelectedGpxFile selectedGpxFile=selectedGpxHelper.getSelectedFileByName(child.getFileName());
-  checkItem.setChecked(selectedGpxFile != null);
+  final boolean isChecked;
+  if (child.currentlyRecordingTrack) {
+    isChecked=selectedGpxHelper.getSelectedCurrentRecordingTrack() != null;
+  }
+ else {
+    final SelectedGpxFile selectedGpxFile=selectedGpxHelper.getSelectedFileByName(child.getFileName());
+    isChecked=selectedGpxFile != null;
+  }
+  checkItem.setChecked(isChecked);
   checkItem.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      if (child.gpx != null) {
-        selectedGpxHelper.selectGpxFile(child.gpx,checkItem.isChecked(),false);
-      }
- else {
-        selectedGpxHelper.getSelectedGPXFiles().remove(selectedGpxFile);
-      }
+      selectedGpxHelper.selectGpxFile(child.gpx,!isChecked,true);
+      notifyDataSetChanged();
     }
   }
 );

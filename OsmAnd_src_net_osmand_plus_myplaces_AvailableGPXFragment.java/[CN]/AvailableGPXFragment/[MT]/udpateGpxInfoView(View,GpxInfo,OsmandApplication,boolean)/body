@@ -1,0 +1,66 @@
+{
+  TextView viewName=((TextView)v.findViewById(R.id.name));
+  if (!isDashItem) {
+    v.findViewById(R.id.divider).setVisibility(View.GONE);
+  }
+ else {
+    v.findViewById(R.id.divider).setVisibility(View.VISIBLE);
+  }
+  viewName.setText(child.getName());
+  GpxSelectionHelper selectedGpxHelper=app.getSelectedGpxHelper();
+  ImageView icon=(ImageView)v.findViewById(R.id.icon);
+  icon.setVisibility(View.VISIBLE);
+  icon.setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.ic_gpx_track));
+  if (child.isCorrupted()) {
+    viewName.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
+  }
+ else {
+    viewName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+  }
+  SelectedGpxFile sgpx=child.currentlyRecordingTrack ? selectedGpxHelper.getSelectedCurrentRecordingTrack() : selectedGpxHelper.getSelectedFileByName(child.getFileName());
+  GPXTrackAnalysis analysis=null;
+  if (sgpx != null) {
+    icon.setImageDrawable(app.getIconsCache().getIcon(R.drawable.ic_gpx_track,R.color.color_distance));
+    analysis=sgpx.getTrackAnalysis();
+  }
+  boolean sectionRead=analysis == null;
+  if (sectionRead) {
+    v.findViewById(R.id.read_section).setVisibility(View.GONE);
+    v.findViewById(R.id.unknown_section).setVisibility(View.VISIBLE);
+    String date="";
+    String size="";
+    if (child.getSize() >= 0) {
+      if (child.getSize() > 100) {
+        size=formatMb.format(new Object[]{(float)child.getSize() / (1 << 10)});
+      }
+ else {
+        size=child.getSize() + " kB";
+      }
+    }
+    DateFormat df=app.getResourceManager().getDateFormat();
+    long fd=child.getFileDate();
+    if (fd > 0) {
+      date=(df.format(new Date(fd)));
+    }
+    TextView sizeText=(TextView)v.findViewById(R.id.date_and_size_details);
+    sizeText.setText(date + " \u2022 " + size);
+  }
+ else {
+    v.findViewById(R.id.read_section).setVisibility(View.VISIBLE);
+    v.findViewById(R.id.unknown_section).setVisibility(View.GONE);
+    TextView time=(TextView)v.findViewById(R.id.time);
+    TextView distance=(TextView)v.findViewById(R.id.distance);
+    TextView pointsCount=(TextView)v.findViewById(R.id.points_count);
+    pointsCount.setText(analysis.wptPoints + "");
+    distance.setText(OsmAndFormatter.getFormattedDistance(analysis.totalDistance,app));
+    if (analysis.isTimeSpecified()) {
+      time.setText(Algorithms.formatDuration((int)(analysis.timeSpan / 1000)) + "");
+    }
+ else {
+      time.setText("");
+    }
+  }
+  TextView descr=((TextView)v.findViewById(R.id.description));
+  descr.setVisibility(View.GONE);
+  v.findViewById(R.id.check_item).setVisibility(View.GONE);
+}

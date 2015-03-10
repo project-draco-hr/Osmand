@@ -1,0 +1,34 @@
+{
+  try {
+    startBgTime=System.currentTimeMillis();
+    app.favorites.loadFavorites();
+    notifyEvent(InitEvents.FAVORITES_INITIALIZED);
+    initPoiTypes();
+    app.resourceManager.reloadIndexesOnStart(this,warnings);
+    app.resourceManager.initRenderers(this);
+    notifyEvent(InitEvents.INIT_RENDERERS);
+    initNativeCore();
+    notifyEvent(InitEvents.NATIVE_INITIALIZED);
+    app.poiFilters.reloadAllPoiFilters();
+    notifyEvent(InitEvents.POI_TYPES_INITIALIZED);
+    indexRegionsBoundaries(false);
+    notifyEvent(InitEvents.INDEX_REGION_BOUNDARIES);
+    app.selectedGpxHelper.loadGPXTracks(this);
+    notifyEvent(InitEvents.LOAD_GPX_TRACKS);
+    saveGPXTracks();
+    notifyEvent(InitEvents.SAVE_GPX_TRACKS);
+    restoreBackupForFavoritesFiles();
+    notifyEvent(InitEvents.RESTORE_BACKUPS);
+  }
+ catch (  RuntimeException e) {
+    e.printStackTrace();
+    warnings.add(e.getMessage());
+  }
+ finally {
+    appInitializing=false;
+    notifyFinish();
+    if (warnings != null && !warnings.isEmpty()) {
+      app.showToastMessage(formatWarnings(warnings).toString());
+    }
+  }
+}

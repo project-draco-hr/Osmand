@@ -1,0 +1,31 @@
+{
+  MapObjectStat st=req.stat;
+  int cnt=0;
+  boolean names=st.lastObjectCoordinates == 0;
+  if (!names) {
+    this.lastStringNamesSize+=st.lastStringNamesSize;
+    this.lastObjectIdSize+=st.lastObjectIdSize;
+    this.lastObjectHeaderInfo+=st.lastObjectHeaderInfo;
+    this.lastObjectAdditionalTypes+=st.lastObjectAdditionalTypes;
+    this.lastObjectTypes+=st.lastObjectTypes;
+    this.lastObjectCoordinates+=st.lastObjectCoordinates;
+    cnt=obj.getPointsLength();
+    this.lastObjectSize+=st.lastObjectSize;
+    if (obj.getPolygonInnerCoordinates() != null) {
+      for (      int[] i : obj.getPolygonInnerCoordinates()) {
+        cnt+=i.length;
+      }
+    }
+    this.lastObjectCoordinatesCount+=cnt;
+  }
+  for (int i=0; i < obj.getTypes().length; i++) {
+    int tp=obj.getTypes()[i];
+    TagValuePair pair=obj.mapIndex.decodeType(tp);
+    if (pair == null) {
+      continue;
+    }
+    processKey(pair.toSimpleString(),st,obj.getObjectNames(),cnt,names);
+  }
+  st.clearObjectStats();
+  st.lastObjectSize=0;
+}

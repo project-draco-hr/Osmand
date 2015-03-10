@@ -1,21 +1,34 @@
 {
   this.visible=visible;
+  DashboardOnMap.staticVisible=visible;
   if (visible) {
-    addDashboardFragments();
+    mapViewLocation=mapActivity.getMapLocation();
+    mapRotation=mapActivity.getMapRotate();
+    mapLinkedToLocation=mapActivity.getMapViewTrackingUtilities().isMapLinkedToLocation();
+    myLocation=mapActivity.getMyApplication().getLocationProvider().getLastKnownLocation();
+    mapActivity.getMapViewTrackingUtilities().setDashboard(this);
+    addOrUpdateDashboardFragments();
+    setupActionBar();
+    updateDownloadBtn();
     dashboardView.setVisibility(View.VISIBLE);
-    if (floatingButtonVisible) {
-      fabButton.showFloatingActionButton();
-    }
-    open(dashboardView.findViewById(R.id.content));
-    ma.getMapActions().disableDrawer();
-    ma.findViewById(R.id.MapInfoControls).setVisibility(View.GONE);
-    ma.findViewById(R.id.MapButtons).setVisibility(View.GONE);
+    fabButton.showFloatingActionButton();
+    open(dashboardView.findViewById(R.id.animateContent));
+    mapActivity.getMapActions().disableDrawer();
+    mapActivity.findViewById(R.id.MapInfoControls).setVisibility(View.GONE);
+    mapActivity.findViewById(R.id.MapButtons).setVisibility(View.GONE);
+    updateLocation(true,true,false);
   }
  else {
-    ma.getMapActions().enableDrawer();
-    hide(dashboardView.findViewById(R.id.content));
-    ma.findViewById(R.id.MapInfoControls).setVisibility(View.VISIBLE);
-    ma.findViewById(R.id.MapButtons).setVisibility(View.VISIBLE);
+    mapActivity.getMapActions().enableDrawer();
+    mapActivity.getMapViewTrackingUtilities().setDashboard(null);
+    hide(dashboardView.findViewById(R.id.animateContent));
+    mapActivity.findViewById(R.id.MapInfoControls).setVisibility(View.VISIBLE);
+    mapActivity.findViewById(R.id.MapButtons).setVisibility(View.VISIBLE);
     fabButton.hideFloatingActionButton();
+    for (    WeakReference<DashBaseFragment> df : fragList) {
+      if (df.get() != null) {
+        df.get().onCloseDash();
+      }
+    }
   }
 }

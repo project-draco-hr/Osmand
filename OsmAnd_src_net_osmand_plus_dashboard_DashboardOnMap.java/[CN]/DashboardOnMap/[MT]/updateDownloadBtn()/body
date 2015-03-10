@@ -1,0 +1,33 @@
+{
+  Button btn=(Button)dashboardView.findViewById(R.id.map_download_button);
+  String filter=null;
+  String txt="";
+  OsmandMapTileView mv=mapActivity.getMapView();
+  if (mv != null && !mapActivity.getMyApplication().isApplicationInitializing()) {
+    if (mv.getZoom() < 11 && !mapActivity.getMyApplication().getResourceManager().containsBasemap()) {
+      filter="basemap";
+      txt=mapActivity.getString(R.string.shared_string_download) + " " + mapActivity.getString(R.string.base_world_map);
+    }
+ else {
+      DownloadedRegionsLayer dl=mv.getLayerByClass(DownloadedRegionsLayer.class);
+      if (dl != null) {
+        StringBuilder btnName=new StringBuilder();
+        filter=dl.getFilter(btnName);
+        txt=btnName.toString();
+      }
+    }
+  }
+  btn.setText(txt);
+  btn.setVisibility(filter == null ? View.GONE : View.VISIBLE);
+  final String f=filter;
+  btn.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      setDashboardVisibility(false);
+      final Intent intent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getDownloadIndexActivity());
+      intent.putExtra(DownloadActivity.FILTER_KEY,f.toString());
+      intent.putExtra(DownloadActivity.TAB_TO_OPEN,DownloadActivity.DOWNLOAD_TAB);
+      mapActivity.startActivity(intent);
+    }
+  }
+);
+}

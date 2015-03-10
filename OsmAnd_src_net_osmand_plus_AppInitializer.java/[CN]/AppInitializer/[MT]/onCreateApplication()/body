@@ -1,0 +1,32 @@
+{
+  OsmandSettings osmandSettings=app.getSettings();
+  if (!osmandSettings.FOLLOW_THE_ROUTE.get()) {
+    osmandSettings.APPLICATION_MODE.set(osmandSettings.DEFAULT_APPLICATION_MODE.get());
+  }
+  startTime=System.currentTimeMillis();
+  try {
+    app.bRouterServiceConnection=startupInit(BRouterServiceConnection.connect(app),BRouterServiceConnection.class);
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+  }
+  app.applyTheme(app);
+  app.poiTypes=startupInit(MapPoiTypes.getDefaultNoInit(),MapPoiTypes.class);
+  app.routingHelper=startupInit(new RoutingHelper(app),RoutingHelper.class);
+  app.resourceManager=startupInit(new ResourceManager(app),ResourceManager.class);
+  app.daynightHelper=startupInit(new DayNightHelper(app),DayNightHelper.class);
+  app.avoidSpecificRoads=startupInit(new AvoidSpecificRoads(app),AvoidSpecificRoads.class);
+  app.locationProvider=startupInit(new OsmAndLocationProvider(app),OsmAndLocationProvider.class);
+  app.savingTrackHelper=startupInit(new SavingTrackHelper(app),SavingTrackHelper.class);
+  app.liveMonitoringHelper=startupInit(new LiveMonitoringHelper(app),LiveMonitoringHelper.class);
+  app.selectedGpxHelper=startupInit(new GpxSelectionHelper(app,app.savingTrackHelper),GpxSelectionHelper.class);
+  app.favorites=startupInit(new FavouritesDbHelper(app),FavouritesDbHelper.class);
+  app.waypointHelper=startupInit(new WaypointHelper(app),WaypointHelper.class);
+  app.regions=startupInit(new OsmandRegions(),OsmandRegions.class);
+  String lang=osmandSettings.PREFERRED_LOCALE.get();
+  String clang="".equals(lang) ? new Locale(lang).getLanguage() : lang;
+  app.regions.setLocale(clang);
+  app.poiFilters=startupInit(new PoiFiltersHelper(app),PoiFiltersHelper.class);
+  app.rendererRegistry=startupInit(new RendererRegistry(),RendererRegistry.class);
+  app.targetPointsHelper=startupInit(new TargetPointsHelper(app),TargetPointsHelper.class);
+}
