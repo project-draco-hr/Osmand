@@ -1,0 +1,40 @@
+{
+  OsmandApplication app=getMyApplication();
+  final PopupMenu optionsMenu=new PopupMenu(getActivity(),v);
+  DirectionsDialogs.setupPopUpMenuIcon(optionsMenu);
+  MenuItem item=optionsMenu.getMenu().add(R.string.showed_on_map).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_show_on_map));
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      OsmandSettings settings=getMyApplication().getSettings();
+      settings.setMapLocationToShow(info.getLatitude(),info.getLongitude(),settings.getLastKnownMapZoom());
+      MapActivity.launchMapActivityMoveToTop(getActivity());
+      return true;
+    }
+  }
+);
+  item=optionsMenu.getMenu().add(R.string.local_openstreetmap_delete).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_action_delete_dark));
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      if (info.getGroup() == OsmPoint.Group.POI) {
+        dbpoi.deletePOI((OpenstreetmapPoint)info);
+      }
+ else       if (info.getGroup() == OsmPoint.Group.BUG) {
+        dbbug.deleteAllBugModifications((OsmNotesPoint)info);
+      }
+      listAdapter.delete(info);
+      return true;
+    }
+  }
+);
+  item=optionsMenu.getMenu().add(R.string.local_openstreetmap_upload).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_action_gup_dark));
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      toUpload=new OsmPoint[]{info};
+      ProgressDialog implementation=ProgressImplementation.createProgressDialog(getActivity(),getString(R.string.uploading),getString(R.string.local_openstreetmap_uploading),ProgressDialog.STYLE_HORIZONTAL).getDialog();
+      implementation.show();
+      return true;
+    }
+  }
+);
+  optionsMenu.show();
+}
