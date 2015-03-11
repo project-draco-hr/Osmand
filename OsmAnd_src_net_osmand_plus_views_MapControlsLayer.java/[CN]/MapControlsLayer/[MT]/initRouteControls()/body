@@ -1,0 +1,38 @@
+{
+  routePreparationLayout=mapActivity.findViewById(R.id.map_route_preparation_layout);
+  View cancelRouteButton=mapActivity.findViewById(R.id.map_cancel_route_button);
+  controls.add(MapHudButton.create((ImageView)cancelRouteButton,R.drawable.ic_action_remove_dark));
+  cancelRouteButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      notifyClicked();
+      if (mapActivity.getRoutingHelper().isFollowingMode()) {
+        mapActivity.getMapActions().stopNavigationActionConfirm(mapActivity.getMapView());
+      }
+ else {
+        mapActivity.getMapActions().stopNavigationWithoutConfirm();
+      }
+    }
+  }
+);
+  mapRouteInfoControl=new MapRouteInfoControl(mapActivity.getMapLayers().getContextMenuLayer(),mapActivity);
+  View waypointsButton=mapActivity.findViewById(R.id.map_waypoints_route_button);
+  controls.add(MapHudButton.create((ImageView)waypointsButton,R.drawable.ic_action_flage_dark));
+  waypointsButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      notifyClicked();
+      mapRouteInfoControl.showHideDialog();
+    }
+  }
+);
+  View optionsRouteButton=mapActivity.findViewById(R.id.map_options_route_button);
+  optionsRouteControl=MapHudButton.create((ImageView)optionsRouteButton,settings.getApplicationMode().getSmallIcon(false));
+  optionsRouteControlDialog=new MapRoutePreferencesControl(mapActivity);
+  controls.add(optionsRouteControl);
+  optionsRouteButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      notifyClicked();
+      optionsRouteControlDialog.showAndHideDialog();
+    }
+  }
+);
+}

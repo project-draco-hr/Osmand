@@ -4,7 +4,6 @@
   int textColor=isNight ? mapActivity.getResources().getColor(R.color.widgettext_night) : Color.BLACK;
   if (shadowColor != shadw) {
     shadowColor=shadw;
-    updatextColor(textColor,shadw,rulerControl,zoomControls,mapMenuControls);
   }
   boolean routePlanningMode=false;
   RoutingHelper rh=mapActivity.getRoutingHelper();
@@ -15,26 +14,8 @@
     routePlanningMode=true;
   }
   boolean routeFollowingMode=!routePlanningMode && rh.isFollowingMode();
-  boolean showDefaultButtons=!routePlanningMode && (!routeFollowingMode || settings.SHOW_ZOOM_BUTTONS_NAVIGATION.get());
-  if (routePlanningMode) {
-    forceHideView(zoomControls);
-    forceHideView(mapMenuControls);
-    forceHideView(mapRoutePlanControl);
-  }
-  checkVisibilityAndDraw(showDefaultButtons,zoomControls,canvas,tileBox,nightMode);
-  checkVisibilityAndDraw(showDefaultButtons,mapMenuControls,canvas,tileBox,nightMode);
-  checkVisibilityAndDraw(false,mapRoutePlanControl,canvas,tileBox,nightMode);
   boolean showRouteCalculationControls=routePlanningMode;
-  boolean showNavigationControls=mapActivity.getMyApplication().getAppCustomization().showNavigationControls();
-  checkVisibilityAndDraw(showRouteCalculationControls,mapSmallMenuControls,canvas,tileBox,nightMode);
-  checkVisibilityAndDraw(showNavigationControls && showRouteCalculationControls,mapCancelNavigationControl,canvas,tileBox,nightMode);
-  checkVisibilityAndDraw(showNavigationControls && showRouteCalculationControls,mapInfoNavigationControl,canvas,tileBox,nightMode);
-  checkVisibilityAndDraw(showNavigationControls && showRouteCalculationControls,mapAppModeControl,canvas,tileBox,nightMode);
-  checkVisibilityAndDraw(showRouteCalculationControls,mapNavigationControl,canvas,tileBox,nightMode);
-  checkVisibilityAndDraw(showRouteCalculationControls,zoomSideControls,canvas,tileBox,nightMode);
-  int vmargin=mapNavigationControl.isVisible() || zoomControls.isVisible() ? (zoomControls.getHeight() + zoomControls.getTotalVerticalMargin()) : 0;
-  rulerControl.setVerticalMargin(vmargin);
-  checkVisibilityAndDraw(true,rulerControl,canvas,tileBox,nightMode);
+  boolean showDefaultButtons=!routePlanningMode && (!routeFollowingMode || settings.SHOW_ZOOM_BUTTONS_NAVIGATION.get());
   boolean enabled=mapActivity.getMyApplication().getLocationProvider().getLastKnownLocation() != null;
   boolean tracked=mapActivity.getMapViewTrackingUtilities().isMapLinkedToLocation();
   if (!enabled) {
@@ -47,7 +28,13 @@
     backToLocationControl.setIconColorId(R.color.color_white);
   }
   menuControl.setIconResId(mapActivity.getMyApplication().getSettings().USE_DASHBOARD_INSTEAD_OF_DRAWER.get() ? R.drawable.ic_dashboard_dark : R.drawable.ic_navigation_drawer);
-  for (  MapControl mc : controls) {
+  optionsRouteControl.setIconResId(settings.getApplicationMode().getSmallIcon(false));
+  int vis=showRouteCalculationControls ? View.VISIBLE : View.GONE;
+  if (routePreparationLayout.getVisibility() != vis) {
+    routePreparationLayout.setVisibility(vis);
+    mapRouteInfoControl.setVisible(showRouteCalculationControls);
+  }
+  for (  MapHudButton mc : controls) {
     mc.update(mapActivity.getMyApplication(),nightMode == null ? false : nightMode.isNightMode());
   }
 }
