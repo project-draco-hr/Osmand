@@ -10,11 +10,13 @@ case DIALOG_SUB_CATEGORIES:
 {
   Builder builder=new AlertDialog.Builder(ctx);
   final Amenity a=(Amenity)args.getSerializable(KEY_AMENITY);
-  final String[] subCats=poiTypes.getAllTranslatedNames(a.getType()).keySet().toArray(new String[0]);
+  final Map<String,PoiType> allTranslatedNames=poiTypes.getAllTranslatedNames(a.getType(),true);
+  final String[] subCats=allTranslatedNames.keySet().toArray(new String[0]);
   builder.setItems(subCats,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      typeText.setText(subCats[which]);
-      a.setSubType(subCats[which]);
+      PoiType poiType=allTranslatedNames.get(subCats[which]);
+      typeText.setText(poiType.getKeyName());
+      a.setSubType(poiType.getKeyName());
       ctx.removeDialog(DIALOG_SUB_CATEGORIES);
     }
   }
