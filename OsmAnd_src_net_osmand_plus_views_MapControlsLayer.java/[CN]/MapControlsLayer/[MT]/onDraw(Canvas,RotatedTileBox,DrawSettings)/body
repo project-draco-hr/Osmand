@@ -35,4 +35,19 @@
   int vmargin=mapNavigationControl.isVisible() || zoomControls.isVisible() ? (zoomControls.getHeight() + zoomControls.getTotalVerticalMargin()) : 0;
   rulerControl.setVerticalMargin(vmargin);
   checkVisibilityAndDraw(true,rulerControl,canvas,tileBox,nightMode);
+  boolean enabled=mapActivity.getMyApplication().getLocationProvider().getLastKnownLocation() != null;
+  boolean tracked=mapActivity.getMapViewTrackingUtilities().isMapLinkedToLocation();
+  if (!enabled) {
+    backToLocationControl.setIconColorId(R.color.icon_color_light);
+  }
+ else   if (tracked) {
+    backToLocationControl.setIconColorId(R.color.color_distance);
+  }
+ else {
+    backToLocationControl.setIconColorId(R.color.color_white);
+  }
+  menuControl.setIconResId(mapActivity.getMyApplication().getSettings().USE_DASHBOARD_INSTEAD_OF_DRAWER.get() ? R.drawable.ic_dashboard_dark : R.drawable.ic_navigation_drawer);
+  for (  MapControl mc : controls) {
+    mc.update(mapActivity.getMyApplication(),nightMode == null ? false : nightMode.isNightMode());
+  }
 }
