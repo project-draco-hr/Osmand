@@ -28,11 +28,34 @@
     backToLocationControl.setIconColorId(R.color.color_white);
   }
   menuControl.setIconResId(mapActivity.getMyApplication().getSettings().USE_DASHBOARD_INSTEAD_OF_DRAWER.get() ? R.drawable.ic_dashboard_dark : R.drawable.ic_navigation_drawer);
-  optionsRouteControl.setIconResId(settings.getApplicationMode().getSmallIcon(false));
+  optionsRouteControl.setIconResId(settings.getApplicationMode().getSmallIcon(true));
   int vis=showRouteCalculationControls ? View.VISIBLE : View.GONE;
+  if (showRouteCalculationControls) {
+    ((TextView)routeGoControl.iv).setTextColor(textColor);
+  }
   if (routePreparationLayout.getVisibility() != vis) {
     routePreparationLayout.setVisibility(vis);
-    mapRouteInfoControl.setVisible(showRouteCalculationControls);
+    mapRouteInfoControlDialog.setVisible(showRouteCalculationControls);
+  }
+  float mapRotate=mapActivity.getMapView().getRotate();
+  if (mapRotate != cachedRotate && (rotateAnimation == null || rotateAnimation.hasEnded())) {
+    float c=cachedRotate - mapRotate;
+    cachedRotate=mapRotate;
+    rotateAnimation=new RotateAnimation(0.0f,c,compassHud.iv.getWidth() / 2,compassHud.iv.getHeight() / 2);
+    rotateAnimation.setDuration(100);
+    rotateAnimation.setRepeatCount(0);
+    rotateAnimation.setRepeatMode(Animation.REVERSE);
+    rotateAnimation.setFillAfter(true);
+    compassHud.iv.setAnimation(rotateAnimation);
+  }
+  if (settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_NONE) {
+    compassHud.setIconResId(isNight ? R.drawable.map_compass_niu_white : R.drawable.map_compass_niu);
+  }
+ else   if (settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_BEARING) {
+    compassHud.setIconResId(isNight ? R.drawable.map_compass_bearing_white : R.drawable.map_compass_bearing);
+  }
+ else {
+    compassHud.setIconResId(isNight ? R.drawable.map_compass_white : R.drawable.map_compass);
   }
   for (  MapHudButton mc : controls) {
     mc.update(mapActivity.getMyApplication(),nightMode == null ? false : nightMode.isNightMode());
