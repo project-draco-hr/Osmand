@@ -17,8 +17,21 @@
   if (limited) {
     long endtime=plugin.getParkingTime();
     long currTime=Calendar.getInstance().getTimeInMillis();
-    String time=getFormattedTime(endtime - currTime);
-    ((TextView)mainView.findViewById(R.id.time_left)).setText(time);
+    long timeDiff=endtime - currTime;
+    String time=getFormattedTime(timeDiff);
+    TextView timeLeft=(TextView)mainView.findViewById(R.id.time_left);
+    TextView leftLabel=(TextView)mainView.findViewById(R.id.left_lbl);
+    timeLeft.setText(time);
+    if (timeDiff < 0) {
+      timeLeft.setTextColor(Color.RED);
+      leftLabel.setTextColor(Color.RED);
+      leftLabel.setText(R.string.osmand_parking_outdated);
+    }
+ else {
+      timeLeft.setTextColor(Color.WHITE);
+      leftLabel.setTextColor(Color.WHITE);
+      leftLabel.setText(R.string.osmand_parking_time_left);
+    }
     mainView.findViewById(R.id.left_lbl).setVisibility(View.VISIBLE);
   }
  else {
@@ -29,6 +42,7 @@
   ImageView direction=(ImageView)mainView.findViewById(R.id.direction_icon);
   if (loc != null) {
     DashLocationView dv=new DashLocationView(direction,(TextView)mainView.findViewById(R.id.distance),position);
+    dv.paint=false;
     dv.arrowResId=R.drawable.ic_parking_postion_arrow;
     distances.add(dv);
   }
