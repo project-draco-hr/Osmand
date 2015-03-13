@@ -1,4 +1,58 @@
 {
   menu.clear();
-  ((FavoritesActivity)getActivity()).getClearToolbar(false);
+  if (ScreenOrientationHelper.isOrientationPortrait(getActivity())) {
+    menu=((FavoritesActivity)getActivity()).getClearToolbar(true).getMenu();
+  }
+ else {
+    ((FavoritesActivity)getActivity()).getClearToolbar(false);
+  }
+  MenuItem item=menu.add(R.string.local_openstreetmap_uploadall).setIcon(R.drawable.ic_action_export);
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      toUpload=dataPoints.toArray(new OsmPoint[0]);
+      showUploadItemsDialog();
+      return true;
+    }
+  }
+);
+  MenuItemCompat.setShowAsAction(item,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+  item=menu.add(R.string.local_osm_changes_backup).setIcon(R.drawable.ic_action_gsave_dark);
+  MenuItemCompat.setShowAsAction(item,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      new BackupOpenstreetmapPointAsyncTask().execute(dataPoints.toArray(new OsmPoint[0]));
+      return true;
+    }
+  }
+);
+  item=menu.add(R.string.shared_string_delete_all).setIcon(R.drawable.ic_action_delete_dark);
+  MenuItemCompat.setShowAsAction(item,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      AlertDialog.Builder b=new AlertDialog.Builder(getActivity());
+      b.setMessage(getString(R.string.local_osm_changes_delete_all_confirm,dataPoints.size()));
+      b.setPositiveButton(R.string.shared_string_delete,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          Iterator<OsmPoint> it=dataPoints.iterator();
+          while (it.hasNext()) {
+            OsmPoint info=it.next();
+            if (info.getGroup() == OsmPoint.Group.POI) {
+              dbpoi.deletePOI((OpenstreetmapPoint)info);
+            }
+ else             if (info.getGroup() == OsmPoint.Group.BUG) {
+              dbbug.deleteAllBugModifications((OsmNotesPoint)info);
+            }
+            it.remove();
+            listAdapter.delete(info);
+          }
+          listAdapter.notifyDataSetChanged();
+        }
+      }
+);
+      b.setNegativeButton(R.string.shared_string_cancel,null);
+      b.show();
+      return true;
+    }
+  }
+);
 }
