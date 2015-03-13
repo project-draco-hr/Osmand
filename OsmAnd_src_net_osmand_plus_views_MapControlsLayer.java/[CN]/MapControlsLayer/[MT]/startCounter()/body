@@ -1,0 +1,26 @@
+{
+  OsmandSettings settings=mapActivity.getMyApplication().getSettings();
+  int del=settings.DELAY_TO_START_NAVIGATION.get();
+  if (del <= 0) {
+    return;
+  }
+  if (startCounter <= 0) {
+    startCounter=System.currentTimeMillis() + del * 1000;
+    delayStart=new Runnable(){
+      @Override public void run(){
+        if (startCounter > 0) {
+          if (System.currentTimeMillis() > startCounter) {
+            startCounter=0;
+            startNavigation();
+          }
+ else {
+            mapActivity.refreshMap();
+            showUIHandler.postDelayed(delayStart,1000);
+          }
+        }
+      }
+    }
+;
+    delayStart.run();
+  }
+}

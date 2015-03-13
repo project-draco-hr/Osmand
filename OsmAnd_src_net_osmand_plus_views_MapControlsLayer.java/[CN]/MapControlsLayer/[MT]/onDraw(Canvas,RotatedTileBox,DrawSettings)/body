@@ -32,14 +32,30 @@
   int vis=showRouteCalculationControls ? View.VISIBLE : View.GONE;
   if (showRouteCalculationControls) {
     ((TextView)routeGoControl.iv).setTextColor(textColor);
+    final String text;
+    if (startCounter > 0) {
+      int get=(int)((startCounter - System.currentTimeMillis()) / 1000l);
+      text=mapActivity.getString(R.string.shared_string_go) + " (" + get+ ")";
+    }
+ else {
+      text=mapActivity.getString(R.string.shared_string_go);
+    }
+    ((TextView)routeGoControl.iv).setText(text);
   }
   if (routePreparationLayout.getVisibility() != vis) {
     routePreparationLayout.setVisibility(vis);
     mapRouteInfoControlDialog.setVisible(showRouteCalculationControls);
+    if (showRouteCalculationControls) {
+      if (!mapActivity.getRoutingHelper().isFollowingMode() && !mapActivity.getRoutingHelper().isPauseNavigation()) {
+        startCounter();
+      }
+    }
+ else {
+      stopCounter();
+    }
   }
   float mapRotate=mapActivity.getMapView().getRotate();
   if (mapRotate != cachedRotate) {
-    float c=cachedRotate - mapRotate;
     cachedRotate=mapRotate;
     compassHud.iv.invalidate();
   }
