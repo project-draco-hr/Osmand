@@ -27,7 +27,23 @@
  else {
     backToLocationControl.setIconColorId(R.color.color_white);
   }
-  menuControl.setIconResId(mapActivity.getMyApplication().getSettings().USE_DASHBOARD_INSTEAD_OF_DRAWER.get() ? R.drawable.ic_dashboard_dark : R.drawable.ic_navigation_drawer);
+  menuControl.setIconResId(settings.USE_DASHBOARD_INSTEAD_OF_DRAWER.get() ? R.drawable.ic_dashboard_dark : R.drawable.ic_navigation_drawer);
+  if (routeFollowingMode || routePlanningMode) {
+    mapAppModeShadow.setVisibility(View.GONE);
+  }
+ else {
+    mapAppModeShadow.setVisibility(View.VISIBLE);
+    if (!mapView.isZooming() || !OsmandPlugin.isDevelopment()) {
+      zoomText.setVisibility(View.GONE);
+      appModeIcon.setVisibility(View.VISIBLE);
+      appModeIcon.setImageResource(settings.getApplicationMode().getSmallIcon(isNight));
+    }
+ else {
+      zoomText.setVisibility(View.VISIBLE);
+      appModeIcon.setVisibility(View.GONE);
+      zoomText.setText(getZoomLevel(tileBox));
+    }
+  }
   optionsRouteControl.setIconResId(settings.getApplicationMode().getSmallIcon(true));
   int vis=showRouteCalculationControls ? View.VISIBLE : View.GONE;
   if (showRouteCalculationControls) {
