@@ -12,37 +12,7 @@
     mapViewTrackingUtilities=new MapViewTrackingUtilities(app);
   }
   dashboardOnMap.createDashboardView();
-  if (app.isApplicationInitializing() || DashboardOnMap.staticVisible) {
-    dashboardOnMap.setDashboardVisibility(true);
-  }
-  if (app.isApplicationInitializing()) {
-    findViewById(R.id.init_progress).setVisibility(View.VISIBLE);
-    initListener=new AppInitializeListener(){
-      boolean openGlSetup=false;
-      @Override public void onProgress(      AppInitializer init,      InitEvents event){
-        String tn=init.getCurrentInitTaskName();
-        if (tn != null) {
-          ((TextView)findViewById(R.id.ProgressMessage)).setText(tn);
-        }
-        if (event == InitEvents.MAPS_INITIALIZED) {
-          mapView.refreshMap(true);
-        }
-      }
-      @Override public void onFinish(      AppInitializer init){
-        if (!openGlSetup) {
-          setupOpenGLView();
-        }
-        mapView.refreshMap(true);
-        findViewById(R.id.init_progress).setVisibility(View.GONE);
-        findViewById(R.id.drawer_layout).invalidate();
-      }
-    }
-;
-    getMyApplication().checkApplicationIsBeingInitialized(this,initListener);
-  }
- else {
-    setupOpenGLView();
-  }
+  checkAppInitialization();
   parseLaunchIntentLocation();
   OsmAndMapSurfaceView surf=(OsmAndMapSurfaceView)findViewById(R.id.MapView);
   surf.setVisibility(View.VISIBLE);
@@ -82,9 +52,6 @@
   }
   addDialogProvider(mapActions);
   OsmandPlugin.onMapActivityCreate(this);
-  if (lockView != null) {
-    ((FrameLayout)mapView.getParent()).addView(lockView);
-  }
   gpxImportHelper=new GpxImportHelper(this,getMyApplication(),getMapView());
   mapActions.prepareStartOptionsMenu();
   wakeLockHelper=new WakeLockHelper(getMyApplication());
