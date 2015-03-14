@@ -18,22 +18,28 @@
     }
   }
 );
-  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-    fabButton=new FloatingActionButton.Builder(mapActivity).withDrawable(mapActivity.getResources().getDrawable(R.drawable.ic_action_get_my_location)).withButtonColor(mapActivity.getResources().getColor(R.color.color_myloc_distance)).withGravity(landscape ? Gravity.BOTTOM | Gravity.RIGHT : Gravity.TOP | Gravity.RIGHT).withMargins(0,landscape ? 0 : 160,16,landscape ? 16 : 0).create();
-    fabButton.setOnClickListener(new View.OnClickListener(){
-      @Override public void onClick(      View view){
-        if (getMyApplication().accessibilityEnabled()) {
-          mapActivity.getMapActions().whereAmIDialog();
-        }
- else {
-          mapActivity.getMapViewTrackingUtilities().backToLocationImpl();
-        }
-        setDashboardVisibility(false);
+  actionButton=new ActionButton(mapActivity);
+  FrameLayout.LayoutParams params=new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+  int marginRight=convertPixelsToDp(16,mapActivity);
+  params.setMargins(0,landscape ? 0 : convertPixelsToDp(164,mapActivity),marginRight,landscape ? marginRight : 0);
+  params.gravity=landscape ? Gravity.BOTTOM | Gravity.RIGHT : Gravity.TOP | Gravity.RIGHT;
+  actionButton.setLayoutParams(params);
+  actionButton.setImageDrawable(mapActivity.getResources().getDrawable(R.drawable.ic_action_map));
+  actionButton.setButtonColor(mapActivity.getResources().getColor(R.color.color_myloc_distance));
+  actionButton.hide();
+  actionButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (getMyApplication().accessibilityEnabled()) {
+        mapActivity.getMapActions().whereAmIDialog();
       }
+ else {
+        mapActivity.getMapViewTrackingUtilities().backToLocationImpl();
+      }
+      setDashboardVisibility(false);
     }
-);
-    fabButton.hideFloatingActionButton();
   }
+);
+  dashboardView.addView(actionButton);
   if (ScreenOrientationHelper.isOrientationPortrait(mapActivity)) {
     ((NotifyingScrollView)dashboardView.findViewById(R.id.main_scroll)).setOnScrollChangedListener(onScrollChangedListener);
   }

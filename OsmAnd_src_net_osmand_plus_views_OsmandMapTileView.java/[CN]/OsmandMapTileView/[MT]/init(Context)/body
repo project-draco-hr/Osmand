@@ -1,0 +1,34 @@
+{
+  application=(OsmandApplication)ctx.getApplicationContext();
+  paintGrayFill=new Paint();
+  paintGrayFill.setColor(Color.GRAY);
+  paintGrayFill.setStyle(Style.FILL);
+  paintGrayFill.setAntiAlias(true);
+  paintBlackFill=new Paint();
+  paintBlackFill.setColor(Color.BLACK);
+  paintBlackFill.setStyle(Style.FILL);
+  paintBlackFill.setAntiAlias(true);
+  paintWhiteFill=new Paint();
+  paintWhiteFill.setColor(Color.WHITE);
+  paintWhiteFill.setStyle(Style.FILL);
+  paintWhiteFill.setAntiAlias(true);
+  paintCenter=new Paint();
+  paintCenter.setStyle(Style.STROKE);
+  paintCenter.setColor(Color.rgb(60,60,60));
+  paintCenter.setStrokeWidth(2);
+  paintCenter.setAntiAlias(true);
+  paintImg=new Paint();
+  paintImg.setFilterBitmap(true);
+  handler=new Handler();
+  baseHandler=new Handler(application.getResourceManager().getRenderingBufferImageThread().getLooper());
+  animatedDraggingThread=new AnimateDraggingMapThread(this);
+  gestureDetector=new GestureDetector(ctx,new MapExplorer(this,new MapTileViewOnGestureListener()));
+  multiTouchSupport=new MultiTouchSupport(ctx,new MapTileViewMultiTouchZoomListener());
+  gestureDetector.setOnDoubleTapListener(new MapTileViewOnDoubleTapListener());
+  WindowManager mgr=(WindowManager)ctx.getSystemService(Context.WINDOW_SERVICE);
+  dm=new DisplayMetrics();
+  mgr.getDefaultDisplay().getMetrics(dm);
+  currentViewport=new RotatedTileBox.RotatedTileBoxBuilder().setLocation(0,0).setZoom(3).setPixelDimensions(100,100).build();
+  currentViewport.setDensity(dm.density);
+  currentViewport.setMapDensity(getSettingsMapDensity());
+}
