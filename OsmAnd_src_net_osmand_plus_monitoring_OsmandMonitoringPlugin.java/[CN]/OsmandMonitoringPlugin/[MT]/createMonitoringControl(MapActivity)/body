@@ -2,7 +2,7 @@
   final Drawable monitoringBig=map.getResources().getDrawable(R.drawable.monitoring_rec_big);
   final Drawable monitoringSmall=map.getResources().getDrawable(R.drawable.monitoring_rec_small);
   final Drawable monitoringInactive=map.getResources().getDrawable(R.drawable.monitoring_rec_inactive);
-  monitoringControl=new TextInfoWidget(map,0,paintText,paintSubText){
+  monitoringControl=new TextInfoWidget(map){
     long lastUpdateTime;
     @Override public boolean updateInfo(    DrawSettings drawSettings){
       if (isSaving) {
@@ -44,8 +44,7 @@
       if ((last != lastUpdateTime) && (globalRecord || isRecording)) {
         lastUpdateTime=last;
         setImageDrawable(monitoringInactive);
-        invalidate();
-        postDelayed(new Runnable(){
+        map.getMyApplication().runInUIThread(new Runnable(){
           @Override public void run(){
             if (globalRecord) {
               setImageDrawable(monitoringBig);
@@ -53,7 +52,6 @@
  else {
               setImageDrawable(monitoringSmall);
             }
-            invalidate();
           }
         }
 ,500);
