@@ -1,6 +1,7 @@
 {
   String text=null;
   TurnType[] type=new TurnType[1];
+  boolean showNextTurn=false;
   if (routingHelper != null && routingHelper.isRouteCalculated()) {
     if (routingHelper.isFollowingMode()) {
       text=routingHelper.getCurrentName(type);
@@ -8,6 +9,7 @@
  else {
       int di=MapRouteInfoControl.getDirectionInfo();
       if (di >= 0 && MapRouteInfoControl.isControlVisible() && di < routingHelper.getRouteDirections().size()) {
+        showNextTurn=true;
         RouteDirectionInfo next=routingHelper.getRouteDirections().get(di);
         type[0]=next.getTurnType();
         text=RoutingHelper.formatStreetName(next.getStreetName(),next.getRef(),next.getDestinationName());
@@ -20,7 +22,8 @@
       text=RoutingHelper.formatStreetName(rt.getName(),rt.getRef(),rt.getDestinationName());
     }
   }
-  if (updateWaypoint()) {
+  if (!showNextTurn && updateWaypoint()) {
+    updateVisibility(true);
     updateVisibility(addressText,false);
   }
  else   if (text == null) {
@@ -28,8 +31,13 @@
   }
  else {
     updateVisibility(true);
+    updateVisibility(waypointInfoBar,false);
     updateVisibility(addressText,true);
     boolean update=turnDrawable.setTurnType(type[0]);
+    int h=addressText.getHeight() / 4 * 3;
+    if (h != turnDrawable.getBounds().bottom) {
+      turnDrawable.setBounds(0,0,h,h);
+    }
     if (update) {
       if (type[0] != null) {
         addressText.setCompoundDrawables(turnDrawable,null,null,null);
