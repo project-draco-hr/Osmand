@@ -1,0 +1,64 @@
+{
+  boolean visible=false;
+  int locimminent=-1;
+  int[] loclanes=null;
+  int dist=0;
+  if ((rh == null || !rh.isFollowingMode()) && trackingUtilities.isMapLinkedToLocation() && settings.SHOW_LANES.get()) {
+    RouteDataObject ro=locationProvider.getLastKnownRouteSegment();
+    Location lp=locationProvider.getLastKnownLocation();
+    if (ro != null) {
+      float degree=lp == null || !lp.hasBearing() ? 0 : lp.getBearing();
+      loclanes=RouteResultPreparation.parseTurnLanes(ro,degree / 180 * Math.PI);
+      if (loclanes == null) {
+        loclanes=RouteResultPreparation.parseLanes(ro,degree / 180 * Math.PI);
+      }
+    }
+  }
+ else   if (rh != null && rh.isRouteCalculated()) {
+    if (rh.isFollowingMode() && settings.SHOW_LANES.get()) {
+      NextDirectionInfo r=rh.getNextRouteDirectionInfo(new NextDirectionInfo(),false);
+      if (r != null && r.directionInfo != null && r.directionInfo.getTurnType() != null) {
+        loclanes=r.directionInfo.getTurnType().getLanes();
+        locimminent=r.imminent;
+        if ((r.distanceTo > 800 && r.directionInfo.getTurnType().isSkipToSpeak()) || r.distanceTo > 1200) {
+          loclanes=null;
+        }
+        dist=r.distanceTo;
+      }
+    }
+ else {
+      int di=MapRouteInfoControl.getDirectionInfo();
+      if (di >= 0 && MapRouteInfoControl.isControlVisible() && di < rh.getRouteDirections().size()) {
+        RouteDirectionInfo next=rh.getRouteDirections().get(di);
+        if (next != null) {
+          loclanes=next.getTurnType().getLanes();
+        }
+      }
+    }
+  }
+  visible=loclanes != null && loclanes.length > 0;
+  if (visible) {
+    if (!Arrays.equals(lanesDrawable.lanes,loclanes) || (locimminent == 0) != lanesDrawable.imminent) {
+      lanesDrawable.imminent=locimminent == 0;
+      lanesDrawable.lanes=loclanes;
+      lanesDrawable.updateBounds();
+      lanesView.setImageDrawable(null);
+      lanesView.setImageDrawable(lanesDrawable);
+      lanesView.requestLayout();
+      lanesView.invalidate();
+    }
+    if (distChanged(dist,this.dist)) {
+      this.dist=dist;
+      if (dist == 0) {
+        lanesText.setText("");
+      }
+ else {
+        lanesText.setText(OsmAndFormatter.getFormattedDistance(dist,app));
+      }
+      lanesText.invalidate();
+    }
+  }
+  updateVisibility(lanesText,visible);
+  updateVisibility(lanesView,visible);
+  return true;
+}
