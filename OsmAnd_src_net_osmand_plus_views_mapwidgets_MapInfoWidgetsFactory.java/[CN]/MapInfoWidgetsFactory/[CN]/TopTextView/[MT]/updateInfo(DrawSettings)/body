@@ -1,14 +1,16 @@
 {
   String text=null;
+  TurnType[] type=new TurnType[1];
   if (routingHelper != null && routingHelper.isRouteCalculated()) {
     if (routingHelper.isFollowingMode()) {
-      text=routingHelper.getCurrentName();
+      text=routingHelper.getCurrentName(type);
     }
  else {
       int di=MapRouteInfoControl.getDirectionInfo();
       if (di >= 0 && MapRouteInfoControl.isControlVisible() && di < routingHelper.getRouteDirections().size()) {
         RouteDirectionInfo next=routingHelper.getRouteDirections().get(di);
-        text="\u2566 " + RoutingHelper.formatStreetName(next.getStreetName(),next.getRef(),next.getDestinationName());
+        type[0]=next.getTurnType();
+        text=RoutingHelper.formatStreetName(next.getStreetName(),next.getRef(),next.getDestinationName());
       }
     }
   }
@@ -27,6 +29,15 @@
  else {
     updateVisibility(true);
     updateVisibility(addressText,true);
+    boolean update=turnDrawable.setTurnType(type[0]);
+    if (update) {
+      if (type[0] != null) {
+        addressText.setCompoundDrawables(turnDrawable,null,null,null);
+      }
+ else {
+        addressText.setCompoundDrawables(null,null,null,null);
+      }
+    }
     if (!text.equals(addressText.getText().toString())) {
       if (!text.equals("")) {
         topBar.setContentDescription(text);
