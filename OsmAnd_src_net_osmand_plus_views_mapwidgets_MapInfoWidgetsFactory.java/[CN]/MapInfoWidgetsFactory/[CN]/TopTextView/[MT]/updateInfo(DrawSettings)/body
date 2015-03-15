@@ -1,55 +1,61 @@
 {
   String text=null;
+  TurnType[] type=new TurnType[1];
+  boolean showNextTurn=false;
   if (routingHelper != null && routingHelper.isRouteCalculated()) {
     if (routingHelper.isFollowingMode()) {
-      text=routingHelper.getCurrentName();
+      text=routingHelper.getCurrentName(type);
     }
  else {
       int di=MapRouteInfoControl.getDirectionInfo();
       if (di >= 0 && MapRouteInfoControl.isControlVisible() && di < routingHelper.getRouteDirections().size()) {
+        showNextTurn=true;
         RouteDirectionInfo next=routingHelper.getRouteDirections().get(di);
-        text="\u2566 " + RoutingHelper.formatStreetName(next.getStreetName(),next.getRef(),next.getDestinationName());
+        type[0]=next.getTurnType();
+        text=RoutingHelper.formatStreetName(next.getStreetName(),next.getRef(),next.getDestinationName());
       }
     }
   }
- else   if (map.getMapViewTrackingUtilities().isMapLinkedToLocation()) {
+ else   if (settings.getApplicationMode() != ApplicationMode.DEFAULT && map.getMapViewTrackingUtilities().isMapLinkedToLocation()) {
     RouteDataObject rt=locationProvider.getLastKnownRouteSegment();
     if (rt != null) {
       text=RoutingHelper.formatStreetName(rt.getName(),rt.getRef(),rt.getDestinationName());
     }
   }
-  if (text == null) {
-    text="";
+  if (!showNextTurn && updateWaypoint()) {
+    updateVisibility(true);
+    updateVisibility(addressText,false);
   }
-  if (!text.equals(getText().toString())) {
-    TextPaint pp=new TextPaint(getPaint());
-    if (!text.equals("")) {
-      pp.setTextSize(20 * scaleCoefficient);
-      float ts=pp.measureText(text);
-      int wth=getWidth();
-      while (ts > wth && pp.getTextSize() > (16 * scaleCoefficient)) {
-        pp.setTextSize(pp.getTextSize() - 1);
-        ts=pp.measureText(text);
-      }
-      boolean dots=false;
-      while (ts > wth) {
-        dots=true;
-        ts=pp.measureText(text);
-        text=text.substring(0,text.length() - 2);
-      }
-      if (dots) {
-        text+="..";
-      }
-      setTextSize(TypedValue.COMPLEX_UNIT_PX,pp.getTextSize());
-      setContentDescription(text);
-    }
+ else   if (text == null) {
+    updateVisibility(false);
+  }
  else {
-      setTextSize(TypedValue.COMPLEX_UNIT_PX,7);
-      setContentDescription(getResources().getString(R.string.map_widget_top_text));
+    updateVisibility(true);
+    updateVisibility(waypointInfoBar,false);
+    updateVisibility(addressText,true);
+    boolean update=turnDrawable.setTurnType(type[0]);
+    int h=addressText.getHeight() / 4 * 3;
+    if (h != turnDrawable.getBounds().bottom) {
+      turnDrawable.setBounds(0,0,h,h);
     }
-    setText(text);
-    invalidate();
-    return true;
+    if (update) {
+      if (type[0] != null) {
+        addressText.setCompoundDrawables(turnDrawable,null,null,null);
+      }
+ else {
+        addressText.setCompoundDrawables(null,null,null,null);
+      }
+    }
+    if (!text.equals(addressText.getText().toString())) {
+      if (!text.equals("")) {
+        topBar.setContentDescription(text);
+      }
+ else {
+        topBar.setContentDescription(map.getResources().getString(R.string.map_widget_top_text));
+      }
+      addressText.setText(text);
+      return true;
+    }
   }
   return false;
 }

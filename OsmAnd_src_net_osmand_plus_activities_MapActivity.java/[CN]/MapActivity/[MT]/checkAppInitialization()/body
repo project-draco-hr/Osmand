@@ -1,0 +1,37 @@
+{
+  if (app.isApplicationInitializing() || DashboardOnMap.staticVisible) {
+    dashboardOnMap.setDashboardVisibility(true);
+  }
+  if (app.isApplicationInitializing()) {
+    findViewById(R.id.init_progress).setVisibility(View.VISIBLE);
+    initListener=new AppInitializeListener(){
+      boolean openGlSetup=false;
+      @Override public void onProgress(      AppInitializer init,      InitEvents event){
+        String tn=init.getCurrentInitTaskName();
+        if (tn != null) {
+          ((TextView)findViewById(R.id.ProgressMessage)).setText(tn);
+        }
+        if (event == InitEvents.NATIVE_INITIALIZED) {
+          setupOpenGLView(false);
+          openGlSetup=true;
+        }
+        if (event == InitEvents.MAPS_INITIALIZED) {
+          mapView.refreshMap(true);
+        }
+      }
+      @Override public void onFinish(      AppInitializer init){
+        if (!openGlSetup) {
+          setupOpenGLView(false);
+        }
+        mapView.refreshMap(true);
+        findViewById(R.id.init_progress).setVisibility(View.GONE);
+        findViewById(R.id.drawer_layout).invalidate();
+      }
+    }
+;
+    getMyApplication().checkApplicationIsBeingInitialized(this,initListener);
+  }
+ else {
+    setupOpenGLView(true);
+  }
+}

@@ -1,43 +1,27 @@
 {
-  boolean selecteable=m.selecteable();
-  if (selecteable) {
-    ApplicationMode mode=settings.APPLICATION_MODE.get();
-    boolean visible=m.visible(mode);
-    boolean collapseEnabled=m.collapseEnabled(mode);
-    boolean collapse=m.visibleCollapsed(mode);
-    if (this.visibleElementsFromSettings.get(mode) == null) {
-      LinkedHashSet<String> set=new LinkedHashSet<String>();
-      restoreModes(set,left,mode);
-      restoreModes(set,right,mode);
-      restoreModes(set,top,mode);
-      this.visibleElementsFromSettings.put(mode,set);
-    }
-    this.visibleElementsFromSettings.get(mode).remove(m.key);
-    this.visibleElementsFromSettings.get(mode).remove("+" + m.key);
-    this.visibleElementsFromSettings.get(mode).remove("-" + m.key);
-    m.visibleModes.remove(mode);
-    if (m.visibleCollapsible != null) {
-      m.visibleCollapsible.remove(mode);
-    }
-    if (visible || collapse) {
-      if (collapseEnabled && !collapse) {
-        m.visibleCollapsible.add(mode);
-        this.visibleElementsFromSettings.get(mode).add("+" + m.key);
-      }
- else {
-        this.visibleElementsFromSettings.get(mode).add("-" + m.key);
-      }
+  ApplicationMode mode=settings.APPLICATION_MODE.get();
+  boolean visible=m.visible(mode);
+  boolean collapse=m.visibleCollapsed(mode);
+  defineDefaultSettingsElement(mode);
+  this.visibleElementsFromSettings.get(mode).remove(m.key);
+  this.visibleElementsFromSettings.get(mode).remove("+" + m.key);
+  this.visibleElementsFromSettings.get(mode).remove("-" + m.key);
+  m.visibleModes.remove(mode);
+  m.visibleCollapsible.remove(mode);
+  if (visible || collapse) {
+    if (!collapse) {
+      m.visibleCollapsible.add(mode);
+      this.visibleElementsFromSettings.get(mode).add("+" + m.key);
     }
  else {
-      m.visibleModes.add(mode);
-      this.visibleElementsFromSettings.get(mode).add("" + m.key);
+      this.visibleElementsFromSettings.get(mode).add("-" + m.key);
     }
-    StringBuilder bs=new StringBuilder();
-    for (    String ks : this.visibleElementsFromSettings.get(mode)) {
-      bs.append(ks).append(";");
-    }
-    settings.MAP_INFO_CONTROLS.set(bs.toString());
   }
+ else {
+    m.visibleModes.add(mode);
+    this.visibleElementsFromSettings.get(mode).add("" + m.key);
+  }
+  saveVisibleElementsToSettings(mode);
   if (m.stateChangeListener != null) {
     m.stateChangeListener.run();
   }

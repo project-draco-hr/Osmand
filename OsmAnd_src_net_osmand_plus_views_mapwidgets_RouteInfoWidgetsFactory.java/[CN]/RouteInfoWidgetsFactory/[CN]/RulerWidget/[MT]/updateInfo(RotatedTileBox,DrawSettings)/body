@@ -1,0 +1,24 @@
+{
+  boolean visible=true;
+  OsmandMapTileView view=ma.getMapView();
+  if (view.isZooming()) {
+    visible=false;
+  }
+ else   if ((tb.getZoom() != cacheRulerZoom || Math.abs(tb.getCenterTileX() - cacheRulerTileX) > 1 || Math.abs(tb.getCenterTileY() - cacheRulerTileY) > 1) && tb.getPixWidth() > 0 && maxWidth > 0) {
+    cacheRulerZoom=tb.getZoom();
+    cacheRulerTileX=tb.getCenterTileX();
+    cacheRulerTileY=tb.getCenterTileY();
+    final double dist=tb.getDistance(0,tb.getPixHeight() / 2,tb.getPixWidth(),tb.getPixHeight() / 2);
+    double pixDensity=tb.getPixWidth() / dist;
+    double roundedDist=OsmAndFormatter.calculateRoundedDist(maxWidth / pixDensity,view.getApplication());
+    int cacheRulerDistPix=(int)(pixDensity * roundedDist);
+    cacheRulerText=OsmAndFormatter.getFormattedDistance((float)roundedDist,view.getApplication());
+    text.setText(cacheRulerText);
+    LinearLayout.LayoutParams lp=(LayoutParams)layout.getLayoutParams();
+    lp.width=cacheRulerDistPix;
+    layout.setLayoutParams(lp);
+    layout.requestLayout();
+  }
+  updateVisibility(layout,visible);
+  return true;
+}

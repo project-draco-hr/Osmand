@@ -8,7 +8,7 @@ case DIALOG_DELETE_POI:
   return createDeleteDialog(args);
 case DIALOG_SUB_CATEGORIES:
 {
-  Builder builder=new AlertDialog.Builder(ctx);
+  Builder builder=new AlertDialog.Builder(activity);
   final Amenity a=(Amenity)args.getSerializable(KEY_AMENITY);
   final Map<String,PoiType> allTranslatedNames=poiTypes.getAllTranslatedNames(a.getType(),true);
   final String[] subCats=allTranslatedNames.keySet().toArray(new String[0]);
@@ -16,14 +16,14 @@ case DIALOG_SUB_CATEGORIES:
     @Override public void onClick(    DialogInterface dialog,    int which){
       PoiType poiType=allTranslatedNames.get(subCats[which]);
       typeText.setText(poiType.getKeyName());
-      a.setSubType(poiType.getKeyName());
-      ctx.removeDialog(DIALOG_SUB_CATEGORIES);
+      a.setSubType(subCats[which]);
+      activity.removeDialog(DIALOG_SUB_CATEGORIES);
     }
   }
 );
   builder.setOnCancelListener(new DialogInterface.OnCancelListener(){
     @Override public void onCancel(    DialogInterface dialog){
-      ctx.removeDialog(DIALOG_SUB_CATEGORIES);
+      activity.removeDialog(DIALOG_SUB_CATEGORIES);
     }
   }
 );
@@ -32,7 +32,7 @@ case DIALOG_SUB_CATEGORIES:
 case DIALOG_POI_TYPES:
 {
 final Amenity a=(Amenity)args.getSerializable(KEY_AMENITY);
-Builder builder=new AlertDialog.Builder(ctx);
+Builder builder=new AlertDialog.Builder(activity);
 final List<PoiCategory> categories=poiTypes.getCategories();
 String[] vals=new String[categories.size()];
 for (int i=0; i < vals.length; i++) {
@@ -46,13 +46,13 @@ builder.setItems(vals,new Dialog.OnClickListener(){
       a.setSubType("");
       updateType(a);
     }
-    ctx.removeDialog(DIALOG_POI_TYPES);
+    activity.removeDialog(DIALOG_POI_TYPES);
   }
 }
 );
 builder.setOnCancelListener(new DialogInterface.OnCancelListener(){
   @Override public void onCancel(  DialogInterface dialog){
-    ctx.removeDialog(DIALOG_POI_TYPES);
+    activity.removeDialog(DIALOG_POI_TYPES);
   }
 }
 );
