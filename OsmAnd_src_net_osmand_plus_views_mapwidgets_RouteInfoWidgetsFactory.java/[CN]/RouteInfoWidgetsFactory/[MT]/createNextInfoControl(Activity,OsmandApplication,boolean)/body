@@ -1,0 +1,45 @@
+{
+  final OsmandSettings settings=app.getSettings();
+  final RoutingHelper routingHelper=app.getRoutingHelper();
+  final NextTurnInfoWidget nextTurnInfo=new NextTurnInfoWidget(activity,app,horisontalMini,scaleCoefficient){
+    NextDirectionInfo calc1=new NextDirectionInfo();
+    @Override public boolean updateInfo(    DrawSettings drawSettings){
+      boolean followingMode=routingHelper.isFollowingMode() || app.getLocationProvider().getLocationSimulation().isRouteAnimating();
+      TurnType turnType=null;
+      boolean deviatedFromRoute=false;
+      int turnImminent=0;
+      int nextTurnDistance=0;
+      if (routingHelper != null && routingHelper.isRouteCalculated() && followingMode) {
+        deviatedFromRoute=routingHelper.isDeviatedFromRoute();
+        if (deviatedFromRoute) {
+          turnImminent=0;
+          turnType=TurnType.valueOf(TurnType.OFFR,settings.DRIVING_REGION.get().leftHandDriving);
+          setDeviatePath((int)routingHelper.getRouteDeviation());
+        }
+ else {
+          NextDirectionInfo r=routingHelper.getNextRouteDirectionInfo(calc1,true);
+          if (r != null && r.distanceTo > 0 && r.directionInfo != null) {
+            turnType=r.directionInfo.getTurnType();
+            setExitOut(turnType.getExitOut());
+            nextTurnDistance=r.distanceTo;
+            turnImminent=r.imminent;
+          }
+        }
+      }
+      setTurnType(turnType);
+      setTurnImminent(turnImminent,deviatedFromRoute);
+      setTurnDistance(nextTurnDistance);
+      return true;
+    }
+  }
+;
+  nextTurnInfo.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (routingHelper.isRouteCalculated()) {
+        routingHelper.getVoiceRouter().announceCurrentDirection(null);
+      }
+    }
+  }
+);
+  return nextTurnInfo;
+}
