@@ -1,0 +1,29 @@
+{
+  lastPoint=waypointHelper.getMostImportantLocationPoint(null);
+  if (lastPoint == null) {
+    updateVisibility(waypointInfoBar,false);
+    return false;
+  }
+ else {
+    boolean updated=updateVisibility(waypointInfoBar,true);
+    WaypointDialogHelper.updatePointInfoView(map.getMyApplication(),map,waypointInfoBar,lastPoint,null);
+    if (updated) {
+      View all=waypointInfoBar.findViewById(R.id.waypoint_more);
+      View btnN=waypointInfoBar.findViewById(R.id.waypoint_close);
+      all.setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        View view){
+          map.getMapActions().showWaypointsInDrawer(false);
+        }
+      }
+);
+      btnN.setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        View view){
+          waypointHelper.removeVisibleLocationPoint(lastPoint);
+          map.refreshMap();
+        }
+      }
+);
+    }
+    return true;
+  }
+}

@@ -12,44 +12,31 @@
       }
     }
   }
- else   if (map.getMapViewTrackingUtilities().isMapLinkedToLocation()) {
+ else   if (settings.getApplicationMode() != ApplicationMode.DEFAULT && map.getMapViewTrackingUtilities().isMapLinkedToLocation()) {
     RouteDataObject rt=locationProvider.getLastKnownRouteSegment();
     if (rt != null) {
       text=RoutingHelper.formatStreetName(rt.getName(),rt.getRef(),rt.getDestinationName());
     }
   }
-  if (text == null) {
-    text="";
+  if (updateWaypoint()) {
+    updateVisibility(addressText,false);
   }
-  if (!text.equals(getText().toString())) {
-    TextPaint pp=new TextPaint(getPaint());
-    if (!text.equals("")) {
-      pp.setTextSize(20 * scaleCoefficient);
-      float ts=pp.measureText(text);
-      int wth=getWidth();
-      while (ts > wth && pp.getTextSize() > (16 * scaleCoefficient)) {
-        pp.setTextSize(pp.getTextSize() - 1);
-        ts=pp.measureText(text);
-      }
-      boolean dots=false;
-      while (ts > wth) {
-        dots=true;
-        ts=pp.measureText(text);
-        text=text.substring(0,text.length() - 2);
-      }
-      if (dots) {
-        text+="..";
-      }
-      setTextSize(TypedValue.COMPLEX_UNIT_PX,pp.getTextSize());
-      setContentDescription(text);
-    }
+ else   if (text == null) {
+    updateVisibility(false);
+  }
  else {
-      setTextSize(TypedValue.COMPLEX_UNIT_PX,7);
-      setContentDescription(getResources().getString(R.string.map_widget_top_text));
+    updateVisibility(true);
+    updateVisibility(addressText,true);
+    if (!text.equals(addressText.getText().toString())) {
+      if (!text.equals("")) {
+        topBar.setContentDescription(text);
+      }
+ else {
+        topBar.setContentDescription(map.getResources().getString(R.string.map_widget_top_text));
+      }
+      addressText.setText(text);
+      return true;
     }
-    setText(text);
-    invalidate();
-    return true;
   }
   return false;
 }
