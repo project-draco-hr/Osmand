@@ -15,22 +15,9 @@
   item=optionsMenu.getMenu().add(R.string.shared_string_delete).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_action_delete_dark));
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
-      AlertDialog.Builder b=new AlertDialog.Builder(getActivity());
-      b.setMessage(getString(R.string.local_osm_changes_delete_all_confirm,1));
-      b.setPositiveButton(R.string.shared_string_delete,new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          if (info.getGroup() == OsmPoint.Group.POI) {
-            dbpoi.deletePOI((OpenstreetmapPoint)info);
-          }
- else           if (info.getGroup() == OsmPoint.Group.BUG) {
-            dbbug.deleteAllBugModifications((OsmNotesPoint)info);
-          }
-          listAdapter.delete(info);
-        }
-      }
-);
-      b.setNegativeButton(R.string.shared_string_cancel,null);
-      b.show();
+      ArrayList<OsmPoint> points=new ArrayList<OsmPoint>();
+      points.add(info);
+      deleteItems(new ArrayList<OsmPoint>(points));
       return true;
     }
   }
@@ -38,8 +25,7 @@
   item=optionsMenu.getMenu().add(R.string.local_openstreetmap_upload).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_action_export));
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
-      toUpload=new OsmPoint[]{info};
-      showUploadItemsDialog();
+      uploadItems(new OsmPoint[]{info});
       return true;
     }
   }
