@@ -7,17 +7,11 @@
     }
   }
 ;
+  scrollView=((NotifyingScrollView)dashboardView.findViewById(R.id.main_scroll));
+  listViewLayout=dashboardView.findViewById(R.id.dash_list_view_layout);
+  listView=(ListView)dashboardView.findViewById(R.id.dash_list_view);
   dashboardView.findViewById(R.id.animateContent).setOnClickListener(listener);
   dashboardView.setOnClickListener(listener);
-  switchButton=(ImageView)dashboardView.findViewById(R.id.map_menu_button);
-  switchButton.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      setDashboardVisibility(false);
-      mapActivity.getMyApplication().getSettings().USE_DASHBOARD_INSTEAD_OF_DRAWER.set(false);
-      mapActivity.getMapActions().toggleDrawer();
-    }
-  }
-);
   actionButton=new ActionButton(mapActivity);
   FrameLayout.LayoutParams params=new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
   int marginRight=convertPixelsToDp(16,mapActivity);
@@ -41,6 +35,14 @@
 );
   dashboardView.addView(actionButton);
   if (ScreenOrientationHelper.isOrientationPortrait(mapActivity)) {
-    ((NotifyingScrollView)dashboardView.findViewById(R.id.main_scroll)).setOnScrollChangedListener(onScrollChangedListener);
+    scrollView.setOnScrollChangedListener(onScrollChangedListener);
+    listView.setOnScrollListener(new OnScrollListener(){
+      private TIntObjectHashMap<Integer> listViewItemHeights=new TIntObjectHashMap<Integer>();
+      @Override public void onScrollStateChanged(      AbsListView view,      int scrollState){
+      }
+      @Override public void onScroll(      AbsListView view,      int firstVisibleItem,      int visibleItemCount,      int totalItemCount){
+      }
+    }
+);
   }
 }

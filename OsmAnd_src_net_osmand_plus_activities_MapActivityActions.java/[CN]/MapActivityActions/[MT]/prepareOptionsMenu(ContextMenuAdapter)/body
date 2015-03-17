@@ -1,31 +1,10 @@
 {
   refreshDrawer=false;
   final ArrayAdapter<?> listAdapter=cm.createListAdapter(mapActivity,getMyApplication().getSettings().isLightContent());
-  mDrawerList.setAdapter(listAdapter);
-  mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-    @Override public void onItemClick(    AdapterView<?> parent,    View view,    int which,    long id){
-      OnContextMenuClick click=cm.getClickAdapter(which);
-      if (click instanceof OnRowItemClick) {
-        boolean cl=((OnRowItemClick)click).onRowItemClick(listAdapter,view,cm.getElementId(which),which);
-        if (cl) {
-          mDrawerLayout.closeDrawer(mDrawerList);
-        }
-      }
- else       if (click != null) {
-        CompoundButton btn=(CompoundButton)view.findViewById(R.id.check_item);
-        if (btn != null && btn.getVisibility() == View.VISIBLE) {
-          btn.setChecked(!btn.isChecked());
-        }
- else {
-          if (click.onContextMenuClick(listAdapter,cm.getElementId(which),which,false)) {
-            mDrawerLayout.closeDrawer(mDrawerList);
-          }
-        }
-      }
- else {
-        mDrawerLayout.closeDrawer(mDrawerList);
-      }
-    }
+  OnItemClickListener listener=getOptionsMenuOnClickListener(cm,listAdapter);
+  if (USE_OLD_DRAWER_TODELETE) {
+    mDrawerList.setAdapter(listAdapter);
+    mDrawerList.setOnItemClickListener(getOptionsMenuOnClickListener(cm,listAdapter));
   }
-);
+  mapActivity.getDashboard().setListAdapter(listAdapter,listener);
 }
