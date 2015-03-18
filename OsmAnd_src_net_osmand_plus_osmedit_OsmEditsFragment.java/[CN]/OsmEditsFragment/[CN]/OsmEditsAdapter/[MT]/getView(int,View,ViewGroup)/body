@@ -7,6 +7,25 @@
   }
   getOsmEditView(v,child,getMyApplication());
   v.findViewById(R.id.play).setVisibility(View.GONE);
+  final CheckBox ch=(CheckBox)v.findViewById(R.id.check_local_index);
+  View options=v.findViewById(R.id.options);
+  if (selectionMode) {
+    options.setVisibility(View.GONE);
+    ch.setVisibility(View.VISIBLE);
+    ch.setChecked(osmEditsSelected.contains(child));
+    v.findViewById(R.id.icon).setVisibility(View.GONE);
+    ch.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        onItemSelect(ch,child);
+      }
+    }
+);
+  }
+ else {
+    v.findViewById(R.id.icon).setVisibility(View.VISIBLE);
+    options.setVisibility(View.VISIBLE);
+    ch.setVisibility(View.GONE);
+  }
   v.findViewById(R.id.options).setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       openPopUpMenu(v,child);
@@ -15,7 +34,13 @@
 );
   v.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      showOnMap(child);
+      if (selectionMode) {
+        ch.setChecked(!ch.isChecked());
+        onItemSelect(ch,child);
+      }
+ else {
+        showOnMap(child);
+      }
     }
   }
 );
