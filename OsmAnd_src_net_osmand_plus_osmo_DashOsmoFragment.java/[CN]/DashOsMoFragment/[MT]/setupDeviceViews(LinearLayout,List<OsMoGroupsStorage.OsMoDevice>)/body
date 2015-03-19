@@ -1,0 +1,50 @@
+{
+  Drawable markerIcon=getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_marker_dark);
+  LayoutInflater inflater=getActivity().getLayoutInflater();
+  for (  final OsMoGroupsStorage.OsMoDevice device : devices) {
+    View v=inflater.inflate(R.layout.dash_osmo_item,null,false);
+    final ImageButton showOnMap=(ImageButton)v.findViewById(R.id.show_on_map);
+    showOnMap.setImageDrawable(markerIcon);
+    final String name=device.getVisibleName();
+    showOnMap.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        Location loc=device.getLastLocation();
+        if (loc == null) {
+          Toast.makeText(getActivity(),R.string.osmo_device_not_found,Toast.LENGTH_SHORT).show();
+          return;
+        }
+        getMyApplication().getSettings().setMapLocationToShow(loc.getLatitude(),loc.getLongitude(),15,new PointDescription(PointDescription.POINT_TYPE_MARKER,name),false,device);
+        MapActivity.launchMapActivityMoveToTop(getActivity());
+      }
+    }
+);
+    final CompoundButton enableDevice=(CompoundButton)v.findViewById(R.id.check_item);
+    ImageView icon=(ImageView)v.findViewById(R.id.icon);
+    if (device.isEnabled()) {
+      enableDevice.setVisibility(View.GONE);
+      icon.setImageDrawable(getMyApplication().getIconsCache().getPaintedContentIcon(R.drawable.ic_person,device.getColor()));
+    }
+ else {
+      enableDevice.setVisibility(View.VISIBLE);
+      enableDevice.setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        View v){
+          plugin.getGroups().connectDevice(device);
+          refreshItems();
+        }
+      }
+);
+      showOnMap.setVisibility(View.GONE);
+      icon.setImageDrawable(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_person));
+    }
+    if (device.isActive()) {
+    }
+    ((TextView)v.findViewById(R.id.name)).setText(name);
+    v.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        launchOsMoGroupsActivity();
+      }
+    }
+);
+    contentList.addView(v);
+  }
+}
