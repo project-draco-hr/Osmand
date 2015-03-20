@@ -32,69 +32,41 @@
       }
     }
   }
+  DirectionDrawable draw=new DirectionDrawable(SearchPOIActivity.this,width,height,R.drawable.ic_destination_arrow_white,R.color.color_distance);
+  int screenOrientation=DashLocationFragment.getScreenOrientation(SearchPOIActivity.this);
   if (loc != null) {
-    DirectionDrawable draw=new DirectionDrawable(SearchPOIActivity.this,width,height,R.drawable.ic_destination_arrow_white,R.color.color_distance);
-    Float h=heading;
-    float a=h != null ? h : 0;
-    int screenOrientation=0;
-    screenOrientation=((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
-switch (screenOrientation) {
-case ORIENTATION_0:
-      screenOrientation=0;
-    break;
-case ORIENTATION_90:
-  screenOrientation=90;
-break;
-case ORIENTATION_270:
-screenOrientation=270;
-break;
-case ORIENTATION_180:
-screenOrientation=180;
-break;
-}
-Sensor compass=((SensorManager)getSystemService(Context.SENSOR_SERVICE)).getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-if (compass == null) {
-screenOrientation=0;
-}
-draw.setAngle(mes[1] - a + 180 + screenOrientation);
-draw.setOpenedColor(opened);
-direction.setImageDrawable(draw);
-}
+    float a=heading != null ? heading : 0;
+    draw.setAngle(mes[1] - a + 180 + screenOrientation);
+  }
  else {
-if (opened == -1) {
-direction.setImageResource(R.drawable.poi);
-}
- else if (opened == 0) {
-direction.setImageResource(R.drawable.opened_poi);
-}
+    draw.setAngle(0);
+  }
+  draw.setOpenedColor(opened);
+  direction.setImageDrawable(draw);
+  PoiType st=amenity.getType().getPoiTypeByKeyName(amenity.getSubType());
+  if (st != null) {
+    if (RenderingIcons.containsBigIcon(st.getKeyName())) {
+      icon.setImageResource(RenderingIcons.getBigIconResourceId(st.getKeyName()));
+    }
+ else     if (RenderingIcons.containsBigIcon(st.getOsmTag() + "_" + st.getOsmValue())) {
+      icon.setImageResource(RenderingIcons.getBigIconResourceId(st.getOsmTag() + "_" + st.getOsmValue()));
+    }
+ else     if (RenderingIcons.containsBigIcon(st.getOsmTag() + "_" + st.getOsmValue())) {
+      icon.setImageResource(RenderingIcons.getBigIconResourceId(st.getOsmValue()));
+    }
  else {
-direction.setImageResource(R.drawable.closed_poi);
-}
-}
-PoiType st=amenity.getType().getPoiTypeByKeyName(amenity.getSubType());
-if (st != null) {
-if (RenderingIcons.containsBigIcon(st.getKeyName())) {
-icon.setImageResource(RenderingIcons.getBigIconResourceId(st.getKeyName()));
-}
- else if (RenderingIcons.containsBigIcon(st.getOsmTag() + "_" + st.getOsmValue())) {
-icon.setImageResource(RenderingIcons.getBigIconResourceId(st.getOsmTag() + "_" + st.getOsmValue()));
-}
- else if (RenderingIcons.containsBigIcon(st.getOsmTag() + "_" + st.getOsmValue())) {
-icon.setImageResource(RenderingIcons.getBigIconResourceId(st.getOsmValue()));
-}
+      icon.setImageDrawable(null);
+    }
+  }
  else {
-icon.setImageDrawable(null);
-}
-}
- else {
-icon.setImageDrawable(null);
-}
-String distance="  ";
-if (mes != null) {
-distance=" " + OsmAndFormatter.getFormattedDistance((int)mes[0],getMyApplication()) + "  ";
-}
-String poiType=OsmAndFormatter.getPoiStringWithoutType(amenity,settings.usingEnglishNames());
-label.setText(poiType);
-distanceText.setText(distance);
-return (row);
+    icon.setImageDrawable(null);
+  }
+  String distance="  ";
+  if (mes != null) {
+    distance=" " + OsmAndFormatter.getFormattedDistance((int)mes[0],getMyApplication()) + "  ";
+  }
+  String poiType=OsmAndFormatter.getPoiStringWithoutType(amenity,settings.usingEnglishNames());
+  label.setText(poiType);
+  distanceText.setText(distance);
+  return (row);
 }

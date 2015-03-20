@@ -1,5 +1,6 @@
 {
   final int layoutId=defaultLayoutId;
+  final OsmandApplication app=((OsmandApplication)activity.getApplication());
   ArrayAdapter<String> listAdapter=new ArrayAdapter<String>(activity,layoutId,R.id.title,getItemNames()){
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
@@ -9,7 +10,7 @@
         return AppModeDialog.prepareAppModeDrawerView(activity,visibleModes,selected,allModes,new View.OnClickListener(){
           @Override public void onClick(          View view){
             if (selected.size() > 0) {
-              ((OsmandApplication)activity.getApplication()).getSettings().APPLICATION_MODE.set(selected.iterator().next());
+              app.getSettings().APPLICATION_MODE.set(selected.iterator().next());
               notifyDataSetChanged();
             }
             if (changeAppModeListener != null) {
@@ -25,9 +26,9 @@
       }
       TextView tv=(TextView)v.findViewById(R.id.title);
       tv.setText(isCategory(position) ? getItemName(position).toUpperCase() : getItemName(position));
-      int imageId=getImageId(position,holoLight);
-      if (imageId != 0) {
-        ((ImageView)v.findViewById(R.id.icon)).setImageResource(imageId);
+      Drawable imageId=getImage(app,position,holoLight);
+      if (imageId != null) {
+        ((ImageView)v.findViewById(R.id.icon)).setImageDrawable(imageId);
         v.findViewById(R.id.icon).setVisibility(View.VISIBLE);
       }
  else       if (v.findViewById(R.id.icon) != null) {
