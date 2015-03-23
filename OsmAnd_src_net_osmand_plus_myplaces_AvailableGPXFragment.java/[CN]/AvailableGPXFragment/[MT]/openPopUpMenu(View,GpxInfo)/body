@@ -1,13 +1,8 @@
 {
-  boolean light=getMyApplication().getSettings().isLightContent();
+  IconsCache iconsCache=getMyApplication().getIconsCache();
   final PopupMenu optionsMenu=new PopupMenu(getActivity(),v);
   DirectionsDialogs.setupPopUpMenuIcon(optionsMenu);
-  Drawable showIcon=getResources().getDrawable(R.drawable.ic_show_on_map);
-  if (light) {
-    showIcon=showIcon.mutate();
-    showIcon.setColorFilter(getResources().getColor(R.color.icon_color_light),PorterDuff.Mode.MULTIPLY);
-  }
-  MenuItem item=optionsMenu.getMenu().add(R.string.shared_string_show_on_map).setIcon(showIcon);
+  MenuItem item=optionsMenu.getMenu().add(R.string.shared_string_show_on_map).setIcon(iconsCache.getContentIcon(R.drawable.ic_show_on_map));
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
       showGpxOnMap(gpxInfo);
@@ -15,7 +10,7 @@
     }
   }
 );
-  item=optionsMenu.getMenu().add(R.string.shared_string_rename).setIcon(light ? R.drawable.ic_action_edit_light : R.drawable.ic_action_edit_dark);
+  item=optionsMenu.getMenu().add(R.string.shared_string_rename).setIcon(iconsCache.getContentIcon(R.drawable.ic_action_edit_dark));
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
       LocalIndexesFragment.renameFile(getActivity(),gpxInfo.file,new Runnable(){
@@ -29,7 +24,7 @@
     }
   }
 );
-  item=optionsMenu.getMenu().add(R.string.shared_string_share).setIcon(getMyApplication().getIconsCache().getActionBarIcon(R.drawable.ic_action_gshare_dark,light));
+  item=optionsMenu.getMenu().add(R.string.shared_string_share).setIcon(iconsCache.getContentIcon(R.drawable.ic_action_gshare_dark));
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
       final Uri fileUri=Uri.fromFile(gpxInfo.file);
@@ -43,7 +38,7 @@
 );
   final OsmEditingPlugin osmEditingPlugin=OsmandPlugin.getEnabledPlugin(OsmEditingPlugin.class);
   if (osmEditingPlugin != null && osmEditingPlugin.isActive()) {
-    item=optionsMenu.getMenu().add(R.string.shared_string_export).setIcon(getMyApplication().getIconsCache().getActionBarIcon(R.drawable.ic_action_export,light));
+    item=optionsMenu.getMenu().add(R.string.shared_string_export).setIcon(iconsCache.getContentIcon(R.drawable.ic_action_export));
     item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
       @Override public boolean onMenuItemClick(      MenuItem item){
         osmEditingPlugin.sendGPXFiles(getActivity(),AvailableGPXFragment.this,gpxInfo);
@@ -52,7 +47,7 @@
     }
 );
   }
-  item=optionsMenu.getMenu().add(R.string.shared_string_delete).setIcon(light ? R.drawable.ic_action_delete_light : R.drawable.ic_action_delete_dark);
+  item=optionsMenu.getMenu().add(R.string.shared_string_delete).setIcon(iconsCache.getContentIcon(R.drawable.ic_action_delete_dark));
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
       AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
