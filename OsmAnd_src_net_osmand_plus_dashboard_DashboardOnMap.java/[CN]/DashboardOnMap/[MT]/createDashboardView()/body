@@ -10,6 +10,26 @@
   scrollView=((NotifyingScrollView)dashboardView.findViewById(R.id.main_scroll));
   listViewLayout=dashboardView.findViewById(R.id.dash_list_view_layout);
   listView=(ListView)dashboardView.findViewById(R.id.dash_list_view);
+  if (listView instanceof ObservableListView) {
+    ((ObservableListView)listView).setScrollViewCallbacks(this);
+    mFlexibleSpaceImageHeight=mapActivity.getResources().getDimensionPixelSize(R.dimen.dashboard_map_top_padding);
+    View paddingView=new View(mapActivity);
+    AbsListView.LayoutParams lp=new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT,mFlexibleSpaceImageHeight);
+    paddingView.setLayoutParams(lp);
+    paddingView.setClickable(true);
+    paddingView.setOnClickListener(listener);
+    listView.addHeaderView(paddingView);
+    Toolbar tb=(Toolbar)mapActivity.findViewById(R.id.dash_toolbar);
+    tb.setLogo(R.drawable.icon);
+    listBackgroundView=mapActivity.findViewById(R.id.dash_list_background);
+    final View contentView=mapActivity.getWindow().getDecorView().findViewById(android.R.id.content);
+    contentView.post(new Runnable(){
+      @Override public void run(){
+        listBackgroundView.getLayoutParams().height=contentView.getHeight();
+      }
+    }
+);
+  }
   dashboardView.findViewById(R.id.animateContent).setOnClickListener(listener);
   dashboardView.findViewById(R.id.map_part_dashboard).setOnClickListener(listener);
   actionButton=new ActionButton(mapActivity);
@@ -35,15 +55,4 @@
   }
 );
   dashboardView.addView(actionButton);
-  if (ScreenOrientationHelper.isOrientationPortrait(mapActivity)) {
-    scrollView.setOnScrollChangedListener(onScrollChangedListener);
-    listView.setOnScrollListener(new OnScrollListener(){
-      private TIntObjectHashMap<Integer> listViewItemHeights=new TIntObjectHashMap<Integer>();
-      @Override public void onScrollStateChanged(      AbsListView view,      int scrollState){
-      }
-      @Override public void onScroll(      AbsListView view,      int firstVisibleItem,      int visibleItemCount,      int totalItemCount){
-      }
-    }
-);
-  }
 }

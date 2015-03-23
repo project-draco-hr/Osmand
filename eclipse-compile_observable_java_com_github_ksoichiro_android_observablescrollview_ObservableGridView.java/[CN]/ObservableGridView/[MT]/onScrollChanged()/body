@@ -1,0 +1,63 @@
+{
+  if (mCallbacks != null) {
+    if (getChildCount() > 0) {
+      int firstVisiblePosition=getFirstVisiblePosition();
+      for (int i=getFirstVisiblePosition(), j=0; i <= getLastVisiblePosition(); i++, j++) {
+        if (mChildrenHeights.indexOfKey(i) < 0 || getChildAt(j).getHeight() != mChildrenHeights.get(i)) {
+          if (i % getNumColumnsCompat() == 0) {
+            mChildrenHeights.put(i,getChildAt(j).getHeight());
+          }
+        }
+      }
+      View firstVisibleChild=getChildAt(0);
+      if (firstVisibleChild != null) {
+        if (mPrevFirstVisiblePosition < firstVisiblePosition) {
+          int skippedChildrenHeight=0;
+          if (firstVisiblePosition - mPrevFirstVisiblePosition != 1) {
+            for (int i=firstVisiblePosition - 1; i > mPrevFirstVisiblePosition; i--) {
+              if (0 < mChildrenHeights.indexOfKey(i)) {
+                skippedChildrenHeight+=mChildrenHeights.get(i);
+              }
+            }
+          }
+          mPrevScrolledChildrenHeight+=mPrevFirstVisibleChildHeight + skippedChildrenHeight;
+          mPrevFirstVisibleChildHeight=firstVisibleChild.getHeight();
+        }
+ else         if (firstVisiblePosition < mPrevFirstVisiblePosition) {
+          int skippedChildrenHeight=0;
+          if (mPrevFirstVisiblePosition - firstVisiblePosition != 1) {
+            for (int i=mPrevFirstVisiblePosition - 1; i > firstVisiblePosition; i--) {
+              if (0 < mChildrenHeights.indexOfKey(i)) {
+                skippedChildrenHeight+=mChildrenHeights.get(i);
+              }
+            }
+          }
+          mPrevScrolledChildrenHeight-=firstVisibleChild.getHeight() + skippedChildrenHeight;
+          mPrevFirstVisibleChildHeight=firstVisibleChild.getHeight();
+        }
+ else         if (firstVisiblePosition == 0) {
+          mPrevFirstVisibleChildHeight=firstVisibleChild.getHeight();
+        }
+        if (mPrevFirstVisibleChildHeight < 0) {
+          mPrevFirstVisibleChildHeight=0;
+        }
+        mScrollY=mPrevScrolledChildrenHeight - firstVisibleChild.getTop();
+        mPrevFirstVisiblePosition=firstVisiblePosition;
+        mCallbacks.onScrollChanged(mScrollY,mFirstScroll,mDragging);
+        if (mFirstScroll) {
+          mFirstScroll=false;
+        }
+        if (mPrevScrollY < mScrollY) {
+          mScrollState=ScrollState.UP;
+        }
+ else         if (mScrollY < mPrevScrollY) {
+          mScrollState=ScrollState.DOWN;
+        }
+ else {
+          mScrollState=ScrollState.STOP;
+        }
+        mPrevScrollY=mScrollY;
+      }
+    }
+  }
+}
