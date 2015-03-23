@@ -1,0 +1,24 @@
+{
+  if (mTouchInterceptionListener == null) {
+    return false;
+  }
+switch (ev.getActionMasked()) {
+case MotionEvent.ACTION_DOWN:
+    mInitialPoint=new PointF(ev.getX(),ev.getY());
+  mPendingDownMotionEvent=MotionEvent.obtainNoHistory(ev);
+mDownMotionEventPended=true;
+mIntercepting=mTouchInterceptionListener.shouldInterceptTouchEvent(ev,false,0,0);
+mBeganFromDownMotionEvent=mIntercepting;
+mChildrenEventsCanceled=false;
+return mIntercepting;
+case MotionEvent.ACTION_MOVE:
+if (mInitialPoint == null) {
+mInitialPoint=new PointF(ev.getX(),ev.getY());
+}
+float diffX=ev.getX() - mInitialPoint.x;
+float diffY=ev.getY() - mInitialPoint.y;
+mIntercepting=mTouchInterceptionListener.shouldInterceptTouchEvent(ev,true,diffX,diffY);
+return mIntercepting;
+}
+return false;
+}

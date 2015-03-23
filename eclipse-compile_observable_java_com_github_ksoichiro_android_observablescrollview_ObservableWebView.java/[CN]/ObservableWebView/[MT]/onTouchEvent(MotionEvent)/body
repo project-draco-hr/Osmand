@@ -1,0 +1,54 @@
+{
+  if (mCallbacks != null) {
+switch (ev.getActionMasked()) {
+case MotionEvent.ACTION_DOWN:
+      break;
+case MotionEvent.ACTION_UP:
+case MotionEvent.ACTION_CANCEL:
+    mIntercepted=false;
+  mDragging=false;
+mCallbacks.onUpOrCancelMotionEvent(mScrollState);
+break;
+case MotionEvent.ACTION_MOVE:
+if (mPrevMoveEvent == null) {
+mPrevMoveEvent=ev;
+}
+float diffY=ev.getY() - mPrevMoveEvent.getY();
+mPrevMoveEvent=MotionEvent.obtainNoHistory(ev);
+if (getCurrentScrollY() - diffY <= 0) {
+if (mIntercepted) {
+return false;
+}
+final ViewGroup parent;
+if (mTouchInterceptionViewGroup == null) {
+parent=(ViewGroup)getParent();
+}
+ else {
+parent=mTouchInterceptionViewGroup;
+}
+float offsetX=0;
+float offsetY=0;
+for (View v=this; v != null && v != parent; v=(View)v.getParent()) {
+offsetX+=v.getLeft() - v.getScrollX();
+offsetY+=v.getTop() - v.getScrollY();
+}
+final MotionEvent event=MotionEvent.obtainNoHistory(ev);
+event.offsetLocation(offsetX,offsetY);
+if (parent.onInterceptTouchEvent(event)) {
+mIntercepted=true;
+event.setAction(MotionEvent.ACTION_DOWN);
+post(new Runnable(){
+@Override public void run(){
+parent.dispatchTouchEvent(event);
+}
+}
+);
+return false;
+}
+return super.onTouchEvent(ev);
+}
+break;
+}
+}
+return super.onTouchEvent(ev);
+}

@@ -1,0 +1,71 @@
+{
+  if (mTouchInterceptionListener != null) {
+switch (ev.getActionMasked()) {
+case MotionEvent.ACTION_DOWN:
+      if (mIntercepting) {
+        mTouchInterceptionListener.onDownMotionEvent(ev);
+        duplicateTouchEventForChildren(ev);
+        return true;
+      }
+    break;
+case MotionEvent.ACTION_MOVE:
+  if (mInitialPoint == null) {
+    mInitialPoint=new PointF(ev.getX(),ev.getY());
+  }
+float diffX=ev.getX() - mInitialPoint.x;
+float diffY=ev.getY() - mInitialPoint.y;
+mIntercepting=mTouchInterceptionListener.shouldInterceptTouchEvent(ev,true,diffX,diffY);
+if (mIntercepting) {
+if (!mBeganFromDownMotionEvent) {
+mBeganFromDownMotionEvent=true;
+MotionEvent event=MotionEvent.obtainNoHistory(mPendingDownMotionEvent);
+event.setLocation(ev.getX(),ev.getY());
+mTouchInterceptionListener.onDownMotionEvent(event);
+mInitialPoint=new PointF(ev.getX(),ev.getY());
+diffX=diffY=0;
+}
+if (!mChildrenEventsCanceled) {
+mChildrenEventsCanceled=true;
+duplicateTouchEventForChildren(obtainMotionEvent(ev,MotionEvent.ACTION_CANCEL));
+}
+mTouchInterceptionListener.onMoveMotionEvent(ev,diffX,diffY);
+mDownMotionEventPended=true;
+return true;
+}
+ else {
+if (mDownMotionEventPended) {
+mDownMotionEventPended=false;
+MotionEvent event=MotionEvent.obtainNoHistory(mPendingDownMotionEvent);
+event.setLocation(ev.getX(),ev.getY());
+duplicateTouchEventForChildren(ev,event);
+}
+ else {
+duplicateTouchEventForChildren(ev);
+}
+mBeganFromDownMotionEvent=false;
+mChildrenEventsCanceled=false;
+}
+break;
+case MotionEvent.ACTION_UP:
+case MotionEvent.ACTION_CANCEL:
+mBeganFromDownMotionEvent=false;
+if (mIntercepting) {
+mTouchInterceptionListener.onUpOrCancelMotionEvent(ev);
+}
+if (!mChildrenEventsCanceled) {
+mChildrenEventsCanceled=true;
+if (mDownMotionEventPended) {
+mDownMotionEventPended=false;
+MotionEvent event=MotionEvent.obtainNoHistory(mPendingDownMotionEvent);
+event.setLocation(ev.getX(),ev.getY());
+duplicateTouchEventForChildren(ev,event);
+}
+ else {
+duplicateTouchEventForChildren(ev);
+}
+}
+return true;
+}
+}
+return super.onTouchEvent(ev);
+}
