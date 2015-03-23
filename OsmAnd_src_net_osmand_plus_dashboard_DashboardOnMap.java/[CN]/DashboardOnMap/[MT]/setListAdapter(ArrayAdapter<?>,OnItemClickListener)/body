@@ -6,7 +6,20 @@
   this.listAdapterOnClickListener=optionsMenuOnClickListener;
   if (this.listView != null) {
     listView.setAdapter(listAdapter);
-    listView.setOnItemClickListener(optionsMenuOnClickListener);
+    if (listBackgroundView == null) {
+      listView.setOnItemClickListener(optionsMenuOnClickListener);
+    }
+ else     if (optionsMenuOnClickListener != null) {
+      listView.setOnItemClickListener(new OnItemClickListener(){
+        @Override public void onItemClick(        AdapterView<?> parent,        View view,        int position,        long id){
+          optionsMenuOnClickListener.onItemClick(parent,view,position - 1,id);
+        }
+      }
+);
+    }
+ else {
+      listView.setOnItemClickListener(null);
+    }
   }
   setDashboardVisibility(true);
 }

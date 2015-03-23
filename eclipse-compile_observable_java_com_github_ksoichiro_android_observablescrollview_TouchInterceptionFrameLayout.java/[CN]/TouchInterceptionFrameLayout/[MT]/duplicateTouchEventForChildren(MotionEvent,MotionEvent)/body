@@ -1,0 +1,33 @@
+{
+  if (ev == null) {
+    return;
+  }
+  for (int i=getChildCount() - 1; 0 <= i; i--) {
+    View childView=getChildAt(i);
+    if (childView != null) {
+      Rect childRect=new Rect();
+      childView.getHitRect(childRect);
+      MotionEvent event=MotionEvent.obtainNoHistory(ev);
+      if (!childRect.contains((int)event.getX(),(int)event.getY())) {
+        continue;
+      }
+      float offsetX=-childView.getLeft();
+      float offsetY=-childView.getTop();
+      boolean consumed=false;
+      if (pendingEvents != null) {
+        for (        MotionEvent pe : pendingEvents) {
+          if (pe != null) {
+            MotionEvent peAdjusted=MotionEvent.obtainNoHistory(pe);
+            peAdjusted.offsetLocation(offsetX,offsetY);
+            consumed|=childView.dispatchTouchEvent(peAdjusted);
+          }
+        }
+      }
+      event.offsetLocation(offsetX,offsetY);
+      consumed|=childView.dispatchTouchEvent(event);
+      if (consumed) {
+        break;
+      }
+    }
+  }
+}
