@@ -10,6 +10,13 @@
   scrollView=((NotifyingScrollView)dashboardView.findViewById(R.id.main_scroll));
   listViewLayout=dashboardView.findViewById(R.id.dash_list_view_layout);
   listView=(ListView)dashboardView.findViewById(R.id.dash_list_view);
+  scrollView.setOnScrollChangedListener(new NotifyingScrollView.OnScrollChangedListener(){
+    public void onScrollChanged(    ScrollView who,    int l,    int t,    int oldl,    int oldt){
+      int sy=who.getScrollY();
+      updateTopButton(sy);
+    }
+  }
+);
   if (listView instanceof ObservableListView) {
     ((ObservableListView)listView).setScrollViewCallbacks(this);
     mFlexibleSpaceImageHeight=mapActivity.getResources().getDimensionPixelSize(R.dimen.dashboard_map_top_padding);
@@ -23,7 +30,9 @@
     final View contentView=mapActivity.getWindow().getDecorView().findViewById(android.R.id.content);
     contentView.post(new Runnable(){
       @Override public void run(){
-        listBackgroundView.getLayoutParams().height=contentView.getHeight();
+        if (listBackgroundView != null) {
+          listBackgroundView.getLayoutParams().height=contentView.getHeight();
+        }
       }
     }
 );
