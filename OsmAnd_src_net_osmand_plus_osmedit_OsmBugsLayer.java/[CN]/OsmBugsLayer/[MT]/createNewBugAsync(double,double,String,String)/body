@@ -1,12 +1,18 @@
 {
   AsyncTask<Void,Void,String> task=new AsyncTask<Void,Void,String>(){
+    private OsmBugsUtil osmbugsUtil;
     @Override protected String doInBackground(    Void... params){
-      return getOsmbugsUtil(null).createNewBug(latitude,longitude,text);
+      osmbugsUtil=getOsmbugsUtil(null);
+      return osmbugsUtil.createNewBug(latitude,longitude,text,author);
     }
     protected void onPostExecute(    String result){
       if (result == null) {
-        AccessibleToast.makeText(activity,activity.getResources().getString(R.string.osb_add_dialog_success),Toast.LENGTH_LONG).show();
-        clearCache();
+        if (local == osmbugsUtil) {
+          AccessibleToast.makeText(activity,R.string.osm_changes_added_to_local_edits,Toast.LENGTH_LONG).show();
+        }
+ else {
+          AccessibleToast.makeText(activity,R.string.osb_add_dialog_success,Toast.LENGTH_LONG).show();
+        }
         refreshMap();
       }
  else {
