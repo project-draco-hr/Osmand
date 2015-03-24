@@ -1,0 +1,19 @@
+{
+  poiTypes=((OsmandApplication)activity.getApplication()).getPoiTypes();
+  allTranslatedSubTypes=poiTypes.getAllTranslatedNames();
+  settings=((OsmandApplication)activity.getApplication()).getSettings();
+  isLocalEdit=true;
+  if (settings.OFFLINE_EDITION.get() || !settings.isInternetConnectionAvailable(true)) {
+    this.openstreetmapUtil=new OpenstreetmapLocalUtil(activity);
+    this.openstreetmapUtilToLoad=openstreetmapUtil;
+  }
+ else   if (!settings.isInternetConnectionAvailable(true)) {
+    this.openstreetmapUtil=new OpenstreetmapLocalUtil(activity);
+    this.openstreetmapUtilToLoad=new OpenstreetmapRemoteUtil(activity);
+  }
+ else {
+    isLocalEdit=false;
+    this.openstreetmapUtil=new OpenstreetmapRemoteUtil(activity);
+    this.openstreetmapUtilToLoad=openstreetmapUtil;
+  }
+}
