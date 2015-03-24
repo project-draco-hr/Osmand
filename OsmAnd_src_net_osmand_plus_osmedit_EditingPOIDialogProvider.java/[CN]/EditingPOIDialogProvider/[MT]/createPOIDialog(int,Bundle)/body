@@ -14,6 +14,7 @@ nameText=((EditText)view.findViewById(R.id.Name));
 openingHours=((EditText)view.findViewById(R.id.OpeningHours));
 typeText=((AutoCompleteTextView)view.findViewById(R.id.Type));
 typeButton=((Button)view.findViewById(R.id.TypeButton));
+osmTagValue=((TextView)view.findViewById(R.id.OsmTagValue));
 openHoursButton=((Button)view.findViewById(R.id.OpenHoursButton));
 typeText=((AutoCompleteTextView)view.findViewById(R.id.Type));
 typeText.setThreshold(1);
@@ -23,6 +24,7 @@ hnoText=((EditText)view.findViewById(R.id.HouseNumber));
 streetNameText=((EditText)view.findViewById(R.id.StreetName));
 websiteText=((EditText)view.findViewById(R.id.Website));
 closeChange=((CheckBox)view.findViewById(R.id.CloseChangeset));
+closeChange.setVisibility(isLocalEdit ? View.GONE : View.VISIBLE);
 TextView linkToOsmDoc=(TextView)view.findViewById(R.id.LinkToOsmDoc);
 linkToOsmDoc.setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
@@ -34,7 +36,7 @@ linkToOsmDoc.setMovementMethod(LinkMovementMethod.getInstance());
 final Amenity a=(Amenity)args.getSerializable(KEY_AMENITY);
 final Node n=(Node)args.getSerializable(KEY_AMENITY_NODE);
 dlg.setNegativeButton(R.string.shared_string_cancel,null);
-dlg.setPositiveButton(R.string.default_buttons_commit,new DialogInterface.OnClickListener(){
+dlg.setPositiveButton(isLocalEdit ? R.string.shared_string_save : R.string.default_buttons_commit,new DialogInterface.OnClickListener(){
 @Override public void onClick(DialogInterface dialog,int which){
 Resources resources=view.getResources();
 final String msg=n.getId() == -1 ? resources.getString(R.string.poi_action_add) : resources.getString(R.string.poi_action_change);
@@ -90,7 +92,12 @@ n.removeTag(OSMTagKey.ADDR_HOUSE_NUMBER.getValue());
 }
 commitNode(action,n,openstreetmapUtil.getEntityInfo(),commentText.getText().toString(),closeChange.isSelected(),new Runnable(){
 @Override public void run(){
-  AccessibleToast.makeText(activity,MessageFormat.format(activity.getResources().getString(R.string.poi_action_succeded_template),msg),Toast.LENGTH_LONG).show();
+  if (isLocalEdit) {
+    AccessibleToast.makeText(activity,R.string.osm_changes_added_to_local_edits,Toast.LENGTH_LONG).show();
+  }
+ else {
+    AccessibleToast.makeText(activity,MessageFormat.format(activity.getResources().getString(R.string.poi_action_succeded_template),msg),Toast.LENGTH_LONG).show();
+  }
   if (activity instanceof MapActivity) {
     ((MapActivity)activity).getMapView().refreshMap(true);
   }
@@ -103,5 +110,6 @@ commitNode(action,n,openstreetmapUtil.getEntityInfo(),commentText.getText().toSt
 );
 preparePOIDialog(view,args);
 attachListeners(view,a,n);
+updateOsmTagValue(a);
 return dlg;
 }
