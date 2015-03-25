@@ -1,0 +1,28 @@
+{
+  ContextMenuAdapter cm=null;
+  if (DashboardType.WAYPOINTS == visibleType || DashboardType.WAYPOINTS_FLAT == visibleType) {
+    ArrayAdapter<Object> listAdapter=waypointDialogHelper.getWaypointsDrawerAdapter(false,deletedPoints,mapActivity,running,DashboardType.WAYPOINTS_FLAT == visibleType);
+    OnItemClickListener listener=waypointDialogHelper.getDrawerItemClickListener(mapActivity,running,listAdapter,null);
+    updateListAdapter(listAdapter,listener);
+  }
+ else   if (DashboardType.WAYPOINTS_EDIT == visibleType) {
+    deletedPoints.clear();
+    ArrayAdapter<Object> listAdapter=waypointDialogHelper.getWaypointsDrawerAdapter(true,deletedPoints,mapActivity,running,DashboardType.WAYPOINTS_FLAT == visibleType);
+    OnItemClickListener listener=waypointDialogHelper.getDrawerItemClickListener(mapActivity,running,listAdapter,null);
+    updateListAdapter(listAdapter,listener);
+  }
+ else {
+    if (DashboardType.CONFIGURE_SCREEN == visibleType) {
+      cm=mapActivity.getMapLayers().getMapInfoLayer().getViewConfigureMenuAdapter();
+    }
+ else     if (DashboardType.CONFIGURE_MAP == visibleType) {
+      cm=new ConfigureMapMenu().createListAdapter(mapActivity);
+    }
+ else     if (DashboardType.LIST_MENU == visibleType) {
+      cm=mapActivity.getMapActions().createMainOptionsMenu();
+    }
+    if (cm != null) {
+      updateListAdapter(cm);
+    }
+  }
+}

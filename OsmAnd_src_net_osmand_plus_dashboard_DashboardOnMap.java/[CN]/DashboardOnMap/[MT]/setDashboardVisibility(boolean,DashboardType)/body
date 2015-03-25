@@ -2,7 +2,9 @@
   if (visible == this.visible && type == visibleType) {
     return;
   }
+  this.previousVisibleType=this.visible ? null : visibleType;
   this.visible=visible;
+  boolean refresh=this.visibleType == type;
   this.visibleType=type;
   DashboardOnMap.staticVisible=visible;
   DashboardOnMap.staticVisibleType=type;
@@ -24,9 +26,16 @@
  else {
       scrollView.setVisibility(View.GONE);
       listViewLayout.setVisibility(View.VISIBLE);
+      if (refresh) {
+        refreshContent();
+      }
+ else {
+        updateListAdapter();
+        updateListBackgroundHeight();
+      }
     }
     mapActivity.findViewById(R.id.MapHudButtonsOverlay).setVisibility(View.INVISIBLE);
-    initToolbarActions();
+    updateToolbarActions();
     open(dashboardView.findViewById(R.id.animateContent));
     updateLocation(true,true,false);
   }
