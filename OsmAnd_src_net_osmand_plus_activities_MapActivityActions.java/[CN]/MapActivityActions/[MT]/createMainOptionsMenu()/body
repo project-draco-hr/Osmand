@@ -1,2 +1,170 @@
 {
+  final OsmandMapTileView mapView=mapActivity.getMapView();
+  final OsmandApplication app=mapActivity.getMyApplication();
+  ContextMenuAdapter optionsMenuHelper=new ContextMenuAdapter(app);
+  boolean muteVisible=routingHelper.getFinalLocation() != null && routingHelper.isFollowingMode();
+  if (muteVisible) {
+    boolean mute=routingHelper.getVoiceRouter().isMute();
+    int t=mute ? R.string.menu_mute_on : R.string.menu_mute_off;
+    int icon;
+    if (mute) {
+      icon=R.drawable.a_10_device_access_volume_muted_dark;
+    }
+ else {
+      icon=R.drawable.a_10_device_access_volume_on_dark;
+    }
+    optionsMenuHelper.item(t).iconColor(icon).listen(new OnContextMenuClick(){
+      @Override public boolean onContextMenuClick(      ArrayAdapter<?> adapter,      int itemId,      int pos,      boolean isChecked){
+        routingHelper.getVoiceRouter().setMute(!routingHelper.getVoiceRouter().isMute());
+        return true;
+      }
+    }
+).reg();
+  }
+  if (!routingHelper.isFollowingMode() && !routingHelper.isRoutePlanningMode()) {
+    optionsMenuHelper.item(R.string.get_directions).iconColor(R.drawable.ic_action_gdirections_dark).listen(new OnContextMenuClick(){
+      @Override public boolean onContextMenuClick(      ArrayAdapter<?> adapter,      int itemId,      int pos,      boolean isChecked){
+        enterRoutePlanningMode(null,null,false);
+        return true;
+      }
+    }
+).reg();
+  }
+ else   if (routingHelper.isRouteCalculated()) {
+    optionsMenuHelper.item(routingHelper.isRoutePlanningMode() ? R.string.continue_navigation : R.string.pause_navigation).iconColor(R.drawable.ic_action_gdirections_dark).listen(new OnContextMenuClick(){
+      @Override public boolean onContextMenuClick(      ArrayAdapter<?> adapter,      int itemId,      int pos,      boolean isChecked){
+        if (routingHelper.isRoutePlanningMode()) {
+          routingHelper.setRoutePlanningMode(false);
+          routingHelper.setFollowingMode(true);
+        }
+ else {
+          routingHelper.setRoutePlanningMode(true);
+          routingHelper.setFollowingMode(false);
+          routingHelper.setPauseNaviation(true);
+        }
+        mapActivity.getMapViewTrackingUtilities().switchToRoutePlanningMode();
+        mapActivity.refreshMap();
+        return true;
+      }
+    }
+).reg();
+  }
+  if (mapActivity.getPointToNavigate() != null) {
+    int nav;
+    if (routingHelper.isFollowingMode()) {
+      nav=R.string.cancel_navigation;
+    }
+ else     if (routingHelper.isRouteCalculated() || routingHelper.isRouteBeingCalculated()) {
+      nav=R.string.cancel_route;
+    }
+ else {
+      nav=R.string.clear_destination;
+    }
+    optionsMenuHelper.item(nav).iconColor(R.drawable.ic_action_remove_dark).listen(new OnContextMenuClick(){
+      @Override public boolean onContextMenuClick(      ArrayAdapter<?> adapter,      int itemId,      int pos,      boolean isChecked){
+        stopNavigationActionConfirm(mapView);
+        OsMoPositionLayer osMoPositionLayer=mapActivity.getMapView().getLayerByClass(OsMoPositionLayer.class);
+        if (osMoPositionLayer != null) {
+          OsMoPositionLayer.setFollowDestination(null);
+        }
+        return true;
+      }
+    }
+).reg();
+  }
+  optionsMenuHelper.item(R.string.target_points).iconColor(R.drawable.ic_action_flage_dark).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      showWaypointsInDrawer(false);
+      return false;
+    }
+  }
+).reg();
+  if (routingHelper.isRouteCalculated()) {
+    optionsMenuHelper.item(R.string.impassable_road).iconColor(R.drawable.ic_action_road_works_dark).listen(new OnContextMenuClick(){
+      @Override public boolean onContextMenuClick(      ArrayAdapter<?> adapter,      int itemId,      int pos,      boolean isChecked){
+        app.getAvoidSpecificRoads().showDialog(mapActivity);
+        return true;
+      }
+    }
+).reg();
+  }
+  optionsMenuHelper.item(R.string.search_button).iconColor(R.drawable.ic_action_search_dark).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      Intent newIntent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getSearchActivity());
+      LatLon loc=mapActivity.getMapLocation();
+      newIntent.putExtra(SearchActivity.SEARCH_LAT,loc.getLatitude());
+      newIntent.putExtra(SearchActivity.SEARCH_LON,loc.getLongitude());
+      newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+      mapActivity.startActivity(newIntent);
+      return true;
+    }
+  }
+).reg();
+  optionsMenuHelper.item(R.string.shared_string_my_places).iconColor(R.drawable.ic_action_fav_dark).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      Intent newIntent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getFavoritesActivity());
+      mapActivity.startActivity(newIntent);
+      return true;
+    }
+  }
+).reg();
+  optionsMenuHelper.item(R.string.show_point_options).iconColor(R.drawable.ic_action_marker_dark).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      contextMenuPoint(mapView.getLatitude(),mapView.getLongitude());
+      return true;
+    }
+  }
+).reg();
+  optionsMenuHelper.item(R.string.configure_map).iconColor(R.drawable.ic_action_layers_dark).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      mapActivity.getDashboard().setListAdapter(new ConfigureMapMenu().createListAdapter(mapActivity),DashboardType.CONFIGURE_MAP);
+      return false;
+    }
+  }
+).reg();
+  optionsMenuHelper.item(R.string.layer_map_appearance).iconColor(R.drawable.ic_configure_screen_dark).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      ContextMenuAdapter cm=mapActivity.getMapLayers().getMapInfoLayer().getViewConfigureMenuAdapter();
+      mapActivity.getDashboard().setListAdapter(cm,DashboardType.CONFIGURE_SCREEN);
+      return false;
+    }
+  }
+).reg();
+  optionsMenuHelper.item(R.string.index_settings).iconColor(R.drawable.ic_type_archive).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      Intent newIntent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getDownloadActivity());
+      mapActivity.startActivity(newIntent);
+      return true;
+    }
+  }
+).reg();
+  optionsMenuHelper.item(R.string.prefs_plugins).iconColor(R.drawable.ic_extension_dark).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      Intent newIntent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getPluginsActivity());
+      mapActivity.startActivity(newIntent);
+      return true;
+    }
+  }
+).reg();
+  optionsMenuHelper.item(R.string.shared_string_settings).iconColor(R.drawable.ic_action_settings_enabled_dark).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      final Intent settings=new Intent(mapActivity,getMyApplication().getAppCustomization().getSettingsActivity());
+      mapActivity.startActivity(settings);
+      return true;
+    }
+  }
+).reg();
+  OsmandPlugin.registerOptionsMenu(mapActivity,optionsMenuHelper);
+  optionsMenuHelper.item(R.string.shared_string_exit).iconColor(R.drawable.ic_action_quit_dark).listen(new OnContextMenuClick(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      Intent newIntent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getMainMenuActivity());
+      newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+      newIntent.putExtra(AppInitializer.APP_EXIT_KEY,AppInitializer.APP_EXIT_CODE);
+      mapActivity.startActivity(newIntent);
+      return true;
+    }
+  }
+).reg();
+  getMyApplication().getAppCustomization().prepareOptionsMenu(mapActivity,optionsMenuHelper);
+  return optionsMenuHelper;
 }
