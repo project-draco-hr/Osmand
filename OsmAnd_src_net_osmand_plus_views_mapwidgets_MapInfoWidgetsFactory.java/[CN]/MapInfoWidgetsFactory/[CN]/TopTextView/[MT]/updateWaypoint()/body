@@ -1,6 +1,8 @@
 {
-  lastPoint=waypointHelper.getMostImportantLocationPoint(null);
-  if (lastPoint == null) {
+  final LocationPointWrapper pnt=waypointHelper.getMostImportantLocationPoint(null);
+  boolean changed=this.lastPoint != pnt;
+  this.lastPoint=pnt;
+  if (pnt == null) {
     topBar.setOnClickListener(null);
     updateVisibility(waypointInfoBar,false);
     return false;
@@ -8,20 +10,19 @@
  else {
     updateVisibility(addressText,false);
     boolean updated=updateVisibility(waypointInfoBar,true);
-    WaypointDialogHelper.updatePointInfoView(map.getMyApplication(),map,topBar,lastPoint,null);
-    if (updated) {
+    WaypointDialogHelper.updatePointInfoView(map.getMyApplication(),map,topBar,pnt,true);
+    if (updated || changed) {
       ImageView all=(ImageView)waypointInfoBar.findViewById(R.id.waypoint_more);
-      View btnN=waypointInfoBar.findViewById(R.id.waypoint_close);
-      all.setImageDrawable(map.getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_overflow_menu_light));
+      ImageView remove=(ImageView)waypointInfoBar.findViewById(R.id.waypoint_close);
       all.setOnClickListener(new View.OnClickListener(){
         @Override public void onClick(        View view){
-          map.getMapActions().showWaypointsDialog(false);
+          map.getDashboard().setDashboardVisibility(true,DashboardType.WAYPOINTS);
         }
       }
 );
-      btnN.setOnClickListener(new View.OnClickListener(){
+      remove.setOnClickListener(new View.OnClickListener(){
         @Override public void onClick(        View view){
-          waypointHelper.removeVisibleLocationPoint(lastPoint);
+          waypointHelper.removeVisibleLocationPoint(pnt);
           map.refreshMap();
         }
       }

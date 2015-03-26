@@ -1,65 +1,32 @@
 {
+  waypointDialogHelper=new WaypointDialogHelper(mapActivity);
   landscape=!ScreenOrientationHelper.isOrientationPortrait(mapActivity);
   dashboardView=(FrameLayout)mapActivity.findViewById(R.id.dashboard);
   View.OnClickListener listener=new View.OnClickListener(){
     @Override public void onClick(    View v){
-      setDashboardVisibility(false);
+      hideDashboard();
     }
   }
 ;
-  scrollView=((NotifyingScrollView)dashboardView.findViewById(R.id.main_scroll));
-  listViewLayout=dashboardView.findViewById(R.id.dash_list_view_layout);
+  toolbar=((Toolbar)dashboardView.findViewById(R.id.toolbar));
+  ObservableScrollView scrollView=((ObservableScrollView)dashboardView.findViewById(R.id.main_scroll));
   listView=(ListView)dashboardView.findViewById(R.id.dash_list_view);
-  scrollView.setOnScrollChangedListener(new NotifyingScrollView.OnScrollChangedListener(){
-    public void onScrollChanged(    ScrollView who,    int l,    int t,    int oldl,    int oldt){
-      int sy=who.getScrollY();
-      updateTopButton(sy);
-    }
-  }
-);
+  scrollView.setScrollViewCallbacks(this);
+  gradientToolbar=mapActivity.getResources().getDrawable(R.drawable.gradient_toolbar).mutate();
   if (ScreenOrientationHelper.isOrientationPortrait(mapActivity)) {
     ((ObservableListView)listView).setScrollViewCallbacks(this);
     mFlexibleSpaceImageHeight=mapActivity.getResources().getDimensionPixelSize(R.dimen.dashboard_map_top_padding);
-    View paddingView=new View(mapActivity);
+    mFlexibleBlurSpaceHeight=mapActivity.getResources().getDimensionPixelSize(R.dimen.dashboard_map_top_blur);
+    paddingView=new View(mapActivity);
     AbsListView.LayoutParams lp=new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT,mFlexibleSpaceImageHeight);
     paddingView.setLayoutParams(lp);
     paddingView.setClickable(true);
     paddingView.setOnClickListener(listener);
     listView.addHeaderView(paddingView);
     listBackgroundView=mapActivity.findViewById(R.id.dash_list_background);
-    final View contentView=mapActivity.getWindow().getDecorView().findViewById(android.R.id.content);
-    contentView.post(new Runnable(){
-      @Override public void run(){
-        if (listBackgroundView != null) {
-          listBackgroundView.getLayoutParams().height=contentView.getHeight();
-        }
-      }
-    }
-);
   }
   dashboardView.findViewById(R.id.animateContent).setOnClickListener(listener);
   dashboardView.findViewById(R.id.map_part_dashboard).setOnClickListener(listener);
-  actionButton=new ActionButton(mapActivity);
-  FrameLayout.LayoutParams params=new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-  int marginRight=convertPixelsToDp(16,mapActivity);
-  params.setMargins(0,landscape ? 0 : convertPixelsToDp(164,mapActivity),marginRight,landscape ? marginRight : 0);
-  params.gravity=landscape ? Gravity.BOTTOM | Gravity.RIGHT : Gravity.TOP | Gravity.RIGHT;
-  actionButton.setLayoutParams(params);
-  actionButton.setImageDrawable(mapActivity.getResources().getDrawable(R.drawable.ic_action_get_my_location));
-  actionButton.setButtonColor(mapActivity.getResources().getColor(R.color.map_widget_blue));
-  actionButton.setButtonColorPressed(mapActivity.getResources().getColor(R.color.map_widget_blue_pressed));
-  actionButton.hide();
-  actionButton.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      if (getMyApplication().accessibilityEnabled()) {
-        mapActivity.getMapActions().whereAmIDialog();
-      }
- else {
-        mapActivity.getMapViewTrackingUtilities().backToLocationImpl();
-      }
-      setDashboardVisibility(false);
-    }
-  }
-);
+  initActionButton();
   dashboardView.addView(actionButton);
 }

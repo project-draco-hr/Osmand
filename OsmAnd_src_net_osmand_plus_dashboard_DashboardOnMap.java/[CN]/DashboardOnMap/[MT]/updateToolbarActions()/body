@@ -1,0 +1,105 @@
+{
+  TextView tv=(TextView)dashboardView.findViewById(R.id.toolbar_text);
+  tv.setText("");
+  boolean waypointsVisible=visibleType == DashboardType.WAYPOINTS || visibleType == DashboardType.WAYPOINTS_FLAT;
+  boolean waypointsEdit=visibleType == DashboardType.WAYPOINTS_EDIT;
+  if (waypointsVisible || waypointsEdit) {
+    tv.setText(R.string.waypoints);
+  }
+ else   if (visibleType == DashboardType.CONFIGURE_MAP) {
+    tv.setText(R.string.configure_map);
+  }
+ else   if (visibleType == DashboardType.CONFIGURE_SCREEN) {
+    tv.setText(R.string.layer_map_appearance);
+  }
+  ImageView edit=(ImageView)dashboardView.findViewById(R.id.toolbar_edit);
+  edit.setVisibility(View.GONE);
+  ImageView sort=(ImageView)dashboardView.findViewById(R.id.toolbar_sort);
+  sort.setVisibility(View.GONE);
+  ImageView ok=(ImageView)dashboardView.findViewById(R.id.toolbar_ok);
+  ok.setVisibility(View.GONE);
+  ImageView flat=(ImageView)dashboardView.findViewById(R.id.toolbar_flat);
+  flat.setVisibility(View.GONE);
+  ImageView settings=(ImageView)dashboardView.findViewById(R.id.toolbar_settings);
+  settings.setVisibility(View.GONE);
+  IconsCache iconsCache=mapActivity.getMyApplication().getIconsCache();
+  ImageView lst=(ImageView)dashboardView.findViewById(R.id.toolbar_list);
+  lst.setVisibility(View.GONE);
+  ImageView back=(ImageView)dashboardView.findViewById(R.id.toolbar_back);
+  back.setImageDrawable(((OsmandApplication)getMyApplication()).getIconsCache().getActionBarIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha));
+  back.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      backPressed();
+    }
+  }
+);
+  if (waypointsVisible && getMyApplication().getWaypointHelper().getAllPoints().size() > 0) {
+    edit.setVisibility(View.VISIBLE);
+    edit.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        setDashboardVisibility(true,DashboardType.WAYPOINTS_EDIT);
+      }
+    }
+);
+    if (getMyApplication().getWaypointHelper().isRouteCalculated()) {
+      flat.setVisibility(View.VISIBLE);
+      final boolean flatNow=visibleType == DashboardType.WAYPOINTS_FLAT;
+      flat.setImageDrawable(iconsCache.getActionBarIcon(flatNow ? R.drawable.ic_tree_list_dark : R.drawable.ic_flat_list_dark));
+      flat.setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        View v){
+          setDashboardVisibility(true,flatNow ? DashboardType.WAYPOINTS : DashboardType.WAYPOINTS_FLAT,previousVisibleType,false);
+        }
+      }
+);
+    }
+  }
+  if (waypointsEdit) {
+    ok.setVisibility(View.VISIBLE);
+    ok.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        mapActivity.getMyApplication().getWaypointHelper().removeVisibleLocationPoint(deletedPoints);
+        hideDashboard();
+      }
+    }
+);
+    if (mapActivity.getMyApplication().getTargetPointsHelper().getIntermediatePoints().size() > 0) {
+      sort.setVisibility(View.VISIBLE);
+      sort.setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        View v){
+          hideDashboard();
+          IntermediatePointsDialog.openIntermediatePointsDialog(mapActivity,getMyApplication(),true);
+        }
+      }
+);
+    }
+  }
+  if (visibleType == DashboardType.DASHBOARD || visibleType == DashboardType.LIST_MENU) {
+    settings.setVisibility(View.VISIBLE);
+    settings.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        Class<? extends Activity> sta=mapActivity.getMyApplication().getAppCustomization().getSettingsActivity();
+        hideDashboard(false);
+        mapActivity.startActivity(new Intent(mapActivity,sta));
+      }
+    }
+);
+    lst.setVisibility(View.VISIBLE);
+    if (visibleType == DashboardType.DASHBOARD) {
+      lst.setImageDrawable(iconsCache.getActionBarIcon(R.drawable.ic_navigation_drawer));
+    }
+ else     if (visibleType == DashboardType.LIST_MENU) {
+      lst.setImageDrawable(iconsCache.getActionBarIcon(R.drawable.ic_dashboard_dark));
+    }
+    lst.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        if (visibleType == DashboardType.DASHBOARD) {
+          setDashboardVisibility(true,DashboardType.LIST_MENU,null,true);
+        }
+ else {
+          setDashboardVisibility(true,DashboardType.DASHBOARD,null,true);
+        }
+      }
+    }
+);
+  }
+}

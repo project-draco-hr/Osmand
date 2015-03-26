@@ -1,0 +1,37 @@
+{
+  OsMoGroupsStorage.OsMoGroup mainGroup=null;
+  for (  OsMoGroupsStorage.OsMoGroup grp : groups) {
+    if (grp.getGroupId() == null) {
+      mainGroup=grp;
+      groups.remove(grp);
+      break;
+    }
+  }
+  if (mainGroup == null) {
+    return new ArrayList<>();
+  }
+  String trackerId=plugin.getService().getMyGroupTrackerId();
+  List<OsMoGroupsStorage.OsMoDevice> devices=new ArrayList<>(mainGroup.getVisibleGroupUsers(trackerId));
+  if (groups.size() > 0) {
+    for (    OsMoGroupsStorage.OsMoGroup grp : groups) {
+      for (      OsMoGroupsStorage.OsMoDevice device : grp.getVisibleGroupUsers(trackerId)) {
+        devices.add(device);
+      }
+    }
+  }
+  for (  OsMoGroupsStorage.OsMoDevice device : devices) {
+    if (!device.isActive() && !device.isEnabled() && devices.size() > 2) {
+      devices.remove(device);
+    }
+    if (devices.size() < 4) {
+      break;
+    }
+  }
+  sortDevices(devices);
+  if (devices.size() > 3) {
+    while (devices.size() > 3) {
+      devices.remove(devices.size() - 1);
+    }
+  }
+  return devices;
+}

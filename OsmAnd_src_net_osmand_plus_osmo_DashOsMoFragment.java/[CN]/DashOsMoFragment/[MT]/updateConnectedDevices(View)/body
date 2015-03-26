@@ -1,32 +1,7 @@
 {
   OsMoGroups grps=plugin.getGroups();
-  OsMoGroupsStorage.OsMoGroup mainGroup=null;
-  ArrayList<OsMoGroupsStorage.OsMoGroup> groups=new ArrayList<>(grps.getGroups());
-  for (  OsMoGroupsStorage.OsMoGroup grp : groups) {
-    if (grp.getGroupId() == null) {
-      mainGroup=grp;
-      groups.remove(grp);
-      break;
-    }
-  }
   LinearLayout contentList=getClearContentList(mainView);
-  if (mainGroup == null) {
-    return;
-  }
-  String trackerId=plugin.getService().getMyGroupTrackerId();
-  List<OsMoGroupsStorage.OsMoDevice> devices=new ArrayList<>(mainGroup.getVisibleGroupUsers(trackerId));
-  if (devices.size() > 3) {
-    while (devices.size() > 3) {
-      devices.remove(devices.size() - 1);
-    }
-  }
- else {
-    if (groups.size() > 0) {
-      for (      OsMoGroupsStorage.OsMoGroup grp : groups) {
-        if (grp.getVisibleGroupUsers(trackerId).size() > 0) {
-        }
-      }
-    }
-  }
+  ArrayList<OsMoGroupsStorage.OsMoGroup> groups=new ArrayList<>(grps.getGroups());
+  List<OsMoGroupsStorage.OsMoDevice> devices=getOsMoDevices(groups);
   setupDeviceViews(contentList,devices);
 }
