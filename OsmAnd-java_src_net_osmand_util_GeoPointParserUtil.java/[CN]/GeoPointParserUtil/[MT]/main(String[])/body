@@ -27,7 +27,7 @@
     }
     System.out.println(" Passed!");
   }
-  String twoQueryParameters[]={"geo:0,0?z=11&q=Lots+Of+Stuff","http://download.osmand.net/go?lat=34.99393&lon=-110.12345","http://download.osmand.net/go?lat=34.99393&lon=-110.12345#this+should+be+ignored"};
+  String twoQueryParameters[]={"geo:0,0?z=11&q=Lots+Of+Stuff","http://osmand.net/go?lat=34.99393&lon=-110.12345","http://www.osmand.net/go.html?lat=34.99393&lon=-110.12345","http://download.osmand.net/go?lat=34.99393&lon=-110.12345","http://download.osmand.net/go?lat=34.99393&lon=-110.12345#this+should+be+ignored"};
   for (  String s : twoQueryParameters) {
     URI uri=URI.create(s);
     Map<String,String> map=getQueryParameters(uri);
@@ -131,6 +131,22 @@
   System.out.println("url: " + url);
   actual=GeoPointParserUtil.parse(url);
   assertGeoPoint(actual,new GeoParsedPoint(dlat,dlon,z));
+  url="http://www.osmand.net/go.html?lat=" + ilat + "&lon="+ ilon+ "&z="+ z;
+  System.out.println("url: " + url);
+  actual=GeoPointParserUtil.parse(url);
+  assertGeoPoint(actual,new GeoParsedPoint(ilat,ilon,z));
+  url="http://www.osmand.net/go.html?lat=" + dlat + "&lon="+ dlon+ "&z="+ z;
+  System.out.println("url: " + url);
+  actual=GeoPointParserUtil.parse(url);
+  assertGeoPoint(actual,new GeoParsedPoint(dlat,dlon,z));
+  url="http://osmand.net/go?lat=" + ilat + "&lon="+ ilon+ "&z="+ z;
+  System.out.println("url: " + url);
+  actual=GeoPointParserUtil.parse(url);
+  assertGeoPoint(actual,new GeoParsedPoint(ilat,ilon,z));
+  url="http://osmand.net/go?lat=" + dlat + "&lon="+ dlon+ "&z="+ z;
+  System.out.println("url: " + url);
+  actual=GeoPointParserUtil.parse(url);
+  assertGeoPoint(actual,new GeoParsedPoint(dlat,dlon,z));
   z=11;
   url="http://openstreetmap.org/#map=" + z + "/"+ ilat+ "/"+ ilon;
   System.out.println("url: " + url);
@@ -206,14 +222,6 @@
   actual=GeoPointParserUtil.parse(url);
   assertGeoPoint(actual,new GeoParsedPoint(ilat,ilon,z));
   url="http://maps.google.com/maps/q=loc:" + dlat + ","+ dlon+ "&z="+ z;
-  System.out.println("url: " + url);
-  actual=GeoPointParserUtil.parse(url);
-  assertGeoPoint(actual,new GeoParsedPoint(dlat,dlon,z));
-  url="http://www.google.com/maps/?q=loc:" + ilat + ","+ ilon+ "&z="+ z;
-  System.out.println("url: " + url);
-  actual=GeoPointParserUtil.parse(url);
-  assertGeoPoint(actual,new GeoParsedPoint(ilat,ilon,z));
-  url="http://www.google.com/maps/?q=loc:" + dlat + ","+ dlon+ "&z="+ z;
   System.out.println("url: " + url);
   actual=GeoPointParserUtil.parse(url);
   assertGeoPoint(actual,new GeoParsedPoint(dlat,dlon,z));
@@ -348,6 +356,14 @@
     if (actual == null)     throw new RuntimeException(u + " not parsable!");
     System.out.println("Properly parsed as: " + actual.getGeoUriString());
   }
+  url="http://www.google.com/maps/?q=loc:" + ilat + ","+ ilon+ "&z="+ z;
+  System.out.println("url: " + url);
+  actual=GeoPointParserUtil.parse(url);
+  assertGeoPoint(actual,new GeoParsedPoint(ilat,ilon,z));
+  url="http://www.google.com/maps/?q=loc:" + dlat + ","+ dlon+ "&z="+ z;
+  System.out.println("url: " + url);
+  actual=GeoPointParserUtil.parse(url);
+  assertGeoPoint(actual,new GeoParsedPoint(dlat,dlon,z));
   String[] unparsableUrls={"http://maps.yandex.ru/-/CVCw6M9g","http://maps.yandex.com/-/CVCXEKYW","http://goo.gl/maps/Cji0V","http://amap.com/0F0i02","http://j.map.baidu.com/oXrVz","http://l.map.qq.com/9741483212?m","http://map.qq.com/?l=261496722","http://her.is/vLCEXE"};
   for (  String u : unparsableUrls) {
     System.out.println("url: " + u);
