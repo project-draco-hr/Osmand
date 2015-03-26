@@ -1,23 +1,12 @@
 {
-  boolean light=((OsmandApplication)getActivity().getApplication()).getSettings().isLightContent();
-  final PopupMenu optionsMenu=new PopupMenu(getActivity(),v);
+  final PopupMenu optionsMenu=new PopupMenu(getActivity(),view);
   DirectionsDialogs.setupPopUpMenuIcon(optionsMenu);
-  MenuItem item=optionsMenu.getMenu().add(R.string.shared_string_add_to_favorites).setIcon(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_fav_dark));
-  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
-    @Override public boolean onMenuItemClick(    MenuItem item){
-      Bundle args=new Bundle();
-      Dialog dlg=FavoriteDialogs.createAddFavouriteDialog(getActivity(),args);
-      dlg.show();
-      FavoriteDialogs.prepareAddFavouriteDialog(getActivity(),dlg,args,model.getLatitude(),model.getLongitude(),model.getOriginalPointDescription());
-      return true;
-    }
-  }
-);
-  final boolean target=model == getMyApplication().getTargetPointsHelper().getPointToNavigate();
+  MenuItem item;
+  final boolean target=point == getMyApplication().getTargetPointsHelper().getPointToNavigate();
   if (SHOW_ALL && getMyApplication().getTargetPointsHelper().getIntermediatePoints().size() > 0) {
     final List<TargetPoint> allTargets=getMyApplication().getTargetPointsHelper().getIntermediatePointsWithTarget();
-    if (model.index > 0 || target) {
-      final int ind=target ? allTargets.size() - 1 : model.index;
+    if (point.index > 0 || target) {
+      final int ind=target ? allTargets.size() - 1 : point.index;
       item=optionsMenu.getMenu().add(R.string.waypoint_visit_before).setIcon(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_up_dark));
       item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
         @Override public boolean onMenuItemClick(        MenuItem item){
@@ -34,8 +23,8 @@
       item=optionsMenu.getMenu().add(R.string.waypoint_visit_after).setIcon(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_down_dark));
       item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
         @Override public boolean onMenuItemClick(        MenuItem item){
-          TargetPoint remove=allTargets.remove(model.index + 1);
-          allTargets.add(model.index,remove);
+          TargetPoint remove=allTargets.remove(point.index + 1);
+          allTargets.add(point.index,remove);
           getMyApplication().getTargetPointsHelper().reorderAllTargetPoints(allTargets,true);
           setupTargets();
           return true;
@@ -44,11 +33,10 @@
 );
     }
   }
-  item=optionsMenu.getMenu().add(R.string.shared_string_delete).setIcon(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_delete_dark));
+  item=optionsMenu.getMenu().add(R.string.shared_string_delete).setIcon(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_remove_dark));
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
-      getMyApplication().getTargetPointsHelper().removeWayPoint(true,target ? -1 : model.index);
-      setupTargets();
+      deletePointConfirm(point,view);
       return true;
     }
   }
