@@ -1,5 +1,12 @@
 {
   final LocationManager service=(LocationManager)app.getSystemService(Context.LOCATION_SERVICE);
+  if (app.getSettings().isInternetConnectionAvailable()) {
+    long time=System.currentTimeMillis();
+    if (time - app.getSettings().AGPS_DATA_LAST_TIME_DOWNLOADED.get() > AGPS_TO_REDOWNLOAD) {
+      redownloadAGPS();
+      app.getSettings().AGPS_DATA_LAST_TIME_DOWNLOADED.set(time);
+    }
+  }
   service.addGpsStatusListener(getGpsStatusListener(service));
   try {
     service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,gpsListener);
