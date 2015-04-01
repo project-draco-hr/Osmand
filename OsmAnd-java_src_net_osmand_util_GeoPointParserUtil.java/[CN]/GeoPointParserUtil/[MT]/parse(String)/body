@@ -24,7 +24,7 @@
     simpleDomains.add("download.osmand.net");
     simpleDomains.add("openstreetmap.de");
     simpleDomains.add("www.openstreetmap.de");
-    final Pattern commaSeparatedPairPattern=Pattern.compile("([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)");
+    final Pattern commaSeparatedPairPattern=Pattern.compile("(?:loc:)?([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)");
     try {
       if (host.equals("osm.org") || host.endsWith("openstreetmap.org")) {
         Pattern p;
@@ -103,7 +103,30 @@
         }
       }
  else       if (host.matches("(?:www\\.)?(?:maps\\.)?google\\.[a-z.]+")) {
+        String latString=null;
+        String lonString=null;
+        String z=String.valueOf(GeoParsedPoint.NO_ZOOM);
         Map<String,String> params=getQueryParameters(uri);
+        if (params.containsKey("q")) {
+          Matcher matcher=commaSeparatedPairPattern.matcher(params.get("q"));
+          if (matcher.matches()) {
+            latString=matcher.group(1);
+            lonString=matcher.group(2);
+          }
+        }
+ else         if (params.containsKey("ll")) {
+          Matcher matcher=commaSeparatedPairPattern.matcher(params.get("ll"));
+          if (matcher.matches()) {
+            latString=matcher.group(1);
+            lonString=matcher.group(2);
+          }
+        }
+        if (latString != null && lonString != null) {
+          if (params.containsKey("z")) {
+            z=params.get("z");
+          }
+          return new GeoParsedPoint(latString,lonString,z);
+        }
         if (params.containsKey("daddr")) {
           return parseGoogleMapsPath(params.get("daddr"),params);
         }
@@ -112,6 +135,13 @@
         }
  else         if (params.containsKey("q")) {
           return parseGoogleMapsPath(params.get("q"),params);
+        }
+        if (fragment != null) {
+          Pattern p=Pattern.compile(".*[!&]q=([^&!]+).*");
+          Matcher m=p.matcher(fragment);
+          if (m.matches()) {
+            return new GeoParsedPoint(m.group(1));
+          }
         }
         String[] pathPrefixes=new String[]{"/@","/ll=","loc:","/"};
         for (        String pref : pathPrefixes) {
