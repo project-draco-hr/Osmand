@@ -1,5 +1,6 @@
 {
   InputStream is;
+  List<PoiType> referenceTypes=new ArrayList<PoiType>();
   try {
     if (resourceName == null) {
       is=MapRenderingTypes.class.getResourceAsStream("poi_types.xml");
@@ -18,16 +19,19 @@
         String name=parser.getName();
         if (name.equals("poi_category")) {
           lastCategory=new PoiCategory(this,parser.getAttributeValue("","name"),categories.size());
+          lastCategory.setTopVisible(Boolean.parseBoolean(parser.getAttributeValue("","top")));
           categories.add(lastCategory);
         }
  else         if (name.equals("poi_filter")) {
           PoiFilter tp=new PoiFilter(this,lastCategory,parser.getAttributeValue("","name"));
+          tp.setTopVisible(Boolean.parseBoolean(parser.getAttributeValue("","top")));
           lastFilter=tp;
           lastCategory.addPoiType(tp);
         }
  else         if (name.equals("poi_reference")) {
           PoiType tp=new PoiType(this,lastCategory,parser.getAttributeValue("","name"));
-          tp.setReference(true);
+          referenceTypes.add(tp);
+          tp.setReferenceType(tp);
           if (lastFilter != null) {
             lastFilter.addPoiType(tp);
           }
@@ -69,6 +73,15 @@ catch (  XmlPullParserException e) {
     log.error("Unexpected error",e);
     e.printStackTrace();
     throw new RuntimeException(e);
+  }
+  for (  PoiType gt : referenceTypes) {
+    PoiType pt=getPoiTypeByKey(gt.keyName);
+    if (pt == null || pt.getOsmTag() == null) {
+      throw new IllegalStateException("Can't find poi type for poi reference '" + gt.keyName + "'");
+    }
+ else {
+      gt.setReferenceType(pt);
+    }
   }
   findDefaultOtherCategory();
   init=true;
