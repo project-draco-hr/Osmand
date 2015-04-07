@@ -1,0 +1,20 @@
+{
+  List<Object> filters=new ArrayList<Object>();
+  if (Algorithms.isEmpty(s)) {
+    PoiFiltersHelper poiFilters=getApp().getPoiFilters();
+    filters.addAll(poiFilters.getTopDefinedPoiFilters());
+  }
+ else {
+    PoiFiltersHelper poiFilters=getApp().getPoiFilters();
+    for (    PoiLegacyFilter pf : poiFilters.getTopDefinedPoiFilters()) {
+      if (!pf.isStandardFilter()) {
+        filters.add(pf);
+      }
+    }
+    Map<String,AbstractPoiType> res=getApp().getPoiTypes().getAllTypesTranslatedNames(new CollatorStringMatcher(s,StringMatcherMode.CHECK_STARTS_FROM_SPACE));
+    for (    AbstractPoiType p : res.values()) {
+      filters.add(p);
+    }
+  }
+  return filters;
+}

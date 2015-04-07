@@ -1,0 +1,36 @@
+{
+  View row=convertView;
+  if (row == null) {
+    LayoutInflater inflater=getActivity().getLayoutInflater();
+    row=inflater.inflate(R.layout.searchpoifolder_list,parent,false);
+  }
+  TextView label=(TextView)row.findViewById(R.id.folder_label);
+  ImageView icon=(ImageView)row.findViewById(R.id.folder_icon);
+  Object item=getItem(position);
+  String name;
+  if (item instanceof PoiLegacyFilter) {
+    final PoiLegacyFilter model=(PoiLegacyFilter)item;
+    if (RenderingIcons.containsBigIcon(model.getSimplifiedId())) {
+      icon.setImageDrawable(RenderingIcons.getBigIcon(getActivity(),model.getSimplifiedId()));
+    }
+ else {
+      icon.setImageResource(R.drawable.mx_user_defined);
+    }
+    name=model.getName();
+  }
+ else {
+    AbstractPoiType st=(AbstractPoiType)item;
+    if (RenderingIcons.containsBigIcon(st.getKeyName())) {
+      icon.setImageDrawable(RenderingIcons.getBigIcon(getActivity(),st.getKeyName()));
+    }
+ else     if (st instanceof PoiType && RenderingIcons.containsBigIcon(((PoiType)st).getOsmTag() + "_" + ((PoiType)st).getOsmValue())) {
+      icon.setImageResource(RenderingIcons.getBigIconResourceId(((PoiType)st).getOsmTag() + "_" + ((PoiType)st).getOsmValue()));
+    }
+ else {
+      icon.setImageDrawable(null);
+    }
+    name=st.getTranslation();
+  }
+  label.setText(name);
+  return (row);
+}
