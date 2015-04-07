@@ -1,14 +1,6 @@
 {
   if (cacheTopStandardFilters == null) {
     cacheTopStandardFilters=new ArrayList<PoiLegacyFilter>();
-    PoiLegacyFilter filter=new SearchByNameFilter(application);
-    filter.setStandardFilter(true);
-    cacheTopStandardFilters.add(filter);
-    filter=new PoiLegacyFilter(application.getString(R.string.poi_filter_custom_filter),PoiLegacyFilter.CUSTOM_FILTER_ID,new LinkedHashMap<PoiCategory,LinkedHashSet<String>>(),application);
-    filter.setStandardFilter(true);
-    cacheTopStandardFilters.add(filter);
-    cacheTopStandardFilters.add(new PoiLegacyFilter(null,application));
-    cacheTopStandardFilters.add(getNameFinderPOIFilter());
     cacheTopStandardFilters.addAll(getUserDefinedPoiFilters());
     MapPoiTypes poiTypes=application.getPoiTypes();
     for (    PoiFilter t : poiTypes.getTopVisibleFilters()) {
@@ -16,5 +8,8 @@
     }
     sortListOfFilters(cacheTopStandardFilters);
   }
-  return Collections.unmodifiableList(cacheTopStandardFilters);
+  List<PoiLegacyFilter> result=new ArrayList<PoiLegacyFilter>();
+  result.add(getShowAllPOIFilter());
+  result.addAll(cacheTopStandardFilters);
+  return result;
 }
