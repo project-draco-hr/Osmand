@@ -1,11 +1,14 @@
 {
-  final PoiLegacyFilter filter=((PoiFiltersAdapter)getListAdapter()).getItem(position);
-  if (!(filter instanceof NameFinderPoiFilter)) {
-    ResourceManager rm=getApp().getResourceManager();
-    if (!rm.containsAmenityRepositoryToSearch(filter instanceof SearchByNameFilter)) {
-      AccessibleToast.makeText(getActivity(),R.string.data_to_search_poi_not_available,Toast.LENGTH_LONG);
-      return;
-    }
+  final Object item=((PoiFiltersAdapter)getListAdapter()).getItem(position);
+  ResourceManager rm=getApp().getResourceManager();
+  if (!rm.containsAmenityRepositoryToSearch(false)) {
+    AccessibleToast.makeText(getActivity(),R.string.data_to_search_poi_not_available,Toast.LENGTH_LONG);
+    return;
   }
-  showFilterActivity(filter);
+  if (item instanceof PoiLegacyFilter) {
+    showFilterActivity(((PoiLegacyFilter)item).getFilterId());
+  }
+ else {
+    showFilterActivity(PoiLegacyFilter.STD_PREFIX + ((AbstractPoiType)item).getKeyName());
+  }
 }

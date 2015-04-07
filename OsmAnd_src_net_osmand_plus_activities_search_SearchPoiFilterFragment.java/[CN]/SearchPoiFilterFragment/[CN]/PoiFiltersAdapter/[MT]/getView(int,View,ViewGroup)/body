@@ -6,23 +6,31 @@
   }
   TextView label=(TextView)row.findViewById(R.id.folder_label);
   ImageView icon=(ImageView)row.findViewById(R.id.folder_icon);
-  OsmandApplication app=getMyApplication();
-  final PoiLegacyFilter model=getItem(position);
-  label.setText(model.getName());
-  IconsCache iconsCache=app.getIconsCache();
-  if (model.getFilterId().equals(PoiLegacyFilter.CUSTOM_FILTER_ID)) {
-    icon.setImageDrawable(iconsCache.getContentIcon(R.drawable.ic_action_filter_dark));
-  }
- else   if (model.getFilterId().equals(PoiLegacyFilter.BY_NAME_FILTER_ID)) {
-    icon.setImageResource(android.R.drawable.ic_search_category_default);
-  }
- else {
+  Object item=getItem(position);
+  String name;
+  if (item instanceof PoiLegacyFilter) {
+    final PoiLegacyFilter model=(PoiLegacyFilter)item;
     if (RenderingIcons.containsBigIcon(model.getSimplifiedId())) {
       icon.setImageDrawable(RenderingIcons.getBigIcon(getActivity(),model.getSimplifiedId()));
     }
  else {
       icon.setImageResource(R.drawable.mx_user_defined);
     }
+    name=model.getName();
   }
+ else {
+    AbstractPoiType st=(AbstractPoiType)item;
+    if (RenderingIcons.containsBigIcon(st.getKeyName())) {
+      icon.setImageDrawable(RenderingIcons.getBigIcon(getActivity(),st.getKeyName()));
+    }
+ else     if (st instanceof PoiType && RenderingIcons.containsBigIcon(((PoiType)st).getOsmTag() + "_" + ((PoiType)st).getOsmValue())) {
+      icon.setImageResource(RenderingIcons.getBigIconResourceId(((PoiType)st).getOsmTag() + "_" + ((PoiType)st).getOsmValue()));
+    }
+ else {
+      icon.setImageDrawable(null);
+    }
+    name=st.getTranslation();
+  }
+  label.setText(name);
   return (row);
 }
