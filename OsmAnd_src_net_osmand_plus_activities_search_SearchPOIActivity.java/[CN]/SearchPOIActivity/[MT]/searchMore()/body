@@ -1,23 +1,16 @@
 {
   String query=searchFilter.getText().toString().trim();
-  if (query.length() < 2 && (isNameFinderFilter() || isSearchByNameFilter())) {
+  if (query.length() < 2 && isNameSearch()) {
     AccessibleToast.makeText(SearchPOIActivity.this,R.string.poi_namefinder_query_empty,Toast.LENGTH_LONG).show();
     return true;
   }
-  if (isNameFinderFilter() && !Algorithms.objectEquals(((NameFinderPoiFilter)filter).getQuery(),query)) {
+  if (isNameSearch() && !Algorithms.objectEquals(filter.getFilterByName(),query)) {
     filter.clearPreviousZoom();
-    ((NameFinderPoiFilter)filter).setQuery(query);
-    runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
-  }
- else   if (isSearchByNameFilter() && !Algorithms.objectEquals(((SearchByNameFilter)filter).getQuery(),query)) {
-    showFilterItem.setVisible(false);
-    filter.clearPreviousZoom();
-    showPoiCategoriesByNameFilter(query,location);
-    ((SearchByNameFilter)filter).setQuery(query);
-    runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.NEW_SEARCH_INIT));
+    filter.setFilterByName(query);
+    runNewSearchQuery(location,NEW_SEARCH_INIT);
   }
  else {
-    runNewSearchQuery(SearchAmenityRequest.buildRequest(location,SearchAmenityRequest.SEARCH_FURTHER));
+    runNewSearchQuery(location,SEARCH_FURTHER);
   }
   return true;
 }

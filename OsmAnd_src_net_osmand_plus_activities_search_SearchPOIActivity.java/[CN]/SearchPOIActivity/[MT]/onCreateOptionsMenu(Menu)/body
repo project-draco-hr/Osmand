@@ -8,46 +8,30 @@
     }
   }
 );
-  updateSearchPoiTextButton(false);
   showFilterItem=menu.add(0,FILTER,0,R.string.search_poi_filter);
   MenuItemCompat.setShowAsAction(showFilterItem,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
   showFilterItem=showFilterItem.setIcon(getMyApplication().getIconsCache().getActionBarIcon(R.drawable.ic_action_filter_dark));
   showFilterItem.setOnMenuItemClickListener(new OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
-      if (isSearchByNameFilter()) {
-        Intent newIntent=new Intent(SearchPOIActivity.this,EditPOIFilterActivity.class);
-        newIntent.putExtra(EditPOIFilterActivity.AMENITY_FILTER,PoiLegacyFilter.CUSTOM_FILTER_ID);
-        if (location != null) {
-          newIntent.putExtra(EditPOIFilterActivity.SEARCH_LAT,location.getLatitude());
-          newIntent.putExtra(EditPOIFilterActivity.SEARCH_LON,location.getLongitude());
-        }
-        startActivity(newIntent);
+      if (searchFilterLayout.getVisibility() == View.GONE) {
+        searchFilterLayout.setVisibility(View.VISIBLE);
       }
  else {
-        if (searchFilterLayout.getVisibility() == View.GONE) {
-          searchFilterLayout.setVisibility(View.VISIBLE);
+        if (filter != null) {
+          searchFilter.setText(filter.getSavedFilterByName() == null ? "" : filter.getSavedFilterByName());
         }
- else {
-          searchFilter.setText("");
-          searchFilterLayout.setVisibility(View.GONE);
-        }
+        searchFilterLayout.setVisibility(View.GONE);
       }
       return true;
     }
   }
 );
-  updateShowFilterItem();
-  if (isSearchByNameFilter() || isNameFinderFilter()) {
-    showFilterItem.setVisible(false);
-  }
   showOnMapItem=menu.add(0,SHOW_ON_MAP,0,R.string.shared_string_show_on_map);
   MenuItemCompat.setShowAsAction(showOnMapItem,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
   showOnMapItem=showOnMapItem.setIcon(getMyApplication().getIconsCache().getActionBarIcon(R.drawable.ic_show_on_map));
   showOnMapItem.setOnMenuItemClickListener(new OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
-      if (searchFilter.getVisibility() == View.VISIBLE) {
-        filter.setNameFilter(searchFilter.getText().toString());
-      }
+      OsmandSettings settings=app.getSettings();
       settings.setPoiFilterForMap(filter.getFilterId());
       settings.SHOW_POI_OVER_MAP.set(true);
       if (location != null) {
@@ -58,5 +42,6 @@
     }
   }
 );
+  updateButtonState();
   return true;
 }

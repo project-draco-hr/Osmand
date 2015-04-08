@@ -4,20 +4,11 @@
   getSupportActionBar().setTitle(R.string.searchpoi_activity);
   setSupportProgressBarIndeterminateVisibility(false);
   app=(OsmandApplication)getApplication();
-  searchFilter=(EditText)findViewById(R.id.edit);
   searchFilterLayout=findViewById(R.id.SearchFilterLayout);
-  settings=((OsmandApplication)getApplication()).getSettings();
+  searchFilter=(EditText)findViewById(R.id.edit);
   searchFilter.addTextChangedListener(new TextWatcher(){
     @Override public void afterTextChanged(    Editable s){
-      if (!isNameFinderFilter() && !isSearchByNameFilter()) {
-        amenityAdapter.getFilter().filter(s);
-      }
- else {
-        if (searchPOILevel != null) {
-          searchPOILevel.setEnabled(true);
-          searchPOILevel.setTitle(R.string.search_button);
-        }
-      }
+      changeFilter(s);
     }
     @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
     }
@@ -35,12 +26,4 @@
 );
   amenityAdapter=new AmenityAdapter(new ArrayList<Amenity>());
   setListAdapter(amenityAdapter);
-  boolean light=getMyApplication().getSettings().isLightContent();
-  Drawable arrowImage=getResources().getDrawable(R.drawable.ic_destination_arrow_white);
-  if (light) {
-    arrowImage.setColorFilter(getResources().getColor(R.color.color_distance),PorterDuff.Mode.MULTIPLY);
-  }
- else {
-    arrowImage.setColorFilter(getResources().getColor(R.color.color_distance),PorterDuff.Mode.MULTIPLY);
-  }
 }

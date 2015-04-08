@@ -1,0 +1,17 @@
+{
+  List<Amenity> results=new ArrayList<Amenity>();
+  List<Amenity> tempResults=currentSearchResult;
+  if (tempResults != null) {
+    for (    Amenity a : tempResults) {
+      LatLon l=a.getLocation();
+      if (l != null && l.getLatitude() <= top && l.getLatitude() >= bottom && l.getLongitude() >= left && l.getLongitude() <= right) {
+        if (matcher == null || matcher.publish(a)) {
+          results.add(a);
+        }
+      }
+    }
+  }
+  List<Amenity> amenities=app.getResourceManager().searchAmenities(this,top,left,bottom,right,zoom,wrapResultMatcher(matcher));
+  results.addAll(amenities);
+  return results;
+}
