@@ -2,10 +2,10 @@
   byte[] image;
   try {
     ResourceManager rm=app.getResourceManager();
-    String tileFilename=rm.calculateTileId(tileSource,tileId.getX(),tileId.getY(),zoom.swigValue());
-    final TileReadyCallback tileReadyCallback=new TileReadyCallback(tileSource,tileId.getX(),tileId.getY(),zoom.swigValue());
+    String tileFilename=rm.calculateTileId(tileSource,request.getTileId().getX(),request.getTileId().getY(),request.getZoom().swigValue());
+    final TileReadyCallback tileReadyCallback=new TileReadyCallback(tileSource,request.getTileId().getX(),request.getTileId().getY(),request.getZoom().swigValue());
     rm.getMapTileDownloader().addDownloaderCallback(tileReadyCallback);
-    while (rm.getTileImageForMapAsync(tileFilename,tileSource,tileId.getX(),tileId.getY(),zoom.swigValue(),true) == null) {
+    while (rm.getTileImageForMapAsync(tileFilename,tileSource,request.getTileId().getX(),request.getTileId().getY(),request.getZoom().swigValue(),true) == null) {
 synchronized (tileReadyCallback.getSync()) {
         if (tileReadyCallback.isReady()) {
           break;
@@ -18,7 +18,7 @@ synchronized (tileReadyCallback.getSync()) {
       }
     }
     rm.getMapTileDownloader().removeDownloaderCallback(tileReadyCallback);
-    image=tileSource.getBytes(tileId.getX(),tileId.getY(),zoom.swigValue(),app.getAppPath(IndexConstants.TILES_INDEX_DIR).getAbsolutePath());
+    image=tileSource.getBytes(request.getTileId().getX(),request.getTileId().getY(),request.getZoom().swigValue(),app.getAppPath(IndexConstants.TILES_INDEX_DIR).getAbsolutePath());
   }
  catch (  IOException e) {
     return SwigUtilities.emptyQByteArray();
