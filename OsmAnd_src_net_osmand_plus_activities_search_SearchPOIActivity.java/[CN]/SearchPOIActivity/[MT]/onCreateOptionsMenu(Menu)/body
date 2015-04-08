@@ -1,5 +1,5 @@
 {
-  menu=getClearToolbar(true).getMenu();
+  Menu menu=getClearToolbar(true).getMenu();
   searchPOILevel=menu.add(0,SEARCH_MORE,0,R.string.search_POI_level_btn);
   MenuItemCompat.setShowAsAction(searchPOILevel,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
   searchPOILevel.setOnMenuItemClickListener(new OnMenuItemClickListener(){
@@ -16,6 +16,8 @@
       if (searchFilterLayout.getVisibility() == View.GONE) {
         searchFilterLayout.setVisibility(View.VISIBLE);
         searchFilter.requestFocus();
+        InputMethodManager imm=(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(searchFilter,InputMethodManager.SHOW_IMPLICIT);
       }
  else {
         if (filter != null) {
@@ -43,6 +45,12 @@
     }
   }
 );
+  if (filter != null && !isNameSearch()) {
+    createMenuItem(omenu,SAVE_FILTER,R.string.edit_filter_save_as_menu_item,R.drawable.ic_action_gsave_dark,MenuItemCompat.SHOW_AS_ACTION_IF_ROOM);
+    if (!filter.isStandardFilter()) {
+      createMenuItem(omenu,DELETE_FILTER,R.string.shared_string_delete,R.drawable.ic_action_delete_dark,MenuItemCompat.SHOW_AS_ACTION_IF_ROOM);
+    }
+  }
   updateButtonState();
   return true;
 }
