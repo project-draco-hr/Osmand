@@ -6,9 +6,21 @@
     return;
   }
   if (item instanceof PoiLegacyFilter) {
-    showFilterActivity(((PoiLegacyFilter)item).getFilterId());
+    PoiLegacyFilter model=((PoiLegacyFilter)item);
+    if (PoiLegacyFilter.BY_NAME_FILTER_ID.equals(model.getFilterId()) || model instanceof NominatimPoiFilter) {
+      model.setFilterByName(searchEditText.getText().toString());
+    }
+ else {
+      model.setFilterByName(model.getSavedFilterByName());
+    }
+    showFilterActivity(model.getFilterId());
   }
  else {
-    showFilterActivity(PoiLegacyFilter.STD_PREFIX + ((AbstractPoiType)item).getKeyName());
+    PoiLegacyFilter custom=getApp().getPoiFilters().getFilterById(PoiLegacyFilter.STD_PREFIX + ((AbstractPoiType)item).getKeyName());
+    if (custom != null) {
+      custom.setFilterByName(null);
+      custom.updateTypesToAccept(((AbstractPoiType)item));
+      showFilterActivity(custom.getFilterId());
+    }
   }
 }

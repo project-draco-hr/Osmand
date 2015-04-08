@@ -7,13 +7,18 @@
  else {
     PoiFiltersHelper poiFilters=getApp().getPoiFilters();
     for (    PoiLegacyFilter pf : poiFilters.getTopDefinedPoiFilters()) {
-      if (!pf.isStandardFilter()) {
+      if (!pf.isStandardFilter() && pf.getName().toLowerCase().startsWith(s.toLowerCase())) {
         filters.add(pf);
       }
     }
     Map<String,AbstractPoiType> res=getApp().getPoiTypes().getAllTypesTranslatedNames(new CollatorStringMatcher(s,StringMatcherMode.CHECK_STARTS_FROM_SPACE));
     for (    AbstractPoiType p : res.values()) {
       filters.add(p);
+    }
+    filters.add(poiFilters.getSearchByNamePOIFilter());
+    if (OsmandPlugin.getEnabledPlugin(OsmandRasterMapsPlugin.class) != null) {
+      filters.add(poiFilters.getNominatimPOIFilter());
+      filters.add(poiFilters.getNominatimAddressFilter());
     }
   }
   return filters;

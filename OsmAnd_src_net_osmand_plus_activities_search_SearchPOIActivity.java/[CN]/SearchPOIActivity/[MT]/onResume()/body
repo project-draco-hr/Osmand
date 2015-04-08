@@ -19,16 +19,16 @@
       filter.clearPreviousZoom();
     }
  else {
-      amenityAdapter.setNewModel(Collections.<Amenity>emptyList(),"");
+      amenityAdapter.setNewModel(Collections.<Amenity>emptyList());
     }
-    clearSearchQuery();
+    runNewSearchQuery(location,NEW_SEARCH_INIT);
   }
+  updateButtonState();
   if (filter != null) {
-    filter.clearNameFilter();
+    String text=filter.getFilterByName() != null ? filter.getFilterByName() : "";
+    searchFilter.setText(text);
+    searchFilterLayout.setVisibility(text.length() > 0 || isNameSearch() ? View.VISIBLE : View.GONE);
   }
-  updateSubtitle();
-  updateSearchPoiTextButton(false);
-  updateShowFilterItem();
   if (filter != null) {
     if (searchNearBy) {
       app.getLocationProvider().addLocationListener(this);
@@ -37,17 +37,8 @@
     }
     updateLocation(location);
   }
-  if (isNameFinderFilter()) {
-    searchFilterLayout.setVisibility(View.VISIBLE);
-  }
- else   if (isSearchByNameFilter()) {
-    searchFilterLayout.setVisibility(View.VISIBLE);
-  }
   if (!app.accessibilityEnabled()) {
     app.getLocationProvider().addCompassListener(this);
     app.getLocationProvider().registerOrUnregisterCompassListener(true);
-  }
-  if (searchFilterLayout.getVisibility() == View.VISIBLE) {
-    searchFilter.requestFocus();
   }
 }

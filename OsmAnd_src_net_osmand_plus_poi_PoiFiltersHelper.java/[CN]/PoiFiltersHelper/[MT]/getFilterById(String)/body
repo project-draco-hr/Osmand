@@ -7,7 +7,7 @@
       return f;
     }
   }
-  PoiLegacyFilter ff=getFilterById(filterId,getCustomPOIFilter(),getSearchByNamePOIFilter(),getShowAllPOIFilter(),getNameFinderPOIFilter());
+  PoiLegacyFilter ff=getFilterById(filterId,getCustomPOIFilter(),getSearchByNamePOIFilter(),getShowAllPOIFilter(),getNominatimPOIFilter(),getNominatimAddressFilter());
   if (ff != null) {
     return ff;
   }
@@ -15,7 +15,10 @@
     String typeId=filterId.substring(PoiLegacyFilter.STD_PREFIX.length());
     PoiType tp=application.getPoiTypes().getPoiTypeByKey(typeId);
     if (tp != null) {
-      return new PoiLegacyFilter(tp,application);
+      PoiLegacyFilter lf=new PoiLegacyFilter(tp,application);
+      cacheTopStandardFilters.add(lf);
+      sortListOfFilters(cacheTopStandardFilters);
+      return lf;
     }
   }
   return null;

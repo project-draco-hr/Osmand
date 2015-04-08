@@ -1,0 +1,16 @@
+{
+  long now=System.currentTimeMillis();
+  List<Amenity> result=null;
+  SearchRequest<Amenity> req=BinaryMapIndexReader.buildSearchPoiRequest(locations,radius,filter,matcher);
+  try {
+    result=index.searchPoi(req);
+  }
+ catch (  IOException e) {
+    log.error("Error searching amenities",e);
+    return result;
+  }
+  if (log.isDebugEnabled() && result != null) {
+    log.debug(String.format("Search done in %s ms found %s.",(System.currentTimeMillis() - now),result.size()));
+  }
+  return result;
+}

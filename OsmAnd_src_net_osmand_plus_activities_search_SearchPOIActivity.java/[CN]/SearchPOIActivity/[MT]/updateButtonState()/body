@@ -1,0 +1,29 @@
+{
+  if (showFilterItem != null) {
+    showFilterItem.setVisible(filter != null && !isNameSearch());
+  }
+  if (filter != null) {
+    int maxLength=24;
+    String name=filter.getGeneratedName(maxLength);
+    if (name.length() >= maxLength) {
+      name=name.substring(0,maxLength) + getString(R.string.shared_string_ellipsis);
+    }
+    if (filter instanceof NominatimPoiFilter && !((NominatimPoiFilter)filter).isPlacesQuery()) {
+    }
+ else {
+      name+=" " + filter.getSearchArea();
+    }
+    getSupportActionBar().setTitle(name);
+  }
+  if (searchPOILevel != null) {
+    int title=location == null ? R.string.search_poi_location : R.string.search_POI_level_btn;
+    boolean taskAlreadyFinished=currentSearchTask == null || currentSearchTask.getStatus() != Status.RUNNING;
+    boolean enabled=taskAlreadyFinished && location != null && filter != null && filter.isSearchFurtherAvailable();
+    if (isNameSearch() && !Algorithms.objectEquals(searchFilter.getText().toString(),filter.getFilterByName())) {
+      enabled=true;
+      title=R.string.search_button;
+    }
+    searchPOILevel.setEnabled(enabled);
+    searchPOILevel.setTitle(title);
+  }
+}
