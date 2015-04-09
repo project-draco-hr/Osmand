@@ -1,42 +1,17 @@
 {
   super.onResume();
-  Bundle bundle=this.getIntent().getExtras();
-  if (bundle.containsKey(SEARCH_LAT) && bundle.containsKey(SEARCH_LON)) {
-    location=new net.osmand.Location("internal");
-    location.setLatitude(bundle.getDouble(SEARCH_LAT));
-    location.setLongitude(bundle.getDouble(SEARCH_LON));
-    searchNearBy=false;
-  }
- else {
-    location=null;
-    searchNearBy=true;
-  }
-  String filterId=bundle.getString(AMENITY_FILTER);
-  PoiLegacyFilter filter=app.getPoiFilters().getFilterById(filterId);
-  if (filter != this.filter) {
-    this.filter=filter;
-    if (filter != null) {
-      filter.clearPreviousZoom();
-    }
- else {
-      amenityAdapter.setNewModel(Collections.<Amenity>emptyList());
-    }
-    runNewSearchQuery(location,NEW_SEARCH_INIT);
-  }
   updateButtonState();
   if (filter != null) {
     String text=filter.getFilterByName() != null ? filter.getFilterByName() : "";
     searchFilter.setText(text);
     searchFilterLayout.setVisibility(text.length() > 0 || isNameSearch() ? View.VISIBLE : View.GONE);
   }
-  if (filter != null) {
-    if (searchNearBy) {
-      app.getLocationProvider().addLocationListener(this);
-      location=app.getLocationProvider().getLastKnownLocation();
-      app.getLocationProvider().resumeAllUpdates();
-    }
-    updateLocation(location);
+  if (searchNearBy) {
+    app.getLocationProvider().addLocationListener(this);
+    location=app.getLocationProvider().getLastKnownLocation();
+    app.getLocationProvider().resumeAllUpdates();
   }
+  updateLocation(location);
   if (!app.accessibilityEnabled()) {
     app.getLocationProvider().addCompassListener(this);
     app.getLocationProvider().registerOrUnregisterCompassListener(true);
