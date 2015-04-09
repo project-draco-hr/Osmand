@@ -3,7 +3,14 @@
   if (helper == null) {
     return false;
   }
-  boolean res=helper.addFilter(filter,helper.getWritableDatabase(),false);
+  boolean res=helper.deleteFilter(helper.getWritableDatabase(),filter);
+  Iterator<PoiLegacyFilter> it=cacheTopStandardFilters.iterator();
+  while (it.hasNext()) {
+    if (it.next().getFilterId().equals(filter.getFilterId())) {
+      it.remove();
+    }
+  }
+  res=helper.addFilter(filter,helper.getWritableDatabase(),false);
   if (res) {
     cacheTopStandardFilters.add(filter);
     sortListOfFilters(cacheTopStandardFilters);
