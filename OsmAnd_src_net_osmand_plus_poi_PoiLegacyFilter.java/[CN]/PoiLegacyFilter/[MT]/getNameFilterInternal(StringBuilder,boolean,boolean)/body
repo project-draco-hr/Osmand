@@ -1,0 +1,35 @@
+{
+  final CollatorStringMatcher sm=nmFilter.length() > 0 ? new CollatorStringMatcher(nmFilter.toString().trim(),StringMatcherMode.CHECK_CONTAINS) : null;
+  final boolean en=app.getSettings().usingEnglishNames();
+  return new AmenityNameFilter(){
+    @Override public boolean accept(    Amenity a){
+      if (sm != null) {
+        String lower=OsmAndFormatter.getPoiStringWithoutType(a,en);
+        if (!sm.matches(lower)) {
+          return false;
+        }
+      }
+      if (allTime) {
+        if (!"24/7".equalsIgnoreCase(a.getOpeningHours())) {
+          return false;
+        }
+      }
+      if (open) {
+        OpeningHours rs=OpeningHoursParser.parseOpenedHours(a.getOpeningHours());
+        if (rs != null) {
+          Calendar inst=Calendar.getInstance();
+          inst.setTimeInMillis(System.currentTimeMillis());
+          boolean work=rs.isOpenedForTime(inst);
+          if (!work) {
+            return false;
+          }
+        }
+ else {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+;
+}
