@@ -14,6 +14,7 @@
     parser.setInput(is,"UTF-8");
     PoiCategory lastCategory=null;
     PoiFilter lastFilter=null;
+    PoiType lastType=null;
     while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
       if (tok == XmlPullParser.START_TAG) {
         String name=parser.getName();
@@ -37,12 +38,23 @@
           }
           lastCategory.addPoiType(tp);
         }
+ else         if (name.equals("poi_additional")) {
+          PoiType tp=new PoiType(this,lastCategory,parser.getAttributeValue("","name"));
+          tp.setOsmTag(parser.getAttributeValue("","tag"));
+          tp.setOsmValue(parser.getAttributeValue("","value"));
+          tp.setOsmTag2(parser.getAttributeValue("","tag2"));
+          tp.setOsmValue2(parser.getAttributeValue("","value2"));
+          if (lastType != null) {
+            lastType.addPoiAdditional(tp);
+          }
+        }
  else         if (name.equals("poi_type")) {
           PoiType tp=new PoiType(this,lastCategory,parser.getAttributeValue("","name"));
           tp.setOsmTag(parser.getAttributeValue("","tag"));
           tp.setOsmValue(parser.getAttributeValue("","value"));
           tp.setOsmTag2(parser.getAttributeValue("","tag2"));
           tp.setOsmValue2(parser.getAttributeValue("","value2"));
+          lastType=tp;
           if (lastFilter != null) {
             lastFilter.addPoiType(tp);
           }
@@ -53,6 +65,9 @@
         String name=parser.getName();
         if (name.equals("poi_filter")) {
           lastFilter=null;
+        }
+ else         if (name.equals("poi_type")) {
+          lastType=null;
         }
       }
     }

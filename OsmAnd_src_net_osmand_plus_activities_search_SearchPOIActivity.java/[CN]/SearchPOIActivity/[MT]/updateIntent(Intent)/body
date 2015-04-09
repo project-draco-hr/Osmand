@@ -1,0 +1,28 @@
+{
+  Bundle bundle=intent.getExtras();
+  if (bundle.containsKey(SEARCH_LAT) && bundle.containsKey(SEARCH_LON)) {
+    location=new net.osmand.Location("internal");
+    location.setLatitude(bundle.getDouble(SEARCH_LAT));
+    location.setLongitude(bundle.getDouble(SEARCH_LON));
+    searchNearBy=false;
+  }
+ else {
+    location=null;
+    searchNearBy=true;
+  }
+  String filterId=bundle.getString(AMENITY_FILTER);
+  this.filter=app.getPoiFilters().getFilterById(filterId);
+  if (filter != null) {
+    if (filter.isEmpty()) {
+      showEditActivity(filter);
+    }
+ else {
+      filter.clearPreviousZoom();
+      runNewSearchQuery(location,NEW_SEARCH_INIT);
+    }
+  }
+ else {
+    amenityAdapter.setNewModel(Collections.<Amenity>emptyList());
+    finish();
+  }
+}
