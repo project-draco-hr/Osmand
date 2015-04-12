@@ -2,8 +2,9 @@
   if (cities.isEmpty()) {
     try {
       List<City> cs=file.getCities(region,BinaryMapIndexReader.buildAddressRequest(resultMatcher),BinaryMapAddressReaderAdapter.CITY_TOWN_TYPE);
+      LinkedHashMap<Long,City> ncities=new LinkedHashMap<Long,City>();
       for (      City c : cs) {
-        cities.put(c.getId(),c);
+        ncities.put(c.getId(),c);
         LatLon loc=c.getLocation();
         if (loc != null) {
           int y31=MapUtils.get31TileNumberY(loc.getLatitude());
@@ -12,6 +13,7 @@
           citiesQtree.insert(c,new QuadRect((x31 >> dz) - 1,(y31 >> dz) - 1,(x31 >> dz) + 1,(y31 >> dz) + 1));
         }
       }
+      cities=ncities;
     }
  catch (    IOException e) {
       log.error("Disk operation failed",e);
