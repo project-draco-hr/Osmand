@@ -46,12 +46,11 @@
   pref.setSummary(getString(R.string.native_app_allocated_memory_descr,mem.nativePrivateDirty / 1024,mem.dalvikPrivateDirty / 1024,mem.otherPrivateDirty / 1024,mem.nativePss / 1024,mem.dalvikPss / 1024,mem.otherPss / 1024));
   pref.setSelectable(false);
   cat.addPreference(pref);
-  long agpsLastDownloaded=settings.AGPS_DATA_LAST_TIME_DOWNLOADED.get();
   pref=new Preference(this);
   pref.setTitle(R.string.agps_info);
-  if (agpsLastDownloaded != 0L) {
+  if (settings.AGPS_DATA_LAST_TIME_DOWNLOADED.get() != 0L) {
     SimpleDateFormat prt=new SimpleDateFormat("yyyy-MM-dd  HH:mm");
-    pref.setSummary(getString(R.string.agps_data_last_downloaded,prt.format(agpsLastDownloaded)));
+    pref.setSummary(getString(R.string.agps_data_last_downloaded,prt.format(settings.AGPS_DATA_LAST_TIME_DOWNLOADED.get())));
   }
  else {
     pref.setSummary(getString(R.string.agps_data_last_downloaded,"--"));
@@ -63,6 +62,8 @@
         getMyApplication().getLocationProvider().redownloadAGPS();
         if (getMyApplication().getLocationProvider().agpsDownloaded() == true) {
           getMyApplication().getSettings().AGPS_DATA_LAST_TIME_DOWNLOADED.set(System.currentTimeMillis());
+          SimpleDateFormat prt=new SimpleDateFormat("yyyy-MM-dd  HH:mm");
+          pref.setSummary(getString(R.string.agps_data_last_downloaded,prt.format(settings.AGPS_DATA_LAST_TIME_DOWNLOADED.get())));
         }
       }
       return true;
