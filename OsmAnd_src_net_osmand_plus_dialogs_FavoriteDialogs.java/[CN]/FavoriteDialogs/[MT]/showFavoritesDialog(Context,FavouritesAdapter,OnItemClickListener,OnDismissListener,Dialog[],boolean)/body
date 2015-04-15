@@ -1,0 +1,35 @@
+{
+  ListView listView=new ListView(uiContext);
+  Builder bld=new AlertDialog.Builder(uiContext);
+  final Collator inst=Collator.getInstance();
+  favouritesAdapter.sort(new Comparator<FavouritePoint>(){
+    @Override public int compare(    FavouritePoint lhs,    FavouritePoint rhs){
+      if (sortByDist) {
+        if (favouritesAdapter.getLocation() == null) {
+          return 0;
+        }
+        double ld=MapUtils.getDistance(favouritesAdapter.getLocation(),lhs.getLatitude(),lhs.getLongitude());
+        double rd=MapUtils.getDistance(favouritesAdapter.getLocation(),rhs.getLatitude(),rhs.getLongitude());
+        return Double.compare(ld,rd);
+      }
+      return inst.compare(lhs.getName(),rhs.getName());
+    }
+  }
+);
+  listView.setAdapter(favouritesAdapter);
+  listView.setOnItemClickListener(click);
+  bld.setPositiveButton(sortByDist ? R.string.sort_by_name : R.string.sort_by_distance,new OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      showFavoritesDialog(uiContext,favouritesAdapter,click,dismissListener,dialogHolder,!sortByDist);
+    }
+  }
+);
+  bld.setNegativeButton(R.string.shared_string_cancel,null);
+  bld.setView(listView);
+  AlertDialog dlg=bld.show();
+  if (dialogHolder != null) {
+    dialogHolder[0]=dlg;
+  }
+  dlg.setOnDismissListener(dismissListener);
+  return dlg;
+}
