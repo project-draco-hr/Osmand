@@ -7,7 +7,14 @@
     is=new FileInputStream(externalRenderers.get(name));
   }
  else   if (internalRenderers.containsKey(name)) {
-    is=RenderingRulesStorage.class.getResourceAsStream(internalRenderers.get(name));
+    File fl=getFileForInternalStyle(name);
+    if (fl.exists()) {
+      is=new FileInputStream(fl);
+    }
+ else {
+      copyFileForInternalStyle(name);
+      is=RenderingRulesStorage.class.getResourceAsStream(internalRenderers.get(name));
+    }
   }
  else {
     throw new IllegalArgumentException("Not found " + name);
