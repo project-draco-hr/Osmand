@@ -16,7 +16,6 @@
     }
     findViewById(R.id.DownloadButton).setVisibility(View.VISIBLE);
     if (Version.isFreeVersion(getMyApplication())) {
-      int countedDownloads=DownloadActivity.downloadListIndexThread.getDownloads();
       int left=DownloadActivity.MAXIMUM_AVAILABLE_FREE_DOWNLOADS - settings.NUMBER_OF_FREE_DOWNLOADS.get() - downloads;
       boolean excessLimit=left < 0;
       if (left < 0)       left=0;
@@ -25,5 +24,22 @@
       }
     }
     ((Button)findViewById(R.id.DownloadButton)).setText(text);
+  }
+  for (  WeakReference<Fragment> ref : fragList) {
+    Fragment f=ref.get();
+    if (!f.isDetached()) {
+      if (f instanceof OsmandExpandableListFragment) {
+        ExpandableListAdapter ad=((OsmandExpandableListFragment)f).getExpandableListView().getExpandableListAdapter();
+        if (ad instanceof OsmandBaseExpandableListAdapter) {
+          ((OsmandBaseExpandableListAdapter)ad).notifyDataSetChanged();
+        }
+      }
+ else       if (f instanceof ListFragment) {
+        ListAdapter la=((ListFragment)f).getListAdapter();
+        if (la instanceof BaseAdapter) {
+          ((BaseAdapter)la).notifyDataSetChanged();
+        }
+      }
+    }
   }
 }
