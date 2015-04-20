@@ -1,10 +1,17 @@
 {
   Dialog dialog=new Dialog(mapActivity);
-  View lmain=mapActivity.getLayoutInflater().inflate(R.layout.plan_route_info,null);
-  updateInfo(lmain);
+  View ll=mapActivity.getLayoutInflater().inflate(R.layout.plan_route_info,null);
+  updateInfo(ll);
   WindowManager.LayoutParams lp=new WindowManager.LayoutParams();
   lp.width=WindowManager.LayoutParams.MATCH_PARENT;
-  lp.height=WindowManager.LayoutParams.WRAP_CONTENT;
+  ll.measure(MeasureSpec.makeMeasureSpec(0,MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(0,MeasureSpec.EXACTLY));
+  int h=ll.getHeight();
+  if (ScreenOrientationHelper.isOrientationPortrait(mapActivity)) {
+    lp.height=(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,280,mapActivity.getResources().getDisplayMetrics());
+  }
+ else {
+    lp.height=WindowManager.LayoutParams.WRAP_CONTENT;
+  }
   lp.gravity=Gravity.BOTTOM;
   if (mapActivity.getMyApplication().getDaynightHelper().isNightMode()) {
     dialog.getContext().setTheme(R.style.Dialog_Fullscreen_Dark);
@@ -14,7 +21,7 @@
   }
   dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
   dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-  dialog.setContentView(lmain,new LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT));
+  dialog.setContentView(ll,new LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT));
   dialog.setCanceledOnTouchOutside(true);
   dialog.getWindow().setAttributes(lp);
   return dialog;
