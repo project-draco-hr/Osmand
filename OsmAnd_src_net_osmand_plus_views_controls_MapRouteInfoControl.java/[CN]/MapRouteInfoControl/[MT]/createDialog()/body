@@ -1,34 +1,28 @@
 {
-  AlertDialog.Builder builder=new AlertDialog.Builder(mapActivity);
-  View lmain=mapActivity.getLayoutInflater().inflate(R.layout.plan_route_info,null);
-  boolean addButtons=routingHelper.isRouteCalculated();
-  updateInfo(lmain);
-  if (addButtons) {
-    attachListeners(lmain);
-  }
- else {
-    lmain.findViewById(R.id.RouteInfoControls).setVisibility(View.GONE);
-    lmain.findViewById(R.id.SimulateRoute).setVisibility(View.GONE);
-    TextView textView=(TextView)lmain.findViewById(R.id.ValidateTextView);
-    TargetPointsHelper targets=getTargets();
-    if (targets.hasTooLongDistanceToNavigate()) {
-      textView.setText(R.string.route_is_too_long);
-      textView.setVisibility(View.VISIBLE);
-    }
- else {
-      textView.setVisibility(View.GONE);
-    }
-  }
-  builder.setView(lmain);
-  Dialog dialog=builder.create();
-  dialog.setCanceledOnTouchOutside(true);
+  Dialog dialog=new Dialog(mapActivity);
+  View ll=mapActivity.getLayoutInflater().inflate(R.layout.plan_route_info,null);
+  updateInfo(ll);
   WindowManager.LayoutParams lp=new WindowManager.LayoutParams();
-  lp.copyFrom(dialog.getWindow().getAttributes());
-  lp.width=WindowManager.LayoutParams.WRAP_CONTENT;
-  lp.height=WindowManager.LayoutParams.WRAP_CONTENT;
+  lp.width=WindowManager.LayoutParams.MATCH_PARENT;
+  ll.measure(MeasureSpec.makeMeasureSpec(0,MeasureSpec.EXACTLY),MeasureSpec.makeMeasureSpec(0,MeasureSpec.EXACTLY));
+  int h=ll.getHeight();
+  if (ScreenOrientationHelper.isOrientationPortrait(mapActivity)) {
+    lp.height=(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,280,mapActivity.getResources().getDisplayMetrics());
+  }
+ else {
+    lp.height=WindowManager.LayoutParams.WRAP_CONTENT;
+  }
   lp.gravity=Gravity.BOTTOM;
+  if (mapActivity.getMyApplication().getDaynightHelper().isNightMode()) {
+    dialog.getContext().setTheme(R.style.Dialog_Fullscreen_Dark);
+  }
+ else {
+    dialog.getContext().setTheme(R.style.Dialog_Fullscreen_Light);
+  }
   dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
   dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+  dialog.setContentView(ll,new LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT));
+  dialog.setCanceledOnTouchOutside(true);
   dialog.getWindow().setAttributes(lp);
   return dialog;
 }

@@ -14,12 +14,11 @@
     routePlanningMode=true;
   }
   boolean routeFollowingMode=!routePlanningMode && rh.isFollowingMode();
-  boolean showRouteCalculationControls=routePlanningMode;
-  boolean showButtons=routePlanningMode || !routeFollowingMode || (System.currentTimeMillis() - touchEvent < TIMEOUT_TO_SHOW_BUTTONS);
+  boolean showRouteCalculationControls=routePlanningMode || ((System.currentTimeMillis() - touchEvent < TIMEOUT_TO_SHOW_BUTTONS) && routeFollowingMode);
+  boolean showButtons=routePlanningMode || !routeFollowingMode;
   updateMyLocation(rh);
-  routePlanningBtn.setIconResId(routeFollowingMode ? R.drawable.ic_action_gabout_dark : R.drawable.ic_action_gdirections_dark);
-  routePlanningBtn.updateVisibility(showButtons && !routePlanningMode);
-  menuControl.setIconResId(settings.USE_DASHBOARD_INSTEAD_OF_DRAWER.get() ? R.drawable.ic_dashboard_dark : R.drawable.ic_navigation_drawer);
+  routePlanningBtn.setIconResId(R.drawable.map_directions);
+  routePlanningBtn.updateVisibility(!routeFollowingMode && !routePlanningMode);
   menuControl.updateVisibility(showButtons);
   if (routeFollowingMode || routePlanningMode) {
     mapAppModeShadow.setVisibility(View.GONE);
@@ -29,7 +28,7 @@
     if (!mapView.isZooming() || !OsmandPlugin.isDevelopment()) {
       zoomText.setVisibility(View.GONE);
       appModeIcon.setVisibility(View.VISIBLE);
-      appModeIcon.setImageDrawable(app.getIconsCache().getActionBarIcon(settings.getApplicationMode().getSmallIconDark(),!isNight));
+      appModeIcon.setImageDrawable(app.getIconsCache().getIcon(settings.getApplicationMode().getSmallIconDark(),!isNight));
     }
  else {
       zoomText.setVisibility(View.VISIBLE);
@@ -37,7 +36,6 @@
       zoomText.setText(getZoomLevel(tileBox));
     }
   }
-  optionsRouteControl.setIconResId(settings.getApplicationMode().getSmallIconDark());
   int vis=showRouteCalculationControls ? View.VISIBLE : View.GONE;
   if (showRouteCalculationControls) {
     ((TextView)routeGoControl.iv).setTextColor(textColor);
