@@ -1,0 +1,34 @@
+{
+  editBtn.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+        showOtherDialog();
+      }
+ else {
+        showSelectDialog19();
+      }
+    }
+  }
+);
+  copyMapsBtn.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      MoveFilesToDifferentDirectory task=new MoveFilesToDifferentDirectory(activity,currentAppFile,selectedFile){
+        @Override protected void onPostExecute(        Boolean result){
+          super.onPostExecute(result);
+          if (result) {
+            mapsCopied=true;
+            getMyApplication().getResourceManager().resetStoreDirectory();
+          }
+ else {
+            AccessibleToast.makeText(activity,R.string.copying_osmand_file_failed,Toast.LENGTH_SHORT).show();
+          }
+          updateView();
+        }
+      }
+;
+      task.execute();
+    }
+  }
+);
+  confirmBtn.setOnClickListener(getConfirmListener());
+}
