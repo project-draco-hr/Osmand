@@ -1,0 +1,23 @@
+{
+  int type=settingsAPI.getInt(globalPreferences,EXTERNAL_STORAGE_DIR_TYPE_V19,-1);
+  File location=getDefaultLocationV19();
+  if (type == -1) {
+    if (isWritable(location)) {
+      return location;
+    }
+    File[] external=ctx.getExternalFilesDirs(null);
+    if (external != null && external.length > 0 && external[0] != null) {
+      location=external[0];
+    }
+ else {
+      File[] obbDirs=ctx.getObbDirs();
+      if (obbDirs != null && obbDirs.length > 0 && obbDirs[0] != null) {
+        location=obbDirs[0];
+      }
+ else {
+        location=ctx.getFilesDir();
+      }
+    }
+  }
+  return location;
+}
