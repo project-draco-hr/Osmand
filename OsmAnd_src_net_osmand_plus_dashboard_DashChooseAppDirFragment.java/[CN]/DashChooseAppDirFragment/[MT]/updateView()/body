@@ -1,0 +1,36 @@
+{
+  if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_DEFAULT) {
+    locationPath.setText(R.string.storage_directory_default);
+  }
+ else   if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_EXTERNAL_FILE) {
+    locationPath.setText(R.string.storage_directory_external);
+  }
+ else   if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_OBB) {
+    locationPath.setText(R.string.storage_directory_multiuser);
+  }
+ else   if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_SPECIFIED) {
+    locationPath.setText(R.string.storage_directory_manual);
+  }
+ else   if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_SPECIFIED) {
+    locationPath.setText(R.string.storage_directory_manual);
+  }
+  locationDesc.setText(selectedFile.getAbsolutePath() + " \u2022 " + getFreeSpace(selectedFile));
+  boolean readOnlyAndFileExist=!currentAppFile.getAbsolutePath().equals(selectedFile.getAbsolutePath()) && !OsmandSettings.isWritable(currentAppFile) && !mapsCopied;
+  if (readOnlyAndFileExist) {
+    readOnlyAndFileExist=false;
+    File[] lf=currentAppFile.listFiles();
+    if (lf != null) {
+      for (      File f : lf) {
+        if (f != null) {
+          if (f.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
+            readOnlyAndFileExist=true;
+            break;
+          }
+        }
+      }
+    }
+  }
+  warningReadonly.setVisibility(readOnlyAndFileExist ? View.VISIBLE : View.GONE);
+  warningReadonly.setText(getString(R.string.android_19_location_disabled,currentAppFile.getAbsolutePath()));
+  copyMapsBtn.setVisibility(readOnlyAndFileExist ? View.VISIBLE : View.GONE);
+}

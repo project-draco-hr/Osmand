@@ -1,0 +1,54 @@
+{
+  editBtn.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+        showOtherDialog();
+      }
+ else {
+        showSelectDialog19();
+      }
+    }
+  }
+);
+  copyMapsBtn.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      MoveFilesToDifferentDirectory task=new MoveFilesToDifferentDirectory(getActivity(),currentAppFile,selectedFile){
+        protected Boolean doInBackground(        Void[] params){
+          Boolean result=super.doInBackground(params);
+          if (result) {
+            mapsCopied=true;
+            getMyApplication().getResourceManager().resetStoreDirectory();
+          }
+ else {
+            AccessibleToast.makeText(getActivity(),R.string.copying_osmand_file_failed,Toast.LENGTH_SHORT).show();
+          }
+          updateView();
+          return result;
+        }
+      }
+;
+      task.execute();
+    }
+  }
+);
+  confirmBtn.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      boolean wr=OsmandSettings.isWritable(selectedFile);
+      if (wr) {
+        boolean changed=!currentAppFile.getAbsolutePath().equals(selectedFile.getAbsolutePath());
+        getMyApplication().setExternalStorageDirectory(type,currentAppFile.getAbsolutePath());
+        if (changed) {
+          reloadData();
+        }
+        ActionBarActivity dashboardActivity=((ActionBarActivity)getActivity());
+        if (dashboardActivity != null) {
+          dashboardActivity.getSupportFragmentManager().beginTransaction().remove(DashChooseAppDirFragment.this).commit();
+        }
+      }
+ else {
+        AccessibleToast.makeText(getActivity(),R.string.specified_directiory_not_writeable,Toast.LENGTH_LONG).show();
+      }
+    }
+  }
+);
+}
