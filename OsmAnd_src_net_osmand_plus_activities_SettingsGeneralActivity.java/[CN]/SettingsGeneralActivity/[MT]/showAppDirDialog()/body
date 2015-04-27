@@ -1,8 +1,12 @@
 {
-  AlertDialog.Builder editalert=new AlertDialog.Builder(activity);
+  if (Build.VERSION.SDK_INT >= 19) {
+    ChooseAppDirDialogFragment newFragment=ChooseAppDirDialogFragment.newInstance();
+    newFragment.show(getFragmentManager(),"dialog");
+  }
+  AlertDialog.Builder editalert=new AlertDialog.Builder(SettingsGeneralActivity.this);
   editalert.setTitle(R.string.application_dir);
-  final EditText input=new EditText(activity);
-  input.setText(selectedFile.getAbsolutePath());
+  final EditText input=new EditText(SettingsGeneralActivity.this);
+  input.setText(settings.getExternalStorageDirectory().getAbsolutePath());
   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT);
   lp.leftMargin=lp.rightMargin=5;
   lp.bottomMargin=lp.topMargin=5;
@@ -12,9 +16,7 @@
   editalert.setNegativeButton(R.string.shared_string_cancel,null);
   editalert.setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
     public void onClick(    DialogInterface dialog,    int whichButton){
-      selectedFile=new File(input.getText().toString());
-      mapsCopied=false;
-      updateView();
+      warnAboutChangingStorage(input.getText().toString());
     }
   }
 );

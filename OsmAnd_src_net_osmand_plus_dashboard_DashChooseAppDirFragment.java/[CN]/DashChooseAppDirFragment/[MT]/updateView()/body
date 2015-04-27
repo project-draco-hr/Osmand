@@ -15,22 +15,29 @@
     locationPath.setText(R.string.storage_directory_manual);
   }
   locationDesc.setText(selectedFile.getAbsolutePath() + " \u2022 " + getFreeSpace(selectedFile));
-  boolean readOnlyAndFileExist=!currentAppFile.getAbsolutePath().equals(selectedFile.getAbsolutePath()) && !OsmandSettings.isWritable(currentAppFile) && !mapsCopied;
-  if (readOnlyAndFileExist) {
-    readOnlyAndFileExist=false;
+  boolean copyFiles=!currentAppFile.getAbsolutePath().equals(selectedFile.getAbsolutePath()) && !mapsCopied;
+  if (copyFiles) {
+    copyFiles=false;
     File[] lf=currentAppFile.listFiles();
     if (lf != null) {
       for (      File f : lf) {
         if (f != null) {
           if (f.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
-            readOnlyAndFileExist=true;
+            copyFiles=true;
             break;
           }
         }
       }
     }
   }
-  warningReadonly.setVisibility(readOnlyAndFileExist ? View.VISIBLE : View.GONE);
-  warningReadonly.setText(getString(R.string.android_19_location_disabled,currentAppFile.getAbsolutePath()));
-  copyMapsBtn.setVisibility(readOnlyAndFileExist ? View.VISIBLE : View.GONE);
+  warningReadonly.setVisibility(copyFiles ? View.VISIBLE : View.GONE);
+  if (copyFiles) {
+    if (OsmandSettings.isWritable(currentAppFile)) {
+      warningReadonly.setText(getString(R.string.android_19_location_disabled,currentAppFile.getAbsolutePath()));
+    }
+ else {
+      warningReadonly.setText(getString(R.string.application_dir_change_warning3));
+    }
+  }
+  copyMapsBtn.setVisibility(copyFiles ? View.VISIBLE : View.GONE);
 }
