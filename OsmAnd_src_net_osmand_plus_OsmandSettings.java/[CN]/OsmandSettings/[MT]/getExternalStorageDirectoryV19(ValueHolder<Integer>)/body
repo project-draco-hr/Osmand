@@ -3,19 +3,31 @@
   File location=getDefaultLocationV19();
   if (type == -1) {
     if (isWritable(location)) {
+      if (tp != null) {
+        tp.value=settingsAPI.contains(globalPreferences,EXTERNAL_STORAGE_DIR_V19) ? EXTERNAL_STORAGE_TYPE_SPECIFIED : EXTERNAL_STORAGE_TYPE_DEFAULT;
+      }
       return location;
     }
     File[] external=ctx.getExternalFilesDirs(null);
     if (external != null && external.length > 0 && external[0] != null) {
       location=external[0];
+      if (tp != null) {
+        tp.value=EXTERNAL_STORAGE_TYPE_EXTERNAL_FILE;
+      }
     }
  else {
       File[] obbDirs=ctx.getObbDirs();
       if (obbDirs != null && obbDirs.length > 0 && obbDirs[0] != null) {
         location=obbDirs[0];
+        if (tp != null) {
+          tp.value=EXTERNAL_STORAGE_TYPE_OBB;
+        }
       }
  else {
-        location=ctx.getFilesDir();
+        location=getInternalAppPath();
+        if (tp != null) {
+          tp.value=EXTERNAL_STORAGE_TYPE_INTERNAL_FILE;
+        }
       }
     }
   }
