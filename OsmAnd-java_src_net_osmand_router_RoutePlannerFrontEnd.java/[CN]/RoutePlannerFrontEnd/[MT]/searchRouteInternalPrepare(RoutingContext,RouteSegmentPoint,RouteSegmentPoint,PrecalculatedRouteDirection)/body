@@ -1,10 +1,16 @@
 {
-  ctx.initStartAndTargetPoints(start,end);
+  RouteSegment recalculationEnd=getRecalculationEnd(ctx);
+  if (recalculationEnd != null) {
+    ctx.initStartAndTargetPoints(start,recalculationEnd);
+  }
+ else {
+    ctx.initStartAndTargetPoints(start,end);
+  }
   if (routeDirection != null) {
     ctx.precalculatedRouteDirection=routeDirection.adopt(ctx);
   }
   if (ctx.nativeLib != null) {
-    return runNativeRouting(ctx);
+    return runNativeRouting(ctx,recalculationEnd);
   }
  else {
     refreshProgressDistance(ctx);
@@ -12,7 +18,7 @@
       new BinaryRoutePlannerOld().searchRouteInternal(ctx,start,end);
     }
  else {
-      ctx.finalRouteSegment=new BinaryRoutePlanner().searchRouteInternal(ctx,start,end);
+      ctx.finalRouteSegment=new BinaryRoutePlanner().searchRouteInternal(ctx,start,end,recalculationEnd);
     }
     return new RouteResultPreparation().prepareResult(ctx,ctx.finalRouteSegment);
   }

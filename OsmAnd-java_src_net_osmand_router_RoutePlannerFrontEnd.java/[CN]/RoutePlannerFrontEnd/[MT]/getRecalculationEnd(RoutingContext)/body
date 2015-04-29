@@ -1,0 +1,32 @@
+{
+  RouteSegment recalculationEnd=null;
+  boolean runRecalculation=ctx.previouslyCalculatedRoute != null && ctx.previouslyCalculatedRoute.size() > 0 && ctx.config.recalculateDistance != 0;
+  if (runRecalculation) {
+    List<RouteSegmentResult> rlist=new ArrayList<RouteSegmentResult>();
+    float distanceThreshold=ctx.config.recalculateDistance;
+    float threshold=0;
+    for (    RouteSegmentResult rr : ctx.previouslyCalculatedRoute) {
+      threshold+=rr.getDistance();
+      if (threshold > distanceThreshold) {
+        rlist.add(rr);
+      }
+    }
+    runRecalculation=rlist.size() > 0;
+    if (rlist.size() > 0) {
+      RouteSegment previous=null;
+      for (int i=0; i < rlist.size() - 1; i++) {
+        RouteSegmentResult rr=rlist.get(i);
+        RouteSegment segment=new RouteSegment(rr.getObject(),rr.getEndPointIndex());
+        if (previous != null) {
+          previous.setParentRoute(segment);
+          previous.setParentSegmentEnd(rr.getStartPointIndex());
+        }
+ else {
+          recalculationEnd=segment;
+        }
+        previous=segment;
+      }
+    }
+  }
+  return recalculationEnd;
+}
