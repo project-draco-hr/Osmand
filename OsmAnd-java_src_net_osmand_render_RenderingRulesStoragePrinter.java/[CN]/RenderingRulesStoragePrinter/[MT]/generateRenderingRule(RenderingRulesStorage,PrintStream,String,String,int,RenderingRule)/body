@@ -1,0 +1,32 @@
+{
+  int cnt=1;
+  String mp="";
+  Iterator<Entry<String,String>> it=key.getAttributes().entrySet().iterator();
+  while (it.hasNext()) {
+    Entry<String,String> e=it.next();
+    int kk=storage.getDictionaryValue(e.getKey());
+    int vv=storage.getDictionaryValue(e.getValue());
+    mp+=kk + ", " + vv;
+    if (it.hasNext()) {
+      mp+=", ";
+    }
+  }
+  if (mp.equals("")) {
+    mp="java.util.Collections.EMPTY_MAP";
+  }
+ else {
+    mp="createMap(" + mp + ")";
+  }
+  out.println("" + indent + name+ ind+ " = new RenderingRule("+ mp+ ", "+ key.isGroup()+ ",  storage);");
+  for (  RenderingRule k : key.getIfChildren()) {
+    generateRenderingRule(storage,out,indent + "\t",name,ind + 1,k);
+    out.println("" + indent + name+ ind+ ".addIfChildren("+ name+ (ind + 1)+ ");");
+    cnt++;
+  }
+  for (  RenderingRule k : key.getIfElseChildren()) {
+    generateRenderingRule(storage,out,indent + "\t",name,ind + 1,k);
+    out.println("" + indent + name+ ind+ ".addIfElseChildren("+ name+ (ind + 1)+ ");");
+    cnt++;
+  }
+  return cnt;
+}
