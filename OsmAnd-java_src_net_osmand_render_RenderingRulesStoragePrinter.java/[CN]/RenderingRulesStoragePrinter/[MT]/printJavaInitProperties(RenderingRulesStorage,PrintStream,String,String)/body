@@ -1,0 +1,22 @@
+{
+  out.println("\n" + indent + "public void initProperties() {");
+  out.println("" + indent + ti+ "RenderingRuleProperty prop = null;");
+  for (  RenderingRuleProperty p : storage.PROPS.customRules) {
+    out.println("" + indent + ti+ "prop = new RenderingRuleProperty("+ javaString(p.attrName)+ ","+ p.type+ ", "+ p.input+ ");");
+    out.println("" + indent + ti+ "prop.setDescription("+ javaString(p.description)+ ");");
+    out.println("" + indent + ti+ "prop.setCategory("+ javaString(p.category)+ ");");
+    out.println("" + indent + ti+ "prop.setName("+ javaString(p.name)+ ");");
+    if (p.possibleValues != null && !p.isBoolean()) {
+      String mp="";
+      for (      String s : p.possibleValues) {
+        if (mp.length() > 0) {
+          mp+=", ";
+        }
+        mp+=javaString(s);
+      }
+      out.println("" + indent + ti+ "prop.setPossibleValues(new String[]{"+ mp+ "});");
+    }
+    out.println("" + indent + ti+ "storage.PROPS.registerRule(prop);");
+  }
+  out.println("" + indent + "}");
+}
