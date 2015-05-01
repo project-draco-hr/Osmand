@@ -1,23 +1,26 @@
 {
-  ContextMenuAdapter cm=new ContextMenuAdapter(view.getContext());
+  ContextMenuAdapter cm=new ContextMenuAdapter(map);
   cm.setDefaultLayoutId(R.layout.drawer_list_item);
   cm.item(R.string.app_modes_choose).layout(R.layout.mode_toggles).reg();
   cm.setChangeAppModeListener(new ConfigureMapMenu.OnClickListener(){
     @Override public void onClick(    boolean allModes){
-      map.getDashboard().updateListAdapter(getViewConfigureMenuAdapter());
+      map.getDashboard().updateListAdapter(getViewConfigureMenuAdapter(map));
     }
   }
 );
   cm.item(R.string.map_widget_reset).iconColor(R.drawable.ic_action_reset_to_default_dark).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
-      mapInfoControls.resetToDefault();
-      recreateControls();
+      resetToDefault();
+      MapInfoLayer mil=map.getMapLayers().getMapInfoLayer();
+      if (mil != null) {
+        mil.recreateControls();
+      }
       adapter.notifyDataSetInvalidated();
       return false;
     }
   }
 ).reg();
   final ApplicationMode mode=settings.getApplicationMode();
-  mapInfoControls.addControls(this,cm,mode);
+  addControls(map,cm,mode);
   return cm;
 }
