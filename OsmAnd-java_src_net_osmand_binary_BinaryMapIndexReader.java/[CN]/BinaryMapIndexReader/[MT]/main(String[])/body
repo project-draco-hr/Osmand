@@ -1,5 +1,5 @@
 {
-  RandomAccessFile raf=new RandomAccessFile("","r");
+  RandomAccessFile raf=new RandomAccessFile("/Users/victorshcherb/osmand/maps/Netherlands_europe_2.obf","r");
   BinaryMapIndexReader reader=new BinaryMapIndexReader(raf);
   println("VERSION " + reader.getVersion());
   long time=System.currentTimeMillis();
@@ -13,11 +13,15 @@
   if (testTransportSearch) {
     testTransportSearch(reader);
   }
-  if (testPoiSearch) {
+  if (testPoiSearch || testPoiSearchOnPath) {
     PoiRegion poiRegion=reader.getPoiIndexes().get(0);
-    testPoiSearch(reader,poiRegion);
-    testPoiSearchByName(reader);
-    testSearchOnthePath(reader);
+    if (testPoiSearch) {
+      testPoiSearch(reader,poiRegion);
+      testPoiSearchByName(reader);
+    }
+    if (testPoiSearchOnPath) {
+      testSearchOnthePath(reader);
+    }
   }
   println("MEMORY " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
   println("Time " + (System.currentTimeMillis() - time));
