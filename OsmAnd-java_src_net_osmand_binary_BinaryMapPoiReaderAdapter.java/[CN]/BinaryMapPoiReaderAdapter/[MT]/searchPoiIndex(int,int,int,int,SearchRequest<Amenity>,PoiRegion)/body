@@ -2,10 +2,8 @@
   int indexOffset=codedIS.getTotalBytesRead();
   long time=System.currentTimeMillis();
   TLongHashSet skipTiles=null;
-  int zoomToSkip=31;
   if (req.zoom != -1) {
     skipTiles=new TLongHashSet();
-    zoomToSkip=req.zoom + ZOOM_TO_SKIP_FILTER;
   }
   int length;
   int oldLimit;
@@ -31,12 +29,25 @@ Arrays.sort(offsets);
 if (skipTiles != null) {
 skipTiles.clear();
 }
-LOG.info("Searched poi structure in " + (System.currentTimeMillis() - time) + "ms. Found "+ offsets.length+ " subtress");
+LOG.info("Searched poi structure in " + (System.currentTimeMillis() - time) + " ms. Found "+ offsets.length+ " subtrees");
 for (int j=0; j < offsets.length; j++) {
+long skipVal=offsetsMap.get(offsets[j]);
+if (skipTiles != null && skipVal != -1) {
+int dzoom=ZOOM_TO_SKIP_FILTER_READ - ZOOM_TO_SKIP_FILTER;
+long dx=(skipVal >> ZOOM_TO_SKIP_FILTER_READ);
+long dy=skipVal - (dx << ZOOM_TO_SKIP_FILTER_READ);
+skipVal=((dx >> dzoom) << ZOOM_TO_SKIP_FILTER) | (dy >> dzoom);
+if (skipVal != -1 && skipTiles.contains(skipVal)) {
+continue;
+}
+}
 codedIS.seek(offsets[j] + indexOffset);
 int len=readInt();
 int oldLim=codedIS.pushLimit(len);
-readPoiData(left31,right31,top31,bottom31,req,region,skipTiles,zoomToSkip);
+boolean read=readPoiData(left31,right31,top31,bottom31,req,region,skipTiles,req.zoom == -1 ? 31 : req.zoom + ZOOM_TO_SKIP_FILTER);
+if (read && skipVal != -1 && skipTiles != null) {
+skipTiles.add(skipVal);
+}
 codedIS.popLimit(oldLim);
 if (req.isCancelled()) {
 return;

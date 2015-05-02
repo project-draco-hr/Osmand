@@ -1,7 +1,7 @@
 {
   SearchRequest<Amenity> request=new SearchRequest<Amenity>();
   float coeff=(float)(radius / MapUtils.getTileDistanceWidth(SearchRequest.ZOOM_TO_SEARCH_POI));
-  TIntObjectHashMap<List<Location>> zooms=new TIntObjectHashMap<List<Location>>();
+  TLongObjectHashMap<List<Location>> zooms=new TLongObjectHashMap<List<Location>>();
   for (int i=1; i < route.size(); i++) {
     Location cr=route.get(i);
     Location pr=route.get(i - 1);
@@ -15,7 +15,7 @@
     double bottomRightY=Math.max(ty,py) + coeff;
     for (int x=(int)topLeftX; x <= bottomRightX; x++) {
       for (int y=(int)topLeftY; y <= bottomRightY; y++) {
-        int hash=(x << SearchRequest.ZOOM_TO_SEARCH_POI) + y;
+        long hash=(((long)x) << SearchRequest.ZOOM_TO_SEARCH_POI) + y;
         if (!zooms.containsKey(hash)) {
           zooms.put(hash,new LinkedList<Location>());
         }
@@ -25,14 +25,14 @@
       }
     }
   }
-  int sleft=0, sright=Integer.MAX_VALUE, stop=0, sbottom=Integer.MAX_VALUE;
-  for (  int vl : zooms.keys()) {
-    int x=(vl >> SearchRequest.ZOOM_TO_SEARCH_POI) << (31 - SearchRequest.ZOOM_TO_SEARCH_POI);
-    int y=(vl & ((1 << SearchRequest.ZOOM_TO_SEARCH_POI) - 1)) << (31 - SearchRequest.ZOOM_TO_SEARCH_POI);
-    sleft=Math.min(x,sleft);
-    stop=Math.min(y,stop);
-    sbottom=Math.max(y,sbottom);
-    sright=Math.max(x,sright);
+  int sleft=Integer.MAX_VALUE, sright=0, stop=Integer.MAX_VALUE, sbottom=0;
+  for (  long vl : zooms.keys()) {
+    long x=(vl >> SearchRequest.ZOOM_TO_SEARCH_POI) << (31 - SearchRequest.ZOOM_TO_SEARCH_POI);
+    long y=(vl & ((1 << SearchRequest.ZOOM_TO_SEARCH_POI) - 1)) << (31 - SearchRequest.ZOOM_TO_SEARCH_POI);
+    sleft=(int)Math.min(x,sleft);
+    stop=(int)Math.min(y,stop);
+    sbottom=(int)Math.max(y,sbottom);
+    sright=(int)Math.max(x,sright);
   }
   request.radius=radius;
   request.left=sleft;

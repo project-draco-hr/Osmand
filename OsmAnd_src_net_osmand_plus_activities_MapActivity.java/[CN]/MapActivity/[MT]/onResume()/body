@@ -1,6 +1,12 @@
 {
   super.onResume();
   long tm=System.currentTimeMillis();
+  if (app.isApplicationInitializing() || DashboardOnMap.staticVisible) {
+    if (!dashboardOnMap.isVisible()) {
+      dashboardOnMap.setDashboardVisibility(true,DashboardOnMap.staticVisibleType);
+    }
+  }
+  dashboardOnMap.updateLocation(true,true,false);
   cancelNotification();
   if (getSupportActionBar() != null) {
     getSupportActionBar().hide();
@@ -24,9 +30,6 @@
 ;
   settings.APPLICATION_MODE.addListener(applicationModeListener);
   updateApplicationModeSettings();
-  String filterId=settings.getPoiFilterForMap();
-  PoiLegacyFilter poiFilter=app.getPoiFilters().getFilterById(filterId);
-  mapLayers.getPoiMapLayer().setFilter(poiFilter);
   TargetPointsHelper targets=app.getTargetPointsHelper();
   RoutingHelper routingHelper=app.getRoutingHelper();
   if (routingHelper.isFollowingMode() && (!Algorithms.objectEquals(targets.getPointToNavigate().point,routingHelper.getFinalLocation()) || !Algorithms.objectEquals(targets.getIntermediatePointsLatLon(),routingHelper.getIntermediatePoints()))) {
