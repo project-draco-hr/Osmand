@@ -2,15 +2,16 @@
   int x=0;
   int y=0;
   int zoom=0;
+  boolean read=false;
   while (true) {
     if (req.isCancelled()) {
-      return;
+      return read;
     }
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
 switch (tag) {
 case 0:
-      return;
+      return read;
 case OsmandOdb.OsmAndPoiBoxData.X_FIELD_NUMBER:
     x=codedIS.readUInt32();
   break;
@@ -29,20 +30,23 @@ if (am != null) {
 if (toSkip != null) {
 int xp=(int)MapUtils.getTileNumberX(zSkip,am.getLocation().getLongitude());
 int yp=(int)MapUtils.getTileNumberY(zSkip,am.getLocation().getLatitude());
-long val=(((long)xp) << zSkip) | yp;
-if (!toSkip.contains(val)) {
+long valSkip=(((long)xp) << zSkip) | yp;
+if (!toSkip.contains(valSkip)) {
 boolean publish=req.publish(am);
 if (publish) {
-toSkip.add(val);
+read=true;
+toSkip.add(valSkip);
 }
 }
-if (zSkip <= zoom) {
+ else if (zSkip <= zoom) {
 codedIS.skipRawBytes(codedIS.getBytesUntilLimit());
-return;
+return read;
 }
 }
  else {
-req.publish(am);
+if (req.publish(am)) {
+read=true;
+}
 }
 }
 break;
