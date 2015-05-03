@@ -1,0 +1,35 @@
+{
+  int px=xs.get(0);
+  int py=ys.get(0);
+  int h=tb.getPixHeight();
+  int w=tb.getPixWidth();
+  int cnt=0;
+  boolean pin=isIn(px,py,0,0,w,h);
+  Path path=null;
+  for (int i=1; i < xs.size(); i++) {
+    int x=xs.get(i);
+    int y=ys.get(i);
+    boolean in=isIn(x,y,0,0,w,h);
+    boolean draw=false;
+    if (pin && in) {
+      draw=true;
+    }
+ else {
+      long intersection=MapAlgorithms.calculateIntersection(x,y,px,py,0,w,h,0);
+      if (intersection != -1) {
+        draw=true;
+      }
+    }
+    if (draw) {
+      path=new Path();
+      results.add(px);
+      results.add(py);
+      results.add(x);
+      results.add(y);
+    }
+    pin=in;
+    px=x;
+    py=y;
+  }
+  return cnt;
+}
