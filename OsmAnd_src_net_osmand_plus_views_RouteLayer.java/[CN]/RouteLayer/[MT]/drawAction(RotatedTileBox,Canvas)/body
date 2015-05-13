@@ -1,22 +1,43 @@
 {
   if (actionPoints.size() > 0) {
     canvas.rotate(-tb.getRotate(),tb.getCenterPixelX(),tb.getCenterPixelY());
-    TIntArrayList tx=new TIntArrayList();
-    TIntArrayList ty=new TIntArrayList();
+    Path pth=new Path();
+    Matrix matrix=new Matrix();
+    boolean first=true;
+    int x=0, px=0, py=0, y=0;
     for (int i=0; i < actionPoints.size(); i++) {
       Location o=actionPoints.get(i);
-      int x=(int)tb.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
-      int y=(int)tb.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
-      tx.add(x);
-      ty.add(y);
-    }
-    Path pth=new Path();
-    for (int i=0; i < tx.size(); i+=3) {
-      pth.reset();
-      pth.moveTo(tx.get(i),tx.get(i));
-      pth.lineTo(tx.get(i + 1),tx.get(i + 1));
-      pth.lineTo(tx.get(i + 2),tx.get(i + 2));
-      canvas.drawPath(pth,actionPaint);
+      if (o == null) {
+        canvas.drawPath(pth,actionPaint);
+        float angleRad=(float)Math.atan2(y - py,x - px);
+        float angle=(float)(angleRad * 180 / Math.PI) + 90f;
+        float distSegment=FloatMath.sqrt((y - py) * (y - py) + (x - px) * (x - px));
+        if (distSegment == 0) {
+          continue;
+        }
+        float pdx=x - px;
+        float pdy=y - py;
+        matrix.reset();
+        matrix.postTranslate(0,-actionArrow.getHeight() / 2);
+        matrix.postRotate(angle,actionArrow.getWidth() / 2,0);
+        matrix.postTranslate(px + pdx - actionArrow.getWidth() / 2,py + pdy);
+        canvas.drawBitmap(actionArrow,matrix,paintIcon);
+        first=true;
+      }
+ else {
+        px=x;
+        py=y;
+        x=(int)tb.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
+        y=(int)tb.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
+        if (first) {
+          pth.reset();
+          pth.moveTo(x,y);
+          first=false;
+        }
+ else {
+          pth.lineTo(x,y);
+        }
+      }
     }
     canvas.rotate(tb.getRotate(),tb.getCenterPixelX(),tb.getCenterPixelY());
   }
