@@ -7,24 +7,11 @@
       if (rType == nameEnRuleType && Algorithms.objectEquals(val,tags.get(OSMTagKey.NAME))) {
         continue;
       }
-      if (rType.targetTagValue != null) {
-        rType=rType.targetTagValue;
-      }
       if (rType.isAdditionalOrText()) {
-        boolean applied=rType.applyToTagValue == null;
-        if (!applied) {
-          Iterator<TagValuePattern> it=rType.applyToTagValue.iterator();
-          while (!applied && it.hasNext()) {
-            TagValuePattern nv=it.next();
-            applied=nv.isApplicable(tags);
-          }
+        if (!rType.isText() && !Algorithms.isEmpty(rType.tagValuePattern.value)) {
+          val=rType.tagValuePattern.value;
         }
-        if (applied) {
-          if (!rType.isText() && !Algorithms.isEmpty(rType.tagValuePattern.value)) {
-            val=rType.tagValuePattern.value;
-          }
-          map.put(rType.tagValuePattern.tag,val);
-        }
+        map.put(rType.tagValuePattern.tag,val);
       }
     }
   }
