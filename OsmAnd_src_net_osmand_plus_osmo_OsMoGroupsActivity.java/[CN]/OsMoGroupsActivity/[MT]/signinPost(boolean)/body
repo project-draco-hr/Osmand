@@ -1,19 +1,29 @@
 {
-  AlertDialog.Builder builder=new AlertDialog.Builder(this);
-  builder.setTitle(R.string.osmo_sign_in);
+  final Dialog dialog=new Dialog(this,app.getSettings().isLightContent() ? R.style.OsmandLightTheme : R.style.OsmandDarkTheme);
   LinearLayout ll=new LinearLayout(this);
   ll.setOrientation(LinearLayout.VERTICAL);
-  ll.setPadding(5,5,5,5);
+  Toolbar tb=new Toolbar(this);
+  tb.setClickable(true);
+  Drawable back=((OsmandApplication)getApplication()).getIconsCache().getIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+  tb.setNavigationIcon(back);
+  tb.setTitle(R.string.osmo_sign_in);
+  tb.setBackgroundColor(getResources().getColor(getResIdFromAttribute(this,R.attr.pstsTabBackground)));
+  tb.setTitleTextColor(getResources().getColor(getResIdFromAttribute(this,R.attr.pstsTextColor)));
+  tb.setNavigationOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    final View v){
+      dialog.dismiss();
+    }
+  }
+);
   setSupportProgressBarIndeterminateVisibility(true);
   final WebView wv=new WebView(this);
   wv.loadUrl(OsMoService.SIGN_IN_URL + app.getSettings().OSMO_DEVICE_KEY.get());
-  ll.addView(wv);
-  final EditText et=new EditText(this);
-  et.setVisibility(View.GONE);
-  ll.addView(et);
   ScrollView scrollView=new ScrollView(this);
-  scrollView.addView(ll);
-  builder.setView(scrollView);
+  int pad=(int)getResources().getDimension(R.dimen.list_content_padding);
+  ll.addView(tb);
+  ll.addView(scrollView);
+  scrollView.addView(wv);
+  dialog.setContentView(ll);
   wv.setFocusable(true);
   wv.setFocusableInTouchMode(true);
   wv.requestFocus(View.FOCUS_DOWN);
@@ -31,8 +41,8 @@ case MotionEvent.ACTION_UP:
 }
 }
 );
-builder.setCancelable(true);
-builder.setOnCancelListener(new OnCancelListener(){
+dialog.setCancelable(true);
+dialog.setOnCancelListener(new OnCancelListener(){
 @Override public void onCancel(DialogInterface dialog){
   if (!createGroup) {
     updateStatus();
@@ -41,7 +51,7 @@ builder.setOnCancelListener(new OnCancelListener(){
 }
 }
 );
-final AlertDialog dlg=builder.show();
+dialog.show();
 wv.setWebViewClient(new WebViewClient(){
 @Override public void onPageFinished(WebView view,String url){
   setSupportProgressBarIndeterminateVisibility(false);
@@ -61,7 +71,7 @@ public boolean shouldOverrideUrlLoading(WebView view,String url){
  else {
       updateStatus();
     }
-    dlg.dismiss();
+    dialog.dismiss();
     return true;
   }
   return false;
