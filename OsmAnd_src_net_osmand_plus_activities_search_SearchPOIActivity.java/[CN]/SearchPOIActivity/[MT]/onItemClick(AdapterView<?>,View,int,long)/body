@@ -1,7 +1,7 @@
 {
   final Amenity amenity=((AmenityAdapter)getListAdapter()).getItem(position);
   final OsmandSettings settings=app.getSettings();
-  String poiSimpleFormat=OsmAndFormatter.getPoiStringWithoutType(amenity,settings.usingEnglishNames());
+  String poiSimpleFormat=OsmAndFormatter.getPoiStringWithoutType(amenity,app.getSettings().MAP_PREFERRED_LOCALE.get());
   PointDescription name=new PointDescription(PointDescription.POINT_TYPE_POI,poiSimpleFormat);
   int z=Math.max(16,settings.getLastKnownMapZoom());
   final PopupMenu optionsMenu=new PopupMenu(this,view);
@@ -14,7 +14,7 @@
         SpannableString spannable=new SpannableString(d);
         Linkify.addLinks(spannable,Linkify.ALL);
         Builder bs=new AlertDialog.Builder(view.getContext());
-        bs.setTitle(OsmAndFormatter.getPoiStringWithoutType(amenity,settings.usingEnglishNames()));
+        bs.setTitle(OsmAndFormatter.getPoiStringWithoutType(amenity,app.getSettings().MAP_PREFERRED_LOCALE.get()));
         bs.setMessage(spannable);
         AlertDialog dialog=bs.show();
         TextView textView=(TextView)dialog.findViewById(android.R.id.message);
@@ -29,7 +29,7 @@
     MenuItem item=optionsMenu.getMenu().add(R.string.show_details);
     item.setOnMenuItemClickListener(new OnMenuItemClickListener(){
       @Override public boolean onMenuItemClick(      MenuItem item){
-        showPOIDetails(amenity,settings.usingEnglishNames());
+        showPOIDetails(amenity,app.getSettings().MAP_PREFERRED_LOCALE.get());
         return true;
       }
     }
