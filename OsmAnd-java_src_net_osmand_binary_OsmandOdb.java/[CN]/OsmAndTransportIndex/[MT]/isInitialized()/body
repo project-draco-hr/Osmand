@@ -1,10 +1,22 @@
 {
-  if (!hasStringTable)   return false;
+  byte isInitialized=memoizedIsInitialized;
+  if (isInitialized != -1)   return isInitialized == 1;
+  if (!hasStringTable()) {
+    memoizedIsInitialized=0;
+    return false;
+  }
   if (hasRoutes()) {
-    if (!getRoutes().isInitialized())     return false;
+    if (!getRoutes().isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
   if (hasStops()) {
-    if (!getStops().isInitialized())     return false;
+    if (!getStops().isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
+  memoizedIsInitialized=1;
   return true;
 }

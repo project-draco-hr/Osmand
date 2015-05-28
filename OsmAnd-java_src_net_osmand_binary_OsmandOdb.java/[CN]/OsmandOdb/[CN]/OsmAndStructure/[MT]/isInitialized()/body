@@ -1,21 +1,48 @@
 {
-  if (!hasVersion)   return false;
-  if (!hasDateCreated)   return false;
-  if (!hasVersionConfirm)   return false;
-  for (  net.osmand.binary.OsmandOdb.OsmAndAddressIndex element : getAddressIndexList()) {
-    if (!element.isInitialized())     return false;
+  byte isInitialized=memoizedIsInitialized;
+  if (isInitialized != -1)   return isInitialized == 1;
+  if (!hasVersion()) {
+    memoizedIsInitialized=0;
+    return false;
   }
-  for (  net.osmand.binary.OsmandOdb.OsmAndTransportIndex element : getTransportIndexList()) {
-    if (!element.isInitialized())     return false;
+  if (!hasDateCreated()) {
+    memoizedIsInitialized=0;
+    return false;
   }
-  for (  net.osmand.binary.OsmandOdb.OsmAndPoiIndex element : getPoiIndexList()) {
-    if (!element.isInitialized())     return false;
+  if (!hasVersionConfirm()) {
+    memoizedIsInitialized=0;
+    return false;
   }
-  for (  net.osmand.binary.OsmandOdb.OsmAndMapIndex element : getMapIndexList()) {
-    if (!element.isInitialized())     return false;
+  for (int i=0; i < getAddressIndexCount(); i++) {
+    if (!getAddressIndex(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
-  for (  net.osmand.binary.OsmandOdb.OsmAndRoutingIndex element : getRoutingIndexList()) {
-    if (!element.isInitialized())     return false;
+  for (int i=0; i < getTransportIndexCount(); i++) {
+    if (!getTransportIndex(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
+  for (int i=0; i < getPoiIndexCount(); i++) {
+    if (!getPoiIndex(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  for (int i=0; i < getMapIndexCount(); i++) {
+    if (!getMapIndex(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  for (int i=0; i < getRoutingIndexCount(); i++) {
+    if (!getRoutingIndex(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  memoizedIsInitialized=1;
   return true;
 }

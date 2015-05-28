@@ -1,7 +1,16 @@
 {
-  if (!hasTable)   return false;
-  for (  net.osmand.binary.OsmandOdb.OsmAndAddressNameIndexData.AddressNameIndexData element : getAtomList()) {
-    if (!element.isInitialized())     return false;
+  byte isInitialized=memoizedIsInitialized;
+  if (isInitialized != -1)   return isInitialized == 1;
+  if (!hasTable()) {
+    memoizedIsInitialized=0;
+    return false;
   }
+  for (int i=0; i < getAtomCount(); i++) {
+    if (!getAtom(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  memoizedIsInitialized=1;
   return true;
 }
