@@ -1,10 +1,22 @@
 {
-  if (!hasName)   return false;
-  for (  net.osmand.binary.OsmandOdb.OsmAndMapIndex.MapEncodingRule element : getRulesList()) {
-    if (!element.isInitialized())     return false;
+  byte isInitialized=memoizedIsInitialized;
+  if (isInitialized != -1)   return isInitialized == 1;
+  if (!hasName()) {
+    memoizedIsInitialized=0;
+    return false;
   }
-  for (  net.osmand.binary.OsmandOdb.OsmAndMapIndex.MapRootLevel element : getLevelsList()) {
-    if (!element.isInitialized())     return false;
+  for (int i=0; i < getRulesCount(); i++) {
+    if (!getRules(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
+  for (int i=0; i < getLevelsCount(); i++) {
+    if (!getLevels(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  memoizedIsInitialized=1;
   return true;
 }

@@ -1,21 +1,48 @@
 {
-  if (!hasName)   return false;
-  if (!hasBoundaries)   return false;
-  if (!getBoundaries().isInitialized())   return false;
-  for (  net.osmand.binary.OsmandOdb.OsmAndCategoryTable element : getCategoriesTableList()) {
-    if (!element.isInitialized())     return false;
+  byte isInitialized=memoizedIsInitialized;
+  if (isInitialized != -1)   return isInitialized == 1;
+  if (!hasName()) {
+    memoizedIsInitialized=0;
+    return false;
+  }
+  if (!hasBoundaries()) {
+    memoizedIsInitialized=0;
+    return false;
+  }
+  if (!getBoundaries().isInitialized()) {
+    memoizedIsInitialized=0;
+    return false;
+  }
+  for (int i=0; i < getCategoriesTableCount(); i++) {
+    if (!getCategoriesTable(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
   if (hasNameIndex()) {
-    if (!getNameIndex().isInitialized())     return false;
+    if (!getNameIndex().isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
   if (hasSubtypesTable()) {
-    if (!getSubtypesTable().isInitialized())     return false;
+    if (!getSubtypesTable().isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
-  for (  net.osmand.binary.OsmandOdb.OsmAndPoiBox element : getBoxesList()) {
-    if (!element.isInitialized())     return false;
+  for (int i=0; i < getBoxesCount(); i++) {
+    if (!getBoxes(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
-  for (  net.osmand.binary.OsmandOdb.OsmAndPoiBoxData element : getPoiDataList()) {
-    if (!element.isInitialized())     return false;
+  for (int i=0; i < getPoiDataCount(); i++) {
+    if (!getPoiData(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
+  memoizedIsInitialized=1;
   return true;
 }

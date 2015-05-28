@@ -1,13 +1,34 @@
 {
-  if (!hasLeft)   return false;
-  if (!hasRight)   return false;
-  if (!hasTop)   return false;
-  if (!hasBottom)   return false;
-  for (  net.osmand.binary.OsmandOdb.TransportStopsTree element : getSubtreesList()) {
-    if (!element.isInitialized())     return false;
+  byte isInitialized=memoizedIsInitialized;
+  if (isInitialized != -1)   return isInitialized == 1;
+  if (!hasLeft()) {
+    memoizedIsInitialized=0;
+    return false;
   }
-  for (  net.osmand.binary.OsmandOdb.TransportStop element : getLeafsList()) {
-    if (!element.isInitialized())     return false;
+  if (!hasRight()) {
+    memoizedIsInitialized=0;
+    return false;
   }
+  if (!hasTop()) {
+    memoizedIsInitialized=0;
+    return false;
+  }
+  if (!hasBottom()) {
+    memoizedIsInitialized=0;
+    return false;
+  }
+  for (int i=0; i < getSubtreesCount(); i++) {
+    if (!getSubtrees(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  for (int i=0; i < getLeafsCount(); i++) {
+    if (!getLeafs(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  memoizedIsInitialized=1;
   return true;
 }
