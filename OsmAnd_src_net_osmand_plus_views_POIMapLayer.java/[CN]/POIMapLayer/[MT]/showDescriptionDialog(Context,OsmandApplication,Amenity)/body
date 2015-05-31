@@ -1,0 +1,19 @@
+{
+  String lang=app.getSettings().MAP_PREFERRED_LOCALE.get();
+  if (a.getType().isWiki()) {
+    showWiki(ctx,app,a.getName(lang),a.getDescription(lang));
+  }
+ else {
+    String d=OsmAndFormatter.getAmenityDescriptionContent(app,a,false);
+    SpannableString spannable=new SpannableString(d);
+    Linkify.addLinks(spannable,Linkify.ALL);
+    Builder bs=new AlertDialog.Builder(ctx);
+    bs.setTitle(OsmAndFormatter.getPoiStringWithoutType(a,lang));
+    bs.setMessage(spannable);
+    bs.setPositiveButton(R.string.shared_string_ok,null);
+    AlertDialog dialog=bs.show();
+    TextView textView=(TextView)dialog.findViewById(android.R.id.message);
+    textView.setMovementMethod(LinkMovementMethod.getInstance());
+    textView.setLinksClickable(true);
+  }
+}
