@@ -1,12 +1,15 @@
 {
   super.onResume();
-  location=null;
   OsmandApplication app=(OsmandApplication)getActivity().getApplication();
-  if (location == null && getActivity() instanceof SearchActivity) {
-    location=((SearchActivity)getActivity()).getSearchPoint();
+  LatLon loc=null;
+  if (getActivity() instanceof SearchActivity) {
+    loc=((SearchActivity)getActivity()).getSearchPoint();
   }
-  if (location == null) {
-    location=app.getSettings().getLastKnownMapLocation();
+  if (loc == null) {
+    loc=app.getSettings().getLastKnownMapLocation();
   }
-  locationUpdate(location);
+  if (!Algorithms.objectEquals(loc,location)) {
+    location=loc;
+    locationUpdate(location);
+  }
 }
