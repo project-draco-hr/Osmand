@@ -1,29 +1,27 @@
 {
-  final Map<String,BinaryMapDataObject> downloadNamesPrefix=new LinkedHashMap<String,BinaryMapDataObject>();
+  final Map<String,String> downloadNames=new LinkedHashMap<String,String>();
+  final Map<String,String> parentRelations=new LinkedHashMap<String,String>();
   final ResultMatcher<BinaryMapDataObject> resultMatcher=new ResultMatcher<BinaryMapDataObject>(){
     @Override public boolean publish(    BinaryMapDataObject object){
       initTypes(object);
-      String downloadName=object.getNameByType(downloadNameType).toLowerCase();
-      String prefix=getPrefix(object);
-      String keyName=getKeyName(object);
-      if (prefix == null) {
-        prefix="";
+      String downloadName=getDownloadName(object);
+      if (downloadName == null) {
+        return false;
       }
+      downloadName=downloadName.toLowerCase();
+      String parentFullName=getParentFullName(object);
+      String fullName=getFullName(object);
+      if (!Algorithms.isEmpty(parentFullName)) {
+        parentRelations.put(fullName,parentFullName);
+      }
+      downloadNames.put(fullName,downloadName);
       String locName=getLocaleName(object);
       if (locName != null && locName.length() > 0) {
-        String kn=keyName.toLowerCase();
-        if (prefix.length() > 0) {
-          downloadNamesPrefix.put(downloadName,object);
-          kn=prefix.toLowerCase() + "_" + keyName;
-        }
         downloadNamesToLocaleNames.put(downloadName,locName);
-        downloadNamesToLocaleNames.put(kn,locName);
       }
       MapIndex mi=object.getMapIndex();
       TIntObjectIterator<String> it=object.getObjectNames().iterator();
       StringBuilder ind=new StringBuilder();
-      String pr=getDownloadNameIndexLowercase(prefix);
-      ind.append(pr == null ? prefix.toLowerCase() : pr.toLowerCase()).append(" ");
       while (it.hasNext()) {
         it.advance();
         TagValuePair tp=mi.decodeType(it.key());
@@ -43,17 +41,21 @@
   }
 ;
   iterateOverAllObjects(resultMatcher);
-  for (  Map.Entry<String,BinaryMapDataObject> e : downloadNamesPrefix.entrySet()) {
-    String downloadName=e.getKey();
-    BinaryMapDataObject o=e.getValue();
-    String prefix=getPrefix(o).toLowerCase();
-    String locPrefix=downloadNamesToLocaleNames.get(prefix);
-    String locName=downloadNamesToLocaleNames.get(downloadName);
-    if (locPrefix == null || locName == null) {
-      throw new IllegalStateException("There is no prefix registered for " + downloadName + " ("+ prefix+ ") ");
+  for (  Map.Entry<String,String> e : downloadNames.entrySet()) {
+    String fullName=e.getKey();
+    String downloadName=e.getValue();
+    String parentFullName=parentRelations.get(fullName);
+    if (!Algorithms.isEmpty(parentFullName) && !Algorithms.isEmpty(parentRelations.get(parentFullName))) {
+      String parentDW=downloadNames.get(parentFullName);
+      String locPrefix=downloadNamesToLocaleNames.get(parentDW);
+      String locName=downloadNamesToLocaleNames.get(downloadName);
+      if (locPrefix == null || locName == null) {
+        throw new IllegalStateException("There is no prefix registered for " + downloadName + " ("+ parentFullName+ ") ");
+      }
+      downloadNamesToLocaleNames.put(downloadName,locPrefix + " " + locName);
+      String index=downloadNamesToLowercaseIndex.get(downloadName);
+      String prindex=downloadNamesToLowercaseIndex.get(parentDW);
+      downloadNamesToLowercaseIndex.put(downloadName,index + " " + prindex);
     }
-    downloadNamesToLocaleNames.put(downloadName,locPrefix + " " + locName);
-    String index=downloadNamesToLowercaseIndex.get(downloadName);
-    downloadNamesToLowercaseIndex.put(downloadName,index + " " + prefix+ " "+ locPrefix.toLowerCase());
   }
 }
