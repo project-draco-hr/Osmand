@@ -1,23 +1,16 @@
 {
-  final Map<String,String> downloadNames=new LinkedHashMap<String,String>();
   final Map<String,String> parentRelations=new LinkedHashMap<String,String>();
   final ResultMatcher<BinaryMapDataObject> resultMatcher=new ResultMatcher<BinaryMapDataObject>(){
     @Override public boolean publish(    BinaryMapDataObject object){
       initTypes(object);
-      String downloadName=getDownloadName(object);
       String parentFullName=getParentFullName(object);
       String fullName=getFullName(object);
       if (!Algorithms.isEmpty(parentFullName)) {
         parentRelations.put(fullName,parentFullName);
       }
-      if (downloadName == null) {
-        return false;
-      }
-      downloadName=downloadName.toLowerCase();
-      downloadNames.put(fullName,downloadName);
       String locName=getLocaleName(object);
-      if (locName != null && locName.length() > 0) {
-        downloadNamesToLocaleNames.put(downloadName,locName);
+      if (!Algorithms.isEmpty(locName)) {
+        fullNamesToLocaleNames.put(fullName,locName);
       }
       MapIndex mi=object.getMapIndex();
       TIntObjectIterator<String> it=object.getObjectNames().iterator();
@@ -25,6 +18,9 @@
       while (it.hasNext()) {
         it.advance();
         TagValuePair tp=mi.decodeType(it.key());
+        if (tp.tag.equals("key_name") && Algorithms.isEmpty(locName)) {
+          fullNamesToLocaleNames.put(fullName,Algorithms.capitalizeFirstLetterAndLowercase(it.value().replace('_','-')));
+        }
         if (tp.tag.startsWith("name") || tp.tag.equals("key_name")) {
           final String vl=it.value().toLowerCase();
           if (ind.indexOf(vl) == -1) {
@@ -32,7 +28,11 @@
           }
         }
       }
-      downloadNamesToLowercaseIndex.put(downloadName,ind.toString());
+      fullNamesToLowercaseIndex.put(fullName,ind.toString());
+      String downloadName=getDownloadName(object);
+      if (downloadName != null) {
+        downloadNamesToFullNames.put(downloadName,fullName);
+      }
       return false;
     }
     @Override public boolean isCancelled(){
@@ -41,21 +41,23 @@
   }
 ;
   iterateOverAllObjects(resultMatcher);
-  for (  Map.Entry<String,String> e : downloadNames.entrySet()) {
+  for (  Map.Entry<String,String> e : parentRelations.entrySet()) {
     String fullName=e.getKey();
-    String downloadName=e.getValue();
-    String parentFullName=parentRelations.get(fullName);
-    if (!Algorithms.isEmpty(parentFullName) && !Algorithms.isEmpty(parentRelations.get(parentFullName))) {
-      String parentDW=downloadNames.get(parentFullName);
-      String locPrefix=downloadNamesToLocaleNames.get(parentDW);
-      String locName=downloadNamesToLocaleNames.get(downloadName);
-      if (locPrefix == null || locName == null) {
-        throw new IllegalStateException("There is no prefix registered for " + downloadName + " ("+ parentFullName+ ") ");
+    String parentFullName=e.getValue();
+    String parentParentFulName=parentRelations.get(parentFullName);
+    if (!Algorithms.isEmpty(parentFullName) && !Algorithms.isEmpty(parentParentFulName)) {
+      if (parentParentFulName.contains("russia") || parentParentFulName.contains("japan")) {
+        parentFullName=parentParentFulName;
       }
-      downloadNamesToLocaleNames.put(downloadName,locPrefix + " " + locName);
-      String index=downloadNamesToLowercaseIndex.get(downloadName);
-      String prindex=downloadNamesToLowercaseIndex.get(parentDW);
-      downloadNamesToLowercaseIndex.put(downloadName,index + " " + prindex);
+      String locPrefix=fullNamesToLocaleNames.get(parentFullName);
+      String locName=fullNamesToLocaleNames.get(fullName);
+      if (locPrefix == null || locName == null) {
+        throw new IllegalStateException("There is no prefix registered for " + fullName + " ("+ parentFullName+ ") ");
+      }
+      fullNamesToLocaleNames.put(fullName,locPrefix + " " + locName);
+      String index=fullNamesToLowercaseIndex.get(fullName);
+      String prindex=fullNamesToLowercaseIndex.get(parentFullName);
+      fullNamesToLowercaseIndex.put(fullName,index + " " + prindex);
     }
   }
 }
