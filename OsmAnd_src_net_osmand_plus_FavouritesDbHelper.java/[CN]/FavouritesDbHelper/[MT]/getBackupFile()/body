@@ -1,0 +1,21 @@
+{
+  File fld=new File(context.getAppPath(null),BACKUP_FOLDER);
+  if (!fld.exists()) {
+    fld.mkdirs();
+  }
+  int back=1;
+  File firstModified=null;
+  long firstModifiedMin=System.currentTimeMillis();
+  while (back <= BACKUP_CNT) {
+    File bak=new File(fld,BACKUP_FOLDER + "_" + back+ ".gpx.bz2");
+    if (!bak.exists()) {
+      return bak;
+    }
+ else     if (bak.lastModified() < firstModifiedMin) {
+      firstModified=bak;
+      firstModifiedMin=bak.lastModified();
+    }
+    back++;
+  }
+  return firstModified;
+}
