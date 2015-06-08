@@ -3,13 +3,21 @@
     return;
   }
   if ((currentRunningJob == null && System.currentTimeMillis() - lastTimeEvaluatedRoute > evalWaitInterval) || paramsChanged || !onlyStartPointChanged) {
+    if (System.currentTimeMillis() - lastTimeEvaluatedRoute < RECALCULATE_THRESHOLD_CAUSING_FULL_RECALCULATE_INTERVAL) {
+      recalculateCountInInterval++;
+    }
     RouteCalculationParams params=new RouteCalculationParams();
     params.start=start;
     params.end=end;
     params.intermediates=intermediates;
     params.gpxRoute=gpxRoute == null ? null : gpxRoute.build(start,settings);
     params.onlyStartPointChanged=onlyStartPointChanged;
-    params.previousToRecalculate=previousRoute;
+    if (recalculateCountInInterval < RECALCULATE_THRESHOLD_COUNT_CAUSING_FULL_RECALCULATE) {
+      params.previousToRecalculate=previousRoute;
+    }
+ else {
+      recalculateCountInInterval=0;
+    }
     params.leftSide=settings.DRIVING_REGION.get().leftHandDriving;
     params.fast=settings.FAST_ROUTE_MODE.getModeValue(mode);
     params.type=settings.ROUTER_SERVICE.getModeValue(mode);
