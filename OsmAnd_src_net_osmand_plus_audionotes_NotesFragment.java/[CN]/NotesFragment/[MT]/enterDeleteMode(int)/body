@@ -1,0 +1,37 @@
+{
+  actionMode=getActionBarActivity().startSupportActionMode(new ActionMode.Callback(){
+    @Override public boolean onCreateActionMode(    final ActionMode mode,    Menu menu){
+      enableSelectionMode(true);
+      MenuItem item=menu.add(R.string.shared_string_delete_all).setIcon(R.drawable.ic_action_delete_dark);
+      item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+        @Override public boolean onMenuItemClick(        MenuItem item){
+          if (type == MODE_DELETE) {
+            deleteItems(selected);
+          }
+ else           if (type == MODE_SHARE) {
+            shareItems(selected);
+          }
+          mode.finish();
+          return true;
+        }
+      }
+);
+      MenuItemCompat.setShowAsAction(item,MenuItemCompat.SHOW_AS_ACTION_IF_ROOM);
+      selected.clear();
+      listAdapter.notifyDataSetInvalidated();
+      updateSelectionMode(mode);
+      return true;
+    }
+    @Override public boolean onPrepareActionMode(    ActionMode mode,    Menu menu){
+      return false;
+    }
+    @Override public boolean onActionItemClicked(    ActionMode actionMode,    MenuItem menuItem){
+      return false;
+    }
+    @Override public void onDestroyActionMode(    ActionMode mode){
+      enableSelectionMode(false);
+      listAdapter.notifyDataSetInvalidated();
+    }
+  }
+);
+}
