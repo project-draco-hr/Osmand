@@ -5,9 +5,9 @@
     AccessibleToast.makeText(getActivity(),R.string.data_to_search_poi_not_available,Toast.LENGTH_LONG);
     return;
   }
-  if (item instanceof PoiLegacyFilter) {
-    PoiLegacyFilter model=((PoiLegacyFilter)item);
-    if (PoiLegacyFilter.BY_NAME_FILTER_ID.equals(model.getFilterId()) || model instanceof NominatimPoiFilter) {
+  if (item instanceof PoiUIFilter) {
+    PoiUIFilter model=((PoiUIFilter)item);
+    if (PoiUIFilter.BY_NAME_FILTER_ID.equals(model.getFilterId()) || model instanceof NominatimPoiFilter) {
       model.setFilterByName(searchEditText.getText().toString());
     }
  else {
@@ -16,9 +16,13 @@
     showFilterActivity(model.getFilterId());
   }
  else {
-    PoiLegacyFilter custom=getApp().getPoiFilters().getFilterById(PoiLegacyFilter.STD_PREFIX + ((AbstractPoiType)item).getKeyName());
+    PoiUIFilter custom=getApp().getPoiFilters().getFilterById(PoiUIFilter.STD_PREFIX + ((AbstractPoiType)item).getKeyName());
     if (custom != null) {
-      custom.setFilterByName(null);
+      if (item instanceof PoiType && ((PoiType)item).isAdditional()) {
+      }
+ else {
+        custom.setFilterByName(null);
+      }
       custom.updateTypesToAccept(((AbstractPoiType)item));
       showFilterActivity(custom.getFilterId());
     }

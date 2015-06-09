@@ -1,0 +1,22 @@
+{
+  PoiFilterDbHelper helper=openDbHelper();
+  if (helper == null) {
+    return false;
+  }
+  boolean res=helper.deleteFilter(helper.getWritableDatabase(),filter);
+  Iterator<PoiUIFilter> it=cacheTopStandardFilters.iterator();
+  while (it.hasNext()) {
+    if (it.next().getFilterId().equals(filter.getFilterId())) {
+      it.remove();
+    }
+  }
+  res=helper.addFilter(filter,helper.getWritableDatabase(),false);
+  if (res) {
+    ArrayList<PoiUIFilter> copy=new ArrayList<>(cacheTopStandardFilters);
+    copy.add(filter);
+    sortListOfFilters(copy);
+    cacheTopStandardFilters=copy;
+  }
+  helper.close();
+  return res;
+}

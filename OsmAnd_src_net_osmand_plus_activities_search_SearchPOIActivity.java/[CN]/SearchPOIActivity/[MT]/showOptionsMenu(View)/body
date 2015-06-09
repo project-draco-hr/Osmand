@@ -1,11 +1,11 @@
 {
   IconsCache iconsCache=getMyApplication().getIconsCache();
   final PopupMenu optionsMenu=new PopupMenu(this,v);
-  final PoiLegacyFilter f=this.filter;
+  final PoiUIFilter f=this.filter;
   MenuItem item=optionsMenu.getMenu().add(R.string.shared_string_edit).setIcon(iconsCache.getContentIcon(R.drawable.ic_action_edit_dark));
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
-      PoiLegacyFilter custom=getMyApplication().getPoiFilters().getCustomPOIFilter();
+      PoiUIFilter custom=getMyApplication().getPoiFilters().getCustomPOIFilter();
       custom.updateTypesToAccept(f);
       showEditActivity(custom);
       return true;
@@ -18,7 +18,9 @@
   if (poiAdditionals != null) {
     TreeMap<String,PoiType> adds=new TreeMap<String,PoiType>();
     for (    PoiType vtype : poiAdditionals.values()) {
-      adds.put(vtype.getTranslation().replace(' ',':').toLowerCase(),vtype);
+      if (vtype.isTopVisible()) {
+        adds.put(vtype.getTranslation().replace(' ',':').toLowerCase(),vtype);
+      }
     }
     for (    String vtype : adds.keySet()) {
       addFilter(optionsMenu,vtype);
