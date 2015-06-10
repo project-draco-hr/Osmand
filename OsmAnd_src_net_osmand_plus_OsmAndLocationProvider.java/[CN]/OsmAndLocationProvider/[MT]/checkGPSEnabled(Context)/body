@@ -1,0 +1,30 @@
+{
+  LocationManager lm=(LocationManager)app.getSystemService(Context.LOCATION_SERVICE);
+  boolean gpsenabled=false;
+  boolean networkenabled=false;
+  try {
+    gpsenabled=lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+  }
+ catch (  Exception ex) {
+  }
+  try {
+    networkenabled=lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+  }
+ catch (  Exception ex) {
+  }
+  if (!gpsenabled && !networkenabled) {
+    AlertDialog.Builder dialog=new AlertDialog.Builder(context);
+    dialog.setMessage(context.getResources().getString(R.string.gps_network_not_enabled));
+    dialog.setPositiveButton(context.getResources().getString(R.string.shared_string_settings),new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface paramDialogInterface,      int paramInt){
+        Intent myIntent=new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        context.startActivity(myIntent);
+      }
+    }
+);
+    dialog.setNegativeButton(context.getString(R.string.shared_string_cancel),null);
+    dialog.show();
+    return false;
+  }
+  return true;
+}
