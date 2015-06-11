@@ -1,0 +1,30 @@
+{
+  CompoundButton trackr=(CompoundButton)header.findViewById(R.id.enable_tracker);
+  trackr.setText(R.string.osmo_share_my_location);
+  if (osMoPlugin != null && osMoPlugin.getTracker() != null) {
+    trackr.setOnCheckedChangeListener(null);
+    trackr.setChecked(osMoPlugin.getTracker().isEnabledTracker());
+  }
+  trackr.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
+      if (isChecked) {
+        if (app.getLocationProvider().checkGPSEnabled(OsMoGroupsActivity.this)) {
+          if (osMoPlugin != null && osMoPlugin.getTracker() != null) {
+            osMoPlugin.getTracker().enableTracker();
+          }
+          app.startNavigationService(NavigationService.USED_BY_LIVE);
+        }
+      }
+ else {
+        if (osMoPlugin != null && osMoPlugin.getTracker() != null) {
+          osMoPlugin.getTracker().disableTracker();
+        }
+        if (app.getNavigationService() != null) {
+          app.getNavigationService().stopIfNeeded(app,NavigationService.USED_BY_LIVE);
+        }
+      }
+      updateStatus();
+    }
+  }
+);
+}
