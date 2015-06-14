@@ -1,6 +1,5 @@
 {
   final Dialog dialog=new Dialog(ctx,app.getSettings().isLightContent() ? R.style.OsmandLightTheme : R.style.OsmandDarkTheme);
-  String content=a.getDescription(lang);
   final String title=a.getName(lang);
   LinearLayout ll=new LinearLayout(ctx);
   ll.setOrientation(LinearLayout.VERTICAL);
@@ -13,14 +12,18 @@
   topBar.setTitleTextColor(ctx.getResources().getColor(getResIdFromAttribute(ctx,R.attr.pstsTextColor)));
   String lng=a.getNameSelected(lang);
   if (Algorithms.isEmpty(lng)) {
-    lng="EN";
+    lng=a.getNameSelected("en");
   }
   final String langSelected=lng;
+  String content=a.getDescription(langSelected);
   final Button bottomBar=new Button(ctx);
   bottomBar.setText(R.string.read_full_article);
   bottomBar.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       String article="http://" + langSelected.toLowerCase() + ".wikipedia.org/wiki/"+ title.replace(' ','_');
+      if (langSelected.equals("")) {
+        article="http://en.wikipedia.org/wiki/" + title.replace(' ','_');
+      }
       Intent i=new Intent(Intent.ACTION_VIEW);
       i.setData(Uri.parse(article));
       ctx.startActivity(i);
