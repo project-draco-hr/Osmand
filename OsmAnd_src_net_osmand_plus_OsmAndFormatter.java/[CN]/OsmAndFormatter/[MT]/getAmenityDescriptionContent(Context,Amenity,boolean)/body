@@ -1,5 +1,8 @@
 {
   StringBuilder d=new StringBuilder();
+  if (amenity.getType().isWiki()) {
+    return "";
+  }
   for (  Entry<String,String> e : amenity.getAdditionalInfo().entrySet()) {
     String key=e.getKey();
     String vl=e.getValue();
@@ -18,9 +21,6 @@
       d.append(ctx.getString(R.string.phone) + ": ");
     }
  else     if (Amenity.WEBSITE.equals(key)) {
-      if (amenity.getType().isWiki()) {
-        continue;
-      }
       d.append(ctx.getString(R.string.website) + ": ");
     }
  else {
@@ -32,7 +32,7 @@
  else {
         vl=Algorithms.capitalizeFirstLetterAndLowercase(e.getKey());
       }
-      vl+=": " + e.getValue();
+      vl+=": " + amenity.unzipContent(e.getValue());
     }
     d.append(vl).append('\n');
   }
