@@ -61,7 +61,24 @@
     }
   }
 );
-  ((ImageView)findViewById(R.id.WikiButton)).setImageResource(R.drawable.ic_action_wikipedia);
+  findViewById(R.id.CancelAll).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      getEntriesToDownload().clear();
+      updateDownloadButton();
+      for (      WeakReference<Fragment> ref : fragList) {
+        Fragment f=ref.get();
+        if (f instanceof OsmAndListFragment) {
+          if (!f.isDetached() && ((OsmAndListFragment)f).getListAdapter() instanceof ArrayAdapter) {
+            ((ArrayAdapter)((OsmAndListFragment)f).getListAdapter()).notifyDataSetChanged();
+          }
+        }
+ else         if (!f.isDetached() && f instanceof OsmandExpandableListFragment && ((OsmandExpandableListFragment)f).getAdapter() instanceof BaseExpandableListAdapter) {
+          ((BaseExpandableListAdapter)((OsmandExpandableListFragment)f).getAdapter()).notifyDataSetChanged();
+        }
+      }
+    }
+  }
+);
   downloadTypes=createDownloadTypes();
   final Intent intent=getIntent();
   if (intent != null && intent.getExtras() != null) {
