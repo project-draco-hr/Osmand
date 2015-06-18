@@ -1,34 +1,40 @@
 {
   final QuadRect latLonBounds=tileBox.getLatLonBounds();
   for (  TrkSegment l : points) {
-    path.rewind();
     int startIndex=-1;
     int endIndex=-1;
     int prevCross=0;
-    boolean intersect=false;
+    double shift=0.1;
     for (int i=0; i < l.points.size(); i++) {
       WptPt ls=l.points.get(i);
       int cross=0;
-      cross|=(ls.lon < latLonBounds.left - 0.1 ? 1 : 0);
-      cross|=(ls.lon > latLonBounds.right + 0.1 ? 2 : 0);
-      cross|=(ls.lat > latLonBounds.top + 0.1 ? 4 : 0);
-      cross|=(ls.lat < latLonBounds.bottom - 0.1 ? 8 : 0);
+      cross|=(ls.lon < latLonBounds.left - shift ? 1 : 0);
+      cross|=(ls.lon > latLonBounds.right + shift ? 2 : 0);
+      cross|=(ls.lat > latLonBounds.top + shift ? 4 : 0);
+      cross|=(ls.lat < latLonBounds.bottom - shift ? 8 : 0);
       if (i > 0) {
         if ((prevCross & cross) == 0) {
-          if (prevCross != 0 || !intersect) {
+          if (prevCross == 0 && endIndex != -1) {
+          }
+ else {
             if (startIndex > 0) {
               drawSegment(canvas,tileBox,l,startIndex,endIndex);
             }
             startIndex=i - 1;
           }
           endIndex=i;
-          intersect=true;
+        }
+ else {
+          if (startIndex != -1) {
+            drawSegment(canvas,tileBox,l,startIndex,endIndex);
+            startIndex=-1;
+          }
         }
       }
       prevCross=cross;
     }
     if (startIndex != -1) {
-      drawSegment(canvas,tileBox,l,startIndex,l.points.size() - 1);
+      drawSegment(canvas,tileBox,l,startIndex,endIndex);
     }
   }
 }
