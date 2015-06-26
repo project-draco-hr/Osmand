@@ -8,8 +8,22 @@
     if (rrs != null) {
       RenderingRuleSearchRequest req=new RenderingRuleSearchRequest(rrs);
       req.setBooleanFilter(rrs.PROPS.R_NIGHT_MODE,isNight);
+      CommonPreference<Boolean> p=view.getSettings().getCustomRenderBooleanProperty("currentTrackColor");
+      if (p != null && p.isSet()) {
+        RenderingRuleProperty ctColor=rrs.PROPS.get("currentTrackColor");
+        if (ctColor != null) {
+          req.setBooleanFilter(ctColor,p.get());
+        }
+      }
+      String additional="";
       if (routePoints) {
-        req.setStringFilter(rrs.PROPS.R_ADDITIONAL,"routePoints=true");
+        additional="routePoints=true";
+      }
+      if (currentTrack) {
+        additional=(additional.length() == 0 ? "" : ";") + "currentTrack=true";
+      }
+      if (additional.length() > 0) {
+        req.setStringFilter(rrs.PROPS.R_ADDITIONAL,additional);
       }
       if (req.searchRenderingAttribute("gpx")) {
         RenderingContext rc=new OsmandRenderer.RenderingContext(view.getContext());
