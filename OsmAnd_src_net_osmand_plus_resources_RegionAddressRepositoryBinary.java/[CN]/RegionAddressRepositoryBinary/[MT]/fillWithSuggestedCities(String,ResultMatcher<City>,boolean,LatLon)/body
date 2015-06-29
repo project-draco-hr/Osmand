@@ -11,9 +11,10 @@
     return citiesToFill;
   }
   try {
+    String lang=getLang();
     if (searchVillages) {
       String uName=name.toUpperCase();
-      List<City> foundCities=file.getCities(region,BinaryMapIndexReader.buildAddressRequest(resultMatcher),new CollatorStringMatcher(uName,StringMatcherMode.CHECK_CONTAINS),false,BinaryMapAddressReaderAdapter.POSTCODES_TYPE);
+      List<City> foundCities=file.getCities(region,BinaryMapIndexReader.buildAddressRequest(resultMatcher),new CollatorStringMatcher(uName,StringMatcherMode.CHECK_CONTAINS),lang,BinaryMapAddressReaderAdapter.POSTCODES_TYPE);
       for (      City code : foundCities) {
         citiesToFill.add(code);
         if (resultMatcher.isCancelled()) {
@@ -23,7 +24,7 @@
     }
     name=name.toLowerCase();
     for (    City c : cities.values()) {
-      String cName=c.getName(useEnglishNames);
+      String cName=c.getName(lang);
       if (CollatorStringMatcher.cmatches(collator,cName,name,StringMatcherMode.CHECK_STARTS_FROM_SPACE)) {
         if (resultMatcher.publish(c)) {
           citiesToFill.add(c);
@@ -48,7 +49,7 @@
           return resultMatcher.isCancelled();
         }
       }
-),new CollatorStringMatcher(name,StringMatcherMode.CHECK_STARTS_FROM_SPACE),useEnglishNames,BinaryMapAddressReaderAdapter.VILLAGES_TYPE);
+),new CollatorStringMatcher(name,StringMatcherMode.CHECK_STARTS_FROM_SPACE),lang,BinaryMapAddressReaderAdapter.VILLAGES_TYPE);
       for (      City c : foundCities) {
         citiesToFill.add(c);
         if (resultMatcher.isCancelled()) {

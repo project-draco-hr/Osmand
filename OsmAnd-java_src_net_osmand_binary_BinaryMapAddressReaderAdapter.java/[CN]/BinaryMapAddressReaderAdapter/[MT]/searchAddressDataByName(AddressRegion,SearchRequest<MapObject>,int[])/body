@@ -63,7 +63,7 @@ City obj=null;
 codedIS.seek(list.get(j + 1));
 int len=codedIS.readRawVarint32();
 int old=codedIS.pushLimit(len);
-obj=readCityHeader(null,list.get(j + 1),false);
+obj=readCityHeader(null,list.get(j + 1),null);
 codedIS.popLimit(old);
 }
 if (obj != null) {
@@ -73,7 +73,16 @@ int old=codedIS.pushLimit(len);
 LatLon l=obj.getLocation();
 Street s=new Street(obj);
 readStreet(s,null,false,MapUtils.get31TileNumberX(l.getLongitude()) >> 7,MapUtils.get31TileNumberY(l.getLatitude()) >> 7,obj.isPostcode() ? obj.getName() : null);
-if (matcher.matches(s.getName())) {
+boolean matches=matcher.matches(s.getName());
+if (!matches) {
+for (String n : s.getAllNames()) {
+matches=matcher.matches(n);
+if (matches) {
+break;
+}
+}
+}
+if (matches) {
 req.publish(s);
 }
 codedIS.popLimit(old);
@@ -86,7 +95,7 @@ for (int j=0; j < list.size() && !req.isCancelled(); j++) {
 codedIS.seek(list.get(j));
 int len=codedIS.readRawVarint32();
 int old=codedIS.pushLimit(len);
-City obj=readCityHeader(matcher,list.get(j),false);
+City obj=readCityHeader(matcher,list.get(j),null);
 if (obj != null) {
 req.publish(obj);
 }

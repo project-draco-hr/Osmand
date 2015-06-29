@@ -26,13 +26,12 @@ int oldLim=codedIS.pushLimit(len);
 Amenity am=readPoiPoint(0,Integer.MAX_VALUE,0,Integer.MAX_VALUE,x,y,zoom,req,region,false);
 codedIS.popLimit(oldLim);
 if (am != null) {
-boolean matches=matcher.matches(am.getName(false).toLowerCase()) || matcher.matches(am.getName(true).toLowerCase());
+boolean matches=matcher.matches(am.getName().toLowerCase()) || matcher.matches(am.getEnName(true).toLowerCase());
 if (!matches) {
-Iterator<Entry<String,String>> it=am.getAdditionalInfo().entrySet().iterator();
-while (!matches && it.hasNext()) {
-Entry<String,String> n=it.next();
-if (n.getKey().startsWith("name:")) {
-matches=matcher.matches(n.getValue().toLowerCase());
+for (String s : am.getAllNames()) {
+matches=matcher.matches(s.toLowerCase());
+if (matches) {
+break;
 }
 }
 }
