@@ -1,6 +1,7 @@
 {
   int x=0;
   int y=0;
+  LinkedList<String> additionalTags=null;
   boolean loadLocation=city24X != 0 || city24Y != 0;
   while (true) {
     int t=codedIS.readTag();
@@ -13,6 +14,24 @@ case 0:
     return s;
 case OsmandOdb.StreetIndex.ID_FIELD_NUMBER:
   s.setId(codedIS.readUInt64());
+break;
+case OsmandOdb.StreetIndex.ATTRIBUTETAGIDS_FIELD_NUMBER:
+int tgid=codedIS.readUInt32();
+if (additionalTags == null) {
+additionalTags=new LinkedList<String>();
+}
+if (additionalTagsTable != null && tgid < additionalTagsTable.size()) {
+additionalTags.add(additionalTagsTable.get(tgid));
+}
+break;
+case OsmandOdb.StreetIndex.ATTRIBUTEVALUES_FIELD_NUMBER:
+String nm=codedIS.readString();
+if (additionalTags != null && additionalTags.size() > 0) {
+String tg=additionalTags.pollFirst();
+if (tg.startsWith("name:")) {
+s.setName(tg.substring("name:".length()),nm);
+}
+}
 break;
 case OsmandOdb.StreetIndex.NAME_EN_FIELD_NUMBER:
 s.setEnName(codedIS.readString());
@@ -42,7 +61,7 @@ case OsmandOdb.StreetIndex.INTERSECTIONS_FIELD_NUMBER:
 int length=codedIS.readRawVarint32();
 if (loadBuildingsAndIntersected) {
 int oldLimit=codedIS.pushLimit(length);
-Street si=readIntersectedStreet(s.getCity(),x,y);
+Street si=readIntersectedStreet(s.getCity(),x,y,additionalTagsTable);
 s.addIntersectedStreet(si);
 codedIS.popLimit(oldLimit);
 }
@@ -55,7 +74,7 @@ int offset=codedIS.getTotalBytesRead();
 length=codedIS.readRawVarint32();
 if (loadBuildingsAndIntersected) {
 int oldLimit=codedIS.pushLimit(length);
-Building b=readBuilding(offset,x,y);
+Building b=readBuilding(offset,x,y,additionalTagsTable);
 if (postcodeFilter == null || postcodeFilter.equalsIgnoreCase(b.getPostcode())) {
 if (buildingsMatcher == null || buildingsMatcher.publish(b)) {
 s.addBuilding(b);

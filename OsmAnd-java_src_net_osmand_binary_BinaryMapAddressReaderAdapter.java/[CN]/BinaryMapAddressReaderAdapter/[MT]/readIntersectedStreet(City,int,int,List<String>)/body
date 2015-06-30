@@ -2,6 +2,7 @@
   int x=0;
   int y=0;
   Street s=new Street(c);
+  LinkedList<String> additionalTags=null;
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
@@ -17,6 +18,24 @@ s.setEnName(codedIS.readString());
 break;
 case OsmandOdb.StreetIntersection.NAME_FIELD_NUMBER:
 s.setName(codedIS.readString());
+break;
+case OsmandOdb.StreetIntersection.ATTRIBUTETAGIDS_FIELD_NUMBER:
+int tgid=codedIS.readUInt32();
+if (additionalTags == null) {
+additionalTags=new LinkedList<String>();
+}
+if (additionalTagsTable != null && tgid < additionalTagsTable.size()) {
+additionalTags.add(additionalTagsTable.get(tgid));
+}
+break;
+case OsmandOdb.StreetIntersection.ATTRIBUTEVALUES_FIELD_NUMBER:
+String nm=codedIS.readString();
+if (additionalTags != null && additionalTags.size() > 0) {
+String tg=additionalTags.pollFirst();
+if (tg.startsWith("name:")) {
+s.setName(tg.substring("name:".length()),nm);
+}
+}
 break;
 case OsmandOdb.StreetIntersection.INTERSECTEDX_FIELD_NUMBER:
 x=codedIS.readSInt32() + street24X;
