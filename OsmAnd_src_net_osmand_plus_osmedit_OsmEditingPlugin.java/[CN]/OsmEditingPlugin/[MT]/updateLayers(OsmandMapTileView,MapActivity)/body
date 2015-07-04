@@ -1,13 +1,26 @@
 {
-  if (osmBugsLayer == null) {
-    registerLayers(activity);
-  }
-  if (mapView.getLayers().contains(osmBugsLayer) != settings.SHOW_OSM_BUGS.get()) {
-    if (settings.SHOW_OSM_BUGS.get()) {
-      mapView.addLayer(osmBugsLayer,2);
+  if (isActive()) {
+    if (osmBugsLayer == null) {
+      registerLayers(activity);
     }
+    if (!mapView.getLayers().contains(osmEditsLayer)) {
+      activity.getMapView().addLayer(osmEditsLayer,3.5f);
+    }
+    if (mapView.getLayers().contains(osmBugsLayer) != settings.SHOW_OSM_BUGS.get()) {
+      if (settings.SHOW_OSM_BUGS.get()) {
+        mapView.addLayer(osmBugsLayer,2);
+      }
  else {
+        mapView.removeLayer(osmBugsLayer);
+      }
+    }
+  }
+ else {
+    if (osmBugsLayer != null) {
       mapView.removeLayer(osmBugsLayer);
+    }
+    if (osmEditsLayer != null) {
+      mapView.removeLayer(osmEditsLayer);
     }
   }
 }
