@@ -27,8 +27,16 @@
     @Override public void run(){
       ValueHolder<Boolean> showToast=new ValueHolder<Boolean>();
       showToast.value=true;
-      for (      IRouteInformationListener l : listeners) {
-        l.newRouteIsCalculated(newRoute,showToast);
+      Iterator<WeakReference<IRouteInformationListener>> it=listeners.iterator();
+      while (it.hasNext()) {
+        WeakReference<IRouteInformationListener> ref=it.next();
+        IRouteInformationListener l=ref.get();
+        if (l == null) {
+          it.remove();
+        }
+ else {
+          l.newRouteIsCalculated(newRoute,showToast);
+        }
       }
       if (showToast.value) {
         String msg=app.getString(R.string.new_route_calculated_dist) + ": " + OsmAndFormatter.getFormattedDistance(res.getWholeDistance(),app);
