@@ -1,17 +1,8 @@
 {
   MapInfoLayer mapInfoLayer=activity.getMapLayers().getMapInfoLayer();
   final OsmandMapTileView mv=activity.getMapView();
-  if (mapInfoLayer != null && fps == null) {
-    fps=new TextInfoWidget(activity){
-      @Override public boolean updateInfo(      DrawSettings drawSettings){
-        if (!mv.isMeasureFPS()) {
-          mv.setMeasureFPS(true);
-        }
-        setText("",Integer.toString((int)mv.getFPS()) + "/" + Integer.toString((int)mv.getSecondaryFPS())+ " FPS");
-        return true;
-      }
-    }
-;
+  if (mapInfoLayer != null && mapInfoLayer.getSideWidget(FPSTextInfoWidget.class) == null) {
+    FPSTextInfoWidget fps=new FPSTextInfoWidget(mv,activity);
     mapInfoLayer.registerSideWidget(fps,R.drawable.widget_no_icon,R.string.map_widget_fps_info,"fps",false,30);
     mapInfoLayer.recreateControls();
   }

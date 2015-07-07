@@ -34,15 +34,13 @@ synchronized (resourceManger) {
  else         if (req instanceof MapLoadRequest) {
           if (!mapLoaded) {
             MapLoadRequest r=(MapLoadRequest)req;
-            resourceManger.getRenderer().loadMap(r.tileBox,resourceManger.getMapTileDownloader().getDownloaderCallbacks());
+            resourceManger.getRenderer().loadMap(r.tileBox,resourceManger.getMapTileDownloader());
             mapLoaded=!resourceManger.getRenderer().wasInterrupted();
           }
         }
       }
       if (tileLoaded || amenityLoaded || transportLoaded|| mapLoaded) {
-        for (        IMapDownloaderCallback c : resourceManger.getMapTileDownloader().getDownloaderCallbacks()) {
-          c.tileDownloaded(null);
-        }
+        resourceManger.getMapTileDownloader().fireLoadCallback(null);
       }
       int newProgress=calculateProgressStatus();
       if (progress != newProgress) {
