@@ -123,7 +123,8 @@
     Bitmap reuse=prevBmp;
     this.prevBmp=this.bmp;
     this.prevBmpLocation=this.bmpLocation;
-    if (reuse != null && reuse.getWidth() == currentRenderingContext.width && reuse.getHeight() == currentRenderingContext.height) {
+    Config cfg=transparent ? Config.ARGB_8888 : Config.RGB_565;
+    if (reuse != null && reuse.getWidth() == currentRenderingContext.width && reuse.getHeight() == currentRenderingContext.height && cfg == reuse.getConfig()) {
       bmp=reuse;
       bmp.eraseColor(currentRenderingContext.defaultColor);
     }
@@ -131,12 +132,7 @@
       if (reuse != null) {
         log.warn(String.format("Create new image ? %d != %d (w) %d != %d (h) ",currentRenderingContext.width,reuse.getWidth(),currentRenderingContext.height,reuse.getHeight()));
       }
-      if (transparent) {
-        bmp=Bitmap.createBitmap(currentRenderingContext.width,currentRenderingContext.height,Config.ARGB_8888);
-      }
- else {
-        bmp=Bitmap.createBitmap(currentRenderingContext.width,currentRenderingContext.height,Config.ARGB_8888);
-      }
+      bmp=Bitmap.createBitmap(currentRenderingContext.width,currentRenderingContext.height,cfg);
       if (reuse != null) {
         reuse.recycle();
       }
