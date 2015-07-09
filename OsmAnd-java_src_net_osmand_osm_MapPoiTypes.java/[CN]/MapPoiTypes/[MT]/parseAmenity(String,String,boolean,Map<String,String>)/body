@@ -1,0 +1,40 @@
+{
+  boolean hasName=!Algorithms.isEmpty(otherTags.get("name"));
+  initPoiTypesByTag();
+  PoiType pt=poiTypesByTag.get(tag + "/" + val);
+  if (pt == null) {
+    pt=poiTypesByTag.get(tag);
+  }
+  if (pt == null || pt.isAdditional()) {
+    return null;
+  }
+  if (!Algorithms.isEmpty(pt.getOsmTag2())) {
+    if (!Algorithms.objectEquals(otherTags.get(pt.getOsmTag2()),pt.getOsmValue2())) {
+      return null;
+    }
+  }
+  if (!hasName && pt.isNameOnly()) {
+    return null;
+  }
+  if (relation && !pt.isRelation()) {
+    return null;
+  }
+  Amenity a=new Amenity();
+  a.setType(pt.getCategory());
+  a.setSubType(pt.getKeyName());
+  Iterator<Entry<String,String>> it=otherTags.entrySet().iterator();
+  while (it.hasNext()) {
+    Entry<String,String> e=it.next();
+    String otag=e.getKey();
+    if (!otag.equals(tag)) {
+      PoiType pat=poiTypesByTag.get(otag + "/" + e.getValue());
+      if (pat == null) {
+        pat=poiTypesByTag.get(otag);
+      }
+      if (pat != null && pat.isAdditional()) {
+        a.setAdditionalInfo(pat.getKeyName(),e.getValue());
+      }
+    }
+  }
+  return a;
+}

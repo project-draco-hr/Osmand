@@ -44,38 +44,26 @@
           lastCategory.addPoiType(tp);
         }
  else         if (name.equals("poi_additional")) {
-          PoiType tp=new PoiType(this,lastCategory,parser.getAttributeValue("","name"));
-          tp.setAdditional(lastType != null ? lastType : (lastFilter != null ? lastFilter : lastCategory));
-          tp.setTopVisible(Boolean.parseBoolean(parser.getAttributeValue("","top")));
-          tp.setOsmTag(parser.getAttributeValue("","tag"));
-          tp.setOsmValue(parser.getAttributeValue("","value"));
-          tp.setOsmTag2(parser.getAttributeValue("","tag2"));
-          tp.setOsmValue2(parser.getAttributeValue("","value2"));
-          if (lastType != null) {
-            lastType.addPoiAdditional(tp);
-          }
- else           if (lastFilter != null) {
-            lastFilter.addPoiAdditional(tp);
-          }
- else           if (lastCategory != null) {
-            lastCategory.addPoiAdditional(tp);
-          }
-        }
- else         if (name.equals("poi_type")) {
-          PoiType tp=new PoiType(this,lastCategory,parser.getAttributeValue("","name"));
-          tp.setOsmTag(parser.getAttributeValue("","tag"));
-          tp.setOsmValue(parser.getAttributeValue("","value"));
-          tp.setOsmTag2(parser.getAttributeValue("","tag2"));
-          tp.setOsmValue2(parser.getAttributeValue("","value2"));
-          lastType=tp;
-          if (lastFilter != null) {
-            lastFilter.addPoiType(tp);
-          }
-          allTypes.put(tp.getKeyName(),tp);
           if (lastCategory == null) {
             lastCategory=getOtherMapCategory();
           }
-          lastCategory.addPoiType(tp);
+          if ("true".equals(parser.getAttributeValue("","lang"))) {
+            for (            String lng : MapRenderingTypes.langs) {
+              parsePoiAdditional(parser,lastCategory,lastFilter,lastType,lng);
+            }
+          }
+          parsePoiAdditional(parser,lastCategory,lastFilter,lastType,null);
+        }
+ else         if (name.equals("poi_type")) {
+          if (lastCategory == null) {
+            lastCategory=getOtherMapCategory();
+          }
+          if ("true".equals(parser.getAttributeValue("","lang"))) {
+            for (            String lng : MapRenderingTypes.langs) {
+              parsePoiType(allTypes,parser,lastCategory,lastFilter,lng);
+            }
+          }
+          lastType=parsePoiType(allTypes,parser,lastCategory,lastFilter,null);
         }
       }
  else       if (tok == XmlPullParser.END_TAG) {
