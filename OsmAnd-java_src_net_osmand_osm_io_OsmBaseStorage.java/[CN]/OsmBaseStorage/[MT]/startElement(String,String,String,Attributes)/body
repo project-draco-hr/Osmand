@@ -3,7 +3,16 @@
   if (!parseStarted) {
     initRootElement(uri,localName,name,attributes);
   }
-  if (currentParsedEntity == null) {
+  if (ELEM_MODIFY.equals(name)) {
+    currentModify=Entity.MODIFY_MODIFIED;
+  }
+ else   if (ELEM_CREATE.equals(name)) {
+    currentModify=Entity.MODIFY_CREATED;
+  }
+ else   if (ELEM_DELETE.equals(name)) {
+    currentModify=Entity.MODIFY_DELETED;
+  }
+ else   if (currentParsedEntity == null) {
     progressEntity++;
     if (progress != null && ((progressEntity % moduleProgress) == 0) && !progress.isIndeterminate() && streamForProgress != null) {
       try {
@@ -24,14 +33,17 @@
     }
  else {
     }
-    if (parseEntityInfo && currentParsedEntity != null) {
-      currentParsedEntityInfo=new EntityInfo();
-      currentParsedEntityInfo.setChangeset(attributes.getValue(ATTR_CHANGESET));
-      currentParsedEntityInfo.setTimestamp(attributes.getValue(ATTR_TIMESTAMP));
-      currentParsedEntityInfo.setUser(attributes.getValue(ATTR_USER));
-      currentParsedEntityInfo.setVersion(attributes.getValue(ATTR_VERSION));
-      currentParsedEntityInfo.setVisible(attributes.getValue(ATTR_VISIBLE));
-      currentParsedEntityInfo.setUid(attributes.getValue(ATTR_UID));
+    if (currentParsedEntity != null) {
+      currentParsedEntity.setModify(currentModify);
+      if (parseEntityInfo) {
+        currentParsedEntityInfo=new EntityInfo();
+        currentParsedEntityInfo.setChangeset(attributes.getValue(ATTR_CHANGESET));
+        currentParsedEntityInfo.setTimestamp(attributes.getValue(ATTR_TIMESTAMP));
+        currentParsedEntityInfo.setUser(attributes.getValue(ATTR_USER));
+        currentParsedEntityInfo.setVersion(attributes.getValue(ATTR_VERSION));
+        currentParsedEntityInfo.setVisible(attributes.getValue(ATTR_VISIBLE));
+        currentParsedEntityInfo.setUid(attributes.getValue(ATTR_UID));
+      }
     }
   }
  else {
