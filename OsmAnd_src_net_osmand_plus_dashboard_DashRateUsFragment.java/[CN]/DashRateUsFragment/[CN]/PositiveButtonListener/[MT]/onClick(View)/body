@@ -1,0 +1,34 @@
+{
+switch (state) {
+case INITIAL_STATE:
+    state=FragmentState.USER_LIKES_APP;
+  header.setText(getResources().getString(R.string.rate_this_app));
+subheader.setText(getResources().getString(R.string.rate_this_app_long));
+positiveButton.setText(getResources().getString(R.string.shared_string_ok));
+negativeButton.setText(getResources().getString(R.string.shared_string_no_thanks));
+return;
+case USER_LIKES_APP:
+settings.RATE_US_STATE.set(RateUsState.LIKED);
+Uri uri=Uri.parse("market://details?id=" + getActivity().getPackageName());
+Intent goToMarket=new Intent(Intent.ACTION_VIEW,uri);
+try {
+startActivity(goToMarket);
+}
+ catch (ActivityNotFoundException e) {
+startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("http://play.google.com/store/apps/details?id=" + getActivity().getPackageName())));
+}
+dashboard.refreshDashboardFragments();
+return;
+case USER_HATES_APP:
+settings.RATE_US_STATE.set(RateUsState.DISLIKED_WITH_MESSAGE);
+settings.NUMBER_OF_APPLICATION_STARTS.set(0);
+settings.LAST_DISPLAY_TIME.set(System.currentTimeMillis());
+dashboard.refreshDashboardFragments();
+Intent sendEmail=new Intent(Intent.ACTION_SENDTO);
+sendEmail.setType("text/plain");
+sendEmail.setData(Uri.parse("mailto:" + EMAIL));
+sendEmail.putExtra(Intent.EXTRA_EMAIL,EMAIL);
+startActivity(sendEmail);
+break;
+}
+}
