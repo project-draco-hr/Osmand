@@ -19,17 +19,17 @@
   }
   getSupportActionBar().setTitle(title);
   setContentView(R.layout.help_activity);
-  wv=(WebView)findViewById(R.id.webView);
-  wv.setFocusable(true);
-  wv.setFocusableInTouchMode(true);
-  wv.requestFocus(View.FOCUS_DOWN);
-  wv.setOnTouchListener(new View.OnTouchListener(){
-    @Override public boolean onTouch(    View v,    MotionEvent event){
+  mWebView=(WebView)findViewById(R.id.webView);
+  mWebView.setFocusable(true);
+  mWebView.setFocusableInTouchMode(true);
+  mWebView.requestFocus(View.FOCUS_DOWN);
+  mWebView.setOnTouchListener(new View.OnTouchListener(){
+    @Override public boolean onTouch(    View view,    MotionEvent event){
 switch (event.getAction()) {
 case MotionEvent.ACTION_DOWN:
 case MotionEvent.ACTION_UP:
-        if (!v.hasFocus()) {
-          v.requestFocus();
+        if (!view.hasFocus()) {
+          view.requestFocus();
         }
       break;
   }
@@ -37,14 +37,19 @@ case MotionEvent.ACTION_UP:
 }
 }
 );
-wv.setWebViewClient(new WebViewClient(){
+mWebView.setWebViewClient(new WebViewClient(){
 @Override public void onPageFinished(WebView view,String url){
-  wv.requestFocus(View.FOCUS_DOWN);
+  mWebView.requestFocus(View.FOCUS_DOWN);
 }
 @Override public void onLoadResource(WebView view,String url){
   super.onLoadResource(view,url);
 }
 }
 );
-wv.loadUrl(FILE_ANDROID_ASSET_HELP + url);
+if (savedInstanceState != null) {
+mWebView.restoreState(savedInstanceState);
+}
+ else {
+mWebView.loadUrl(FILE_ANDROID_ASSET_HELP + url);
+}
 }
