@@ -33,64 +33,64 @@ activity.startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://wiki.ope
 }
 );
 linkToOsmDoc.setMovementMethod(LinkMovementMethod.getInstance());
-final Amenity a=(Amenity)args.getSerializable(KEY_AMENITY);
-final Node n=(Node)args.getSerializable(KEY_AMENITY_NODE);
+final Amenity amenity=(Amenity)args.getSerializable(KEY_AMENITY);
+final Node node=(Node)args.getSerializable(KEY_AMENITY_NODE);
 dlg.setNegativeButton(R.string.shared_string_cancel,null);
 dlg.setPositiveButton(isLocalEdit ? R.string.shared_string_save : R.string.default_buttons_commit,new DialogInterface.OnClickListener(){
 @Override public void onClick(DialogInterface dialog,int which){
 Resources resources=view.getResources();
-final String msg=n.getId() == -1 ? resources.getString(R.string.poi_action_add) : resources.getString(R.string.poi_action_change);
-OsmPoint.Action action=n.getId() == -1 ? OsmPoint.Action.CREATE : OsmPoint.Action.MODIFY;
+final String msg=node.getId() == -1 ? resources.getString(R.string.poi_action_add) : resources.getString(R.string.poi_action_change);
+OsmPoint.Action action=node.getId() == -1 ? OsmPoint.Action.CREATE : OsmPoint.Action.MODIFY;
 String subType=typeText.getText().toString().trim().toLowerCase();
 if (allTranslatedSubTypes.get(subType) != null) {
 PoiType pt=allTranslatedSubTypes.get(subType);
-n.putTag(pt.getOsmTag(),pt.getOsmValue());
+node.putTag(pt.getOsmTag(),pt.getOsmValue());
 if (pt.getOsmTag2() != null) {
-  n.putTag(pt.getOsmTag2(),pt.getOsmValue2());
+  node.putTag(pt.getOsmTag2(),pt.getOsmValue2());
 }
 }
  else {
-n.putTag(a.getType().getDefaultTag(),subType);
+node.putTag(amenity.getType().getDefaultTag(),subType);
 }
 String name=nameText.getText().toString();
 if (name.length() > 0) {
-n.putTag(OSMTagKey.NAME.getValue(),name);
+node.putTag(OSMTagKey.NAME.getValue(),name);
 }
 if (openingHours.getText().toString().length() == 0) {
-n.removeTag(OSMTagKey.OPENING_HOURS.getValue());
+node.removeTag(OSMTagKey.OPENING_HOURS.getValue());
 }
  else {
-n.putTag(OSMTagKey.OPENING_HOURS.getValue(),openingHours.getText().toString());
+node.putTag(OSMTagKey.OPENING_HOURS.getValue(),openingHours.getText().toString());
 }
 String website=websiteText.getText().toString();
 if (website.length() > 0) {
-n.putTag(OSMTagKey.WEBSITE.getValue(),website);
+node.putTag(OSMTagKey.WEBSITE.getValue(),website);
 }
  else {
-n.removeTag(OSMTagKey.WEBSITE.getValue());
+node.removeTag(OSMTagKey.WEBSITE.getValue());
 }
 String phone=phoneText.getText().toString();
 if (phone.length() > 0) {
-n.putTag(OSMTagKey.PHONE.getValue(),phone);
+node.putTag(OSMTagKey.PHONE.getValue(),phone);
 }
  else {
-n.removeTag(OSMTagKey.PHONE.getValue());
+node.removeTag(OSMTagKey.PHONE.getValue());
 }
 String str=streetNameText.getText().toString();
 if (str.length() > 0) {
-n.putTag(OSMTagKey.ADDR_STREET.getValue(),str);
+node.putTag(OSMTagKey.ADDR_STREET.getValue(),str);
 }
  else {
-n.removeTag(OSMTagKey.ADDR_STREET.getValue());
+node.removeTag(OSMTagKey.ADDR_STREET.getValue());
 }
 String hno=hnoText.getText().toString();
 if (hno.length() > 0) {
-n.putTag(OSMTagKey.ADDR_HOUSE_NUMBER.getValue(),hno);
+node.putTag(OSMTagKey.ADDR_HOUSE_NUMBER.getValue(),hno);
 }
  else {
-n.removeTag(OSMTagKey.ADDR_HOUSE_NUMBER.getValue());
+node.removeTag(OSMTagKey.ADDR_HOUSE_NUMBER.getValue());
 }
-commitNode(action,n,openstreetmapUtil.getEntityInfo(),commentText.getText().toString(),closeChange.isSelected(),new Runnable(){
+commitNode(action,node,openstreetmapUtil.getEntityInfo(),commentText.getText().toString(),closeChange.isSelected(),new Runnable(){
 @Override public void run(){
   if (isLocalEdit) {
     AccessibleToast.makeText(activity,R.string.osm_changes_added_to_local_edits,Toast.LENGTH_LONG).show();
@@ -109,7 +109,7 @@ commitNode(action,n,openstreetmapUtil.getEntityInfo(),commentText.getText().toSt
 }
 );
 preparePOIDialog(view,args);
-attachListeners(view,a,n);
-updateOsmTagValue(a);
+attachListeners(view,amenity,node);
+updateOsmTagValue(amenity);
 return dlg;
 }
