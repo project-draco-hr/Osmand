@@ -9,6 +9,9 @@
   if (OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) != null) {
     collectFiles(context.getAppPath(IndexConstants.SRTM_INDEX_DIR),IndexConstants.BINARY_MAP_INDEX_EXT,files);
   }
+  if (context.getSettings().BETA_TESTING_LIVE_UPDATES.get()) {
+    collectFiles(context.getAppPath(IndexConstants.LIVE_INDEX_DIR),IndexConstants.BINARY_MAP_INDEX_EXT,files);
+  }
   Collections.sort(files,Algorithms.getFileVersionComparator());
   List<String> warnings=new ArrayList<String>();
   renderer.clearAllResources();
@@ -49,7 +52,12 @@
         if (dateCreated == 0) {
           dateCreated=f.lastModified();
         }
-        indexFileNames.put(f.getName(),dateFormat.format(dateCreated));
+        if (f.getParentFile().getName().equals(IndexConstants.LIVE_INDEX_DIR)) {
+          liveUpdatesFiles.put(f.getName(),dateFormat.format(dateCreated));
+        }
+ else {
+          indexFileNames.put(f.getName(),dateFormat.format(dateCreated));
+        }
         for (        String rName : index.getRegionNames()) {
           RegionAddressRepositoryBinary rarb=new RegionAddressRepositoryBinary(this,index,rName,f.getName());
           addressMap.put(rName,rarb);
