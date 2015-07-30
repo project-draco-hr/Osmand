@@ -1,0 +1,20 @@
+{
+  View row=convertView;
+  PointHolder holder=null;
+  if (row == null) {
+    LayoutInflater inflater=context.getLayoutInflater();
+    row=inflater.inflate(layoutResourceId,parent,false);
+    holder=new PointHolder();
+    holder.checkedUncheckedImageView=(ImageView)row.findViewById(R.id.iconImageView);
+    holder.pointNameTextView=(TextView)row.findViewById(R.id.nameTextView);
+    row.setTag(holder);
+  }
+ else {
+    holder=(PointHolder)row.getTag();
+  }
+  PointWithPotentialError pointWrapper=data[position];
+  holder.pointNameTextView.setText(pointWrapper.point);
+  IconsCache cache=((OsmandApplication)context.getApplication()).getIconsCache();
+  holder.checkedUncheckedImageView.setImageDrawable(pointWrapper.hasError ? cache.getContentIcon(R.drawable.ic_action_remove_dark) : cache.getContentIcon(R.drawable.ic_action_done));
+  return row;
+}
