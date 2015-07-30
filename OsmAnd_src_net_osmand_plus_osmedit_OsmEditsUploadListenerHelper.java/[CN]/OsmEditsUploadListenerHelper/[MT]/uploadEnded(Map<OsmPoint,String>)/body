@@ -17,22 +17,7 @@
     dialogFragment.show(activity.getSupportFragmentManager(),"error_loading");
   }
  else {
-    Log.v(TAG,"in if2");
-    String[] pointNames=new String[loadErrorsMap.keySet().size()];
-    boolean[] hasErrors=new boolean[loadErrorsMap.keySet().size()];
-    ArrayList<OsmPoint> pointsWithErrors=new ArrayList<>();
-    int i=0;
-    for (    OsmPoint point : loadErrorsMap.keySet()) {
-      pointNames[i]=point.getGroup() == OsmPoint.Group.BUG ? ((OsmNotesPoint)point).getText() : ((OpenstreetmapPoint)point).getName();
-      pointNames[i]=TextUtils.isEmpty(pointNames[i]) ? "id:" + point.getId() : pointNames[i];
-      hasErrors[i]=loadErrorsMap.get(point) != null;
-      if (hasErrors[i]) {
-        pointsWithErrors.add(point);
-      }
-      i++;
-    }
-    UploadingMultipleErrorDialogFragment dialogFragment=UploadingMultipleErrorDialogFragment.getInstance(pointNames,hasErrors);
-    dialogFragment.setPointsToUpload(pointsWithErrors.toArray(new OsmPoint[pointsWithErrors.size()]));
+    UploadingMultipleErrorDialogFragment dialogFragment=UploadingMultipleErrorDialogFragment.createInstance(loadErrorsMap);
     dialogFragment.show(activity.getSupportFragmentManager(),"multiple_error_loading");
   }
 }
