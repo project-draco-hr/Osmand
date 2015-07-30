@@ -1,0 +1,25 @@
+{
+  String[] pointNames=new String[loadErrorsMap.keySet().size()];
+  boolean[] hasErrors=new boolean[loadErrorsMap.keySet().size()];
+  ArrayList<OsmPoint> pointsWithErrors=new ArrayList<>();
+  int i=0;
+  for (  OsmPoint point : loadErrorsMap.keySet()) {
+    pointNames[i]=point.getGroup() == OsmPoint.Group.BUG ? ((OsmNotesPoint)point).getText() : ((OpenstreetmapPoint)point).getName();
+    pointNames[i]=TextUtils.isEmpty(pointNames[i]) ? "id:" + point.getId() : pointNames[i];
+    hasErrors[i]=loadErrorsMap.get(point) != null;
+    if (hasErrors[i]) {
+      pointsWithErrors.add(point);
+    }
+    i++;
+  }
+  if (pointNames.length != hasErrors.length) {
+    throw new IllegalArgumentException("pointNames and hasError arrays " + "must me of equal length");
+  }
+  UploadingMultipleErrorDialogFragment fragment=new UploadingMultipleErrorDialogFragment();
+  Bundle bundle=new Bundle();
+  bundle.putSerializable(POINTS_WITH_ERRORS,pointsWithErrors.toArray(new OsmPoint[pointsWithErrors.size()]));
+  bundle.putStringArray(POINT_NAMES,pointNames);
+  bundle.putBooleanArray(HAS_ERROR,hasErrors);
+  fragment.setArguments(bundle);
+  return fragment;
+}
