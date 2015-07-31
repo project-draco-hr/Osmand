@@ -1,0 +1,23 @@
+{
+  int uploaded=0;
+  int pointsNum=loadErrorsMap.keySet().size();
+  for (  OsmPoint point : loadErrorsMap.keySet()) {
+    if (loadErrorsMap.get(point) == null) {
+      uploaded++;
+    }
+  }
+  if (uploaded == pointsNum) {
+    AccessibleToast.makeText(activity,MessageFormat.format(numberFormat,uploaded),Toast.LENGTH_LONG).show();
+  }
+ else   if (pointsNum == 1) {
+    Log.v(TAG,"in if1");
+    OsmPoint point=loadErrorsMap.keySet().iterator().next();
+    String message=loadErrorsMap.get(point);
+    DialogFragment dialogFragment=UploadingErrorDialogFragment.getInstance(message,point);
+    dialogFragment.show(activity.getSupportFragmentManager(),"error_loading");
+  }
+ else {
+    UploadingMultipleErrorDialogFragment dialogFragment=UploadingMultipleErrorDialogFragment.createInstance(loadErrorsMap);
+    dialogFragment.show(activity.getSupportFragmentManager(),"multiple_error_loading");
+  }
+}
