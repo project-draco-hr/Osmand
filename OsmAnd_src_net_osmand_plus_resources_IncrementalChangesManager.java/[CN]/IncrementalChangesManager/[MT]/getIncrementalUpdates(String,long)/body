@@ -1,0 +1,22 @@
+{
+  String url=URL + "?timestamp=" + timestamp+ "&file="+ URLEncoder.encode(file);
+  HttpURLConnection conn=NetworkUtils.getHttpURLConnection(url);
+  XmlPullParser parser=PlatformUtil.newXMLPullParser();
+  parser.setInput(conn.getInputStream(),"UTF-8");
+  List<IncrementalUpdate> lst=new ArrayList<IncrementalUpdate>();
+  while (parser.next() != XmlPullParser.END_DOCUMENT) {
+    if (parser.getEventType() == XmlPullParser.START_TAG) {
+      if (parser.getName().equals("update")) {
+        IncrementalUpdate dt=new IncrementalUpdate();
+        dt.date=parser.getAttributeValue("","updateDate");
+        dt.containerSize=Long.parseLong(parser.getAttributeValue("","containerSize"));
+        dt.contentSize=Long.parseLong(parser.getAttributeValue("","contentSize"));
+        dt.sizeText=parser.getAttributeValue("","size");
+        dt.timestamp=Long.parseLong(parser.getAttributeValue("","timestamp"));
+        dt.fileName=parser.getAttributeValue("","name");
+        lst.add(dt);
+      }
+    }
+  }
+  return lst;
+}
