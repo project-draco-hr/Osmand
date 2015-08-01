@@ -1,0 +1,76 @@
+{
+  if (!parseStarted) {
+    initRootElement(parser,name);
+  }
+  if (ELEM_MODIFY.equals(name)) {
+    currentModify=Entity.MODIFY_MODIFIED;
+  }
+ else   if (ELEM_CREATE.equals(name)) {
+    currentModify=Entity.MODIFY_CREATED;
+  }
+ else   if (ELEM_DELETE.equals(name)) {
+    currentModify=Entity.MODIFY_DELETED;
+  }
+ else   if (currentParsedEntity == null) {
+    progressEntity++;
+    if (progress != null && ((progressEntity % moduleProgress) == 0) && !progress.isIndeterminate() && streamForProgress != null) {
+      try {
+        progress.remaining(streamForProgress.available());
+      }
+ catch (      IOException e) {
+        progress.startWork(-1);
+      }
+    }
+    if (ELEM_NODE.equals(name)) {
+      currentParsedEntity=new Node(parseDouble(parser,ATTR_LAT,0),parseDouble(parser,ATTR_LON,0),parseId(parser,ATTR_ID,-1));
+    }
+ else     if (ELEM_WAY.equals(name)) {
+      currentParsedEntity=new Way(parseId(parser,ATTR_ID,-1));
+    }
+ else     if (ELEM_RELATION.equals(name)) {
+      currentParsedEntity=new Relation(parseId(parser,ATTR_ID,-1));
+    }
+ else {
+    }
+    if (currentParsedEntity != null) {
+      currentParsedEntity.setModify(currentModify);
+      if (parseEntityInfo) {
+        currentParsedEntityInfo=new EntityInfo();
+        currentParsedEntityInfo.setChangeset(parser.getAttributeValue("",ATTR_CHANGESET));
+        currentParsedEntityInfo.setTimestamp(parser.getAttributeValue("",ATTR_TIMESTAMP));
+        currentParsedEntityInfo.setUser(parser.getAttributeValue("",ATTR_USER));
+        currentParsedEntityInfo.setVersion(parser.getAttributeValue("",ATTR_VERSION));
+        currentParsedEntityInfo.setVisible(parser.getAttributeValue("",ATTR_VISIBLE));
+        currentParsedEntityInfo.setUid(parser.getAttributeValue("",ATTR_UID));
+      }
+    }
+  }
+ else {
+    if (ELEM_TAG.equals(name)) {
+      String key=parser.getAttributeValue("",ATTR_K);
+      if (key != null) {
+        currentParsedEntity.putTag(key,parser.getAttributeValue("",ATTR_V));
+      }
+    }
+ else     if (ELEM_ND.equals(name)) {
+      Long id=parseId(parser,ATTR_REF,-1);
+      if (id != -1 && currentParsedEntity instanceof Way) {
+        ((Way)currentParsedEntity).addNode(id);
+      }
+    }
+ else     if (ELEM_MEMBER.equals(name)) {
+      try {
+        Long id=parseId(parser,ATTR_REF,-1);
+        if (id != -1 && currentParsedEntity instanceof Relation) {
+          EntityType type=EntityType.valueOf(parser.getAttributeValue("",ATTR_TYPE).toUpperCase());
+          ((Relation)currentParsedEntity).addMember(id,type,parser.getAttributeValue("",ATTR_ROLE));
+        }
+      }
+ catch (      Exception e) {
+        e.printStackTrace();
+      }
+    }
+ else {
+    }
+  }
+}
