@@ -1,0 +1,30 @@
+{
+  IncrementalUpdateList iul=new IncrementalUpdateList();
+  RegionUpdateFiles ruf=regions.get(fileName.toLowerCase());
+  iul.updateFiles=ruf;
+  if (ruf == null) {
+    iul.errorMessage=resourceManager.getContext().getString(R.string.no_updates_available);
+    return iul;
+  }
+  long timestamp=ruf.mainFileInit;
+  for (  RegionUpdate ru : ruf.monthUpdates.values()) {
+    timestamp=Math.max(ru.obfCreated,timestamp);
+  }
+  for (  List<RegionUpdate> l : ruf.dayUpdates.values()) {
+    for (    RegionUpdate ru : l) {
+      timestamp=Math.max(ru.obfCreated,timestamp);
+    }
+  }
+  try {
+    List<IncrementalUpdate> lst=getIncrementalUpdates(fileName,timestamp);
+    for (    IncrementalUpdate iu : lst) {
+      iul.addUpdate(iu);
+    }
+  }
+ catch (  Exception e) {
+    iul.errorMessage=e.getMessage();
+    e.printStackTrace();
+    log.error(e.getMessage(),e);
+  }
+  return iul;
+}

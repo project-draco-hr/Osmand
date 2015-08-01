@@ -1,0 +1,35 @@
+{
+  String nm=Algorithms.getFileNameWithoutExtension(f).toLowerCase();
+  if (!regions.containsKey(nm)) {
+    regions.put(nm,new RegionUpdateFiles(nm));
+  }
+  RegionUpdateFiles regionUpdateFiles=regions.get(nm);
+  regionUpdateFiles.mainFile=f;
+  regionUpdateFiles.mainFileInit=dateCreated;
+  if (!regionUpdateFiles.monthUpdates.isEmpty()) {
+    List<String> list=new ArrayList<String>(regionUpdateFiles.monthUpdates.keySet());
+    for (    String month : list) {
+      RegionUpdate ru=regionUpdateFiles.monthUpdates.get(month);
+      if (ru.obfCreated < dateCreated) {
+        resourceManager.closeFile(ru.file.getName());
+        regionUpdateFiles.monthUpdates.remove(month);
+        ru.file.delete();
+      }
+    }
+  }
+  if (!regionUpdateFiles.dayUpdates.isEmpty()) {
+    ArrayList<String> list=new ArrayList<String>(regionUpdateFiles.dayUpdates.keySet());
+    for (    String month : list) {
+      Iterator<RegionUpdate> it=regionUpdateFiles.dayUpdates.get(month).iterator();
+      RegionUpdate monthRu=regionUpdateFiles.monthUpdates.get(month);
+      while (it.hasNext()) {
+        RegionUpdate ru=it.next();
+        if (ru.obfCreated < dateCreated || (monthRu != null && ru.obfCreated < monthRu.obfCreated)) {
+          resourceManager.closeFile(ru.file.getName());
+          it.remove();
+          ru.file.delete();
+        }
+      }
+    }
+  }
+}

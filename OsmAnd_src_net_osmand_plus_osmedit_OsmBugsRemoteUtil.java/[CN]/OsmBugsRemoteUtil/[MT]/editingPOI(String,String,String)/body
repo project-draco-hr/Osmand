@@ -16,23 +16,7 @@
     String msg=connection.getResponseMessage();
     boolean ok=connection.getResponseCode() == HttpURLConnection.HTTP_OK;
     log.info(msg);
-    StringBuilder responseBody=new StringBuilder();
-    responseBody.setLength(0);
-    InputStream i=connection.getInputStream();
-    if (i != null) {
-      BufferedReader in=new BufferedReader(new InputStreamReader(i,"UTF-8"),256);
-      String s;
-      boolean f=true;
-      while ((s=in.readLine()) != null) {
-        if (!f) {
-          responseBody.append("\n");
-        }
- else {
-          f=false;
-        }
-        responseBody.append(s);
-      }
-    }
+    StringBuilder responseBody=Algorithms.readFromInputStream(connection.getInputStream());
     log.info("Response : " + responseBody);
     connection.disconnect();
     if (!ok) {
