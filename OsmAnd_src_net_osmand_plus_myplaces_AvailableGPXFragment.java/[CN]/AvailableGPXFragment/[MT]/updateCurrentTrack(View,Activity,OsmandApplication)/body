@@ -7,7 +7,12 @@
   }
   final boolean isRecording=app.getSettings().SAVE_GLOBAL_TRACK_TO_GPX.get();
   ImageButton stop=((ImageButton)v.findViewById(R.id.stop));
-  stop.setImageDrawable(app.getIconsCache().getContentIcon(isRecording ? R.drawable.ic_action_rec_stop : R.drawable.ic_play_dark));
+  if (isRecording) {
+    stop.setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.ic_action_rec_stop));
+  }
+ else {
+    stop.setImageDrawable(app.getIconsCache().getIcon(R.drawable.ic_action_rec_start,R.color.recording_color));
+  }
   stop.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       final OsmandMonitoringPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
@@ -15,7 +20,9 @@
         plugin.stopRecording();
       }
  else {
-        plugin.startGPXMonitoring(ctx);
+        if (app.getLocationProvider().checkGPSEnabled(ctx)) {
+          plugin.startGPXMonitoring(ctx);
+        }
       }
     }
   }
@@ -24,14 +31,8 @@
   ImageButton save=((ImageButton)v.findViewById(R.id.show_on_map));
   save.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      Runnable run=new Runnable(){
-        @Override public void run(){
-          final OsmandMonitoringPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
-          plugin.saveCurrentTrack();
-        }
-      }
-;
-      run.run();
+      final OsmandMonitoringPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
+      plugin.saveCurrentTrack();
     }
   }
 );

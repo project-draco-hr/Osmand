@@ -1,5 +1,5 @@
 {
-  int uploaded=0;
+  Map<OsmPoint,String> loadErrorsMap=new HashMap<>();
   for (  OsmPoint point : points) {
     if (interruptUploading)     break;
     if (point.getGroup() == OsmPoint.Group.POI) {
@@ -10,29 +10,29 @@
       }
       Node n=remotepoi.commitNodeImpl(p.getAction(),p.getEntity(),entityInfo,p.getComment(),false);
       if (n != null) {
-        dbpoi.deletePOI(p);
+        plugin.getDBPOI().deletePOI(p);
         publishProgress(p);
-        uploaded++;
       }
+      loadErrorsMap.put(point,n != null ? null : "Unknown problem");
     }
  else     if (point.getGroup() == OsmPoint.Group.BUG) {
       OsmNotesPoint p=(OsmNotesPoint)point;
-      boolean success=false;
+      String errorMessage=null;
       if (p.getAction() == OsmPoint.Action.CREATE) {
-        success=remotebug.createNewBug(p.getLatitude(),p.getLongitude(),p.getText(),p.getAuthor()) == null;
+        errorMessage=remotebug.createNewBug(p.getLatitude(),p.getLongitude(),p.getText(),p.getAuthor());
       }
  else       if (p.getAction() == OsmPoint.Action.MODIFY) {
-        success=remotebug.addingComment(p.getId(),p.getText(),p.getAuthor()) == null;
+        errorMessage=remotebug.addingComment(p.getId(),p.getText(),p.getAuthor());
       }
  else       if (p.getAction() == OsmPoint.Action.DELETE) {
-        success=remotebug.closingBug(p.getId(),p.getText(),p.getAuthor()) == null;
+        errorMessage=remotebug.closingBug(p.getId(),p.getText(),p.getAuthor());
       }
-      if (success) {
-        dbbug.deleteAllBugModifications(p);
-        uploaded++;
+      if (errorMessage == null) {
+        plugin.getDBBug().deleteAllBugModifications(p);
         publishProgress(p);
       }
+      loadErrorsMap.put(point,errorMessage);
     }
   }
-  return uploaded;
+  return loadErrorsMap;
 }

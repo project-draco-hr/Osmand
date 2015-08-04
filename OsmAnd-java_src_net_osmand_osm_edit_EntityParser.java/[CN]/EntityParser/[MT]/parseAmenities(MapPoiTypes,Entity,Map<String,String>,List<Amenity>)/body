@@ -1,0 +1,19 @@
+{
+  amenitiesList.clear();
+  boolean relation=entity instanceof Relation;
+  boolean purerelation=relation && !"multipolygon".equals(tags.get("type"));
+  for (  Map.Entry<String,String> e : tags.entrySet()) {
+    Amenity am=poiTypes.parseAmenity(e.getKey(),e.getValue(),purerelation,tags);
+    if (am != null) {
+      parseMapObject(am,entity,tags);
+      String wbs=getWebSiteURL(tags);
+      if (wbs != null) {
+        am.setAdditionalInfo("website",wbs);
+      }
+      if (checkAmenitiesToAdd(am,amenitiesList) && !"no".equals(am.getSubType())) {
+        amenitiesList.add(am);
+      }
+    }
+  }
+  return amenitiesList;
+}

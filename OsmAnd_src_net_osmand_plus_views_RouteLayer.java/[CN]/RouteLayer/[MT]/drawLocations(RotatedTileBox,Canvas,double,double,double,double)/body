@@ -1,5 +1,6 @@
 {
   points.clear();
+  actionPoints.clear();
   boolean previousVisible=false;
   Location lastProjection=helper.getLastProjection();
   if (lastProjection != null) {
@@ -9,6 +10,9 @@
     }
   }
   List<Location> routeNodes=helper.getRoute().getRouteLocations();
+  int cd=helper.getRoute().getCurrentRoute();
+  List<RouteDirectionInfo> rd=helper.getRouteDirections();
+  Iterator<RouteDirectionInfo> it=rd.iterator();
   for (int i=0; i < routeNodes.size(); i++) {
     Location ls=routeNodes.get(i);
     if (leftLongitude <= ls.getLongitude() && ls.getLongitude() <= rightLongitude && bottomLatitude <= ls.getLatitude() && ls.getLatitude() <= topLatitude) {
@@ -31,4 +35,8 @@
     }
   }
   drawSegment(tb,canvas);
+  if (tb.getZoom() >= 14) {
+    calculateActionPoints(topLatitude,leftLongitude,bottomLatitude,rightLongitude,lastProjection,routeNodes,cd,it,tb.getZoom());
+    drawAction(tb,canvas);
+  }
 }

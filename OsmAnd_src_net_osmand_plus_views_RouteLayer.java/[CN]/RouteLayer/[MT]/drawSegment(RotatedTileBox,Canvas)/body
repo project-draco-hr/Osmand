@@ -1,39 +1,35 @@
 {
   if (points.size() > 0) {
     canvas.rotate(-tb.getRotate(),tb.getCenterPixelX(),tb.getCenterPixelY());
-    paint.setStrokeWidth(12 * tb.getDensity());
-    TIntArrayList tx=new TIntArrayList();
-    TIntArrayList ty=new TIntArrayList();
-    for (int i=0; i < points.size(); i++) {
-      Location o=points.get(i);
-      int x=(int)tb.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
-      int y=(int)tb.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
-      tx.add(x);
-      ty.add(y);
-    }
-    int pth=calculatePath(tb,tx,ty,path,null);
-    if (isPaint_1) {
-      canvas.drawPath(path,paint_1);
-    }
-    if (isShadowPaint) {
-      canvas.drawPath(path,shadowPaint);
-    }
-    canvas.drawPath(path,paint);
-    if (isPaint2) {
-      canvas.drawPath(path,paint2);
-    }
-    if (tb.getZoomAnimation() == 0) {
-      if (pth <= 1) {
-        drawArrowsOverPath(canvas,path,coloredArrowUp);
+    try {
+      TIntArrayList tx=new TIntArrayList();
+      TIntArrayList ty=new TIntArrayList();
+      for (int i=0; i < points.size(); i++) {
+        Location o=points.get(i);
+        int x=(int)tb.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
+        int y=(int)tb.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
+        tx.add(x);
+        ty.add(y);
       }
- else {
-        ArrayList<Path> lst=new ArrayList<Path>();
-        calculatePath(tb,tx,ty,path,lst);
-        for (        Path l : lst) {
-          drawArrowsOverPath(canvas,l,coloredArrowUp);
-        }
+      calculatePath(tb,tx,ty,path);
+      if (isPaint_1) {
+        canvas.drawPath(path,paint_1);
+      }
+      if (isShadowPaint) {
+        canvas.drawPath(path,shadowPaint);
+      }
+      canvas.drawPath(path,paint);
+      if (isPaint2) {
+        canvas.drawPath(path,paint2);
+      }
+      if (tb.getZoomAnimation() == 0) {
+        TIntArrayList lst=new TIntArrayList(50);
+        calculateSplitPaths(tb,tx,ty,lst);
+        drawArrowsOverPath(canvas,lst,coloredArrowUp);
       }
     }
-    canvas.rotate(tb.getRotate(),tb.getCenterPixelX(),tb.getCenterPixelY());
+  finally {
+      canvas.rotate(tb.getRotate(),tb.getCenterPixelX(),tb.getCenterPixelY());
+    }
   }
 }

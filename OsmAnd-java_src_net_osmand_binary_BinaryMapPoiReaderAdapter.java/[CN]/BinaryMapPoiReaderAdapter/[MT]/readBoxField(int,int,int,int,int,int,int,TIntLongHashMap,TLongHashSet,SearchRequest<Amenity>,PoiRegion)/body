@@ -1,6 +1,6 @@
 {
   req.numberOfReadSubtrees++;
-  int zoomToSkip=req.zoom + ZOOM_TO_SKIP_FILTER;
+  int zoomToSkip=req.zoom == -1 ? 31 : req.zoom + ZOOM_TO_SKIP_FILTER_READ;
   boolean checkBox=true;
   boolean existsCategories=false;
   int zoom=pzoom;
@@ -73,19 +73,21 @@ case OsmandOdb.OsmAndPoiBox.SHIFTTODATA_FIELD_NUMBER:
 {
 int x=dx + (px << (zoom - pzoom));
 int y=dy + (py << (zoom - pzoom));
-long l=((((x << zoom) | y) << 5) | zoom);
 boolean read=true;
 if (req.tiles != null) {
-int zx=x << (SearchRequest.ZOOM_TO_SEARCH_POI - zoom);
-int zy=y << (SearchRequest.ZOOM_TO_SEARCH_POI - zoom);
+long zx=x << (SearchRequest.ZOOM_TO_SEARCH_POI - zoom);
+long zy=y << (SearchRequest.ZOOM_TO_SEARCH_POI - zoom);
 read=req.tiles.contains((zx << SearchRequest.ZOOM_TO_SEARCH_POI) + zy);
 }
 int offset=readInt();
 if (read) {
-offsetsMap.put(offset,l);
 if (skipTiles != null && zoom >= zoomToSkip) {
-long val=((((long)x) >> (zoom - zoomToSkip)) << zoomToSkip) | (((long)y) >> (zoom - zoomToSkip));
-skipTiles.add(val);
+long valSkip=((((long)x) >> (zoom - zoomToSkip)) << zoomToSkip) | (((long)y) >> (zoom - zoomToSkip));
+offsetsMap.put(offset,valSkip);
+skipTiles.add(valSkip);
+}
+ else {
+offsetsMap.put(offset,-1);
 }
 }
 }

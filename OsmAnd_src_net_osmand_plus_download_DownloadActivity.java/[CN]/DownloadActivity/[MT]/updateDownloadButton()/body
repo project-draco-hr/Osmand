@@ -1,0 +1,47 @@
+{
+  if (getEntriesToDownload().isEmpty()) {
+    findViewById(R.id.DownloadLayout).setVisibility(View.GONE);
+  }
+ else {
+    BasicProgressAsyncTask<?,?,?> task=DownloadActivity.downloadListIndexThread.getCurrentRunningTask();
+    boolean running=task instanceof DownloadIndexesThread.DownloadIndexesAsyncTask;
+    ((Button)findViewById(R.id.DownloadButton)).setEnabled(!running);
+    String text;
+    int downloads=DownloadActivity.downloadListIndexThread.getDownloads();
+    if (!running) {
+      text=getString(R.string.shared_string_download) + "  (" + downloads+ ")";
+    }
+ else {
+      text=getString(R.string.shared_string_downloading) + "  (" + downloads+ ")";
+    }
+    findViewById(R.id.DownloadLayout).setVisibility(View.VISIBLE);
+    if (Version.isFreeVersion(getMyApplication())) {
+      int left=DownloadActivity.MAXIMUM_AVAILABLE_FREE_DOWNLOADS - settings.NUMBER_OF_FREE_DOWNLOADS.get() - downloads;
+      boolean excessLimit=left < 0;
+      if (left < 0)       left=0;
+      if (getDownloadType() == DownloadActivityType.NORMAL_FILE || getDownloadType() == DownloadActivityType.ROADS_FILE) {
+        text+=" (" + (excessLimit ? "! " : "") + getString(R.string.files_limit,left).toLowerCase()+ ")";
+      }
+    }
+    ((Button)findViewById(R.id.DownloadButton)).setText(text);
+    List<IndexItem> wikipediaItems=getWikipediaItems();
+    findViewById(R.id.WikiButton).setVisibility(wikipediaItems.size() == 0 ? View.GONE : View.VISIBLE);
+  }
+  for (  WeakReference<Fragment> ref : fragList) {
+    Fragment f=ref.get();
+    if (!f.isDetached()) {
+      if (f instanceof OsmandExpandableListFragment) {
+        ExpandableListAdapter ad=((OsmandExpandableListFragment)f).getExpandableListView().getExpandableListAdapter();
+        if (ad instanceof OsmandBaseExpandableListAdapter) {
+          ((OsmandBaseExpandableListAdapter)ad).notifyDataSetChanged();
+        }
+      }
+ else       if (f instanceof ListFragment) {
+        ListAdapter la=((ListFragment)f).getListAdapter();
+        if (la instanceof BaseAdapter) {
+          ((BaseAdapter)la).notifyDataSetChanged();
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  Set<String> wikipediaItems=new HashSet<String>();
+  Map<String,String> indexed=getMyApplication().getResourceManager().getIndexFileNames();
+  for (  IndexItem i : getEntriesToDownload().keySet()) {
+    if (i.getType() == DownloadActivityType.NORMAL_FILE) {
+      boolean fit=true;
+      fit=fit && i.getFileName().contains("obf");
+      fit=fit && !i.getFileName().contains("world");
+      String fname=i.getBasename();
+      if (fit && !indexed.containsKey(fname + ".wiki.obf")) {
+        wikipediaItems.add(fname);
+      }
+    }
+  }
+  for (  IndexItem i : getEntriesToDownload().keySet()) {
+    if (i.getType() == DownloadActivityType.WIKIPEDIA_FILE) {
+      wikipediaItems.remove(i.getBasename());
+    }
+  }
+  List<IndexItem> res=new ArrayList<IndexItem>();
+  IndexFileList list=downloadListIndexThread.getIndexFiles();
+  if (list != null) {
+    List<IndexItem> indexFiles=list.getIndexFiles();
+    for (    IndexItem i : indexFiles) {
+      if (i.getType() == DownloadActivityType.WIKIPEDIA_FILE && wikipediaItems.contains(i.getBasename())) {
+        res.add(i);
+      }
+    }
+  }
+  return res;
+}

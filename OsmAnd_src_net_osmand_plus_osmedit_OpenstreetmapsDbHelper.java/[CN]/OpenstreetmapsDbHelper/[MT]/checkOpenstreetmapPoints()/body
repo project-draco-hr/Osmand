@@ -1,6 +1,6 @@
 {
-  SQLiteDatabase db=getWritableDatabase();
-  List<OpenstreetmapPoint> cachedOpenstreetmapPoints=new ArrayList<OpenstreetmapPoint>();
+  SQLiteDatabase db=getReadableDatabase();
+  List<OpenstreetmapPoint> points=new ArrayList<OpenstreetmapPoint>();
   if (db != null) {
     Cursor query=db.rawQuery("SELECT " + OPENSTREETMAP_COL_ID + ", "+ OPENSTREETMAP_COL_LAT+ ","+ OPENSTREETMAP_COL_LON+ ","+ OPENSTREETMAP_COL_ACTION+ ","+ OPENSTREETMAP_COL_COMMENT+ ","+ OPENSTREETMAP_COL_TAGS+ " FROM "+ OPENSTREETMAP_TABLE_NAME,null);
     if (query.moveToFirst()) {
@@ -15,11 +15,12 @@
         p.setEntity(entity);
         p.setAction(query.getString(3));
         p.setComment(query.getString(4));
-        cachedOpenstreetmapPoints.add(p);
+        points.add(p);
       }
  while (query.moveToNext());
     }
     query.close();
   }
-  return cachedOpenstreetmapPoints;
+  cache=points;
+  return points;
 }

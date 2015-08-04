@@ -1,60 +1,12 @@
 {
   View settingsDlg=View.inflate(mapActivity,R.layout.plan_route_settings,null);
   Context ctx=mapActivity;
-  final OsmandSettings settings=mapActivity.getMyApplication().getSettings();
-  ApplicationMode am=settings.APPLICATION_MODE.get();
-  final ListView lv=(ListView)settingsDlg.findViewById(android.R.id.list);
-  final Set<ApplicationMode> selected=new HashSet<ApplicationMode>();
-  selected.add(am);
   ImageView muteBtn=(ImageView)settingsDlg.findViewById(R.id.mute);
   setMuteBtn(muteBtn);
   ImageView avoidRoads=(ImageView)settingsDlg.findViewById(R.id.avoid_roads);
   setAvoidRoads(avoidRoads);
-  setupSpinner(settingsDlg);
-  final float scaleCoefficient=mapActivity.getMapView().getScaleCoefficient();
-  listAdapter=new ArrayAdapter<LocalRoutingParameter>(ctx,R.layout.layers_list_activity_item,R.id.title,getRoutingParameters(am)){
-    @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
-      View v=mapActivity.getLayoutInflater().inflate(R.layout.layers_list_activity_item,null);
-      final TextView tv=(TextView)v.findViewById(R.id.title);
-      final CheckBox ch=((CheckBox)v.findViewById(R.id.check_item));
-      final LocalRoutingParameter rp=getItem(position);
-      tv.setText(rp.getText(mapActivity));
-      tv.setPadding((int)(5 * scaleCoefficient),0,0,0);
-      if (rp.routingParameter != null && rp.routingParameter.getId().equals("short_way")) {
-        ch.setChecked(!settings.FAST_ROUTE_MODE.get());
-      }
- else {
-        ch.setChecked(rp.isSelected(settings));
-      }
-      ch.setVisibility(View.VISIBLE);
-      ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
-        @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
-          if (rp.routingParameter != null && rp.routingParameter.getId().equals("short_way")) {
-            settings.FAST_ROUTE_MODE.set(!isChecked);
-          }
-          rp.setSelected(settings,isChecked);
-          if (rp instanceof OtherLocalRoutingParameter) {
-            updateGpxRoutingParameter((OtherLocalRoutingParameter)rp);
-          }
-          mapActivity.getRoutingHelper().recalculateRouteDueToSettingsChange();
-        }
-      }
-);
-      return v;
-    }
-  }
-;
-  AppModeDialog.prepareAppModeView(mapActivity,selected,false,(ViewGroup)settingsDlg.findViewById(R.id.TopBar),true,new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      if (selected.size() > 0) {
-        ApplicationMode next=selected.iterator().next();
-        settings.APPLICATION_MODE.set(next);
-        mapActivity.getRoutingHelper().recalculateRouteDueToSettingsChange();
-        updateParameters();
-      }
-    }
-  }
-);
-  lv.setAdapter(listAdapter);
+  setupListParameters(settingsDlg,ctx);
+  setupApplicationModes(settingsDlg);
+  controlsLayer.updateRouteButtons(settingsDlg,false);
   return settingsDlg;
 }

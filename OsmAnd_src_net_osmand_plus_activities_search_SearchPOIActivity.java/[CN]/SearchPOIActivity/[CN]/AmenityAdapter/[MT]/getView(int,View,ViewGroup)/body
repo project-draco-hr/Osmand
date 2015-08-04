@@ -17,11 +17,14 @@
     if (rs != null) {
       Calendar inst=Calendar.getInstance();
       inst.setTimeInMillis(System.currentTimeMillis());
-      boolean work=rs.isOpenedForTime(inst);
+      boolean worksNow=rs.isOpenedForTime(inst);
+      inst.setTimeInMillis(System.currentTimeMillis() + 30 * 60 * 1000);
+      boolean worksLater=rs.isOpenedForTime(inst);
+      int colorId=worksNow ? worksLater ? color.color_ok : color.color_intermediate : color.color_warning;
       timeIcon.setVisibility(View.VISIBLE);
       timeText.setVisibility(View.VISIBLE);
-      timeIcon.setImageDrawable(app.getIconsCache().getIcon(R.drawable.ic_small_time,work ? R.color.color_ok : R.color.color_warning));
-      timeText.setTextColor(app.getResources().getColor(work ? R.color.color_ok : R.color.color_warning));
+      timeIcon.setImageDrawable(app.getIconsCache().getIcon(R.drawable.ic_small_time,colorId));
+      timeText.setTextColor(app.getResources().getColor(colorId));
       String rt=rs.getCurrentRuleTime(inst);
       timeText.setText(rt == null ? "" : rt);
     }
@@ -60,8 +63,8 @@
   direction.setImageDrawable(draw);
   PoiType st=amenity.getType().getPoiTypeByKeyName(amenity.getSubType());
   if (st != null) {
-    if (RenderingIcons.containsBigIcon(st.getKeyName())) {
-      icon.setImageResource(RenderingIcons.getBigIconResourceId(st.getKeyName()));
+    if (RenderingIcons.containsBigIcon(st.getIconKeyName())) {
+      icon.setImageResource(RenderingIcons.getBigIconResourceId(st.getIconKeyName()));
     }
  else     if (RenderingIcons.containsBigIcon(st.getOsmTag() + "_" + st.getOsmValue())) {
       icon.setImageResource(RenderingIcons.getBigIconResourceId(st.getOsmTag() + "_" + st.getOsmValue()));
@@ -77,7 +80,7 @@
   if (mes != null) {
     distance=" " + OsmAndFormatter.getFormattedDistance((int)mes[0],getMyApplication()) + "  ";
   }
-  String poiType=OsmAndFormatter.getPoiStringWithoutType(amenity,app.getSettings().usingEnglishNames());
+  String poiType=OsmAndFormatter.getPoiStringWithoutType(amenity,app.getSettings().MAP_PREFERRED_LOCALE.get());
   label.setText(poiType);
   distanceText.setText(distance);
   return (row);

@@ -1,0 +1,27 @@
+{
+  int ind=actionPoints.size();
+  Location lprevious=loc;
+  double dist=0;
+  for (int k=routePoint - 1; k >= -1; k--) {
+    Location l=k == -1 ? lastProjection : routeNodes.get(k);
+    float locDist=lprevious.distanceTo(l);
+    dist+=locDist;
+    if (dist >= DISTANCE_ACTION) {
+      if (locDist > 1) {
+        actionPoints.add(ind,calculateProjection(1 - (dist - DISTANCE_ACTION) / locDist,lprevious,l));
+      }
+      break;
+    }
+ else {
+      actionPoints.add(ind,l);
+      lprevious=l;
+    }
+    if (prevFinishPoint == k) {
+      if (ind >= 2) {
+        actionPoints.remove(ind - 2);
+        actionPoints.remove(ind - 2);
+      }
+      break;
+    }
+  }
+}

@@ -1,32 +1,17 @@
 {
   header=getLayoutInflater().inflate(R.layout.osmo_groups_list_header,null);
   getExpandableListView().addHeaderView(header);
-  CompoundButton trackr=(CompoundButton)header.findViewById(R.id.enable_tracker);
-  if (osMoPlugin != null && osMoPlugin.getTracker() != null) {
-    trackr.setChecked(osMoPlugin.getTracker().isEnabledTracker());
-  }
-  trackr.setOnCheckedChangeListener(new OnCheckedChangeListener(){
-    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
-      if (isChecked) {
-        if (osMoPlugin != null && osMoPlugin.getTracker() != null) {
-          osMoPlugin.getTracker().enableTracker();
-        }
-        app.startNavigationService(NavigationService.USED_BY_LIVE);
-      }
- else {
-        if (osMoPlugin != null && osMoPlugin.getTracker() != null) {
-          osMoPlugin.getTracker().disableTracker();
-        }
-        if (app.getNavigationService() != null) {
-          app.getNavigationService().stopIfNeeded(app,NavigationService.USED_BY_LIVE);
-        }
-      }
-      updateStatus();
+  ImageView iv=(ImageView)header.findViewById(R.id.share_my_location);
+  iv.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      shareSession();
     }
   }
 );
+  updateTrackerButton();
   CompoundButton srvc=(CompoundButton)header.findViewById(R.id.enable_service);
   srvc.setChecked(osMoPlugin.getService().isEnabled());
+  srvc.setText(R.string.osmo_start_service);
   srvc.setOnCheckedChangeListener(new OnCheckedChangeListener(){
     @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
       if (isChecked) {
@@ -68,14 +53,4 @@
     mtd.setLinksClickable(true);
     mtd.setMovementMethod(LinkMovementMethod.getInstance());
   }
-  CompoundButton login=(CompoundButton)header.findViewById(R.id.osmo_login_logoff);
-  login.setChecked(osMoPlugin.getService().isLoggedIn());
-  login.setOnCheckedChangeListener(new LoginOnCheckedChangeListener());
-  Button hintBtn=(Button)header.findViewById(R.id.osmo_login_hint_button);
-  hintBtn.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      showHint();
-    }
-  }
-);
 }

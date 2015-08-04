@@ -1,0 +1,68 @@
+{
+  RouteDirectionInfo nf=null;
+  double DISTANCE_ACTION=35;
+  if (zoom >= 17) {
+    DISTANCE_ACTION=15;
+  }
+ else   if (zoom == 15) {
+    DISTANCE_ACTION=70;
+  }
+ else   if (zoom < 15) {
+    DISTANCE_ACTION=110;
+  }
+  double actionDist=0;
+  Location previousAction=null;
+  actionPoints.clear();
+  int prevFinishPoint=-1;
+  for (int routePoint=0; routePoint < routeNodes.size(); routePoint++) {
+    Location loc=routeNodes.get(routePoint);
+    if (nf != null) {
+      int pnt=nf.routeEndPointOffset == 0 ? nf.routePointOffset : nf.routeEndPointOffset;
+      if (pnt < routePoint + cd) {
+        nf=null;
+      }
+    }
+    while (nf == null && it.hasNext()) {
+      nf=it.next();
+      int pnt=nf.routeEndPointOffset == 0 ? nf.routePointOffset : nf.routeEndPointOffset;
+      if (pnt < routePoint + cd) {
+        nf=null;
+      }
+    }
+    boolean action=nf != null && (nf.routePointOffset == routePoint + cd || (nf.routePointOffset <= routePoint + cd && routePoint + cd <= nf.routeEndPointOffset));
+    if (!action && previousAction == null) {
+      continue;
+    }
+    boolean visible=leftLongitude <= loc.getLongitude() && loc.getLongitude() <= rightLongitude && bottomLatitude <= loc.getLatitude() && loc.getLatitude() <= topLatitude;
+    if (action && !visible && previousAction == null) {
+      continue;
+    }
+    if (!action) {
+      float dist=loc.distanceTo(previousAction);
+      actionDist+=dist;
+      if (actionDist >= DISTANCE_ACTION) {
+        actionPoints.add(calculateProjection(1 - (actionDist - DISTANCE_ACTION) / dist,previousAction,loc));
+        actionPoints.add(null);
+        prevFinishPoint=routePoint;
+        previousAction=null;
+        actionDist=0;
+      }
+ else {
+        actionPoints.add(loc);
+        previousAction=loc;
+      }
+    }
+ else {
+      if (previousAction == null) {
+        addPreviousToActionPoints(lastProjection,routeNodes,DISTANCE_ACTION,prevFinishPoint,routePoint,loc);
+      }
+      actionPoints.add(loc);
+      previousAction=loc;
+      prevFinishPoint=-1;
+      actionDist=0;
+    }
+  }
+  if (previousAction != null) {
+    actionPoints.add(null);
+  }
+}

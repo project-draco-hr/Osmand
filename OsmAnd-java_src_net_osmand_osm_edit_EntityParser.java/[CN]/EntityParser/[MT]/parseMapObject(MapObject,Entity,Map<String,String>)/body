@@ -1,0 +1,38 @@
+{
+  mo.setId(e.getId());
+  if (mo instanceof Amenity) {
+    mo.setId((e.getId() << 1) + ((EntityType.valueOf(e) == EntityType.NODE) ? 0 : 1));
+  }
+  if (mo.getName().length() == 0) {
+    mo.setName(tags.get(OSMTagKey.NAME.getValue()));
+  }
+  if (mo.getEnName(false).length() == 0) {
+    mo.setEnName(tags.get(OSMTagKey.NAME_EN.getValue()));
+  }
+  for (  String ts : tags.keySet()) {
+    if (ts.startsWith("name:") && !ts.equals(OSMTagKey.NAME_EN.getValue())) {
+      mo.setName(ts.substring(("name:").length()),tags.get(ts));
+    }
+  }
+  if (mo.getName().length() == 0) {
+    mo.setName(mo.getEnName(false));
+  }
+  if (mo.getLocation() == null) {
+    LatLon l=null;
+    if (mo instanceof Building) {
+      l=findOnlyOneEntrance(e);
+    }
+    if (l == null) {
+      l=OsmMapUtils.getCenter(e);
+    }
+    if (l != null) {
+      mo.setLocation(l.getLatitude(),l.getLongitude());
+    }
+  }
+  if (mo.getName().length() == 0) {
+    setNameFromOperator(mo,tags);
+  }
+  if (mo.getName().length() == 0) {
+    setNameFromRef(mo,tags);
+  }
+}

@@ -1,0 +1,36 @@
+{
+  if (Algorithms.isEmpty(filter)) {
+    return new AmenityNameFilter(){
+      @Override public boolean accept(      Amenity a){
+        return true;
+      }
+    }
+;
+  }
+  StringBuilder nmFilter=new StringBuilder();
+  String[] items=filter.split(" ");
+  boolean allTime=false;
+  boolean open=false;
+  Map<PoiType,String> poiAdditionalsFilter=null;
+  for (  String s : items) {
+    s=s.trim();
+    if (!Algorithms.isEmpty(s)) {
+      if (getNameToken24H().equalsIgnoreCase(s)) {
+        allTime=true;
+      }
+ else       if (getNameTokenOpen().equalsIgnoreCase(s)) {
+        open=true;
+      }
+ else       if (poiAdditionals.containsKey(s.toLowerCase())) {
+        if (poiAdditionalsFilter == null) {
+          poiAdditionalsFilter=new LinkedHashMap<PoiType,String>();
+        }
+        poiAdditionalsFilter.put(poiAdditionals.get(s.toLowerCase()),null);
+      }
+ else {
+        nmFilter.append(s).append(" ");
+      }
+    }
+  }
+  return getNameFilterInternal(nmFilter,allTime,open,poiAdditionalsFilter);
+}

@@ -1,5 +1,6 @@
 {
-  if (!Version.getFullVersion(context).equalsIgnoreCase(context.getSettings().PREVIOUS_INSTALLED_VERSION.get())) {
+  String fv=Version.getFullVersion(context);
+  if (!fv.equalsIgnoreCase(context.getSettings().PREVIOUS_INSTALLED_VERSION.get())) {
     File applicationDataDir=context.getAppPath(null);
     applicationDataDir.mkdirs();
     if (applicationDataDir.canWrite()) {
@@ -8,8 +9,15 @@
         AssetManager assetManager=context.getAssets();
         boolean isFirstInstall=context.getSettings().PREVIOUS_INSTALLED_VERSION.get().equals("");
         unpackBundledAssets(assetManager,applicationDataDir,progress,isFirstInstall);
-        context.getSettings().PREVIOUS_INSTALLED_VERSION.set(Version.getFullVersion(context));
+        context.getSettings().PREVIOUS_INSTALLED_VERSION.set(fv);
         copyRegionsBoundaries();
+        copyPoiTypes();
+        for (        String internalStyle : context.getRendererRegistry().getInternalRenderers().keySet()) {
+          File fl=context.getRendererRegistry().getFileForInternalStyle(internalStyle);
+          if (fl.exists()) {
+            context.getRendererRegistry().copyFileForInternalStyle(internalStyle);
+          }
+        }
       }
  catch (      SQLiteException e) {
         log.error(e.getMessage(),e);

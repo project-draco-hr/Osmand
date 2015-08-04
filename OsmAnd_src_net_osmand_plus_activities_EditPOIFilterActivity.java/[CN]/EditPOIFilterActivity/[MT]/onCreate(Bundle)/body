@@ -4,11 +4,24 @@
   helper=((OsmandApplication)getApplication()).getPoiFilters();
   filter=helper.getFilterById(filterId);
   super.onCreate(icicle);
-  setContentView(R.layout.editing_poi_filter);
+  setContentView(R.layout.update_index);
+  ((TextView)findViewById(R.id.header)).setText(R.string.shared_string_select_all);
+  final CheckBox selectAll=(CheckBox)findViewById(R.id.select_all);
+  selectAll.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (selectAll.isChecked()) {
+        selectAll();
+      }
+ else {
+        deselectAll();
+      }
+    }
+  }
+);
   getSupportActionBar().setTitle(R.string.filterpoi_activity);
   if (filter != null) {
     getSupportActionBar().setSubtitle(filter.getName());
-    setListAdapter(new AmenityAdapter(((OsmandApplication)getApplication()).getPoiTypes().getCategories()));
+    setListAdapter(new AmenityAdapter(((OsmandApplication)getApplication()).getPoiTypes().getCategories(false)));
   }
  else {
     setListAdapter(new AmenityAdapter(new ArrayList<PoiCategory>()));

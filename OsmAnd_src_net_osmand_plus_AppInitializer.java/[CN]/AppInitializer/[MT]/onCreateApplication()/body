@@ -3,7 +3,6 @@
   if (!osmandSettings.FOLLOW_THE_ROUTE.get()) {
     osmandSettings.APPLICATION_MODE.set(osmandSettings.DEFAULT_APPLICATION_MODE.get());
   }
-  osmandSettings.USE_DASHBOARD_INSTEAD_OF_DRAWER.set(true);
   startTime=System.currentTimeMillis();
   try {
     app.bRouterServiceConnection=startupInit(BRouterServiceConnection.connect(app),BRouterServiceConnection.class);
@@ -24,10 +23,8 @@
   app.favorites=startupInit(new FavouritesDbHelper(app),FavouritesDbHelper.class);
   app.waypointHelper=startupInit(new WaypointHelper(app),WaypointHelper.class);
   app.regions=startupInit(new OsmandRegions(),OsmandRegions.class);
-  String lang=osmandSettings.PREFERRED_LOCALE.get();
-  String clang="".equals(lang) ? new Locale(lang).getLanguage() : lang;
-  app.regions.setLocale(clang);
+  app.regions.setLocale(app.getLanguage());
   app.poiFilters=startupInit(new PoiFiltersHelper(app),PoiFiltersHelper.class);
-  app.rendererRegistry=startupInit(new RendererRegistry(),RendererRegistry.class);
+  app.rendererRegistry=startupInit(new RendererRegistry(app),RendererRegistry.class);
   app.targetPointsHelper=startupInit(new TargetPointsHelper(app),TargetPointsHelper.class);
 }

@@ -1,0 +1,57 @@
+{
+  RenderingRulesStorage rrs=view.getApplication().getRendererRegistry().getCurrentSelectedRenderer();
+  final boolean isNight=nightMode != null && nightMode.isNightMode();
+  int hsh=calculateHash(rrs,routePoints,isNight,tileBox.getMapDensity());
+  if (hsh != cachedHash) {
+    cachedHash=hsh;
+    cachedColor=view.getResources().getColor(R.color.gpx_track);
+    if (rrs != null) {
+      RenderingRuleSearchRequest req=new RenderingRuleSearchRequest(rrs);
+      req.setBooleanFilter(rrs.PROPS.R_NIGHT_MODE,isNight);
+      CommonPreference<String> p=view.getSettings().getCustomRenderProperty("currentTrackColor");
+      if (p != null && p.isSet()) {
+        RenderingRuleProperty ctColor=rrs.PROPS.get("currentTrackColor");
+        if (ctColor != null) {
+          req.setStringFilter(ctColor,p.get());
+        }
+      }
+      CommonPreference<String> p2=view.getSettings().getCustomRenderProperty("currentTrackWidth");
+      if (p2 != null && p2.isSet()) {
+        RenderingRuleProperty ctWidth=rrs.PROPS.get("currentTrackWidth");
+        if (ctWidth != null) {
+          req.setStringFilter(ctWidth,p2.get());
+        }
+      }
+      String additional="";
+      if (routePoints) {
+        additional="routePoints=true";
+      }
+      if (currentTrack) {
+        additional=(additional.length() == 0 ? "" : ";") + "currentTrack=true";
+      }
+      if (additional.length() > 0) {
+        req.setStringFilter(rrs.PROPS.R_ADDITIONAL,additional);
+      }
+      if (req.searchRenderingAttribute("gpx")) {
+        RenderingContext rc=new OsmandRenderer.RenderingContext(view.getContext());
+        rc.setDensityValue((float)tileBox.getMapDensity());
+        cachedColor=req.getIntPropertyValue(rrs.PROPS.R_COLOR);
+        osmandRenderer.updatePaint(req,paint,0,false,rc);
+        isPaint2=osmandRenderer.updatePaint(req,paint2,1,false,rc);
+        isPaint_1=osmandRenderer.updatePaint(req,paint_1,-1,false,rc);
+        isShadowPaint=req.isSpecified(rrs.PROPS.R_SHADOW_RADIUS);
+        if (isShadowPaint) {
+          ColorFilter cf=new PorterDuffColorFilter(req.getIntPropertyValue(rrs.PROPS.R_SHADOW_COLOR),Mode.SRC_IN);
+          shadowPaint.setColorFilter(cf);
+          shadowPaint.setStrokeWidth(paint.getStrokeWidth() + 2 * rc.getComplexValue(req,rrs.PROPS.R_SHADOW_RADIUS));
+        }
+      }
+ else {
+        System.err.println("Rendering attribute gpx is not found !");
+        paint.setStrokeWidth(7 * view.getDensity());
+      }
+    }
+  }
+  paint.setColor(color == 0 ? cachedColor : color);
+  return cachedColor;
+}

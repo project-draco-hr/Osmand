@@ -6,17 +6,16 @@
   supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
   super.onCreate(savedInstanceState);
   setContentView(R.layout.main);
-  mapView=new OsmandMapTileView(this);
+  mapView=new OsmandMapTileView(this,getWindow().getDecorView().getWidth(),getWindow().getDecorView().getHeight());
+  app.getAppInitializer().checkAppVersionChanged(this);
   mapActions=new MapActivityActions(this);
   mapLayers=new MapActivityLayers(this);
   if (mapViewTrackingUtilities == null) {
     mapViewTrackingUtilities=new MapViewTrackingUtilities(app);
   }
-  firstTime=app.getAppInitializer().isFirstTime(this);
   dashboardOnMap.createDashboardView();
   checkAppInitialization();
   parseLaunchIntentLocation();
-  getMyApplication().getLocationProvider().redownloadAGPS();
   mapView.setTrackBallDelegate(new OsmandMapTileView.OnTrackBallListener(){
     @Override public boolean onTrackBallEvent(    MotionEvent e){
       showAndHideMapPosition();
@@ -59,7 +58,4 @@
     System.err.println("OnCreate for MapActivity took " + (System.currentTimeMillis() - tm) + " ms");
   }
   mapView.refreshMap(true);
-  if (dashboardOnMap != null) {
-    dashboardOnMap.updateLocation(true,true,false);
-  }
 }

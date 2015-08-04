@@ -1,0 +1,78 @@
+{
+  AlertDialog.Builder editalert=new AlertDialog.Builder(activity);
+  editalert.setTitle(R.string.application_dir);
+  final List<String> items=new ArrayList<String>();
+  final List<String> paths=new ArrayList<String>();
+  final TIntArrayList types=new TIntArrayList();
+  int selected=-1;
+  if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_SPECIFIED) {
+    items.add(getString(R.string.storage_directory_manual));
+    paths.add(selectedFile.getAbsolutePath());
+    types.add(OsmandSettings.EXTERNAL_STORAGE_TYPE_SPECIFIED);
+  }
+  File df=settings.getDefaultInternalStorage();
+  if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_DEFAULT || OsmandSettings.isWritable(df)) {
+    if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_DEFAULT) {
+      selected=items.size();
+    }
+    items.add(getString(R.string.storage_directory_default));
+    paths.add(df.getAbsolutePath());
+    types.add(OsmandSettings.EXTERNAL_STORAGE_TYPE_DEFAULT);
+  }
+  File[] externals=getMyApplication().getExternalFilesDirs(null);
+  if (externals != null) {
+    int i=1;
+    for (    File external : externals) {
+      if (external != null) {
+        if (selectedFile.getAbsolutePath().equals(external.getAbsolutePath())) {
+          selected=items.size();
+        }
+        items.add(getString(R.string.storage_directory_external) + " " + (i++));
+        paths.add(external.getAbsolutePath());
+        types.add(OsmandSettings.EXTERNAL_STORAGE_TYPE_EXTERNAL_FILE);
+      }
+    }
+  }
+  File[] obbDirs=getMyApplication().getObbDirs();
+  if (obbDirs != null) {
+    int i=1;
+    for (    File obb : obbDirs) {
+      if (obb != null) {
+        if (selectedFile.getAbsolutePath().equals(obb.getAbsolutePath())) {
+          selected=items.size();
+        }
+        items.add(getString(R.string.storage_directory_multiuser) + " " + (i++));
+        paths.add(obb.getAbsolutePath());
+        types.add(OsmandSettings.EXTERNAL_STORAGE_TYPE_OBB);
+      }
+    }
+  }
+  String pth=settings.getInternalAppPath().getAbsolutePath();
+  if (selectedFile.getAbsolutePath().equals(pth)) {
+    selected=items.size();
+  }
+  items.add(getString(R.string.storage_directory_internal_app));
+  paths.add(pth);
+  types.add(OsmandSettings.EXTERNAL_STORAGE_TYPE_INTERNAL_FILE);
+  items.add(getString(R.string.storage_directory_manual) + getString(R.string.shared_string_ellipsis));
+  paths.add("");
+  types.add(OsmandSettings.EXTERNAL_STORAGE_TYPE_SPECIFIED);
+  editalert.setSingleChoiceItems(items.toArray(new String[items.size()]),selected,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (which == items.size() - 1) {
+        dialog.dismiss();
+        showOtherDialog();
+      }
+ else {
+        mapsCopied=false;
+        type=types.get(which);
+        selectedFile=new File(paths.get(which));
+        dialog.dismiss();
+        updateView();
+      }
+    }
+  }
+);
+  editalert.setNegativeButton(R.string.shared_string_dismiss,null);
+  editalert.show();
+}

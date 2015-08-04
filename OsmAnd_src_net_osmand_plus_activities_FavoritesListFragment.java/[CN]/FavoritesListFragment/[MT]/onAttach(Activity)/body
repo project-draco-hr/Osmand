@@ -1,8 +1,19 @@
 {
   super.onAttach(activity);
+  Intent intent=activity.getIntent();
+  if (intent != null) {
+    selectFavoriteMode=intent.hasExtra(SELECT_FAVORITE_POINT_INTENT_KEY);
+    if (intent.hasExtra(SearchActivity.SEARCH_LAT) && intent.hasExtra(SearchActivity.SEARCH_LON)) {
+      double lat=intent.getDoubleExtra(SearchActivity.SEARCH_LAT,0);
+      double lon=intent.getDoubleExtra(SearchActivity.SEARCH_LON,0);
+      if (lat != 0 || lon != 0) {
+        favouritesAdapter.location=new LatLon(lat,lon);
+      }
+    }
+  }
   settings=((OsmandApplication)getApplication()).getSettings();
   OsmandApplication app=(OsmandApplication)getApplication();
-  favouritesAdapter=new FavouritesAdapter(activity,app.getFavorites().getFavouritePoints());
+  favouritesAdapter=new FavouritesAdapter(activity,app.getFavorites().getFavouritePoints(),!selectFavoriteMode);
   setListAdapter(favouritesAdapter);
   setHasOptionsMenu(true);
 }

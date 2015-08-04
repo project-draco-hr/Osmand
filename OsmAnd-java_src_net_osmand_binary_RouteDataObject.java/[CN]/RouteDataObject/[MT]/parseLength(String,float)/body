@@ -1,11 +1,30 @@
 {
+  float f=0;
   int i=Algorithms.findFirstNumberEndIndex(v);
   if (i > 0) {
-    float f=Float.parseFloat(v.substring(0,i));
-    if (v.contains("\"") || v.contains("ft")) {
+    f+=Float.parseFloat(v.substring(0,i));
+    String pref=v.substring(i,v.length()).trim();
+    float add=0;
+    for (int ik=0; ik < pref.length(); ik++) {
+      if (Character.isDigit(pref.charAt(ik)) || pref.charAt(ik) == '.' || pref.charAt(ik) == '-') {
+        int first=Algorithms.findFirstNumberEndIndex(pref.substring(ik));
+        if (first != -1) {
+          add=parseLength(pref.substring(ik),0);
+          pref=pref.substring(0,ik);
+        }
+        break;
+      }
+    }
+    if (pref.contains("km")) {
+      f*=1000;
+    }
+    if (pref.contains("\"")) {
+      f*=0.0254;
+    }
+ else     if (pref.contains("\'") || pref.contains("ft")) {
       f*=0.3048;
     }
-    return f;
+    return f + add;
   }
   return def;
 }

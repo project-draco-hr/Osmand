@@ -1,29 +1,41 @@
 {
+  if (!Algorithms.objectEquals(this.settings.SELECTED_POI_FILTER_FOR_MAP.get(),filter == null ? null : filter.getFilterId())) {
+    if (this.settings.SELECTED_POI_FILTER_FOR_MAP.get() == null) {
+      this.filter=null;
+    }
+ else {
+      PoiFiltersHelper pfh=app.getPoiFilters();
+      this.filter=pfh.getFilterById(this.settings.SELECTED_POI_FILTER_FOR_MAP.get());
+    }
+    data.clearCache();
+  }
   List<Amenity> objects=Collections.emptyList();
-  if (tileBox.getZoom() >= startZoom) {
-    data.queryNewData(tileBox);
-    objects=data.getResults();
-    if (objects != null) {
-      int r=getRadiusPoi(tileBox);
-      for (      Amenity o : objects) {
-        int x=(int)tileBox.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
-        int y=(int)tileBox.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
-        canvas.drawCircle(x,y,r,pointAltUI);
-        canvas.drawCircle(x,y,r,point);
-        String id=null;
-        PoiType st=o.getType().getPoiTypeByKeyName(o.getSubType());
-        if (st != null) {
-          if (RenderingIcons.containsIcon(st.getKeyName())) {
-            id=st.getKeyName();
+  if (filter != null) {
+    if (tileBox.getZoom() >= startZoom) {
+      data.queryNewData(tileBox);
+      objects=data.getResults();
+      if (objects != null) {
+        int r=getRadiusPoi(tileBox);
+        for (        Amenity o : objects) {
+          int x=(int)tileBox.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+          int y=(int)tileBox.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+          canvas.drawCircle(x,y,r,pointAltUI);
+          canvas.drawCircle(x,y,r,point);
+          String id=null;
+          PoiType st=o.getType().getPoiTypeByKeyName(o.getSubType());
+          if (st != null) {
+            if (RenderingIcons.containsSmallIcon(st.getIconKeyName())) {
+              id=st.getIconKeyName();
+            }
+ else             if (RenderingIcons.containsSmallIcon(st.getOsmTag() + "_" + st.getOsmValue())) {
+              id=st.getOsmTag() + "_" + st.getOsmValue();
+            }
           }
- else           if (RenderingIcons.containsIcon(st.getOsmTag() + "_" + st.getOsmValue())) {
-            id=st.getOsmTag() + "_" + st.getOsmValue();
-          }
-        }
-        if (id != null) {
-          Bitmap bmp=RenderingIcons.getIcon(view.getContext(),id);
-          if (bmp != null) {
-            canvas.drawBitmap(bmp,x - bmp.getWidth() / 2,y - bmp.getHeight() / 2,paintIcon);
+          if (id != null) {
+            Bitmap bmp=RenderingIcons.getIcon(view.getContext(),id,false);
+            if (bmp != null) {
+              canvas.drawBitmap(bmp,x - bmp.getWidth() / 2,y - bmp.getHeight() / 2,paintIcon);
+            }
           }
         }
       }

@@ -1,7 +1,7 @@
 {
   boolean handled=false;
   if (location != null && filter != null) {
-    net.osmand.Location searchedLocation=currentSearchTask == null ? null : currentSearchTask.getSearchedLocation();
+    net.osmand.Location searchedLocation=lastSearchedLocation;
     if (searchedLocation == null) {
       if (!isNameSearch()) {
         runNewSearchQuery(location,NEW_SEARCH_INIT);
@@ -24,7 +24,12 @@
   }
   if (handled) {
     this.location=location;
+    ListView lv=getListView();
+    final int index=lv.getFirstVisiblePosition();
+    View v=lv.getChildAt(0);
+    final int top=(v == null) ? 0 : v.getTop();
     amenityAdapter.notifyDataSetChanged();
+    lv.setSelectionFromTop(index,top);
     updateButtonState();
   }
 }

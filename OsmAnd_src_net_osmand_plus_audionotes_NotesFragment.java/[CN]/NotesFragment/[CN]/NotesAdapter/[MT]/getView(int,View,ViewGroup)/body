@@ -9,7 +9,26 @@
   icon.setColorFilter(getResources().getColor(R.color.color_distance),Mode.MULTIPLY);
   ((ImageView)row.findViewById(R.id.play)).setImageDrawable(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_play_dark));
   row.findViewById(R.id.play).setVisibility(View.GONE);
+  final CheckBox ch=(CheckBox)row.findViewById(R.id.check_local_index);
   ImageButton options=(ImageButton)row.findViewById(R.id.options);
+  options.setImageDrawable(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_overflow_menu_white));
+  if (selectionMode) {
+    options.setVisibility(View.GONE);
+    ch.setVisibility(View.VISIBLE);
+    ch.setChecked(selected.contains(recording));
+    row.findViewById(R.id.icon).setVisibility(View.GONE);
+    ch.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        onItemSelect(ch,recording);
+      }
+    }
+);
+  }
+ else {
+    row.findViewById(R.id.icon).setVisibility(View.VISIBLE);
+    options.setVisibility(View.VISIBLE);
+    ch.setVisibility(View.GONE);
+  }
   options.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       openPopUpMenu(v,recording);
@@ -18,7 +37,13 @@
 );
   row.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      showOnMap(recording);
+      if (selectionMode) {
+        ch.setChecked(!ch.isChecked());
+        onItemSelect(ch,recording);
+      }
+ else {
+        showOnMap(recording);
+      }
     }
   }
 );

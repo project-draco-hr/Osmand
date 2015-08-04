@@ -2,6 +2,7 @@
   BinaryMapIndexReader[] files=params.ctx.getResourceManager().getRoutingMapFiles();
   RoutePlannerFrontEnd router=new RoutePlannerFrontEnd(false);
   OsmandSettings settings=params.ctx.getSettings();
+  router.setUseFastRecalculation(settings.USE_FAST_RECALCULATION.get());
   RoutingConfiguration.Builder config=params.ctx.getDefaultRoutingConfig();
   GeneralRouter generalRouter=SettingsNavigationActivity.getRouter(config,params.mode);
   if (generalRouter == null) {
@@ -22,18 +23,44 @@
     precalculated.setFollowNext(true);
   }
   NativeOsmandLibrary lib=settings.SAFE_MODE.get() ? null : NativeOsmandLibrary.getLoadedLibrary();
+  int leftX=MapUtils.get31TileNumberX(params.start.getLongitude());
+  int rightX=leftX;
+  int bottomY=MapUtils.get31TileNumberY(params.start.getLatitude());
+  int topY=bottomY;
+  if (params.intermediates != null) {
+    for (    LatLon l : params.intermediates) {
+      leftX=Math.min(MapUtils.get31TileNumberX(l.getLongitude()),leftX);
+      rightX=Math.max(MapUtils.get31TileNumberX(l.getLongitude()),rightX);
+      bottomY=Math.max(MapUtils.get31TileNumberY(l.getLatitude()),bottomY);
+      topY=Math.min(MapUtils.get31TileNumberY(l.getLatitude()),topY);
+    }
+  }
+  LatLon l=params.end;
+  leftX=Math.min(MapUtils.get31TileNumberX(l.getLongitude()),leftX);
+  rightX=Math.max(MapUtils.get31TileNumberX(l.getLongitude()),rightX);
+  bottomY=Math.max(MapUtils.get31TileNumberY(l.getLatitude()),bottomY);
+  topY=Math.min(MapUtils.get31TileNumberY(l.getLatitude()),topY);
+  params.ctx.getResourceManager().getRenderer().checkInitialized(15,lib,leftX,rightX,bottomY,topY);
   RoutingContext ctx=router.buildRoutingContext(cf,lib,files,RouteCalculationMode.NORMAL);
   RoutingContext complexCtx=null;
   boolean complex=params.mode.isDerivedRoutingFrom(ApplicationMode.CAR) && !settings.DISABLE_COMPLEX_ROUTING.get() && precalculated == null;
+  ctx.leftSideNavigation=params.leftSide;
+  ctx.calculationProgress=params.calculationProgress;
+  if (params.previousToRecalculate != null && params.onlyStartPointChanged) {
+    int currentRoute=params.previousToRecalculate.getCurrentRoute();
+    List<RouteSegmentResult> originalRoute=params.previousToRecalculate.getOriginalRoute();
+    if (originalRoute != null && currentRoute < originalRoute.size()) {
+      ctx.previouslyCalculatedRoute=originalRoute.subList(currentRoute,originalRoute.size());
+    }
+  }
+  if (complex && router.getRecalculationEnd(ctx) != null) {
+    complex=false;
+  }
   if (complex) {
     complexCtx=router.buildRoutingContext(cf,lib,files,RouteCalculationMode.COMPLEX);
     complexCtx.calculationProgress=params.calculationProgress;
     complexCtx.leftSideNavigation=params.leftSide;
-  }
-  ctx.leftSideNavigation=params.leftSide;
-  ctx.calculationProgress=params.calculationProgress;
-  if (params.previousToRecalculate != null && params.onlyStartPointChanged) {
-    ctx.previouslyCalculatedRoute=params.previousToRecalculate.getOriginalRoute();
+    complexCtx.previouslyCalculatedRoute=ctx.previouslyCalculatedRoute;
   }
   LatLon st=new LatLon(params.start.getLatitude(),params.start.getLongitude());
   LatLon en=new LatLon(params.end.getLatitude(),params.end.getLongitude());

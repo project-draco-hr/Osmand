@@ -22,10 +22,14 @@
     ctx.startY=MapUtils.get31TileNumberY(start.getLatitude());
     ctx.targetX=MapUtils.get31TileNumberX(end.getLongitude());
     ctx.targetY=MapUtils.get31TileNumberY(end.getLatitude());
+    RouteSegment recalculationEnd=getRecalculationEnd(ctx);
+    if (recalculationEnd != null) {
+      ctx.initTargetPoint(recalculationEnd);
+    }
     if (routeDirection != null) {
       ctx.precalculatedRouteDirection=routeDirection.adopt(ctx);
     }
-    List<RouteSegmentResult> res=runNativeRouting(ctx);
+    List<RouteSegmentResult> res=runNativeRouting(ctx,recalculationEnd);
     if (res != null) {
       new RouteResultPreparation().printResults(ctx,start,end,res);
     }

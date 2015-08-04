@@ -1,0 +1,111 @@
+{
+  InputStream is;
+  long time=System.currentTimeMillis();
+  List<PoiType> referenceTypes=new ArrayList<PoiType>();
+  final Map<String,PoiType> allTypes=new LinkedHashMap<String,PoiType>();
+  if (resourceName != null) {
+    this.resourceName=resourceName;
+  }
+  try {
+    if (this.resourceName == null) {
+      is=MapPoiTypes.class.getResourceAsStream("poi_types.xml");
+    }
+ else {
+      is=new FileInputStream(this.resourceName);
+    }
+    time=System.currentTimeMillis();
+    XmlPullParser parser=PlatformUtil.newXMLPullParser();
+    int tok;
+    parser.setInput(is,"UTF-8");
+    PoiCategory lastCategory=null;
+    PoiFilter lastFilter=null;
+    PoiType lastType=null;
+    while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
+      if (tok == XmlPullParser.START_TAG) {
+        String name=parser.getName();
+        if (name.equals("poi_category")) {
+          lastCategory=new PoiCategory(this,parser.getAttributeValue("","name"),categories.size());
+          lastCategory.setTopVisible(Boolean.parseBoolean(parser.getAttributeValue("","top")));
+          categories.add(lastCategory);
+        }
+ else         if (name.equals("poi_filter")) {
+          PoiFilter tp=new PoiFilter(this,lastCategory,parser.getAttributeValue("","name"));
+          tp.setTopVisible(Boolean.parseBoolean(parser.getAttributeValue("","top")));
+          lastFilter=tp;
+          lastCategory.addPoiType(tp);
+        }
+ else         if (name.equals("poi_reference")) {
+          PoiType tp=new PoiType(this,lastCategory,parser.getAttributeValue("","name"));
+          referenceTypes.add(tp);
+          tp.setReferenceType(tp);
+          if (lastFilter != null) {
+            lastFilter.addPoiType(tp);
+          }
+          lastCategory.addPoiType(tp);
+        }
+ else         if (name.equals("poi_additional")) {
+          if (lastCategory == null) {
+            lastCategory=getOtherMapCategory();
+          }
+          if ("true".equals(parser.getAttributeValue("","lang"))) {
+            for (            String lng : MapRenderingTypes.langs) {
+              parsePoiAdditional(parser,lastCategory,lastFilter,lastType,lng);
+            }
+          }
+          parsePoiAdditional(parser,lastCategory,lastFilter,lastType,null);
+        }
+ else         if (name.equals("poi_type")) {
+          if (lastCategory == null) {
+            lastCategory=getOtherMapCategory();
+          }
+          if ("true".equals(parser.getAttributeValue("","lang"))) {
+            for (            String lng : MapRenderingTypes.langs) {
+              parsePoiType(allTypes,parser,lastCategory,lastFilter,lng);
+            }
+          }
+          lastType=parsePoiType(allTypes,parser,lastCategory,lastFilter,null);
+        }
+      }
+ else       if (tok == XmlPullParser.END_TAG) {
+        String name=parser.getName();
+        if (name.equals("poi_filter")) {
+          lastFilter=null;
+        }
+ else         if (name.equals("poi_type")) {
+          lastType=null;
+        }
+ else         if (name.equals("poi_category")) {
+          lastCategory=null;
+        }
+      }
+    }
+    is.close();
+  }
+ catch (  IOException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw new RuntimeException(e);
+  }
+catch (  RuntimeException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw e;
+  }
+catch (  XmlPullParserException e) {
+    log.error("Unexpected error",e);
+    e.printStackTrace();
+    throw new RuntimeException(e);
+  }
+  for (  PoiType gt : referenceTypes) {
+    PoiType pt=allTypes.get(gt.getKeyName());
+    if (pt == null || pt.getOsmTag() == null) {
+      throw new IllegalStateException("Can't find poi type for poi reference '" + gt.keyName + "'");
+    }
+ else {
+      gt.setReferenceType(pt);
+    }
+  }
+  findDefaultOtherCategory();
+  init=true;
+  log.info("Time to init poi types " + (System.currentTimeMillis() - time));
+}

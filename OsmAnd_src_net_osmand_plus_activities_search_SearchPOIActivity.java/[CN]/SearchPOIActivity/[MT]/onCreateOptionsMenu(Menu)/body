@@ -10,7 +10,7 @@
 );
   showFilterItem=menu.add(0,FILTER,0,R.string.search_poi_filter);
   MenuItemCompat.setShowAsAction(showFilterItem,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-  showFilterItem=showFilterItem.setIcon(getMyApplication().getIconsCache().getActionBarIcon(R.drawable.ic_action_filter_dark));
+  showFilterItem=showFilterItem.setIcon(getMyApplication().getIconsCache().getIcon(R.drawable.ic_action_filter_dark));
   showFilterItem.setOnMenuItemClickListener(new OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
       if (searchFilterLayout.getVisibility() == View.GONE) {
@@ -31,12 +31,12 @@
 );
   showOnMapItem=menu.add(0,SHOW_ON_MAP,0,R.string.shared_string_show_on_map);
   MenuItemCompat.setShowAsAction(showOnMapItem,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-  showOnMapItem=showOnMapItem.setIcon(getMyApplication().getIconsCache().getActionBarIcon(R.drawable.ic_show_on_map));
+  showOnMapItem=showOnMapItem.setIcon(getMyApplication().getIconsCache().getIcon(R.drawable.ic_show_on_map));
   showOnMapItem.setOnMenuItemClickListener(new OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
       OsmandSettings settings=app.getSettings();
-      settings.setPoiFilterForMap(filter.getFilterId());
-      settings.SHOW_POI_OVER_MAP.set(true);
+      filter.setFilterByName(searchFilter.getText().toString().trim());
+      settings.SELECTED_POI_FILTER_FOR_MAP.set(filter.getFilterId());
       if (location != null) {
         settings.setMapLocationToShow(location.getLatitude(),location.getLongitude(),15);
       }
@@ -45,8 +45,9 @@
     }
   }
 );
+  showOnMapItem.setEnabled(!isNameSearch() || amenityAdapter.getCount() > 0);
   if (filter != null && !isNameSearch()) {
-    createMenuItem(omenu,SAVE_FILTER,R.string.edit_filter_save_as_menu_item,R.drawable.ic_action_gsave_dark,MenuItemCompat.SHOW_AS_ACTION_IF_ROOM);
+    createMenuItem(omenu,SAVE_FILTER,R.string.edit_filter_save_as_menu_item,R.drawable.ic_action_fav_dark,MenuItemCompat.SHOW_AS_ACTION_IF_ROOM);
     if (!filter.isStandardFilter()) {
       createMenuItem(omenu,DELETE_FILTER,R.string.shared_string_delete,R.drawable.ic_action_delete_dark,MenuItemCompat.SHOW_AS_ACTION_IF_ROOM);
     }

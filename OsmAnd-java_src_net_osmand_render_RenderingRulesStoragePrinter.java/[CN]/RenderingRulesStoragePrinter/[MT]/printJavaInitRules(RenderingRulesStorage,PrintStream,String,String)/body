@@ -1,0 +1,46 @@
+{
+  int javaFunctions=0;
+  boolean initNewSection=true;
+  for (int rulesSection=0; rulesSection < RenderingRulesStorage.LENGTH_RULES; rulesSection++) {
+    initNewSection=true;
+    if (storage.tagValueGlobalRules[rulesSection] == null) {
+      continue;
+    }
+    TIntObjectIterator<RenderingRule> iterator=storage.tagValueGlobalRules[rulesSection].iterator();
+    int rulesInSection=0;
+    while (iterator.hasNext()) {
+      iterator.advance();
+      if (initNewSection) {
+        if (javaFunctions > 0) {
+          out.println("" + indent + "}\n");
+        }
+        out.println("\n" + indent + "public void initRules"+ javaFunctions+ "() {");
+        for (int k=0; k < 15; k++) {
+          out.println("" + indent + ti+ "RenderingRule rule"+ k+ " = null;");
+        }
+        initNewSection=false;
+        javaFunctions++;
+      }
+      if (rulesInSection > 50) {
+        rulesInSection=0;
+        initNewSection=true;
+      }
+      rulesInSection+=generateRenderingRule(storage,out,indent + ti,"rule",0,iterator.value());
+      out.println("" + indent + ti+ "storage.tagValueGlobalRules["+ rulesSection+ "].put("+ iterator.key()+ ", rule0);");
+    }
+  }
+  if (javaFunctions > 0) {
+    out.println("" + indent + "}\n");
+  }
+  out.println("\n" + indent + "public void initRules() {");
+  for (int k=0; k < RenderingRulesStorage.LENGTH_RULES; k++) {
+    if (storage.tagValueGlobalRules[k] == null) {
+      continue;
+    }
+    out.println("" + indent + ti+ "storage.tagValueGlobalRules["+ k+ "] = new gnu.trove.map.hash.TIntObjectHashMap();");
+  }
+  for (int i=0; i < javaFunctions; i++) {
+    out.println("" + indent + ti+ "initRules"+ i+ "();");
+  }
+  out.println("" + indent + "}");
+}

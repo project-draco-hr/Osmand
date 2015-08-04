@@ -4,39 +4,8 @@
     applicationDir.setTitle(R.string.application_dir);
     applicationDir.setKey("external_storage_dir");
     applicationDir.setOnPreferenceClickListener(new OnPreferenceClickListener(){
-      public void showOtherDialog(){
-        AlertDialog.Builder editalert=new AlertDialog.Builder(SettingsGeneralActivity.this);
-        editalert.setTitle(R.string.application_dir);
-        final EditText input=new EditText(SettingsGeneralActivity.this);
-        input.setText(settings.getExternalStorageDirectory().getAbsolutePath());
-        input.setPadding(3,3,3,3);
-        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT);
-        input.setLayoutParams(lp);
-        settings.getExternalStorageDirectory().getAbsolutePath();
-        editalert.setView(input);
-        editalert.setNegativeButton(R.string.shared_string_cancel,null);
-        editalert.setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
-          public void onClick(          DialogInterface dialog,          int whichButton){
-            warnAboutChangingStorage(input.getText().toString());
-          }
-        }
-);
-        editalert.show();
-      }
       @Override public boolean onPreferenceClick(      Preference preference){
-        SuggestExternalDirectoryDialog.showDialog(SettingsGeneralActivity.this,new OnClickListener(){
-          @Override public void onClick(          DialogInterface dialog,          int which){
-            dialog.dismiss();
-            showOtherDialog();
-          }
-        }
-,new CallbackWithObject<String>(){
-          @Override public boolean processResult(          String result){
-            warnAboutChangingStorage(result);
-            return true;
-          }
-        }
-);
+        showAppDirDialog();
         return false;
       }
     }
@@ -55,6 +24,6 @@
       misc.addPreference(createCheckBoxPreference(settings.USE_TRACKBALL_FOR_MOVEMENTS,R.string.use_trackball,R.string.use_trackball_descr));
     }
   }
-  registerListPreference(settings.OSMAND_THEME,misc,new String[]{"Dark","Light"},new Integer[]{OsmandSettings.OSMAND_DARK_THEME,OsmandSettings.OSMAND_LIGHT_THEME});
+  registerListPreference(settings.OSMAND_THEME,misc,new String[]{getString(R.string.dark_theme),getString(R.string.light_theme)},new Integer[]{OsmandSettings.OSMAND_DARK_THEME,OsmandSettings.OSMAND_LIGHT_THEME});
   misc.addPreference(createCheckBoxPreference(settings.USE_KALMAN_FILTER_FOR_COMPASS,R.string.use_kalman_filter_compass,R.string.use_kalman_filter_compass_descr));
 }

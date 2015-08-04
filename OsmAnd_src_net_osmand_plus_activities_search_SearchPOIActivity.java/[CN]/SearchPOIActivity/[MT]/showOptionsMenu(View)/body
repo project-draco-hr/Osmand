@@ -1,0 +1,30 @@
+{
+  IconsCache iconsCache=getMyApplication().getIconsCache();
+  final PopupMenu optionsMenu=new PopupMenu(this,v);
+  final PoiUIFilter f=this.filter;
+  MenuItem item=optionsMenu.getMenu().add(R.string.shared_string_edit).setIcon(iconsCache.getContentIcon(R.drawable.ic_action_edit_dark));
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      PoiUIFilter custom=getMyApplication().getPoiFilters().getCustomPOIFilter();
+      custom.replaceWithPoiFilter(f);
+      showEditActivity(custom);
+      return true;
+    }
+  }
+);
+  addFilter(optionsMenu,getString(R.string.shared_string_open).toLowerCase());
+  addFilter(optionsMenu,"24/7");
+  Map<String,PoiType> poiAdditionals=f.getPoiAdditionals();
+  if (poiAdditionals != null) {
+    TreeMap<String,PoiType> adds=new TreeMap<String,PoiType>();
+    for (    PoiType vtype : poiAdditionals.values()) {
+      if (vtype.isTopVisible()) {
+        adds.put(vtype.getTranslation().replace(' ',':').toLowerCase(),vtype);
+      }
+    }
+    for (    String vtype : adds.keySet()) {
+      addFilter(optionsMenu,vtype);
+    }
+  }
+  optionsMenu.show();
+}

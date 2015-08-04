@@ -7,7 +7,7 @@
     boolean top=stack.size() == 0 || isTopCase();
     parseAttributes(attrsMap);
     RenderingRule renderingRule=new RenderingRule(attrsMap,isSwitch,RenderingRulesStorage.this);
-    if (top) {
+    if (top || STORE_ATTTRIBUTES) {
       renderingRule.storeAttributes(attrsMap);
     }
     if (stack.size() > 0 && stack.peek() instanceof RenderingRule) {
@@ -20,6 +20,9 @@
     attrsMap.clear();
     parseAttributes(attrsMap);
     RenderingRule renderingRule=new RenderingRule(attrsMap,false,RenderingRulesStorage.this);
+    if (STORE_ATTTRIBUTES) {
+      renderingRule.storeAttributes(attrsMap);
+    }
     if (stack.size() > 0 && stack.peek() instanceof RenderingRule) {
       ((RenderingRule)stack.peek()).addIfChildren(renderingRule);
     }
@@ -68,6 +71,7 @@
       prop=RenderingRuleProperty.createInputIntProperty(attr);
     }
     prop.setDescription(parser.getAttributeValue("","description"));
+    prop.setDefaultValueDescription(parser.getAttributeValue("","defaultValueDescription"));
     prop.setCategory(parser.getAttributeValue("","category"));
     prop.setName(parser.getAttributeValue("","name"));
     if (parser.getAttributeValue("","possibleValues") != null) {

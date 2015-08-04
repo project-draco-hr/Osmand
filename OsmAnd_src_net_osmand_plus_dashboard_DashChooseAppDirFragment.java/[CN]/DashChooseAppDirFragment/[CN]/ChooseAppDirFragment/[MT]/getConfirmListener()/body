@@ -1,0 +1,24 @@
+{
+  return new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      boolean wr=OsmandSettings.isWritable(selectedFile);
+      if (wr) {
+        boolean changed=!currentAppFile.getAbsolutePath().equals(selectedFile.getAbsolutePath());
+        getMyApplication().setExternalStorageDirectory(type,selectedFile.getAbsolutePath());
+        if (changed) {
+          reloadData();
+        }
+        if (fragment != null && activity instanceof FragmentActivity) {
+          ((FragmentActivity)activity).getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+        }
+      }
+ else {
+        AccessibleToast.makeText(activity,R.string.specified_directiory_not_writeable,Toast.LENGTH_LONG).show();
+      }
+      if (dlg != null) {
+        dlg.dismiss();
+      }
+    }
+  }
+;
+}

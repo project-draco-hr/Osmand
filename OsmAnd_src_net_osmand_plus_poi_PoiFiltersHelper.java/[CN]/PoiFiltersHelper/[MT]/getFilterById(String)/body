@@ -2,22 +2,33 @@
   if (filterId == null) {
     return null;
   }
-  for (  PoiLegacyFilter f : getTopDefinedPoiFilters()) {
+  for (  PoiUIFilter f : getTopDefinedPoiFilters()) {
     if (f.getFilterId().equals(filterId)) {
       return f;
     }
   }
-  PoiLegacyFilter ff=getFilterById(filterId,getCustomPOIFilter(),getSearchByNamePOIFilter(),getShowAllPOIFilter(),getNominatimPOIFilter(),getNominatimAddressFilter());
+  PoiUIFilter ff=getFilterById(filterId,getCustomPOIFilter(),getSearchByNamePOIFilter(),getShowAllPOIFilter(),getNominatimPOIFilter(),getNominatimAddressFilter());
   if (ff != null) {
     return ff;
   }
-  if (filterId.startsWith(PoiLegacyFilter.STD_PREFIX)) {
-    String typeId=filterId.substring(PoiLegacyFilter.STD_PREFIX.length());
-    PoiType tp=application.getPoiTypes().getPoiTypeByKey(typeId);
+  if (filterId.startsWith(PoiUIFilter.STD_PREFIX)) {
+    String typeId=filterId.substring(PoiUIFilter.STD_PREFIX.length());
+    AbstractPoiType tp=application.getPoiTypes().getAnyPoiTypeByKey(typeId);
     if (tp != null) {
-      PoiLegacyFilter lf=new PoiLegacyFilter(tp,application);
-      cacheTopStandardFilters.add(lf);
-      sortListOfFilters(cacheTopStandardFilters);
+      PoiUIFilter lf=new PoiUIFilter(tp,application);
+      ArrayList<PoiUIFilter> copy=new ArrayList<PoiUIFilter>(cacheTopStandardFilters);
+      copy.add(lf);
+      sortListOfFilters(copy);
+      cacheTopStandardFilters=copy;
+      return lf;
+    }
+    AbstractPoiType lt=application.getPoiTypes().getAnyPoiAdditionalTypeByKey(typeId);
+    if (lt != null) {
+      PoiUIFilter lf=new PoiUIFilter(lt,application);
+      ArrayList<PoiUIFilter> copy=new ArrayList<PoiUIFilter>(cacheTopStandardFilters);
+      copy.add(lf);
+      sortListOfFilters(copy);
+      cacheTopStandardFilters=copy;
       return lf;
     }
   }

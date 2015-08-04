@@ -1,9 +1,7 @@
 {
   final OsmandSettings settings=ma.getMyApplication().getSettings();
   if (itemId == R.string.layer_poi) {
-    settings.setPoiFilterForMap(null);
-    ma.getMapLayers().getPoiMapLayer().setFilter(null);
-    settings.SHOW_POI_OVER_MAP.set(isChecked);
+    settings.SELECTED_POI_FILTER_FOR_MAP.set(null);
     if (isChecked) {
       selectPOILayer(settings);
     }
@@ -27,6 +25,16 @@
         }
       }
 );
+    }
+  }
+ else   if (itemId == R.string.layer_map) {
+    if (OsmandPlugin.getEnabledPlugin(OsmandRasterMapsPlugin.class) == null) {
+      Intent intent=new Intent(ma,PluginActivity.class);
+      intent.putExtra(PluginActivity.EXTRA_PLUGIN_ID,OsmandRasterMapsPlugin.ID);
+      ma.startActivity(intent);
+    }
+ else {
+      ma.getMapLayers().selectMapLayer(ma.getMapView());
     }
   }
  else   if (itemId == R.string.layer_transport_route) {

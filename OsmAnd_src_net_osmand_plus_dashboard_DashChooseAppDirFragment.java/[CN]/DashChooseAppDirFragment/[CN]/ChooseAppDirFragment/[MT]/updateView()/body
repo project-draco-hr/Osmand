@@ -1,0 +1,43 @@
+{
+  if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_DEFAULT) {
+    locationPath.setText(R.string.storage_directory_default);
+  }
+ else   if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_EXTERNAL_FILE) {
+    locationPath.setText(R.string.storage_directory_external);
+  }
+ else   if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_OBB) {
+    locationPath.setText(R.string.storage_directory_multiuser);
+  }
+ else   if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_SPECIFIED) {
+    locationPath.setText(R.string.storage_directory_manual);
+  }
+ else   if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_SPECIFIED) {
+    locationPath.setText(R.string.storage_directory_manual);
+  }
+  locationDesc.setText(selectedFile.getAbsolutePath() + " \u2022 " + getFreeSpace(selectedFile));
+  boolean copyFiles=!currentAppFile.getAbsolutePath().equals(selectedFile.getAbsolutePath()) && !mapsCopied;
+  if (copyFiles) {
+    copyFiles=false;
+    File[] lf=currentAppFile.listFiles();
+    if (lf != null) {
+      for (      File f : lf) {
+        if (f != null) {
+          if (f.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT)) {
+            copyFiles=true;
+            break;
+          }
+        }
+      }
+    }
+  }
+  warningReadonly.setVisibility(copyFiles ? View.VISIBLE : View.GONE);
+  if (copyFiles) {
+    if (!OsmandSettings.isWritable(currentAppFile)) {
+      warningReadonly.setText(activity.getString(R.string.android_19_location_disabled,currentAppFile.getAbsolutePath()));
+    }
+ else {
+      warningReadonly.setText(getString(R.string.application_dir_change_warning3));
+    }
+  }
+  copyMapsBtn.setVisibility(copyFiles ? View.VISIBLE : View.GONE);
+}

@@ -10,14 +10,11 @@
       int newCurrentRoute=lookAheadFindMinOrthogonalDistance(start,routeNodes,res.currentRoute,15);
       if (newCurrentRoute + 1 < routeNodes.size()) {
         wrongMovementDirection=checkWrongMovementDirection(start,routeNodes.get(newCurrentRoute + 1));
-        if (!wrongMovementDirection) {
+        if (wrongMovementDirection) {
           evalWaitInterval=3000;
         }
  else {
-          if (evalWaitInterval == 0) {
-            evalWaitInterval=3000;
-          }
-          evalWaitInterval=evalWaitInterval * 3 / 2;
+          evalWaitInterval=Math.max(3000,evalWaitInterval * 3 / 2);
           evalWaitInterval=Math.min(evalWaitInterval,120000);
         }
       }
@@ -28,8 +25,25 @@
   }
   app.runInUIThread(new Runnable(){
     @Override public void run(){
-      for (      IRouteInformationListener l : listeners) {
-        l.newRouteIsCalculated(newRoute);
+      ValueHolder<Boolean> showToast=new ValueHolder<Boolean>();
+      showToast.value=true;
+      Iterator<WeakReference<IRouteInformationListener>> it=listeners.iterator();
+      while (it.hasNext()) {
+        WeakReference<IRouteInformationListener> ref=it.next();
+        IRouteInformationListener l=ref.get();
+        if (l == null) {
+          it.remove();
+        }
+ else {
+          l.newRouteIsCalculated(newRoute,showToast);
+        }
+      }
+      if (showToast.value) {
+        String msg=app.getString(R.string.new_route_calculated_dist) + ": " + OsmAndFormatter.getFormattedDistance(res.getWholeDistance(),app);
+        if (OsmandPlugin.isDevelopment() && res.getRoutingTime() != 0f) {
+          msg+=" (" + Algorithms.formatDuration((int)res.getRoutingTime()) + ")";
+        }
+        app.showToastMessage(msg);
       }
     }
   }

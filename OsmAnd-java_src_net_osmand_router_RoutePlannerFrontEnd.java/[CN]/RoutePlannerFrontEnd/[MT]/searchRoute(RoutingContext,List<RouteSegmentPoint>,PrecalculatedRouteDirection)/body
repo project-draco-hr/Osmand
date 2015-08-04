@@ -1,6 +1,8 @@
 {
   if (points.size() <= 2) {
-    ctx.previouslyCalculatedRoute=null;
+    if (!useSmartRouteRecalculation) {
+      ctx.previouslyCalculatedRoute=null;
+    }
     return searchRoute(ctx,points.get(0),points.get(1),routeDirection);
   }
   ArrayList<RouteSegmentResult> firstPartRecalculatedRoute=null;
@@ -35,6 +37,9 @@
   for (int i=0; i < points.size() - 1; i++) {
     RoutingContext local=new RoutingContext(ctx);
     if (i == 0) {
+      if (useSmartRouteRecalculation) {
+        local.previouslyCalculatedRoute=firstPartRecalculatedRoute;
+      }
     }
     local.visitor=ctx.visitor;
     local.calculationProgress=ctx.calculationProgress;

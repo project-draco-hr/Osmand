@@ -4,7 +4,7 @@
   OsMoGroup group=null;
   if (command.equalsIgnoreCase("GP")) {
     group=storage.getGroup(gid);
-    if (group != null) {
+    if (group != null && gid.length() > 0) {
       List<OsMoDevice> delta=mergeGroup(group,obj,false);
       String mygid=service.getMyGroupTrackerId();
       StringBuilder b=new StringBuilder();
@@ -33,6 +33,8 @@
     group=storage.getGroup(gid);
     if (group != null) {
       disconnectAllGroupUsers(group);
+      disableGroupTracks(group,group.groupTracks);
+      disableGroupTracks(group,Collections.singleton(group.name + " points.gpx"));
     }
     processed=true;
   }
@@ -161,13 +163,7 @@
  else {
         mainGroup.users.remove(gid);
         storage.save();
-        if (obj != null) {
-          String errorDescription=obj.optString("error_description");
-          if (!TextUtils.isEmpty(errorDescription)) {
-            app.showToastMessage(errorDescription);
-          }
-        }
- else {
+        if (obj == null) {
           app.showToastMessage(app.getString(R.string.osmo_device_not_found));
         }
       }
@@ -182,13 +178,7 @@
       storage.save();
     }
     if (!OK.equals(data)) {
-      if (obj != null) {
-        String errorDescription=obj.optString("error_description");
-        if (!TextUtils.isEmpty(errorDescription)) {
-          app.showToastMessage(errorDescription);
-        }
-      }
- else {
+      if (obj == null) {
         app.showToastMessage(app.getString(R.string.osmo_device_not_found));
       }
     }

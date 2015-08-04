@@ -1,0 +1,29 @@
+{
+  if (lang != null) {
+    String translateName=getAdditionalInfo(tag + ":" + lang);
+    if (!Algorithms.isEmpty(translateName)) {
+      return lang;
+    }
+  }
+  String plainContent=getAdditionalInfo(tag);
+  if (!Algorithms.isEmpty(plainContent)) {
+    return defLang;
+  }
+  String enName=getAdditionalInfo(tag + ":en");
+  if (!Algorithms.isEmpty(enName)) {
+    return enName;
+  }
+  int maxLen=0;
+  String lng=defLang;
+  for (  String nm : getAdditionalInfo().keySet()) {
+    if (nm.startsWith(tag + ":")) {
+      String key=nm.substring(tag.length() + 1);
+      String cnt=getAdditionalInfo(tag + ":" + key);
+      if (!Algorithms.isEmpty(cnt) && cnt.length() > maxLen) {
+        maxLen=cnt.length();
+        lng=key;
+      }
+    }
+  }
+  return lng;
+}

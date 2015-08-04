@@ -1,12 +1,13 @@
 {
   try {
-    Map<String,FavouritePoint> ex=new LinkedHashMap<String,FavouritePoint>();
-    loadGPXFile(getInternalFile(),ex);
+    Map<String,FavouritePoint> deletedInMemory=new LinkedHashMap<String,FavouritePoint>();
+    loadGPXFile(getInternalFile(),deletedInMemory);
     for (    FavouritePoint fp : cachedFavoritePoints) {
-      ex.remove(getKey(fp));
+      deletedInMemory.remove(getKey(fp));
     }
     saveFile(cachedFavoritePoints,getInternalFile());
-    saveExternalFile(ex.keySet());
+    saveExternalFile(deletedInMemory.keySet());
+    backup(getBackupFile(),getExternalFile());
   }
  catch (  Exception e) {
     log.error(e.getMessage(),e);
