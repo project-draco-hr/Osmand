@@ -1,7 +1,12 @@
 {
   AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
   final OsmandSettings settings=mapActivity.getMyApplication().getSettings();
-  final DashFragmentAdapter adapter=new DashFragmentAdapter(getActivity(),fragmentsData,settings);
+  if (savedInstanceState != null && savedInstanceState.containsKey(CHECKED_ITEMS)) {
+    adapter=new DashFragmentAdapter(getActivity(),fragmentsData,savedInstanceState.getBooleanArray(CHECKED_ITEMS));
+  }
+ else {
+    adapter=new DashFragmentAdapter(getActivity(),fragmentsData,settings);
+  }
   builder.setTitle(R.string.dahboard_options_dialog_title).setAdapter(adapter,null).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialogInterface,    int type){
       boolean[] shouldShow=adapter.getCheckedItems();
@@ -11,7 +16,6 @@
       mapActivity.getDashboard().refreshDashboardFragments();
     }
   }
-);
-  final AlertDialog dialog=builder.create();
-  return dialog;
+).setNegativeButton(R.string.shared_string_cancel,null);
+  return builder.create();
 }
