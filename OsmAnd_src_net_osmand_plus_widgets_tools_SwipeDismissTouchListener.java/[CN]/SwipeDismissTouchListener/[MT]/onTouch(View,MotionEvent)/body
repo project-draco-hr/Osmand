@@ -35,7 +35,7 @@ case MotionEvent.ACTION_UP:
       dismiss=(velocityX < 0) == (deltaX < 0);
       dismissRight=mVelocityTracker.getXVelocity() > 0;
     }
-    if (dismiss) {
+    if (dismiss && dismissRight) {
       final boolean finalDismissRight=dismissRight;
       ViewCompat.animate(mView).translationX(dismissRight ? mViewWidth : -mViewWidth).alpha(0).setDuration(mAnimationTime).setListener(new ViewPropertyAnimatorListener(){
         @Override public void onAnimationStart(        View view){
@@ -81,7 +81,7 @@ if (mVelocityTracker == null) {
 mVelocityTracker.addMovement(motionEvent);
 float deltaX=motionEvent.getRawX() - mDownX;
 float deltaY=motionEvent.getRawY() - mDownY;
-if (Math.abs(deltaX) > mSlop && Math.abs(deltaY) < Math.abs(deltaX) / 2) {
+if (deltaX > mSlop && Math.abs(deltaY) < deltaX / 2) {
   mSwiping=true;
   mSwipingSlop=(deltaX > 0 ? mSlop : -mSlop);
   mView.getParent().requestDisallowInterceptTouchEvent(true);
