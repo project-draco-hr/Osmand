@@ -1,0 +1,25 @@
+{
+  Iterator<IncrementalUpdateGroupByMonth> it=updateByMonth.values().iterator();
+  List<IncrementalUpdate> ll=new ArrayList<IncrementalUpdate>();
+  while (it.hasNext()) {
+    IncrementalUpdateGroupByMonth n=it.next();
+    if (it.hasNext()) {
+      if (!n.isMonthUpdateApplicable()) {
+        return null;
+      }
+      ll.addAll(n.getMonthUpdate());
+    }
+ else {
+      if (n.isDayUpdateApplicable() && isPreferrableLimitForDayUpdates(n.monthYearPart,n.getDayUpdates())) {
+        ll.addAll(n.getDayUpdates());
+      }
+ else       if (n.isMonthUpdateApplicable()) {
+        ll.addAll(n.getMonthUpdate());
+      }
+ else {
+        return null;
+      }
+    }
+  }
+  return ll;
+}

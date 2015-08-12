@@ -2,13 +2,21 @@
   long val=System.currentTimeMillis();
   ArrayList<File> files=new ArrayList<File>();
   File appPath=context.getAppPath(null);
+  File roadsPath=context.getAppPath(IndexConstants.ROADS_INDEX_DIR);
+  roadsPath.mkdirs();
   collectFiles(appPath,IndexConstants.BINARY_MAP_INDEX_EXT,files);
+  renameRoadsFiles(files,roadsPath);
+  collectFiles(roadsPath,IndexConstants.BINARY_MAP_INDEX_EXT,files);
   if (!Version.isFreeVersion(context)) {
     collectFiles(context.getAppPath(IndexConstants.WIKI_INDEX_DIR),IndexConstants.BINARY_MAP_INDEX_EXT,files);
   }
   if (OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) != null) {
     collectFiles(context.getAppPath(IndexConstants.SRTM_INDEX_DIR),IndexConstants.BINARY_MAP_INDEX_EXT,files);
   }
+  if (context.getSettings().BETA_TESTING_LIVE_UPDATES.get()) {
+    changesManager.collectChangesFiles(context.getAppPath(IndexConstants.LIVE_INDEX_DIR),IndexConstants.BINARY_MAP_INDEX_EXT,files);
+  }
+  Collections.sort(files,Algorithms.getFileVersionComparator());
   List<String> warnings=new ArrayList<String>();
   renderer.clearAllResources();
   CachedOsmandIndexes cachedOsmandIndexes=new CachedOsmandIndexes();
@@ -21,62 +29,85 @@
       log.error(e.getMessage(),e);
     }
   }
+  File liveDir=context.getAppPath(IndexConstants.LIVE_INDEX_DIR);
   for (  File f : files) {
     progress.startTask(context.getString(R.string.indexing_map) + " " + f.getName(),-1);
     try {
-      BinaryMapIndexReader index=null;
+      BinaryMapIndexReader mapReader=null;
       try {
-        index=cachedOsmandIndexes.getReader(f);
-        if (index.getVersion() != IndexConstants.BINARY_MAP_VERSION) {
-          index=null;
+        mapReader=cachedOsmandIndexes.getReader(f);
+        if (mapReader.getVersion() != IndexConstants.BINARY_MAP_VERSION) {
+          mapReader=null;
         }
-        if (index != null) {
-          renderer.initializeNewResource(progress,f,index);
+        if (mapReader != null) {
+          renderer.initializeNewResource(progress,f,mapReader);
         }
       }
  catch (      IOException e) {
         log.error(String.format("File %s could not be read",f.getName()),e);
       }
-      if (index == null || (Version.isFreeVersion(context) && (f.getName().contains("_wiki") || f.getName().contains(".wiki")))) {
+      if (mapReader == null || (Version.isFreeVersion(context) && (f.getName().contains("_wiki") || f.getName().contains(".wiki")))) {
         warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
       }
  else {
-        if (index.isBasemap()) {
+        if (mapReader.isBasemap()) {
           basemapFileNames.put(f.getName(),f.getName());
         }
-        long dateCreated=index.getDateCreated();
+        long dateCreated=mapReader.getDateCreated();
         if (dateCreated == 0) {
           dateCreated=f.lastModified();
         }
-        indexFileNames.put(f.getName(),dateFormat.format(dateCreated));
-        for (        String rName : index.getRegionNames()) {
-          RegionAddressRepositoryBinary rarb=new RegionAddressRepositoryBinary(this,index,rName,f.getName());
-          addressMap.put(rName,rarb);
+        if (f.getParentFile().getName().equals(liveDir.getName())) {
+          boolean toUse=changesManager.index(f,dateCreated,mapReader);
+          if (!toUse) {
+            try {
+              mapReader.close();
+            }
+ catch (            IOException e) {
+              log.error(e.getMessage(),e);
+            }
+            continue;
+          }
         }
-        if (index.hasTransportData()) {
+ else {
+          changesManager.indexMainMap(f,dateCreated);
+          indexFileNames.put(f.getName(),dateFormat.format(dateCreated));
+        }
+        if (!mapReader.getRegionNames().isEmpty()) {
           try {
             RandomAccessFile raf=new RandomAccessFile(f,"r");
-            transportRepositories.add(new TransportIndexRepositoryBinary(new BinaryMapIndexReader(raf,index)));
+            RegionAddressRepositoryBinary rarb=new RegionAddressRepositoryBinary(this,new BinaryMapIndexReader(raf,mapReader),f.getName());
+            addressMap.put(f.getName(),rarb);
           }
  catch (          IOException e) {
             log.error("Exception reading " + f.getAbsolutePath(),e);
             warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
           }
         }
-        if (index.containsRouteData()) {
+        if (mapReader.hasTransportData()) {
           try {
             RandomAccessFile raf=new RandomAccessFile(f,"r");
-            routingMapFiles.put(f.getAbsolutePath(),new BinaryMapIndexReader(raf,index));
+            transportRepositories.put(f.getName(),new TransportIndexRepositoryBinary(new BinaryMapIndexReader(raf,mapReader)));
           }
  catch (          IOException e) {
             log.error("Exception reading " + f.getAbsolutePath(),e);
             warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
           }
         }
-        if (index.containsPoiData()) {
+        if (mapReader.containsRouteData()) {
           try {
             RandomAccessFile raf=new RandomAccessFile(f,"r");
-            amenityRepositories.add(new AmenityIndexRepositoryBinary(new BinaryMapIndexReader(raf,index)));
+            routingMapFiles.put(f.getName(),new BinaryMapIndexReader(raf,mapReader));
+          }
+ catch (          IOException e) {
+            log.error("Exception reading " + f.getAbsolutePath(),e);
+            warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
+          }
+        }
+        if (mapReader.containsPoiData()) {
+          try {
+            RandomAccessFile raf=new RandomAccessFile(f,"r");
+            amenityRepositories.put(f.getName(),new AmenityIndexRepositoryBinary(new BinaryMapIndexReader(raf,mapReader)));
           }
  catch (          IOException e) {
             log.error("Exception reading " + f.getAbsolutePath(),e);

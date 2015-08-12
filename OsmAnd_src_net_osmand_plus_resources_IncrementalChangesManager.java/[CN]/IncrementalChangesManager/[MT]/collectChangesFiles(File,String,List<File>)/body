@@ -1,0 +1,26 @@
+{
+  if (dir.exists() && dir.canRead()) {
+    File[] lf=dir.listFiles();
+    if (lf == null || lf.length == 0) {
+      return files;
+    }
+    Set<String> existingFiles=new HashSet<String>();
+    for (    File f : files) {
+      if (!f.getName().endsWith(IndexConstants.BINARY_WIKI_MAP_INDEX_EXT) && !f.getName().endsWith(IndexConstants.BINARY_SRTM_MAP_INDEX_EXT)) {
+        existingFiles.add(Algorithms.getFileNameWithoutExtension(f));
+      }
+    }
+    for (    File f : lf) {
+      if (f.getName().endsWith(ext)) {
+        String index=Algorithms.getFileNameWithoutExtension(f);
+        if (index.length() >= 9 || index.charAt(index.length() - 9) != '_') {
+          String nm=index.substring(0,index.length() - 9);
+          if (existingFiles.contains(nm)) {
+            files.add(f);
+          }
+        }
+      }
+    }
+  }
+  return files;
+}
