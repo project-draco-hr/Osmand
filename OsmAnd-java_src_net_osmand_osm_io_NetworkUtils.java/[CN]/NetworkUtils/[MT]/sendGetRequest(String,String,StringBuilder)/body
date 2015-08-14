@@ -1,0 +1,39 @@
+{
+  try {
+    log.info("GET : " + urlText);
+    HttpURLConnection conn=getHttpURLConnection(urlText);
+    conn.setDoInput(true);
+    conn.setDoOutput(false);
+    conn.setRequestMethod("GET");
+    if (userNamePassword != null) {
+      conn.setRequestProperty("Authorization","Basic " + Base64.encode(userNamePassword));
+    }
+    conn.setRequestProperty("User-Agent","OsmAnd");
+    log.info("Response code and message : " + conn.getResponseCode() + " "+ conn.getResponseMessage());
+    if (conn.getResponseCode() != 200) {
+      return conn.getResponseMessage();
+    }
+    InputStream is=conn.getInputStream();
+    responseBody.setLength(0);
+    if (is != null) {
+      BufferedReader in=new BufferedReader(new InputStreamReader(is,"UTF-8"));
+      String s;
+      boolean first=true;
+      while ((s=in.readLine()) != null) {
+        if (first) {
+          first=false;
+        }
+ else {
+          responseBody.append("\n");
+        }
+        responseBody.append(s);
+      }
+      is.close();
+    }
+    return null;
+  }
+ catch (  IOException e) {
+    log.error(e.getMessage(),e);
+    return e.getMessage();
+  }
+}

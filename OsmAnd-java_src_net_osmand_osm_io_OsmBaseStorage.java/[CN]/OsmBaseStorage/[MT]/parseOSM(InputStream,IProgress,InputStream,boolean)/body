@@ -6,14 +6,23 @@
     streamForProgress=inputStream;
   }
   this.streamForProgress=streamForProgress;
-  SAXParser parser=initSaxParser();
   parseStarted=false;
   entities.clear();
   this.entityInfo.clear();
   if (progress != null) {
     progress.startWork(streamForProgress.available());
   }
-  parser.parse(stream,this);
+  XmlPullParser parser=PlatformUtil.newXMLPullParser();
+  parser.setInput(stream,"UTF-8");
+  int tok;
+  while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
+    if (tok == XmlPullParser.START_TAG) {
+      startElement(parser,parser.getName());
+    }
+ else     if (tok == XmlPullParser.END_TAG) {
+      endElement(parser,parser.getName());
+    }
+  }
   if (progress != null) {
     progress.finishTask();
   }

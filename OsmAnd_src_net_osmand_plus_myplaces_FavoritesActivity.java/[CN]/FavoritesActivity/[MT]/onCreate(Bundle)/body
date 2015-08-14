@@ -3,34 +3,7 @@
   super.onCreate(icicle);
   getSupportActionBar().setTitle(R.string.shared_string_my_places);
   getSupportActionBar().setElevation(0);
-  File[] lf=((OsmandApplication)getApplication()).getAppPath(TRACKS).listFiles();
-  boolean hasGpx=false;
-  if (lf != null) {
-    for (    File t : lf) {
-      if (t.isDirectory() || (t.getName().toLowerCase().endsWith(".gpx"))) {
-        hasGpx=true;
-        break;
-      }
-    }
-  }
   setContentView(R.layout.tab_content);
-  PagerSlidingTabStrip mSlidingTabLayout=(PagerSlidingTabStrip)findViewById(R.id.sliding_tabs);
-  OsmandSettings settings=((OsmandApplication)getApplication()).getSettings();
-  ViewPager mViewPager=(ViewPager)findViewById(R.id.pager);
-  List<TabItem> mTabs=new ArrayList<TabItem>();
-  mTabs.add(getTabIndicator(R.string.shared_string_my_favorites,FavoritesTreeFragment.class));
-  if (hasGpx) {
-    mTabs.add(getTabIndicator(R.string.shared_string_my_tracks,AvailableGPXFragment.class));
-  }
-  OsmandPlugin.addMyPlacesTabPlugins(this,mTabs,getIntent());
-  Integer tabId=settings.FAVORITES_TAB.get();
-  int tab=0;
-  for (int i=0; i < mTabs.size(); i++) {
-    if (mTabs.get(i).resId == tabId) {
-      tab=i;
-    }
-  }
-  setViewPagerAdapter(mViewPager,mTabs);
-  mSlidingTabLayout.setViewPager(mViewPager);
-  mViewPager.setCurrentItem(tab);
+  List<TabItem> mTabs=getTabItems();
+  setTabs(mTabs);
 }
