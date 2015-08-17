@@ -1,0 +1,27 @@
+{
+  View childView=initView(inflater,container,savedInstanceState);
+  FrameLayout.LayoutParams layoutParams=new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+  InterceptorFrameLayout frameLayout=new InterceptorFrameLayout(getActivity());
+  frameLayout.setLayoutParams(layoutParams);
+  FrameLayout.LayoutParams childLayoutParams=new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)childView.getLayoutParams());
+  frameLayout.addView(childView,childLayoutParams);
+  if (isDismissAllowed()) {
+    SwipeDismissTouchListener listener=new SwipeDismissTouchListener(childView,null,new SwipeDismissTouchListener.DismissCallbacks(){
+      @Override public boolean canDismiss(      Object token){
+        return true;
+      }
+      @Override public void onDismiss(      View view,      Object token,      boolean isSwipeRight){
+        if (isSwipeRight) {
+          getDismissCallback().onDismiss();
+        }
+      }
+    }
+);
+    frameLayout.setOnTouchListener(listener);
+    frameLayout.setListener(listener);
+    if (getDismissCallback() == null) {
+      defaultDismissListener=new DefaultDismissListener(getParentView(),dashboard,getTag(),childView);
+    }
+  }
+  return frameLayout;
+}
