@@ -1,18 +1,43 @@
 {
-  Log.v(TAG,"getView(" + "tag=" + tag + ")");
   final View convertView=LayoutInflater.from(linearLayout.getContext()).inflate(R.layout.poi_tag_list_item,null,false);
-  EditText tagEditText=(EditText)convertView.findViewById(R.id.tagEditText);
-  EditText valueEditText=(EditText)convertView.findViewById(R.id.valueEditText);
-  ImageButton deleteItemImageButton=(ImageButton)convertView.findViewById(R.id.deleteItemImageButton);
+  final EditText tagEditText=(EditText)convertView.findViewById(R.id.tagEditText);
   tagEditText.setText(tag.tag);
+  final EditText valueEditText=(EditText)convertView.findViewById(R.id.valueEditText);
+  ImageButton deleteItemImageButton=(ImageButton)convertView.findViewById(R.id.deleteItemImageButton);
   valueEditText.setText(tag.value);
   deleteItemImageButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       linearLayout.removeView((View)v.getParent());
       editPoiData.tags.remove(tag);
+      if (mIsUserInput)       editPoiData.notifyDatasetChanged(mTagsChangedListener);
     }
   }
 );
-  Log.v(TAG,"convertView=" + convertView);
+  tagEditText.addTextChangedListener(new TextWatcher(){
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+    @Override public void afterTextChanged(    Editable s){
+      editPoiData.tags.remove(tag);
+      tag.tag=tagEditText.getText().toString();
+      editPoiData.tags.add(tag);
+      if (mIsUserInput)       editPoiData.notifyDatasetChanged(mTagsChangedListener);
+    }
+  }
+);
+  valueEditText.addTextChangedListener(new TextWatcher(){
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+    @Override public void afterTextChanged(    Editable s){
+      editPoiData.tags.remove(tag);
+      tag.value=valueEditText.getText().toString();
+      editPoiData.tags.add(tag);
+      if (mIsUserInput)       editPoiData.notifyDatasetChanged(mTagsChangedListener);
+    }
+  }
+);
   return convertView;
 }
