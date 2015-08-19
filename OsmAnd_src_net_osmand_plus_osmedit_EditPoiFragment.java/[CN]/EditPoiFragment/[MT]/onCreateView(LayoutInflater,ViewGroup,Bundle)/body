@@ -44,7 +44,7 @@
   ImageButton poiTypeButton=(ImageButton)view.findViewById(R.id.poiTypeButton);
   poiTypeButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      DialogFragment fragment=PoiTypeDialogFragment.createInstance(amenity);
+      DialogFragment fragment=PoiTypeDialogFragment.createInstance(editPoiData.amenity);
       fragment.show(getChildFragmentManager(),"PoiTypeDialogFragment");
     }
   }
@@ -65,6 +65,7 @@
     }
   }
 );
+  poiTypeTextInputLayout=(TextInputLayout)view.findViewById(R.id.poiTypeTextInputLayout);
   poiTypeEditText=(AutoCompleteTextView)view.findViewById(R.id.poiTypeEditText);
   poiTypeEditText.addTextChangedListener(new TextWatcher(){
     @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
@@ -72,7 +73,7 @@
     @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
     }
     @Override public void afterTextChanged(    Editable s){
-      final Tag tag=new Tag(poiTypeTag,s.toString());
+      final Tag tag=new Tag(POI_TYPE_TAG,s.toString());
       if (mIsUserInput) {
         getEditPoiData().tags.remove(tag);
         getEditPoiData().tags.add(tag);
@@ -83,8 +84,8 @@
 );
   poiTypeEditText.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      if (poiTypeEditText.getText().length() == 0 && amenity.getType() != null) {
-        DialogFragment dialogFragment=PoiSubTypeDialogFragment.createInstance(amenity);
+      if (poiTypeEditText.getText().length() == 0 && editPoiData.amenity.getType() != null) {
+        DialogFragment dialogFragment=PoiSubTypeDialogFragment.createInstance(editPoiData.amenity);
         dialogFragment.show(getChildFragmentManager(),"PoiSubTypeDialogFragment");
       }
     }
@@ -97,8 +98,9 @@
     @Override public void onClick(    View v){
       OsmPoint.Action action=node.getId() == -1 ? OsmPoint.Action.CREATE : OsmPoint.Action.MODIFY;
       String description="";
+      Log.v(TAG,"tags=" + editPoiData.tags);
       for (      Tag tag : editPoiData.tags) {
-        if (tag.tag.equals(poiTypeTag)) {
+        if (tag.tag.equals(POI_TYPE_TAG)) {
           if (allTranslatedSubTypes.get(tag.value) != null) {
             PoiType pt=allTranslatedSubTypes.get(tag.value);
             node.putTag(pt.getOsmTag(),pt.getOsmValue());
@@ -107,11 +109,8 @@
             }
           }
  else {
-            node.putTag(amenity.getType().getDefaultTag(),tag.value);
+            node.putTag(editPoiData.amenity.getType().getDefaultTag(),tag.value);
           }
-        }
- else         if (tag.tag.equals(OSMSettings.OSMTagKey.DESCRIPTION.getValue())) {
-          description=tag.value;
         }
  else {
           if (tag.value.length() > 0) {
