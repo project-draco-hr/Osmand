@@ -2,19 +2,14 @@
   OnContextMenuClick listener=new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int resId,    int pos,    boolean isChecked){
       if (resId == R.string.context_menu_item_create_poi) {
-        mapActivity.getSupportFragmentManager().beginTransaction().add(R.id.fragmentContainer,new EditPoiFragment(),EditPoiFragment.TAG).addToBackStack(null).commit();
+        EditPoiFragment editPoiFragment=EditPoiFragment.createAddPoiInstance(latitude,longitude,mapActivity.getMyApplication());
+        mapActivity.getSupportFragmentManager().beginTransaction().add(R.id.fragmentContainer,editPoiFragment,EditPoiFragment.TAG).addToBackStack(null).commit();
       }
  else       if (resId == R.string.context_menu_item_open_bug) {
         if (osmBugsLayer == null) {
           registerLayers(mapActivity);
         }
         osmBugsLayer.openBug(latitude,longitude);
-      }
- else       if (resId == R.string.poi_context_menu_delete) {
-        getPoiActions(mapActivity).showDeleteDialog((Amenity)selectedObj);
-      }
- else       if (resId == R.string.poi_context_menu_modify) {
-        getPoiActions(mapActivity).showEditDialog((Amenity)selectedObj);
       }
       return true;
     }
