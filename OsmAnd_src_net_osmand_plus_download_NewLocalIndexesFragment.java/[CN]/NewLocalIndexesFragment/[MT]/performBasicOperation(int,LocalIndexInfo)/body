@@ -1,0 +1,30 @@
+{
+  if (resId == R.string.shared_string_rename) {
+    renameFile(getActivity(),new File(info.getPathToData()),new Runnable(){
+      @Override public void run(){
+        reloadIndexes();
+      }
+    }
+);
+  }
+ else   if (resId == R.string.local_index_mi_restore) {
+    new LocalIndexOperationTask(RESTORE_OPERATION).execute(info);
+  }
+ else   if (resId == R.string.shared_string_delete) {
+    Builder confirm=new Builder(getActivity());
+    confirm.setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        new LocalIndexOperationTask(DELETE_OPERATION).execute(info);
+      }
+    }
+);
+    confirm.setNegativeButton(R.string.shared_string_no,null);
+    String fn=FileNameTranslationHelper.getFileName(getActivity(),getMyApplication().getResourceManager().getOsmandRegions(),info.getFileName());
+    confirm.setMessage(getString(R.string.delete_confirmation_msg,fn));
+    confirm.show();
+  }
+ else   if (resId == R.string.local_index_mi_backup) {
+    new LocalIndexOperationTask(BACKUP_OPERATION).execute(info);
+  }
+  return true;
+}
