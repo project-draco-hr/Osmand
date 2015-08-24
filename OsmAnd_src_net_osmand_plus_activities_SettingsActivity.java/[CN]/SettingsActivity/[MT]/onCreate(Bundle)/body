@@ -7,8 +7,6 @@
   general.setOnPreferenceClickListener(this);
   routing=(Preference)screen.findPreference("routing_settings");
   routing.setOnPreferenceClickListener(this);
-  help=(Preference)screen.findPreference("help");
-  help.setOnPreferenceClickListener(this);
   getToolbar().setTitle(Version.getFullVersion(getMyApplication()));
   Intent intent=getIntent();
   if (intent != null && intent.getIntExtra(INTENT_KEY_SETTINGS_SCREEN,0) != 0) {
@@ -20,10 +18,21 @@
       startActivity(new Intent(this,SettingsNavigationActivity.class));
     }
   }
-  about=new Preference(this);
-  about.setOnPreferenceClickListener(this);
-  about.setSummary(R.string.about_settings_descr);
-  about.setTitle(R.string.about_settings);
-  about.setKey("about");
-  screen.addPreference(about);
+  PreferenceCategory plugins=(PreferenceCategory)screen.findPreference("plugin_settings");
+  for (  OsmandPlugin op : OsmandPlugin.getEnabledPlugins()) {
+    final Class<? extends Activity> sa=op.getSettingsActivity();
+    if (sa != null) {
+      Preference preference=new Preference(this);
+      preference.setTitle(op.getName());
+      preference.setKey(op.getId());
+      preference.setOnPreferenceClickListener(new OnPreferenceClickListener(){
+        @Override public boolean onPreferenceClick(        Preference preference){
+          startActivity(new Intent(SettingsActivity.this,sa));
+          return false;
+        }
+      }
+);
+      plugins.addPreference(preference);
+    }
+  }
 }
