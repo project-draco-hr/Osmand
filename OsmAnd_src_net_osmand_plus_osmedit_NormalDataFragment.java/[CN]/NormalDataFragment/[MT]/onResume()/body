@@ -1,0 +1,22 @@
+{
+  super.onResume();
+  mTagsChangedListener=new EditPoiData.TagsChangedListener(){
+    @Override public void onTagsChanged(){
+      TagMapProcessor tagMapProcessor=new TagMapProcessor();
+      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.ADDR_STREET.getValue(),streetEditText);
+      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.ADDR_HOUSE_NUMBER.getValue(),houseNumberEditText);
+      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.PHONE.getValue(),phoneEditText);
+      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.WEBSITE.getValue(),webSiteEditText);
+      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.DESCRIPTION.getValue(),descriptionEditText);
+      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.OPENING_HOURS.getValue(),openHoursEditText);
+      mIsUserInput=false;
+      for (      Tag tag : getData().tags) {
+        tagMapProcessor.process(tag);
+      }
+      tagMapProcessor.clearEmptyFields();
+      mIsUserInput=true;
+    }
+  }
+;
+  getData().addListener(mTagsChangedListener);
+}

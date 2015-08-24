@@ -1,0 +1,23 @@
+{
+  MapPoiTypes poiTypes=((OsmandApplication)getActivity().getApplication()).getPoiTypes();
+  final Amenity amenity=(Amenity)getArguments().getSerializable(KEY_AMENITY);
+  AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
+  final List<PoiCategory> categories=poiTypes.getCategories(false);
+  String[] vals=new String[categories.size()];
+  for (int i=0; i < vals.length; i++) {
+    vals[i]=categories.get(i).getTranslation();
+  }
+  builder.setItems(vals,new Dialog.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      PoiCategory aType=categories.get(which);
+      if (aType != amenity.getType()) {
+        amenity.setType(aType);
+        amenity.setSubType("");
+        ((EditPoiFragment)getParentFragment()).updateType(amenity);
+      }
+      dismiss();
+    }
+  }
+);
+  return builder.create();
+}

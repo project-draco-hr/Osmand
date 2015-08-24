@@ -41,5 +41,115 @@
     }
   }
 );
+  ImageButton poiTypeButton=(ImageButton)view.findViewById(R.id.poiTypeButton);
+  poiTypeButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      DialogFragment fragment=PoiTypeDialogFragment.createInstance(editPoiData.amenity);
+      fragment.show(getChildFragmentManager(),"PoiTypeDialogFragment");
+    }
+  }
+);
+  poiNameEditText=(EditText)view.findViewById(R.id.poiNameEditText);
+  poiNameEditText.addTextChangedListener(new TextWatcher(){
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+    @Override public void afterTextChanged(    Editable s){
+      final Tag tag=new Tag(OSMSettings.OSMTagKey.NAME.getValue(),s.toString());
+      if (mIsUserInput) {
+        getEditPoiData().tags.remove(tag);
+        getEditPoiData().tags.add(tag);
+        getEditPoiData().notifyDatasetChanged(mTagsChangedListener);
+      }
+    }
+  }
+);
+  poiTypeTextInputLayout=(TextInputLayout)view.findViewById(R.id.poiTypeTextInputLayout);
+  poiTypeEditText=(AutoCompleteTextView)view.findViewById(R.id.poiTypeEditText);
+  poiTypeEditText.addTextChangedListener(new TextWatcher(){
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+    @Override public void afterTextChanged(    Editable s){
+      final Tag tag=new Tag(POI_TYPE_TAG,s.toString());
+      if (mIsUserInput) {
+        getEditPoiData().tags.remove(tag);
+        getEditPoiData().tags.add(tag);
+        getEditPoiData().notifyDatasetChanged(mTagsChangedListener);
+      }
+    }
+  }
+);
+  poiTypeEditText.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (poiTypeEditText.getText().length() == 0 && editPoiData.amenity.getType() != null) {
+        DialogFragment dialogFragment=PoiSubTypeDialogFragment.createInstance(editPoiData.amenity);
+        dialogFragment.show(getChildFragmentManager(),"PoiSubTypeDialogFragment");
+      }
+    }
+  }
+);
+  Button saveButton=(Button)view.findViewById(R.id.saveButton);
+  int saveButtonTextId=isLocalEdit ? R.string.shared_string_save : R.string.default_buttons_commit;
+  saveButton.setText(saveButtonTextId);
+  saveButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      OsmPoint.Action action=node.getId() == -1 ? OsmPoint.Action.CREATE : OsmPoint.Action.MODIFY;
+      String description="";
+      Log.v(TAG,"tags=" + editPoiData.tags);
+      for (      Tag tag : editPoiData.tags) {
+        if (tag.tag.equals(POI_TYPE_TAG)) {
+          if (allTranslatedSubTypes.get(tag.value) != null) {
+            PoiType pt=allTranslatedSubTypes.get(tag.value);
+            node.putTag(pt.getOsmTag(),pt.getOsmValue());
+            if (pt.getOsmTag2() != null) {
+              node.putTag(pt.getOsmTag2(),pt.getOsmValue2());
+            }
+          }
+ else {
+            node.putTag(editPoiData.amenity.getType().getDefaultTag(),tag.value);
+          }
+        }
+ else {
+          if (tag.value.length() > 0) {
+            node.putTag(tag.tag,tag.value);
+          }
+ else {
+            node.removeTag(tag.tag);
+          }
+        }
+      }
+      commitNode(action,node,openstreetmapUtil.getEntityInfo(),"",false,new Runnable(){
+        @Override public void run(){
+          if (isLocalEdit) {
+            AccessibleToast.makeText(getActivity(),R.string.osm_changes_added_to_local_edits,Toast.LENGTH_LONG).show();
+          }
+ else {
+            final String message=node.getId() == -1 ? getResources().getString(R.string.poi_action_add) : getResources().getString(R.string.poi_action_change);
+            AccessibleToast.makeText(getActivity(),MessageFormat.format(getResources().getString(R.string.poi_action_succeded_template),message),Toast.LENGTH_LONG).show();
+          }
+          if (getActivity() instanceof MapActivity) {
+            ((MapActivity)getActivity()).getMapView().refreshMap(true);
+          }
+          FragmentManager fragmentManager=getActivity().getSupportFragmentManager();
+          fragmentManager.beginTransaction().remove(EditPoiFragment.this).commit();
+          fragmentManager.popBackStack();
+        }
+      }
+,getActivity());
+    }
+  }
+);
+  Button cancelButton=(Button)view.findViewById(R.id.cancelButton);
+  cancelButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      FragmentManager fragmentManager=getActivity().getSupportFragmentManager();
+      fragmentManager.beginTransaction().remove(EditPoiFragment.this).commit();
+      fragmentManager.popBackStack();
+    }
+  }
+);
   return view;
 }
