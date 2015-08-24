@@ -3,16 +3,10 @@
   super.onCreate(savedInstanceState);
   addPreferencesFromResource(R.xml.settings_pref);
   PreferenceScreen screen=getPreferenceScreen();
-  localIndexes=(Preference)screen.findPreference("local_indexes");
-  localIndexes.setOnPreferenceClickListener(this);
-  plugins=(Preference)screen.findPreference("plugins");
-  plugins.setOnPreferenceClickListener(this);
   general=(Preference)screen.findPreference("general_settings");
   general.setOnPreferenceClickListener(this);
   routing=(Preference)screen.findPreference("routing_settings");
   routing.setOnPreferenceClickListener(this);
-  help=(Preference)screen.findPreference("help");
-  help.setOnPreferenceClickListener(this);
   getToolbar().setTitle(Version.getFullVersion(getMyApplication()));
   Intent intent=getIntent();
   if (intent != null && intent.getIntExtra(INTENT_KEY_SETTINGS_SCREEN,0) != 0) {
@@ -24,18 +18,21 @@
       startActivity(new Intent(this,SettingsNavigationActivity.class));
     }
   }
-  if ((Version.isDeveloperVersion(getMyApplication())) && OsmandPlugin.getEnabledPlugin(OsmandDevelopmentPlugin.class) != null) {
-    version=new Preference(this);
-    version.setOnPreferenceClickListener(this);
-    version.setSummary(R.string.version_settings_descr);
-    version.setTitle(R.string.version_settings);
-    version.setKey("version");
-    screen.addPreference(version);
+  PreferenceCategory plugins=(PreferenceCategory)screen.findPreference("plugin_settings");
+  for (  OsmandPlugin op : OsmandPlugin.getEnabledPlugins()) {
+    final Class<? extends Activity> sa=op.getSettingsActivity();
+    if (sa != null) {
+      Preference preference=new Preference(this);
+      preference.setTitle(op.getName());
+      preference.setKey(op.getId());
+      preference.setOnPreferenceClickListener(new OnPreferenceClickListener(){
+        @Override public boolean onPreferenceClick(        Preference preference){
+          startActivity(new Intent(SettingsActivity.this,sa));
+          return false;
+        }
+      }
+);
+      plugins.addPreference(preference);
+    }
   }
-  about=new Preference(this);
-  about.setOnPreferenceClickListener(this);
-  about.setSummary(R.string.about_settings_descr);
-  about.setTitle(R.string.about_settings);
-  about.setKey("about");
-  screen.addPreference(about);
 }
