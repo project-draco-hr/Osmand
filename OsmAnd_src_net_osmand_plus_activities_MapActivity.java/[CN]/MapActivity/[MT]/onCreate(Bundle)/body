@@ -62,7 +62,19 @@
   if (getMyApplication().getAppInitializer().isFirstTime(this)) {
     getSupportFragmentManager().beginTransaction().add(R.id.fragmentContainer,new FirstUsageFragment(),FirstUsageFragment.TAG).commit();
   }
-  ListView menuItemsListView=(ListView)findViewById(R.id.menuItems);
+  final ListView menuItemsListView=(ListView)findViewById(R.id.menuItems);
   menuItemsListView.setDivider(null);
-  menuItemsListView.setAdapter(mapActions.createMainOptionsMenu().createSimpleListAdapter(this,true));
+  final ContextMenuAdapter contextMenuAdapter=mapActions.createMainOptionsMenu();
+  final ArrayAdapter<?> simpleListAdapter=contextMenuAdapter.createSimpleListAdapter(this,true);
+  menuItemsListView.setAdapter(simpleListAdapter);
+  menuItemsListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+    @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
+      ContextMenuAdapter.OnContextMenuClick click=contextMenuAdapter.getClickAdapter(position);
+      if (click.onContextMenuClick(simpleListAdapter,contextMenuAdapter.getElementId(position),position,false)) {
+        closeDrawer();
+      }
+    }
+  }
+);
+  drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
 }
