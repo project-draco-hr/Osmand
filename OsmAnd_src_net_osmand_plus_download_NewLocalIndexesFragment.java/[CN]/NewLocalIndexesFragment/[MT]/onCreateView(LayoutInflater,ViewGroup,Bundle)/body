@@ -2,9 +2,19 @@
   View view=inflater.inflate(R.layout.local_index_fragment,container,false);
   getDownloadActivity().setSupportProgressBarIndeterminateVisibility(false);
   ListView listView=(ListView)view.findViewById(android.R.id.list);
-  descriptionText=(TextView)view.findViewById(R.id.memory_size);
-  sizeProgress=(ProgressBar)view.findViewById(R.id.memory_progress);
-  updateDescriptionTextWithSize();
-  colorDrawables();
+  TextView descriptionText=(TextView)view.findViewById(R.id.memory_size);
+  ProgressBar sizeProgress=(ProgressBar)view.findViewById(R.id.memory_progress);
+  File dir=getMyApplication().getAppPath("").getParentFile();
+  String size=formatGb.format(new Object[]{0});
+  int percent=0;
+  if (dir.canRead()) {
+    StatFs statFs=new StatFs(dir.getAbsolutePath());
+    size=formatGb.format(new Object[]{(float)(statFs.getAvailableBlocks()) * statFs.getBlockSize() / (1 << 30)});
+    percent=(int)(statFs.getAvailableBlocks() * 100 / statFs.getBlockCount());
+  }
+  sizeProgress.setProgress(percent);
+  String text=getString(R.string.free,size);
+  descriptionText.setText(text);
+  descriptionText.setMovementMethod(LinkMovementMethod.getInstance());
   return view;
 }
