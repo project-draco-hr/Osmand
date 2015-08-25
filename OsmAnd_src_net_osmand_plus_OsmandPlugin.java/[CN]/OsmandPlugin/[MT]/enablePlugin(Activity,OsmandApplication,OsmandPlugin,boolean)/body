@@ -14,7 +14,14 @@
   }
   app.getSettings().enablePlugin(plugin.getId(),enable);
   if (activity instanceof MapActivity) {
-    plugin.updateLayers(((MapActivity)activity).getMapView(),(MapActivity)activity);
+    final MapActivity mapActivity=(MapActivity)activity;
+    plugin.updateLayers(mapActivity.getMapView(),mapActivity);
+    mapActivity.getDashboard().refreshDashboardFragments();
+    if (!enable && plugin.getCardFragment() != null) {
+      Fragment fragment=mapActivity.getSupportFragmentManager().findFragmentByTag(plugin.getCardFragment().tag);
+      LOG.debug("fragment=" + fragment);
+      mapActivity.getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+    }
   }
   return true;
 }
