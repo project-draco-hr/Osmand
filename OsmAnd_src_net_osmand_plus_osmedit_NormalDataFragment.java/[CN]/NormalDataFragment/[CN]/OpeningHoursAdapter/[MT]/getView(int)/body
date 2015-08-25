@@ -1,0 +1,26 @@
+{
+  OpeningHoursParser.BasicOpeningHourRule rule=(BasicOpeningHourRule)openingHours.getRules().get(position);
+  final View view=LayoutInflater.from(linearLayout.getContext()).inflate(R.layout.open_time_list_item,null,false);
+  ImageView clockIconImageView=(ImageView)view.findViewById(R.id.clockIconImageView);
+  TextView daysTextView=(TextView)view.findViewById(R.id.daysTextView);
+  StringBuilder stringBuilder=new StringBuilder();
+  rule.appendDaysString(stringBuilder);
+  daysTextView.setText(stringBuilder.toString());
+  TextView openingTextView=(TextView)view.findViewById(R.id.openingTextView);
+  final int openingHour=rule.getStartTime() / 60;
+  int openingMinute=rule.getStartTime() - openingHour * 60;
+  openingTextView.setText(formatTime(openingHour,openingMinute));
+  TextView closingTextView=(TextView)view.findViewById(R.id.closingTextView);
+  int enHour=rule.getEndTime() / 60;
+  int enTime=rule.getEndTime() - enHour * 60;
+  closingTextView.setText(formatTime(enHour,enTime));
+  ImageButton deleteItemImageButton=(ImageButton)view.findViewById(R.id.deleteItemImageButton);
+  deleteItemImageButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      openingHours.getRules().remove(position);
+      updateViews();
+    }
+  }
+);
+  return view;
+}
