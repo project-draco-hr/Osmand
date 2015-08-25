@@ -15,12 +15,35 @@
       data.queryNewData(tileBox);
       objects=data.getResults();
       if (objects != null) {
-        int r=getRadiusPoi(tileBox);
+        int iconSize=poiBackground.getWidth() * 3 / 2;
+        List<Amenity> fullObjects=new ArrayList<>();
+        QuadRect bounds=new QuadRect(0,0,tileBox.getPixWidth(),tileBox.getPixHeight());
+        QuadTree<RectF> boundIntersections=new QuadTree<RectF>(bounds,4,0.6f);
+        List<RectF> result=new ArrayList<RectF>();
         for (        Amenity o : objects) {
           int x=(int)tileBox.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
           int y=(int)tileBox.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
-          canvas.drawCircle(x,y,r,pointAltUI);
-          canvas.drawCircle(x,y,r,point);
+          boolean intersects=false;
+          RectF visibleRect=calculateRect(x,y,iconSize,iconSize);
+          boundIntersections.queryInBox(new QuadRect(visibleRect.left,visibleRect.top,visibleRect.right,visibleRect.bottom),result);
+          for (          RectF r : result) {
+            if (r.intersects(visibleRect.left,visibleRect.top,visibleRect.right,visibleRect.bottom)) {
+              intersects=true;
+              break;
+            }
+          }
+          if (intersects) {
+            canvas.drawBitmap(poiBackgroundSmall,x - poiBackgroundSmall.getWidth() / 2,y - poiBackgroundSmall.getHeight() / 2,paintIconBackground);
+          }
+ else {
+            boundIntersections.insert(visibleRect,new QuadRect(visibleRect.left,visibleRect.top,visibleRect.right,visibleRect.bottom));
+            fullObjects.add(o);
+          }
+        }
+        for (        Amenity o : fullObjects) {
+          int x=(int)tileBox.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+          int y=(int)tileBox.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+          canvas.drawBitmap(poiBackground,x - poiBackground.getWidth() / 2,y - poiBackground.getHeight() / 2,paintIconBackground);
           String id=null;
           PoiType st=o.getType().getPoiTypeByKeyName(o.getSubType());
           if (st != null) {
@@ -34,6 +57,7 @@
           if (id != null) {
             Bitmap bmp=RenderingIcons.getIcon(view.getContext(),id,false);
             if (bmp != null) {
+              paintIcon.setColorFilter(new PorterDuffColorFilter(Color.WHITE,PorterDuff.Mode.SRC_IN));
               canvas.drawBitmap(bmp,x - bmp.getWidth() / 2,y - bmp.getHeight() / 2,paintIcon);
             }
           }
