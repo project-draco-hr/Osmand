@@ -1,18 +1,16 @@
 {
   Bundle args=getArguments();
   final boolean isStart=args.getBoolean(IS_START);
+  final int positionToAdd=args.getInt(POSITION_TO_ADD);
   final OpeningHoursParser.BasicOpeningHourRule item=(OpeningHoursParser.BasicOpeningHourRule)args.getSerializable(BASIC_OPENING_HOUR_RULE);
   AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
-  Calendar initialState=(Calendar)args.getSerializable(INITIAL_TIME);
-  if (initialState == null) {
-    initialState=Calendar.getInstance();
-    initialState.set(Calendar.HOUR_OF_DAY,isStart ? 8 : 20);
-    initialState.set(Calendar.MINUTE,0);
-  }
+  int time=isStart ? item.getStartTime() : item.getEndTime();
+  int hour=time / 60;
+  int minute=time - hour * 60;
   final TimePicker timePicker=new TimePicker(getActivity());
   timePicker.setIs24HourView(DateFormat.is24HourFormat(getActivity()));
-  timePicker.setCurrentHour(initialState.get(Calendar.HOUR_OF_DAY));
-  timePicker.setCurrentMinute(initialState.get(Calendar.MINUTE));
+  timePicker.setCurrentHour(hour);
+  timePicker.setCurrentMinute(minute);
   builder.setView(timePicker).setPositiveButton(R.string.next_proceed,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       int minute=timePicker.getCurrentMinute();
@@ -20,11 +18,11 @@
       int time=minute + hourOfDay * 60;
       if (isStart) {
         item.setStartTime(time);
-        OpeningHoursHoursDialogFragment.createInstance(item,null,false).show(getFragmentManager(),"TimePickerDialogFragment");
+        OpeningHoursHoursDialogFragment.createInstance(item,positionToAdd,false).show(getFragmentManager(),"TimePickerDialogFragment");
       }
  else {
         item.setEndTime(time);
-        ((BasicDataFragment)getParentFragment()).addBasicOpeningHoursRule(item);
+        ((BasicDataFragment)getParentFragment()).setBasicOpeningHoursRule(item,positionToAdd);
       }
     }
   }
