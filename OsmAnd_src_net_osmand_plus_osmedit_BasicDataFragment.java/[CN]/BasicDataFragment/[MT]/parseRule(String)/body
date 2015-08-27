@@ -1,7 +1,10 @@
 {
-  r=r.replaceAll("sunset",sunset);
-  r=r.replaceAll("sunrise",sunrise);
-  r=r.replaceAll("\\+","-" + endOfDay);
+  final String[] daysStr=new String[]{"Mo","Tu","We","Th","Fr","Sa","Su"};
+  final String[] monthsStr=new String[]{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+  String sunrise="07:00";
+  String sunset="21:00";
+  String endOfDay="24:00";
+  String localRuleString=r.replaceAll("sunset",sunset).replaceAll("sunrise",sunrise).replaceAll("\\+","-" + endOfDay);
   int startDay=-1;
   int previousDay=-1;
   int startMonth=-1;
@@ -10,19 +13,18 @@
   BasicOpeningHourRule basic=new BasicOpeningHourRule();
   boolean[] days=basic.getDays();
   boolean[] months=basic.getMonths();
-  if ("24/7".equals(r)) {
+  if ("24/7".equals(localRuleString)) {
     Arrays.fill(days,true);
     Arrays.fill(months,true);
     basic.addTimeRange(0,24 * 60);
-    rs.addRule(basic);
-    return true;
+    return basic;
   }
-  for (; k < r.length(); k++) {
-    char ch=r.charAt(k);
+  for (; k < localRuleString.length(); k++) {
+    char ch=localRuleString.charAt(k);
     if (Character.isDigit(ch)) {
       break;
     }
-    if ((k + 2 < r.length()) && r.substring(k,k + 3).equals("off")) {
+    if ((k + 2 < localRuleString.length()) && localRuleString.substring(k,k + 3).equals("off")) {
       break;
     }
     if (Character.isWhitespace(ch) || ch == ',') {
@@ -35,7 +37,7 @@
         startMonth=previousMonth;
       }
  else {
-        return false;
+        return new UnparseableRule(r);
       }
     }
  else     if (k < r.length() - 1) {
@@ -97,7 +99,7 @@
       }
     }
  else {
-      return false;
+      return new UnparseableRule(r);
     }
   }
   if (previousDay == -1) {
@@ -110,7 +112,7 @@
       months[i]=true;
     }
   }
-  String timeSubstr=r.substring(k);
+  String timeSubstr=localRuleString.substring(k);
   String[] times=timeSubstr.split(",");
   boolean timesExist=true;
   for (int i=0; i < times.length; i++) {
@@ -129,7 +131,7 @@
     String[] stEnd=time.split("-");
     if (stEnd.length != 2) {
       if (i == times.length - 1 && basic.getStartTime() == 0 && basic.getEndTime() == 0) {
-        return false;
+        return new UnparseableRule(r);
       }
       continue;
     }
@@ -160,13 +162,12 @@
       end=endHour * 60 + endMin;
     }
  catch (    NumberFormatException e) {
-      return false;
+      return new UnparseableRule(r);
     }
     basic.addTimeRange(st,end);
   }
-  rs.addRule(basic);
   if (!timesExist) {
-    return false;
+    return new UnparseableRule(r);
   }
-  return true;
+  return basic;
 }
