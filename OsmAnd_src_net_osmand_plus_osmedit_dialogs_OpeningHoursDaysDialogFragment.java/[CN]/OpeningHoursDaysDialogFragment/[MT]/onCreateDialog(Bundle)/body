@@ -2,7 +2,7 @@
   final OpeningHoursParser.BasicOpeningHourRule item=(OpeningHoursParser.BasicOpeningHourRule)getArguments().getSerializable(ITEM);
   final int positionToAdd=getArguments().getInt(POSITION_TO_ADD);
   AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
-  boolean add=positionToAdd > -1;
+  final boolean createNew=positionToAdd == -1;
   Calendar inst=Calendar.getInstance();
   final int first=inst.getFirstDayOfWeek();
   final boolean[] dayToShow=new boolean[7];
@@ -23,13 +23,18 @@
     }
   }
 );
-  builder.setPositiveButton(getActivity().getString(R.string.next_proceed),new DialogInterface.OnClickListener(){
+  builder.setPositiveButton(createNew ? R.string.next_proceed : R.string.shared_string_save,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       boolean[] days=item.getDays();
       for (int i=0; i < 7; i++) {
         days[(first + 5 + i) % 7]=dayToShow[i];
       }
-      OpeningHoursHoursDialogFragment.createInstance(item,positionToAdd,true).show(getFragmentManager(),"TimePickerDialogFragment");
+      if (createNew) {
+        OpeningHoursHoursDialogFragment.createInstance(item,positionToAdd,true).show(getFragmentManager(),"TimePickerDialogFragment");
+      }
+ else {
+        ((BasicDataFragment)getParentFragment()).setBasicOpeningHoursRule(item,positionToAdd);
+      }
     }
   }
 );
