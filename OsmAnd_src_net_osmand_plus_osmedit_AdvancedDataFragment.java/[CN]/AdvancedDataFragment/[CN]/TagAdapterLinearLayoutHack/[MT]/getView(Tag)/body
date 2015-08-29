@@ -1,6 +1,6 @@
 {
   final View convertView=LayoutInflater.from(linearLayout.getContext()).inflate(R.layout.poi_tag_list_item,null,false);
-  final EditText tagEditText=(EditText)convertView.findViewById(R.id.tagEditText);
+  final AutoCompleteTextView tagEditText=(AutoCompleteTextView)convertView.findViewById(R.id.tagEditText);
   tagEditText.setText(tag.tag);
   final EditText valueEditText=(EditText)convertView.findViewById(R.id.valueEditText);
   ImageButton deleteItemImageButton=(ImageButton)convertView.findViewById(R.id.deleteItemImageButton);
@@ -27,6 +27,30 @@
       tag.tag=tagEditText.getText().toString();
       editPoiData.tags.add(tag);
       if (mIsUserInput)       editPoiData.notifyDatasetChanged(mTagsChangedListener);
+    }
+  }
+);
+  final Set<String> tagKeys=new TreeSet<String>();
+  for (  OSMSettings.OSMTagKey t : OSMSettings.OSMTagKey.values()) {
+    if ((t != OSMSettings.OSMTagKey.NAME) && (t != OSMSettings.OSMTagKey.OPENING_HOURS) && (t != OSMSettings.OSMTagKey.PHONE)&& (t != OSMSettings.OSMTagKey.WEBSITE)) {
+      tagKeys.add(t.getValue());
+    }
+  }
+  ArrayAdapter<Object> adapter=new ArrayAdapter<Object>(linearLayout.getContext(),R.layout.list_textview,tagKeys.toArray());
+  tagEditText.setAdapter(adapter);
+  tagEditText.setThreshold(1);
+  tagEditText.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
+      final String[] tags=tagKeys.toArray(new String[tagKeys.size()]);
+      builder.setItems(tags,new Dialog.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          tagEditText.setText(tags[which]);
+        }
+      }
+);
+      builder.create();
+      builder.show();
     }
   }
 );
