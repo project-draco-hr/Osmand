@@ -9,7 +9,13 @@
       if ((rh == null || !rh.isFollowingMode()) && trackingUtilities.isMapLinkedToLocation()) {
         RouteDataObject ro=locationProvider.getLastKnownRouteSegment();
         if (ro != null) {
-          mx=ro.getMaximumSpeed();
+          boolean direction=true;
+          Location loc=locationProvider.getLastKnownLocation();
+          if (loc != null && loc.hasBearing()) {
+            double diff=MapUtils.alignAngleDifference(ro.directionRoute(0,true) - loc.getBearing() / (2 * Math.PI));
+            direction=Math.abs(diff) < Math.PI;
+          }
+          mx=ro.getMaximumSpeed(direction);
         }
       }
  else {
