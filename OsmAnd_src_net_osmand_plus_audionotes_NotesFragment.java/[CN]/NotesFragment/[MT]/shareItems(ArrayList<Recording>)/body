@@ -4,8 +4,17 @@
   intent.setType("image/*");
   ArrayList<Uri> files=new ArrayList<Uri>();
   for (  Recording path : selected) {
-    files.add(Uri.fromFile(path.getFile()));
+    if (path == shareLocationFile) {
+      File fl=generateGPXForRecordings(selected);
+      if (fl != null) {
+        files.add(Uri.fromFile(fl));
+      }
+    }
+ else {
+      files.add(Uri.fromFile(path.getFile()));
+    }
   }
   intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM,files);
+  intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
   startActivity(Intent.createChooser(intent,getString(R.string.share_note)));
 }
