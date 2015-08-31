@@ -1,0 +1,23 @@
+{
+  File tmpFile=new File(getActivity().getCacheDir(),"share/noteLocations.gpx");
+  tmpFile.getParentFile().mkdirs();
+  GPXFile file=new GPXFile();
+  for (  Recording r : selected) {
+    if (r != shareLocationFile) {
+      String desc=r.getDescriptionName(r.getFileName());
+      if (desc == null) {
+        desc=r.getFileName();
+      }
+      WptPt wpt=new WptPt();
+      wpt.lat=r.getLatitude();
+      wpt.lon=r.getLongitude();
+      wpt.name=desc;
+      wpt.link=r.getFileName();
+      wpt.time=r.getFile().lastModified();
+      wpt.category=r.getSearchHistoryType();
+      file.points.add(wpt);
+    }
+  }
+  GPXUtilities.writeGpxFile(tmpFile,file,getMyApplication());
+  return tmpFile;
+}
