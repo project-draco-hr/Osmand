@@ -4,6 +4,30 @@
   }
  else {
     editPoiData.tags=new LinkedHashSet<>();
+    LOG.debug("node.tags=" + node.getTags());
+    tryAddTag(OSMSettings.OSMTagKey.ADDR_STREET.getValue(),node.getTag(OSMSettings.OSMTagKey.ADDR_STREET));
+    tryAddTag(OSMSettings.OSMTagKey.ADDR_HOUSE_NUMBER.getValue(),node.getTag(OSMSettings.OSMTagKey.ADDR_HOUSE_NUMBER));
+    tryAddTag(OSMSettings.OSMTagKey.PHONE.getValue(),editPoiData.amenity.getPhone());
+    tryAddTag(OSMSettings.OSMTagKey.WEBSITE.getValue(),editPoiData.amenity.getSite());
+    for (    String tag : node.getTagKeySet()) {
+      tryAddTag(tag,node.getTag(tag));
+    }
+    String subType=editPoiData.amenity.getSubType();
+    String key;
+    String value;
+    if (allTranslatedSubTypes.get(subType) != null) {
+      PoiType pt=allTranslatedSubTypes.get(subType);
+      key=pt.getOsmTag();
+      value=pt.getOsmValue();
+    }
+ else {
+      key=editPoiData.amenity.getType().getDefaultTag();
+      value=subType;
+    }
+    final Tag tag=new Tag(key,value);
+    editPoiData.tags.remove(tag);
+    tag.tag=POI_TYPE_TAG;
+    editPoiData.tags.add(tag);
   }
   View view=inflater.inflate(R.layout.fragment_edit_poi,container,false);
   Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
@@ -67,6 +91,7 @@
     }
   }
 );
+  poiNameEditText.setText(node.getTag(OSMSettings.OSMTagKey.NAME));
   poiTypeTextInputLayout=(TextInputLayout)view.findViewById(R.id.poiTypeTextInputLayout);
   poiTypeEditText=(AutoCompleteTextView)view.findViewById(R.id.poiTypeEditText);
   poiTypeEditText.addTextChangedListener(new TextWatcher(){
