@@ -7,11 +7,19 @@
     if (path == shareLocationFile) {
       File fl=generateGPXForRecordings(selected);
       if (fl != null) {
-        files.add(Uri.fromFile(fl));
+        files.add(FileProvider.getUriForFile(getActivity(),"net.osmand.fileprovider",fl));
       }
     }
  else {
-      files.add(Uri.fromFile(path.getFile()));
+      File src=path.getFile();
+      File dst=new File(getActivity().getCacheDir(),"share/" + src.getName());
+      try {
+        Algorithms.fileCopy(src,dst);
+        files.add(FileProvider.getUriForFile(getActivity(),"net.osmand.fileprovider",dst));
+      }
+ catch (      IOException e) {
+        e.printStackTrace();
+      }
     }
   }
   intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM,files);
