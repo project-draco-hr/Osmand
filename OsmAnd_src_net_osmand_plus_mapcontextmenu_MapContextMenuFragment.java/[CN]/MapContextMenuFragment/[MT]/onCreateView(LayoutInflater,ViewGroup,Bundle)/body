@@ -1,0 +1,84 @@
+{
+  view=inflater.inflate(R.layout.map_context_menu_fragment,container,false);
+  View shadowView=view.findViewById(R.id.context_menu_shadow_view);
+  shadowView.setOnTouchListener(new View.OnTouchListener(){
+    public boolean onTouch(    View view,    MotionEvent event){
+      dismissMenu();
+      return true;
+    }
+  }
+);
+  View topView=view.findViewById(R.id.context_menu_top_view);
+  mainView=view.findViewById(R.id.context_menu_main);
+  topView.setOnTouchListener(new View.OnTouchListener(){
+    private float dy;
+    @Override public boolean onTouch(    View v,    MotionEvent event){
+switch (event.getAction()) {
+case MotionEvent.ACTION_DOWN:
+        dy=event.getY();
+      mainViewHeight=mainView.getHeight();
+    break;
+case MotionEvent.ACTION_MOVE:
+  float y=event.getY();
+LinearLayout.LayoutParams lp=(LinearLayout.LayoutParams)mainView.getLayoutParams();
+float top=lp.topMargin + (y - dy);
+if (top < 0) {
+lp.topMargin=(int)top;
+mainView.setLayoutParams(lp);
+}
+break;
+case MotionEvent.ACTION_UP:
+case MotionEvent.ACTION_CANCEL:
+float posY=view.getHeight() - mainViewHeight;
+if (mainView.getY() != posY) {
+mainView.animate().y(posY).setDuration(200).setInterpolator(new DecelerateInterpolator()).start();
+}
+break;
+}
+return true;
+}
+}
+);
+int iconId=MapContextMenu.getInstance().getLeftIconId();
+final View iconLayout=view.findViewById(R.id.context_menu_icon_layout);
+final ImageView iconView=(ImageView)view.findViewById(R.id.context_menu_icon_view);
+if (iconId == 0) {
+iconLayout.setVisibility(View.GONE);
+}
+ else {
+iconView.setImageResource(iconId);
+}
+TextView line1=(TextView)view.findViewById(R.id.context_menu_line1);
+line1.setText(contextMenu.getAddressStr());
+TextView line2=(TextView)view.findViewById(R.id.context_menu_line2);
+line2.setText(contextMenu.getLocationStr());
+final ImageButton buttonNavigate=(ImageButton)view.findViewById(R.id.context_menu_route_button);
+buttonNavigate.setOnClickListener(new View.OnClickListener(){
+@Override public void onClick(View v){
+MapContextMenu.getInstance().buttonNavigatePressed();
+}
+}
+);
+final ImageButton buttonFavorite=(ImageButton)view.findViewById(R.id.context_menu_fav_button);
+buttonFavorite.setOnClickListener(new View.OnClickListener(){
+@Override public void onClick(View v){
+MapContextMenu.getInstance().buttonFavoritePressed();
+}
+}
+);
+final ImageButton buttonShare=(ImageButton)view.findViewById(R.id.context_menu_share_button);
+buttonShare.setOnClickListener(new View.OnClickListener(){
+@Override public void onClick(View v){
+MapContextMenu.getInstance().buttonSharePressed();
+}
+}
+);
+final ImageButton buttonMore=(ImageButton)view.findViewById(R.id.context_menu_more_button);
+buttonMore.setOnClickListener(new View.OnClickListener(){
+@Override public void onClick(View v){
+MapContextMenu.getInstance().buttonMorePressed();
+}
+}
+);
+return view;
+}
