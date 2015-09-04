@@ -1,37 +1,17 @@
 {
   final Activity activity=getActivity();
-  OsmandSettings settings=((OsmandApplication)activity.getApplication()).getSettings();
   OsmEditingPlugin plugin=OsmandPlugin.getPlugin(OsmEditingPlugin.class);
   final OpenstreetmapUtil mOpenstreetmapUtil;
-  if (settings.OFFLINE_EDITION.get() || !settings.isInternetConnectionAvailable(true)) {
-    mOpenstreetmapUtil=new OpenstreetmapLocalUtil(plugin,activity);
-  }
- else   if (!settings.isInternetConnectionAvailable(true)) {
-    mOpenstreetmapUtil=new OpenstreetmapLocalUtil(plugin,activity);
-  }
- else {
-    mOpenstreetmapUtil=new OpenstreetmapRemoteUtil(activity);
-  }
+  mOpenstreetmapUtil=new OpenstreetmapLocalUtil(plugin,activity);
   final Bundle args=getArguments();
   AlertDialog.Builder builder=new AlertDialog.Builder(activity);
   builder.setTitle(R.string.poi_remove_title);
-  LinearLayout ll=new LinearLayout(activity);
-  ll.setPadding(4,2,4,0);
-  ll.setOrientation(LinearLayout.VERTICAL);
-  final EditText comment=new EditText(activity);
-  comment.setText(R.string.poi_remove_title);
-  ll.addView(comment);
-  final CheckBox closeChangeset;
-  closeChangeset=new CheckBox(activity);
-  closeChangeset.setText(R.string.close_changeset);
-  ll.addView(closeChangeset);
-  builder.setView(ll);
+  ;
   builder.setNegativeButton(R.string.shared_string_cancel,null);
   builder.setPositiveButton(R.string.shared_string_delete,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      Node n=(Node)args.getSerializable(KEY_AMENITY_NODE);
-      String c=comment.getText().toString();
-      EditPoiFragment.commitNode(OsmPoint.Action.DELETE,n,mOpenstreetmapUtil.getEntityInfo(),c,closeChangeset == null ? false : closeChangeset.isSelected(),new Runnable(){
+      Node node=(Node)args.getSerializable(KEY_AMENITY_NODE);
+      EditPoiFragment.commitNode(OsmPoint.Action.DELETE,node,mOpenstreetmapUtil.getEntityInfo(),null,false,new Runnable(){
         @Override public void run(){
           AccessibleToast.makeText(activity,R.string.poi_remove_success,Toast.LENGTH_LONG).show();
           if (activity instanceof MapActivity) {
