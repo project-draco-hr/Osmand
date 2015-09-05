@@ -14,7 +14,9 @@
     nextRouteDirection=next;
     currentStatus=STATUS_UNKNOWN;
     playedAndArriveAtTarget=false;
-    playGoAheadDist=-1;
+    if (playGoAheadDist != -1) {
+      playGoAheadDist=0;
+    }
   }
   if (!repeat) {
     if (dist == 0) {
@@ -29,17 +31,8 @@
     }
   }
   if (currentStatus == STATUS_UNKNOWN) {
-    if (((playGoAheadDist == -1) && (!isDistanceLess(speed,dist,TURN_IN_DISTANCE * 1.3,0f))) || !isDistanceLess(speed,dist,PREPARE_LONG_DISTANCE + 300,0f)) {
+    if ((playGoAheadDist == -1) || (dist > PREPARE_LONG_DISTANCE)) {
       playGoAheadDist=dist - 80;
-    }
-    if (dist > PREPARE_LONG_DISTANCE + 300) {
-      nextStatusAfter(STATUS_UNKNOWN);
-    }
- else     if (dist > PREPARE_DISTANCE + 300) {
-      nextStatusAfter(STATUS_LONG_PREPARE);
-    }
- else {
-      nextStatusAfter(STATUS_PREPARE);
     }
   }
   NextDirectionInfo nextNextInfo=router.getNextRouteDirectionInfoAfter(nextInfo,new NextDirectionInfo(),!repeat);
@@ -88,7 +81,7 @@
  else   if (statusNotPassed(STATUS_UNKNOWN)) {
     nextStatusAfter(STATUS_UNKNOWN);
   }
- else   if (repeat || (statusNotPassed(STATUS_TURN_IN) && dist < playGoAheadDist)) {
+ else   if (repeat || (statusNotPassed(STATUS_PREPARE) && dist < playGoAheadDist)) {
     playGoAheadDist=0;
     playGoAhead(dist,getSpeakableStreetName(currentSegment,next));
   }
