@@ -13,13 +13,21 @@
   }
   LatLon latLon=selectObjectsForContextMenu(tileBox,point);
   if (latLon != null) {
-    String description=getSelectedObjectDescription();
-    setLocation(latLon,description);
+    if (selectedObjects.size() == 1) {
+      setLocation(null,"");
+      Object selectedObj=selectedObjects.keySet().iterator().next();
+      showMapContextMenu(selectedObj,latLon);
+    }
+ else {
+      String description=getSelectedObjectDescription();
+      setLocation(latLon,description);
+    }
   }
  else {
+    setLocation(null,"");
     final double lat=tileBox.getLatFromPixel((int)point.x,(int)point.y);
     final double lon=tileBox.getLonFromPixel((int)point.x,(int)point.y);
-    setLocation(new LatLon(lat,lon),null);
+    showMapContextMenu(null,new LatLon(lat,lon));
   }
   view.refreshMap();
   return true;
