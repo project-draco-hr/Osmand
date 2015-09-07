@@ -11,45 +11,12 @@
   passwordEditText.setText(settings.USER_PASSWORD.get());
   builder.setTitle(R.string.commit_poi).setView(view).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      final OpenstreetmapRemoteUtil openstreetmapRemoteUtil=new OpenstreetmapRemoteUtil(getActivity());
       settings.USER_NAME.set(userNameEditText.getText().toString());
       settings.USER_PASSWORD.set(passwordEditText.getText().toString());
-      final String message=messageEditText.getText().toString();
-      final boolean closeChangeSet=closeChangeSetCheckBox.isChecked();
-      final Activity activity=getActivity();
-      int actionTypeMessageId=-1;
-switch (poi.getAction()) {
-case CREATE:
-        actionTypeMessageId=R.string.poi_action_add;
-      break;
-case MODIFY:
-    actionTypeMessageId=R.string.poi_action_change;
-  break;
-case DELETE:
-actionTypeMessageId=R.string.poi_action_delete;
-break;
-}
-final String resultMessage=getResources().getString(actionTypeMessageId);
-final String successTemplate=getResources().getString(R.string.poi_action_succeded_template);
-new AsyncTask<Void,Void,EntityInfo>(){
-@Override protected EntityInfo doInBackground(Void... params){
-return openstreetmapRemoteUtil.loadNode(poi.getEntity());
-}
-@Override protected void onPostExecute(EntityInfo entityInfo){
-EditPoiFragment.commitNode(poi.getAction(),poi.getEntity(),entityInfo,message,closeChangeSet,new Runnable(){
-@Override public void run(){
-  AccessibleToast.makeText(activity,MessageFormat.format(successTemplate,resultMessage),Toast.LENGTH_LONG).show();
-  if (activity instanceof MapActivity) {
-    ((MapActivity)activity).getMapView().refreshMap(true);
+      poi.setComment(messageEditText.getText().toString());
+      ((DashOsmEditsFragment)getParentFragment()).showProgressDialog(poi,closeChangeSetCheckBox.isChecked());
+    }
   }
-}
-}
-,activity,openstreetmapRemoteUtil);
-}
-}
-.execute();
-}
-}
 ).setNegativeButton(R.string.shared_string_cancel,null);
-return builder.create();
+  return builder.create();
 }
