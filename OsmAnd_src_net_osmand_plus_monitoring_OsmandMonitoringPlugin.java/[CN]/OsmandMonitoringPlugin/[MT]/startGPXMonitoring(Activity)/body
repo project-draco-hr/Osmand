@@ -30,4 +30,23 @@
     }
 );
   }
+  String stop=map.getResources().getString(R.string.shared_string_control_stop);
+  Intent stopIntent=new Intent(NavigationService.OSMAND_STOP_SERVICE_ACTION);
+  PendingIntent stopPendingIntent=PendingIntent.getBroadcast(map,0,stopIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+  String save=map.getResources().getString(R.string.shared_string_save);
+  Intent saveIntent=new Intent(OSMAND_SAVE_SERVICE_ACTION);
+  PendingIntent savePendingIntent=PendingIntent.getBroadcast(map,0,saveIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+  BroadcastReceiver saveBroadcastReceiver=new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      final OsmandMonitoringPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
+      if (plugin != null) {
+        plugin.saveCurrentTrack();
+      }
+    }
+  }
+;
+  map.registerReceiver(saveBroadcastReceiver,new IntentFilter(OSMAND_SAVE_SERVICE_ACTION));
+  final NotificationCompat.Builder notificationBuilder=new android.support.v7.app.NotificationCompat.Builder(map).setContentTitle(map.getResources().getString(R.string.map_widget_monitoring)).setSmallIcon(R.drawable.ic_action_polygom_dark).setOngoing(true).addAction(R.drawable.ic_action_rec_stop,stop,stopPendingIntent).addAction(R.drawable.ic_action_save,save,savePendingIntent);
+  NotificationManager mNotificationManager=(NotificationManager)map.getSystemService(Context.NOTIFICATION_SERVICE);
+  mNotificationManager.notify(notificationId,notificationBuilder.build());
 }
