@@ -1,14 +1,16 @@
 {
   PointDescription pointDescription;
   if (obj != null) {
-    pointDescription=selectedObjects.get(obj).getObjectName(obj);
-    pointDescription.setLat(latLon.getLatitude());
-    pointDescription.setLon(latLon.getLongitude());
+    IContextMenuProvider typedObj=selectedObjects.get(obj);
+    pointDescription=typedObj.getObjectName(obj);
+    LatLon objLocation=typedObj.getObjectLocation(obj);
+    pointDescription.setLat(objLocation.getLatitude());
+    pointDescription.setLon(objLocation.getLongitude());
   }
  else {
     pointDescription=new PointDescription(latLon.getLatitude(),latLon.getLongitude());
   }
-  this.latLon=latLon;
+  this.latLon=new LatLon(pointDescription.getLat(),pointDescription.getLon());
   showMapContextMenuMarker();
   MapContextMenu.getInstance().show(pointDescription,obj);
 }
