@@ -1,4 +1,8 @@
 {
+  if (pressedContextMarker(tileBox,point.x,point.y)) {
+    showMapContextMenu(selectedObj,latLon);
+    return true;
+  }
   boolean nativeMode=(Build.VERSION.SDK_INT >= 14) || view.getSettings().SCROLL_MAP_BY_GESTURES.get();
   int val=pressedInTextView(tileBox,point.x,point.y);
   if (selectOnMap != null) {
@@ -27,13 +31,12 @@
     LatLon latLon=selectObjectsForContextMenu(tileBox,point);
     if (latLon != null) {
       if (selectedObjects.size() == 1) {
-        Object selectedObj=selectedObjects.keySet().iterator().next();
-        showMapContextMenu(selectedObj,latLon,null);
+        setLocation(null,"");
+        selectedObj=selectedObjects.keySet().iterator().next();
+        showMapContextMenu(selectedObj,latLon);
       }
- else {
-        String description=getSelectedObjectDescription();
-        setLocation(latLon,description);
-        view.refreshMap();
+ else       if (selectedObjects.size() > 1) {
+        showContextMenuForSelectedObjects(latLon);
         return true;
       }
     }
