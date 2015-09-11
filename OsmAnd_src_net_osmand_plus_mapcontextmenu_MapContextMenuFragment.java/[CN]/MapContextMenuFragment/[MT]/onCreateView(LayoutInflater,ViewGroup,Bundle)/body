@@ -1,4 +1,5 @@
 {
+  if (savedInstanceState != null)   getCtxMenu().restoreMenuState(savedInstanceState);
   view=inflater.inflate(R.layout.map_context_menu_fragment,container,false);
   ViewTreeObserver vto=view.getViewTreeObserver();
   vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
@@ -35,7 +36,7 @@
   }
 );
   mainView=view.findViewById(R.id.context_menu_main);
-  View.OnTouchListener slideTouchListener=new View.OnTouchListener(){
+  final View.OnTouchListener slideTouchListener=new View.OnTouchListener(){
     private float dy;
     private float dyMain;
     private int destinationState;
@@ -50,7 +51,7 @@
     private boolean isClick(    float endX,    float endY){
       float differenceX=Math.abs(startX - endX);
       float differenceY=Math.abs(startY - endY);
-      if (differenceX > 3 || differenceY > 3 || System.currentTimeMillis() - lastTouchDown > CLICK_ACTION_THRESHHOLD) {
+      if (differenceX > 1 || differenceY > 1 || System.currentTimeMillis() - lastTouchDown > CLICK_ACTION_THRESHHOLD) {
         return false;
       }
       return true;
@@ -103,13 +104,13 @@ destinationState=MenuController.MenuState.HEADER_ONLY;
 float posY=0;
 switch (destinationState) {
 case MenuController.MenuState.HEADER_ONLY:
-posY=view.getHeight() - (menuFullHeight - menuBottomViewHeight);
+posY=view.getHeight() - (menuFullHeight - menuBottomViewHeight - dpToPx(SHADOW_HEIGHT_BOTTOM_DP));
 break;
 case MenuController.MenuState.HALF_SCREEN:
 posY=view.getHeight() - menuFullHeight;
 break;
 case MenuController.MenuState.FULL_SCREEN:
-posY=-menuTopShadowHeight;
+posY=-menuTopShadowHeight - dpToPx(SHADOW_HEIGHT_TOP_DP);
 break;
 default :
 break;
@@ -138,6 +139,14 @@ View topView=view.findViewById(R.id.context_menu_top_view);
 topView.setOnTouchListener(slideTouchListener);
 View topShadowView=view.findViewById(R.id.context_menu_top_shadow);
 topShadowView.setOnTouchListener(slideTouchListener);
+View topShadowAllView=view.findViewById(R.id.context_menu_top_shadow_all);
+topShadowAllView.setOnTouchListener(new View.OnTouchListener(){
+@Override public boolean onTouch(View v,MotionEvent event){
+if (event.getY() <= dpToPx(SHADOW_HEIGHT_TOP_DP) || event.getAction() != MotionEvent.ACTION_DOWN) return slideTouchListener.onTouch(v,event);
+ else return false;
+}
+}
+);
 IconsCache iconsCache=getMyApplication().getIconsCache();
 boolean light=getMyApplication().getSettings().isLightContent();
 int iconId=getCtxMenu().getLeftIconId();
