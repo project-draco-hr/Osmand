@@ -6,9 +6,11 @@
     @Override public void onGlobalLayout(){
       menuTopHeight=view.findViewById(R.id.context_menu_top_view).getHeight();
       menuTopShadowHeight=view.findViewById(R.id.context_menu_top_shadow).getHeight();
+      menuTopShadowAllHeight=view.findViewById(R.id.context_menu_top_shadow_all).getHeight();
       menuButtonsHeight=view.findViewById(R.id.context_menu_buttons).getHeight();
-      menuBottomViewHeight=view.findViewById(R.id.context_menu_bottom_view).getHeight();
       menuFullHeight=view.findViewById(R.id.context_menu_main).getHeight();
+      menuTitleHeight=menuTopShadowHeight + menuTopShadowAllHeight;
+      menuFullHeightMax=menuTitleHeight + menuBottomViewHeight + dpToPx(2f);
       ViewTreeObserver obs=view.getViewTreeObserver();
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
         obs.removeOnGlobalLayoutListener(this);
@@ -17,13 +19,6 @@
         obs.removeGlobalOnLayoutListener(this);
       }
       doLayoutMenu();
-    }
-  }
-);
-  bottomBorder=view.findViewById(R.id.context_menu_bottom_border);
-  bottomBorder.setOnTouchListener(new View.OnTouchListener(){
-    @Override public boolean onTouch(    View v,    MotionEvent event){
-      return true;
     }
   }
 );
@@ -39,11 +34,12 @@
   final View.OnTouchListener slideTouchListener=new View.OnTouchListener(){
     private float dy;
     private float dyMain;
-    private int destinationState;
     private VelocityTracker velocity;
     private boolean slidingUp;
     private boolean slidingDown;
+    private float velocityX;
     private float velocityY;
+    private float maxVelocityY;
     private float startX;
     private float startY;
     private long lastTouchDown;
@@ -51,7 +47,7 @@
     private boolean isClick(    float endX,    float endY){
       float differenceX=Math.abs(startX - endX);
       float differenceY=Math.abs(startY - endY);
-      if (differenceX > 1 || differenceY > 1 || System.currentTimeMillis() - lastTouchDown > CLICK_ACTION_THRESHHOLD) {
+      if (differenceX > 1 || differenceY > 1 || Math.abs(velocityX) > 10 || Math.abs(velocityY) > 10 || System.currentTimeMillis() - lastTouchDown > CLICK_ACTION_THRESHHOLD) {
         return false;
       }
       return true;
@@ -65,29 +61,32 @@ case MotionEvent.ACTION_DOWN:
   dy=event.getY();
 dyMain=mainView.getY();
 velocity=VelocityTracker.obtain();
+velocityX=0;
 velocityY=0;
+maxVelocityY=0;
 velocity.addMovement(event);
 break;
 case MotionEvent.ACTION_MOVE:
 float y=event.getY();
 float newY=mainView.getY() + (y - dy);
-mainView.setY(newY);
-ViewGroup.LayoutParams lp=bottomBorder.getLayoutParams();
-lp.height=(int)(view.getHeight() - newY - menuFullHeight) + 10;
-bottomBorder.setLayoutParams(lp);
-bottomBorder.setY(newY + menuFullHeight);
-bottomBorder.requestLayout();
+mainView.setY((int)newY);
+menuFullHeight=view.getHeight() - (int)newY + 10;
+ViewGroup.LayoutParams lp=mainView.getLayoutParams();
+lp.height=Math.max(menuFullHeight,menuTitleHeight);
+mainView.setLayoutParams(lp);
+mainView.requestLayout();
 velocity.addMovement(event);
 velocity.computeCurrentVelocity(1000);
-float vel=Math.abs(velocity.getYVelocity());
-if (vel > velocityY) velocityY=vel;
+velocityX=Math.abs(velocity.getXVelocity());
+velocityY=Math.abs(velocity.getYVelocity());
+if (velocityY > maxVelocityY) maxVelocityY=velocityY;
 break;
 case MotionEvent.ACTION_UP:
 case MotionEvent.ACTION_CANCEL:
 float endX=event.getX();
 float endY=event.getY();
-slidingUp=Math.abs(velocityY) > 500 && (mainView.getY() - dyMain) < -50;
-slidingDown=Math.abs(velocityY) > 500 && (mainView.getY() - dyMain) > 50;
+slidingUp=Math.abs(maxVelocityY) > 500 && (mainView.getY() - dyMain) < -50;
+slidingDown=Math.abs(maxVelocityY) > 500 && (mainView.getY() - dyMain) > 50;
 velocity.recycle();
 if (menuController != null) {
 if (slidingUp) {
@@ -96,34 +95,21 @@ menuController.slideUp();
  else if (slidingDown) {
 menuController.slideDown();
 }
-destinationState=menuController.getCurrentMenuState();
 }
- else {
-destinationState=MenuController.MenuState.HEADER_ONLY;
-}
-float posY=0;
-switch (destinationState) {
-case MenuController.MenuState.HEADER_ONLY:
-posY=view.getHeight() - (menuFullHeight - menuBottomViewHeight - dpToPx(SHADOW_HEIGHT_BOTTOM_DP));
-break;
-case MenuController.MenuState.HALF_SCREEN:
-posY=view.getHeight() - menuFullHeight;
-break;
-case MenuController.MenuState.FULL_SCREEN:
-posY=-menuTopShadowHeight - dpToPx(SHADOW_HEIGHT_TOP_DP);
-break;
-default :
-break;
-}
-float minY=Math.min(posY,mainView.getY());
-lp=bottomBorder.getLayoutParams();
-lp.height=(int)(view.getHeight() - minY - menuFullHeight) + 10;
-if (lp.height < 0) lp.height=0;
-bottomBorder.setLayoutParams(lp);
-bottomBorder.requestLayout();
+final int posY=getPosY();
 if (mainView.getY() != posY) {
-mainView.animate().y(posY).setDuration(200).setInterpolator(new DecelerateInterpolator()).start();
-bottomBorder.animate().y(posY + menuFullHeight).setDuration(200).setInterpolator(new DecelerateInterpolator()).start();
+if (posY < mainView.getY()) {
+updateMainViewLayout(posY);
+}
+mainView.animate().y(posY).setDuration(200).setInterpolator(new DecelerateInterpolator()).setListener(new AnimatorListenerAdapter(){
+@Override public void onAnimationCancel(Animator animation){
+updateMainViewLayout(posY);
+}
+@Override public void onAnimationEnd(Animator animation){
+updateMainViewLayout(posY);
+}
+}
+).start();
 }
 if (isClick(endX,endY)) {
 OsmandMapTileView mapView=getMapActivity().getMapView();
@@ -172,7 +158,7 @@ dismissMenu();
 }
 );
 final ImageButton buttonNavigate=(ImageButton)view.findViewById(R.id.context_menu_route_button);
-buttonNavigate.setImageDrawable(iconsCache.getIcon(R.drawable.map_directions,light ? R.color.icon_color : R.color.dash_search_icon_dark));
+buttonNavigate.setImageDrawable(iconsCache.getIcon(R.drawable.map_directions,light ? R.color.icon_color : R.color.dashboard_subheader_text_dark));
 buttonNavigate.setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
 getCtxMenu().buttonNavigatePressed(getMapActivity());
@@ -180,7 +166,7 @@ getCtxMenu().buttonNavigatePressed(getMapActivity());
 }
 );
 final ImageButton buttonFavorite=(ImageButton)view.findViewById(R.id.context_menu_fav_button);
-buttonFavorite.setImageDrawable(iconsCache.getIcon(R.drawable.ic_action_fav_dark,light ? R.color.icon_color : R.color.dash_search_icon_dark));
+buttonFavorite.setImageDrawable(iconsCache.getIcon(R.drawable.ic_action_fav_dark,light ? R.color.icon_color : R.color.dashboard_subheader_text_dark));
 buttonFavorite.setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
 getCtxMenu().buttonFavoritePressed(getMapActivity());
@@ -188,7 +174,7 @@ getCtxMenu().buttonFavoritePressed(getMapActivity());
 }
 );
 final ImageButton buttonShare=(ImageButton)view.findViewById(R.id.context_menu_share_button);
-buttonShare.setImageDrawable(iconsCache.getIcon(R.drawable.abc_ic_menu_share_mtrl_alpha,light ? R.color.icon_color : R.color.dash_search_icon_dark));
+buttonShare.setImageDrawable(iconsCache.getIcon(R.drawable.abc_ic_menu_share_mtrl_alpha,light ? R.color.icon_color : R.color.dashboard_subheader_text_dark));
 buttonShare.setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
 getCtxMenu().buttonSharePressed(getMapActivity());
@@ -196,7 +182,7 @@ getCtxMenu().buttonSharePressed(getMapActivity());
 }
 );
 final ImageButton buttonMore=(ImageButton)view.findViewById(R.id.context_menu_more_button);
-buttonMore.setImageDrawable(iconsCache.getIcon(R.drawable.ic_overflow_menu_white,light ? R.color.icon_color : R.color.dash_search_icon_dark));
+buttonMore.setImageDrawable(iconsCache.getIcon(R.drawable.ic_overflow_menu_white,light ? R.color.icon_color : R.color.dashboard_subheader_text_dark));
 buttonMore.setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
 getCtxMenu().buttonMorePressed(getMapActivity());
@@ -214,5 +200,7 @@ return true;
 );
 menuController.build(bottomView);
 }
+bottomView.measure(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+menuBottomViewHeight=bottomView.getMeasuredHeight();
 return view;
 }
