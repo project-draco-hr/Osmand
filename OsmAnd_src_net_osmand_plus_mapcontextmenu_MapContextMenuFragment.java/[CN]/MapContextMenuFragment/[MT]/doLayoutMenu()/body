@@ -1,0 +1,41 @@
+{
+  int shadowViewHeight=0;
+  int bottomBorderHeight=0;
+  int menuState;
+  if (menuController != null)   menuState=menuController.getCurrentMenuState();
+ else   menuState=MenuController.MenuState.HEADER_ONLY;
+switch (menuState) {
+case MenuController.MenuState.HEADER_ONLY:
+    shadowViewHeight=view.getHeight() - (menuFullHeight - menuBottomViewHeight) + dpToPx(SHADOW_HEIGHT_BOTTOM_DP);
+  bottomBorderHeight=0;
+break;
+case MenuController.MenuState.HALF_SCREEN:
+int maxHeight=(int)(menuController.getHalfScreenMaxHeightKoef() * view.getHeight());
+if (maxHeight > menuFullHeight) {
+shadowViewHeight=view.getHeight() - menuFullHeight;
+bottomBorderHeight=0;
+}
+ else {
+shadowViewHeight=view.getHeight() - maxHeight;
+bottomBorderHeight=0;
+mainView.setY(shadowViewHeight);
+}
+break;
+case MenuController.MenuState.FULL_SCREEN:
+shadowViewHeight=0;
+bottomBorderHeight=view.getHeight() - menuFullHeight + menuTopShadowHeight + dpToPx(SHADOW_HEIGHT_TOP_DP);
+break;
+default :
+break;
+}
+ViewGroup.LayoutParams lp=bottomBorder.getLayoutParams();
+lp.height=bottomBorderHeight + 10;
+bottomBorder.setLayoutParams(lp);
+bottomBorder.setY(view.getHeight() - bottomBorderHeight);
+lp=shadowView.getLayoutParams();
+lp.height=shadowViewHeight;
+shadowView.setLayoutParams(lp);
+lp=mainView.getLayoutParams();
+lp.height=menuFullHeight;
+mainView.setLayoutParams(lp);
+}

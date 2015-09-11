@@ -1,0 +1,43 @@
+{
+  boolean firstRow=true;
+  MapPoiTypes poiTypes=app.getPoiTypes();
+  for (  Map.Entry<String,String> e : amenity.getAdditionalInfo().entrySet()) {
+    int iconId;
+    String key=e.getKey();
+    String vl=e.getValue();
+    if (key.startsWith("name:")) {
+      continue;
+    }
+ else     if (Amenity.OPENING_HOURS.equals(key)) {
+      iconId=R.drawable.ic_action_time;
+    }
+ else     if (Amenity.PHONE.equals(key)) {
+      iconId=R.drawable.ic_action_call_dark;
+    }
+ else     if (Amenity.WEBSITE.equals(key)) {
+      iconId=R.drawable.ic_world_globe_dark;
+    }
+ else {
+      if (Amenity.DESCRIPTION.equals(key)) {
+        iconId=R.drawable.ic_action_note_dark;
+      }
+ else {
+        iconId=R.drawable.ic_action_info_dark;
+      }
+      AbstractPoiType pt=poiTypes.getAnyPoiAdditionalTypeByKey(e.getKey());
+      if (pt != null) {
+        if (pt instanceof PoiType && !((PoiType)pt).isText()) {
+          vl=pt.getTranslation();
+        }
+ else {
+          vl=pt.getTranslation() + ": " + amenity.unzipContent(e.getValue());
+        }
+      }
+ else {
+        vl=Algorithms.capitalizeFirstLetterAndLowercase(e.getKey()) + ": " + amenity.unzipContent(e.getValue());
+      }
+    }
+    buildRow(view,iconId,vl,firstRow);
+    firstRow=false;
+  }
+}
