@@ -59,7 +59,7 @@ case MotionEvent.ACTION_DOWN:
       startY=event.getY();
     lastTouchDown=System.currentTimeMillis();
   dy=event.getY();
-dyMain=mainView.getY();
+dyMain=getViewY();
 velocity=VelocityTracker.obtain();
 velocityX=0;
 velocityY=0;
@@ -68,13 +68,15 @@ velocity.addMovement(event);
 break;
 case MotionEvent.ACTION_MOVE:
 float y=event.getY();
-float newY=mainView.getY() + (y - dy);
-mainView.setY((int)newY);
+float newY=getViewY() + (y - dy);
+setViewY((int)newY);
 menuFullHeight=view.getHeight() - (int)newY + 10;
+if (!oldAndroid()) {
 ViewGroup.LayoutParams lp=mainView.getLayoutParams();
 lp.height=Math.max(menuFullHeight,menuTitleHeight);
 mainView.setLayoutParams(lp);
 mainView.requestLayout();
+}
 velocity.addMovement(event);
 velocity.computeCurrentVelocity(1000);
 velocityX=Math.abs(velocity.getXVelocity());
@@ -85,8 +87,9 @@ case MotionEvent.ACTION_UP:
 case MotionEvent.ACTION_CANCEL:
 float endX=event.getX();
 float endY=event.getY();
-slidingUp=Math.abs(maxVelocityY) > 500 && (mainView.getY() - dyMain) < -50;
-slidingDown=Math.abs(maxVelocityY) > 500 && (mainView.getY() - dyMain) > 50;
+int currentY=getViewY();
+slidingUp=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) < -50;
+slidingDown=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) > 50;
 velocity.recycle();
 if (menuController != null) {
 if (menuBottomViewHeight > 0 && slidingUp) {
@@ -97,10 +100,11 @@ menuController.slideDown();
 }
 }
 final int posY=getPosY();
-if (mainView.getY() != posY) {
-if (posY < mainView.getY()) {
+if (currentY != posY) {
+if (posY < getViewY()) {
 updateMainViewLayout(posY);
 }
+if (!oldAndroid()) {
 mainView.animate().y(posY).setDuration(200).setInterpolator(new DecelerateInterpolator()).setListener(new AnimatorListenerAdapter(){
 @Override public void onAnimationCancel(Animator animation){
 updateMainViewLayout(posY);
@@ -110,6 +114,11 @@ updateMainViewLayout(posY);
 }
 }
 ).start();
+}
+ else {
+setViewY(posY);
+updateMainViewLayout(posY);
+}
 }
 if (isClick(endX,endY)) {
 OsmandMapTileView mapView=getMapActivity().getMapView();
