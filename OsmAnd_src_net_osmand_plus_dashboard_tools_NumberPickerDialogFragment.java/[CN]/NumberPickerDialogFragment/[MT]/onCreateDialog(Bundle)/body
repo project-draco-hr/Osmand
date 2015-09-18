@@ -1,0 +1,34 @@
+{
+  if (!(getParentFragment() instanceof CanAcceptNumber)) {
+    throw new RuntimeException("Parent fragment must implement CanAcceptNumber");
+  }
+  Bundle args=getArguments();
+  String headerText=args.getString(HEADER_TEXT);
+  String subHeaderText=args.getString(SUBHEADER_TEXT);
+  final String tag=args.getString(TAG);
+  int numberOfItems=args.getInt(NUMBER_OF_ITEMS);
+  String[] items=new String[numberOfItems];
+  for (int i=0; i < numberOfItems; i++) {
+    items[i]=String.valueOf(i + 1);
+  }
+  AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
+  builder.setSingleChoiceItems(items,0,null).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      final int userChoice=((AlertDialog)dialog).getListView().getCheckedItemPosition() + 1;
+      ((CanAcceptNumber)getParentFragment()).acceptNumber(tag,userChoice);
+    }
+  }
+).setNegativeButton(R.string.shared_string_cancel,null);
+  if (subHeaderText != null) {
+    View titleView=LayoutInflater.from(getActivity()).inflate(R.layout.number_picker_dialog_title,null);
+    TextView titleTextView=(TextView)titleView.findViewById(R.id.titleTextView);
+    titleTextView.setText(headerText);
+    TextView subtitleTextView=(TextView)titleView.findViewById(R.id.subtitleTextView);
+    subtitleTextView.setText(subHeaderText);
+    builder.setCustomTitle(titleView);
+  }
+ else {
+    builder.setTitle(headerText);
+  }
+  return builder.create();
+}
