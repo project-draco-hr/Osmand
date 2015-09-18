@@ -1,6 +1,11 @@
 {
   if (savedInstanceState != null)   getCtxMenu().restoreMenuState(savedInstanceState);
   view=inflater.inflate(R.layout.map_context_menu_fragment,container,false);
+  mainView=view.findViewById(R.id.context_menu_main);
+  menuController=getCtxMenu().getMenuController(getActivity());
+  if (menuController != null && menuController.isLandscapeLayout()) {
+    mainView.setLayoutParams(new FrameLayout.LayoutParams(dpToPx(menuController.getLandscapeWidthDp()),ViewGroup.LayoutParams.MATCH_PARENT));
+  }
   ViewTreeObserver vto=view.getViewTreeObserver();
   vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
     @Override public void onGlobalLayout(){
@@ -39,39 +44,29 @@
     }
   }
 );
-  mainView=view.findViewById(R.id.context_menu_main);
   final View.OnTouchListener slideTouchListener=new View.OnTouchListener(){
     private float dy;
     private float dyMain;
     private VelocityTracker velocity;
     private boolean slidingUp;
     private boolean slidingDown;
-    private float velocityX;
     private float velocityY;
     private float maxVelocityY;
-    private float startX;
-    private float startY;
-    private long lastTouchDown;
-    private final int CLICK_ACTION_THRESHHOLD=200;
-    private boolean isClick(    float endX,    float endY){
-      float differenceX=Math.abs(startX - endX);
-      float differenceY=Math.abs(startY - endY);
-      if (differenceX > 1 || differenceY > 1 || Math.abs(velocityX) > 10 || Math.abs(velocityY) > 10 || System.currentTimeMillis() - lastTouchDown > CLICK_ACTION_THRESHHOLD) {
-        return false;
-      }
-      return true;
-    }
     @Override public boolean onTouch(    View v,    MotionEvent event){
+      if (singleTapDetector.onTouchEvent(event)) {
+        OsmandMapTileView mapView=getMapActivity().getMapView();
+        mapView.getAnimatedDraggingThread().startMoving(getCtxMenu().getPointDescription().getLat(),getCtxMenu().getPointDescription().getLon(),mapView.getZoom(),true);
+        return true;
+      }
+      if (menuController != null && menuController.isLandscapeLayout()) {
+        return true;
+      }
 switch (event.getAction()) {
 case MotionEvent.ACTION_DOWN:
-        startX=event.getX();
-      startY=event.getY();
-    lastTouchDown=System.currentTimeMillis();
-  dy=event.getY();
-dyMain=getViewY();
-velocity=VelocityTracker.obtain();
-velocityX=0;
-velocityY=0;
+        dy=event.getY();
+      dyMain=getViewY();
+    velocity=VelocityTracker.obtain();
+  velocityY=0;
 maxVelocityY=0;
 velocity.addMovement(event);
 break;
@@ -88,14 +83,11 @@ mainView.requestLayout();
 }
 velocity.addMovement(event);
 velocity.computeCurrentVelocity(1000);
-velocityX=Math.abs(velocity.getXVelocity());
 velocityY=Math.abs(velocity.getYVelocity());
 if (velocityY > maxVelocityY) maxVelocityY=velocityY;
 break;
 case MotionEvent.ACTION_UP:
 case MotionEvent.ACTION_CANCEL:
-float endX=event.getX();
-float endY=event.getY();
 int currentY=getViewY();
 slidingUp=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) < -50;
 slidingDown=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) > 50;
@@ -128,10 +120,6 @@ updateMainViewLayout(posY);
 setViewY(posY);
 updateMainViewLayout(posY);
 }
-}
-if (isClick(endX,endY)) {
-OsmandMapTileView mapView=getMapActivity().getMapView();
-mapView.getAnimatedDraggingThread().startMoving(getCtxMenu().getPointDescription().getLat(),getCtxMenu().getPointDescription().getLon(),mapView.getZoom(),true);
 }
 break;
 }
@@ -204,7 +192,6 @@ getCtxMenu().buttonMorePressed(getMapActivity());
 }
 }
 );
-menuController=getCtxMenu().getMenuController();
 bottomView=view.findViewById(R.id.context_menu_bottom_view);
 if (menuController != null) {
 bottomView.setOnTouchListener(new View.OnTouchListener(){
