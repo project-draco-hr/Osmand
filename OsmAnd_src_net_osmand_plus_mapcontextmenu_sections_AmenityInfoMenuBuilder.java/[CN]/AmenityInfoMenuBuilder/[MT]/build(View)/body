@@ -2,7 +2,8 @@
   boolean firstRow=true;
   MapPoiTypes poiTypes=app.getPoiTypes();
   for (  Map.Entry<String,String> e : amenity.getAdditionalInfo().entrySet()) {
-    int iconId;
+    int iconId=0;
+    Drawable icon=null;
     String key=e.getKey();
     String vl=e.getValue();
     if (key.startsWith("name:")) {
@@ -16,6 +17,7 @@
     }
  else     if (Amenity.WEBSITE.equals(key)) {
       iconId=R.drawable.ic_world_globe_dark;
+      vl=vl.replace(' ','_');
     }
  else {
       if (Amenity.DESCRIPTION.equals(key)) {
@@ -24,8 +26,12 @@
  else {
         iconId=R.drawable.ic_action_info_dark;
       }
-      AbstractPoiType pt=poiTypes.getAnyPoiAdditionalTypeByKey(e.getKey());
+      AbstractPoiType pt=poiTypes.getAnyPoiAdditionalTypeByKey(key);
       if (pt != null) {
+        PoiType pType=(PoiType)pt;
+        if (pType.getParentType() != null && pType.getParentType() instanceof PoiType) {
+          icon=getRowIcon(view.getContext(),((PoiType)pType.getParentType()).getOsmTag() + "_" + pType.getOsmTag().replace(':','_')+ "_"+ pType.getOsmValue());
+        }
         if (pt instanceof PoiType && !((PoiType)pt).isText()) {
           vl=pt.getTranslation();
         }
@@ -37,7 +43,12 @@
         vl=Algorithms.capitalizeFirstLetterAndLowercase(e.getKey()) + ": " + amenity.unzipContent(e.getValue());
       }
     }
-    buildRow(view,iconId,vl,firstRow);
+    if (icon != null) {
+      buildRow(view,icon,vl,firstRow);
+    }
+ else {
+      buildRow(view,iconId,vl,firstRow);
+    }
     firstRow=false;
   }
 }
