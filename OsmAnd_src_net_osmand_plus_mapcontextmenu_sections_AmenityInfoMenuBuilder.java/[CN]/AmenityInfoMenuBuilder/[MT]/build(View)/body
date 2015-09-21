@@ -1,12 +1,13 @@
 {
   firstRow=true;
   for (  PlainMenuItem item : plainMenuItems) {
-    buildRow(view,item.getIconId(),item.getText());
+    buildRow(view,item.getIconId(),item.getText(),0);
   }
   MapPoiTypes poiTypes=app.getPoiTypes();
   for (  Map.Entry<String,String> e : amenity.getAdditionalInfo().entrySet()) {
     int iconId=0;
     Drawable icon=null;
+    int textColor=0;
     String key=e.getKey();
     String vl=e.getValue();
     if (key.startsWith("name:")) {
@@ -14,6 +15,18 @@
     }
  else     if (Amenity.OPENING_HOURS.equals(key)) {
       iconId=R.drawable.ic_action_time;
+      OpeningHoursParser.OpeningHours rs=OpeningHoursParser.parseOpenedHours(amenity.getOpeningHours());
+      if (rs != null) {
+        Calendar inst=Calendar.getInstance();
+        inst.setTimeInMillis(System.currentTimeMillis());
+        boolean opened=rs.isOpenedForTime(inst);
+        if (opened) {
+          textColor=R.color.color_ok;
+        }
+ else {
+          textColor=R.color.color_invalid;
+        }
+      }
     }
  else     if (Amenity.PHONE.equals(key)) {
       iconId=R.drawable.ic_action_call_dark;
@@ -47,10 +60,10 @@
       }
     }
     if (icon != null) {
-      buildRow(view,icon,vl);
+      buildRow(view,icon,vl,textColor);
     }
  else {
-      buildRow(view,iconId,vl);
+      buildRow(view,iconId,vl,textColor);
     }
   }
 }
