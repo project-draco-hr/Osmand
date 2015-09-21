@@ -52,10 +52,14 @@
     private boolean slidingDown;
     private float velocityY;
     private float maxVelocityY;
+    private boolean hasMoved;
     @Override public boolean onTouch(    View v,    MotionEvent event){
       if (singleTapDetector.onTouchEvent(event)) {
         OsmandMapTileView mapView=getMapActivity().getMapView();
         mapView.getAnimatedDraggingThread().startMoving(getCtxMenu().getPointDescription().getLat(),getCtxMenu().getPointDescription().getLon(),mapView.getZoom(),true);
+        if (hasMoved) {
+          applyPosY(getViewY());
+        }
         return true;
       }
       if (menuController != null && menuController.isLandscapeLayout()) {
@@ -63,14 +67,16 @@
       }
 switch (event.getAction()) {
 case MotionEvent.ACTION_DOWN:
-        dy=event.getY();
-      dyMain=getViewY();
-    velocity=VelocityTracker.obtain();
-  velocityY=0;
+        hasMoved=false;
+      dy=event.getY();
+    dyMain=getViewY();
+  velocity=VelocityTracker.obtain();
+velocityY=0;
 maxVelocityY=0;
 velocity.addMovement(event);
 break;
 case MotionEvent.ACTION_MOVE:
+hasMoved=true;
 float y=event.getY();
 float newY=getViewY() + (y - dy);
 setViewY((int)newY);
@@ -100,9 +106,15 @@ menuController.slideUp();
 menuController.slideDown();
 }
 }
+applyPosY(currentY);
+break;
+}
+return true;
+}
+private void applyPosY(int currentY){
 final int posY=getPosY();
 if (currentY != posY) {
-if (posY < getViewY()) {
+if (posY < currentY) {
 updateMainViewLayout(posY);
 }
 if (!oldAndroid()) {
@@ -121,9 +133,6 @@ setViewY(posY);
 updateMainViewLayout(posY);
 }
 }
-break;
-}
-return true;
 }
 }
 ;
