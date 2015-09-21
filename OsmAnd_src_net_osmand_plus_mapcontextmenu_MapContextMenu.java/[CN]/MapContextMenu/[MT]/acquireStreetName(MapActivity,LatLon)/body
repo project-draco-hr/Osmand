@@ -1,38 +1,31 @@
 {
-  new AsyncTask<LatLon,Void,RouteDataObject>(){
-    Exception e=null;
-    @Override protected RouteDataObject doInBackground(    LatLon... params){
-      try {
-        return app.getLocationProvider().findRoute(loc.getLatitude(),loc.getLongitude());
-      }
- catch (      Exception e) {
-        this.e=e;
-        e.printStackTrace();
-        return null;
-      }
-    }
-    protected void onPostExecute(    RouteDataObject result){
-      if (e != null) {
-        foundStreetName=null;
-      }
- else       if (result != null) {
-        foundStreetName=RoutingHelper.formatStreetName(result.getName(settings.MAP_PREFERRED_LOCALE.get()),result.getRef(),result.getDestinationName(settings.MAP_PREFERRED_LOCALE.get()));
+  Location ll=new Location("");
+  ll.setLatitude(loc.getLatitude());
+  ll.setLongitude(loc.getLongitude());
+  app.getLocationProvider().getRouteSegment(ll,new ResultMatcher<RouteDataObject>(){
+    @Override public boolean publish(    RouteDataObject object){
+      if (object != null) {
+        foundStreetName=RoutingHelper.formatStreetName(object.getName(settings.MAP_PREFERRED_LOCALE.get()),object.getRef(),object.getDestinationName(settings.MAP_PREFERRED_LOCALE.get()));
         if (foundStreetName != null && foundStreetName.trim().length() == 0) {
           foundStreetName=null;
+        }
+        if (foundStreetName != null) {
+          activity.runOnUiThread(new Runnable(){
+            public void run(){
+              refreshMenuTitle(activity);
+            }
+          }
+);
         }
       }
  else {
         foundStreetName=null;
       }
-      if (foundStreetName != null) {
-        activity.runOnUiThread(new Runnable(){
-          public void run(){
-            refreshMenuTitle(activity);
-          }
-        }
-);
-      }
+      return true;
+    }
+    @Override public boolean isCancelled(){
+      return false;
     }
   }
-.execute(loc);
+);
 }
