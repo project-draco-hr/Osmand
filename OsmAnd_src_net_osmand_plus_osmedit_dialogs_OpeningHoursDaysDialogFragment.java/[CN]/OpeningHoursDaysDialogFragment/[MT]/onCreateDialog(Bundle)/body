@@ -1,0 +1,43 @@
+{
+  final OpeningHoursParser.BasicOpeningHourRule item=(OpeningHoursParser.BasicOpeningHourRule)getArguments().getSerializable(ITEM);
+  final int positionToAdd=getArguments().getInt(POSITION_TO_ADD);
+  AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
+  final boolean createNew=positionToAdd == -1;
+  Calendar inst=Calendar.getInstance();
+  final int first=inst.getFirstDayOfWeek();
+  final boolean[] dayToShow=new boolean[7];
+  String[] daysToShow=new String[7];
+  for (int i=0; i < 7; i++) {
+    int d=(first + i - 1) % 7 + 1;
+    inst.set(Calendar.DAY_OF_WEEK,d);
+    CharSequence dayName=DateFormat.format("EEEE",inst);
+    String result="" + Character.toUpperCase(dayName.charAt(0)) + dayName.subSequence(1,dayName.length());
+    daysToShow[i]=result;
+    final int pos=(d + 5) % 7;
+    dayToShow[i]=item.getDays()[pos];
+  }
+  builder.setTitle(getResources().getString(R.string.working_days));
+  builder.setMultiChoiceItems(daysToShow,dayToShow,new DialogInterface.OnMultiChoiceClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which,    boolean isChecked){
+      dayToShow[which]=isChecked;
+    }
+  }
+);
+  builder.setPositiveButton(createNew ? R.string.next_proceed : R.string.shared_string_save,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      boolean[] days=item.getDays();
+      for (int i=0; i < 7; i++) {
+        days[(first + 5 + i) % 7]=dayToShow[i];
+      }
+      if (createNew) {
+        OpeningHoursHoursDialogFragment.createInstance(item,positionToAdd,true).show(getFragmentManager(),"TimePickerDialogFragment");
+      }
+ else {
+        ((BasicDataFragment)getParentFragment()).setBasicOpeningHoursRule(item,positionToAdd);
+      }
+    }
+  }
+);
+  builder.setNegativeButton(getActivity().getString(R.string.shared_string_cancel),null);
+  return builder.create();
+}

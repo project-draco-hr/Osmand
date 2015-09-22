@@ -1,0 +1,22 @@
+{
+  RoutePlannerFrontEnd rp=new RoutePlannerFrontEnd(false);
+  if (ctx == null || am != app.getSettings().getApplicationMode()) {
+    initCtx(app);
+    if (ctx == null) {
+      return null;
+    }
+  }
+  final RouteSegment sg=rp.findRouteSegment(lat,lon,ctx);
+  if (result != null) {
+    app.runInUIThread(new Runnable(){
+      public void run(){
+        result.publish(sg == null ? null : sg.getRoad());
+      }
+    }
+);
+  }
+  if (sg == null) {
+    return null;
+  }
+  return sg.getRoad();
+}

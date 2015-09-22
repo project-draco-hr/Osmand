@@ -1,16 +1,23 @@
 {
   DashFragmentData dashFragmentData=getItem(position);
-  DashViewHolder viewHolder;
+  final DashViewHolder viewHolder;
+  boolean hasRows=getItemViewType(position) == 1;
   if (convertView == null) {
     viewHolder=new DashViewHolder();
     convertView=LayoutInflater.from(getContext()).inflate(R.layout.dashboard_settings_dialog_item,parent,false);
+    if (hasRows) {
+      viewHolder.numberOfRowsTextView=(TextView)convertView.findViewById(R.id.numberOfRowsTextView);
+    }
     viewHolder.textView=(TextView)convertView.findViewById(R.id.text);
     viewHolder.compoundButton=(CompoundButton)convertView.findViewById(R.id.check_item);
     viewHolder.compoundButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
       @Override public void onCheckedChanged(      CompoundButton compoundButton,      boolean b){
         DashViewHolder localViewHolder=(DashViewHolder)compoundButton.getTag();
         checkedItems[localViewHolder.position]=b;
-        localViewHolder.textView.setTextColor(checkedItems[localViewHolder.position] ? 0xFF212121 : 0xFF8c8c8c);
+        localViewHolder.textView.setTextColor(checkedItems[localViewHolder.position] ? textColorPrimary : textColorSecondary);
+        if (localViewHolder.numberOfRowsTextView != null) {
+          localViewHolder.numberOfRowsTextView.setTextColor(checkedItems[position] ? colorBlue : textColorSecondary);
+        }
       }
     }
 );
@@ -18,11 +25,26 @@
  else {
     viewHolder=(DashViewHolder)convertView.getTag();
   }
+  if (hasRows) {
+    viewHolder.numberOfRowsTextView.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        DashViewHolder localViewHolder=(DashViewHolder)v.getTag();
+        String header=getString(getItem(localViewHolder.position).titleStringId);
+        String subheader=getResources().getString(R.string.count_of_lines);
+        final String stringPosition=String.valueOf(localViewHolder.position);
+        NumberPickerDialogFragment.createInstance(header,subheader,stringPosition,5).show(getChildFragmentManager(),NumberPickerDialogFragment.TAG);
+      }
+    }
+);
+    viewHolder.numberOfRowsTextView.setTag(viewHolder);
+    viewHolder.numberOfRowsTextView.setText(String.valueOf(numbersOfRows[position]));
+    viewHolder.numberOfRowsTextView.setTextColor(checkedItems[position] ? colorBlue : textColorSecondary);
+  }
   viewHolder.position=position;
   viewHolder.compoundButton.setTag(viewHolder);
   viewHolder.compoundButton.setChecked(checkedItems[position]);
-  viewHolder.textView.setText(dashFragmentData.title);
-  viewHolder.textView.setTextColor(checkedItems[position] ? 0xFF212121 : 0xFF8c8c8c);
+  viewHolder.textView.setText(dashFragmentData.titleStringId);
+  viewHolder.textView.setTextColor(checkedItems[position] ? textColorPrimary : textColorSecondary);
   convertView.setTag(viewHolder);
   return convertView;
 }

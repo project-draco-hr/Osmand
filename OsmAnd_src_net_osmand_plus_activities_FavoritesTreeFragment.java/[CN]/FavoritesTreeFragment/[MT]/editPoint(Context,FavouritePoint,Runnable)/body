@@ -1,6 +1,6 @@
 {
   OsmandApplication app=(OsmandApplication)ctx.getApplicationContext();
-  Builder builder=new AlertDialog.Builder(ctx);
+  final Builder builder=new AlertDialog.Builder(ctx);
   builder.setTitle(R.string.favourites_context_menu_edit);
   final View v=LayoutInflater.from(ctx).inflate(R.layout.favorite_edit_dialog,null,false);
   final AutoCompleteTextView cat=(AutoCompleteTextView)v.findViewById(R.id.Category);
@@ -21,9 +21,28 @@
   builder.setNegativeButton(R.string.shared_string_cancel,null);
   builder.setPositiveButton(R.string.shared_string_apply,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      boolean edited=helper.editFavouriteName(point,editText.getText().toString().trim(),cat.getText().toString(),editDescr.getText().toString());
-      if (edited && callback != null) {
-        callback.run();
+      final String newName=editText.getText().toString().trim();
+      point.setName(newName);
+      point.setCategory(cat.getText().toString());
+      point.setDescription(editDescr.getText().toString());
+      AlertDialog.Builder builder1=helper.checkDuplicates(point,helper,ctx);
+      if (builder1 != null) {
+        builder1.setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            boolean edited=helper.editFavouriteName(point,point.getName(),cat.getText().toString(),editDescr.getText().toString());
+            if (edited && callback != null) {
+              callback.run();
+            }
+          }
+        }
+);
+        builder1.create().show();
+      }
+ else {
+        boolean edited=helper.editFavouriteName(point,newName,cat.getText().toString(),editDescr.getText().toString());
+        if (edited && callback != null) {
+          callback.run();
+        }
       }
     }
   }

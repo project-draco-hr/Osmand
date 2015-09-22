@@ -1,0 +1,29 @@
+{
+  final OsmandSettings settings=((OsmandApplication)activity.getApplication()).getSettings();
+  final OpenstreetmapUtil openstreetmapUtilToLoad;
+  if (settings.OFFLINE_EDITION.get() || !settings.isInternetConnectionAvailable(true)) {
+    OsmEditingPlugin plugin=OsmandPlugin.getPlugin(OsmEditingPlugin.class);
+    openstreetmapUtilToLoad=new OpenstreetmapLocalUtil(plugin,activity);
+  }
+ else   if (!settings.isInternetConnectionAvailable(true)) {
+    openstreetmapUtilToLoad=new OpenstreetmapRemoteUtil(activity);
+  }
+ else {
+    openstreetmapUtilToLoad=new OpenstreetmapRemoteUtil(activity);
+  }
+  new AsyncTask<Void,Void,Node>(){
+    @Override protected Node doInBackground(    Void... params){
+      return openstreetmapUtilToLoad.loadNode(amenity);
+    }
+    protected void onPostExecute(    Node n){
+      if (n != null) {
+        EditPoiFragment fragment=EditPoiFragment.createInstance(n,amenity);
+        fragment.show(activity.getSupportFragmentManager(),TAG);
+      }
+ else {
+        AccessibleToast.makeText(activity,activity.getString(R.string.poi_error_poi_not_found),Toast.LENGTH_SHORT).show();
+      }
+    }
+  }
+.execute();
+}

@@ -1,0 +1,54 @@
+{
+  View view=inflater.inflate(R.layout.fragment_edit_poi_normal,container,false);
+  Display display=getActivity().getWindowManager().getDefaultDisplay();
+  Point size=new Point();
+  display.getSize(size);
+  int height=size.y;
+  view.findViewById(R.id.screenFiller).setMinimumHeight(height);
+  IconsCache iconsCache=getMyApplication().getIconsCache();
+  int iconColor=getResources().getColor(R.color.dash_search_icon_dark);
+  ImageView streetImageView=(ImageView)view.findViewById(R.id.streetImageView);
+  streetImageView.setImageDrawable(iconsCache.getPaintedContentIcon(R.drawable.ic_action_street_name,iconColor));
+  ImageView houseNumberImageView=(ImageView)view.findViewById(R.id.houseNumberImageView);
+  houseNumberImageView.setImageDrawable(iconsCache.getPaintedContentIcon(R.drawable.ic_action_building_number,iconColor));
+  ImageView phoneImageView=(ImageView)view.findViewById(R.id.phoneImageView);
+  phoneImageView.setImageDrawable(iconsCache.getPaintedContentIcon(R.drawable.ic_action_call_dark,iconColor));
+  ImageView webSiteImageView=(ImageView)view.findViewById(R.id.webSiteImageView);
+  webSiteImageView.setImageDrawable(iconsCache.getPaintedContentIcon(R.drawable.ic_world_globe_dark,iconColor));
+  ImageView descriptionImageView=(ImageView)view.findViewById(R.id.descriptionImageView);
+  descriptionImageView.setImageDrawable(iconsCache.getPaintedContentIcon(R.drawable.ic_action_description,iconColor));
+  ImageView openingHoursImageView=(ImageView)view.findViewById(R.id.openingHoursImageView);
+  openingHoursImageView.setImageDrawable(iconsCache.getPaintedContentIcon(R.drawable.ic_action_time,iconColor));
+  streetEditText=(EditText)view.findViewById(R.id.streetEditText);
+  streetEditText.addTextChangedListener(new MyOnFocusChangeListener(getData(),OSMSettings.OSMTagKey.ADDR_STREET.getValue()));
+  houseNumberEditText=(EditText)view.findViewById(R.id.houseNumberEditText);
+  houseNumberEditText.addTextChangedListener(new MyOnFocusChangeListener(getData(),OSMSettings.OSMTagKey.ADDR_HOUSE_NUMBER.getValue()));
+  phoneEditText=(EditText)view.findViewById(R.id.phoneEditText);
+  phoneEditText.addTextChangedListener(new MyOnFocusChangeListener(getData(),OSMSettings.OSMTagKey.PHONE.getValue()));
+  webSiteEditText=(EditText)view.findViewById(R.id.webSiteEditText);
+  webSiteEditText.addTextChangedListener(new MyOnFocusChangeListener(getData(),OSMSettings.OSMTagKey.WEBSITE.getValue()));
+  descriptionEditText=(EditText)view.findViewById(R.id.descriptionEditText);
+  descriptionEditText.addTextChangedListener(new MyOnFocusChangeListener(getData(),OSMSettings.OSMTagKey.DESCRIPTION.getValue()));
+  Button addOpeningHoursButton=(Button)view.findViewById(R.id.addOpeningHoursButton);
+  addOpeningHoursButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      BasicOpeningHourRule rule=new BasicOpeningHourRule();
+      rule.setStartTime(9 * 60);
+      rule.setEndTime(18 * 60);
+      OpeningHoursDaysDialogFragment fragment=OpeningHoursDaysDialogFragment.createInstance(rule,-1);
+      fragment.show(getChildFragmentManager(),"OpenTimeDialogFragment");
+    }
+  }
+);
+  LinearLayout openHoursContainer=(LinearLayout)view.findViewById(R.id.openHoursContainer);
+  Drawable clockDrawable=iconsCache.getPaintedContentIcon(R.drawable.ic_action_time,iconColor);
+  Drawable deleteDrawable=iconsCache.getPaintedContentIcon(R.drawable.ic_action_remove_dark,iconColor);
+  if (savedInstanceState != null && savedInstanceState.containsKey(OPENING_HOURS)) {
+    mOpeningHoursAdapter=new OpeningHoursAdapter((OpeningHoursParser.OpeningHours)savedInstanceState.getSerializable(OPENING_HOURS),openHoursContainer,getData(),clockDrawable,deleteDrawable);
+    mOpeningHoursAdapter.updateViews();
+  }
+ else {
+    mOpeningHoursAdapter=new OpeningHoursAdapter(new OpeningHoursParser.OpeningHours(),openHoursContainer,getData(),clockDrawable,deleteDrawable);
+  }
+  return view;
+}

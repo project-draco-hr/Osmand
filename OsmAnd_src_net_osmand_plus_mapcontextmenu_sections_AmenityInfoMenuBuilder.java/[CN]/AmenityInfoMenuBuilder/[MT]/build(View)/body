@@ -1,0 +1,69 @@
+{
+  firstRow=true;
+  for (  PlainMenuItem item : plainMenuItems) {
+    buildRow(view,item.getIconId(),item.getText(),0);
+  }
+  MapPoiTypes poiTypes=app.getPoiTypes();
+  for (  Map.Entry<String,String> e : amenity.getAdditionalInfo().entrySet()) {
+    int iconId=0;
+    Drawable icon=null;
+    int textColor=0;
+    String key=e.getKey();
+    String vl=e.getValue();
+    if (key.startsWith("name:")) {
+      continue;
+    }
+ else     if (Amenity.OPENING_HOURS.equals(key)) {
+      iconId=R.drawable.ic_action_time;
+      OpeningHoursParser.OpeningHours rs=OpeningHoursParser.parseOpenedHours(amenity.getOpeningHours());
+      if (rs != null) {
+        Calendar inst=Calendar.getInstance();
+        inst.setTimeInMillis(System.currentTimeMillis());
+        boolean opened=rs.isOpenedForTime(inst);
+        if (opened) {
+          textColor=R.color.color_ok;
+        }
+ else {
+          textColor=R.color.color_invalid;
+        }
+      }
+    }
+ else     if (Amenity.PHONE.equals(key)) {
+      iconId=R.drawable.ic_action_call_dark;
+    }
+ else     if (Amenity.WEBSITE.equals(key)) {
+      iconId=R.drawable.ic_world_globe_dark;
+      vl=vl.replace(' ','_');
+    }
+ else {
+      if (Amenity.DESCRIPTION.equals(key)) {
+        iconId=R.drawable.ic_action_note_dark;
+      }
+ else {
+        iconId=R.drawable.ic_action_info_dark;
+      }
+      AbstractPoiType pt=poiTypes.getAnyPoiAdditionalTypeByKey(key);
+      if (pt != null) {
+        PoiType pType=(PoiType)pt;
+        if (pType.getParentType() != null && pType.getParentType() instanceof PoiType) {
+          icon=getRowIcon(view.getContext(),((PoiType)pType.getParentType()).getOsmTag() + "_" + pType.getOsmTag().replace(':','_')+ "_"+ pType.getOsmValue());
+        }
+        if (pt instanceof PoiType && !((PoiType)pt).isText()) {
+          vl=pt.getTranslation();
+        }
+ else {
+          vl=pt.getTranslation() + ": " + amenity.unzipContent(e.getValue());
+        }
+      }
+ else {
+        vl=Algorithms.capitalizeFirstLetterAndLowercase(e.getKey()) + ": " + amenity.unzipContent(e.getValue());
+      }
+    }
+    if (icon != null) {
+      buildRow(view,icon,vl,textColor);
+    }
+ else {
+      buildRow(view,iconId,vl,textColor);
+    }
+  }
+}

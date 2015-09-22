@@ -1,4 +1,8 @@
 {
+  if (pressedContextMarker(tileBox,point.x,point.y)) {
+    showMapContextMenu(latLon);
+    return true;
+  }
   boolean nativeMode=(Build.VERSION.SDK_INT >= 14) || view.getSettings().SCROLL_MAP_BY_GESTURES.get();
   int val=pressedInTextView(tileBox,point.x,point.y);
   if (selectOnMap != null) {
@@ -22,6 +26,22 @@
       activity.getMapActions().contextMenuPoint(latLon.getLatitude(),latLon.getLongitude());
     }
     return true;
+  }
+ else   if (!disableSingleTap()) {
+    LatLon latLon=selectObjectsForContextMenu(tileBox,point);
+    if (latLon != null) {
+      if (selectedObjects.size() == 1) {
+        setLocation(null,"");
+        selectedObj=selectedObjects.keySet().iterator().next();
+        contextObject=selectedObjects.get(selectedObj);
+        showMapContextMenu(latLon);
+        return true;
+      }
+ else       if (selectedObjects.size() > 1) {
+        showContextMenuForSelectedObjects(latLon);
+        return true;
+      }
+    }
   }
   return false;
 }

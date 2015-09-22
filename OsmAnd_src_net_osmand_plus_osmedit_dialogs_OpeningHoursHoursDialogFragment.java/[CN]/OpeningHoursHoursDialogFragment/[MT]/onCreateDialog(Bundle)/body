@@ -1,0 +1,52 @@
+{
+  Bundle args=getArguments();
+  final boolean isStart=args.getBoolean(IS_START);
+  final int positionToAdd=args.getInt(POSITION_TO_ADD);
+  final boolean createNew=positionToAdd == -1;
+  final OpeningHoursParser.BasicOpeningHourRule item=(OpeningHoursParser.BasicOpeningHourRule)args.getSerializable(BASIC_OPENING_HOUR_RULE);
+  AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
+  int time=isStart ? item.getStartTime() : item.getEndTime();
+  int hour=time / 60;
+  int minute=time - hour * 60;
+  final TimePicker timePicker=new TimePicker(getActivity());
+  timePicker.setIs24HourView(DateFormat.is24HourFormat(getActivity()));
+  timePicker.setCurrentHour(hour);
+  timePicker.setCurrentMinute(minute);
+  builder.setView(timePicker).setPositiveButton(isStart && createNew ? R.string.next_proceed : R.string.shared_string_save,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      int minute=timePicker.getCurrentMinute();
+      int hourOfDay=timePicker.getCurrentHour();
+      int time=minute + hourOfDay * 60;
+      if (isStart && createNew) {
+        item.setStartTime(time);
+        OpeningHoursHoursDialogFragment.createInstance(item,positionToAdd,false).show(getFragmentManager(),"TimePickerDialogFragment");
+      }
+ else {
+        if (isStart) {
+          item.setStartTime(time);
+        }
+ else {
+          item.setEndTime(time);
+        }
+        ((BasicDataFragment)getParentFragment()).setBasicOpeningHoursRule(item,positionToAdd);
+      }
+    }
+  }
+).setNegativeButton(R.string.shared_string_cancel,null);
+  int paddingInDp=18;
+  float density=getActivity().getResources().getDisplayMetrics().density;
+  int paddingInPx=(int)(paddingInDp * density);
+  final TypedValue textColorTypedValue=new TypedValue();
+  getActivity().getTheme().resolveAttribute(android.R.attr.textColorPrimary,textColorTypedValue,true);
+  int textColor=textColorTypedValue.data;
+  TextView titleTextView=new TextView(getActivity());
+  titleTextView.setText(isStart ? getActivity().getString(R.string.opening_at) : getActivity().getString(R.string.closing_at));
+  titleTextView.setPadding(paddingInPx,paddingInPx,paddingInPx,paddingInPx);
+  titleTextView.setGravity(Gravity.CENTER_VERTICAL);
+  titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,18);
+  titleTextView.setTextColor(textColor);
+  Typeface typeface=titleTextView.getTypeface();
+  titleTextView.setTypeface(typeface,Typeface.BOLD);
+  builder.setCustomTitle(titleTextView);
+  return builder.create();
+}

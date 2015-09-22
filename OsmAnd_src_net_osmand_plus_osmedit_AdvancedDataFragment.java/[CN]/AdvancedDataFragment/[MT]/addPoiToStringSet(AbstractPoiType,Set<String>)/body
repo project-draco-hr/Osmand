@@ -1,0 +1,32 @@
+{
+  if (abstractPoiType instanceof PoiType) {
+    PoiType poiType=(PoiType)abstractPoiType;
+    if (poiType.getOsmTag() != null && !poiType.getOsmTag().equals(OSMSettings.OSMTagKey.NAME.getValue())) {
+      stringSet.add(poiType.getOsmTag());
+      if (poiType.getOsmTag2() != null) {
+        stringSet.add(poiType.getOsmTag2());
+      }
+    }
+  }
+ else   if (abstractPoiType instanceof PoiCategory) {
+    PoiCategory poiCategory=(PoiCategory)abstractPoiType;
+    for (    PoiFilter filter : poiCategory.getPoiFilters()) {
+      addPoiToStringSet(filter,stringSet);
+    }
+    for (    PoiType poiType : poiCategory.getPoiTypes()) {
+      addPoiToStringSet(poiType,stringSet);
+    }
+    for (    PoiType poiType : poiCategory.getPoiAdditionals()) {
+      addPoiToStringSet(poiType,stringSet);
+    }
+  }
+ else   if (abstractPoiType instanceof PoiFilter) {
+    PoiFilter poiFilter=(PoiFilter)abstractPoiType;
+    for (    PoiType poiType : poiFilter.getPoiTypes()) {
+      addPoiToStringSet(poiType,stringSet);
+    }
+  }
+ else {
+    throw new IllegalArgumentException("abstractPoiType can't be instance of class " + abstractPoiType.getClass());
+  }
+}

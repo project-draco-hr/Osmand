@@ -15,9 +15,11 @@
   adapter.item(R.string.context_menu_item_search).iconColor(R.drawable.ic_action_search_dark).reg();
   adapter.item(R.string.context_menu_item_share_location).iconColor(R.drawable.ic_action_gshare_dark).reg();
   adapter.item(R.string.shared_string_add_to_favorites).iconColor(R.drawable.ic_action_fav_dark).reg();
+  LOG.debug("contextMenuPoint()");
   OsmandPlugin.registerMapContextMenu(mapActivity,latitude,longitude,adapter,selectedObj);
   getMyApplication().getAppCustomization().prepareLocationMenu(mapActivity,adapter);
   final Builder builder=new AlertDialog.Builder(mapActivity);
+  builder.setTitle(R.string.show_point_options);
   final ArrayAdapter<?> listAdapter=adapter.createListAdapter(mapActivity,getMyApplication().getSettings().isLightContent());
   builder.setAdapter(listAdapter,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
@@ -50,8 +52,7 @@
         }
       }
  else       if (standardId == R.string.context_menu_item_share_location) {
-        enhance(dialogBundle,latitude,longitude,mapActivity.getMapView().getZoom());
-        new ShareLocation(mapActivity).run();
+        shareLocation(latitude,longitude);
       }
  else       if (standardId == R.string.shared_string_add_to_favorites) {
         addFavouritePoint(latitude,longitude);

@@ -1,34 +1,20 @@
 {
   final View view=inflater.inflate(R.layout.fragment_edit_poi_advanced,container,false);
-  final EditText tagEditText=(EditText)view.findViewById(R.id.tagEditText);
-  final EditText valueEditText=(EditText)view.findViewById(R.id.valueEditText);
-  ImageButton deleteItemImageButton=(ImageButton)view.findViewById(R.id.deleteItemImageButton);
-  deleteItemImageButton.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      tagEditText.setText(null);
-      tagEditText.clearFocus();
-      valueEditText.setText(null);
-      valueEditText.clearFocus();
-    }
-  }
-);
+  Display display=getActivity().getWindowManager().getDefaultDisplay();
+  Point size=new Point();
+  display.getSize(size);
+  int height=size.y;
+  view.findViewById(R.id.screenFiller).setMinimumHeight(height);
+  deleteDrawable=((OsmandApplication)getActivity().getApplication()).getIconsCache().getPaintedContentIcon(R.drawable.ic_action_remove_dark,getActivity().getResources().getColor(R.color.dash_search_icon_dark));
   TextView nameTextView=(TextView)view.findViewById(R.id.nameTextView);
   TextView amenityTagTextView=(TextView)view.findViewById(R.id.amenityTagTextView);
   TextView amenityTextView=(TextView)view.findViewById(R.id.amenityTextView);
   LinearLayout editTagsLineaLayout=(LinearLayout)view.findViewById(R.id.editTagsList);
-  mAdapter=new TagAdapterLinearLayoutHack(editTagsLineaLayout,getData(),nameTextView,amenityTagTextView,amenityTextView,((OsmandApplication)getActivity().getApplication()).getPoiTypes().getAllTranslatedNames());
+  mAdapter=new TagAdapterLinearLayoutHack(editTagsLineaLayout,getData(),nameTextView,amenityTagTextView,amenityTextView,((OsmandApplication)getActivity().getApplication()).getPoiTypes());
   Button addTagButton=(Button)view.findViewById(R.id.addTagButton);
   addTagButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      String tag=String.valueOf(tagEditText.getText());
-      String value=String.valueOf(valueEditText.getText());
-      if (!TextUtils.isEmpty(tag) && !TextUtils.isEmpty(value)) {
-        mAdapter.addTag(new Tag(tag,value));
-        tagEditText.setText(null);
-        tagEditText.clearFocus();
-        valueEditText.setText(null);
-        valueEditText.clearFocus();
-      }
+      mAdapter.addTag(new Tag("",""));
     }
   }
 );

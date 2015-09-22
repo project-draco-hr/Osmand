@@ -10,17 +10,41 @@
     data.clearCache();
   }
   List<Amenity> objects=Collections.emptyList();
+  List<Amenity> fullObjects=new ArrayList<>();
   if (filter != null) {
     if (tileBox.getZoom() >= startZoom) {
       data.queryNewData(tileBox);
       objects=data.getResults();
       if (objects != null) {
-        int r=getRadiusPoi(tileBox);
+        float iconSize=poiBackground.getWidth() * 3 / 2;
+        QuadRect bounds=new QuadRect(0,0,tileBox.getPixWidth(),tileBox.getPixHeight());
+        bounds.inset(-bounds.width() / 4,-bounds.height() / 4);
+        QuadTree<QuadRect> boundIntersections=new QuadTree<>(bounds,4,0.6f);
+        List<QuadRect> result=new ArrayList<>();
         for (        Amenity o : objects) {
+          float x=tileBox.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+          float y=tileBox.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+          boolean intersects=false;
+          QuadRect visibleRect=calculateRect(x,y,iconSize,iconSize);
+          boundIntersections.queryInBox(new QuadRect(visibleRect.left,visibleRect.top,visibleRect.right,visibleRect.bottom),result);
+          for (          QuadRect r : result) {
+            if (QuadRect.intersects(r,visibleRect)) {
+              intersects=true;
+              break;
+            }
+          }
+          if (intersects) {
+            canvas.drawBitmap(poiBackgroundSmall,x - poiBackgroundSmall.getWidth() / 2,y - poiBackgroundSmall.getHeight() / 2,paintIconBackground);
+          }
+ else {
+            boundIntersections.insert(visibleRect,new QuadRect(visibleRect.left,visibleRect.top,visibleRect.right,visibleRect.bottom));
+            fullObjects.add(o);
+          }
+        }
+        for (        Amenity o : fullObjects) {
           int x=(int)tileBox.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
           int y=(int)tileBox.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
-          canvas.drawCircle(x,y,r,pointAltUI);
-          canvas.drawCircle(x,y,r,point);
+          canvas.drawBitmap(poiBackground,x - poiBackground.getWidth() / 2,y - poiBackground.getHeight() / 2,paintIconBackground);
           String id=null;
           PoiType st=o.getType().getPoiTypeByKeyName(o.getSubType());
           if (st != null) {

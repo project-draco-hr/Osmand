@@ -8,9 +8,29 @@
     view.refreshMap();
     return true;
   }
+  if (disableLongPressOnMap()) {
+    return false;
+  }
   LatLon latLon=selectObjectsForContextMenu(tileBox,point);
-  String description=getSelectedObjectDescription();
-  setLocation(latLon,description);
+  if (latLon != null) {
+    if (selectedObjects.size() == 1) {
+      setLocation(null,"");
+      selectedObj=selectedObjects.keySet().iterator().next();
+      contextObject=selectedObjects.get(selectedObj);
+      showMapContextMenu(latLon);
+    }
+ else     if (selectedObjects.size() > 1) {
+      showContextMenuForSelectedObjects(latLon);
+    }
+  }
+ else {
+    setLocation(null,"");
+    final double lat=tileBox.getLatFromPixel((int)point.x,(int)point.y);
+    final double lon=tileBox.getLonFromPixel((int)point.x,(int)point.y);
+    selectedObj=null;
+    contextObject=null;
+    showMapContextMenu(new LatLon(lat,lon));
+  }
   view.refreshMap();
   return true;
 }

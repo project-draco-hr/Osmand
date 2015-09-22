@@ -1,0 +1,32 @@
+{
+  if (object != null) {
+    if (object instanceof Amenity) {
+      Amenity amenity=(Amenity)object;
+      PoiCategory pc=amenity.getType();
+      PoiType pt=pc.getPoiTypeByKeyName(amenity.getSubType());
+      typeStr=amenity.getSubType();
+      if (pt != null) {
+        typeStr=pt.getTranslation();
+      }
+ else       if (typeStr != null) {
+        typeStr=Algorithms.capitalizeFirstLetterAndLowercase(typeStr.replace('_',' '));
+      }
+      nameStr=amenity.getName(settings.MAP_PREFERRED_LOCALE.get());
+    }
+  }
+  if (Algorithms.isEmpty(nameStr)) {
+    nameStr=pointDescription.getName();
+  }
+  if (Algorithms.isEmpty(typeStr)) {
+    typeStr=pointDescription.getTypeName();
+  }
+  if (Algorithms.isEmpty(nameStr)) {
+    if (!Algorithms.isEmpty(typeStr)) {
+      nameStr=typeStr;
+      typeStr=null;
+    }
+ else {
+      nameStr=app.getResources().getString(R.string.address_unknown);
+    }
+  }
+}
