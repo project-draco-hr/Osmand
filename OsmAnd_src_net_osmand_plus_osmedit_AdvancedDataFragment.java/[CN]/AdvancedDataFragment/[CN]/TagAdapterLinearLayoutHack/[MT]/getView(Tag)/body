@@ -8,12 +8,9 @@
   deleteItemImageButton.setImageDrawable(deleteDrawable);
   deleteItemImageButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      LOG.debug("onClick(" + "v=" + v + ") tag="+ tag+ "; editPoiData.tags"+ editPoiData.tags);
       linearLayout.removeView((View)v.getParent());
       editPoiData.tags.remove(tag);
-      LOG.debug("editPoiData.tags" + editPoiData.tags + " mIsUserInput="+ mIsUserInput);
       if (mIsUserInput)       editPoiData.notifyDatasetChanged(null);
-      LOG.debug("editPoiData.tags" + editPoiData.tags);
     }
   }
 );
@@ -30,12 +27,13 @@
     }
   }
 );
-  final Set<String> tagKeys=new TreeSet<>();
-  for (  OSMSettings.OSMTagKey t : OSMSettings.OSMTagKey.values()) {
-    if (t != OSMSettings.OSMTagKey.NAME) {
-      tagKeys.add(t.getValue());
-    }
+  final Set<String> tagKeys=new HashSet<>();
+  for (  String s : allTypes.keySet()) {
+    AbstractPoiType abstractPoiType=allTypes.get(s);
+    addPoiToStringSet(abstractPoiType,tagKeys);
   }
+  addPoiToStringSet(mapPoiTypes.getOtherMapCategory(),tagKeys);
+  TagTester.areAllTagsPresent(tagKeys);
   ArrayAdapter<Object> adapter=new ArrayAdapter<>(linearLayout.getContext(),R.layout.list_textview,tagKeys.toArray());
   tagEditText.setAdapter(adapter);
   tagEditText.setThreshold(1);
