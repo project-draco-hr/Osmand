@@ -27,23 +27,7 @@
     }
   }
 );
-  shadowView=view.findViewById(R.id.context_menu_shadow_view);
   final GestureDetector singleTapDetector=new GestureDetector(view.getContext(),new SingleTapConfirm());
-  shadowView.setOnTouchListener(new View.OnTouchListener(){
-    public boolean onTouch(    View view,    MotionEvent event){
-      if (singleTapDetector.onTouchEvent(event)) {
-        MapActivity mapActivity=getMapActivity();
-        ContextMenuLayer contextMenuLayer=mapActivity.getMapLayers().getContextMenuLayer();
-        PointF point=new PointF(event.getX(),event.getY());
-        RotatedTileBox tileBox=mapActivity.getMapView().getCurrentRotatedTileBox();
-        if (!contextMenuLayer.pressedContextMarker(tileBox,point.x,point.y) && !contextMenuLayer.onSingleTap(point,tileBox)) {
-          dismissMenu();
-        }
-      }
-      return true;
-    }
-  }
-);
   final View.OnTouchListener slideTouchListener=new View.OnTouchListener(){
     private float dy;
     private float dyMain;
@@ -201,7 +185,7 @@ getCtxMenu().buttonMorePressed(getMapActivity());
 }
 }
 );
-bottomView=view.findViewById(R.id.context_menu_bottom_view);
+View bottomView=view.findViewById(R.id.context_menu_bottom_view);
 if (menuController != null) {
 bottomView.setOnTouchListener(new View.OnTouchListener(){
 @Override public boolean onTouch(View v,MotionEvent event){
@@ -213,5 +197,6 @@ menuController.build(bottomView);
 }
 bottomView.measure(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
 menuBottomViewHeight=bottomView.getMeasuredHeight();
+getMapActivity().getMapLayers().getMapControlsLayer().setControlsClickable(false);
 return view;
 }
