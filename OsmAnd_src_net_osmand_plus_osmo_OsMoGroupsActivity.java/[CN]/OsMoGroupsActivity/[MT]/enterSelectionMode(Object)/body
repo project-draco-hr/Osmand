@@ -31,25 +31,18 @@
       group=(OsMoGroup)(o instanceof OsMoGroup ? o : null);
       MenuItem mi=null;
       if (device != null) {
-        mi=createActionModeMenuItem(actionMode,menu,ON_OFF_ACTION_ID,R.string.shared_string_ok,0,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
         mode.setTitle(device.getVisibleName());
-      }
-      if (device != null && device.getLastLocation() != null) {
-        createActionModeMenuItem(actionMode,menu,SHOW_ON_MAP_ID,R.string.shared_string_show_on_map,R.drawable.ic_action_marker_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-      }
-      createActionModeMenuItem(actionMode,menu,SHARE_ID,R.string.shared_string_share,R.drawable.ic_action_gshare_dark,device != null && device.getLastLocation() != null ? MenuItemCompat.SHOW_AS_ACTION_NEVER : MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-      if (device != null) {
-        createActionModeMenuItem(actionMode,menu,SETTINGS_DEV_ID,R.string.shared_string_settings,R.drawable.ic_action_settings,device.getLastLocation() != null ? MenuItemCompat.SHOW_AS_ACTION_NEVER : MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-      }
-      if (device != null && device.getLastLocation() != null) {
-        MenuItem menuItem=createActionModeMenuItem(actionMode,menu,TRACK_DEV_ID,R.string.osmo_set_moving_target,R.drawable.ic_action_flage_dark,device.getLastLocation() != null ? MenuItemCompat.SHOW_AS_ACTION_NEVER : MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-        menuItem.setTitleCondensed(getString(R.string.osmo_follow));
+        if (device.getLastLocation() != null) {
+          createActionModeMenuItem(actionMode,menu,SHOW_ON_MAP_ID,R.string.shared_string_show_on_map,R.drawable.ic_action_marker_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+          MenuItem menuItem=createActionModeMenuItem(actionMode,menu,TRACK_DEV_ID,R.string.osmo_set_moving_target,R.drawable.ic_action_flage_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+          menuItem.setTitleCondensed(getString(R.string.osmo_follow));
+        }
+        createActionModeMenuItem(actionMode,menu,SETTINGS_DEV_ID,R.string.shared_string_settings,R.drawable.ic_action_settings,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
       }
       if (group != null) {
+        createActionModeMenuItem(actionMode,menu,SHARE_ID,R.string.shared_string_share,R.drawable.ic_action_gshare_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
         mode.setTitle(group.getVisibleName(OsMoGroupsActivity.this));
         createActionModeMenuItem(actionMode,menu,GROUP_INFO,R.string.osmo_group_info,R.drawable.ic_action_gabout_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-      }
-      if ((group != null && !group.isMainGroup()) || (device != null && device.getGroup().isMainGroup())) {
         createActionModeMenuItem(actionMode,menu,DELETE_ACTION_ID,R.string.shared_string_delete,R.drawable.ic_action_delete_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
       }
       if (mi != null) {
@@ -92,13 +85,13 @@
       }
  else       if (item.getItemId() == DELETE_ACTION_ID) {
         Builder bld=new AlertDialog.Builder(OsMoGroupsActivity.this);
-        String name=(selectedObject instanceof OsMoDevice) ? ((OsMoDevice)selectedObject).getVisibleName() : ((OsMoGroup)selectedObject).getVisibleName(OsMoGroupsActivity.this);
-        bld.setTitle(getString(selectedObject instanceof OsMoDevice ? R.string.delete_confirmation_msg : R.string.osmo_leave_confirmation_msg,name));
+        String name=((OsMoGroup)selectedObject).getVisibleName(OsMoGroupsActivity.this);
+        bld.setTitle(getString(R.string.osmo_leave_confirmation_msg,name));
         bld.setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
           @Override public void onClick(          DialogInterface dialog,          int which){
             Object obj=selectedObject;
             quitSelectionMode();
-            deleteObject(obj);
+            deleteObject((OsMoGroup)obj);
           }
         }
 );
@@ -109,12 +102,7 @@
         showGroupInfo(group);
       }
  else       if (item.getItemId() == SHARE_ID) {
-        if (device != null) {
-          shareTrackerId(device.getVisibleName(),device.getTrackerId());
-        }
- else {
-          shareOsMoGroup(group.getVisibleName(app),group.getGroupId());
-        }
+        shareOsMoGroup(group.getVisibleName(app),group.getGroupId());
       }
  else       if (item.getItemId() == SHOW_ON_MAP_ID) {
         if (device != null) {
@@ -134,25 +122,14 @@
       return true;
     }
     private void onOffAction(    CompoundButton bt){
-      if ((selectedObject instanceof OsMoDevice)) {
-        OsMoDevice d=(OsMoDevice)selectedObject;
-        if (bt.isChecked()) {
-          osMoPlugin.getGroups().connectDevice(d);
-        }
- else {
-          osMoPlugin.getGroups().disconnectDevice(d);
-        }
+      OsMoGroup g=(OsMoGroup)selectedObject;
+      if (bt.isChecked()) {
+        String operation=osMoPlugin.getGroups().connectGroup(g);
+        startLongRunningOperation(operation);
       }
  else {
-        OsMoGroup g=(OsMoGroup)selectedObject;
-        if (bt.isChecked()) {
-          String operation=osMoPlugin.getGroups().connectGroup(g);
-          startLongRunningOperation(operation);
-        }
- else {
-          String operation=osMoPlugin.getGroups().disconnectGroup(g);
-          startLongRunningOperation(operation);
-        }
+        String operation=osMoPlugin.getGroups().disconnectGroup(g);
+        startLongRunningOperation(operation);
       }
       quitSelectionMode();
     }
