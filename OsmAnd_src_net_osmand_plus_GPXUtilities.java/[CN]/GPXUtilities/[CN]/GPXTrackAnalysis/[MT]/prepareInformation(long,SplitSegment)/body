@@ -5,8 +5,16 @@
   int speedCount=0;
   double totalSpeedSum=0;
   points=0;
+  double channelThres=5;
+  double channelBase;
+  double channelTop;
+  double channelBottom;
+  boolean climb=false;
   for (  SplitSegment s : splitSegments) {
     final int numberOfPoints=s.getNumberOfPoints();
+    channelBase=99999;
+    channelTop=channelBase;
+    channelBottom=channelBase;
     metricEnd+=s.metricEnd;
     points+=numberOfPoints;
     for (int j=0; j < numberOfPoints; j++) {
@@ -35,17 +43,45 @@
         maxSpeed=Math.max(speed,maxSpeed);
         speedCount++;
       }
-      if (j > 0) {
-        WptPt prev=s.get(j - 1);
-        if (!Double.isNaN(point.ele) && !Double.isNaN(prev.ele)) {
-          double diff=point.ele - prev.ele;
-          if (diff > 0) {
-            diffElevationUp+=diff;
+      if (!Double.isNaN(point.ele)) {
+        if (channelBase == 99999) {
+          channelBase=point.ele;
+          channelTop=channelBase;
+          channelBottom=channelBase;
+        }
+        if (point.ele > channelTop) {
+          channelTop=point.ele;
+        }
+ else         if (point.ele < channelBottom) {
+          channelBottom=point.ele;
+        }
+        if ((point.ele <= (channelTop - channelThres)) && (climb == true)) {
+          if ((channelTop - channelBase) >= channelThres) {
+            diffElevationUp+=channelTop - channelBase;
           }
- else {
-            diffElevationDown-=diff;
+          channelBase=channelTop;
+          channelBottom=point.ele;
+          climb=false;
+        }
+ else         if ((point.ele >= (channelBottom + channelThres)) && (climb == false)) {
+          if ((channelBase - channelBottom) >= channelThres) {
+            diffElevationDown+=channelBase - channelBottom;
+          }
+          channelBase=channelBottom;
+          channelTop=point.ele;
+          climb=true;
+        }
+ else         if (j == numberOfPoints - 1) {
+          if ((channelTop - channelBase) >= channelThres) {
+            diffElevationUp+=channelTop - channelBase;
+          }
+          if ((channelBase - channelBottom) >= channelThres) {
+            diffElevationDown+=channelBase - channelBottom;
           }
         }
+      }
+      if (j > 0) {
+        WptPt prev=s.get(j - 1);
         net.osmand.Location.distanceBetween(prev.lat,prev.lon,point.lat,point.lon,calculations);
         totalDistance+=calculations[0];
         if (speed > 0 && point.time != 0 && prev.time != 0) {
