@@ -1,0 +1,107 @@
+{
+  boolean skipWiki=Version.isFreeVersion(ctx);
+  final Map<String,IndexItemCategoryWithSubcat> cats=new TreeMap<>();
+  ArrayList<IndexItemCategoryWithSubcat> mainList=new ArrayList<>();
+  for (  IndexItem i : indexItems) {
+    String lowerCase=i.getFileName().toLowerCase();
+    CategoryStaticData categoryStaticData;
+    if (lowerCase.endsWith(".voice.zip")) {
+      categoryStaticData=CategoryStaticData.NAME_VOICE;
+    }
+ else     if (lowerCase.contains(".ttsvoice.zip")) {
+      categoryStaticData=CategoryStaticData.TTS_VOICE;
+    }
+ else     if (lowerCase.contains("_wiki_")) {
+      if (skipWiki) {
+        continue;
+      }
+      categoryStaticData=CategoryStaticData.WIKI;
+    }
+ else     if (lowerCase.startsWith("us") || (lowerCase.contains("united states") && lowerCase.startsWith("north-america"))) {
+      categoryStaticData=CategoryStaticData.US;
+    }
+ else     if (lowerCase.startsWith("canada")) {
+      categoryStaticData=CategoryStaticData.CANADA;
+    }
+ else     if (lowerCase.contains("openmaps")) {
+      categoryStaticData=CategoryStaticData.OPENMAPS;
+    }
+ else     if (lowerCase.contains("northamerica") || lowerCase.contains("north-america")) {
+      categoryStaticData=CategoryStaticData.NORTH_AMERICA;
+    }
+ else     if (lowerCase.contains("centralamerica") || lowerCase.contains("central-america") || lowerCase.contains("caribbean")) {
+      categoryStaticData=CategoryStaticData.CENTRAL_AMERICA;
+    }
+ else     if (lowerCase.contains("southamerica") || lowerCase.contains("south-america")) {
+      categoryStaticData=CategoryStaticData.SOUTH_AMERICA;
+    }
+ else     if (lowerCase.contains("germany")) {
+      categoryStaticData=CategoryStaticData.GERMANY;
+    }
+ else     if (lowerCase.startsWith("france_")) {
+      categoryStaticData=CategoryStaticData.FRANCE;
+    }
+ else     if (lowerCase.startsWith("italy_")) {
+      categoryStaticData=CategoryStaticData.ITALY;
+    }
+ else     if (lowerCase.startsWith("gb_") || lowerCase.startsWith("british")) {
+      categoryStaticData=CategoryStaticData.GB;
+    }
+ else     if (lowerCase.contains("netherlands")) {
+      categoryStaticData=CategoryStaticData.NETHERLANDS;
+    }
+ else     if (lowerCase.contains("russia")) {
+      categoryStaticData=CategoryStaticData.RUSSIA;
+    }
+ else     if (lowerCase.contains("europe")) {
+      categoryStaticData=CategoryStaticData.EUROPE;
+    }
+ else     if (lowerCase.contains("africa") && !lowerCase.contains("_wiki_")) {
+      categoryStaticData=CategoryStaticData.AFRICA;
+    }
+ else     if (lowerCase.contains("_asia") || lowerCase.startsWith("asia")) {
+      categoryStaticData=CategoryStaticData.ASIA;
+    }
+ else     if (lowerCase.contains("oceania") || lowerCase.contains("australia")) {
+      categoryStaticData=CategoryStaticData.OCEANIA;
+    }
+ else     if (lowerCase.contains("tour")) {
+      categoryStaticData=CategoryStaticData.TOURS;
+    }
+ else {
+      categoryStaticData=CategoryStaticData.WORLD_WIDE_AND_TOPIC;
+    }
+    String name=ctx.getString(categoryStaticData.getNameId());
+    categoryStaticData.setName(name);
+    final IndexItemCategoryWithSubcat category=new IndexItemCategoryWithSubcat(categoryStaticData);
+    if (!cats.containsKey(name)) {
+      cats.put(name,category);
+      LOG.debug("category=" + category.categoryStaticData);
+      if (!categoryStaticData.hasParent()) {
+        mainList.add(category);
+      }
+ else {
+        final CategoryStaticData parent=categoryStaticData.getParent();
+        if (cats.get(parent.getName()) == null) {
+          cats.put(parent.getName(),new IndexItemCategoryWithSubcat(parent));
+        }
+ else {
+          cats.get(parent.getName()).subcats.add(category);
+        }
+      }
+    }
+    cats.get(name).items.add(i);
+  }
+  final Collator collator=OsmAndCollator.primaryCollator();
+  for (  IndexItemCategoryWithSubcat ct : mainList) {
+    final OsmandRegions osmandRegions=ctx.getResourceManager().getOsmandRegions();
+    Collections.sort(ct.items,new Comparator<IndexItem>(){
+      @Override public int compare(      IndexItem lhs,      IndexItem rhs){
+        return collator.compare(lhs.getVisibleName(ctx,osmandRegions),rhs.getVisibleName(ctx,osmandRegions));
+      }
+    }
+);
+  }
+  Collections.sort(mainList);
+  return mainList;
+}
