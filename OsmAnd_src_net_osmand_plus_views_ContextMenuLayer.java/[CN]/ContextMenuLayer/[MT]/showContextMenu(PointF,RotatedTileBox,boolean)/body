@@ -1,0 +1,26 @@
+{
+  LatLon latLon=selectObjectsForContextMenu(tileBox,point);
+  if (latLon != null) {
+    if (selectedObjects.size() == 1) {
+      setLocation(null,"");
+      selectedObj=selectedObjects.keySet().iterator().next();
+      contextObject=selectedObjects.get(selectedObj);
+      showMapContextMenu(latLon);
+      return true;
+    }
+ else     if (selectedObjects.size() > 1) {
+      showContextMenuForSelectedObjects(latLon);
+      return true;
+    }
+  }
+ else   if (showUnknownLocation) {
+    setLocation(null,"");
+    final double lat=tileBox.getLatFromPixel((int)point.x,(int)point.y);
+    final double lon=tileBox.getLonFromPixel((int)point.x,(int)point.y);
+    selectedObj=null;
+    contextObject=null;
+    showMapContextMenu(new LatLon(lat,lon));
+    return true;
+  }
+  return false;
+}
