@@ -1,7 +1,6 @@
 {
   Builder builder=new AlertDialog.Builder(this);
   final View v=getLayoutInflater().inflate(R.layout.osmo_connect_to_device,getExpandableListView(),false);
-  final RadioButton device=(RadioButton)v.findViewById(R.id.ConnectToDevice);
   final TextView labelTracker=(TextView)v.findViewById(R.id.LabelTrackerId);
   final TextView labelName=(TextView)v.findViewById(R.id.LabelName);
   final EditText tracker=(EditText)v.findViewById(R.id.TrackerId);
@@ -9,27 +8,12 @@
   final View mgv=v.findViewById(R.id.MyGroupName);
   final EditText nickname=(EditText)v.findViewById(R.id.NickName);
   nickname.setText(app.getSettings().OSMO_USER_NAME.get());
-  device.setChecked(true);
-  device.setOnCheckedChangeListener(new OnCheckedChangeListener(){
-    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
-      if (isChecked) {
-        labelTracker.setText(R.string.osmo_connect_to_device_tracker_id);
-        labelName.setText(R.string.osmo_connect_to_device_name);
-        name.setVisibility(View.VISIBLE);
-        labelName.setVisibility(View.VISIBLE);
-        mgv.setVisibility(View.GONE);
-      }
- else {
-        labelTracker.setText(R.string.osmo_connect_to_group_id);
-        labelName.setText(R.string.osmo_group_name);
-        name.setHint(R.string.osmo_use_server_name);
-        name.setVisibility(View.GONE);
-        labelName.setVisibility(View.GONE);
-        mgv.setVisibility(View.VISIBLE);
-      }
-    }
-  }
-);
+  labelTracker.setText(R.string.osmo_connect_to_group_id);
+  labelName.setText(R.string.osmo_group_name);
+  name.setHint(R.string.osmo_use_server_name);
+  name.setVisibility(View.GONE);
+  labelName.setVisibility(View.GONE);
+  mgv.setVisibility(View.VISIBLE);
   builder.setView(v);
   builder.setNegativeButton(R.string.shared_string_cancel,null);
   builder.setPositiveButton(R.string.shared_string_apply,new DialogInterface.OnClickListener(){
@@ -42,22 +26,15 @@
         connectToDevice();
         return;
       }
-      if (device.isChecked()) {
-        OsMoDevice dev=osMoPlugin.getGroups().addConnectedDevice(id,nameUser,ColorDialogs.getRandomColor());
-        adapter.update(dev.group);
-        adapter.notifyDataSetChanged();
+      if (!checkOperationIsNotRunning()) {
+        return;
       }
- else {
-        if (!checkOperationIsNotRunning()) {
-          return;
-        }
-        joinGroup=true;
-        String op=osMoPlugin.getGroups().joinGroup(id,nameUser,nick);
-        if (app.getSettings().OSMO_USER_PWD.get() == null) {
-          app.getSettings().OSMO_USER_NAME.set(nick);
-        }
-        startLongRunningOperation(op);
+      joinGroup=true;
+      String op=osMoPlugin.getGroups().joinGroup(id,nameUser,nick);
+      if (app.getSettings().OSMO_USER_PWD.get() == null) {
+        app.getSettings().OSMO_USER_NAME.set(nick);
       }
+      startLongRunningOperation(op);
     }
   }
 );

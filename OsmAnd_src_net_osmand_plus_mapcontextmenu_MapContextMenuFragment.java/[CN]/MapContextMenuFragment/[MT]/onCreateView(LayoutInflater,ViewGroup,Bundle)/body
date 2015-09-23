@@ -27,23 +27,7 @@
     }
   }
 );
-  shadowView=view.findViewById(R.id.context_menu_shadow_view);
   final GestureDetector singleTapDetector=new GestureDetector(view.getContext(),new SingleTapConfirm());
-  shadowView.setOnTouchListener(new View.OnTouchListener(){
-    public boolean onTouch(    View view,    MotionEvent event){
-      if (singleTapDetector.onTouchEvent(event)) {
-        MapActivity mapActivity=getMapActivity();
-        ContextMenuLayer contextMenuLayer=mapActivity.getMapLayers().getContextMenuLayer();
-        PointF point=new PointF(event.getX(),event.getY());
-        RotatedTileBox tileBox=mapActivity.getMapView().getCurrentRotatedTileBox();
-        if (!contextMenuLayer.pressedContextMarker(tileBox,point.x,point.y) && !contextMenuLayer.onSingleTap(point,tileBox)) {
-          dismissMenu();
-        }
-      }
-      return true;
-    }
-  }
-);
   final View.OnTouchListener slideTouchListener=new View.OnTouchListener(){
     private float dy;
     private float dyMain;
@@ -55,8 +39,7 @@
     private boolean hasMoved;
     @Override public boolean onTouch(    View v,    MotionEvent event){
       if (singleTapDetector.onTouchEvent(event)) {
-        OsmandMapTileView mapView=getMapActivity().getMapView();
-        mapView.getAnimatedDraggingThread().startMoving(getCtxMenu().getPointDescription().getLat(),getCtxMenu().getPointDescription().getLon(),mapView.getZoom(),true);
+        showOnMap(getCtxMenu().getPointDescription().getLat(),getCtxMenu().getPointDescription().getLon());
         if (hasMoved) {
           applyPosY(getViewY());
         }
@@ -173,7 +156,7 @@ final ImageButton buttonNavigate=(ImageButton)view.findViewById(R.id.context_men
 buttonNavigate.setImageDrawable(iconsCache.getIcon(R.drawable.map_directions,light ? R.color.icon_color : R.color.dashboard_subheader_text_dark));
 buttonNavigate.setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
-getCtxMenu().buttonNavigatePressed(getMapActivity());
+getCtxMenu().buttonNavigatePressed();
 }
 }
 );
@@ -181,7 +164,7 @@ final ImageButton buttonFavorite=(ImageButton)view.findViewById(R.id.context_men
 buttonFavorite.setImageDrawable(iconsCache.getIcon(R.drawable.ic_action_fav_dark,light ? R.color.icon_color : R.color.dashboard_subheader_text_dark));
 buttonFavorite.setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
-getCtxMenu().buttonFavoritePressed(getMapActivity());
+getCtxMenu().buttonFavoritePressed();
 }
 }
 );
@@ -189,7 +172,7 @@ final ImageButton buttonShare=(ImageButton)view.findViewById(R.id.context_menu_s
 buttonShare.setImageDrawable(iconsCache.getIcon(R.drawable.abc_ic_menu_share_mtrl_alpha,light ? R.color.icon_color : R.color.dashboard_subheader_text_dark));
 buttonShare.setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
-getCtxMenu().buttonSharePressed(getMapActivity());
+getCtxMenu().buttonSharePressed();
 }
 }
 );
@@ -197,11 +180,11 @@ final ImageButton buttonMore=(ImageButton)view.findViewById(R.id.context_menu_mo
 buttonMore.setImageDrawable(iconsCache.getIcon(R.drawable.ic_overflow_menu_white,light ? R.color.icon_color : R.color.dashboard_subheader_text_dark));
 buttonMore.setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
-getCtxMenu().buttonMorePressed(getMapActivity());
+getCtxMenu().buttonMorePressed();
 }
 }
 );
-bottomView=view.findViewById(R.id.context_menu_bottom_view);
+View bottomView=view.findViewById(R.id.context_menu_bottom_view);
 if (menuController != null) {
 bottomView.setOnTouchListener(new View.OnTouchListener(){
 @Override public boolean onTouch(View v,MotionEvent event){
@@ -213,5 +196,6 @@ menuController.build(bottomView);
 }
 bottomView.measure(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
 menuBottomViewHeight=bottomView.getMeasuredHeight();
+getMapActivity().getMapLayers().getMapControlsLayer().setControlsClickable(false);
 return view;
 }
