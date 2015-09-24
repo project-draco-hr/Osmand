@@ -7,7 +7,6 @@
   }
  else {
     editPoiData.tags=new LinkedHashSet<>();
-    LOG.debug("node.tags=" + node.getTags());
     tryAddTag(OSMSettings.OSMTagKey.ADDR_STREET.getValue(),node.getTag(OSMSettings.OSMTagKey.ADDR_STREET));
     tryAddTag(OSMSettings.OSMTagKey.ADDR_HOUSE_NUMBER.getValue(),node.getTag(OSMSettings.OSMTagKey.ADDR_HOUSE_NUMBER));
     tryAddTag(OSMSettings.OSMTagKey.PHONE.getValue(),editPoiData.amenity.getPhone());
@@ -137,14 +136,13 @@
         return;
       }
       OsmPoint.Action action=node.getId() == -1 ? OsmPoint.Action.CREATE : OsmPoint.Action.MODIFY;
-      String description="";
       for (      Tag tag : editPoiData.tags) {
         if (tag.tag.equals(POI_TYPE_TAG)) {
-          if (allTranslatedSubTypes.get(tag.value) != null) {
-            PoiType pt=allTranslatedSubTypes.get(tag.value);
-            node.putTag(pt.getOsmTag(),pt.getOsmValue());
-            if (pt.getOsmTag2() != null) {
-              node.putTag(pt.getOsmTag2(),pt.getOsmValue2());
+          final PoiType poiType=allTranslatedSubTypes.get(tag.value.trim().toLowerCase());
+          if (poiType != null) {
+            node.putTag(poiType.getOsmTag(),poiType.getOsmValue());
+            if (poiType.getOsmTag2() != null) {
+              node.putTag(poiType.getOsmTag2(),poiType.getOsmValue2());
             }
           }
  else {
