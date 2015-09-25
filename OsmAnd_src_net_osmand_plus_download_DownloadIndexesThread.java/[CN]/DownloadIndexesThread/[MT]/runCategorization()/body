@@ -1,6 +1,5 @@
 {
   final BasicProgressAsyncTask<Void,Void,List<IndexItem>> inst=new BasicProgressAsyncTask<Void,Void,List<IndexItem>>(ctx){
-    private List<IndexItemCategory> cats;
     private List<IndexItemCategoryWithSubcat> catsWithSubcats;
     @Override protected void onPreExecute(){
       super.onPreExecute();
@@ -12,12 +11,7 @@
     }
     @Override protected List<IndexItem> doInBackground(    Void... params){
       final List<IndexItem> filtered=getFilteredByType();
-      if (withSubcats) {
-        catsWithSubcats=IndexItemCategoryWithSubcat.categorizeIndexItems(app,filtered);
-      }
- else {
-        cats=IndexItemCategory.categorizeIndexItems(app,filtered);
-      }
+      catsWithSubcats=IndexItemCategoryWithSubcat.categorizeIndexItems(app,filtered);
       updateLoadedFiles();
       return filtered;
     }
@@ -26,9 +20,7 @@
       List<IndexItem> cachedIndexFiles=getCachedIndexFiles();
       if (cachedIndexFiles != null) {
         for (        IndexItem file : cachedIndexFiles) {
-          if (file.getType() == type) {
-            filtered.add(file);
-          }
+          filtered.add(file);
         }
       }
       return filtered;
@@ -37,12 +29,7 @@
       prepareFilesToUpdate();
       currentRunningTask.remove(this);
       if (uiActivity != null) {
-        if (withSubcats) {
-          uiActivity.onCategorizationFinished(filtered,catsWithSubcats);
-        }
- else {
-          uiActivity.categorizationFinished(filtered,cats);
-        }
+        uiActivity.onCategorizationFinished(filtered,catsWithSubcats);
         uiActivity.updateProgress(false);
       }
     }
