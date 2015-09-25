@@ -1,0 +1,42 @@
+{
+  final FavouritePoint point=new FavouritePoint(favorite.getLatitude(),favorite.getLongitude(),getName(),getCategory());
+  point.setDescription(getDescription());
+  AlertDialog.Builder builder=FavouritesDbHelper.checkDuplicates(point,helper,getMapActivity());
+  if (favorite.getName().equals(point.getName()) && favorite.getCategory().equals(point.getCategory()) && favorite.getDescription().equals(point.getDescription())) {
+    if (needDismiss) {
+      dismiss(true);
+    }
+    return;
+  }
+  if (builder != null) {
+    builder.setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
+      @Override public void onClick(      DialogInterface dialog,      int which){
+        if (editor.isNew()) {
+          doAddFavorite(point.getName(),point.getCategory(),point.getDescription());
+        }
+ else {
+          helper.editFavouriteName(favorite,point.getName(),point.getCategory(),point.getDescription());
+        }
+        getMapActivity().getMapView().refreshMap(true);
+        if (needDismiss) {
+          dismiss(true);
+        }
+      }
+    }
+);
+    builder.create().show();
+  }
+ else {
+    if (editor.isNew()) {
+      doAddFavorite(point.getName(),point.getCategory(),point.getDescription());
+    }
+ else {
+      helper.editFavouriteName(favorite,point.getName(),point.getCategory(),point.getDescription());
+    }
+    getMapActivity().getMapView().refreshMap(true);
+    if (needDismiss) {
+      dismiss(true);
+    }
+  }
+  saved=true;
+}
