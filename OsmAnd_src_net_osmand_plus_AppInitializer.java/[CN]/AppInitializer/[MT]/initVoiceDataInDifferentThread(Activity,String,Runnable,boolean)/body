@@ -1,12 +1,29 @@
 {
   final ProgressDialog dlg=showDialog ? ProgressDialog.show(uiContext,app.getString(R.string.loading_data),app.getString(R.string.voice_data_initializing)) : null;
   new Thread(new Runnable(){
+    public CommandPlayer createCommandPlayer(    String voiceProvider,    OsmandApplication osmandApplication,    Activity ctx) throws CommandPlayerException {
+      if (voiceProvider != null) {
+        File parent=osmandApplication.getAppPath(IndexConstants.VOICE_INDEX_DIR);
+        File voiceDir=new File(parent,voiceProvider);
+        if (!voiceDir.exists()) {
+          throw new CommandPlayerException(ctx.getString(R.string.voice_data_unavailable));
+        }
+        if (MediaCommandPlayerImpl.isMyData(voiceDir)) {
+          return new MediaCommandPlayerImpl(osmandApplication,osmandApplication.getRoutingHelper().getVoiceRouter(),voiceProvider);
+        }
+ else         if (TTSCommandPlayerImpl.isMyData(voiceDir)) {
+          return new TTSCommandPlayerImpl(ctx,osmandApplication.getRoutingHelper().getVoiceRouter(),voiceProvider);
+        }
+        throw new CommandPlayerException(ctx.getString(R.string.voice_data_not_supported));
+      }
+      return null;
+    }
     @Override public void run(){
       try {
         if (app.player != null) {
           app.player.clear();
         }
-        app.player=CommandPlayerFactory.createCommandPlayer(voiceProvider,app,uiContext);
+        app.player=createCommandPlayer(voiceProvider,app,uiContext);
         app.getRoutingHelper().getVoiceRouter().setPlayer(app.player);
         if (dlg != null) {
           dlg.dismiss();
