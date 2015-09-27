@@ -1,0 +1,28 @@
+{
+  leftIconId=0;
+  leftIcon=null;
+  secondLineIcon=null;
+  if (object != null) {
+    if (object instanceof Amenity) {
+      String id=null;
+      Amenity o=(Amenity)object;
+      PoiType st=o.getType().getPoiTypeByKeyName(o.getSubType());
+      if (st != null) {
+        if (RenderingIcons.containsBigIcon(st.getIconKeyName())) {
+          id=st.getIconKeyName();
+        }
+ else         if (RenderingIcons.containsBigIcon(st.getOsmTag() + "_" + st.getOsmValue())) {
+          id=st.getOsmTag() + "_" + st.getOsmValue();
+        }
+      }
+      if (id != null) {
+        leftIconId=RenderingIcons.getBigIconResourceId(id);
+      }
+    }
+ else     if (object instanceof FavouritePoint) {
+      FavouritePoint fav=(FavouritePoint)object;
+      leftIcon=FavoriteImageDrawable.getOrCreate(mapActivity,fav.getColor(),mapActivity.getMapView().getCurrentRotatedTileBox().getDensity());
+      secondLineIcon=getIcon(R.drawable.ic_small_group);
+    }
+  }
+}

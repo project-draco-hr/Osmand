@@ -1,0 +1,44 @@
+{
+  final BasicProgressAsyncTask<Void,Void,List<IndexItem>> inst=new BasicProgressAsyncTask<Void,Void,List<IndexItem>>(ctx){
+    private List<IndexItemCategoryWithSubcat> catsWithSubcats;
+    @Override protected void onPreExecute(){
+      super.onPreExecute();
+      currentRunningTask.add(this);
+      this.message=ctx.getString(R.string.downloading_list_indexes);
+      if (uiActivity != null) {
+        uiActivity.updateProgress(false);
+      }
+    }
+    @Override protected List<IndexItem> doInBackground(    Void... params){
+      final List<IndexItem> filtered=getFilteredByType();
+      catsWithSubcats=IndexItemCategoryWithSubcat.categorizeIndexItems(app,filtered);
+      updateLoadedFiles();
+      return filtered;
+    }
+    public List<IndexItem> getFilteredByType(){
+      final List<IndexItem> filtered=new ArrayList<IndexItem>();
+      List<IndexItem> cachedIndexFiles=getCachedIndexFiles();
+      if (cachedIndexFiles != null) {
+        for (        IndexItem file : cachedIndexFiles) {
+          filtered.add(file);
+        }
+      }
+      return filtered;
+    }
+    @Override protected void onPostExecute(    List<IndexItem> filtered){
+      prepareFilesToUpdate();
+      currentRunningTask.remove(this);
+      if (uiActivity != null) {
+        uiActivity.onCategorizationFinished(filtered,catsWithSubcats);
+        uiActivity.updateProgress(false);
+      }
+    }
+    @Override protected void updateProgress(    boolean updateOnlyProgress){
+      if (uiActivity != null) {
+        uiActivity.updateProgress(updateOnlyProgress);
+      }
+    }
+  }
+;
+  execute(inst);
+}

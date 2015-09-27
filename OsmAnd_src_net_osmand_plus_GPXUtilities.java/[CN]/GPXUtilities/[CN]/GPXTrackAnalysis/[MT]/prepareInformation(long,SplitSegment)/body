@@ -5,7 +5,8 @@
   int speedCount=0;
   double totalSpeedSum=0;
   points=0;
-  double channelThres=10;
+  double channelThresMin=5;
+  double channelThres=channelThresMin;
   double channelBase;
   double channelTop;
   double channelBottom;
@@ -15,6 +16,7 @@
     channelBase=99999;
     channelTop=channelBase;
     channelBottom=channelBase;
+    channelThres=channelThresMin;
     metricEnd+=s.metricEnd;
     points+=numberOfPoints;
     for (int j=0; j < numberOfPoints; j++) {
@@ -48,12 +50,19 @@
           channelBase=point.ele;
           channelTop=channelBase;
           channelBottom=channelBase;
+          channelThres=channelThresMin;
         }
         if (point.ele > channelTop) {
           channelTop=point.ele;
+          if (!Double.isNaN(point.hdop)) {
+            channelThres=Math.max(channelThres,2.0 * point.hdop);
+          }
         }
  else         if (point.ele < channelBottom) {
           channelBottom=point.ele;
+          if (!Double.isNaN(point.hdop)) {
+            channelThres=Math.max(channelThres,2.0 * point.hdop);
+          }
         }
         if ((point.ele <= (channelTop - channelThres)) && (climb == true)) {
           if ((channelTop - channelBase) >= channelThres) {
@@ -62,6 +71,7 @@
           channelBase=channelTop;
           channelBottom=point.ele;
           climb=false;
+          channelThres=channelThresMin;
         }
  else         if ((point.ele >= (channelBottom + channelThres)) && (climb == false)) {
           if ((channelBase - channelBottom) >= channelThres) {
@@ -70,6 +80,7 @@
           channelBase=channelBottom;
           channelTop=point.ele;
           climb=true;
+          channelThres=channelThresMin;
         }
         if (j == (numberOfPoints - 1)) {
           if ((channelTop - channelBase) >= channelThres) {

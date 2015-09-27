@@ -73,10 +73,10 @@
     }
     String name=ctx.getString(categoryStaticData.getNameId());
     categoryStaticData.setName(name);
-    final IndexItemCategoryWithSubcat category=new IndexItemCategoryWithSubcat(categoryStaticData);
-    if (!cats.containsKey(name)) {
+    IndexItemCategoryWithSubcat category=cats.get(name);
+    if (category == null) {
+      category=new IndexItemCategoryWithSubcat(categoryStaticData);
       cats.put(name,category);
-      LOG.debug("category=" + category.categoryStaticData);
       if (!categoryStaticData.hasParent()) {
         mainList.add(category);
       }
@@ -90,7 +90,28 @@
         }
       }
     }
-    cats.get(name).items.add(i);
+    IndexItemCategoryWithSubcat region;
+    region=cats.get(i.getBasename());
+    final String visibleName=i.getVisibleName(ctx,ctx.getRegions());
+    i.setName(visibleName);
+    if (region == null) {
+      final CategoryStaticData regionStaticData=new CategoryStaticData(0,0);
+      regionStaticData.setName(visibleName);
+      region=new IndexItemCategoryWithSubcat(regionStaticData);
+      cats.put(i.getBasename(),region);
+      category.subcats.add(region);
+    }
+    region.items.add(i);
+    if (i.getType() == DownloadActivityType.NORMAL_FILE) {
+      region.types.add(R.string.shared_string_map);
+    }
+    if (i.getType() == DownloadActivityType.WIKIPEDIA_FILE) {
+      region.types.add(R.string.shared_string_wikipedia);
+    }
+    if (i.getType() == DownloadActivityType.ROADS_FILE) {
+      region.types.add(R.string.roads);
+    }
+    final CategoryStaticData parent=category.categoryStaticData.getParent();
   }
   final Collator collator=OsmAndCollator.primaryCollator();
   for (  IndexItemCategoryWithSubcat ct : mainList) {

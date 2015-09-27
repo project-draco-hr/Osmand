@@ -1,0 +1,41 @@
+{
+  ViewHolder viewHolder;
+  if (convertView == null) {
+    convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.two_line_with_images_list_item,parent,false);
+    viewHolder=new ViewHolder();
+    viewHolder.nameTextView=(TextView)convertView.findViewById(R.id.name);
+    viewHolder.descrTextView=(TextView)convertView.findViewById(R.id.description);
+    viewHolder.leftImageView=(ImageView)convertView.findViewById(R.id.leftIcon);
+    viewHolder.rightImageView=(ImageView)convertView.findViewById(R.id.rightIcon);
+    convertView.setTag(viewHolder);
+  }
+ else {
+    viewHolder=(ViewHolder)convertView.getTag();
+  }
+  HasName item=getItem(position);
+  if (item instanceof IndexItemCategoryWithSubcat) {
+    IndexItemCategoryWithSubcat category=(IndexItemCategoryWithSubcat)item;
+    viewHolder.nameTextView.setText(category.getName());
+    if (category.types.size() > 0) {
+      StringBuilder stringBuilder=new StringBuilder();
+      Resources resources=getContext().getResources();
+      for (      Integer mapType : category.types) {
+        stringBuilder.append(resources.getString(mapType));
+        stringBuilder.append(", ");
+      }
+      LOG.debug("stringBuilder=" + stringBuilder);
+      stringBuilder.delete(stringBuilder.capacity() - 3,stringBuilder.capacity());
+      viewHolder.descrTextView.setText(stringBuilder.toString());
+    }
+ else {
+      viewHolder.descrTextView.setText("Others");
+    }
+    LOG.debug("category.types=" + category.types);
+  }
+ else {
+    viewHolder.nameTextView.setText(item.getName());
+    viewHolder.descrTextView.setText("Temp values");
+  }
+  viewHolder.leftImageView.setImageDrawable(iconsCache.getContentIcon(R.drawable.ic_map));
+  return convertView;
+}

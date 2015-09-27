@@ -1,26 +1,7 @@
 {
   View view=inflater.inflate(R.layout.local_index_fragment,container,false);
-  getDownloadActivity().setSupportProgressBarIndeterminateVisibility(false);
-  ProgressBar sizeProgress=(ProgressBar)view.findViewById(R.id.memory_progress);
-  File dir=getMyApplication().getAppPath("").getParentFile();
-  String size=formatGb.format(new Object[]{0});
-  int percent=0;
-  if (dir.canRead()) {
-    StatFs statFs=new StatFs(dir.getAbsolutePath());
-    size=formatGb.format(new Object[]{(float)(statFs.getAvailableBlocks()) * statFs.getBlockSize() / (1 << 30)});
-    percent=statFs.getAvailableBlocks() * 100 / statFs.getBlockCount();
-  }
-  sizeProgress.setProgress(percent);
-  String text=getString(R.string.free,size);
-  TextView descriptionText=(TextView)view.findViewById(R.id.memory_size);
-  descriptionText.setText(Html.fromHtml(text));
-  descriptionText.setMovementMethod(LinkMovementMethod.getInstance());
-  TextView downloadsLeftTextView=(TextView)view.findViewById(R.id.downloadsLeftTextView);
-  downloadsLeftTextView.setText(getString(R.string.downloads_left_template,BaseDownloadActivity.MAXIMUM_AVAILABLE_FREE_DOWNLOADS - getMyApplication().getSettings().NUMBER_OF_FREE_DOWNLOADS.get()));
-  TextView freeVersionDescriptionTextView=(TextView)view.findViewById(R.id.freeVersionDescriptionTextView);
-  freeVersionDescriptionTextView.setText(getString(R.string.free_version_message,BaseDownloadActivity.MAXIMUM_AVAILABLE_FREE_DOWNLOADS));
   ListView listView=(ListView)view.findViewById(android.R.id.list);
-  mAdapter=new CategoriesAdapter(getActivity());
+  mAdapter=new CategoriesAdapter(getActivity(),getMyApplication());
   listView.setAdapter(mAdapter);
   listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
     @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
@@ -28,5 +9,10 @@
     }
   }
 );
+  View header=inflater.inflate(R.layout.local_index_fragment_header,listView,false);
+  initMemoryConsumedCard(header);
+  DownloadsUiInitHelper.initFreeVersionBanner(header,getMyApplication().getSettings(),getResources());
+  listView.addHeaderView(header);
+  getDownloadActivity().setSupportProgressBarIndeterminateVisibility(false);
   return view;
 }
