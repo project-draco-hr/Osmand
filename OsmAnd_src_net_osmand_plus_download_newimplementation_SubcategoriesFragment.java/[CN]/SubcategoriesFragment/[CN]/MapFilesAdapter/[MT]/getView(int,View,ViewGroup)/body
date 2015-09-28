@@ -23,19 +23,28 @@
         stringBuilder.append(resources.getString(mapType));
         stringBuilder.append(", ");
       }
-      LOG.debug("stringBuilder=" + stringBuilder);
-      stringBuilder.delete(stringBuilder.capacity() - 3,stringBuilder.capacity());
+      stringBuilder.delete(stringBuilder.length() - 2,stringBuilder.capacity());
       viewHolder.descrTextView.setText(stringBuilder.toString());
     }
  else {
       viewHolder.descrTextView.setText("Others");
     }
+    viewHolder.leftImageView.setImageDrawable(iconsCache.getContentIcon(R.drawable.ic_map));
     LOG.debug("category.types=" + category.types);
   }
+ else   if (item instanceof IndexItem) {
+    IndexItem indexItem=(IndexItem)item;
+    if (indexItem.getType() == DownloadActivityType.VOICE_FILE) {
+      viewHolder.nameTextView.setText(indexItem.getVisibleName(getContext(),application.getRegions()));
+    }
  else {
-    viewHolder.nameTextView.setText(item.getName());
-    viewHolder.descrTextView.setText("Temp values");
+      viewHolder.nameTextView.setText(indexItem.getType().getString(getContext()));
+    }
+    viewHolder.descrTextView.setText(indexItem.getSizeDescription(getContext()));
+    viewHolder.leftImageView.setImageResource(indexItem.getType().getIconResource());
   }
-  viewHolder.leftImageView.setImageDrawable(iconsCache.getContentIcon(R.drawable.ic_map));
+ else {
+    throw new IllegalArgumentException("Item must be of type IndexItem or " + "IndexItemCategory but is of type:" + item.getClass());
+  }
   return convertView;
 }
