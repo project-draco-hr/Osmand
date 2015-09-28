@@ -91,8 +91,6 @@
       }
     }
     if (i.getType() == DownloadActivityType.VOICE_FILE) {
-      final String visibleName=i.getVisibleName(ctx,ctx.getRegions());
-      i.setName(visibleName);
       category.items.add(i);
     }
  else {
@@ -109,19 +107,15 @@
       }
       region.items.add(i);
       if (i.getType() == DownloadActivityType.NORMAL_FILE || i.getType() == DownloadActivityType.WIKIPEDIA_FILE || i.getType() == DownloadActivityType.SRTM_COUNTRY_FILE || i.getType() == DownloadActivityType.HILLSHADE_FILE) {
+        category.types.add(i.getType().getStringResource());
         region.types.add(i.getType().getStringResource());
       }
     }
   }
   final Collator collator=OsmAndCollator.primaryCollator();
-  for (  IndexItemCategoryWithSubcat ct : mainList) {
+  for (  IndexItemCategoryWithSubcat category : mainList) {
     final OsmandRegions osmandRegions=ctx.getResourceManager().getOsmandRegions();
-    Collections.sort(ct.items,new Comparator<IndexItem>(){
-      @Override public int compare(      IndexItem lhs,      IndexItem rhs){
-        return collator.compare(lhs.getVisibleName(ctx,osmandRegions),rhs.getVisibleName(ctx,osmandRegions));
-      }
-    }
-);
+    sortIndexItemCategoryWithSybcat(category,ctx,osmandRegions,collator);
   }
   Collections.sort(mainList);
   return mainList;
