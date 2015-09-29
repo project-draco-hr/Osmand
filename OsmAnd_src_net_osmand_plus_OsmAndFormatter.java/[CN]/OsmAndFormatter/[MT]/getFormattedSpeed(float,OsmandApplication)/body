@@ -1,23 +1,66 @@
 {
   OsmandSettings settings=ctx.getSettings();
-  MetricsConstants mc=settings.METRIC_SYSTEM.get();
+  SpeedConstants mc=settings.SPEED_SYSTEM.get();
   ApplicationMode am=settings.getApplicationMode();
   float kmh=metersperseconds * 3.6f;
-  if (mc == MetricsConstants.KILOMETERS_AND_METERS) {
+  if (mc == SpeedConstants.KILOMETERS_PER_HOUR) {
     if (kmh >= 20 || am.hasFastSpeed()) {
-      return ((int)Math.round(kmh)) + " " + ctx.getString(R.string.km_h);
+      return ((int)Math.round(kmh)) + " " + mc.toShortString(ctx);
     }
     int kmh10=(int)Math.round(kmh * 10f);
-    return (kmh10 / 10f) + " " + ctx.getString(R.string.km_h);
+    return (kmh10 / 10f) + " " + mc.toShortString(ctx);
   }
- else {
+ else   if (mc == SpeedConstants.MILES_PER_HOUR) {
     float mph=kmh * METERS_IN_KILOMETER / METERS_IN_ONE_MILE;
     if (mph >= 20 || am.hasFastSpeed()) {
-      return ((int)Math.round(mph)) + " " + ctx.getString(R.string.mile_per_hour);
+      return ((int)Math.round(mph)) + " " + mc.toShortString(ctx);
     }
  else {
       int mph10=(int)Math.round(mph * 10f);
-      return (mph10 / 10f) + " " + ctx.getString(R.string.mile_per_hour);
+      return (mph10 / 10f) + " " + mc.toShortString(ctx);
     }
+  }
+ else   if (mc == SpeedConstants.NAUTICALMILES_PER_HOUR) {
+    float mph=kmh * METERS_IN_KILOMETER / METERS_IN_ONE_NAUTICALMILE;
+    if (mph >= 20 || am.hasFastSpeed()) {
+      return ((int)Math.round(mph)) + " " + mc.toShortString(ctx);
+    }
+ else {
+      int mph10=(int)Math.round(mph * 10f);
+      return (mph10 / 10f) + " " + mc.toShortString(ctx);
+    }
+  }
+ else   if (mc == SpeedConstants.MINUTES_PER_KILOMETER) {
+    if (metersperseconds < 0.111111111) {
+      return "-" + mc.toShortString(ctx);
+    }
+    float minperkm=METERS_IN_KILOMETER / (metersperseconds * 60);
+    if (minperkm >= 10) {
+      return ((int)Math.round(minperkm)) + " " + mc.toShortString(ctx);
+    }
+ else {
+      int mph10=(int)Math.round(minperkm * 10f);
+      return (mph10 / 10f) + " " + mc.toShortString(ctx);
+    }
+  }
+ else   if (mc == SpeedConstants.MINUTES_PER_MILE) {
+    if (metersperseconds < 0.111111111) {
+      return "-" + mc.toShortString(ctx);
+    }
+    float minperm=(METERS_IN_ONE_MILE) / (metersperseconds * 60);
+    if (minperm >= 10) {
+      return ((int)Math.round(minperm)) + " " + mc.toShortString(ctx);
+    }
+ else {
+      int mph10=(int)Math.round(minperm * 10f);
+      return (mph10 / 10f) + " " + mc.toShortString(ctx);
+    }
+  }
+ else {
+    if (metersperseconds >= 10) {
+      return ((int)Math.round(metersperseconds)) + " " + SpeedConstants.METERS_PER_SECOND.toShortString(ctx);
+    }
+    int kmh10=(int)Math.round(metersperseconds * 10f);
+    return (kmh10 / 10f) + " " + SpeedConstants.METERS_PER_SECOND.toShortString(ctx);
   }
 }
