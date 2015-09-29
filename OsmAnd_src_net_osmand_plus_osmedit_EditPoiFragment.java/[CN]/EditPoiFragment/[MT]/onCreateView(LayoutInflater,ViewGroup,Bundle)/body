@@ -75,7 +75,7 @@
     }
   }
 );
-  poiNameEditText=(EditText)view.findViewById(R.id.poiNameEditText);
+  EditText poiNameEditText=(EditText)view.findViewById(R.id.poiNameEditText);
   poiNameEditText.addTextChangedListener(new TextWatcher(){
     @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
     }
@@ -109,71 +109,14 @@
     }
   }
 );
-  poiTypeEditText.setOnTouchListener(new View.OnTouchListener(){
-    @Override public boolean onTouch(    final View v,    MotionEvent event){
-      final EditText editText=(EditText)v;
-      final int DRAWABLE_RIGHT=2;
-      if (event.getAction() == MotionEvent.ACTION_UP) {
-        if (event.getX() >= (editText.getRight() - editText.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width() - editText.getPaddingRight())) {
-          if (editPoiData.amenity.getType() != null) {
-            DialogFragment dialogFragment=PoiSubTypeDialogFragment.createInstance(editPoiData.amenity);
-            dialogFragment.show(getChildFragmentManager(),"PoiSubTypeDialogFragment");
-          }
-          return true;
-        }
-      }
-      return false;
-    }
-  }
-);
+  poiNameEditText.setOnEditorActionListener(mOnEditorActionListener);
+  poiTypeEditText.setOnEditorActionListener(mOnEditorActionListener);
   Button saveButton=(Button)view.findViewById(R.id.saveButton);
   int saveButtonTextId=isLocalEdit ? R.string.shared_string_save : R.string.default_buttons_commit;
   saveButton.setText(saveButtonTextId);
   saveButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      if (TextUtils.isEmpty(poiTypeEditText.getText())) {
-        poiTypeEditText.setError(getResources().getString(R.string.please_specify_poi_type));
-        return;
-      }
-      OsmPoint.Action action=node.getId() == -1 ? OsmPoint.Action.CREATE : OsmPoint.Action.MODIFY;
-      for (      Tag tag : editPoiData.tags) {
-        if (tag.tag.equals(POI_TYPE_TAG)) {
-          final PoiType poiType=allTranslatedSubTypes.get(tag.value.trim().toLowerCase());
-          if (poiType != null) {
-            node.putTag(poiType.getOsmTag(),poiType.getOsmValue());
-            if (poiType.getOsmTag2() != null) {
-              node.putTag(poiType.getOsmTag2(),poiType.getOsmValue2());
-            }
-          }
- else {
-            node.putTag(editPoiData.amenity.getType().getDefaultTag(),tag.value);
-          }
-        }
- else {
-          if (tag.value.length() > 0) {
-            node.putTag(tag.tag,tag.value);
-          }
- else {
-            node.removeTag(tag.tag);
-          }
-        }
-      }
-      commitNode(action,node,mOpenstreetmapUtil.getEntityInfo(),"",false,new Runnable(){
-        @Override public void run(){
-          if (isLocalEdit) {
-            AccessibleToast.makeText(getActivity(),R.string.osm_changes_added_to_local_edits,Toast.LENGTH_LONG).show();
-          }
- else {
-            final String message=node.getId() == -1 ? getResources().getString(R.string.poi_action_add) : getResources().getString(R.string.poi_action_change);
-            AccessibleToast.makeText(getActivity(),MessageFormat.format(getResources().getString(R.string.poi_action_succeded_template),message),Toast.LENGTH_LONG).show();
-          }
-          if (getActivity() instanceof MapActivity) {
-            ((MapActivity)getActivity()).getMapView().refreshMap(true);
-          }
-          dismiss();
-        }
-      }
-,getActivity(),mOpenstreetmapUtil);
+      save();
     }
   }
 );
@@ -186,7 +129,7 @@
     }
   }
 );
-  updateType(editPoiData.amenity);
+  setAdapterForPoiTypeEditText();
   setCancelable(false);
   return view;
 }
