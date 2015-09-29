@@ -1,5 +1,6 @@
 {
   double currentMetricEnd=metricLimit;
+  double secondaryMetricEnd=0;
   SplitSegment sp=new SplitSegment(segment,0,0);
   double total=0;
   WptPt prev=null;
@@ -7,11 +8,13 @@
     WptPt point=segment.points.get(k);
     if (k > 0) {
       double currentSegment=metric.metric(prev,point);
+      secondaryMetricEnd+=secondaryMetric.metric(prev,point);
       while (total + currentSegment > currentMetricEnd) {
         double p=currentMetricEnd - total;
         double cf=(p / currentSegment);
         sp.setLastPoint(k - 1,cf);
         sp.metricEnd=currentMetricEnd;
+        sp.secondaryMetricEnd=secondaryMetricEnd;
         splitSegments.add(sp);
         sp=new SplitSegment(segment,k - 1,cf);
         currentMetricEnd+=metricLimit;
@@ -23,6 +26,7 @@
   }
   if (segment.points.size() > 0 && !(sp.endPointInd == segment.points.size() - 1 && sp.startCoeff == 1)) {
     sp.metricEnd=total;
+    sp.secondaryMetricEnd=secondaryMetricEnd;
     sp.setLastPoint(segment.points.size() - 2,1);
     splitSegments.add(sp);
   }

@@ -2,11 +2,7 @@
   ViewHolder viewHolder;
   if (convertView == null) {
     convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.two_line_with_images_list_item,parent,false);
-    viewHolder=new ViewHolder();
-    viewHolder.nameTextView=(TextView)convertView.findViewById(R.id.name);
-    viewHolder.descrTextView=(TextView)convertView.findViewById(R.id.description);
-    viewHolder.leftImageView=(ImageView)convertView.findViewById(R.id.leftIcon);
-    viewHolder.rightImageView=(ImageView)convertView.findViewById(R.id.rightIcon);
+    viewHolder=new ViewHolder(convertView);
     convertView.setTag(viewHolder);
   }
  else {
@@ -14,34 +10,10 @@
   }
   HasName item=getItem(position);
   if (item instanceof IndexItemCategoryWithSubcat) {
-    IndexItemCategoryWithSubcat category=(IndexItemCategoryWithSubcat)item;
-    viewHolder.nameTextView.setText(category.getName());
-    if (category.types.size() > 0) {
-      StringBuilder stringBuilder=new StringBuilder();
-      Resources resources=getContext().getResources();
-      for (      Integer mapType : category.types) {
-        stringBuilder.append(resources.getString(mapType));
-        stringBuilder.append(", ");
-      }
-      stringBuilder.delete(stringBuilder.length() - 2,stringBuilder.capacity());
-      viewHolder.descrTextView.setText(stringBuilder.toString());
-    }
- else {
-      viewHolder.descrTextView.setText("Others");
-    }
-    viewHolder.leftImageView.setImageDrawable(iconsCache.getContentIcon(R.drawable.ic_map));
-    LOG.debug("category.types=" + category.types);
+    viewHolder.bindCategory((IndexItemCategoryWithSubcat)item,(DownloadActivity)getContext());
   }
  else   if (item instanceof IndexItem) {
-    IndexItem indexItem=(IndexItem)item;
-    if (indexItem.getType() == DownloadActivityType.VOICE_FILE) {
-      viewHolder.nameTextView.setText(indexItem.getVisibleName(getContext(),application.getRegions()));
-    }
- else {
-      viewHolder.nameTextView.setText(indexItem.getType().getString(getContext()));
-    }
-    viewHolder.descrTextView.setText(indexItem.getSizeDescription(getContext()));
-    viewHolder.leftImageView.setImageResource(indexItem.getType().getIconResource());
+    viewHolder.bindIndexItem((IndexItem)item,(DownloadActivity)getContext());
   }
  else {
     throw new IllegalArgumentException("Item must be of type IndexItem or " + "IndexItemCategory but is of type:" + item.getClass());
