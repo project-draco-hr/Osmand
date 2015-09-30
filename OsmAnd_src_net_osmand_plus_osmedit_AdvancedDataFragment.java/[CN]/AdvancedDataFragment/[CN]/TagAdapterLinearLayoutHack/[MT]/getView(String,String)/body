@@ -6,6 +6,7 @@
   ImageButton deleteItemImageButton=(ImageButton)convertView.findViewById(R.id.deleteItemImageButton);
   valueEditText.setText(vl);
   deleteItemImageButton.setImageDrawable(deleteDrawable);
+  final String[] previousTag=new String[]{tg};
   deleteItemImageButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       linearLayout.removeView((View)v.getParent());
@@ -15,12 +16,17 @@
 );
   tagEditText.addTextChangedListener(new TextWatcher(){
     @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+      if (!editPoiData.isInEdit()) {
+        editPoiData.removeTag(s.toString());
+      }
     }
     @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
     }
     @Override public void afterTextChanged(    Editable s){
       if (!editPoiData.isInEdit()) {
+        editPoiData.removeTag(previousTag[0]);
         editPoiData.putTag(s.toString(),valueEditText.getText().toString());
+        previousTag[0]=s.toString();
       }
     }
   }
