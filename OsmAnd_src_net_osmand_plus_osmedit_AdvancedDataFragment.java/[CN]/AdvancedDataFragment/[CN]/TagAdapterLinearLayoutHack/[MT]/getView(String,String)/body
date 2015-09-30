@@ -1,5 +1,10 @@
 {
-  final View convertView=LayoutInflater.from(linearLayout.getContext()).inflate(R.layout.poi_tag_list_item,null,false);
+  View convertView=cachedViews.get(tg);
+  LOG.debug("convertView=" + convertView);
+  if (convertView == null) {
+    convertView=LayoutInflater.from(linearLayout.getContext()).inflate(R.layout.poi_tag_list_item,null,false);
+    cachedViews.put(tg,convertView);
+  }
   final AutoCompleteTextView tagEditText=(AutoCompleteTextView)convertView.findViewById(R.id.tagEditText);
   tagEditText.setText(tg);
   final AutoCompleteTextView valueEditText=(AutoCompleteTextView)convertView.findViewById(R.id.valueEditText);
@@ -31,13 +36,6 @@
     }
   }
 );
-  final Set<String> tagKeys=new HashSet<>();
-  final Set<String> valueKeys=new HashSet<>();
-  for (  String s : allTypes.keySet()) {
-    AbstractPoiType abstractPoiType=allTypes.get(s);
-    addPoiToStringSet(abstractPoiType,tagKeys,valueKeys);
-  }
-  addPoiToStringSet(mapPoiTypes.getOtherMapCategory(),tagKeys,valueKeys);
   ArrayAdapter<Object> tagAdapter=new ArrayAdapter<>(linearLayout.getContext(),R.layout.list_textview,tagKeys.toArray());
   tagEditText.setAdapter(tagAdapter);
   tagEditText.setThreshold(1);
