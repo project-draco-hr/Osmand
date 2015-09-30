@@ -1,0 +1,40 @@
+{
+  Map<String,IndexItem> regionResources=resourcesByRegions.get(region);
+  List<ResourceItem> regionMapArray=new LinkedList<>();
+  List allResourcesArray=new LinkedList();
+  Context context=app.getApplicationContext();
+  OsmandRegions osmandRegions=app.getRegions();
+  for (  IndexItem indexItem : regionResources.values()) {
+    String name=indexItem.getVisibleName(context,osmandRegions);
+    if (Algorithms.isEmpty(name)) {
+      continue;
+    }
+    ResourceItem resItem=new ResourceItem(indexItem,region);
+    resItem.setResourceId(indexItem.getFileName());
+    resItem.setTitle(name);
+    resItem.setContentSize(indexItem.getContentSize());
+    resItem.setContainerSize(indexItem.getSize());
+    if (region != this.region && srtmDisabled) {
+      if (hasSrtm && indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE)       continue;
+      if (indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE) {
+        resItem.setTitle("srtm_disabled");
+        resItem.setContentSize(0);
+        resItem.setContainerSize(0);
+      }
+      if (!hasSrtm && indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE)       hasSrtm=true;
+    }
+    if (region == this.region) {
+      regionMapArray.add(resItem);
+    }
+ else {
+      allResourcesArray.add(resItem);
+    }
+  }
+  regionMapItems.addAll(regionMapArray);
+  if (allResourcesArray.size() > 1) {
+    allSubregionItems.add(region);
+  }
+ else {
+    allResourceItems.addAll(allResourcesArray);
+  }
+}
