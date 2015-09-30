@@ -1,23 +1,7 @@
 {
   super.onResume();
-  mTagsChangedListener=new EditPoiData.TagsChangedListener(){
-    @Override public void onTagsChanged(){
-      TagMapProcessor tagMapProcessor=new TagMapProcessor();
-      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.ADDR_STREET.getValue(),new EditTextTagFilter(streetEditText));
-      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.ADDR_HOUSE_NUMBER.getValue(),new EditTextTagFilter(houseNumberEditText));
-      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.PHONE.getValue(),new EditTextTagFilter(phoneEditText));
-      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.WEBSITE.getValue(),new EditTextTagFilter(webSiteEditText));
-      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.DESCRIPTION.getValue(),new EditTextTagFilter(descriptionEditText));
-      tagMapProcessor.addFilter(OSMSettings.OSMTagKey.OPENING_HOURS.getValue(),new OpenHoursTagFilter(mOpeningHoursAdapter));
-      mIsUserInput=false;
-      for (      Tag tag : getData().tags) {
-        tagMapProcessor.process(tag);
-      }
-      tagMapProcessor.clearEmptyFields();
-      mIsUserInput=true;
-    }
+  for (  EditPoiData.TagsChangedListener tl : listeners) {
+    getData().addListener(tl);
   }
-;
-  mTagsChangedListener.onTagsChanged();
-  getData().addListener(mTagsChangedListener);
+  getData().notifyToUpdateUI();
 }
