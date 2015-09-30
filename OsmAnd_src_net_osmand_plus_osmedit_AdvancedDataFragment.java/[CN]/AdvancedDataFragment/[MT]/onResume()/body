@@ -2,10 +2,24 @@
   super.onResume();
   mAdapter.updateViews();
   mTagsChangedListener=new EditPoiData.TagsChangedListener(){
-    @Override public void onTagsChanged(){
-      mIsUserInput=false;
-      mAdapter.updateViews();
-      mIsUserInput=true;
+    @Override public void onTagsChanged(    String anyTag){
+      LOG.debug("onTagsChanged()");
+      final String value=getData().getTagValues().get(anyTag);
+      if (Algorithms.objectEquals(anyTag,OSMSettings.OSMTagKey.NAME.getValue())) {
+        nameTextView.setText(value);
+      }
+      if (Algorithms.objectEquals(anyTag,EditPoiData.POI_TYPE_TAG)) {
+        String subType=value == null ? "" : value.trim().toLowerCase();
+        if (allTranslatedSubTypes.get(subType) != null) {
+          PoiType pt=allTranslatedSubTypes.get(subType);
+          amenityTagTextView.setText(pt.getOsmTag());
+          amenityTextView.setText(pt.getOsmValue());
+        }
+ else {
+          amenityTagTextView.setText(getData().amenity.getType().getDefaultTag());
+          amenityTextView.setText(subType);
+        }
+      }
     }
   }
 ;

@@ -1,0 +1,88 @@
+{
+  View convertView=cachedViews.get(tg);
+  LOG.debug("convertView=" + convertView);
+  if (convertView == null) {
+    convertView=LayoutInflater.from(linearLayout.getContext()).inflate(R.layout.poi_tag_list_item,null,false);
+    cachedViews.put(tg,convertView);
+  }
+  final AutoCompleteTextView tagEditText=(AutoCompleteTextView)convertView.findViewById(R.id.tagEditText);
+  ImageButton deleteItemImageButton=(ImageButton)convertView.findViewById(R.id.deleteItemImageButton);
+  deleteItemImageButton.setImageDrawable(deleteDrawable);
+  final String[] previousTag=new String[]{tg};
+  deleteItemImageButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      linearLayout.removeView((View)v.getParent());
+      editPoiData.removeTag(tagEditText.getText().toString());
+    }
+  }
+);
+  final AutoCompleteTextView valueEditText=(AutoCompleteTextView)convertView.findViewById(R.id.valueEditText);
+  tagEditText.setText(tg);
+  tagEditText.addTextChangedListener(new TextWatcher(){
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+      if (!editPoiData.isInEdit()) {
+        editPoiData.removeTag(s.toString());
+      }
+    }
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+    @Override public void afterTextChanged(    Editable s){
+      if (!editPoiData.isInEdit()) {
+        editPoiData.removeTag(previousTag[0]);
+        editPoiData.putTag(s.toString(),valueEditText.getText().toString());
+        previousTag[0]=s.toString();
+      }
+    }
+  }
+);
+  ArrayAdapter<Object> tagAdapter=new ArrayAdapter<>(linearLayout.getContext(),R.layout.list_textview,tagKeys.toArray());
+  tagEditText.setAdapter(tagAdapter);
+  tagEditText.setThreshold(1);
+  tagEditText.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
+      final String[] tags=tagKeys.toArray(new String[tagKeys.size()]);
+      builder.setItems(tags,new Dialog.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          tagEditText.setText(tags[which]);
+        }
+      }
+);
+      builder.create();
+      builder.show();
+    }
+  }
+);
+  valueEditText.setText(vl);
+  valueEditText.addTextChangedListener(new TextWatcher(){
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+    @Override public void afterTextChanged(    Editable s){
+      if (!editPoiData.isInEdit()) {
+        editPoiData.putTag(tagEditText.getText().toString(),s.toString());
+      }
+    }
+  }
+);
+  ArrayAdapter<Object> valueAdapter=new ArrayAdapter<>(linearLayout.getContext(),R.layout.list_textview,valueKeys.toArray());
+  valueEditText.setAdapter(valueAdapter);
+  valueEditText.setThreshold(1);
+  valueEditText.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
+      final String[] values=valueKeys.toArray(new String[tagKeys.size()]);
+      builder.setItems(values,new Dialog.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          valueEditText.setText(values[which]);
+        }
+      }
+);
+      builder.create();
+      builder.show();
+    }
+  }
+);
+  return convertView;
+}

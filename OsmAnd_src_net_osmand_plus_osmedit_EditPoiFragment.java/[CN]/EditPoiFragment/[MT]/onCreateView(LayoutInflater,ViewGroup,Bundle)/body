@@ -3,33 +3,8 @@
   final OsmandSettings settings=getMyApplication().getSettings();
   boolean isLightTheme=settings.OSMAND_THEME.get() == OsmandSettings.OSMAND_LIGHT_THEME;
   if (savedInstanceState != null) {
-    editPoiData.tags=(LinkedHashSet<Tag>)savedInstanceState.getSerializable(TAGS_LIST);
-  }
- else {
-    editPoiData.tags=new LinkedHashSet<>();
-    tryAddTag(OSMSettings.OSMTagKey.ADDR_STREET.getValue(),node.getTag(OSMSettings.OSMTagKey.ADDR_STREET));
-    tryAddTag(OSMSettings.OSMTagKey.ADDR_HOUSE_NUMBER.getValue(),node.getTag(OSMSettings.OSMTagKey.ADDR_HOUSE_NUMBER));
-    tryAddTag(OSMSettings.OSMTagKey.PHONE.getValue(),editPoiData.amenity.getPhone());
-    tryAddTag(OSMSettings.OSMTagKey.WEBSITE.getValue(),editPoiData.amenity.getSite());
-    for (    String tag : node.getTagKeySet()) {
-      tryAddTag(tag,node.getTag(tag));
-    }
-    String subType=editPoiData.amenity.getSubType();
-    String key;
-    String value;
-    if (allTranslatedSubTypes.get(subType) != null) {
-      PoiType pt=allTranslatedSubTypes.get(subType);
-      key=pt.getOsmTag();
-      value=pt.getOsmValue();
-    }
- else {
-      key=editPoiData.amenity.getType().getDefaultTag();
-      value=subType;
-    }
-    final Tag tag=new Tag(key,value);
-    editPoiData.tags.remove(tag);
-    tag.tag=POI_TYPE_TAG;
-    editPoiData.tags.add(tag);
+    Map<String,String> mp=(Map<String,String>)savedInstanceState.getSerializable(TAGS_LIST);
+    editPoiData.updateTags(mp);
   }
   Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
   toolbar.setTitle(R.string.poi_create_title);
@@ -43,8 +18,18 @@
   viewPager=(ViewPager)view.findViewById(R.id.viewpager);
   String basicTitle=getResources().getString(R.string.tab_title_basic);
   String extendedTitle=getResources().getString(R.string.tab_title_advanced);
-  MyAdapter pagerAdapter=new MyAdapter(getChildFragmentManager(),basicTitle,extendedTitle);
+  final MyAdapter pagerAdapter=new MyAdapter(getChildFragmentManager(),basicTitle,extendedTitle);
   viewPager.setAdapter(pagerAdapter);
+  viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener(){
+    @Override public void onPageScrolled(    int i,    float v,    int i1){
+    }
+    @Override public void onPageSelected(    int i){
+      ((OnFragmentActivatedListener)pagerAdapter.getItem(i)).onFragmentActivated();
+    }
+    @Override public void onPageScrollStateChanged(    int i){
+    }
+  }
+);
   final TabLayout tabLayout=(TabLayout)view.findViewById(R.id.tab_layout);
   tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
   if (ViewCompat.isLaidOut(tabLayout)) {
@@ -82,11 +67,8 @@
     @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
     }
     @Override public void afterTextChanged(    Editable s){
-      final Tag tag=new Tag(OSMSettings.OSMTagKey.NAME.getValue(),s.toString());
-      if (mIsUserInput) {
-        getEditPoiData().tags.remove(tag);
-        getEditPoiData().tags.add(tag);
-        getEditPoiData().notifyDatasetChanged(mTagsChangedListener);
+      if (!getEditPoiData().isInEdit()) {
+        getEditPoiData().putTag(OSMSettings.OSMTagKey.NAME.getValue(),s.toString());
       }
     }
   }
@@ -100,11 +82,8 @@
     @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
     }
     @Override public void afterTextChanged(    Editable s){
-      final Tag tag=new Tag(POI_TYPE_TAG,s.toString());
-      if (mIsUserInput) {
-        getEditPoiData().tags.remove(tag);
-        getEditPoiData().tags.add(tag);
-        getEditPoiData().notifyDatasetChanged(mTagsChangedListener);
+      if (!getEditPoiData().isInEdit()) {
+        getEditPoiData().putTag(EditPoiData.POI_TYPE_TAG,s.toString());
       }
     }
   }
