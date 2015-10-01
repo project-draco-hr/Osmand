@@ -1,0 +1,30 @@
+{
+  View view=inflater.inflate(R.layout.maps_in_category_fragment,container,false);
+  WorldRegion region=null;
+  if (savedInstanceState != null) {
+    Object regionObj=savedInstanceState.getSerializable(REGION_DLG_KEY);
+    if (regionObj != null) {
+      region=(WorldRegion)regionObj;
+    }
+  }
+  if (region == null) {
+    Object regionObj=getArguments().getSerializable(REGION_DLG_KEY);
+    if (regionObj != null) {
+      region=(WorldRegion)regionObj;
+    }
+  }
+  this.region=region;
+  Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
+  toolbar.setNavigationIcon(getMyApplication().getIconsCache().getIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha));
+  toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismiss();
+    }
+  }
+);
+  if (this.region != null) {
+    getChildFragmentManager().beginTransaction().add(R.id.fragmentContainer,LocalItemsFragment.createInstance(region)).commit();
+    toolbar.setTitle(this.region.getName());
+  }
+  return view;
+}

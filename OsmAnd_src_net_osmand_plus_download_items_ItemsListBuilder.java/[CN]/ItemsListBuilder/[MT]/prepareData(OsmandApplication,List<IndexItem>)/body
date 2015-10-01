@@ -1,0 +1,69 @@
+{
+  lock.lock();
+  try {
+    List<IndexItem> resourcesInRepository;
+    if (resources != null) {
+      resourcesInRepository=resources;
+    }
+ else {
+      resourcesInRepository=DownloadActivity.downloadListIndexThread.getCachedIndexFiles();
+    }
+    if (resourcesInRepository == null) {
+      return false;
+    }
+    boolean doInit=resourcesByRegions.isEmpty();
+    boolean initSearchableRegions=searchableWorldwideRegionItems.isEmpty() || doInit;
+    if (initSearchableRegions) {
+      searchableWorldwideRegionItems.clear();
+    }
+    List<WorldRegion> mergedRegions=app.getWorldRegion().getFlattenedSubregions();
+    mergedRegions.add(app.getWorldRegion());
+    for (    WorldRegion region : mergedRegions) {
+      if (initSearchableRegions) {
+        searchableWorldwideRegionItems.add(region);
+      }
+      String downloadsIdPrefix=region.getDownloadsIdPrefix();
+      Map<String,IndexItem> regionResources=new HashMap<>();
+      if (!doInit) {
+        regionResources.putAll(resourcesByRegions.get(region));
+      }
+      if (doInit) {
+        List<DownloadActivityType> typesArray=new LinkedList<>();
+        boolean hasSrtm=false;
+        for (        IndexItem resource : resourcesInRepository) {
+          if (!resource.getSimplifiedFileName().startsWith(downloadsIdPrefix)) {
+            continue;
+          }
+          if (resource.getType() == DownloadActivityType.SRTM_COUNTRY_FILE) {
+            hasSrtm=true;
+          }
+          typesArray.add(resource.getType());
+          regionResources.put(resource.getSimplifiedFileName(),resource);
+        }
+        if (region.getSuperregion() != null && hasSrtm && region.getSuperregion().getSuperregion() != app.getWorldRegion()) {
+          if (!region.getSuperregion().getResourceTypes().contains(DownloadActivityType.SRTM_COUNTRY_FILE)) {
+            region.getSuperregion().getResourceTypes().add(DownloadActivityType.SRTM_COUNTRY_FILE);
+            Collections.sort(region.getSuperregion().getResourceTypes(),new Comparator<DownloadActivityType>(){
+              @Override public int compare(              DownloadActivityType dat1,              DownloadActivityType dat2){
+                return dat1.getTag().compareTo(dat2.getTag());
+              }
+            }
+);
+          }
+        }
+        Collections.sort(typesArray,new Comparator<DownloadActivityType>(){
+          @Override public int compare(          DownloadActivityType dat1,          DownloadActivityType dat2){
+            return dat1.getTag().compareTo(dat2.getTag());
+          }
+        }
+);
+        region.setResourceTypes(typesArray);
+      }
+      resourcesByRegions.put(region,regionResources);
+    }
+    return true;
+  }
+  finally {
+    lock.unlock();
+  }
+}

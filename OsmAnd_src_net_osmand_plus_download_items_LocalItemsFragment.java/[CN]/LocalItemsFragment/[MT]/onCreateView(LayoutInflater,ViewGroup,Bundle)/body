@@ -1,0 +1,49 @@
+{
+  WorldRegion region=null;
+  if (savedInstanceState != null) {
+    Object regionObj=savedInstanceState.getSerializable(REGION_KEY);
+    if (regionObj != null) {
+      region=(WorldRegion)regionObj;
+    }
+  }
+  if (region == null) {
+    Object regionObj=getArguments().getSerializable(REGION_KEY);
+    if (regionObj != null) {
+      region=(WorldRegion)regionObj;
+    }
+  }
+  this.region=region;
+  View view=inflater.inflate(R.layout.download_index_fragment,container,false);
+  builder=new ItemsListBuilder(getMyApplication(),this.region);
+  mapsTextView=(TextView)view.findViewById(R.id.list_world_regions_title);
+  mapsTextView.setText("Region maps".toUpperCase());
+  mapsListView=(ListView)view.findViewById(R.id.list_world_regions);
+  mapsAdapter=new MapsAdapter(getActivity());
+  mapsListView.setAdapter(mapsAdapter);
+  regionsTextView=(TextView)view.findViewById(R.id.list_world_maps_title);
+  regionsTextView.setText("Additional maps".toUpperCase());
+  regionsListView=(ListView)view.findViewById(R.id.list_world_maps);
+  regionsAdapter=new RegionsAdapter(getActivity());
+  regionsListView.setAdapter(regionsAdapter);
+  regionsListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+    @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
+      Object obj=regionsAdapter.getItem(position);
+      if (obj instanceof WorldRegion) {
+        WorldRegion region=(WorldRegion)obj;
+        ((LocalDialogFragment)getParentFragment()).onRegionSelected(region);
+      }
+    }
+  }
+);
+  voicePromtsTextView=(TextView)view.findViewById(R.id.list_voice_promts_title);
+  voicePromtsTextView.setText("Voice promts".toUpperCase());
+  voicePromtsListView=(ListView)view.findViewById(R.id.list_voice_promts);
+  voicePromtsAdapter=new VoicePromtsAdapter(getActivity(),getMyApplication());
+  voicePromtsListView.setAdapter(voicePromtsAdapter);
+  if (builder.build()) {
+    fillMapsAdapter();
+    fillRegionsAdapter();
+    fillVoicePromtsAdapter();
+  }
+  return view;
+}
