@@ -7,10 +7,16 @@
       this.message=ctx.getString(R.string.downloading_list_indexes);
     }
     @Override protected IndexFileList doInBackground(    Void... params){
-      return DownloadOsmandIndexesHelper.getIndexesList(ctx);
+      IndexFileList indexFileList=DownloadOsmandIndexesHelper.getIndexesList(ctx);
+      indexFiles=indexFileList;
+      if (indexFileList != null) {
+        ItemsListBuilder builder=new ItemsListBuilder(app,app.getWorldRegion());
+        builder.invalidate();
+        builder.build();
+      }
+      return indexFileList;
     }
     protected void onPostExecute(    IndexFileList result){
-      indexFiles=result;
       if (indexFiles != null && uiActivity != null) {
         prepareFilesToUpdate();
         boolean basemapExists=uiActivity.getMyApplication().getResourceManager().containsBasemap();
@@ -38,6 +44,7 @@
         uiActivity.updateProgress(false);
         runCategorization(uiActivity.getDownloadType());
         runCategorization();
+        uiActivity.onCategorizationFinished();
       }
     }
     private void showWarnDialog(){
