@@ -5,19 +5,20 @@
   final TextView freeVersionDescriptionTextView=(TextView)header.findViewById(R.id.freeVersionDescriptionTextView);
   freeVersionDescriptionTextView.setText(resources.getString(R.string.free_version_message,BaseDownloadActivity.MAXIMUM_AVAILABLE_FREE_DOWNLOADS));
   final View buttonsLinearLayout=header.findViewById(R.id.buttonsLinearLayout);
-  header.findViewById(R.id.freeVersionBanner).setOnClickListener(new View.OnClickListener(){
+  header.findViewById(R.id.freeVersionBanner).setOnClickListener(new ToggleCollapseFreeVersionBanner(freeVersionDescriptionTextView,buttonsLinearLayout));
+  ProgressBar downloadsLeftProgressBar=(ProgressBar)header.findViewById(R.id.downloadsLeftProgressBar);
+  downloadsLeftProgressBar.setProgress(settings.NUMBER_OF_FREE_DOWNLOADS.get());
+  header.findViewById(R.id.getFullVersionButton).setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      if (freeVersionDescriptionTextView.getVisibility() == View.VISIBLE) {
-        freeVersionDescriptionTextView.setVisibility(View.GONE);
-        buttonsLinearLayout.setVisibility(View.GONE);
+      BaseDownloadActivity context=(BaseDownloadActivity)v.getContext();
+      Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse(Version.marketPrefix(context.getMyApplication()) + "net.osmand.plus"));
+      try {
+        context.startActivity(intent);
       }
- else {
-        freeVersionDescriptionTextView.setVisibility(View.VISIBLE);
-        buttonsLinearLayout.setVisibility(View.VISIBLE);
+ catch (      ActivityNotFoundException e) {
       }
     }
   }
 );
-  ProgressBar downloadsLeftProgressBar=(ProgressBar)header.findViewById(R.id.downloadsLeftProgressBar);
-  downloadsLeftProgressBar.setProgress(settings.NUMBER_OF_FREE_DOWNLOADS.get());
+  header.findViewById(R.id.laterButton).setOnClickListener(new ToggleCollapseFreeVersionBanner(freeVersionDescriptionTextView,buttonsLinearLayout));
 }
