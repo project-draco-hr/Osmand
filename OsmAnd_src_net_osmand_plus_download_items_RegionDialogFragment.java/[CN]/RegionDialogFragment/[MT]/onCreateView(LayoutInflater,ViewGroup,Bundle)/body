@@ -1,5 +1,5 @@
 {
-  View view=inflater.inflate(R.layout.maps_in_category_fragment,container,false);
+  final View view=inflater.inflate(R.layout.maps_in_category_fragment,container,false);
   WorldRegion region=null;
   if (savedInstanceState != null) {
     Object regionObj=savedInstanceState.getSerializable(REGION_DLG_KEY);
@@ -23,8 +23,24 @@
   }
 );
   if (this.region != null) {
-    getChildFragmentManager().beginTransaction().add(R.id.fragmentContainer,RegionItemsFragment.createInstance(region)).commit();
+    Fragment fragment=getChildFragmentManager().findFragmentById(R.id.fragmentContainer);
+    if (fragment == null) {
+      getChildFragmentManager().beginTransaction().add(R.id.fragmentContainer,RegionItemsFragment.createInstance(region)).commit();
+    }
     toolbar.setTitle(this.region.getName());
   }
+  DownloadsUiHelper.initFreeVersionBanner(view,getMyApplication().getSettings(),getResources());
+  final WorldRegion finalRegion=region;
+  mProgressListener=new DownloadsUiHelper.MapDownloadListener(view,getResources()){
+    @Override public void onProgressUpdate(    int progressPercentage,    int activeTasks){
+      LOG.debug(finalRegion.getName() + " onProgressUpdate()");
+      super.onProgressUpdate(progressPercentage,activeTasks);
+    }
+    @Override public void onFinished(){
+      super.onFinished();
+      DownloadsUiHelper.initFreeVersionBanner(view,getMyApplication().getSettings(),getResources());
+    }
+  }
+;
   return view;
 }

@@ -1,0 +1,24 @@
+{
+  TextView downloadsLeftTextView=(TextView)header.findViewById(R.id.downloadsLeftTextView);
+  final int downloadsLeft=BaseDownloadActivity.MAXIMUM_AVAILABLE_FREE_DOWNLOADS - settings.NUMBER_OF_FREE_DOWNLOADS.get();
+  downloadsLeftTextView.setText(resources.getString(R.string.downloads_left_template,downloadsLeft));
+  final TextView freeVersionDescriptionTextView=(TextView)header.findViewById(R.id.freeVersionDescriptionTextView);
+  freeVersionDescriptionTextView.setText(resources.getString(R.string.free_version_message,BaseDownloadActivity.MAXIMUM_AVAILABLE_FREE_DOWNLOADS));
+  final View buttonsLinearLayout=header.findViewById(R.id.buttonsLinearLayout);
+  header.findViewById(R.id.freeVersionBanner).setOnClickListener(new ToggleCollapseFreeVersionBanner(freeVersionDescriptionTextView,buttonsLinearLayout));
+  ProgressBar downloadsLeftProgressBar=(ProgressBar)header.findViewById(R.id.downloadsLeftProgressBar);
+  downloadsLeftProgressBar.setProgress(settings.NUMBER_OF_FREE_DOWNLOADS.get());
+  header.findViewById(R.id.getFullVersionButton).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      BaseDownloadActivity context=(BaseDownloadActivity)v.getContext();
+      Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse(Version.marketPrefix(context.getMyApplication()) + "net.osmand.plus"));
+      try {
+        context.startActivity(intent);
+      }
+ catch (      ActivityNotFoundException e) {
+      }
+    }
+  }
+);
+  header.findViewById(R.id.laterButton).setOnClickListener(new ToggleCollapseFreeVersionBanner(freeVersionDescriptionTextView,buttonsLinearLayout));
+}
