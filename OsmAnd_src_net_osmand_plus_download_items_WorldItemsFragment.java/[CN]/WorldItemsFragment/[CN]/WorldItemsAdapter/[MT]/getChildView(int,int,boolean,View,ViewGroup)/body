@@ -1,0 +1,39 @@
+{
+  final Object child=getChild(groupPosition,childPosition);
+  if (child instanceof WorldRegion) {
+    WorldRegion item=(WorldRegion)child;
+    SimpleViewHolder viewHolder;
+    if (convertView == null) {
+      convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.simple_list_menu_item,parent,false);
+      viewHolder=new SimpleViewHolder();
+      viewHolder.textView=(TextView)convertView.findViewById(R.id.title);
+      convertView.setTag(viewHolder);
+    }
+ else {
+      viewHolder=(SimpleViewHolder)convertView.getTag();
+    }
+    Drawable iconLeft=getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_world_globe_dark);
+    viewHolder.textView.setCompoundDrawablesWithIntrinsicBounds(iconLeft,null,null,null);
+    viewHolder.textView.setText(item.getName());
+  }
+ else   if (child instanceof ItemsListBuilder.ResourceItem) {
+    ItemsListBuilder.ResourceItem item=(ItemsListBuilder.ResourceItem)child;
+    ItemViewHolder viewHolder;
+    if (convertView == null) {
+      convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.two_line_with_images_list_item,parent,false);
+      viewHolder=new ItemViewHolder(convertView);
+      convertView.setTag(viewHolder);
+    }
+ else {
+      viewHolder=(ItemViewHolder)convertView.getTag();
+    }
+    viewHolder.bindIndexItem(item.getIndexItem(),getDownloadActivity(),false,false);
+  }
+  convertView.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      onChildClick(null,v,groupPosition,childPosition,0);
+    }
+  }
+);
+  return convertView;
+}

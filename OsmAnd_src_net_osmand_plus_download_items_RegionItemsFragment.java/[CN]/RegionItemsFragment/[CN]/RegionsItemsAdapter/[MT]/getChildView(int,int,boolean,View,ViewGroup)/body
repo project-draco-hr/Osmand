@@ -1,0 +1,45 @@
+{
+  final Object child=getChild(groupPosition,childPosition);
+  if (child instanceof ItemsListBuilder.ResourceItem && groupPosition == 0 && getGroupCount() > 1) {
+    ItemViewHolder viewHolder;
+    if (convertView == null) {
+      convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.two_line_with_images_list_item,parent,false);
+      viewHolder=new ItemViewHolder(convertView);
+      convertView.setTag(viewHolder);
+    }
+ else {
+      viewHolder=(ItemViewHolder)convertView.getTag();
+    }
+    viewHolder.setSrtmDisabled(srtmDisabled);
+    ItemsListBuilder.ResourceItem item=(ItemsListBuilder.ResourceItem)child;
+    viewHolder.bindIndexItem(item.getIndexItem(),getDownloadActivity(),true,false);
+  }
+ else {
+    ItemViewHolder viewHolder;
+    if (convertView == null) {
+      convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.two_line_with_images_list_item,parent,false);
+      viewHolder=new ItemViewHolder(convertView);
+      convertView.setTag(viewHolder);
+    }
+ else {
+      viewHolder=(ItemViewHolder)convertView.getTag();
+    }
+    viewHolder.setSrtmDisabled(srtmDisabled);
+    if (child instanceof WorldRegion) {
+      viewHolder.bindRegion((WorldRegion)child,getDownloadActivity());
+    }
+ else     if (child instanceof ItemsListBuilder.ResourceItem) {
+      viewHolder.bindIndexItem(((ItemsListBuilder.ResourceItem)child).getIndexItem(),getDownloadActivity(),false,true);
+    }
+ else {
+      throw new IllegalArgumentException("Item must be of type WorldRegion or " + "IndexItem but is of type:" + child.getClass());
+    }
+  }
+  convertView.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      onChildClick(null,v,groupPosition,childPosition,0);
+    }
+  }
+);
+  return convertView;
+}
