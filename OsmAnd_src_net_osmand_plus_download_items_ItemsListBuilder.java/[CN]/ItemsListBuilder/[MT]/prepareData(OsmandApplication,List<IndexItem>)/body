@@ -28,36 +28,28 @@
         regionResources.putAll(resourcesByRegions.get(region));
       }
       if (doInit) {
-        List<DownloadActivityType> typesArray=new LinkedList<>();
-        boolean hasSrtm=false;
-        for (        IndexItem resource : resourcesInRepository) {
-          if (!resource.getSimplifiedFileName().startsWith(downloadsIdPrefix)) {
-            continue;
-          }
-          if (resource.getType() == DownloadActivityType.SRTM_COUNTRY_FILE) {
-            hasSrtm=true;
-          }
-          typesArray.add(resource.getType());
-          regionResources.put(resource.getSimplifiedFileName(),resource);
-        }
-        if (region.getSuperregion() != null && hasSrtm && region.getSuperregion().getSuperregion() != app.getWorldRegion()) {
-          if (!region.getSuperregion().getResourceTypes().contains(DownloadActivityType.SRTM_COUNTRY_FILE)) {
-            region.getSuperregion().getResourceTypes().add(DownloadActivityType.SRTM_COUNTRY_FILE);
-            Collections.sort(region.getSuperregion().getResourceTypes(),new Comparator<DownloadActivityType>(){
-              @Override public int compare(              DownloadActivityType dat1,              DownloadActivityType dat2){
-                return dat1.getTag().compareTo(dat2.getTag());
-              }
-            }
-);
-          }
-        }
-        Collections.sort(typesArray,new Comparator<DownloadActivityType>(){
+        Set<DownloadActivityType> typesSet=new TreeSet<>(new Comparator<DownloadActivityType>(){
           @Override public int compare(          DownloadActivityType dat1,          DownloadActivityType dat2){
             return dat1.getTag().compareTo(dat2.getTag());
           }
         }
 );
-        region.setResourceTypes(typesArray);
+        for (        IndexItem resource : resourcesInRepository) {
+          if (!resource.getSimplifiedFileName().startsWith(downloadsIdPrefix)) {
+            continue;
+          }
+          typesSet.add(resource.getType());
+          regionResources.put(resource.getSimplifiedFileName(),resource);
+        }
+        if (region.getSuperregion() != null && region.getSuperregion().getSuperregion() != app.getWorldRegion()) {
+          if (region.getSuperregion().getResourceTypes() == null) {
+            region.getSuperregion().setResourceTypes(typesSet);
+          }
+ else {
+            region.getSuperregion().getResourceTypes().addAll(typesSet);
+          }
+        }
+        region.setResourceTypes(typesSet);
       }
       resourcesByRegions.put(region,regionResources);
     }
