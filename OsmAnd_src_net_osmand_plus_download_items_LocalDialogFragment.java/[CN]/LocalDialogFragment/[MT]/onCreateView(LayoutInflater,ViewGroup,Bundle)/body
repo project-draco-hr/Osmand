@@ -1,5 +1,5 @@
 {
-  View view=inflater.inflate(R.layout.maps_in_category_fragment,container,false);
+  final View view=inflater.inflate(R.layout.maps_in_category_fragment,container,false);
   WorldRegion region=null;
   if (savedInstanceState != null) {
     Object regionObj=savedInstanceState.getSerializable(REGION_DLG_KEY);
@@ -26,5 +26,13 @@
     getChildFragmentManager().beginTransaction().add(R.id.fragmentContainer,LocalItemsFragment.createInstance(region)).commit();
     toolbar.setTitle(this.region.getName());
   }
+  DownloadsUiHelper.initFreeVersionBanner(view,getMyApplication().getSettings(),getResources());
+  mProgressListener=new DownloadsUiHelper.MapDownloadListener(view,getResources()){
+    @Override public void onFinished(){
+      super.onFinished();
+      DownloadsUiHelper.initFreeVersionBanner(view,getMyApplication().getSettings(),getResources());
+    }
+  }
+;
   return view;
 }
