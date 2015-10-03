@@ -1,12 +1,13 @@
 {
   boolean light=context.getMyApplication().getSettings().isLightContent();
+  boolean disabled=false;
   if (indexItem.getType() == DownloadActivityType.VOICE_FILE) {
     nameTextView.setText(indexItem.getVisibleName(context,context.getMyApplication().getRegions()));
   }
  else {
     if (indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE && srtmDisabled) {
       nameTextView.setText(context.getString(R.string.srtm_plugin_disabled));
-      nameTextView.setTextColor(context.getResources().getColor(light ? android.R.color.secondary_text_light : android.R.color.secondary_text_dark));
+      disabled=true;
     }
  else     if (showTypeInTitle) {
       nameTextView.setText(indexItem.getType().getString(context));
@@ -24,7 +25,6 @@
  else {
     descrTextView.setText(indexItem.getSizeDescription(context));
   }
-  leftImageView.setImageDrawable(getContextIcon(context,indexItem.getType().getIconResource()));
   rightImageButton.setVisibility(View.VISIBLE);
   rightImageButton.setImageDrawable(getContextIcon(context,R.drawable.ic_action_import));
   rightImageButton.setTag(R.id.index_item,indexItem);
@@ -35,4 +35,12 @@
   }
 );
   progressBar.setVisibility(View.GONE);
+  if (disabled) {
+    leftImageView.setImageDrawable(getContextIcon(context,indexItem.getType().getIconResource(),textColorSecondary));
+    nameTextView.setTextColor(textColorSecondary);
+  }
+ else {
+    leftImageView.setImageDrawable(getContextIcon(context,indexItem.getType().getIconResource()));
+    nameTextView.setTextColor(textColorPrimary);
+  }
 }
