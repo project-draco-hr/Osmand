@@ -5,17 +5,19 @@
       currentRunningTask.add(this);
       super.onPreExecute();
       this.message=ctx.getString(R.string.downloading_list_indexes);
+      dataPrepared=false;
     }
     @Override protected IndexFileList doInBackground(    Void... params){
       IndexFileList indexFileList=DownloadOsmandIndexesHelper.getIndexesList(ctx);
       if (indexFileList != null) {
-        ItemsListBuilder.prepareData(app,indexFileList.getIndexFiles());
+        prepareData(indexFileList.getIndexFiles());
       }
       return indexFileList;
     }
     protected void onPostExecute(    IndexFileList result){
       indexFiles=result;
       if (indexFiles != null && uiActivity != null) {
+        dataPrepared=resourcesByRegions.size() > 0;
         prepareFilesToUpdate();
         boolean basemapExists=uiActivity.getMyApplication().getResourceManager().containsBasemap();
         IndexItem basemap=indexFiles.getBasemap();
