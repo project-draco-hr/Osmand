@@ -1,28 +1,22 @@
 {
   View view=inflater.inflate(R.layout.download_items_fragment,container,false);
-  WorldRegion region=null;
   if (savedInstanceState != null) {
-    Object regionObj=savedInstanceState.getSerializable(REGION_KEY);
-    if (regionObj != null) {
-      region=(WorldRegion)regionObj;
-    }
+    regionId=savedInstanceState.getString(REGION_ID_KEY);
   }
-  if (region == null) {
-    Object regionObj=getArguments().getSerializable(REGION_KEY);
-    if (regionObj != null) {
-      region=(WorldRegion)regionObj;
-    }
+  if (regionId == null) {
+    regionId=getArguments().getString(REGION_ID_KEY);
   }
-  this.region=region;
-  builder=new ItemsListBuilder(getMyApplication(),this.region);
   ExpandableListView listView=(ExpandableListView)view.findViewById(android.R.id.list);
   listAdapter=new RegionsItemsAdapter(getActivity());
   listView.setAdapter(listAdapter);
   setListView(listView);
-  if (builder.build()) {
-    fillRegionItemsAdapter();
-    listAdapter.notifyDataSetChanged();
-    expandAllGroups();
+  if (regionId != null) {
+    ItemsListBuilder builder=getDownloadActivity().getItemsBuilder(regionId);
+    if (builder != null && builder.build()) {
+      fillRegionItemsAdapter(builder);
+      listAdapter.notifyDataSetChanged();
+      expandAllGroups();
+    }
   }
   return view;
 }
