@@ -1,0 +1,29 @@
+{
+  OsmandSettings settings=application.getSettings();
+  if (!Version.isFreeVersion(application) && !settings.SHOULD_SHOW_FREE_VERSION_BANNER.get()) {
+    freeVersionBanner.setVisibility(View.GONE);
+    return;
+  }
+  TextView downloadsLeftTextView=(TextView)view.findViewById(R.id.downloadsLeftTextView);
+  final int downloadsLeft=BaseDownloadActivity.MAXIMUM_AVAILABLE_FREE_DOWNLOADS - settings.NUMBER_OF_FREE_DOWNLOADS.get();
+  downloadsLeftTextView.setText(ctx.getString(R.string.downloads_left_template,downloadsLeft));
+  final TextView freeVersionDescriptionTextView=(TextView)view.findViewById(R.id.freeVersionDescriptionTextView);
+  freeVersionDescriptionTextView.setText(ctx.getString(R.string.free_version_message,BaseDownloadActivity.MAXIMUM_AVAILABLE_FREE_DOWNLOADS));
+  View buttonsLinearLayout=view.findViewById(R.id.buttonsLinearLayout);
+  freeVersionBanner.setOnClickListener(new ToggleCollapseFreeVersionBanner(freeVersionDescriptionTextView,buttonsLinearLayout));
+  ProgressBar downloadsLeftProgressBar=(ProgressBar)view.findViewById(R.id.downloadsLeftProgressBar);
+  downloadsLeftProgressBar.setProgress(settings.NUMBER_OF_FREE_DOWNLOADS.get());
+  view.findViewById(R.id.getFullVersionButton).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      BaseDownloadActivity context=(BaseDownloadActivity)v.getContext();
+      Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse(Version.marketPrefix(context.getMyApplication()) + "net.osmand.plus"));
+      try {
+        context.startActivity(intent);
+      }
+ catch (      ActivityNotFoundException e) {
+      }
+    }
+  }
+);
+  view.findViewById(R.id.laterButton).setOnClickListener(new ToggleCollapseFreeVersionBanner(freeVersionDescriptionTextView,buttonsLinearLayout));
+}
