@@ -1,7 +1,7 @@
 {
   boolean disabled=false;
   String textButtonCaption="GET";
-  RightButtonAction rightButtonAction=RightButtonAction.UNKNOWN;
+  rightButtonAction=RightButtonAction.UNKNOWN;
   if (indexItem.getType() == DownloadActivityType.VOICE_FILE) {
     nameTextView.setText(indexItem.getVisibleName(context,context.getMyApplication().getRegions()));
   }
@@ -58,16 +58,20 @@
       @Override public void onClick(      View v){
 switch (action) {
 case ASK_FOR_FULL_VERSION_PURCHASE:
-          AccessibleToast.makeText(context,"Please purchase Full version",Toast.LENGTH_SHORT).show();
-        break;
+          Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse(Version.marketPrefix(context.getMyApplication()) + "net.osmand.plus"));
+        context.startActivity(intent);
+      break;
 case ASK_FOR_SEAMARKS_PLUGIN:
-      AccessibleToast.makeText(context.getApplicationContext(),"Please turn on Seamarks plugin",Toast.LENGTH_SHORT).show();
-    break;
+    context.startActivity(new Intent(context,context.getMyApplication().getAppCustomization().getPluginsActivity()));
+  AccessibleToast.makeText(context.getApplicationContext(),context.getString(R.string.activate_seamarks_plugin),Toast.LENGTH_SHORT).show();
+break;
 case ASK_FOR_SRTM_PLUGIN_PURCHASE:
-  AccessibleToast.makeText(context,"Please purchase SRTM plugin",Toast.LENGTH_SHORT).show();
+OsmandPlugin plugin=OsmandPlugin.getPlugin(SRTMPlugin.class);
+context.startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(plugin.getInstallURL())));
 break;
 case ASK_FOR_SRTM_PLUGIN_ENABLE:
-AccessibleToast.makeText(context,"Please activate SRTM plugin",Toast.LENGTH_SHORT).show();
+context.startActivity(new Intent(context,context.getMyApplication().getAppCustomization().getPluginsActivity()));
+AccessibleToast.makeText(context,context.getString(R.string.activate_srtm_plugin),Toast.LENGTH_SHORT).show();
 break;
 }
 }
