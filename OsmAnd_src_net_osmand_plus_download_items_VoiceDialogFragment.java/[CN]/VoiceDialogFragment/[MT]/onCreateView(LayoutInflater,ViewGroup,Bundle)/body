@@ -1,0 +1,49 @@
+{
+  final View view=inflater.inflate(R.layout.maps_in_category_fragment,container,false);
+  String value=null;
+  try {
+    if (savedInstanceState != null) {
+      value=savedInstanceState.getString(VOICE_PROMPT_TYPE_DLG_KEY);
+      if (value != null) {
+        voicePromptsType=VoicePromptsType.valueOf(value);
+      }
+    }
+    if (voicePromptsType == VoicePromptsType.NONE) {
+      value=getArguments().getString(VOICE_PROMPT_TYPE_DLG_KEY);
+      if (value != null) {
+        voicePromptsType=VoicePromptsType.valueOf(value);
+      }
+    }
+  }
+ catch (  IllegalArgumentException e) {
+    LOG.warn("VOICE_PROMPT_TYPE_DLG_KEY=" + value);
+  }
+  Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
+  toolbar.setNavigationIcon(getMyApplication().getIconsCache().getIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha));
+  toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismiss();
+    }
+  }
+);
+  if (voicePromptsType != VoicePromptsType.NONE) {
+    Fragment fragment=getChildFragmentManager().findFragmentById(R.id.fragmentContainer);
+    if (fragment == null) {
+      getChildFragmentManager().beginTransaction().add(R.id.fragmentContainer,VoiceItemsFragment.createInstance(voicePromptsType)).commit();
+    }
+    ItemsListBuilder builder=getDownloadActivity().getItemsBuilder();
+    toolbar.setTitle(builder.getVoicePromtName(voicePromptsType));
+  }
+  DownloadsUiHelper.initFreeVersionBanner(view,getMyApplication(),getResources());
+  mProgressListener=new DownloadsUiHelper.MapDownloadListener(view,getResources()){
+    @Override public void onProgressUpdate(    int progressPercentage,    int activeTasks){
+      super.onProgressUpdate(progressPercentage,activeTasks);
+    }
+    @Override public void onFinished(){
+      super.onFinished();
+      DownloadsUiHelper.initFreeVersionBanner(view,getMyApplication(),getResources());
+    }
+  }
+;
+  return view;
+}
