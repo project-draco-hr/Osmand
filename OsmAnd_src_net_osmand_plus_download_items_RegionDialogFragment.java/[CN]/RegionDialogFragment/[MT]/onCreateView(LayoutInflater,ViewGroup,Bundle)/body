@@ -1,19 +1,11 @@
 {
   final View view=inflater.inflate(R.layout.maps_in_category_fragment,container,false);
-  WorldRegion region=null;
   if (savedInstanceState != null) {
-    Object regionObj=savedInstanceState.getSerializable(REGION_DLG_KEY);
-    if (regionObj != null) {
-      region=(WorldRegion)regionObj;
-    }
+    regionId=savedInstanceState.getString(REGION_ID_DLG_KEY);
   }
-  if (region == null) {
-    Object regionObj=getArguments().getSerializable(REGION_DLG_KEY);
-    if (regionObj != null) {
-      region=(WorldRegion)regionObj;
-    }
+  if (regionId == null) {
+    regionId=getArguments().getString(REGION_ID_DLG_KEY);
   }
-  this.region=region;
   Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
   toolbar.setNavigationIcon(getMyApplication().getIconsCache().getIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha));
   toolbar.setNavigationOnClickListener(new View.OnClickListener(){
@@ -22,12 +14,15 @@
     }
   }
 );
-  if (this.region != null) {
+  if (regionId != null) {
     Fragment fragment=getChildFragmentManager().findFragmentById(R.id.fragmentContainer);
     if (fragment == null) {
-      getChildFragmentManager().beginTransaction().add(R.id.fragmentContainer,RegionItemsFragment.createInstance(region)).commit();
+      getChildFragmentManager().beginTransaction().add(R.id.fragmentContainer,RegionItemsFragment.createInstance(regionId)).commit();
     }
-    toolbar.setTitle(this.region.getName());
+    WorldRegion region=getMyApplication().getWorldRegion().getRegionById(regionId);
+    if (region != null) {
+      toolbar.setTitle(region.getName());
+    }
   }
   DownloadsUiHelper.initFreeVersionBanner(view,getMyApplication(),getResources());
   mProgressListener=new DownloadsUiHelper.MapDownloadListener(view,getResources()){
