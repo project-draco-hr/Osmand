@@ -1,0 +1,37 @@
+{
+  String downloadsIdPrefix=region.getDownloadsIdPrefix();
+  Map<String,IndexItem> regionResources=new HashMap<>();
+  Set<DownloadActivityType> typesSet=new TreeSet<>(new Comparator<DownloadActivityType>(){
+    @Override public int compare(    DownloadActivityType dat1,    DownloadActivityType dat2){
+      return dat1.getTag().compareTo(dat2.getTag());
+    }
+  }
+);
+  for (  IndexItem resource : resourcesInRepository) {
+    if (processVoiceFiles) {
+      if (resource.getSimplifiedFileName().endsWith(".voice.zip")) {
+        voiceRecItems.add(resource);
+        continue;
+      }
+ else       if (resource.getSimplifiedFileName().contains(".ttsvoice.zip")) {
+        voiceTTSItems.add(resource);
+        continue;
+      }
+    }
+    if (!resource.getSimplifiedFileName().startsWith(downloadsIdPrefix)) {
+      continue;
+    }
+    typesSet.add(resource.getType());
+    regionResources.put(resource.getSimplifiedFileName(),resource);
+  }
+  if (region.getSuperregion() != null && region.getSuperregion().getSuperregion() != app.getWorldRegion()) {
+    if (region.getSuperregion().getResourceTypes() == null) {
+      region.getSuperregion().setResourceTypes(typesSet);
+    }
+ else {
+      region.getSuperregion().getResourceTypes().addAll(typesSet);
+    }
+  }
+  region.setResourceTypes(typesSet);
+  resourcesByRegions.put(region,regionResources);
+}
