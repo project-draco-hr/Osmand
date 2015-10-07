@@ -1,0 +1,24 @@
+{
+  final View view=inflater.inflate(R.layout.maps_in_category_fragment,container,false);
+  if (savedInstanceState != null) {
+    searchText=savedInstanceState.getString(SEARCH_TEXT_DLG_KEY);
+  }
+  if (searchText == null) {
+    searchText=getArguments().getString(SEARCH_TEXT_DLG_KEY);
+  }
+  if (searchText == null)   searchText="";
+  Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
+  toolbar.setNavigationIcon(getMyApplication().getIconsCache().getIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha));
+  toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismiss();
+    }
+  }
+);
+  Fragment fragment=getChildFragmentManager().findFragmentById(R.id.fragmentContainer);
+  if (fragment == null) {
+    getChildFragmentManager().beginTransaction().add(R.id.fragmentContainer,SearchItemsFragment.createInstance(searchText)).commit();
+  }
+  ((DownloadActivity)getActivity()).initFreeVersionBanner(view);
+  return view;
+}
