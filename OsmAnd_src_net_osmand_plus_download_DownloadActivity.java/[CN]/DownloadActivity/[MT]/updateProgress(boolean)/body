@@ -1,43 +1,10 @@
 {
   BasicProgressAsyncTask<?,?,?> basicProgressAsyncTask=DownloadActivity.downloadListIndexThread.getCurrentRunningTask();
-  final boolean isFinished=basicProgressAsyncTask == null || basicProgressAsyncTask.getStatus() == AsyncTask.Status.FINISHED;
-  boolean indeterminate=true;
-  int percent=0;
-  String message="";
-  if (!isFinished) {
-    indeterminate=basicProgressAsyncTask.isIndeterminate();
-    message=basicProgressAsyncTask.getDescription();
-    if (!indeterminate) {
-      percent=basicProgressAsyncTask.getProgressPercentage();
-    }
-  }
   if (visibleBanner != null) {
-    visibleBanner.updateProgress(isFinished,indeterminate,percent,message);
+    final int countedDownloads=DownloadActivity.downloadListIndexThread.getCountedDownloads();
+    visibleBanner.updateProgress(countedDownloads,basicProgressAsyncTask);
   }
   if (!updateOnlyProgress) {
     updateDownloadButton();
-  }
-  if (progressView == null) {
-    return;
-  }
-  if (updateOnlyProgress) {
-    if (basicProgressAsyncTask != null && !basicProgressAsyncTask.isIndeterminate()) {
-      progressPercent.setText(basicProgressAsyncTask.getProgressPercentage() + "%");
-      determinateProgressBar.setProgress(basicProgressAsyncTask.getProgressPercentage());
-    }
-  }
- else {
-    progressView.setVisibility(!isFinished ? View.VISIBLE : View.GONE);
-    if (!isFinished) {
-      indeterminateProgressBar.setVisibility(!indeterminate ? View.GONE : View.VISIBLE);
-      determinateProgressBar.setVisibility(indeterminate ? View.GONE : View.VISIBLE);
-      cancel.setVisibility(indeterminate ? View.GONE : View.VISIBLE);
-      progressPercent.setVisibility(indeterminate ? View.GONE : View.VISIBLE);
-      progressMessage.setText(basicProgressAsyncTask.getDescription());
-      if (!indeterminate) {
-        progressPercent.setText(basicProgressAsyncTask.getProgressPercentage() + "%");
-        determinateProgressBar.setProgress(basicProgressAsyncTask.getProgressPercentage());
-      }
-    }
   }
 }
