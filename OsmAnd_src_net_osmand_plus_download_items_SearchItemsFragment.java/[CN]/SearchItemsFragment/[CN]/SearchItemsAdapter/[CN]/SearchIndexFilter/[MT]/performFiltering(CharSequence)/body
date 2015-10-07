@@ -1,0 +1,43 @@
+{
+  FilterResults results=new FilterResults();
+  if (constraint == null || constraint.length() == 0) {
+    results.values=new ArrayList<>();
+    results.count=0;
+  }
+ else {
+    String[] ors=constraint.toString().split(",");
+    List<List<String>> conds=new ArrayList<>();
+    for (    String or : ors) {
+      final ArrayList<String> cond=new ArrayList<>();
+      for (      String term : or.split("\\s")) {
+        final String t=term.trim().toLowerCase();
+        if (t.length() > 0) {
+          cond.add(t);
+        }
+      }
+      if (cond.size() > 0) {
+        conds.add(cond);
+      }
+    }
+    List<Object> filter=new ArrayList<>();
+    Context c=getDownloadActivity();
+    for (    WorldRegion region : worldRegions) {
+      String indexLC=region.getName();
+      if (isMatch(conds,false,indexLC)) {
+        filter.add(region);
+      }
+    }
+    for (    IndexItem item : indexItems) {
+      String indexLC=osmandRegions.getDownloadNameIndexLowercase(item.getBasename());
+      if (indexLC == null) {
+        indexLC=item.getVisibleName(c,osmandRegions).toLowerCase();
+      }
+      if (isMatch(conds,false,indexLC)) {
+        filter.add(item);
+      }
+    }
+    results.values=filter;
+    results.count=filter.size();
+  }
+  return results;
+}
