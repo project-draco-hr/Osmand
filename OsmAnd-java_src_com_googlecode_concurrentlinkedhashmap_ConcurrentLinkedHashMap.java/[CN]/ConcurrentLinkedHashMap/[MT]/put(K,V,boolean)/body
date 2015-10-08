@@ -1,0 +1,34 @@
+{
+  checkNotNull(key);
+  checkNotNull(value);
+  final int weight=weigher.weightOf(key,value);
+  final WeightedValue<V> weightedValue=new WeightedValue<V>(value,weight);
+  final Node<K,V> node=new Node<K,V>(key,weightedValue);
+  for (; ; ) {
+    final Node<K,V> prior=data.putIfAbsent(node.key,node);
+    if (prior == null) {
+      afterWrite(new AddTask(node,weight));
+      return null;
+    }
+ else     if (onlyIfAbsent) {
+      afterRead(prior);
+      return prior.getValue();
+    }
+    for (; ; ) {
+      final WeightedValue<V> oldWeightedValue=prior.get();
+      if (!oldWeightedValue.isAlive()) {
+        break;
+      }
+      if (prior.compareAndSet(oldWeightedValue,weightedValue)) {
+        final int weightedDifference=weight - oldWeightedValue.weight;
+        if (weightedDifference == 0) {
+          afterRead(prior);
+        }
+ else {
+          afterWrite(new UpdateTask(prior,weightedDifference));
+        }
+        return oldWeightedValue.value;
+      }
+    }
+  }
+}
