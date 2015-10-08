@@ -2,7 +2,7 @@
   if (savedInstanceState != null)   getCtxMenu().restoreMenuState(savedInstanceState);
   view=inflater.inflate(R.layout.map_context_menu_fragment,container,false);
   mainView=view.findViewById(R.id.context_menu_main);
-  menuController=getCtxMenu().getMenuController(getActivity());
+  menuController=getCtxMenu().getMenuController();
   if (menuController != null && menuController.isLandscapeLayout()) {
     mainView.setLayoutParams(new FrameLayout.LayoutParams(dpToPx(menuController.getLandscapeWidthDp()),ViewGroup.LayoutParams.MATCH_PARENT));
   }
@@ -15,7 +15,8 @@
       menuButtonsHeight=view.findViewById(R.id.context_menu_buttons).getHeight();
       menuFullHeight=view.findViewById(R.id.context_menu_main).getHeight();
       menuTitleHeight=menuTopShadowHeight + menuTopShadowAllHeight;
-      menuFullHeightMax=menuTitleHeight + (menuBottomViewHeight > 0 ? menuBottomViewHeight + dpToPx(2f) : -dpToPx(SHADOW_HEIGHT_BOTTOM_DP));
+      menuBottomViewHeight=view.findViewById(R.id.context_menu_bottom_view).getHeight();
+      recalculateFullHeightMax();
       ViewTreeObserver obs=view.getViewTreeObserver();
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
         obs.removeOnGlobalLayoutListener(this);
@@ -131,22 +132,9 @@ if (event.getY() <= dpToPx(SHADOW_HEIGHT_TOP_DP) || event.getAction() != MotionE
 }
 }
 );
+buildHeader();
 IconsCache iconsCache=getMyApplication().getIconsCache();
 boolean light=getMyApplication().getSettings().isLightContent();
-final View iconLayout=view.findViewById(R.id.context_menu_icon_layout);
-final ImageView iconView=(ImageView)view.findViewById(R.id.context_menu_icon_view);
-Drawable icon=getCtxMenu().getLeftIcon();
-int iconId=getCtxMenu().getLeftIconId();
-if (icon != null) {
-iconView.setImageDrawable(icon);
-}
- else if (iconId != 0) {
-iconView.setImageDrawable(iconsCache.getIcon(iconId,light ? R.color.osmand_orange : R.color.osmand_orange_dark,0.75f));
-}
- else {
-iconLayout.setVisibility(View.GONE);
-}
-setAddressLocation();
 final ImageView closeButtonView=(ImageView)view.findViewById(R.id.context_menu_close_btn_view);
 closeButtonView.setImageDrawable(iconsCache.getIcon(R.drawable.ic_action_remove_dark,light ? R.color.icon_color_light : R.color.dash_search_icon_dark));
 closeButtonView.setOnClickListener(new View.OnClickListener(){
@@ -188,18 +176,7 @@ getCtxMenu().buttonMorePressed();
 }
 }
 );
-View bottomView=view.findViewById(R.id.context_menu_bottom_view);
-if (menuController != null) {
-bottomView.setOnTouchListener(new View.OnTouchListener(){
-@Override public boolean onTouch(View v,MotionEvent event){
-return true;
-}
-}
-);
-menuController.build(bottomView);
-}
-bottomView.measure(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-menuBottomViewHeight=bottomView.getMeasuredHeight();
+buildBottomView();
 getMapActivity().getMapLayers().getMapControlsLayer().setControlsClickable(false);
 return view;
 }
