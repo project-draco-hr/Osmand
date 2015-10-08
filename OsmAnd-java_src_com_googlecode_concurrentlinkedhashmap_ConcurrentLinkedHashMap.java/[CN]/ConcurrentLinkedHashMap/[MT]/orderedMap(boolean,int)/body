@@ -1,0 +1,18 @@
+{
+  checkArgument(limit >= 0);
+  evictionLock.lock();
+  try {
+    drainBuffers();
+    final int initialCapacity=(weigher == Weighers.entrySingleton()) ? Math.min(limit,(int)weightedSize()) : 16;
+    final Map<K,V> map=new LinkedHashMap<K,V>(initialCapacity);
+    final Iterator<Node<K,V>> iterator=ascending ? evictionDeque.iterator() : evictionDeque.descendingIterator();
+    while (iterator.hasNext() && (limit > map.size())) {
+      Node<K,V> node=iterator.next();
+      map.put(node.key,node.getValue());
+    }
+    return unmodifiableMap(map);
+  }
+  finally {
+    evictionLock.unlock();
+  }
+}

@@ -1,0 +1,22 @@
+{
+  evictionLock.lock();
+  try {
+    Node<K,V> node;
+    while ((node=evictionDeque.poll()) != null) {
+      data.remove(node.key,node);
+      makeDead(node);
+    }
+    for (    AtomicReference<Node<K,V>>[] buffer : readBuffers) {
+      for (      AtomicReference<Node<K,V>> slot : buffer) {
+        slot.lazySet(null);
+      }
+    }
+    Runnable task;
+    while ((task=writeBuffer.poll()) != null) {
+      task.run();
+    }
+  }
+  finally {
+    evictionLock.unlock();
+  }
+}

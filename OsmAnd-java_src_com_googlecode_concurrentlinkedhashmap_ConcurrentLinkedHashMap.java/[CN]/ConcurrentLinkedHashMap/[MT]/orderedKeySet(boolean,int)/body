@@ -1,0 +1,17 @@
+{
+  checkArgument(limit >= 0);
+  evictionLock.lock();
+  try {
+    drainBuffers();
+    final int initialCapacity=(weigher == Weighers.entrySingleton()) ? Math.min(limit,(int)weightedSize()) : 16;
+    final Set<K> keys=new LinkedHashSet<K>(initialCapacity);
+    final Iterator<Node<K,V>> iterator=ascending ? evictionDeque.iterator() : evictionDeque.descendingIterator();
+    while (iterator.hasNext() && (limit > keys.size())) {
+      keys.add(iterator.next().key);
+    }
+    return unmodifiableSet(keys);
+  }
+  finally {
+    evictionLock.unlock();
+  }
+}
