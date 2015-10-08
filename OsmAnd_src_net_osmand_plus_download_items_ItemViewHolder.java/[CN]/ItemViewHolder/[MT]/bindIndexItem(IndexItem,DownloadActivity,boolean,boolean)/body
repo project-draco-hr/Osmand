@@ -91,4 +91,21 @@ nameTextView.setTextColor(textColorSecondary);
 leftImageView.setImageDrawable(getContextIcon(context,indexItem.getType().getIconResource()));
 nameTextView.setTextColor(textColorPrimary);
 }
+if (indexFileNames != null && indexItem.isAlreadyDownloaded(indexFileNames)) {
+boolean outdated=false;
+String date=null;
+if (indexItem.getType() == DownloadActivityType.HILLSHADE_FILE) {
+date=indexItem.getDate(dateFormat);
+}
+ else {
+String sfName=indexItem.getTargetFileName();
+final boolean updatableResource=indexActivatedFileNames.containsKey(sfName);
+date=updatableResource ? indexActivatedFileNames.get(sfName) : indexFileNames.get(sfName);
+outdated=DownloadActivity.downloadListIndexThread.checkIfItemOutdated(indexItem);
+}
+String updateDescr=context.getResources().getString(R.string.local_index_installed) + ": " + date;
+mapDateTextView.setText(updateDescr);
+int colorId=outdated ? R.color.color_distance : R.color.color_ok;
+mapDateTextView.setTextColor(context.getResources().getColor(colorId));
+}
 }
