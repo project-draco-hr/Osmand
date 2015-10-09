@@ -1,0 +1,42 @@
+{
+  colors.add(pallette);
+  List<String> colorNames=new ArrayList<String>();
+  int selection=-1;
+  for (int i=0; i < pallette.length; i++) {
+    colorNames.add(ctx.getString(paletteColors[i]));
+    colors.add(pallette[i]);
+    if (selectedColor == pallette[i]) {
+      selection=i;
+    }
+  }
+  if (selection == -1) {
+    colors.insert(0,selectedColor);
+    colorNames.add(0,colorToString(selectedColor));
+    selection=0;
+  }
+  ArrayAdapter<String> adapter=new ArrayAdapter<String>(ctx,R.layout.color_spinner_item,colorNames){
+    @Override public View getView(    int position,    View convertView,    ViewGroup parent){
+      View v=super.getView(position,convertView,parent);
+      if (v instanceof TextView) {
+        TextView textView=(TextView)v;
+        textView.setCompoundDrawablesWithIntrinsicBounds(getIcon(ctx,R.drawable.ic_action_folder,colors.get(position)),null,null,null);
+        textView.setCompoundDrawablePadding(dpToPx(ctx,15f));
+      }
+      return v;
+    }
+    @Override public View getDropDownView(    int position,    View convertView,    ViewGroup parent){
+      View v=super.getView(position,convertView,parent);
+      if (v instanceof TextView) {
+        TextView textView=(TextView)v;
+        textView.setCompoundDrawablesWithIntrinsicBounds(getIcon(ctx,R.drawable.ic_action_circle,colors.get(position)),null,null,null);
+        textView.setCompoundDrawablePadding(dpToPx(ctx,15f));
+      }
+      return v;
+    }
+  }
+;
+  adapter.setDropDownViewResource(R.layout.color_spinner_dropdown_item);
+  colorSpinner.setAdapter(adapter);
+  colorSpinner.setOnItemSelectedListener(listener);
+  colorSpinner.setSelection(selection);
+}
