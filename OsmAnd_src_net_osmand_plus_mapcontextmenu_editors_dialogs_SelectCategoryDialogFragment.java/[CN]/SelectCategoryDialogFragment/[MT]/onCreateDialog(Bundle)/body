@@ -1,4 +1,10 @@
 {
+  if (savedInstanceState != null) {
+    restoreState(savedInstanceState);
+  }
+ else   if (getArguments() != null) {
+    restoreState(getArguments());
+  }
   AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
   builder.setTitle(R.string.favorite_category_select);
   final View v=getActivity().getLayoutInflater().inflate(R.layout.favorite_categories_dialog,null,false);
@@ -7,19 +13,22 @@
   List<FavouritesDbHelper.FavoriteGroup> gs=helper.getFavoriteGroups();
   for (  final FavouritesDbHelper.FavoriteGroup category : gs) {
     View itemView=getActivity().getLayoutInflater().inflate(R.layout.favorite_category_dialog_item,null);
-    ImageView icon=(ImageView)itemView.findViewById(R.id.image_view);
+    Button button=(Button)itemView.findViewById(R.id.button);
     if (category.color != 0) {
-      icon.setImageDrawable(getIcon(getActivity(),R.drawable.ic_action_folder,category.color));
+      button.setCompoundDrawablesWithIntrinsicBounds(getIcon(getActivity(),R.drawable.ic_action_folder,category.color),null,null,null);
     }
  else {
-      icon.setImageDrawable(getIcon(getActivity(),R.drawable.ic_action_folder));
+      button.setCompoundDrawablesWithIntrinsicBounds(getIcon(getActivity(),R.drawable.ic_action_folder),null,null,null);
     }
-    Button button=(Button)itemView.findViewById(R.id.button);
+    button.setCompoundDrawablePadding(dpToPx(15f));
     String name=category.name.length() == 0 ? getString(R.string.shared_string_favorites) : category.name;
     button.setText(name);
     button.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View v){
-        ((PointEditorFragment)getParentFragment()).setCategory(category.name);
+        PointEditor editor=((MapActivity)getActivity()).getPointEditor(editorTag);
+        if (editor != null) {
+          editor.setCategory(category.name);
+        }
         dismiss();
       }
     }
@@ -27,12 +36,15 @@
     ll.addView(itemView);
   }
   View itemView=getActivity().getLayoutInflater().inflate(R.layout.favorite_category_dialog_item,null);
-  ImageView icon=(ImageView)itemView.findViewById(R.id.image_view);
-  icon.setImageDrawable(getIcon(getActivity(),R.drawable.map_zoom_in));
   Button button=(Button)itemView.findViewById(R.id.button);
+  button.setCompoundDrawablesWithIntrinsicBounds(getIcon(getActivity(),R.drawable.map_zoom_in),null,null,null);
+  button.setCompoundDrawablePadding(dpToPx(15f));
   button.setText(getActivity().getResources().getText(R.string.favorite_category_add_new));
   button.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
+      dismiss();
+      DialogFragment dialogFragment=EditCategoryDialogFragment.createInstance(editorTag);
+      dialogFragment.show(getActivity().getSupportFragmentManager(),EditCategoryDialogFragment.TAG);
     }
   }
 );
