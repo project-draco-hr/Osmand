@@ -10,6 +10,8 @@
     @Override protected IndexFileList doInBackground(    Void... params){
       IndexFileList indexFileList=DownloadOsmandIndexesHelper.getIndexesList(ctx);
       if (indexFileList != null) {
+        updateLoadedFiles();
+        prepareFilesToUpdate();
         prepareData(indexFileList.getIndexFiles());
       }
       return indexFileList;
@@ -18,7 +20,6 @@
       indexFiles=result;
       if (indexFiles != null && uiActivity != null) {
         dataPrepared=resourcesByRegions.size() > 0;
-        prepareFilesToUpdate();
         boolean basemapExists=uiActivity.getMyApplication().getResourceManager().containsBasemap();
         IndexItem basemap=indexFiles.getBasemap();
         if (basemap != null) {
@@ -43,7 +44,6 @@
       if (uiActivity != null) {
         uiActivity.updateProgress(false);
         runCategorization(uiActivity.getDownloadType());
-        runCategorization();
         uiActivity.onCategorizationFinished();
       }
     }
