@@ -1,0 +1,27 @@
+{
+  super.onStart();
+  final AlertDialog d=(AlertDialog)getDialog();
+  if (d != null) {
+    Button positiveButton=d.getButton(Dialog.BUTTON_POSITIVE);
+    positiveButton.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        name=nameEdit.getText().toString().trim();
+        if (!helper.groupExists(name)) {
+          helper.addEmptyCategory(name,color);
+          PointEditor editor=((MapActivity)getActivity()).getPointEditor(editorTag);
+          if (editor != null) {
+            editor.setCategory(name);
+          }
+          d.dismiss();
+        }
+ else {
+          AlertDialog.Builder b=new AlertDialog.Builder(getActivity());
+          b.setMessage(getString(R.string.favorite_category_dublicate_message));
+          b.setNegativeButton(R.string.shared_string_ok,null);
+          b.show();
+        }
+      }
+    }
+);
+  }
+}
