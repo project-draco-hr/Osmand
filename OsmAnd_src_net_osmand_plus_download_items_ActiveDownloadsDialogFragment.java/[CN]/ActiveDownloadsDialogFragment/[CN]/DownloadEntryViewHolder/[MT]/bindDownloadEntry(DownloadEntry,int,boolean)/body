@@ -1,0 +1,30 @@
+{
+  nameTextView.setText(downloadEntry.baseName);
+  rightImageButton.setVisibility(View.VISIBLE);
+  int localProgress=progress;
+  boolean isIndeterminate=true;
+  View.OnClickListener onClickListener=null;
+  if (progress != -1) {
+    isIndeterminate=false;
+    onClickListener=activeDownloadOnClickListener;
+    double downloaded=downloadEntry.sizeMB * progress / 100;
+    descrTextView.setText(String.format("%.1f from %.1f MB",downloaded,downloadEntry.sizeMB));
+  }
+ else   if (isDownloaded) {
+    localProgress=progressBar.getMax();
+    descrTextView.setText(String.format("%.1f MB",downloadEntry.sizeMB));
+  }
+ else {
+    onClickListener=new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        context.getEntriesToDownload().remove(downloadEntry.item);
+        adapter.remove(downloadEntry);
+      }
+    }
+;
+    descrTextView.setText(String.format("%.1f MB",downloadEntry.sizeMB));
+  }
+  rightImageButton.setOnClickListener(onClickListener);
+  progressBar.setIndeterminate(isIndeterminate);
+  progressBar.setProgress(localProgress);
+}
