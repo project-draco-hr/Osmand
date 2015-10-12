@@ -23,38 +23,6 @@
   mSlidingTabLayout.setViewPager(viewPager);
   viewPager.setCurrentItem(currentTab);
   settings=((OsmandApplication)getApplication()).getSettings();
-  findViewById(R.id.downloadButton).setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      downloadFilesCheckFreeVersion();
-    }
-  }
-);
-  findViewById(R.id.wikiButton).setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      downloadWikiFiles();
-    }
-  }
-);
-  findViewById(R.id.CancelAll).setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      getEntriesToDownload().clear();
-      updateDownloadButton();
-      for (      WeakReference<Fragment> ref : fragSet) {
-        Fragment f=ref.get();
-        if (f != null) {
-          if (f instanceof OsmAndListFragment) {
-            if (f.isAdded() && ((OsmAndListFragment)f).getListAdapter() instanceof ArrayAdapter) {
-              ((ArrayAdapter)((OsmAndListFragment)f).getListAdapter()).notifyDataSetChanged();
-            }
-          }
- else           if (f.isAdded() && f instanceof OsmandExpandableListFragment && ((OsmandExpandableListFragment)f).getAdapter() instanceof BaseExpandableListAdapter) {
-            ((BaseExpandableListAdapter)((OsmandExpandableListFragment)f).getAdapter()).notifyDataSetChanged();
-          }
-        }
-      }
-    }
-  }
-);
   downloadTypes=createDownloadTypes();
   final Intent intent=getIntent();
   if (intent != null && intent.getExtras() != null) {
@@ -72,4 +40,5 @@
     }
   }
   changeType(downloadTypes.get(0));
+  registerFreeVersionBanner(findViewById(R.id.mainLayout));
 }
