@@ -1,4 +1,5 @@
 {
+  fabPaddingTopPx=dpToPx(FAB_PADDING_TOP);
   menu=getMapActivity().getContextMenu();
   if (savedInstanceState != null) {
     menu.restoreMenuState(savedInstanceState);
@@ -7,6 +8,8 @@
   mainView=view.findViewById(R.id.context_menu_main);
   if (menu.isLandscapeLayout()) {
     mainView.setLayoutParams(new FrameLayout.LayoutParams(dpToPx(menu.getLandscapeWidthDp()),ViewGroup.LayoutParams.MATCH_PARENT));
+    View fabContainer=view.findViewById(R.id.context_menu_fab_container);
+    fabContainer.setLayoutParams(new FrameLayout.LayoutParams(dpToPx(menu.getLandscapeWidthDp()),ViewGroup.LayoutParams.MATCH_PARENT));
   }
   runLayoutListener();
   final GestureDetector singleTapDetector=new GestureDetector(view.getContext(),new SingleTapConfirm());
@@ -92,6 +95,7 @@ updateMainViewLayout(posY);
 }
 }
 ).start();
+fabView.animate().y(getFabY(posY)).setDuration(200).setInterpolator(new DecelerateInterpolator()).start();
 }
  else {
 setViewY(posY);
@@ -116,11 +120,10 @@ if (event.getY() <= dpToPx(SHADOW_HEIGHT_TOP_DP) || event.getAction() != MotionE
 buildHeader();
 IconsCache iconsCache=getMyApplication().getIconsCache();
 boolean light=getMyApplication().getSettings().isLightContent();
-final ImageView closeButtonView=(ImageView)view.findViewById(R.id.context_menu_close_btn_view);
-closeButtonView.setImageDrawable(iconsCache.getIcon(R.drawable.ic_action_remove_dark,light ? R.color.icon_color_light : R.color.dash_search_icon_dark));
-closeButtonView.setOnClickListener(new View.OnClickListener(){
+fabView=(ImageView)view.findViewById(R.id.context_menu_fab_view);
+fabView.setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
-getMapActivity().getContextMenu().close();
+menu.buttonNavigatePressed();
 }
 }
 );
