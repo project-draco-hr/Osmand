@@ -1,11 +1,7 @@
 {
   GpxDisplayItem child=adapter.getItem(position);
-  ContextMenuAdapter qa=new ContextMenuAdapter(v.getContext());
-  qa.setAnchor(v);
-  PointDescription name=new PointDescription(PointDescription.POINT_TYPE_FAVORITE,Html.fromHtml(child.name).toString());
+  final OsmandSettings settings=app.getSettings();
   LatLon location=new LatLon(child.locationStart.lat,child.locationStart.lon);
-  OsmandSettings settings=app.getSettings();
-  final PopupMenu optionsMenu=new PopupMenu(getActivity(),v);
-  DirectionsDialogs.createDirectionActionsPopUpMenu(optionsMenu,location,child.locationStart,name,settings.getLastKnownMapZoom(),getActivity(),false,false);
-  optionsMenu.show();
+  settings.setMapLocationToShow(location.getLatitude(),location.getLongitude(),settings.getLastKnownMapZoom(),new PointDescription(PointDescription.POINT_TYPE_FAVORITE,Html.fromHtml(child.name).toString()),false,child.locationStart);
+  MapActivity.launchMapActivityMoveToTop(getActivity());
 }

@@ -34,8 +34,8 @@
   if (sameId && !schedule && l != null) {
     ContextMenuLayer cl=map.getMapLayers().getContextMenuLayer();
     final boolean sameObject;
-    if (cl.getFirstSelectedObject() instanceof OsMoDevice && cl.isVisible()) {
-      sameObject=Algorithms.objectEquals(device.trackerId,((OsMoDevice)cl.getFirstSelectedObject()).trackerId);
+    if (map.getContextMenu().getObject() instanceof OsMoDevice && cl.isVisible()) {
+      sameObject=Algorithms.objectEquals(device.trackerId,((OsMoDevice)map.getContextMenu().getObject()).trackerId);
     }
  else {
       sameObject=false;
@@ -59,10 +59,8 @@
         @Override public void run(){
           schedule=false;
           if (sameObject) {
-            ContextMenuLayer cl=map.getMapLayers().getContextMenuLayer();
             Location l=device.getLastLocation();
-            cl.setLocation(new LatLon(l.getLatitude(),l.getLongitude()),getObjectDescription(device));
-            cl.setSelectedObject(device);
+            map.getContextMenu().show(new LatLon(l.getLatitude(),l.getLongitude()),getObjectName(device),device);
           }
           if (centered) {
             map.getMapView().setLatLon(loc.getLatitude(),loc.getLongitude());
