@@ -26,7 +26,7 @@
       if (singleTapDetector.onTouchEvent(event)) {
         showOnMap(menu.getLatLon());
         if (hasMoved) {
-          applyPosY(getViewY());
+          applyPosY(getViewY(),false);
         }
         return true;
       }
@@ -66,21 +66,20 @@ int currentY=getViewY();
 slidingUp=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) < -50;
 slidingDown=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) > 50;
 velocity.recycle();
-if (menu.isExtended()) {
+boolean needCloseMenu=false;
 if (menuBottomViewHeight > 0 && slidingUp) {
 menu.slideUp();
 }
  else if (slidingDown) {
-menu.slideDown();
+needCloseMenu=!menu.slideDown();
 }
-}
-applyPosY(currentY);
+applyPosY(currentY,needCloseMenu);
 break;
 }
 return true;
 }
-private void applyPosY(int currentY){
-final int posY=getPosY();
+private void applyPosY(final int currentY,final boolean needCloseMenu){
+final int posY=getPosY(needCloseMenu);
 if (currentY != posY) {
 if (posY < currentY) {
 updateMainViewLayout(posY);
@@ -88,10 +87,20 @@ updateMainViewLayout(posY);
 if (!oldAndroid()) {
 mainView.animate().y(posY).setDuration(200).setInterpolator(new DecelerateInterpolator()).setListener(new AnimatorListenerAdapter(){
 @Override public void onAnimationCancel(Animator animation){
+if (needCloseMenu) {
+menu.close();
+}
+ else {
 updateMainViewLayout(posY);
 }
+}
 @Override public void onAnimationEnd(Animator animation){
+if (needCloseMenu) {
+menu.close();
+}
+ else {
 updateMainViewLayout(posY);
+}
 }
 }
 ).start();
