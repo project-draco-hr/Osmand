@@ -5,11 +5,11 @@
     if (point != null) {
       if ((currentLocation != null) && currentLocation.hasBearing()) {
         final long now=SystemClock.uptimeMillis();
-        if ((now - lastNotificationTime) >= MIN_NOTIFICATION_PERIOD) {
+        if ((now - lastNotificationTime) >= settings.ACCESSIBILITY_AUTOANNOUNCE_PERIOD.get()) {
           Location destination=new Location("map");
           destination.setLatitude(point.getLatitude());
           destination.setLongitude(point.getLongitude());
-          if (lastDirection.update(destination)) {
+          if (lastDirection.update(destination) || !settings.ACCESSIBILITY_SMART_AUTOANNOUNCE.get()) {
             final String notification=distanceString(destination) + " " + lastDirection.getString();
             lastNotificationTime=now;
             app.runInUIThread(new Runnable(){
