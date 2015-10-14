@@ -1,23 +1,26 @@
 {
-  LatLon latLon=selectObjectsForContextMenu(tileBox,point);
-  if (latLon != null) {
-    if (selectedObjects.size() == 1) {
-      setLocation(null,"");
-      Object selectedObj=selectedObjects.keySet().iterator().next();
-      IContextMenuProvider contextObject=selectedObjects.get(selectedObj);
-      showMapContextMenu(latLon,selectedObj,contextObject);
-      return true;
+  Map<Object,IContextMenuProvider> selectedObjects=selectObjectsForContextMenu(tileBox,point);
+  if (selectedObjects.size() == 1) {
+    Object selectedObj=selectedObjects.keySet().iterator().next();
+    IContextMenuProvider contextObject=selectedObjects.get(selectedObj);
+    LatLon latLon=null;
+    PointDescription pointDescription=null;
+    if (contextObject != null) {
+      latLon=contextObject.getObjectLocation(selectedObj);
+      pointDescription=contextObject.getObjectName(selectedObj);
     }
- else     if (selectedObjects.size() > 1) {
-      showContextMenuForSelectedObjects(latLon);
-      return true;
+    if (latLon == null) {
+      latLon=getLatLon(point,tileBox);
     }
+    menu.show(latLon,pointDescription,selectedObj);
+    return true;
+  }
+ else   if (selectedObjects.size() > 1) {
+    showContextMenuForSelectedObjects(getLatLon(point,tileBox),selectedObjects);
+    return true;
   }
  else   if (showUnknownLocation) {
-    setLocation(null,"");
-    final double lat=tileBox.getLatFromPixel((int)point.x,(int)point.y);
-    final double lon=tileBox.getLonFromPixel((int)point.x,(int)point.y);
-    showMapContextMenu(new LatLon(lat,lon));
+    menu.show(getLatLon(point,tileBox),null,null);
     return true;
   }
   return false;
