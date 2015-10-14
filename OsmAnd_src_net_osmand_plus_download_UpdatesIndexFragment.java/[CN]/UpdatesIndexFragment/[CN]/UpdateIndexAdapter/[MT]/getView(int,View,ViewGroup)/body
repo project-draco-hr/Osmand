@@ -1,50 +1,11 @@
 {
   View v=convertView;
   if (v == null) {
-    LayoutInflater inflater=(LayoutInflater)getDownloadActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    v=inflater.inflate(R.layout.update_index_list_item,null);
+    LayoutInflater inflater=LayoutInflater.from(getMyActivity());
+    v=inflater.inflate(R.layout.two_line_with_images_list_item,null);
+    v.setTag(new UpdateViewHolder(v,getMyActivity()));
   }
-  TextView name=(TextView)v.findViewById(R.id.download_item);
-  TextView description=(TextView)v.findViewById(R.id.download_descr);
-  TextView updateDescr=(TextView)v.findViewById(R.id.update_descr);
-  final CheckBox ch=(CheckBox)v.findViewById(R.id.check_download_item);
-  IndexItem e=items.get(position);
-  if (e.getFileName().equals(getString(R.string.everything_up_to_date)) || e.getFileName().equals(getString(R.string.no_index_file_to_download))) {
-    name.setText(e.getFileName());
-    description.setText("");
-    ch.setVisibility(View.INVISIBLE);
-    setSelectAllVisibility(false);
-    v.setOnClickListener(null);
-    return v;
-  }
- else {
-    ch.setVisibility(View.VISIBLE);
-  }
-  String eName=e.getVisibleName(getMyApplication(),osmandRegions);
-  name.setText(eName.trim().replace('\n',' ').replace("TTS",""));
-  String d=getMapDescription(e);
-  description.setText(d);
-  String sfName=e.getTargetFileName();
-  Map<String,String> indexActivatedFileNames=getMyApplication().getResourceManager().getIndexFileNames();
-  String dt=indexActivatedFileNames.get(sfName);
-  updateDescr.setText("");
-  if (dt != null) {
-    try {
-      Date tm=format.parse(dt);
-      long days=Math.max(1,(e.getTimestamp() - tm.getTime()) / (24 * 60 * 60* 1000) + 1);
-      updateDescr.setText(days + " " + getString(R.string.days_behind));
-    }
- catch (    ParseException e1) {
-      e1.printStackTrace();
-    }
-  }
-  ch.setChecked(getDownloadActivity().getEntriesToDownload().containsKey(e));
-  ch.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      ch.setChecked(!ch.isChecked());
-      onItemSelected(ch,position);
-    }
-  }
-);
+  UpdateViewHolder holder=(UpdateViewHolder)v.getTag();
+  holder.bindUpdatesIndexItem(items.get(position));
   return v;
 }
