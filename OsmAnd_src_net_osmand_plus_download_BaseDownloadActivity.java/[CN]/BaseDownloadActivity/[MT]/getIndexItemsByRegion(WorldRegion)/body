@@ -1,8 +1,13 @@
 {
-  if (downloadListIndexThread.isDataPrepared()) {
-    return downloadListIndexThread.getResourcesByRegions().get(region);
+  if (downloadListIndexThread.getResourcesLock().tryLock()) {
+    try {
+      return new LinkedList<>(downloadListIndexThread.getResourcesByRegions().get(region).values());
+    }
+  finally {
+      downloadListIndexThread.getResourcesLock().unlock();
+    }
   }
  else {
-    return null;
+    return new LinkedList<>();
   }
 }
