@@ -8,7 +8,14 @@
  else   if (obj instanceof ItemsListBuilder.ResourceItem) {
     if (((ItemViewHolder)v.getTag()).isItemAvailable()) {
       IndexItem indexItem=((ItemsListBuilder.ResourceItem)obj).getIndexItem();
-      ((BaseDownloadActivity)getActivity()).startDownload(indexItem);
+      if (indexItem.getType() == DownloadActivityType.ROADS_FILE) {
+        IndexItem regularMap=((ItemsListBuilder.ResourceItem)listAdapter.getChild(0,0)).getIndexItem();
+        if (regularMap.getType() == DownloadActivityType.NORMAL_FILE) {
+          ConfirmDownloadUnneededMapDialogFragment.createInstance(indexItem).show(getChildFragmentManager(),"dialog");
+          return true;
+        }
+      }
+      getMyActivity().startDownload(indexItem);
       return true;
     }
   }

@@ -16,45 +16,13 @@
   }
   ViewPager viewPager=(ViewPager)findViewById(R.id.pager);
   PagerSlidingTabStrip mSlidingTabLayout=(PagerSlidingTabStrip)findViewById(R.id.sliding_tabs);
-  mTabs.add(new TabActivity.TabItem(R.string.download_tab_local,getString(R.string.download_tab_local),LocalIndexesFragment.class));
   mTabs.add(new TabActivity.TabItem(R.string.download_tab_downloads,getString(R.string.download_tab_downloads),WorldItemsFragment.class));
+  mTabs.add(new TabActivity.TabItem(R.string.download_tab_local,getString(R.string.download_tab_local),LocalIndexesFragment.class));
   mTabs.add(new TabActivity.TabItem(R.string.download_tab_updates,getString(R.string.download_tab_updates),UpdatesIndexFragment.class));
   viewPager.setAdapter(new TabActivity.OsmandFragmentPagerAdapter(getSupportFragmentManager(),mTabs));
   mSlidingTabLayout.setViewPager(viewPager);
   viewPager.setCurrentItem(currentTab);
   settings=((OsmandApplication)getApplication()).getSettings();
-  findViewById(R.id.downloadButton).setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      downloadFilesCheckFreeVersion();
-    }
-  }
-);
-  findViewById(R.id.wikiButton).setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      downloadWikiFiles();
-    }
-  }
-);
-  findViewById(R.id.CancelAll).setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      getEntriesToDownload().clear();
-      updateDownloadButton();
-      for (      WeakReference<Fragment> ref : fragSet) {
-        Fragment f=ref.get();
-        if (f != null) {
-          if (f instanceof OsmAndListFragment) {
-            if (f.isAdded() && ((OsmAndListFragment)f).getListAdapter() instanceof ArrayAdapter) {
-              ((ArrayAdapter)((OsmAndListFragment)f).getListAdapter()).notifyDataSetChanged();
-            }
-          }
- else           if (f.isAdded() && f instanceof OsmandExpandableListFragment && ((OsmandExpandableListFragment)f).getAdapter() instanceof BaseExpandableListAdapter) {
-            ((BaseExpandableListAdapter)((OsmandExpandableListFragment)f).getAdapter()).notifyDataSetChanged();
-          }
-        }
-      }
-    }
-  }
-);
   downloadTypes=createDownloadTypes();
   final Intent intent=getIntent();
   if (intent != null && intent.getExtras() != null) {
@@ -72,4 +40,5 @@
     }
   }
   changeType(downloadTypes.get(0));
+  registerFreeVersionBanner(findViewById(R.id.mainLayout));
 }
