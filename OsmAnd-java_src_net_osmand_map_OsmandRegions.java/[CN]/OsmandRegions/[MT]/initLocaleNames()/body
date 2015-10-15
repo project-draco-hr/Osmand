@@ -19,6 +19,7 @@
       String locName=getLocaleName(object);
       if (!Algorithms.isEmpty(locName)) {
         fullNamesToLocaleNames.put(fullName,locName);
+        fullNamesNoParentToLocaleNames.put(fullName,locName);
       }
       MapIndex mi=object.getMapIndex();
       TIntObjectIterator<String> it=object.getObjectNames().iterator();
@@ -27,7 +28,9 @@
         it.advance();
         TagValuePair tp=mi.decodeType(it.key());
         if (tp.tag.equals("key_name") && Algorithms.isEmpty(locName)) {
-          fullNamesToLocaleNames.put(fullName,Algorithms.capitalizeFirstLetterAndLowercase(it.value().replace('_','-')));
+          String str=Algorithms.capitalizeFirstLetterAndLowercase(it.value().replace('_','-'));
+          fullNamesToLocaleNames.put(fullName,str);
+          fullNamesNoParentToLocaleNames.put(fullName,str);
         }
         if (tp.tag.startsWith("name") || tp.tag.equals("key_name")) {
           final String vl=it.value().toLowerCase();
@@ -66,7 +69,8 @@
       if (locPrefix == null || locName == null) {
         throw new IllegalStateException("There is no prefix registered for " + fullName + " ("+ parentFullName+ ") ");
       }
-      fullNamesToLocaleNames.put(fullName,locName);
+      fullNamesToLocaleNames.put(fullName,locPrefix + " " + locName);
+      fullNamesNoParentToLocaleNames.put(fullName,locName);
       String index=fullNamesToLowercaseIndex.get(fullName);
       String prindex=fullNamesToLowercaseIndex.get(parentFullName);
       fullNamesToLowercaseIndex.put(fullName,index + " " + prindex);

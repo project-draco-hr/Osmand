@@ -1,0 +1,47 @@
+{
+  String value=lc(parser.getAttributeValue("","value"));
+  String additional=parser.getAttributeValue("","additional");
+  if (value != null && value.length() == 0) {
+    value=null;
+  }
+  MapRulType rtype=MapRulType.createMainEntity(tag,value);
+  if ("true".equals(additional)) {
+    rtype=MapRulType.createAdditional(tag,value);
+  }
+ else   if ("text".equals(additional)) {
+    rtype=MapRulType.createText(tag);
+  }
+  rtype.map="true".equals(parser.getAttributeValue("","map")) || "yes".equals(parser.getAttributeValue("","map")) || parser.getAttributeValue("","map") == null;
+  rtype.poi="true".equals(parser.getAttributeValue("","poi")) || "yes".equals(parser.getAttributeValue("","poi")) || parser.getAttributeValue("","poi") == null;
+  String order=parser.getAttributeValue("","order");
+  if (!Algorithms.isEmpty(order)) {
+    rtype.order=Integer.parseInt(order);
+  }
+ else   if (parentCategory != null) {
+    rtype.order=parentCategory.order;
+  }
+  rtype.category=parentCategory == null ? null : parentCategory.category;
+  rtype.onlyPoint=Boolean.parseBoolean(parser.getAttributeValue("","point"));
+  rtype.relation=Boolean.parseBoolean(parser.getAttributeValue("","relation"));
+  if (rtype.isMain()) {
+    rtype.namePrefix=parser.getAttributeValue("","namePrefix");
+    if (rtype.namePrefix == null) {
+      rtype.namePrefix="";
+    }
+    String v=parser.getAttributeValue("","nameTags");
+    if (v != null) {
+      String[] names=v.split(",");
+      rtype.names=new MapRulType[names.length];
+      for (int i=0; i < names.length; i++) {
+        String tagName=names[i];
+        if (rtype.namePrefix.length() > 0) {
+          tagName=rtype.namePrefix + tagName;
+        }
+        MapRulType mt=MapRulType.createText(tagName);
+        mt=registerRuleType(mt);
+        rtype.names[i]=mt;
+      }
+    }
+  }
+  return rtype;
+}
