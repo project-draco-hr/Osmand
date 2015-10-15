@@ -1,22 +1,27 @@
 {
   checkRunning();
-  final BasicProgressAsyncTask<Void,Void,IndexFileList> inst=new BasicProgressAsyncTask<Void,Void,IndexFileList>(ctx){
+  final BasicProgressAsyncTask<Void,Void,DownloadIndexesResult> inst=new BasicProgressAsyncTask<Void,Void,DownloadIndexesResult>(ctx){
     @Override protected void onPreExecute(){
       currentRunningTask.add(this);
       super.onPreExecute();
       this.message=ctx.getString(R.string.downloading_list_indexes);
     }
-    @Override protected IndexFileList doInBackground(    Void... params){
+    @Override protected DownloadIndexesResult doInBackground(    Void... params){
+      DownloadIndexesResult result=new DownloadIndexesResult();
       IndexFileList indexFileList=DownloadOsmandIndexesHelper.getIndexesList(ctx);
+      result.indexFiles=indexFileList;
       if (indexFileList != null) {
         updateLoadedFiles();
         prepareFilesToUpdate();
-        prepareData(indexFileList.getIndexFiles());
+        prepareData(indexFileList.getIndexFiles(),result.resourcesByRegions,result.voiceRecItems,result.voiceTTSItems);
       }
-      return indexFileList;
+      return result;
     }
-    protected void onPostExecute(    IndexFileList result){
-      indexFiles=result;
+    protected void onPostExecute(    DownloadIndexesResult result){
+      indexFiles=result.indexFiles;
+      resourcesByRegions=result.resourcesByRegions;
+      voiceRecItems=result.voiceRecItems;
+      voiceTTSItems=result.voiceTTSItems;
       if (indexFiles != null && uiActivity != null) {
         boolean basemapExists=uiActivity.getMyApplication().getResourceManager().containsBasemap();
         IndexItem basemap=indexFiles.getBasemap();

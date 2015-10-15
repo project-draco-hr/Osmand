@@ -1,0 +1,31 @@
+{
+  List<IndexItem> resourcesInRepository;
+  if (resources != null) {
+    resourcesInRepository=resources;
+  }
+ else {
+    resourcesInRepository=DownloadActivity.downloadListIndexThread.getCachedIndexFiles();
+  }
+  if (resourcesInRepository == null) {
+    return false;
+  }
+  for (  WorldRegion region : app.getWorldRegion().getFlattenedSubregions()) {
+    processRegion(resourcesInRepository,resourcesByRegions,voiceRecItems,voiceTTSItems,false,region);
+  }
+  processRegion(resourcesInRepository,resourcesByRegions,voiceRecItems,voiceTTSItems,true,app.getWorldRegion());
+  final Collator collator=OsmAndCollator.primaryCollator();
+  final OsmandRegions osmandRegions=app.getRegions();
+  Collections.sort(voiceRecItems,new Comparator<IndexItem>(){
+    @Override public int compare(    IndexItem lhs,    IndexItem rhs){
+      return collator.compare(lhs.getVisibleName(app.getApplicationContext(),osmandRegions),rhs.getVisibleName(app.getApplicationContext(),osmandRegions));
+    }
+  }
+);
+  Collections.sort(voiceTTSItems,new Comparator<IndexItem>(){
+    @Override public int compare(    IndexItem lhs,    IndexItem rhs){
+      return collator.compare(lhs.getVisibleName(app.getApplicationContext(),osmandRegions),rhs.getVisibleName(app.getApplicationContext(),osmandRegions));
+    }
+  }
+);
+  return true;
+}
