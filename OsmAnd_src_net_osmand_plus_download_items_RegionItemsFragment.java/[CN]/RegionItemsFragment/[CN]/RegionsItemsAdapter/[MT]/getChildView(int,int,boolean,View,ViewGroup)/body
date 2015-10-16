@@ -2,7 +2,7 @@
   ItemViewHolder viewHolder;
   if (convertView == null) {
     convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.two_line_with_images_list_item,parent,false);
-    viewHolder=new ItemViewHolder(convertView,getMyApplication().getResourceManager().getDateFormat(),getMyActivity().getIndexActivatedFileNames(),getMyActivity().getIndexFileNames());
+    viewHolder=new ItemViewHolder(convertView,getMyActivity(),getMyApplication().getResourceManager().getDateFormat(),getMyActivity().getIndexActivatedFileNames(),getMyActivity().getIndexFileNames());
     convertView.setTag(viewHolder);
   }
  else {
@@ -12,18 +12,15 @@
   viewHolder.setNauticalPluginDisabled(nauticalPluginDisabled);
   viewHolder.setFreeVersion(freeVersion);
   final Object child=getChild(groupPosition,childPosition);
-  if (child instanceof ItemsListBuilder.ResourceItem && groupPosition == regionMapsGroupPos) {
-    ItemsListBuilder.ResourceItem item=(ItemsListBuilder.ResourceItem)child;
-    viewHolder.bindIndexItem(item.getIndexItem(),getDownloadActivity(),true,false);
-  }
- else   if (child instanceof WorldRegion) {
-    viewHolder.bindRegion((WorldRegion)child,getDownloadActivity());
+  if (child instanceof WorldRegion) {
+    viewHolder.bindRegion((WorldRegion)child);
   }
  else   if (child instanceof ItemsListBuilder.ResourceItem) {
-    viewHolder.bindIndexItem(((ItemsListBuilder.ResourceItem)child).getIndexItem(),getDownloadActivity(),false,true);
+    final int localProgress=groupPosition == groupInProgressPosition && childPosition == childInProgressPosition ? progress : -1;
+    viewHolder.bindIndexItem(((ItemsListBuilder.ResourceItem)child).getIndexItem(),false,true,localProgress);
   }
  else {
-    throw new IllegalArgumentException("Item must be of type WorldRegion or " + "IndexItem but is of type:" + child.getClass());
+    throw new IllegalArgumentException("Item must be of type WorldRegion or " + "ResourceItem but is of type:" + child.getClass());
   }
   return convertView;
 }
