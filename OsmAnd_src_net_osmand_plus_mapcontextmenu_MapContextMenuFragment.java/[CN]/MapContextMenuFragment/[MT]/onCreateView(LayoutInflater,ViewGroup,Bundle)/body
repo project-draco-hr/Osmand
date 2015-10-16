@@ -1,10 +1,19 @@
 {
   fabPaddingTopPx=dpToPx(FAB_PADDING_TOP);
   markerPaddingPx=dpToPx(MARKER_PADDING_DP);
+  markerPaddingXPx=dpToPx(MARKER_PADDING_X_DP);
   menu=getMapActivity().getContextMenu();
   if (savedInstanceState != null) {
     menu.restoreMenuState(savedInstanceState);
   }
+  map=getMapActivity().getMapView();
+  origMapCenterLat=map.getLatitude();
+  origMapCenterLon=map.getLongitude();
+  RotatedTileBox box=map.getCurrentRotatedTileBox();
+  double markerLat=menu.getLatLon().getLatitude();
+  double markerLon=menu.getLatLon().getLongitude();
+  origMarkerX=(int)box.getPixXFromLatLon(markerLat,markerLon);
+  origMarkerY=(int)box.getPixYFromLatLon(markerLat,markerLon);
   view=inflater.inflate(R.layout.map_context_menu_fragment,container,false);
   mainView=view.findViewById(R.id.context_menu_main);
   if (menu.isLandscapeLayout()) {
@@ -25,7 +34,7 @@
     private boolean hasMoved;
     @Override public boolean onTouch(    View v,    MotionEvent event){
       if (singleTapDetector.onTouchEvent(event)) {
-        showOnMap(menu.getLatLon());
+        showOnMap(menu.getLatLon(),true,false);
         if (hasMoved) {
           applyPosY(getViewY(),false);
         }
@@ -48,7 +57,7 @@ case MotionEvent.ACTION_MOVE:
 hasMoved=true;
 float y=event.getY();
 float newY=getViewY() + (y - dy);
-setViewY((int)newY);
+setViewY((int)newY,false);
 menuFullHeight=view.getHeight() - (int)newY + 10;
 if (!oldAndroid()) {
 ViewGroup.LayoutParams lp=mainView.getLayoutParams();
@@ -106,9 +115,10 @@ updateMainViewLayout(posY);
 }
 ).start();
 fabView.animate().y(getFabY(posY)).setDuration(200).setInterpolator(new DecelerateInterpolator()).start();
+adjustMapPosition(posY,true);
 }
  else {
-setViewY(posY);
+setViewY(posY,false);
 updateMainViewLayout(posY);
 }
 }

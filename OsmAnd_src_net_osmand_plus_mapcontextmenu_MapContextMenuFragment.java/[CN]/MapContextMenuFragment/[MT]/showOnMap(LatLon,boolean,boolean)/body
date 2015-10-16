@@ -5,9 +5,20 @@
   double flat=latLon.getLatitude();
   double flon=latLon.getLongitude();
   RotatedTileBox cp=ctx.getMapView().getCurrentRotatedTileBox().copy();
-  cp.setCenterLocation(0.5f,ctx.getMapView().getMapPosition() == OsmandSettings.BOTTOM_CONSTANT ? 0.15f : 0.5f);
+  if (ignoreCoef) {
+    cp.setCenterLocation(0.5f,0.5f);
+  }
+ else {
+    cp.setCenterLocation(0.5f,ctx.getMapView().getMapPosition() == OsmandSettings.BOTTOM_CONSTANT ? 0.15f : 0.5f);
+  }
   cp.setLatLonCenter(flat,flon);
   flat=cp.getLatFromPixel(cp.getPixWidth() / 2,cp.getPixHeight() / 2);
   flon=cp.getLonFromPixel(cp.getPixWidth() / 2,cp.getPixHeight() / 2);
+  if (updateCoords) {
+    origMapCenterLat=flat;
+    origMapCenterLon=flon;
+    origMarkerX=cp.getCenterPixelX();
+    origMarkerY=cp.getCenterPixelY();
+  }
   thread.startMoving(flat,flon,fZoom,true);
 }
