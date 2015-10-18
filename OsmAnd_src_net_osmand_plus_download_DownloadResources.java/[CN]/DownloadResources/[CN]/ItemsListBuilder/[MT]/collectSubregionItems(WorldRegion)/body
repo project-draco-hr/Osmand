@@ -1,0 +1,50 @@
+{
+  Map<String,IndexItem> regionResources=downloadIndexes.resourcesByRegions.get(region);
+  if (regionResources == null) {
+    return;
+  }
+  List<ResourceItem> regionMapArray=new LinkedList<>();
+  List<Object> allResourcesArray=new LinkedList<>();
+  Context context=app.getApplicationContext();
+  OsmandRegions osmandRegions=app.getRegions();
+  for (  IndexItem indexItem : regionResources.values()) {
+    String name=indexItem.getVisibleName(context,osmandRegions,false);
+    if (Algorithms.isEmpty(name)) {
+      continue;
+    }
+    ResourceItem resItem=new ResourceItem(indexItem,region);
+    resItem.setResourceId(indexItem.getSimplifiedFileName());
+    resItem.setTitle(name);
+    if (region != this.region && srtmDisabled) {
+      if (indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE) {
+        if (hasSrtm) {
+          continue;
+        }
+ else {
+          hasSrtm=true;
+        }
+      }
+ else       if (indexItem.getType() == DownloadActivityType.HILLSHADE_FILE) {
+        if (hasHillshade) {
+          continue;
+        }
+ else {
+          hasHillshade=true;
+        }
+      }
+    }
+    if (region == this.region) {
+      regionMapArray.add(resItem);
+    }
+ else {
+      allResourcesArray.add(resItem);
+    }
+  }
+  regionMapItems.addAll(regionMapArray);
+  if (allResourcesArray.size() > 1) {
+    allSubregionItems.add(region);
+  }
+ else {
+    allResourceItems.addAll(allResourcesArray);
+  }
+}
