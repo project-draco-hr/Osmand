@@ -1,0 +1,27 @@
+{
+  downloadFileHelper.setInterruptDownloading(false);
+  DownloadEntry de=item.createDownloadEntry(app);
+  boolean res=false;
+  if (de == null) {
+    return res;
+  }
+  if (de.isAsset) {
+    try {
+      if (ctx != null) {
+        ResourceManager.copyAssets(ctx.getAssets(),de.assetName,de.targetFile);
+        boolean changedDate=de.targetFile.setLastModified(de.dateModified);
+        if (!changedDate) {
+          LOG.error("Set last timestamp is not supported");
+        }
+        res=true;
+      }
+    }
+ catch (    IOException e) {
+      LOG.error("Copy exception",e);
+    }
+  }
+ else {
+    res=downloadFileHelper.downloadFile(de,this,filesToReindex,this,forceWifi);
+  }
+  return res;
+}

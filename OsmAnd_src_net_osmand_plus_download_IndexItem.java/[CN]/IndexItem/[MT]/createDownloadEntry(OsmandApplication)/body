@@ -1,0 +1,33 @@
+{
+  String fileName=this.fileName;
+  File parent=type.getDownloadFolder(ctx,this);
+  boolean preventMediaIndexing=type.preventMediaIndexing(ctx,this);
+  if (parent != null) {
+    parent.mkdirs();
+    if (preventMediaIndexing) {
+      try {
+        new File(parent,".nomedia").createNewFile();
+      }
+ catch (      IOException e) {
+        log.error("IOException",e);
+      }
+    }
+  }
+  DownloadEntry entry;
+  if (parent == null || !parent.exists()) {
+    ctx.showToastMessage(R.string.sd_dir_not_accessible);
+    entry=null;
+  }
+ else {
+    entry=new DownloadEntry();
+    entry.type=type;
+    entry.baseName=getBasename();
+    entry.urlToDownload=entry.type.getBaseUrl(ctx,fileName) + entry.type.getUrlSuffix(ctx);
+    entry.zipStream=type.isZipStream(ctx,this);
+    entry.unzipFolder=type.isZipFolder(ctx,this);
+    entry.dateModified=timestamp;
+    entry.sizeMB=contentSize / (1024f * 1024f);
+    entry.targetFile=getTargetFile(ctx);
+  }
+  return entry;
+}
