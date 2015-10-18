@@ -1,22 +1,63 @@
 {
-  for (  WorldRegion region : app.getWorldRegion().getFlattenedSubregions()) {
-    processRegion(resourcesInRepository,di,false,region);
+  this.rawResources=resources;
+  DownloadResourceGroup voiceRec=new DownloadResourceGroup(this,DownloadResourceGroupType.VOICE_REC,"voice_rec",true);
+  DownloadResourceGroup voiceTTS=new DownloadResourceGroup(this,DownloadResourceGroupType.VOICE_TTS,"voice_tts",true);
+  DownloadResourceGroup worldMaps=new DownloadResourceGroup(this,DownloadResourceGroupType.WORLD_MAPS,"world",true);
+  Map<WorldRegion,List<IndexItem>> groupByRegion=new LinkedHashMap<WorldRegion,List<IndexItem>>();
+  Map<String,WorldRegion> downloadIdForRegion=new LinkedHashMap<String,WorldRegion>();
+  for (  WorldRegion wg : region.getFlattenedSubregions()) {
+    downloadIdForRegion.put(wg.getDownloadsId(),wg);
   }
-  processRegion(resourcesInRepository,di,true,app.getWorldRegion());
-  final net.osmand.Collator collator=OsmAndCollator.primaryCollator();
-  final OsmandRegions osmandRegions=app.getRegions();
-  Collections.sort(di.voiceRecItems,new Comparator<IndexItem>(){
-    @Override public int compare(    IndexItem lhs,    IndexItem rhs){
-      return collator.compare(lhs.getVisibleName(app.getApplicationContext(),osmandRegions),rhs.getVisibleName(app.getApplicationContext(),osmandRegions));
+  for (  IndexItem ii : resources) {
+    if (ii.getType() == DownloadActivityType.VOICE_FILE) {
+      if (ii.getFileName().endsWith(IndexConstants.TTSVOICE_INDEX_EXT_ZIP)) {
+        voiceTTS.addItem(ii);
+      }
+ else {
+        voiceRec.addItem(ii);
+      }
+    }
+    String basename=ii.getBasename().toLowerCase();
+    WorldRegion wg=downloadIdForRegion.get(basename);
+    if (wg != null) {
+      if (!groupByRegion.containsKey(wg)) {
+        groupByRegion.put(wg,new ArrayList<IndexItem>());
+      }
+      groupByRegion.get(wg).add(ii);
+    }
+ else {
+      worldMaps.addItem(ii);
     }
   }
-);
-  Collections.sort(di.voiceTTSItems,new Comparator<IndexItem>(){
-    @Override public int compare(    IndexItem lhs,    IndexItem rhs){
-      return collator.compare(lhs.getVisibleName(app.getApplicationContext(),osmandRegions),rhs.getVisibleName(app.getApplicationContext(),osmandRegions));
+  LinkedList<WorldRegion> queue=new LinkedList<WorldRegion>();
+  LinkedList<DownloadResourceGroup> parent=new LinkedList<DownloadResourceGroup>();
+  for (  WorldRegion rg : region.getSubregions()) {
+    queue.add(rg);
+    parent.add(this);
+  }
+  while (!queue.isEmpty()) {
+    WorldRegion reg=queue.pollFirst();
+    DownloadResourceGroup parentGroup=parent.pollFirst();
+    List<WorldRegion> subregions=reg.getSubregions();
+    DownloadResourceGroup mainGrp=new DownloadResourceGroup(parentGroup,DownloadResourceGroupType.REGION,reg.getRegionId(),false);
+    parentGroup.addGroup(mainGrp);
+    List<IndexItem> list=groupByRegion.get(reg);
+    if (list != null) {
+      DownloadResourceGroup flatFiles=new DownloadResourceGroup(parentGroup,DownloadResourceGroupType.REGION_MAPS,REGION_MAPS_ID,true);
+      for (      IndexItem ii : list) {
+        flatFiles.addItem(ii);
+      }
+      mainGrp.addGroup(flatFiles);
+    }
+    for (    WorldRegion rg : subregions) {
+      queue.add(rg);
+      parent.add(mainGrp);
     }
   }
-);
+  addGroup(worldMaps);
+  addGroup(voiceTTS);
+  addGroup(voiceRec);
+  trimEmptyGroups();
   initAlreadyLoadedFiles();
   return true;
 }
