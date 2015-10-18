@@ -3,10 +3,8 @@
   rightImageButton.setVisibility(View.VISIBLE);
   int localProgress=progress;
   boolean isIndeterminate=true;
-  View.OnClickListener onClickListener=null;
   if (progress != -1) {
     isIndeterminate=false;
-    onClickListener=activeDownloadOnClickListener;
     double downloaded=downloadEntry.sizeMB * progress / 100;
     descrTextView.setText(context.getString(R.string.value_downloaded_from_max,downloaded,downloadEntry.sizeMB));
   }
@@ -14,18 +12,18 @@
     isIndeterminate=false;
     localProgress=progressBar.getMax();
     descrTextView.setText(context.getString(R.string.file_size_in_mb,downloadEntry.sizeMB));
+    rightImageButton.setVisibility(View.GONE);
   }
  else {
-    onClickListener=new View.OnClickListener(){
-      @Override public void onClick(      View v){
-        context.getEntriesToDownload().remove(downloadEntry.item);
-        adapter.updateData();
-      }
-    }
-;
     descrTextView.setText(context.getString(R.string.file_size_in_mb,downloadEntry.sizeMB));
   }
-  rightImageButton.setOnClickListener(onClickListener);
+  rightImageButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      context.cancelDownload(downloadEntry.item);
+      adapter.updateData();
+    }
+  }
+);
   progressBar.setIndeterminate(isIndeterminate);
   progressBar.setProgress(localProgress);
 }
