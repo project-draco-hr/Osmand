@@ -1,25 +1,15 @@
 {
-  if (groupPosition == worldRegionsIndex) {
-    WorldRegion region=(WorldRegion)listAdapter.getChild(groupPosition,childPosition);
-    final RegionDialogFragment regionDialogFragment=RegionDialogFragment.createInstance(region.getRegionId());
+  Object child=listAdapter.getChild(groupPosition,childPosition);
+  if (child instanceof DownloadResourceGroup) {
+    final DownloadResourceGroupFragment regionDialogFragment=DownloadResourceGroupFragment.createInstance(((DownloadResourceGroup)child).getUniqueId());
     regionDialogFragment.setOnDismissListener(getDownloadActivity());
     getDownloadActivity().showDialog(getActivity(),regionDialogFragment);
     return true;
   }
- else   if (groupPosition == voicePromptsIndex) {
-    if (childPosition == voicePromptsItemsRecordedSubIndex) {
-      getDownloadActivity().showDialog(getActivity(),VoiceDialogFragment.createInstance(VoicePromptsType.RECORDED));
-    }
- else {
-      getDownloadActivity().showDialog(getActivity(),VoiceDialogFragment.createInstance(VoicePromptsType.TTS));
-    }
-  }
- else   if (groupPosition == worldMapsIndex) {
-    if (((ItemViewHolder)v.getTag()).isItemAvailable()) {
-      IndexItem indexItem=((ItemsListBuilder.ResourceItem)listAdapter.getChild(groupPosition,childPosition)).getIndexItem();
-      ((BaseDownloadActivity)getActivity()).startDownload(indexItem);
-      return true;
-    }
+ else   if (child instanceof IndexItem) {
+    IndexItem indexItem=(IndexItem)child;
+    ((BaseDownloadActivity)getActivity()).startDownload(indexItem);
+    return true;
   }
   return false;
 }

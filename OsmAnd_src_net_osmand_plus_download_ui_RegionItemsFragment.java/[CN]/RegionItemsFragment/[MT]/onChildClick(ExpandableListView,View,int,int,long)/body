@@ -1,23 +1,19 @@
 {
-  Object obj=listAdapter.getChild(groupPosition,childPosition);
-  if (obj instanceof WorldRegion) {
-    WorldRegion region=(WorldRegion)obj;
-    ((RegionDialogFragment)getParentFragment()).onRegionSelected(region.getRegionId());
+  Object child=listAdapter.getChild(groupPosition,childPosition);
+  if (child instanceof DownloadResourceGroup) {
+    String uniqueId=((DownloadResourceGroup)child).getUniqueId();
+    final DownloadResourceGroupFragment regionDialogFragment=DownloadResourceGroupFragment.createInstance();
+    regionDialogFragment.setOnDismissListener(getDownloadActivity());
+    getDownloadActivity().showDialog(getActivity(),regionDialogFragment);
+    ((DownloadResourceGroupFragment)getParentFragment()).onRegionSelected(uniqueId);
     return true;
   }
- else   if (obj instanceof ItemsListBuilder.ResourceItem) {
-    if (((ItemViewHolder)v.getTag()).isItemAvailable()) {
-      IndexItem indexItem=((ItemsListBuilder.ResourceItem)obj).getIndexItem();
-      if (indexItem.getType() == DownloadActivityType.ROADS_FILE) {
-        IndexItem regularMap=((ItemsListBuilder.ResourceItem)listAdapter.getChild(0,0)).getIndexItem();
-        if (regularMap.getType() == DownloadActivityType.NORMAL_FILE && regularMap.isAlreadyDownloaded(getMyActivity().getIndexFileNames())) {
-          ConfirmDownloadUnneededMapDialogFragment.createInstance(indexItem).show(getChildFragmentManager(),"dialog");
-          return true;
-        }
-      }
-      getMyActivity().startDownload(indexItem);
-      return true;
+ else   if (child instanceof IndexItem) {
+    IndexItem indexItem=(IndexItem)child;
+    if (indexItem.getType() == DownloadActivityType.ROADS_FILE) {
     }
+    ((BaseDownloadActivity)getActivity()).startDownload(indexItem);
+    return true;
   }
   return false;
 }

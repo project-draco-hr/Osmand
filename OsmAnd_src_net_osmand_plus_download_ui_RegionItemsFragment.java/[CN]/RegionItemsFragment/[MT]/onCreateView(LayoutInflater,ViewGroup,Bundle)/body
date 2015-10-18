@@ -8,16 +8,15 @@
   }
   if (regionId == null)   regionId="";
   ExpandableListView listView=(ExpandableListView)view.findViewById(android.R.id.list);
-  listAdapter=new RegionsItemsAdapter();
+  activity=(DownloadActivity)getActivity();
+  DownloadResources indexes=activity.getDownloadThread().getIndexes();
+  group=indexes.getGroupById(regionId);
+  listAdapter=new WorldItemsFragment.DownloadResourceGroupAdapter(activity);
   listView.setAdapter(listAdapter);
   setListView(listView);
-  if (regionId.length() > 0) {
-    ItemsListBuilder builder=getDownloadActivity().getItemsBuilder(regionId,false);
-    if (builder != null) {
-      fillRegionItemsAdapter(builder);
-      listAdapter.notifyDataSetChanged();
-      expandAllGroups();
-    }
+  if (group != null) {
+    listAdapter.update(group);
   }
+  expandAllGroups();
   return view;
 }
