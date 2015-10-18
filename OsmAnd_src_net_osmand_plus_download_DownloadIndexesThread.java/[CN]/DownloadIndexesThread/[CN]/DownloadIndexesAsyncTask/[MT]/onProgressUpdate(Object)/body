@@ -1,18 +1,16 @@
 {
   for (  Object o : values) {
     if (o instanceof IndexItem) {
-      if (uiActivity != null) {
-        uiActivity.updateFragments();
-        IndexItem item=(IndexItem)o;
-        String name=item.getBasename();
-        long count=dbHelper.getCount(name,DatabaseHelper.DOWNLOAD_ENTRY) + 1;
-        DatabaseHelper.HistoryDownloadEntry entry=new DatabaseHelper.HistoryDownloadEntry(name,count);
-        if (count == 1) {
-          dbHelper.add(entry,DatabaseHelper.DOWNLOAD_ENTRY);
-        }
+      updateProgressUI(false);
+      IndexItem item=(IndexItem)o;
+      String name=item.getBasename();
+      long count=dbHelper.getCount(name,DatabaseHelper.DOWNLOAD_ENTRY) + 1;
+      DatabaseHelper.HistoryDownloadEntry entry=new DatabaseHelper.HistoryDownloadEntry(name,count);
+      if (count == 1) {
+        dbHelper.add(entry,DatabaseHelper.DOWNLOAD_ENTRY);
+      }
  else {
-          dbHelper.update(entry,DatabaseHelper.DOWNLOAD_ENTRY);
-        }
+        dbHelper.update(entry,DatabaseHelper.DOWNLOAD_ENTRY);
       }
     }
  else     if (o instanceof String) {
@@ -22,11 +20,7 @@
           AccessibleToast.makeText(ctx,message,Toast.LENGTH_LONG).show();
         }
       }
- else {
-        if (uiActivity != null) {
-          uiActivity.updateProgress(true);
-        }
-      }
+      updateProgressUI(false);
     }
   }
   super.onProgressUpdate(values);

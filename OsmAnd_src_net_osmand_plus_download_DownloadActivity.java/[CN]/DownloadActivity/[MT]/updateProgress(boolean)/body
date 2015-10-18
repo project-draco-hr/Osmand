@@ -4,7 +4,20 @@
     final int countedDownloads=downloadListIndexThread.getCountedDownloads();
     visibleBanner.updateProgress(countedDownloads,basicProgressAsyncTask);
   }
-  if (!updateOnlyProgress) {
-    updateFragments();
+  if (activeDownloads != null) {
+    if (updateOnlyProgress) {
+      activeDownloads.notifyDataSetChanged();
+    }
+ else {
+      activeDownloads.notifyDataSetInvalidated();
+    }
+  }
+  for (  WeakReference<Fragment> ref : fragSet) {
+    Fragment f=ref.get();
+    notifyUpdateDataSetChanged(f);
+    if (f instanceof RegionItemsFragment) {
+      Fragment innerFragment=((RegionItemsFragment)f).getChildFragmentManager().findFragmentById(R.id.fragmentContainer);
+      notifyUpdateDataSetChanged(innerFragment);
+    }
   }
 }
