@@ -1,0 +1,27 @@
+{
+  View view=getView();
+  if (view == null) {
+    return;
+  }
+  DownloadResources indexes=getMyActivity().getDownloadThread().getIndexes();
+  final List<IndexItem> indexItems=indexes.getItemsToUpdate();
+  final TextView updateAllButton=(TextView)view.findViewById(R.id.updateAllButton);
+  if (indexItems.size() == 0 || indexItems.get(0).getType() == null) {
+    updateAllButton.setVisibility(View.GONE);
+  }
+ else {
+    updateAllButton.setVisibility(View.VISIBLE);
+    long downloadsSize=0;
+    for (    IndexItem indexItem : indexItems) {
+      downloadsSize+=indexItem.getSize();
+    }
+    String updateAllText=getActivity().getString(R.string.update_all,downloadsSize >> 20);
+    updateAllButton.setText(updateAllText);
+    updateAllButton.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        getMyActivity().startDownload(indexItems.toArray(new IndexItem[indexItems.size()]));
+      }
+    }
+);
+  }
+}

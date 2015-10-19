@@ -1,8 +1,9 @@
 {
   getMyApplication().applyTheme(this);
   super.onCreate(savedInstanceState);
-  if (downloadListIndexThread.getCachedIndexFiles() == null || !downloadListIndexThread.isDownloadedFromInternet()) {
-    downloadListIndexThread.runReloadIndexFiles();
+  DownloadResources indexes=getDownloadThread().getIndexes();
+  if (!indexes.isDownloadedFromInternet) {
+    getDownloadThread().runReloadIndexFiles();
   }
   setContentView(R.layout.download);
   int currentTab=0;
@@ -15,9 +16,10 @@
       currentTab=2;
     }
   }
+  visibleBanner=new BannerAndDownloadFreeVersion(findViewById(R.id.mainLayout),this);
   ViewPager viewPager=(ViewPager)findViewById(R.id.pager);
   PagerSlidingTabStrip mSlidingTabLayout=(PagerSlidingTabStrip)findViewById(R.id.sliding_tabs);
-  mTabs.add(new TabActivity.TabItem(R.string.download_tab_downloads,getString(R.string.download_tab_downloads),WorldItemsFragment.class));
+  mTabs.add(new TabActivity.TabItem(R.string.download_tab_downloads,getString(R.string.download_tab_downloads),DownloadResourceGroupFragment.class));
   mTabs.add(new TabActivity.TabItem(R.string.download_tab_local,getString(R.string.download_tab_local),LocalIndexesFragment.class));
   mTabs.add(new TabActivity.TabItem(R.string.download_tab_updates,getString(R.string.download_tab_updates),UpdatesIndexFragment.class));
   viewPager.setAdapter(new TabActivity.OsmandFragmentPagerAdapter(getSupportFragmentManager(),mTabs));
@@ -28,5 +30,4 @@
     final String filter=intent.getExtras().getString(FILTER_KEY);
     final String filterCat=intent.getExtras().getString(FILTER_CAT);
   }
-  registerFreeVersionBanner(findViewById(R.id.mainLayout));
 }
