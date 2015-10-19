@@ -1,0 +1,38 @@
+{
+  view=inflater.inflate(R.layout.maps_in_category_fragment,container,false);
+  if (savedInstanceState != null) {
+    groupId=savedInstanceState.getString(REGION_ID_DLG_KEY);
+  }
+  if (groupId == null && getArguments() != null) {
+    groupId=getArguments().getString(REGION_ID_DLG_KEY);
+  }
+  if (groupId == null) {
+    groupId="";
+  }
+  activity=(DownloadActivity)getActivity();
+  toolbar=(Toolbar)view.findViewById(R.id.toolbar);
+  toolbar.setNavigationIcon(getMyApplication().getIconsCache().getIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha));
+  toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismiss();
+    }
+  }
+);
+  if (!openAsDialog()) {
+    toolbar.setVisibility(View.GONE);
+  }
+  setHasOptionsMenu(true);
+  if (openAsDialog()) {
+    banner=new BannerAndDownloadFreeVersion(view,(DownloadActivity)getActivity());
+  }
+ else {
+    banner=null;
+    view.findViewById(R.id.freeVersionBanner).setVisibility(View.GONE);
+  }
+  listView=(ExpandableListView)view.findViewById(android.R.id.list);
+  listView.setOnChildClickListener(this);
+  listAdapter=new DownloadResourceGroupAdapter(activity);
+  listView.setAdapter(listAdapter);
+  reloadData();
+  return view;
+}

@@ -1,0 +1,75 @@
+{
+  this.rawResources=resources;
+  DownloadResourceGroup voiceGroup=new DownloadResourceGroup(this,DownloadResourceGroupType.VOICE_GROUP);
+  DownloadResourceGroup voiceScreenRec=new DownloadResourceGroup(voiceGroup,DownloadResourceGroupType.VOICE_REC);
+  DownloadResourceGroup voiceScreenTTS=new DownloadResourceGroup(voiceGroup,DownloadResourceGroupType.VOICE_TTS);
+  DownloadResourceGroup voiceRec=new DownloadResourceGroup(voiceGroup,DownloadResourceGroupType.VOICE_HEADER_REC);
+  DownloadResourceGroup voiceTTS=new DownloadResourceGroup(voiceGroup,DownloadResourceGroupType.VOICE_HEADER_TTS);
+  voiceScreenTTS.addGroup(voiceTTS);
+  voiceScreenRec.addGroup(voiceRec);
+  voiceGroup.addGroup(voiceScreenRec);
+  voiceGroup.addGroup(voiceScreenTTS);
+  DownloadResourceGroup worldMaps=new DownloadResourceGroup(this,DownloadResourceGroupType.WORLD_MAPS);
+  Map<WorldRegion,List<IndexItem>> groupByRegion=new LinkedHashMap<WorldRegion,List<IndexItem>>();
+  Map<String,WorldRegion> downloadIdForRegion=new LinkedHashMap<String,WorldRegion>();
+  for (  WorldRegion wg : region.getFlattenedSubregions()) {
+    downloadIdForRegion.put(wg.getDownloadsId(),wg);
+  }
+  for (  IndexItem ii : resources) {
+    if (ii.getType() == DownloadActivityType.VOICE_FILE) {
+      if (ii.getFileName().endsWith(IndexConstants.TTSVOICE_INDEX_EXT_ZIP)) {
+        voiceTTS.addItem(ii);
+      }
+ else {
+        voiceRec.addItem(ii);
+      }
+      continue;
+    }
+    String basename=ii.getBasename().toLowerCase();
+    WorldRegion wg=downloadIdForRegion.get(basename);
+    if (wg != null) {
+      if (!groupByRegion.containsKey(wg)) {
+        groupByRegion.put(wg,new ArrayList<IndexItem>());
+      }
+      groupByRegion.get(wg).add(ii);
+    }
+ else {
+      worldMaps.addItem(ii);
+    }
+  }
+  LinkedList<WorldRegion> queue=new LinkedList<WorldRegion>();
+  LinkedList<DownloadResourceGroup> parent=new LinkedList<DownloadResourceGroup>();
+  DownloadResourceGroup worldSubregions=new DownloadResourceGroup(this,DownloadResourceGroupType.SUBREGIONS);
+  addGroup(worldSubregions);
+  for (  WorldRegion rg : region.getSubregions()) {
+    queue.add(rg);
+    parent.add(worldSubregions);
+  }
+  while (!queue.isEmpty()) {
+    WorldRegion reg=queue.pollFirst();
+    DownloadResourceGroup parentGroup=parent.pollFirst();
+    List<WorldRegion> subregions=reg.getSubregions();
+    DownloadResourceGroup mainGrp=new DownloadResourceGroup(parentGroup,DownloadResourceGroupType.REGION,reg.getRegionId());
+    mainGrp.region=reg;
+    parentGroup.addGroup(mainGrp);
+    DownloadResourceGroup subRegions=new DownloadResourceGroup(mainGrp,DownloadResourceGroupType.SUBREGIONS);
+    mainGrp.addGroup(subRegions);
+    List<IndexItem> list=groupByRegion.get(reg);
+    if (list != null) {
+      DownloadResourceGroup flatFiles=new DownloadResourceGroup(mainGrp,DownloadResourceGroupType.REGION_MAPS);
+      for (      IndexItem ii : list) {
+        flatFiles.addItem(ii);
+      }
+      mainGrp.addGroup(flatFiles);
+    }
+    for (    WorldRegion rg : subregions) {
+      queue.add(rg);
+      parent.add(subRegions);
+    }
+  }
+  addGroup(worldMaps);
+  addGroup(voiceGroup);
+  trimEmptyGroups();
+  initAlreadyLoadedFiles();
+  return true;
+}
