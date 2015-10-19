@@ -8,9 +8,25 @@
   }
  else   if (child instanceof IndexItem) {
     IndexItem indexItem=(IndexItem)child;
-    if (indexItem.getType() == DownloadActivityType.ROADS_FILE) {
+    DownloadResourceGroup groupObj=listAdapter.getGroupObj(groupPosition);
+    boolean handled=false;
+    if (indexItem.getType() == DownloadActivityType.ROADS_FILE && groupObj != null && !activity.getDownloadThread().isDownloading(indexItem)) {
+      for (      IndexItem ii : groupObj.getIndividualResources()) {
+        if (ii.getType() == DownloadActivityType.NORMAL_FILE) {
+          if (ii.isDownloaded()) {
+            handled=true;
+            ConfirmDownloadUnneededMapDialogFragment.createInstance(indexItem).show(getChildFragmentManager(),"dialog");
+          }
+          break;
+        }
+      }
     }
     ((DownloadActivity)getActivity()).startDownload(indexItem);
+    if (!handled) {
+      ItemViewHolder vh=(ItemViewHolder)v.getTag();
+      OnClickListener ls=vh.getRightButtonAction(indexItem,vh.getClickAction(indexItem));
+      ls.onClick(v);
+    }
     return true;
   }
   return false;
