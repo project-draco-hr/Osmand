@@ -1,19 +1,11 @@
 {
-  updateBannerInProgress();
-  if (activeDownloads != null) {
-    activeDownloads.notifyDataSetInvalidated();
-  }
+  visibleBanner.updateBannerInProgress();
   for (  WeakReference<Fragment> ref : fragSet) {
     Fragment f=ref.get();
-    notifyUpdateDataSetChanged(f);
-    if (f instanceof UpdatesIndexFragment) {
-      if (f.isAdded()) {
-        ((UpdatesIndexFragment)f).updateItemsList();
+    if (f.isAdded()) {
+      if (f instanceof DownloadEvents) {
+        ((DownloadEvents)f).downloadHasFinished();
       }
-    }
- else     if (f instanceof RegionItemsFragment) {
-      Fragment innerFragment=((RegionItemsFragment)f).getChildFragmentManager().findFragmentById(R.id.fragmentContainer);
-      notifyUpdateDataSetChanged(innerFragment);
     }
   }
 }

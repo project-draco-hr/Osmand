@@ -1,14 +1,11 @@
 {
-  updateBannerInProgress();
-  if (activeDownloads != null) {
-    activeDownloads.notifyDataSetChanged();
-  }
+  visibleBanner.updateBannerInProgress();
   for (  WeakReference<Fragment> ref : fragSet) {
     Fragment f=ref.get();
-    notifyUpdateDataSetChanged(f);
-    if (f instanceof RegionItemsFragment) {
-      Fragment innerFragment=((RegionItemsFragment)f).getChildFragmentManager().findFragmentById(R.id.fragmentContainer);
-      notifyUpdateDataSetChanged(innerFragment);
+    if (f.isAdded()) {
+      if (f instanceof DownloadEvents) {
+        ((DownloadEvents)f).downloadInProgress();
+      }
     }
   }
 }
