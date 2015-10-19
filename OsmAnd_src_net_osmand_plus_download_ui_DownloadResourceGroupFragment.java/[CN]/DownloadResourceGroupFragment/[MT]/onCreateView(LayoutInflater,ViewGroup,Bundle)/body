@@ -1,13 +1,16 @@
 {
   view=inflater.inflate(R.layout.maps_in_category_fragment,container,false);
   if (savedInstanceState != null) {
-    regionId=savedInstanceState.getString(REGION_ID_DLG_KEY);
+    groupId=savedInstanceState.getString(REGION_ID_DLG_KEY);
   }
-  if (regionId == null) {
-    regionId=getArguments().getString(REGION_ID_DLG_KEY);
+  if (groupId == null) {
+    groupId=getArguments().getString(REGION_ID_DLG_KEY);
   }
-  if (regionId == null)   regionId="";
-  Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
+  if (groupId == null) {
+    groupId="";
+  }
+  activity=(DownloadActivity)getActivity();
+  toolbar=(Toolbar)view.findViewById(R.id.toolbar);
   toolbar.setNavigationIcon(getMyApplication().getIconsCache().getIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha));
   toolbar.setNavigationOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
@@ -15,16 +18,12 @@
     }
   }
 );
-  if (regionId.length() > 0) {
-    Fragment fragment=getChildFragmentManager().findFragmentById(R.id.fragmentContainer);
-    if (fragment == null) {
-      getChildFragmentManager().beginTransaction().add(R.id.fragmentContainer,DownloadResourceGroupListFragment.createInstance(regionId)).commit();
-    }
-    WorldRegion region=getMyApplication().getWorldRegion().getRegionById(regionId);
-    if (region != null) {
-      toolbar.setTitle(region.getName());
-    }
-  }
+  setHasOptionsMenu(true);
   banner=new BannerAndDownloadFreeVersion(view,(DownloadActivity)getActivity());
+  listView=(ExpandableListView)view.findViewById(android.R.id.list);
+  listView.setOnChildClickListener(this);
+  listAdapter=new WorldItemsFragment.DownloadResourceGroupAdapter(activity);
+  listView.setAdapter(listAdapter);
+  reloadData();
   return view;
 }
