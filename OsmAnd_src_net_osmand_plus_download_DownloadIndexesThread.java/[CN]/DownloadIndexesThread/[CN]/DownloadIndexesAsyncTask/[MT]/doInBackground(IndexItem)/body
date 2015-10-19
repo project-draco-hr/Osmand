@@ -2,69 +2,43 @@
   try {
     List<File> filesToReindex=new ArrayList<File>();
     boolean forceWifi=downloadFileHelper.isWifiConnected();
-    currentDownloads=new HashSet<DownloadEntry>();
-    String breakDownloadMessage=null;
-    downloadCycle:     while (!entriesToDownload.isEmpty()) {
-      Iterator<Entry<IndexItem,List<DownloadEntry>>> it=entriesToDownload.entrySet().iterator();
-      IndexItem file=null;
-      List<DownloadEntry> list=null;
-      while (it.hasNext()) {
-        Entry<IndexItem,List<DownloadEntry>> n=it.next();
-        if (!currentDownloads.containsAll(n.getValue())) {
-          file=n.getKey();
-          list=n.getValue();
-          break;
+    Set<IndexItem> currentDownloads=new HashSet<IndexItem>();
+    try {
+      downloadCycle:       while (!indexItemDownloading.isEmpty()) {
+        IndexItem item=indexItemDownloading.poll();
+        currentDownloadingItem=item;
+        currentDownloadingItemProgress=0;
+        if (currentDownloads.contains(item)) {
+          continue;
         }
-      }
-      if (file == null) {
-        break downloadCycle;
-      }
-      if (list != null) {
+        currentDownloads.add(item);
         boolean success=false;
-        for (        DownloadEntry entry : list) {
-          if (currentDownloads.contains(entry)) {
-            continue;
-          }
-          currentDownloads.add(entry);
-          double asz=getAvailableSpace();
-          if (downloadFileHelper.isInterruptDownloading()) {
-            break downloadCycle;
-          }
-          if (asz != -1 && entry.sizeMB > asz) {
-            breakDownloadMessage=app.getString(R.string.download_files_not_enough_space,entry.sizeMB,asz);
-            break downloadCycle;
-          }
-          if (exceedsFreelimit(entry)) {
-            breakDownloadMessage=app.getString(R.string.free_version_message,DownloadActivity.MAXIMUM_AVAILABLE_FREE_DOWNLOADS + "");
-            break downloadCycle;
-          }
-          setTag(entry);
-          boolean result=downloadFile(entry,filesToReindex,forceWifi);
-          success=result || success;
-          if (result) {
-            if (DownloadActivityType.isCountedInDownloads(entry.item)) {
-              downloads.set(downloads.get() + 1);
-            }
-            if (entry.existingBackupFile != null) {
-              Algorithms.removeAllFiles(entry.existingBackupFile);
-            }
-            publishProgress(entry);
-          }
+        if (!validateEnoughSpace(item)) {
+          break downloadCycle;
         }
-        if (success) {
-          entriesToDownload.remove(file);
+        if (!validateNotExceedsFreeLimit(item)) {
+          break downloadCycle;
+        }
+        setTag(item);
+        boolean result=downloadFile(item,filesToReindex,forceWifi);
+        success=result || success;
+        if (result) {
+          if (DownloadActivityType.isCountedInDownloads(item)) {
+            downloads.set(downloads.get() + 1);
+          }
+          File bf=item.getBackupFile(app);
+          if (bf.exists()) {
+            Algorithms.removeAllFiles(bf);
+          }
+          publishProgress(item);
         }
       }
+    }
+  finally {
+      currentDownloadingItem=null;
+      currentDownloadingItemProgress=0;
     }
     String warn=reindexFiles(filesToReindex);
-    if (breakDownloadMessage != null) {
-      if (warn != null) {
-        warn=breakDownloadMessage + "\n" + warn;
-      }
- else {
-        warn=breakDownloadMessage;
-      }
-    }
     updateLoadedFiles();
     return warn;
   }

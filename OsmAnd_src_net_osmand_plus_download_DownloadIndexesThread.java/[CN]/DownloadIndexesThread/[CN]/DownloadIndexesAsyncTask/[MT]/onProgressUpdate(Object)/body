@@ -1,11 +1,10 @@
 {
   for (  Object o : values) {
-    if (o instanceof DownloadEntry) {
+    if (o instanceof IndexItem) {
       if (uiActivity != null) {
-        uiActivity.downloadListUpdated();
         uiActivity.updateFragments();
-        DownloadEntry item=(DownloadEntry)o;
-        String name=item.item.getBasename();
+        IndexItem item=(IndexItem)o;
+        String name=item.getBasename();
         long count=dbHelper.getCount(name,DatabaseHelper.DOWNLOAD_ENTRY) + 1;
         DatabaseHelper.HistoryDownloadEntry entry=new DatabaseHelper.HistoryDownloadEntry(name,count);
         if (count == 1) {
@@ -14,16 +13,6 @@
  else {
           dbHelper.update(entry,DatabaseHelper.DOWNLOAD_ENTRY);
         }
-      }
-    }
- else     if (o instanceof IndexItem) {
-      entriesToDownload.remove(o);
-      if (uiActivity != null) {
-        uiActivity.downloadListUpdated();
-        uiActivity.updateFragments();
-        IndexItem item=(IndexItem)o;
-        long count=dbHelper.getCount(item.getBasename(),DatabaseHelper.DOWNLOAD_ENTRY) + 1;
-        dbHelper.add(new DatabaseHelper.HistoryDownloadEntry(item.getBasename(),count),DatabaseHelper.DOWNLOAD_ENTRY);
       }
     }
  else     if (o instanceof String) {
@@ -35,7 +24,7 @@
       }
  else {
         if (uiActivity != null) {
-          uiActivity.updateProgress(true,null);
+          uiActivity.updateProgress(true);
         }
       }
     }
