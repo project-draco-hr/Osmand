@@ -7,28 +7,28 @@
   HashMap<String,WorldRegion> regionsLookupTable=new HashMap<>(loadedItems.size());
   Resources res=app.getResources();
   WorldRegion africaRegion=createRegionAs(AFRICA_REGION_ID,loadedItems,osmandRegions,res.getString(R.string.index_name_africa));
-  addSubregion(africaRegion);
+  addSubregion(africaRegion,this);
   regionsLookupTable.put(africaRegion.regionId,africaRegion);
   WorldRegion asiaRegion=createRegionAs(ASIA_REGION_ID,loadedItems,osmandRegions,res.getString(R.string.index_name_asia));
-  addSubregion(asiaRegion);
+  addSubregion(asiaRegion,this);
   regionsLookupTable.put(asiaRegion.regionId,asiaRegion);
   WorldRegion australiaAndOceaniaRegion=createRegionAs(AUSTRALIA_AND_OCEANIA_REGION_ID,loadedItems,osmandRegions,res.getString(R.string.index_name_oceania));
-  addSubregion(australiaAndOceaniaRegion);
+  addSubregion(australiaAndOceaniaRegion,this);
   regionsLookupTable.put(australiaAndOceaniaRegion.regionId,australiaAndOceaniaRegion);
   WorldRegion centralAmericaRegion=createRegionAs(CENTRAL_AMERICA_REGION_ID,loadedItems,osmandRegions,res.getString(R.string.index_name_central_america));
-  addSubregion(centralAmericaRegion);
+  addSubregion(centralAmericaRegion,this);
   regionsLookupTable.put(centralAmericaRegion.regionId,centralAmericaRegion);
   WorldRegion europeRegion=createRegionAs(EUROPE_REGION_ID,loadedItems,osmandRegions,res.getString(R.string.index_name_europe));
-  addSubregion(europeRegion);
+  addSubregion(europeRegion,this);
   regionsLookupTable.put(europeRegion.regionId,europeRegion);
   WorldRegion northAmericaRegion=createRegionAs(NORTH_AMERICA_REGION_ID,loadedItems,osmandRegions,res.getString(R.string.index_name_north_america));
-  addSubregion(northAmericaRegion);
+  addSubregion(northAmericaRegion,this);
   regionsLookupTable.put(northAmericaRegion.regionId,northAmericaRegion);
   WorldRegion russiaRegion=createRegionAs(RUSSIA_REGION_ID,loadedItems,osmandRegions,res.getString(R.string.index_name_russia));
-  addSubregion(russiaRegion);
+  addSubregion(russiaRegion,this);
   regionsLookupTable.put(russiaRegion.regionId,russiaRegion);
   WorldRegion southAmericaRegion=createRegionAs(SOUTH_AMERICA_REGION_ID,loadedItems,osmandRegions,res.getString(R.string.index_name_south_america));
-  addSubregion(southAmericaRegion);
+  addSubregion(southAmericaRegion,this);
   regionsLookupTable.put(southAmericaRegion.regionId,southAmericaRegion);
   for (; ; ) {
     int processedRegions=0;
@@ -44,13 +44,20 @@
         continue;
       }
       WorldRegion newRegion=new WorldRegion().init(regionId,osmandRegions,null);
-      parentRegion.addSubregion(newRegion);
+      parentRegion.addSubregion(newRegion,this);
       regionsLookupTable.put(newRegion.regionId,newRegion);
       processedRegions++;
       iterator.remove();
     }
     if (processedRegions == 0)     break;
   }
+  Comparator<WorldRegion> nameComparator=new Comparator<WorldRegion>(){
+    @Override public int compare(    WorldRegion w1,    WorldRegion w2){
+      return w1.getName().compareTo(w2.getName());
+    }
+  }
+;
+  sortSubregions(this,nameComparator);
   if (loadedItems.size() > 0) {
     LOG.warn("Found orphaned regions: " + loadedItems.size());
     for (    String regionId : loadedItems.keySet()) {
