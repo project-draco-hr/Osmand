@@ -1,7 +1,31 @@
 {
-  String indexLC=group.getName(ctx).toLowerCase();
-  if (isMatch(conds,false,indexLC)) {
+  String name=group.getName(ctx).toLowerCase();
+  if (group.getType().isScreen() && group.getParentGroup() != null && group.getParentGroup().getParentGroup() != null && group.getParentGroup().getParentGroup().getType() != DownloadResourceGroupType.WORLD && isMatch(conds,false,name)) {
     filter.add(group);
+    for (    DownloadResourceGroup g : group.getGroups()) {
+      if (g.getType() == DownloadResourceGroupType.REGION_MAPS) {
+        if (g.getIndividualResources() != null) {
+          for (          IndexItem item : g.getIndividualResources()) {
+            if (item.getType() == DownloadActivityType.NORMAL_FILE) {
+              filter.add(item);
+              break;
+            }
+          }
+        }
+        break;
+      }
+    }
+  }
+  if (group.getType() == DownloadResourceGroupType.OTHER_MAPS_HEADER || group.getType() == DownloadResourceGroupType.VOICE_HEADER_REC || group.getType() == DownloadResourceGroupType.VOICE_HEADER_TTS) {
+    if (group.getIndividualResources() != null) {
+      for (      IndexItem item : group.getIndividualResources()) {
+        name=item.getVisibleName(ctx,osmandRegions,false).toLowerCase();
+        if (isMatch(conds,false,name)) {
+          filter.add(item);
+          break;
+        }
+      }
+    }
   }
   if (group.getGroups() != null) {
     for (    DownloadResourceGroup g : group.getGroups()) {
