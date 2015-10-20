@@ -1,44 +1,27 @@
 {
   for (  Object o : values) {
-    if (o instanceof DownloadEntry) {
-      if (uiActivity != null) {
-        uiActivity.downloadListUpdated();
-        uiActivity.updateFragments();
-        DownloadEntry item=(DownloadEntry)o;
-        String name=item.item.getBasename();
-        long count=dbHelper.getCount(name,DatabaseHelper.DOWNLOAD_ENTRY) + 1;
-        DatabaseHelper.HistoryDownloadEntry entry=new DatabaseHelper.HistoryDownloadEntry(name,count);
-        if (count == 1) {
-          dbHelper.add(entry,DatabaseHelper.DOWNLOAD_ENTRY);
-        }
- else {
-          dbHelper.update(entry,DatabaseHelper.DOWNLOAD_ENTRY);
-        }
+    if (o instanceof IndexItem) {
+      IndexItem item=(IndexItem)o;
+      String name=item.getBasename();
+      long count=dbHelper.getCount(name,DatabaseHelper.DOWNLOAD_ENTRY) + 1;
+      item.setDownloaded(true);
+      DatabaseHelper.HistoryDownloadEntry entry=new DatabaseHelper.HistoryDownloadEntry(name,count);
+      if (count == 1) {
+        dbHelper.add(entry,DatabaseHelper.DOWNLOAD_ENTRY);
       }
-    }
- else     if (o instanceof IndexItem) {
-      entriesToDownload.remove(o);
-      if (uiActivity != null) {
-        uiActivity.downloadListUpdated();
-        uiActivity.updateFragments();
-        IndexItem item=(IndexItem)o;
-        long count=dbHelper.getCount(item.getBasename(),DatabaseHelper.DOWNLOAD_ENTRY) + 1;
-        dbHelper.add(new DatabaseHelper.HistoryDownloadEntry(item.getBasename(),count),DatabaseHelper.DOWNLOAD_ENTRY);
+ else {
+        dbHelper.update(entry,DatabaseHelper.DOWNLOAD_ENTRY);
       }
     }
  else     if (o instanceof String) {
       String message=(String)o;
-      if (!message.equals("I/O error occurred : Interrupted")) {
+      if (!message.toLowerCase().contains("interrupted")) {
         if (uiActivity == null || !message.equals(uiActivity.getString(R.string.shared_string_download_successful))) {
           AccessibleToast.makeText(ctx,message,Toast.LENGTH_LONG).show();
         }
       }
- else {
-        if (uiActivity != null) {
-          uiActivity.updateProgress(true,null);
-        }
-      }
     }
   }
+  downloadInProgress();
   super.onProgressUpdate(values);
 }

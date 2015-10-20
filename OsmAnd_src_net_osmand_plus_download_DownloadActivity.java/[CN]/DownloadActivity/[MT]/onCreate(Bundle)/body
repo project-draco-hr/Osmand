@@ -1,9 +1,11 @@
 {
   getMyApplication().applyTheme(this);
   super.onCreate(savedInstanceState);
-  updateDownloads();
+  DownloadResources indexes=getDownloadThread().getIndexes();
+  if (!indexes.isDownloadedFromInternet) {
+    getDownloadThread().runReloadIndexFiles();
+  }
   setContentView(R.layout.download);
-  singleTab=getIntent() != null && getIntent().getBooleanExtra(SINGLE_TAB,false);
   int currentTab=0;
   String tab=getIntent() == null || getIntent().getExtras() == null ? null : getIntent().getExtras().getString(TAB_TO_OPEN);
   if (tab != null) {
@@ -14,31 +16,18 @@
       currentTab=2;
     }
   }
+  visibleBanner=new BannerAndDownloadFreeVersion(findViewById(R.id.mainLayout),this);
   ViewPager viewPager=(ViewPager)findViewById(R.id.pager);
   PagerSlidingTabStrip mSlidingTabLayout=(PagerSlidingTabStrip)findViewById(R.id.sliding_tabs);
-  mTabs.add(new TabActivity.TabItem(R.string.download_tab_downloads,getString(R.string.download_tab_downloads),WorldItemsFragment.class));
+  mTabs.add(new TabActivity.TabItem(R.string.download_tab_downloads,getString(R.string.download_tab_downloads),DownloadResourceGroupFragment.class));
   mTabs.add(new TabActivity.TabItem(R.string.download_tab_local,getString(R.string.download_tab_local),LocalIndexesFragment.class));
   mTabs.add(new TabActivity.TabItem(R.string.download_tab_updates,getString(R.string.download_tab_updates),UpdatesIndexFragment.class));
   viewPager.setAdapter(new TabActivity.OsmandFragmentPagerAdapter(getSupportFragmentManager(),mTabs));
   mSlidingTabLayout.setViewPager(viewPager);
   viewPager.setCurrentItem(currentTab);
-  settings=((OsmandApplication)getApplication()).getSettings();
-  downloadTypes=createDownloadTypes();
   final Intent intent=getIntent();
   if (intent != null && intent.getExtras() != null) {
     final String filter=intent.getExtras().getString(FILTER_KEY);
-    if (filter != null) {
-      initialFilter=filter;
-    }
     final String filterCat=intent.getExtras().getString(FILTER_CAT);
-    if (filterCat != null) {
-      DownloadActivityType type=DownloadActivityType.getIndexType(filterCat.toLowerCase());
-      if (type != null) {
-        downloadTypes.remove(type);
-        downloadTypes.add(0,type);
-      }
-    }
   }
-  changeType(downloadTypes.get(0));
-  registerFreeVersionBanner(findViewById(R.id.mainLayout));
 }
