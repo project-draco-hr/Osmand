@@ -26,14 +26,15 @@
  else {
     mAdapter=new DashFragmentAdapter(getActivity(),mFragmentsData,settings);
   }
-  builder.setTitle(R.string.dahboard_options_dialog_title).setAdapter(mAdapter,null).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
+  builder.setTitle(R.string.dahboard_options_dialog_title).setAdapter(mAdapter,null).setPositiveButton(R.string.shared_string_apply,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialogInterface,    int type){
       boolean[] shouldShow=mAdapter.getCheckedItems();
       int[] numberOfRows=mAdapter.getNumbersOfRows();
       for (int i=0; i < shouldShow.length; i++) {
-        settings.registerBooleanPreference(DashboardOnMap.SHOULD_SHOW + mFragmentsData.get(i).tag,true).makeGlobal().set(shouldShow[i]);
-        if (mFragmentsData.get(i).rowNumberTag != null) {
-          settings.registerIntPreference(mFragmentsData.get(i).rowNumberTag,5).makeGlobal().set(numberOfRows[i]);
+        final DashFragmentData fragmentData=mFragmentsData.get(i);
+        settings.registerBooleanPreference(DashboardOnMap.SHOULD_SHOW + fragmentData.tag,true).makeGlobal().set(shouldShow[i]);
+        if (fragmentData.rowNumberTag != null) {
+          settings.registerIntPreference(fragmentData.rowNumberTag,5).makeGlobal().set(numberOfRows[i]);
         }
       }
       mapActivity.getDashboard().refreshDashboardFragments();
