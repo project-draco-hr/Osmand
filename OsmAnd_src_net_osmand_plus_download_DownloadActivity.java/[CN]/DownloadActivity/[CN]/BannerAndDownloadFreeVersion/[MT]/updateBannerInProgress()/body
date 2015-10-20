@@ -2,8 +2,8 @@
   BasicProgressAsyncTask<?,?,?,?> basicProgressAsyncTask=ctx.getDownloadThread().getCurrentRunningTask();
   final boolean isFinished=basicProgressAsyncTask == null || basicProgressAsyncTask.getStatus() == AsyncTask.Status.FINISHED;
   if (isFinished) {
-    downloadProgressLayout.setVisibility(View.GONE);
-    updateFreeVersionBanner();
+    downloadProgressLayout.setOnClickListener(null);
+    updateDescriptionTextWithSize(ctx,downloadProgressLayout);
   }
  else {
     boolean indeterminate=basicProgressAsyncTask.isIndeterminate();
@@ -11,7 +11,12 @@
     int percent=basicProgressAsyncTask.getProgressPercentage();
     setMinimizedFreeVersionBanner(true);
     updateAvailableDownloads();
-    downloadProgressLayout.setVisibility(View.VISIBLE);
+    downloadProgressLayout.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        new ActiveDownloadsDialogFragment().show(ctx.getSupportFragmentManager(),"dialog");
+      }
+    }
+);
     progressBar.setIndeterminate(indeterminate);
     if (indeterminate) {
       leftTextView.setText(message);
