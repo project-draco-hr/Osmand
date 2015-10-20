@@ -2,8 +2,8 @@
   View v=convertView;
   LocalIndexInfo group=getGroup(groupPosition);
   if (v == null) {
-    LayoutInflater inflater=(LayoutInflater)getDownloadActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    v=inflater.inflate(R.layout.local_index_list_category,parent,false);
+    LayoutInflater inflater=LayoutInflater.from(ctx);
+    v=inflater.inflate(R.layout.download_item_list_section,parent,false);
   }
   StringBuilder name=new StringBuilder(group.getType().getHumanString(getDownloadActivity()));
   if (group.getSubfolder() != null) {
@@ -12,8 +12,8 @@
   if (group.isBackupedData()) {
     name.append(" - ").append(getString(R.string.local_indexes_cat_backup));
   }
-  TextView nameView=((TextView)v.findViewById(R.id.category_name));
-  TextView sizeView=((TextView)v.findViewById(R.id.category_size));
+  TextView nameView=((TextView)v.findViewById(R.id.section_name));
+  TextView sizeView=((TextView)v.findViewById(R.id.section_description));
   List<LocalIndexInfo> list=data.get(group);
   int size=0;
   for (  LocalIndexInfo aList : list) {
@@ -36,13 +36,12 @@
     }
   }
   sizeView.setText(sz);
+  sizeView.setVisibility(View.VISIBLE);
   nameView.setText(name.toString());
-  if (!group.isBackupedData()) {
-    nameView.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
-  }
- else {
-    nameView.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
-  }
   v.setOnClickListener(null);
+  TypedValue typedValue=new TypedValue();
+  Resources.Theme theme=ctx.getTheme();
+  theme.resolveAttribute(R.attr.ctx_menu_info_view_bg,typedValue,true);
+  v.setBackgroundColor(typedValue.data);
   return v;
 }
