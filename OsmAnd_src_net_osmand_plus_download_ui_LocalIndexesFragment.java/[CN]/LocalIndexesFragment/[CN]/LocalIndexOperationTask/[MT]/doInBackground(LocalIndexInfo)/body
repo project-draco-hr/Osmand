@@ -7,6 +7,9 @@
       if (operation == DELETE_OPERATION) {
         File f=new File(info.getPathToData());
         successfull=Algorithms.removeAllFiles(f);
+        if (successfull) {
+          getMyApplication().getResourceManager().closeFile(info.getFileName());
+        }
       }
  else       if (operation == RESTORE_OPERATION) {
         successfull=move(new File(info.getPathToData()),getFileToRestore(info));
@@ -29,13 +32,16 @@
     }
   }
   if (operation == DELETE_OPERATION) {
-    return getString(R.string.local_index_items_deleted,count,total);
+    a.getDownloadThread().updateLoadedFiles();
+  }
+  if (operation == DELETE_OPERATION) {
+    return a.getString(R.string.local_index_items_deleted,count,total);
   }
  else   if (operation == BACKUP_OPERATION) {
-    return getString(R.string.local_index_items_backuped,count,total);
+    return a.getString(R.string.local_index_items_backuped,count,total);
   }
  else   if (operation == RESTORE_OPERATION) {
-    return getString(R.string.local_index_items_restored,count,total);
+    return a.getString(R.string.local_index_items_restored,count,total);
   }
   return "";
 }
