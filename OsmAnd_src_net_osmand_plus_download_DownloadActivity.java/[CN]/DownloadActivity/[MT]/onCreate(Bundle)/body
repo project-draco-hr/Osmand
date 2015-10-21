@@ -13,14 +13,13 @@
   String tab=getIntent() == null || getIntent().getExtras() == null ? null : getIntent().getExtras().getString(TAB_TO_OPEN);
   if (tab != null) {
     if (tab.equals(DOWNLOAD_TAB)) {
-      currentTab=1;
+      currentTab=DOWNLOAD_TAB_NUMBER;
     }
  else     if (tab.equals(UPDATES_TAB)) {
-      currentTab=2;
+      currentTab=UPDATES_TAB_NUMBER;
     }
   }
-  visibleBanner=new BannerAndDownloadFreeVersion(findViewById(R.id.mainLayout),this);
-  ViewPager viewPager=(ViewPager)findViewById(R.id.pager);
+  viewPager=(ViewPager)findViewById(R.id.pager);
   PagerSlidingTabStrip mSlidingTabLayout=(PagerSlidingTabStrip)findViewById(R.id.sliding_tabs);
   mTabs.add(new TabActivity.TabItem(R.string.download_tab_downloads,getString(R.string.download_tab_downloads),DownloadResourceGroupFragment.class));
   mTabs.add(new TabActivity.TabItem(R.string.download_tab_local,getString(R.string.download_tab_local),LocalIndexesFragment.class));
@@ -28,6 +27,22 @@
   viewPager.setAdapter(new TabActivity.OsmandFragmentPagerAdapter(getSupportFragmentManager(),mTabs));
   mSlidingTabLayout.setViewPager(viewPager);
   viewPager.setCurrentItem(currentTab);
+  viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener(){
+    @Override public void onPageScrolled(    int i,    float v,    int i1){
+    }
+    @Override public void onPageSelected(    int i){
+      if (i == UPDATES_TAB_NUMBER) {
+        visibleBanner.hideDownloadProgressLayout();
+      }
+ else {
+        visibleBanner.showDownloadProgressLayout();
+      }
+    }
+    @Override public void onPageScrollStateChanged(    int i){
+    }
+  }
+);
+  visibleBanner=new BannerAndDownloadFreeVersion(findViewById(R.id.mainLayout),this);
   final Intent intent=getIntent();
   if (intent != null && intent.getExtras() != null) {
     final String filter=intent.getExtras().getString(FILTER_KEY);
