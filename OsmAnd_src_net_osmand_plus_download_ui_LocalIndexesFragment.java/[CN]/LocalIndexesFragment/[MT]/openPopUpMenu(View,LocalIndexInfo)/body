@@ -22,6 +22,17 @@
     }
   }
 );
+  final IndexItem update=filesToUpdate.get(info.getFileName());
+  if (update != null) {
+    item=optionsMenu.getMenu().add(R.string.shared_string_download).setIcon(iconsCache.getContentIcon(R.drawable.ic_action_import));
+    item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+      @Override public boolean onMenuItemClick(      MenuItem item){
+        getDownloadActivity().startDownload(update);
+        return true;
+      }
+    }
+);
+  }
   item=optionsMenu.getMenu().add(R.string.shared_string_delete).setIcon(iconsCache.getContentIcon(R.drawable.ic_action_delete_dark));
   item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
     @Override public boolean onMenuItemClick(    MenuItem item){
@@ -30,7 +41,7 @@
     }
   }
 );
-  if (getMyApplication().getSettings().BETA_TESTING_LIVE_UPDATES.get()) {
+  if (info.getType() == LocalIndexType.MAP_DATA && getMyApplication().getSettings().BETA_TESTING_LIVE_UPDATES.get()) {
     item=optionsMenu.getMenu().add("Live updates").setIcon(iconsCache.getContentIcon(R.drawable.ic_action_refresh_dark));
     item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
       @Override public boolean onMenuItemClick(      MenuItem item){
