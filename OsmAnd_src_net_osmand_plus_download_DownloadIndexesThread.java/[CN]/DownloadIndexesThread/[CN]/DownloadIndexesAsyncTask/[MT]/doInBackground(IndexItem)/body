@@ -3,6 +3,7 @@
     List<File> filesToReindex=new ArrayList<File>();
     boolean forceWifi=downloadFileHelper.isWifiConnected();
     Set<IndexItem> currentDownloads=new HashSet<IndexItem>();
+    String warn="";
     try {
       downloadCycle:       while (!indexItemDownloading.isEmpty()) {
         IndexItem item=indexItemDownloading.poll();
@@ -31,6 +32,11 @@
             Algorithms.removeAllFiles(bf);
           }
           publishProgress(item);
+          String wn=reindexFiles(filesToReindex);
+          if (!Algorithms.isEmpty(wn)) {
+            warn+=" " + wn;
+          }
+          filesToReindex.clear();
         }
       }
     }
@@ -38,8 +44,10 @@
       currentDownloadingItem=null;
       currentDownloadingItemProgress=0;
     }
-    String warn=reindexFiles(filesToReindex);
-    return warn;
+    if (warn.trim().length() == 0) {
+      return null;
+    }
+    return warn.trim();
   }
  catch (  InterruptedException e) {
     LOG.info("Download Interrupted");
