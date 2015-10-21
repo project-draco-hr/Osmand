@@ -1,15 +1,27 @@
 {
-  RightButtonAction clickAction=getClickAction(indexItem);
+  RightButtonAction clickAction=getClickAction(item);
   boolean disabled=clickAction != RightButtonAction.DOWNLOAD;
+  OnClickListener action=getRightButtonAction(item,clickAction,null);
   if (clickAction != RightButtonAction.DOWNLOAD) {
     rightButton.setText(R.string.get_plugin);
     rightButton.setVisibility(View.VISIBLE);
     rightImageButton.setVisibility(View.GONE);
-    rightButton.setOnClickListener(getRightButtonAction(indexItem,clickAction,null));
+    rightButton.setOnClickListener(action);
   }
  else {
     rightButton.setVisibility(View.GONE);
     rightImageButton.setVisibility(View.VISIBLE);
+    final boolean isDownloading=context.getDownloadThread().isDownloading(item);
+    if (isDownloading) {
+      rightImageButton.setImageDrawable(getContentIcon(context,R.drawable.ic_action_remove_dark));
+    }
+ else     if (item.isDownloaded() && !item.isOutdated()) {
+      rightImageButton.setImageDrawable(getContentIcon(context,R.drawable.ic_overflow_menu_white));
+    }
+ else {
+      rightImageButton.setImageDrawable(getContentIcon(context,R.drawable.ic_action_import));
+    }
+    rightImageButton.setOnClickListener(action);
   }
   return disabled;
 }

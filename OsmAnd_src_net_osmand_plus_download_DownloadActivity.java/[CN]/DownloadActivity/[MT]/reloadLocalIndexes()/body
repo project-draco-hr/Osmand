@@ -1,19 +1,14 @@
 {
-  listAdapter.clear();
-  asyncLoader=new LoadLocalIndexTask();
   AsyncTask<Void,String,List<String>> task=new AsyncTask<Void,String,List<String>>(){
     @Override protected void onPreExecute(){
       super.onPreExecute();
-      getDownloadActivity().setSupportProgressBarIndeterminateVisibility(true);
+      setSupportProgressBarIndeterminateVisibility(true);
     }
     @Override protected List<String> doInBackground(    Void... params){
       return getMyApplication().getResourceManager().reloadIndexes(IProgress.EMPTY_PROGRESS,new ArrayList<String>());
     }
     @Override protected void onPostExecute(    List<String> warnings){
-      if (getDownloadActivity() == null) {
-        return;
-      }
-      getDownloadActivity().setSupportProgressBarIndeterminateVisibility(false);
+      setSupportProgressBarIndeterminateVisibility(false);
       if (!warnings.isEmpty()) {
         final StringBuilder b=new StringBuilder();
         boolean f=true;
@@ -26,11 +21,9 @@
           }
           b.append(w);
         }
-        AccessibleToast.makeText(getDownloadActivity(),b.toString(),Toast.LENGTH_LONG).show();
+        AccessibleToast.makeText(DownloadActivity.this,b.toString(),Toast.LENGTH_LONG).show();
       }
-      if (asyncLoader.getStatus() == Status.PENDING) {
-        asyncLoader.execute(getDownloadActivity());
-      }
+      newDownloadIndexes();
     }
   }
 ;

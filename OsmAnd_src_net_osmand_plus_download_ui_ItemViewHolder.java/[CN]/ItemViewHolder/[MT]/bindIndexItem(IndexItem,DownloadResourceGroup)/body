@@ -1,2 +1,79 @@
 {
+  initAppStatusVariables();
+  boolean isDownloading=context.getDownloadThread().isDownloading(indexItem);
+  int progress=-1;
+  if (context.getDownloadThread().getCurrentDownloadingItem() == indexItem) {
+    progress=context.getDownloadThread().getCurrentDownloadingItemProgress();
+  }
+  boolean disabled=checkDisabledAndClickAction(indexItem);
+  if (showTypeInName) {
+    nameTextView.setText(indexItem.getType().getString(context));
+  }
+ else {
+    nameTextView.setText(indexItem.getVisibleName(context,context.getMyApplication().getRegions(),false));
+  }
+  if (!disabled) {
+    nameTextView.setTextColor(textColorPrimary);
+  }
+ else {
+    nameTextView.setTextColor(textColorSecondary);
+  }
+  int color=textColorSecondary;
+  if (indexItem.isDownloaded() && !isDownloading) {
+    int colorId=indexItem.isOutdated() ? R.color.color_distance : R.color.color_ok;
+    color=context.getResources().getColor(colorId);
+  }
+  if (indexItem.isDownloaded()) {
+    leftImageView.setImageDrawable(getContentIcon(context,indexItem.getType().getIconResource(),color));
+  }
+ else   if (disabled) {
+    leftImageView.setImageDrawable(getContentIcon(context,indexItem.getType().getIconResource(),textColorSecondary));
+  }
+ else {
+    leftImageView.setImageDrawable(getContentIcon(context,indexItem.getType().getIconResource()));
+  }
+  descrTextView.setTextColor(textColorSecondary);
+  if (!isDownloading) {
+    progressBar.setVisibility(View.GONE);
+    descrTextView.setVisibility(View.VISIBLE);
+    if ((indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE || indexItem.getType() == DownloadActivityType.HILLSHADE_FILE) && srtmDisabled) {
+      if (showTypeInName) {
+        descrTextView.setText("");
+      }
+ else {
+        descrTextView.setText(indexItem.getType().getString(context));
+      }
+    }
+ else     if (showTypeInDesc) {
+      descrTextView.setText(indexItem.getType().getString(context) + " ??? " + indexItem.getSizeDescription(context)+ " ??? "+ (showRemoteDate ? indexItem.getRemoteDate(dateFormat) : indexItem.getLocalDate(dateFormat)));
+    }
+ else {
+      descrTextView.setText(indexItem.getSizeDescription(context) + " ??? " + (showRemoteDate ? indexItem.getRemoteDate(dateFormat) : indexItem.getLocalDate(dateFormat)));
+    }
+  }
+ else {
+    progressBar.setVisibility(View.VISIBLE);
+    progressBar.setIndeterminate(progress == -1);
+    progressBar.setProgress(progress);
+    if (showProgressInDesc) {
+      double mb=indexItem.getArchiveSizeMB();
+      String v;
+      if (progress != -1) {
+        v=context.getString(R.string.value_downloaded_from_max,mb * progress / 100,mb);
+      }
+ else {
+        v=context.getString(R.string.file_size_in_mb,mb);
+      }
+      if (showTypeInDesc && indexItem.getType() == DownloadActivityType.ROADS_FILE) {
+        descrTextView.setText(indexItem.getType().getString(context) + " ??? " + v);
+      }
+ else {
+        descrTextView.setText(v);
+      }
+      descrTextView.setVisibility(View.VISIBLE);
+    }
+ else {
+      descrTextView.setVisibility(View.GONE);
+    }
+  }
 }
