@@ -1,0 +1,34 @@
+{
+  if (getCurrentDownloadingItem() != null) {
+    BasicProgressAsyncTask<?,?,?,?> task=getCurrentRunningTask();
+    final boolean isFinished=task == null || task.getStatus() == AsyncTask.Status.FINISHED;
+    Intent contentIntent=new Intent(app,DownloadActivity.class);
+    PendingIntent contentPendingIntent=PendingIntent.getActivity(app,0,contentIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+    Builder bld=new NotificationCompat.Builder(app);
+    String msg=Version.getAppName(app);
+    if (!isFinished) {
+      msg=task.getDescription();
+    }
+    StringBuilder contentText=new StringBuilder();
+    List<IndexItem> ii=getCurrentDownloadingItems();
+    for (    IndexItem i : ii) {
+      if (contentText.length() > 0) {
+        contentText.append(", ");
+      }
+      contentText.append(i.getVisibleName(app,app.getRegions()));
+    }
+    bld.setContentTitle(msg).setSmallIcon(R.drawable.ic_action_import).setContentIntent(contentPendingIntent).setOngoing(true);
+    int progress=getCurrentDownloadingItemProgress();
+    bld.setProgress(100,Math.max(progress,0),progress < 0);
+    notification=bld.build();
+    NotificationManager mNotificationManager=(NotificationManager)app.getSystemService(Context.NOTIFICATION_SERVICE);
+    mNotificationManager.notify(NOTIFICATION_ID,notification);
+  }
+ else {
+    if (notification != null) {
+      NotificationManager mNotificationManager=(NotificationManager)app.getSystemService(Context.NOTIFICATION_SERVICE);
+      mNotificationManager.cancel(NOTIFICATION_ID);
+      notification=null;
+    }
+  }
+}
