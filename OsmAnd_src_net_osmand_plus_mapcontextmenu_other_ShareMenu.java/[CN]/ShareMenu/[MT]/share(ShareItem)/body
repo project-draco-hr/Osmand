@@ -1,0 +1,24 @@
+{
+  final int zoom=mapActivity.getMapView().getZoom();
+  final String geoUrl=MapUtils.buildGeoUrl(latLon.getLatitude(),latLon.getLongitude(),zoom);
+  final String httpUrl="http://osmand.net/go?lat=" + ((float)latLon.getLatitude()) + "&lon="+ ((float)latLon.getLongitude())+ "&z="+ zoom;
+  String sms=mapActivity.getString(R.string.send_location_sms_pattern,geoUrl,httpUrl);
+switch (item) {
+case MESSAGE:
+    ShareDialog.sendMessage(mapActivity,sms);
+  break;
+case CLIPBOARD:
+ShareDialog.sendToClipboard(mapActivity,sms);
+break;
+case GEO:
+Intent mapIntent=new Intent(Intent.ACTION_VIEW,Uri.parse(geoUrl));
+mapActivity.startActivity(mapIntent);
+break;
+case QR_CODE:
+Bundle bundle=new Bundle();
+bundle.putFloat("LAT",(float)latLon.getLatitude());
+bundle.putFloat("LONG",(float)latLon.getLongitude());
+ShareDialog.sendQRCode(mapActivity,"LOCATION_TYPE",bundle,null);
+break;
+}
+}
