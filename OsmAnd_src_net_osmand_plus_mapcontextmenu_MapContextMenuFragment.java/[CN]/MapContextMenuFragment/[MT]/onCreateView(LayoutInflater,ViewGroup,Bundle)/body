@@ -55,7 +55,7 @@
       if (singleTapDetector.onTouchEvent(event)) {
         showOnMap(menu.getLatLon(),true,false);
         if (hasMoved) {
-          applyPosY(getViewY(),false);
+          applyPosY(getViewY(),false,false);
         }
         return true;
       }
@@ -76,7 +76,7 @@ case MotionEvent.ACTION_MOVE:
 hasMoved=true;
 float y=event.getY();
 float newY=getViewY() + (y - dy);
-setViewY((int)newY,false);
+setViewY((int)newY,false,false);
 menuFullHeight=view.getHeight() - (int)newY + 10;
 if (!oldAndroid()) {
 ViewGroup.LayoutParams lp=mainView.getLayoutParams();
@@ -96,18 +96,21 @@ slidingUp=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) < -50;
 slidingDown=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) > 50;
 velocity.recycle();
 boolean needCloseMenu=false;
+int oldMenuState=menu.getCurrentMenuState();
 if (menuBottomViewHeight > 0 && slidingUp) {
 menu.slideUp();
 }
  else if (slidingDown) {
 needCloseMenu=!menu.slideDown();
 }
-applyPosY(currentY,needCloseMenu);
+int newMenuState=menu.getCurrentMenuState();
+boolean needMapAdjust=oldMenuState != newMenuState && newMenuState != MenuController.MenuState.FULL_SCREEN;
+applyPosY(currentY,needCloseMenu,needMapAdjust);
 break;
 }
 return true;
 }
-private void applyPosY(final int currentY,final boolean needCloseMenu){
+private void applyPosY(final int currentY,final boolean needCloseMenu,boolean needMapAdjust){
 final int posY=getPosY(needCloseMenu);
 if (currentY != posY) {
 if (posY < currentY) {
@@ -134,10 +137,12 @@ updateMainViewLayout(posY);
 }
 ).start();
 fabView.animate().y(getFabY(posY)).setDuration(200).setInterpolator(new DecelerateInterpolator()).start();
+if (needMapAdjust) {
 adjustMapPosition(posY,true);
 }
+}
  else {
-setViewY(posY,false);
+setViewY(posY,false,needMapAdjust);
 updateMainViewLayout(posY);
 }
 }
