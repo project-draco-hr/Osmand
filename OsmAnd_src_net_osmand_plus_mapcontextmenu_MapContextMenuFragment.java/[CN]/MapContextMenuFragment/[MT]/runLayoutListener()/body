@@ -2,10 +2,16 @@
   ViewTreeObserver vto=view.getViewTreeObserver();
   vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
     @Override public void onGlobalLayout(){
+      int newMenuTopViewHeight=view.findViewById(R.id.context_menu_top_view).getHeight();
       menuTopShadowHeight=view.findViewById(R.id.context_menu_top_shadow).getHeight();
       menuTopShadowAllHeight=view.findViewById(R.id.context_menu_top_shadow_all).getHeight();
       menuFullHeight=view.findViewById(R.id.context_menu_main).getHeight();
-      menuTitleHeight=menuTopShadowHeight + menuTopShadowAllHeight;
+      int dy=0;
+      if (!menu.isLandscapeLayout() && menuTopViewHeight != 0) {
+        dy=Math.max(0,newMenuTopViewHeight - menuTopViewHeight);
+      }
+      menuTopViewHeight=newMenuTopViewHeight;
+      menuTitleHeight=menuTopShadowHeight + menuTopShadowAllHeight + dy;
       menuBottomViewHeight=view.findViewById(R.id.context_menu_bottom_view).getHeight();
       recalculateFullHeightMax();
       ViewTreeObserver obs=view.getViewTreeObserver();
