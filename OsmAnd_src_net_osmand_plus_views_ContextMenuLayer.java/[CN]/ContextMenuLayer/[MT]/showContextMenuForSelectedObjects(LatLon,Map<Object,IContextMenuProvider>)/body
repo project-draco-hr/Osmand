@@ -1,36 +1,3 @@
 {
-  Builder builder=new AlertDialog.Builder(view.getContext());
-  String[] d=new String[selectedObjects.size()];
-  final List<Object> s=new ArrayList<>();
-  int i=0;
-  for (  Entry<Object,IContextMenuProvider> e : selectedObjects.entrySet()) {
-    d[i++]=e.getValue().getObjectDescription(e.getKey());
-    s.add(e.getKey());
-  }
-  builder.setItems(d,new OnClickListener(){
-    @Override public void onClick(    DialogInterface dialog,    int which){
-      Object selectedObj=s.get(which);
-      IContextMenuProvider contextObject=selectedObjects.get(selectedObj);
-      LatLon ll=null;
-      PointDescription pointDescription=null;
-      if (contextObject != null) {
-        ll=contextObject.getObjectLocation(selectedObj);
-        pointDescription=contextObject.getObjectName(selectedObj);
-      }
-      if (ll == null) {
-        ll=latLon;
-      }
-      menu.show(ll,pointDescription,selectedObj);
-      selectedObjects.remove(selectedObj);
-      clearSelectedObjects(selectedObjects);
-    }
-  }
-);
-  builder.setOnCancelListener(new OnCancelListener(){
-    @Override public void onCancel(    DialogInterface dialog){
-      clearSelectedObjects(selectedObjects);
-    }
-  }
-);
-  builder.show();
+  ObjectSelectionMenu.show(latLon,selectedObjects,activity);
 }
