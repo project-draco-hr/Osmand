@@ -1,0 +1,23 @@
+{
+  ViewTreeObserver vto=view.getViewTreeObserver();
+  vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
+    @Override public void onGlobalLayout(){
+      int maxHeight=(int)(getScreenHeight() * menu.getHalfScreenMaxHeightKoef());
+      int height=view.findViewById(R.id.main_view).getHeight();
+      ViewTreeObserver obs=view.getViewTreeObserver();
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        obs.removeOnGlobalLayoutListener(this);
+      }
+ else {
+        obs.removeGlobalOnLayoutListener(this);
+      }
+      if (height > maxHeight) {
+        ViewGroup.LayoutParams lp=view.getLayoutParams();
+        lp.height=maxHeight;
+        view.setLayoutParams(lp);
+        view.requestLayout();
+      }
+    }
+  }
+);
+}
