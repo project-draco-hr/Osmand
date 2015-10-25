@@ -1,0 +1,33 @@
+{
+  String regionDownloadName=mapIndexFields.get(mapIndexFields.downloadNameType,object);
+  String regionFullName=mapIndexFields.get(mapIndexFields.fullNameType,object);
+  if (Algorithms.isEmpty(regionFullName)) {
+    return null;
+  }
+  WorldRegion rd=new WorldRegion(regionFullName,regionDownloadName);
+  double cx=0;
+  double cy=0;
+  for (int i=0; i < object.getPointsLength(); i++) {
+    cx+=object.getPoint31XTile(i);
+    cy+=object.getPoint31YTile(i);
+  }
+  if (object.getPointsLength() > 0) {
+    cx/=object.getPointsLength();
+    cy/=object.getPointsLength();
+    rd.regionCenter=new LatLon(MapUtils.get31LatitudeY((int)cy),MapUtils.get31LongitudeX((int)cx));
+  }
+  rd.regionParentFullName=mapIndexFields.get(mapIndexFields.parentFullName,object);
+  if (!Algorithms.isEmpty(rd.regionParentFullName)) {
+    parentRelations.put(rd.regionFullName,rd.regionParentFullName);
+  }
+  rd.regionName=mapIndexFields.get(mapIndexFields.nameType,object);
+  rd.regionNameLocale=mapIndexFields.get(mapIndexFields.nameLocaleType,object);
+  rd.regionNameEn=mapIndexFields.get(mapIndexFields.nameEnType,object);
+  rd.regionLang=mapIndexFields.get(mapIndexFields.langType,object);
+  rd.regionLeftHandDriving=mapIndexFields.get(mapIndexFields.leftHandDrivingType,object);
+  rd.regionMetric=mapIndexFields.get(mapIndexFields.metricType,object);
+  rd.regionRoadSigns=mapIndexFields.get(mapIndexFields.roadSignsType,object);
+  rd.regionSearchText=getSearchIndex(object);
+  rd.regionMapDownload=isDownloadOfType(object,MAP_TYPE);
+  return rd;
+}

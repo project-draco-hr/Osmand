@@ -1,18 +1,23 @@
 {
-  if (includingParent) {
-    if (fullNamesToLocaleNames.containsKey(fullName)) {
-      return fullNamesToLocaleNames.get(fullName);
+  WorldRegion rd=fullNamesToRegionData.get(fullName);
+  if (rd == null) {
+    return fullName.replace('_',' ');
+  }
+  if (includingParent && rd.getSuperregion() != null && rd.getSuperregion().getSuperregion() != null) {
+    WorldRegion parentParent=rd.getSuperregion().getSuperregion();
+    WorldRegion parent=rd.getSuperregion();
+    if (parentParent.getRegionId().equals(WorldRegion.WORLD) && !parent.getRegionId().equals(WorldRegion.RUSSIA_REGION_ID)) {
+      return rd.getLocaleName();
     }
- else {
-      return fullName.replace('_',' ');
+    if (parentParent.getRegionId().equals(WorldRegion.RUSSIA_REGION_ID)) {
+      return parentParent.getRegionId() + " " + rd.getLocaleName();
     }
+    if (parentParent.getRegionId().equals(WorldRegion.JAPAN_REGION_ID)) {
+      return parentParent.getRegionId() + " " + rd.getLocaleName();
+    }
+    return parent.getLocaleName() + " " + rd.getLocaleName();
   }
  else {
-    if (fullNamesNoParentToLocaleNames.containsKey(fullName)) {
-      return fullNamesNoParentToLocaleNames.get(fullName);
-    }
- else {
-      return fullName.replace('_',' ');
-    }
+    return rd.getLocaleName();
   }
 }
