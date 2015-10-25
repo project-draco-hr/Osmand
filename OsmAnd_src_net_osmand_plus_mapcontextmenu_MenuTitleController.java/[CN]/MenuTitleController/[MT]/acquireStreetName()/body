@@ -1,0 +1,34 @@
+{
+  Location ll=new Location("");
+  ll.setLatitude(getLatLon().getLatitude());
+  ll.setLongitude(getLatLon().getLongitude());
+  getMapActivity().getMyApplication().getLocationProvider().getRouteSegment(ll,new ResultMatcher<RouteDataObject>(){
+    @Override public boolean publish(    RouteDataObject object){
+      if (object != null) {
+        OsmandSettings settings=getMapActivity().getMyApplication().getSettings();
+        streetStr=RoutingHelper.formatStreetName(object.getName(settings.MAP_PREFERRED_LOCALE.get()),object.getRef(),object.getDestinationName(settings.MAP_PREFERRED_LOCALE.get()));
+        if (!Algorithms.isEmpty(streetStr)) {
+          if (getObject() == null) {
+            nameStr=streetStr;
+            addressUnknown=false;
+            streetStr="";
+          }
+          getMapActivity().runOnUiThread(new Runnable(){
+            public void run(){
+              refreshMenuTitle();
+            }
+          }
+);
+        }
+      }
+ else {
+        streetStr="";
+      }
+      return true;
+    }
+    @Override public boolean isCancelled(){
+      return false;
+    }
+  }
+);
+}
