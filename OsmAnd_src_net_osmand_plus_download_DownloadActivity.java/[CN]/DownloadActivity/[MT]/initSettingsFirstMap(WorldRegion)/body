@@ -1,0 +1,32 @@
+{
+  getMyApplication().getSettings().FIRST_MAP_IS_DOWNLOADED.set(false);
+  DrivingRegion drg=null;
+  boolean americanSigns="american".equals(reg.getRoadSigns(getMyApplication().getRegions()));
+  boolean leftHand="yes".equals(reg.getLeftHandDriving(getMyApplication().getRegions()));
+  MetricsConstants mc="miles".equals(reg.getMetric(getMyApplication().getRegions())) ? MetricsConstants.MILES_AND_FOOTS : MetricsConstants.KILOMETERS_AND_METERS;
+  for (  DrivingRegion r : DrivingRegion.values()) {
+    if (r.americanSigns == americanSigns && r.leftHandDriving == leftHand && r.defMetrics == mc) {
+      drg=r;
+      break;
+    }
+  }
+  if (drg != null) {
+    getMyApplication().getSettings().DRIVING_REGION.set(drg);
+  }
+  String lng=reg.getLang(getMyApplication().getRegions());
+  if (lng != null) {
+    String setTts=null;
+    for (    String s : OsmandSettings.TTS_AVAILABLE_VOICES) {
+      if (lng.startsWith(s)) {
+        setTts=s + "-tts";
+        break;
+      }
+ else       if (lng.contains("," + s)) {
+        setTts=s + "-tts";
+      }
+    }
+    if (setTts != null) {
+      getMyApplication().getSettings().VOICE_PROVIDER.set(setTts);
+    }
+  }
+}
