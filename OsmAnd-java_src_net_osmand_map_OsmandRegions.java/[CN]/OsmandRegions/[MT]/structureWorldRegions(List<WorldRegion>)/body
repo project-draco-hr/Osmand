@@ -1,0 +1,47 @@
+{
+  if (loadedItems.size() == 0) {
+    return;
+  }
+  WorldRegion world=new WorldRegion(WorldRegion.WORLD);
+  initWorldRegion(world,WorldRegion.AFRICA_REGION_ID);
+  initWorldRegion(world,WorldRegion.ASIA_REGION_ID);
+  initWorldRegion(world,WorldRegion.CENTRAL_AMERICA_REGION_ID);
+  initWorldRegion(world,WorldRegion.EUROPE_REGION_ID);
+  initWorldRegion(world,WorldRegion.NORTH_AMERICA_REGION_ID);
+  initWorldRegion(world,WorldRegion.RUSSIA_REGION_ID);
+  initWorldRegion(world,WorldRegion.SOUTH_AMERICA_REGION_ID);
+  Iterator<WorldRegion> it=loadedItems.iterator();
+  while (it.hasNext()) {
+    WorldRegion region=it.next();
+    if (region.superregion == null) {
+      boolean found=false;
+      for (      WorldRegion worldSubregion : world.subregions) {
+        if (worldSubregion.getRegionId().equalsIgnoreCase(region.regionParentFullName)) {
+          worldSubregion.subregions.add(region);
+          found=true;
+          break;
+        }
+      }
+      if (found) {
+        it.remove();
+      }
+    }
+ else {
+      it.remove();
+    }
+  }
+  Comparator<WorldRegion> nameComparator=new Comparator<WorldRegion>(){
+    @Override public int compare(    WorldRegion w1,    WorldRegion w2){
+      return w1.getLocaleName().compareTo(w2.getLocaleName());
+    }
+  }
+;
+  sortSubregions(world,nameComparator);
+  this.worldRegion=world;
+  if (loadedItems.size() > 0) {
+    LOG.warn("Found orphaned regions: " + loadedItems.size());
+    for (    WorldRegion regionId : loadedItems) {
+      LOG.warn("FullName = " + regionId.regionFullName + " parent="+ regionId.regionParentFullName);
+    }
+  }
+}

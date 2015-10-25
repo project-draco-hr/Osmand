@@ -1,4 +1,46 @@
 {
   reader=new BinaryMapIndexReader(new RandomAccessFile(fileName,"r"),new File(fileName));
-  initRegionData();
+  final Map<String,String> parentRelations=new LinkedHashMap<String,String>();
+  final ResultMatcher<BinaryMapDataObject> resultMatcher=new ResultMatcher<BinaryMapDataObject>(){
+    @Override public boolean publish(    BinaryMapDataObject object){
+      initTypes(object);
+      int[] types=object.getTypes();
+      for (int i=0; i < types.length; i++) {
+        TagValuePair tp=object.getMapIndex().decodeType(types[i]);
+        if ("boundary".equals(tp.value)) {
+          return false;
+        }
+      }
+      WorldRegion rd=initRegionData(parentRelations,object);
+      if (rd == null) {
+        return false;
+      }
+      if (rd.regionDownloadName != null) {
+        downloadNamesToFullNames.put(rd.regionDownloadName,rd.regionFullName);
+      }
+      fullNamesToRegionData.put(rd.regionFullName,rd);
+      return false;
+    }
+    @Override public boolean isCancelled(){
+      return false;
+    }
+  }
+;
+  iterateOverAllObjects(resultMatcher);
+  for (  Map.Entry<String,String> e : parentRelations.entrySet()) {
+    String fullName=e.getKey();
+    String parentFullName=e.getValue();
+    WorldRegion rd=fullNamesToRegionData.get(fullName);
+    WorldRegion parent=fullNamesToRegionData.get(parentFullName);
+    if (parent != null && rd != null) {
+      parent.addSubregion(rd);
+    }
+    if (rd != null) {
+      rd.superregion=parent;
+    }
+    if (parent != null) {
+      parent.subregions.add(rd);
+    }
+  }
+  structureWorldRegions(new ArrayList<WorldRegion>(fullNamesToRegionData.values()));
 }
