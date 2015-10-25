@@ -10,19 +10,25 @@
   initWorldRegion(world,WorldRegion.NORTH_AMERICA_REGION_ID);
   initWorldRegion(world,WorldRegion.RUSSIA_REGION_ID);
   initWorldRegion(world,WorldRegion.SOUTH_AMERICA_REGION_ID);
+  initWorldRegion(world,WorldRegion.AUSTRALIA_AND_OCEANIA_REGION_ID);
   Iterator<WorldRegion> it=loadedItems.iterator();
   while (it.hasNext()) {
     WorldRegion region=it.next();
     if (region.superregion == null) {
       boolean found=false;
       for (      WorldRegion worldSubregion : world.subregions) {
-        if (worldSubregion.getRegionId().equalsIgnoreCase(region.regionParentFullName)) {
-          worldSubregion.subregions.add(region);
+        if (worldSubregion.getRegionId().equalsIgnoreCase(region.regionFullName)) {
+          for (          WorldRegion rg : region.subregions) {
+            worldSubregion.addSubregion(rg);
+          }
           found=true;
           break;
         }
       }
       if (found) {
+        it.remove();
+      }
+ else       if (region.getRegionId().contains("basemap")) {
         it.remove();
       }
     }

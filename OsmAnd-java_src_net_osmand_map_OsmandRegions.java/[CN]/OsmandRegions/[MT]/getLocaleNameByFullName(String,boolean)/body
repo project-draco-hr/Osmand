@@ -3,8 +3,19 @@
   if (rd == null) {
     return fullName.replace('_',' ');
   }
-  if (includingParent && rd.superregion != null) {
-    return rd.superregion.getLocaleName() + " " + rd.getLocaleName();
+  if (includingParent && rd.getSuperregion() != null && rd.getSuperregion().getSuperregion() != null) {
+    WorldRegion parentParent=rd.getSuperregion().getSuperregion();
+    WorldRegion parent=rd.getSuperregion();
+    if (parentParent.getRegionId().equals(WorldRegion.WORLD) && !parent.getRegionId().equals(WorldRegion.RUSSIA_REGION_ID)) {
+      return rd.getLocaleName();
+    }
+    if (parentParent.getRegionId().equals(WorldRegion.RUSSIA_REGION_ID)) {
+      return parentParent.getRegionId() + " " + rd.getLocaleName();
+    }
+    if (parentParent.getRegionId().equals(WorldRegion.JAPAN_REGION_ID)) {
+      return parentParent.getRegionId() + " " + rd.getLocaleName();
+    }
+    return parent.getLocaleName() + " " + rd.getLocaleName();
   }
  else {
     return rd.getLocaleName();
