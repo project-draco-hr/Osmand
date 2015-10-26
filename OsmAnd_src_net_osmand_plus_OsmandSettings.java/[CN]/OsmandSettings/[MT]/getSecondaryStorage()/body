@@ -1,10 +1,11 @@
 {
-  final String value=System.getenv("SECONDARY_STORAGE");
-  if (!TextUtils.isEmpty(value)) {
-    final String[] paths=value.split(":");
-    for (    String path : paths) {
-      File file=new File(path);
-      if (file.isDirectory() && file.canWrite()) {
+  if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+    return getExternalStorageDirectoryPre19();
+  }
+ else {
+    File[] externals=ctx.getExternalFilesDirs(null);
+    for (    File file : externals) {
+      if (!file.getAbsolutePath().contains("emulated")) {
         return file;
       }
     }
