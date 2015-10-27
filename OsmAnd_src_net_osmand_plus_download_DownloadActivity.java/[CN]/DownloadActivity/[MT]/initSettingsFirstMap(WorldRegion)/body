@@ -1,9 +1,10 @@
 {
   getMyApplication().getSettings().FIRST_MAP_IS_DOWNLOADED.set(true);
   DrivingRegion drg=null;
-  boolean americanSigns="american".equals(reg.getRegionRoadSigns());
-  boolean leftHand="yes".equals(reg.getRegionLeftHandDriving());
-  MetricsConstants mc="miles".equals(reg.getRegionMetric()) ? MetricsConstants.MILES_AND_FOOTS : MetricsConstants.KILOMETERS_AND_METERS;
+  RegionParams params=reg.getParams();
+  boolean americanSigns="american".equals(params.getRegionRoadSigns());
+  boolean leftHand="yes".equals(params.getRegionLeftHandDriving());
+  MetricsConstants mc="miles".equals(params.getRegionMetric()) ? MetricsConstants.MILES_AND_FOOTS : MetricsConstants.KILOMETERS_AND_METERS;
   for (  DrivingRegion r : DrivingRegion.values()) {
     if (r.americanSigns == americanSigns && r.leftHandDriving == leftHand && r.defMetrics == mc) {
       drg=r;
@@ -13,8 +14,9 @@
   if (drg != null) {
     getMyApplication().getSettings().DRIVING_REGION.set(drg);
   }
-  String lng=reg.getRegionLang();
-  if (lng != null) {
+  String lang=params.getRegionLang();
+  if (lang != null) {
+    String lng=lang.split(",")[0];
     String setTts=null;
     for (    String s : OsmandSettings.TTS_AVAILABLE_VOICES) {
       if (lng.startsWith(s)) {
