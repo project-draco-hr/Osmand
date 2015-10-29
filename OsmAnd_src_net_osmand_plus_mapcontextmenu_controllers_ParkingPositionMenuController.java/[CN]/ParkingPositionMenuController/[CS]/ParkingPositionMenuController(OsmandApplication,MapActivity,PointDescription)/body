@@ -1,0 +1,23 @@
+{
+  super(new MenuBuilder(app),mapActivity);
+  this.pointDescription=pointDescription;
+  plugin=OsmandPlugin.getPlugin(ParkingPositionPlugin.class);
+  if (plugin != null) {
+    StringBuilder sb=new StringBuilder();
+    sb.append(plugin.getParkingStartDesc(mapActivity));
+    String leftDesc=plugin.getParkingLeftDesc(mapActivity);
+    if (!Algorithms.isEmpty(leftDesc)) {
+      sb.append("\n").append(leftDesc);
+    }
+    parkingDescription=sb.toString();
+  }
+  titleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      if (plugin != null) {
+        plugin.showDeleteDialog(getMapActivity());
+      }
+    }
+  }
+;
+  titleButtonController.caption=getMapActivity().getString(R.string.osmand_parking_delete);
+}
