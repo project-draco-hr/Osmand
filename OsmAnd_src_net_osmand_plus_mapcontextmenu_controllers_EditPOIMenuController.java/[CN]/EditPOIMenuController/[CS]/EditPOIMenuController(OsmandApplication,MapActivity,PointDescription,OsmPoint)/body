@@ -1,0 +1,47 @@
+{
+  super(new EditPOIMenuBuilder(app,osmPoint),mapActivity);
+  this.pointDescription=pointDescription;
+  plugin=OsmandPlugin.getPlugin(OsmEditingPlugin.class);
+  poiUploader=new ProgressDialogPoiUploader(){
+    @Override public void showProgressDialog(    OsmPoint[] points,    boolean closeChangeSet){
+      ProgressDialog dialog=ProgressImplementation.createProgressDialog(getMapActivity(),getMapActivity().getString(R.string.uploading),getMapActivity().getString(R.string.local_openstreetmap_uploading),ProgressDialog.STYLE_HORIZONTAL).getDialog();
+      OsmEditsUploadListener listener=new OsmEditsUploadListenerHelper(getMapActivity(),getMapActivity().getString(R.string.local_openstreetmap_were_uploaded)){
+        @Override public void uploadEnded(        Map<OsmPoint,String> loadErrorsMap){
+          super.uploadEnded(loadErrorsMap);
+          for (          OsmPoint osmPoint : loadErrorsMap.keySet()) {
+            if (loadErrorsMap.get(osmPoint) == null) {
+              getMapActivity().getContextMenu().close();
+            }
+          }
+        }
+      }
+;
+      OpenstreetmapRemoteUtil remotepoi=new OpenstreetmapRemoteUtil(getMapActivity());
+      OsmBugsRemoteUtil remotebug=new OsmBugsRemoteUtil(getMapActivity().getMyApplication());
+      UploadOpenstreetmapPointAsyncTask uploadTask=new UploadOpenstreetmapPointAsyncTask(dialog,listener,plugin,remotepoi,remotebug,points.length,closeChangeSet);
+      uploadTask.execute(points);
+      dialog.show();
+    }
+  }
+;
+  titleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      if (plugin != null) {
+        SendPoiDialogFragment sendPoiDialogFragment=SendPoiDialogFragment.createInstance(new OsmPoint[]{osmPoint});
+        sendPoiDialogFragment.setPoiUploader(poiUploader);
+        sendPoiDialogFragment.show(mapActivity.getSupportFragmentManager(),SendPoiDialogFragment.TAG);
+      }
+    }
+  }
+;
+  titleButtonController.caption=getMapActivity().getString(R.string.local_openstreetmap_upload);
+  if (osmPoint.getGroup() == OsmPoint.Group.POI) {
+    pointTypeStr=getMapActivity().getString(R.string.osm_edit_created_poi);
+  }
+ else   if (osmPoint.getGroup() == OsmPoint.Group.BUG) {
+    pointTypeStr=getMapActivity().getString(R.string.osm_edit_created_bug);
+  }
+ else {
+    pointTypeStr="";
+  }
+}

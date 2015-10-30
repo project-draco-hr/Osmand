@@ -35,6 +35,15 @@
         final String message=node.getId() == -1 ? getResources().getString(R.string.poi_action_add) : getResources().getString(R.string.poi_action_change);
         AccessibleToast.makeText(getActivity(),MessageFormat.format(getResources().getString(R.string.poi_action_succeded_template),message),Toast.LENGTH_LONG).show();
       }
+      OsmEditingPlugin plugin=OsmandPlugin.getPlugin(OsmEditingPlugin.class);
+      if (plugin != null) {
+        List<OpenstreetmapPoint> points=plugin.getDBPOI().getOpenstreetmapPoints();
+        OsmPoint point=points.get(points.size() - 1);
+        if (getActivity() instanceof MapActivity) {
+          MapActivity mapActivity=(MapActivity)getActivity();
+          mapActivity.getContextMenu().showOrUpdate(new LatLon(point.getLatitude(),point.getLongitude()),plugin.getOsmEditsLayer(mapActivity).getObjectName(point),point);
+        }
+      }
       if (getActivity() instanceof MapActivity) {
         ((MapActivity)getActivity()).getMapView().refreshMap(true);
       }
