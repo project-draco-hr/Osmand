@@ -2,6 +2,28 @@
   super.build(view);
   File file=recording.getFile();
   if (file != null) {
+    if (recording.isPhoto()) {
+      BitmapFactory.Options opts=new BitmapFactory.Options();
+      opts.inSampleSize=4;
+      int rot=recording.getBitmapRotation();
+      Bitmap bmp=BitmapFactory.decodeFile(file.getAbsolutePath(),opts);
+      if (rot != 0) {
+        Matrix matrix=new Matrix();
+        matrix.postRotate(rot);
+        Bitmap resizedBitmap=Bitmap.createBitmap(bmp,0,0,bmp.getWidth(),bmp.getHeight(),matrix,true);
+        bmp.recycle();
+        bmp=resizedBitmap;
+      }
+      buildImageRow(view,bmp,new OnClickListener(){
+        @Override public void onClick(        View v){
+          Intent vint=new Intent(Intent.ACTION_VIEW);
+          vint.setDataAndType(Uri.fromFile(recording.getFile()),"image/*");
+          vint.setFlags(0x10000000);
+          v.getContext().startActivity(vint);
+        }
+      }
+);
+    }
     DateFormat dateFormat=android.text.format.DateFormat.getMediumDateFormat(view.getContext());
     DateFormat timeFormat=android.text.format.DateFormat.getTimeFormat(view.getContext());
     Date date=new Date(recording.getFile().lastModified());
