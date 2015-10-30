@@ -3,9 +3,7 @@
   markerPaddingPx=dpToPx(MARKER_PADDING_DP);
   markerPaddingXPx=dpToPx(MARKER_PADDING_X_DP);
   menu=getMapActivity().getContextMenu();
-  if (savedInstanceState != null) {
-    menu.restoreMenuState(savedInstanceState);
-  }
+  titleButtonController=menu.getTitleButtonController();
   map=getMapActivity().getMapView();
   RotatedTileBox box=map.getCurrentRotatedTileBox().copy();
   customMapCenter=menu.getMapCenter() != null;
@@ -24,16 +22,30 @@
   }
   view=inflater.inflate(R.layout.map_context_menu_fragment,container,false);
   mainView=view.findViewById(R.id.context_menu_main);
-  Button titleButton=(Button)view.findViewById(R.id.title_button);
-  titleButton.setVisibility(menu.hasTitleButton() ? View.VISIBLE : View.GONE);
-  if (menu.hasTitleButton()) {
-    titleButton.setText(menu.getTitleButtonCaption());
+  final View titleButtonContainer=view.findViewById(R.id.title_button_container);
+  if (titleButtonController != null) {
+    titleButtonContainer.setVisibility(View.VISIBLE);
+    final Button titleButton=(Button)view.findViewById(R.id.title_button);
+    titleButton.setText(titleButtonController.getCaption());
+    Drawable leftIcon=titleButtonController.getLeftIcon();
+    if (leftIcon != null) {
+      titleButton.setCompoundDrawablesWithIntrinsicBounds(leftIcon,null,null,null);
+      titleButton.setCompoundDrawablePadding(dpToPx(8f));
+    }
     titleButton.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View v){
-        menu.titleButtonPressed();
+        titleButtonController.buttonPressed();
       }
     }
 );
+    final TextView titleButtonRightText=(TextView)view.findViewById(R.id.title_button_right_text);
+    titleButtonRightText.setVisibility(titleButtonController.isNeedRightText() ? View.VISIBLE : View.GONE);
+    if (titleButtonController.isNeedRightText()) {
+      titleButtonRightText.setText(titleButtonController.getRightTextCaption());
+    }
+  }
+ else {
+    titleButtonContainer.setVisibility(View.GONE);
   }
   if (menu.isLandscapeLayout()) {
     mainView.setLayoutParams(new FrameLayout.LayoutParams(dpToPx(menu.getLandscapeWidthDp()),ViewGroup.LayoutParams.MATCH_PARENT));

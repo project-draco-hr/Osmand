@@ -1,0 +1,50 @@
+{
+  if (savedInstanceState != null) {
+    String itemFileName=savedInstanceState.getString(KEY_ASK_MAP_DOWNLOAD_ITEM_FILENAME);
+    if (itemFileName != null) {
+      indexItem=getMyApplication().getDownloadThread().getIndexes().getIndexItem(itemFileName);
+    }
+  }
+  View view=inflater.inflate(R.layout.ask_map_download_fragment,container,false);
+  ((ImageView)view.findViewById(R.id.titleIconImageView)).setImageDrawable(getIcon(R.drawable.ic_map,R.color.osmand_orange));
+  Button actionButtonOk=(Button)view.findViewById(R.id.actionButtonOk);
+  String titleText=null;
+  String descriptionText=null;
+  if (indexItem != null) {
+    if (indexItem.getBasename().equalsIgnoreCase(WorldRegion.WORLD_BASEMAP)) {
+      titleText=getString(R.string.index_item_world_basemap);
+      descriptionText=getString(R.string.world_map_download_descr);
+    }
+    actionButtonOk.setText(getString(R.string.shared_string_download) + " (" + indexItem.getSizeDescription(getActivity())+ ")");
+  }
+  if (titleText != null) {
+    ((TextView)view.findViewById(R.id.titleTextView)).setText(titleText);
+  }
+  if (descriptionText != null) {
+    ((TextView)view.findViewById(R.id.descriptionTextView)).setText(descriptionText);
+  }
+  final ImageButton closeImageButton=(ImageButton)view.findViewById(R.id.closeImageButton);
+  closeImageButton.setImageDrawable(getContentIcon(R.drawable.ic_action_remove_dark));
+  closeImageButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismiss();
+    }
+  }
+);
+  actionButtonOk.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (indexItem != null) {
+        ((DownloadActivity)getActivity()).startDownload(indexItem);
+        dismiss();
+      }
+    }
+  }
+);
+  view.findViewById(R.id.actionButtonCancel).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismiss();
+    }
+  }
+);
+  return view;
+}
