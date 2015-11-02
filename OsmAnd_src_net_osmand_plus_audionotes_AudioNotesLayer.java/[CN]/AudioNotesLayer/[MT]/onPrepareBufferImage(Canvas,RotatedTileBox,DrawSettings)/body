@@ -1,11 +1,24 @@
 {
   if (tileBox.getZoom() >= startZoom) {
+    float iconSize=audio.getWidth() * 3 / 2.5f;
+    QuadTree<QuadRect> boundIntersections=initBoundIntersections(tileBox);
     DataTileManager<Recording> recs=plugin.getRecordings();
     final QuadRect latlon=tileBox.getLatLonBounds();
     List<Recording> objects=recs.getObjects(latlon.top,latlon.left,latlon.bottom,latlon.right);
+    List<Recording> fullObjects=new ArrayList<>();
     for (    Recording o : objects) {
-      int x=(int)tileBox.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
-      int y=(int)tileBox.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
+      float x=tileBox.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
+      float y=tileBox.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
+      if (intersects(boundIntersections,x,y,iconSize,iconSize)) {
+        canvas.drawBitmap(pointSmall,x - pointSmall.getWidth() / 2,y - pointSmall.getHeight() / 2,paintIcon);
+      }
+ else {
+        fullObjects.add(o);
+      }
+    }
+    for (    Recording o : fullObjects) {
+      float x=tileBox.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
+      float y=tileBox.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
       Bitmap b;
       if (o.isPhoto()) {
         b=photo;

@@ -1,0 +1,43 @@
+{
+  final Object child=getChild(groupPosition,childPosition);
+  if (child instanceof IndexItem) {
+    IndexItem item=(IndexItem)child;
+    DownloadResourceGroup group=getGroupObj(groupPosition);
+    ItemViewHolder viewHolder;
+    if (convertView != null && convertView.getTag() instanceof ItemViewHolder) {
+      viewHolder=(ItemViewHolder)convertView.getTag();
+    }
+ else {
+      convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.two_line_with_images_list_item,parent,false);
+      viewHolder=new ItemViewHolder(convertView,ctx);
+      viewHolder.setShowRemoteDate(true);
+      convertView.setTag(viewHolder);
+    }
+    if (mainGroup.getType() == DownloadResourceGroupType.REGION && group != null && group.getType() == DownloadResourceGroupType.REGION_MAPS) {
+      viewHolder.setShowTypeInName(true);
+      viewHolder.setShowTypeInDesc(false);
+    }
+ else     if (group != null && (group.getType() == DownloadResourceGroupType.SRTM_HEADER || group.getType() == DownloadResourceGroupType.HILLSHADE_HEADER)) {
+      viewHolder.setShowTypeInName(false);
+      viewHolder.setShowTypeInDesc(false);
+    }
+ else {
+      viewHolder.setShowTypeInDesc(true);
+    }
+    viewHolder.bindIndexItem(item);
+  }
+ else {
+    DownloadResourceGroup group=(DownloadResourceGroup)child;
+    DownloadGroupViewHolder viewHolder;
+    if (convertView != null && convertView.getTag() instanceof DownloadGroupViewHolder) {
+      viewHolder=(DownloadGroupViewHolder)convertView.getTag();
+    }
+ else {
+      convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.simple_list_menu_item,parent,false);
+      viewHolder=new DownloadGroupViewHolder(ctx,convertView);
+      convertView.setTag(viewHolder);
+    }
+    viewHolder.bindItem(group);
+  }
+  return convertView;
+}
