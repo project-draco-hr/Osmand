@@ -1,55 +1,6 @@
 {
-  getMyApplication().applyTheme(this);
-  supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
-  if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-    getWindow().setUiOptions(ActivityInfo.UIOPTION_SPLIT_ACTION_BAR_WHEN_NARROW);
-  }
   super.onCreate(savedInstanceState);
-  String title=getString(R.string.shared_string_help) + " (" + Version.getFullVersion(getMyApplication())+ ")";
-  String url="index.html";
-  if (getIntent() != null) {
-    String tl=getIntent().getStringExtra(TITLE);
-    if (tl != null) {
-      title=tl;
-    }
-    String ul=getIntent().getStringExtra(URL);
-    if (ul != null) {
-      url=ul;
-    }
+  if (getSupportFragmentManager().findFragmentByTag(DIALOG) == null) {
+    new HelpScreenDialogFragment().show(getSupportFragmentManager(),DIALOG);
   }
-  getSupportActionBar().setTitle(title);
-  setContentView(R.layout.help_activity);
-  mWebView=(WebView)findViewById(R.id.webView);
-  mWebView.setFocusable(true);
-  mWebView.setFocusableInTouchMode(true);
-  mWebView.requestFocus(View.FOCUS_DOWN);
-  mWebView.setOnTouchListener(new View.OnTouchListener(){
-    @Override public boolean onTouch(    View view,    MotionEvent event){
-switch (event.getAction()) {
-case MotionEvent.ACTION_DOWN:
-case MotionEvent.ACTION_UP:
-        if (!view.hasFocus()) {
-          view.requestFocus();
-        }
-      break;
-  }
-  return false;
-}
-}
-);
-mWebView.setWebViewClient(new WebViewClient(){
-@Override public void onPageFinished(WebView view,String url){
-  mWebView.requestFocus(View.FOCUS_DOWN);
-}
-@Override public void onLoadResource(WebView view,String url){
-  super.onLoadResource(view,url);
-}
-}
-);
-if (savedInstanceState != null) {
-mWebView.restoreState(savedInstanceState);
-}
- else {
-mWebView.loadUrl(FILE_ANDROID_ASSET_HELP + url);
-}
 }
