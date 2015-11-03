@@ -1,29 +1,14 @@
 {
   ArrayList<MyMenuItem> arrayList=new ArrayList<>();
-  MyMenuItem.Builder builder=new MyMenuItem.Builder().setTitle(R.string.shared_string_online_maps).setIcon(R.drawable.ic_world_globe_dark).setListener(new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      HelpArticleDialogFragment.createInstance("feature_articles/online-maps-plugin.html").show(getActivity().getSupportFragmentManager(),null);
+  MyMenuItem.Builder builder=new MyMenuItem.Builder();
+  for (  final OsmandPlugin osmandPlugin : OsmandPlugin.getAvailablePlugins()) {
+    builder.reset();
+    builder.setTitle(osmandPlugin.getName()).setIcon(osmandPlugin.getLogoResourceId());
+    final String helpFileName=osmandPlugin.getHelpFileName();
+    if (helpFileName != null) {
+      builder.setListener(new ShowArticleOnTouchListener(helpFileName,getActivity()));
     }
+    arrayList.add(builder.create());
   }
-);
-  arrayList.add(builder.create());
-  builder.reset().setTitle(R.string.contour_lines_and_hillshade_maps_item).setIcon(R.drawable.ic_plugin_srtm);
-  arrayList.add(builder.create());
-  builder.reset().setTitle(R.string.trip_recording_tool_item).setIcon(R.drawable.ic_action_polygom_dark);
-  arrayList.add(builder.create());
-  builder.reset().setTitle(R.string.osmand_ski_maps_item).setIcon(R.drawable.ic_plugin_skimaps);
-  arrayList.add(builder.create());
-  builder.reset().setTitle(R.string.nautical_charts_item).setIcon(R.drawable.ic_action_sail_boat_dark);
-  arrayList.add(builder.create());
-  builder.reset().setTitle(R.string.audio_video_note_item).setIcon(R.drawable.ic_action_micro_dark);
-  arrayList.add(builder.create());
-  builder.reset().setTitle(R.string.osm_editing_item).setIcon(R.drawable.ic_action_bug_dark);
-  arrayList.add(builder.create());
-  builder.reset().setTitle(R.string.osmand_distance_planning_plugin_name).setIcon(R.drawable.ic_action_ruler);
-  arrayList.add(builder.create());
-  builder.reset().setTitle(R.string.poi_filter_parking).setIcon(R.drawable.ic_action_parking_dark);
-  arrayList.add(builder.create());
-  builder.reset().setTitle(R.string.debugging_and_development).setIcon(R.drawable.ic_plugin_developer);
-  arrayList.add(builder.create());
   return arrayList;
 }

@@ -1,6 +1,6 @@
 {
   final int zoom=tileBox.getZoom();
-  if (zoom < ZOOM_TO_SHOW_BORDERS_ST) {
+  if (zoom < ZOOM_TO_SHOW_SELECTION_ST) {
     return;
   }
   final List<BinaryMapDataObject> currentObjects=data.results;
@@ -22,5 +22,20 @@
       }
     }
     canvas.drawPath(path,paint);
+  }
+  final List<BinaryMapDataObject> selectedObjects=this.selectedObjects;
+  if (zoom >= ZOOM_TO_SHOW_SELECTION_ST && zoom < ZOOM_TO_SHOW_SELECTION && osmandRegions.isInitialized() && selectedObjects != null) {
+    pathSelected.reset();
+    for (    BinaryMapDataObject o : selectedObjects) {
+      double lat=MapUtils.get31LatitudeY(o.getPoint31YTile(0));
+      double lon=MapUtils.get31LongitudeX(o.getPoint31XTile(0));
+      pathSelected.moveTo(tileBox.getPixXFromLonNoRot(lon),tileBox.getPixYFromLatNoRot(lat));
+      for (int j=1; j < o.getPointsLength(); j++) {
+        lat=MapUtils.get31LatitudeY(o.getPoint31YTile(j));
+        lon=MapUtils.get31LongitudeX(o.getPoint31XTile(j));
+        pathSelected.lineTo(tileBox.getPixXFromLonNoRot(lon),tileBox.getPixYFromLatNoRot(lat));
+      }
+    }
+    canvas.drawPath(pathSelected,paintSelected);
   }
 }
