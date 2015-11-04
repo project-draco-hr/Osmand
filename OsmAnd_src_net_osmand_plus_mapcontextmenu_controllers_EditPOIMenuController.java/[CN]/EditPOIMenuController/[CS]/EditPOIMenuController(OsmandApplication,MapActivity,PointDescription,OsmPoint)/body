@@ -24,7 +24,7 @@
     }
   }
 ;
-  titleButtonController=new TitleButtonController(){
+  leftTitleButtonController=new TitleButtonController(){
     @Override public void buttonPressed(){
       if (plugin != null) {
         SendPoiDialogFragment sendPoiDialogFragment=SendPoiDialogFragment.createInstance(new OsmPoint[]{osmPoint});
@@ -34,7 +34,36 @@
     }
   }
 ;
-  titleButtonController.caption=getMapActivity().getString(R.string.local_openstreetmap_upload);
+  leftTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_upload);
+  leftTitleButtonController.leftIconId=R.drawable.ic_action_export;
+  rightTitleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      AccessibleAlertBuilder bld=new AccessibleAlertBuilder(getMapActivity());
+      bld.setMessage(R.string.recording_delete_confirm);
+      bld.setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
+        @Override public void onClick(        DialogInterface dialog,        int which){
+          if (plugin != null) {
+            boolean deleted=false;
+            if (osmPoint instanceof OsmNotesPoint) {
+              deleted=plugin.getDBBug().deleteAllBugModifications((OsmNotesPoint)osmPoint);
+            }
+ else             if (osmPoint instanceof OpenstreetmapPoint) {
+              deleted=plugin.getDBPOI().deletePOI((OpenstreetmapPoint)osmPoint);
+            }
+            if (deleted) {
+              getMapActivity().getContextMenu().close();
+            }
+          }
+        }
+      }
+);
+      bld.setNegativeButton(R.string.shared_string_no,null);
+      bld.show();
+    }
+  }
+;
+  rightTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_delete);
+  rightTitleButtonController.leftIconId=R.drawable.ic_action_delete_dark;
   if (osmPoint.getGroup() == OsmPoint.Group.POI) {
     pointTypeStr=getMapActivity().getString(R.string.osm_edit_created_poi);
   }
