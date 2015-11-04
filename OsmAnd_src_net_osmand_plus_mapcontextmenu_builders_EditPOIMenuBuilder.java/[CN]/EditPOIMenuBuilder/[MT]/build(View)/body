@@ -2,62 +2,14 @@
   super.build(view);
   if (osmPoint instanceof OsmNotesPoint) {
     OsmNotesPoint notes=(OsmNotesPoint)osmPoint;
-    buildRow(view,R.drawable.ic_action_note_dark,notes.getText(),0,false);
-    buildRow(view,R.drawable.ic_group,notes.getAuthor(),0,false);
+    buildRow(view,R.drawable.ic_action_note_dark,notes.getText());
+    buildRow(view,R.drawable.ic_group,notes.getAuthor());
   }
  else   if (osmPoint instanceof OpenstreetmapPoint) {
     OpenstreetmapPoint point=(OpenstreetmapPoint)osmPoint;
-    MapPoiTypes poiTypes=app.getPoiTypes();
     for (    Map.Entry<String,String> e : point.getEntity().getTags().entrySet()) {
-      int iconId;
-      Drawable icon=null;
-      int textColor=0;
-      String key=e.getKey();
-      String vl=e.getValue();
-      boolean needLinks=!"population".equals(key);
-      if (key.startsWith("name:")) {
-        continue;
-      }
- else       if (Amenity.OPENING_HOURS.equals(key)) {
-        iconId=R.drawable.ic_action_time;
-      }
- else       if (Amenity.PHONE.equals(key)) {
-        iconId=R.drawable.ic_action_call_dark;
-      }
- else       if (Amenity.WEBSITE.equals(key)) {
-        iconId=R.drawable.ic_world_globe_dark;
-        vl=vl.replace(' ','_');
-      }
- else {
-        if (Amenity.DESCRIPTION.equals(key)) {
-          iconId=R.drawable.ic_action_note_dark;
-        }
- else {
-          iconId=R.drawable.ic_action_info_dark;
-        }
-        AbstractPoiType pt=poiTypes.getAnyPoiAdditionalTypeByKey(key);
-        if (pt != null) {
-          PoiType pType=(PoiType)pt;
-          if (pType.getParentType() != null && pType.getParentType() instanceof PoiType) {
-            icon=getRowIcon(view.getContext(),((PoiType)pType.getParentType()).getOsmTag() + "_" + pType.getOsmTag().replace(':','_')+ "_"+ pType.getOsmValue());
-          }
-          if (!((PoiType)pt).isText()) {
-            vl=pt.getTranslation();
-          }
- else {
-            vl=pt.getTranslation() + ": " + e.getValue();
-          }
-        }
- else {
-          vl=Algorithms.capitalizeFirstLetterAndLowercase(e.getKey()) + ": " + e.getValue();
-        }
-      }
-      if (icon != null) {
-        buildRow(view,icon,vl,textColor,needLinks);
-      }
- else {
-        buildRow(view,iconId,vl,textColor,needLinks);
-      }
+      String text=e.getKey() + ": " + e.getValue();
+      buildRow(view,R.drawable.ic_action_info_dark,text);
     }
   }
   buildButtonRow(view,null,view.getResources().getString(R.string.shared_string_delete),new OnClickListener(){
