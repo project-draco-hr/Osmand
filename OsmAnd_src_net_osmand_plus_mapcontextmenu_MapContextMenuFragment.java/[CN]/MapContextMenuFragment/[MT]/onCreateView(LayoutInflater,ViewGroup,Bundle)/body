@@ -6,6 +6,7 @@
   leftTitleButtonController=menu.getLeftTitleButtonController();
   rightTitleButtonController=menu.getRightTitleButtonController();
   topRightTitleButtonController=menu.getTopRightTitleButtonController();
+  titleProgressController=menu.getTitleProgressController();
   map=getMapActivity().getMapView();
   RotatedTileBox box=map.getCurrentRotatedTileBox().copy();
   customMapCenter=menu.getMapCenter() != null;
@@ -22,14 +23,18 @@
     origMarkerX=box.getCenterPixelX();
     origMarkerY=box.getCenterPixelY();
   }
+  IconsCache iconsCache=getMyApplication().getIconsCache();
+  boolean light=getMyApplication().getSettings().isLightContent();
   view=inflater.inflate(R.layout.map_context_menu_fragment,container,false);
   mainView=view.findViewById(R.id.context_menu_main);
+  boolean showButtonsContainer=(leftTitleButtonController != null || rightTitleButtonController != null) && (titleProgressController == null || !titleProgressController.visible);
   final View titleButtonsContainer=view.findViewById(R.id.title_button_container);
-  titleButtonsContainer.setVisibility(leftTitleButtonController != null || rightTitleButtonController != null ? View.VISIBLE : View.GONE);
+  titleButtonsContainer.setVisibility(showButtonsContainer ? View.VISIBLE : View.GONE);
   final Button leftTitleButton=(Button)view.findViewById(R.id.title_button);
   final TextView titleButtonRightText=(TextView)view.findViewById(R.id.title_button_right_text);
   if (leftTitleButtonController != null) {
-    leftTitleButton.setText(leftTitleButtonController.getCaption());
+    leftTitleButton.setText(leftTitleButtonController.caption);
+    leftTitleButton.setVisibility(leftTitleButtonController.visible ? View.VISIBLE : View.INVISIBLE);
     Drawable leftIcon=leftTitleButtonController.getLeftIcon();
     if (leftIcon != null) {
       leftTitleButton.setCompoundDrawablesWithIntrinsicBounds(leftIcon,null,null,null);
@@ -41,8 +46,8 @@
       }
     }
 );
-    if (leftTitleButtonController.isNeedRightText()) {
-      titleButtonRightText.setText(leftTitleButtonController.getRightTextCaption());
+    if (leftTitleButtonController.needRightText) {
+      titleButtonRightText.setText(leftTitleButtonController.rightTextCaption);
     }
  else {
       titleButtonRightText.setVisibility(View.GONE);
@@ -54,7 +59,8 @@
   }
   final Button rightTitleButton=(Button)view.findViewById(R.id.title_button_right);
   if (rightTitleButtonController != null) {
-    rightTitleButton.setText(rightTitleButtonController.getCaption());
+    rightTitleButton.setText(rightTitleButtonController.caption);
+    rightTitleButton.setVisibility(rightTitleButtonController.visible ? View.VISIBLE : View.INVISIBLE);
     Drawable leftIcon=rightTitleButtonController.getLeftIcon();
     if (leftIcon != null) {
       rightTitleButton.setCompoundDrawablesWithIntrinsicBounds(leftIcon,null,null,null);
@@ -72,7 +78,8 @@
   }
   final Button topRightTitleButton=(Button)view.findViewById(R.id.title_button_top_right);
   if (topRightTitleButtonController != null) {
-    topRightTitleButton.setText(topRightTitleButtonController.getCaption());
+    topRightTitleButton.setText(topRightTitleButtonController.caption);
+    topRightTitleButton.setVisibility(topRightTitleButtonController.visible ? View.VISIBLE : View.INVISIBLE);
     Drawable leftIcon=topRightTitleButtonController.getLeftIcon();
     if (leftIcon != null) {
       topRightTitleButton.setCompoundDrawablesWithIntrinsicBounds(leftIcon,null,null,null);
@@ -87,6 +94,21 @@
   }
  else {
     topRightTitleButton.setVisibility(View.GONE);
+  }
+  final View titleProgressContainer=view.findViewById(R.id.title_progress_container);
+  if (titleProgressController != null) {
+    updateProgress();
+    final ImageView progressButton=(ImageView)view.findViewById(R.id.progressButton);
+    progressButton.setImageDrawable(iconsCache.getIcon(R.drawable.ic_action_remove_dark,light ? R.color.icon_color : R.color.dashboard_subheader_text_dark));
+    progressButton.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        titleProgressController.buttonPressed();
+      }
+    }
+);
+  }
+ else {
+    titleProgressContainer.setVisibility(View.GONE);
   }
   if (menu.isLandscapeLayout()) {
     mainView.setLayoutParams(new FrameLayout.LayoutParams(dpToPx(menu.getLandscapeWidthDp()),ViewGroup.LayoutParams.MATCH_PARENT));
@@ -215,8 +237,6 @@ if (event.getY() <= dpToPx(SHADOW_HEIGHT_TOP_DP) || event.getAction() != MotionE
 }
 );
 buildHeader();
-IconsCache iconsCache=getMyApplication().getIconsCache();
-boolean light=getMyApplication().getSettings().isLightContent();
 fabView=(ImageView)view.findViewById(R.id.context_menu_fab_view);
 if (menu.fabVisible()) {
 fabView.setOnClickListener(new View.OnClickListener(){
