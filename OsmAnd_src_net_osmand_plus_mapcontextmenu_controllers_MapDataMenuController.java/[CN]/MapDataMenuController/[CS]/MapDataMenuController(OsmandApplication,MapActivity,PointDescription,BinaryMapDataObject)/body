@@ -2,23 +2,16 @@
   super(new MenuBuilder(app),pointDescription,mapActivity);
   OsmandRegions osmandRegions=app.getRegions();
   String fullName=osmandRegions.getFullName(dataObject);
-  final WorldRegion region=osmandRegions.getRegionData(fullName);
-  this.region=region;
-  if (region != null) {
-    regionName=region.getLocaleName();
-  }
- else {
-    regionName=dataObject.getName();
-  }
-  boolean hasIndexes=app.getDownloadThread().getIndexes().isDownloadedFromInternet;
-  boolean isDownloading=false;
+  this.region=osmandRegions.getRegionData(fullName);
+  name=getPointDescription().getName();
+  downloadValidationManager=new DownloadValidationManager(app);
+  downloadThread=app.getDownloadThread();
+  mapActivity.getSupportFragmentManager();
   leftTitleButtonController=new TitleButtonController(){
     @Override public void buttonPressed(){
-      getMapActivity().getContextMenu().close();
-      final Intent intent=new Intent(getMapActivity(),getMapActivity().getMyApplication().getAppCustomization().getDownloadIndexActivity());
-      intent.putExtra(DownloadActivity.FILTER_KEY,regionName);
-      intent.putExtra(DownloadActivity.TAB_TO_OPEN,DownloadActivity.DOWNLOAD_TAB);
-      getMapActivity().startActivity(intent);
+      if (indexItem != null) {
+        downloadValidationManager.startDownload(mapActivity,indexItem);
+      }
     }
   }
 ;
@@ -26,6 +19,9 @@
   leftTitleButtonController.leftIconId=R.drawable.ic_action_import;
   rightTitleButtonController=new TitleButtonController(){
     @Override public void buttonPressed(){
+      if (indexItem != null) {
+        deleteItem();
+      }
     }
   }
 ;
@@ -37,23 +33,16 @@
   }
 ;
   topRightTitleButtonController.caption=getMapActivity().getString(R.string.download_select_map_types);
-  topRightTitleButtonController.visible=hasIndexes && !isDownloading;
   titleProgressController=new TitleProgressController(){
     @Override public void buttonPressed(){
+      if (indexItem != null) {
+        downloadThread.cancelDownload(indexItem);
+      }
     }
   }
 ;
-  if (!hasIndexes) {
-    titleProgressController.setIndexesDownloadMode();
-    titleProgressController.visible=true;
-    getMapActivity().getMyApplication().getDownloadThread().runReloadIndexFiles();
+  if (!downloadThread.getIndexes().isDownloadedFromInternet) {
+    downloadThread.runReloadIndexFiles();
   }
- else   if (isDownloading) {
-    titleProgressController.setMapDownloadMode();
-    titleProgressController.caption="Downloading...";
-    titleProgressController.visible=true;
-  }
- else {
-    titleProgressController.visible=false;
-  }
+  updateData();
 }
