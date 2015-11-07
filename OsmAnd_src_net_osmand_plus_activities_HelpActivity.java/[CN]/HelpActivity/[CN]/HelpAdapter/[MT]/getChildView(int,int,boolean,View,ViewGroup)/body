@@ -1,0 +1,44 @@
+{
+  if (categories[groupPosition] == HelpMenuCategory.HELP_US_TO_IMPROVE) {
+    convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.help_to_improve_item,parent,false);
+    TextView feedbackButton=(TextView)convertView.findViewById(R.id.feedbackButton);
+    Drawable pollIcon=ctx.getIconsCache().getContentIcon(R.drawable.ic_action_message);
+    feedbackButton.setCompoundDrawablesWithIntrinsicBounds(null,pollIcon,null,null);
+    feedbackButton.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        HelpArticleDialogFragment.instantiateWithUrl(OSMAND_POLL_HTML).show(activity.getSupportFragmentManager(),null);
+      }
+    }
+);
+    TextView contactUsButton=(TextView)convertView.findViewById(R.id.contactUsButton);
+    Drawable contactUsIcon=ctx.getIconsCache().getContentIcon(R.drawable.ic_action_message);
+    contactUsButton.setCompoundDrawablesWithIntrinsicBounds(null,contactUsIcon,null,null);
+    final String email=ctx.getString(R.string.support_email);
+    contactUsButton.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        Intent intent=new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:"));
+        intent.putExtra(Intent.EXTRA_EMAIL,new String[]{email});
+        if (intent.resolveActivity(ctx.getPackageManager()) != null) {
+          activity.startActivity(intent);
+        }
+      }
+    }
+);
+    return convertView;
+  }
+ else {
+    final HelpMenuItem child=getChild(groupPosition,childPosition);
+    MenuItemViewHolder viewHolder;
+    if (convertView == null || convertView.getTag() == null) {
+      convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.two_line_with_images_list_item,parent,false);
+      viewHolder=new MenuItemViewHolder(convertView,ctx);
+      convertView.setTag(viewHolder);
+    }
+ else {
+      viewHolder=(MenuItemViewHolder)convertView.getTag();
+    }
+    viewHolder.bindMenuItem(child);
+    return convertView;
+  }
+}
