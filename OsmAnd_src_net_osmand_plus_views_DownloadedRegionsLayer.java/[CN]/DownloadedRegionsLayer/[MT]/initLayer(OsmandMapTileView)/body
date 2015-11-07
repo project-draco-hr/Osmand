@@ -1,21 +1,12 @@
 {
   this.view=view;
-  rm=view.getApplication().getResourceManager();
+  app=view.getApplication();
+  rm=app.getResourceManager();
   osmandRegions=rm.getOsmandRegions();
-  paint=new Paint();
-  paint.setStyle(Style.FILL_AND_STROKE);
-  paint.setStrokeWidth(1);
-  paint.setColor(Color.argb(100,50,200,50));
-  paint.setAntiAlias(true);
-  paint.setStrokeCap(Cap.ROUND);
-  paint.setStrokeJoin(Join.ROUND);
-  paintSelected=new Paint();
-  paintSelected.setStyle(Style.FILL_AND_STROKE);
-  paintSelected.setStrokeWidth(1);
-  paintSelected.setColor(Color.argb(100,255,143,0));
-  paintSelected.setAntiAlias(true);
-  paintSelected.setStrokeCap(Cap.ROUND);
-  paintSelected.setStrokeJoin(Join.ROUND);
+  paintDownloaded=getPaint(Color.argb(100,50,200,50));
+  paintSelected=getPaint(Color.argb(100,255,143,0));
+  paintDownloading=getPaint(Color.argb(40,50,200,50));
+  paintOutdated=getPaint(Color.argb(100,0,128,255));
   textPaint=new TextPaint();
   final WindowManager wmgr=(WindowManager)view.getApplication().getSystemService(Context.WINDOW_SERVICE);
   DisplayMetrics dm=new DisplayMetrics();
@@ -23,16 +14,18 @@
   textPaint.setStrokeWidth(21 * dm.scaledDensity);
   textPaint.setAntiAlias(true);
   textPaint.setTextAlign(Paint.Align.CENTER);
-  path=new Path();
+  pathDownloaded=new Path();
   pathSelected=new Path();
+  pathDownloading=new Path();
+  pathOutdated=new Path();
   data=new MapLayerData<List<BinaryMapDataObject>>(){
     @Override public void layerOnPostExecute(){
       view.refreshMap();
     }
     public boolean queriedBoxContains(    final RotatedTileBox queriedData,    final RotatedTileBox newBox){
-      if (newBox.getZoom() < ZOOM_TO_SHOW_BORDERS) {
-        if (queriedData != null && queriedData.getZoom() < ZOOM_TO_SHOW_BORDERS) {
-          return queriedData != null && queriedData.containsTileBox(newBox);
+      if (newBox.getZoom() < ZOOM_TO_SHOW_SELECTION) {
+        if (queriedData != null && queriedData.getZoom() < ZOOM_TO_SHOW_SELECTION) {
+          return queriedData.containsTileBox(newBox);
         }
  else {
           return false;
