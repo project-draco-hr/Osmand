@@ -1,0 +1,57 @@
+{
+  if (indexItem == null) {
+    otherIndexItems=downloadThread.getIndexes().getIndexItems(region.getRegionDownloadNameLC());
+    for (    IndexItem i : otherIndexItems) {
+      if (i.getType() == DownloadActivityType.NORMAL_FILE) {
+        indexItem=i;
+        otherIndexItems.remove(i);
+        break;
+      }
+    }
+  }
+  topRightTitleButtonController.visible=otherIndexItems.size() > 0;
+  if (indexItem != null) {
+    if (indexItem.isOutdated()) {
+      leftTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_update) + " (" + indexItem.getSizeDescription(getMapActivity())+ ")";
+    }
+ else {
+      leftTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_download) + " (" + indexItem.getSizeDescription(getMapActivity())+ ")";
+    }
+  }
+  rightTitleButtonController.visible=indexItem != null && indexItem.isDownloaded();
+  boolean hasIndexes=downloadThread.getIndexes().isDownloadedFromInternet;
+  boolean isDownloading=indexItem != null && downloadThread.isDownloading(indexItem);
+  if (!hasIndexes) {
+    titleProgressController.setIndexesDownloadMode();
+    titleProgressController.visible=true;
+  }
+ else   if (isDownloading) {
+    titleProgressController.setMapDownloadMode();
+    if (downloadThread.getCurrentDownloadingItem() == indexItem) {
+      titleProgressController.indeterminate=false;
+      titleProgressController.progress=downloadThread.getCurrentDownloadingItemProgress();
+    }
+ else {
+      titleProgressController.indeterminate=true;
+      titleProgressController.progress=0;
+    }
+    double mb=indexItem.getArchiveSizeMB();
+    String v;
+    if (titleProgressController.progress != -1) {
+      v=getMapActivity().getString(R.string.value_downloaded_from_max,mb * titleProgressController.progress / 100,mb);
+    }
+ else {
+      v=getMapActivity().getString(R.string.file_size_in_mb,mb);
+    }
+    if (indexItem.getType() == DownloadActivityType.ROADS_FILE) {
+      titleProgressController.caption=indexItem.getType().getString(getMapActivity()) + " ??? " + v;
+    }
+ else {
+      titleProgressController.caption=v;
+    }
+    titleProgressController.visible=true;
+  }
+ else {
+    titleProgressController.visible=false;
+  }
+}

@@ -1,0 +1,48 @@
+{
+  super(new MenuBuilder(app),pointDescription,mapActivity);
+  OsmandRegions osmandRegions=app.getRegions();
+  String fullName=osmandRegions.getFullName(dataObject);
+  this.region=osmandRegions.getRegionData(fullName);
+  name=getPointDescription().getName();
+  downloadValidationManager=new DownloadValidationManager(app);
+  downloadThread=app.getDownloadThread();
+  mapActivity.getSupportFragmentManager();
+  leftTitleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      if (indexItem != null) {
+        downloadValidationManager.startDownload(mapActivity,indexItem);
+      }
+    }
+  }
+;
+  leftTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_download);
+  leftTitleButtonController.leftIconId=R.drawable.ic_action_import;
+  rightTitleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      if (indexItem != null) {
+        deleteItem();
+      }
+    }
+  }
+;
+  rightTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_delete);
+  rightTitleButtonController.leftIconId=R.drawable.ic_action_delete_dark;
+  topRightTitleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+    }
+  }
+;
+  topRightTitleButtonController.caption=getMapActivity().getString(R.string.download_select_map_types);
+  titleProgressController=new TitleProgressController(){
+    @Override public void buttonPressed(){
+      if (indexItem != null) {
+        downloadThread.cancelDownload(indexItem);
+      }
+    }
+  }
+;
+  if (!downloadThread.getIndexes().isDownloadedFromInternet) {
+    downloadThread.runReloadIndexFiles();
+  }
+  updateData();
+}
