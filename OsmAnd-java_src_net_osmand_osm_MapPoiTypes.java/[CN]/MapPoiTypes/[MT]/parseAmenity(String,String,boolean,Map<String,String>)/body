@@ -1,5 +1,4 @@
 {
-  boolean hasName=!Algorithms.isEmpty(otherTags.get("name"));
   initPoiTypesByTag();
   PoiType pt=poiTypesByTag.get(tag + "/" + val);
   if (pt == null) {
@@ -16,6 +15,11 @@
   if (pt.getCategory() == getOtherMapCategory()) {
     return null;
   }
+  String nameValue=otherTags.get("name");
+  if (pt.getNameTag() != null) {
+    nameValue=otherTags.get(pt.getNameTag());
+  }
+  boolean hasName=!Algorithms.isEmpty(nameValue);
   if (!hasName && pt.isNameOnly()) {
     return null;
   }
@@ -25,6 +29,9 @@
   Amenity a=new Amenity();
   a.setType(pt.getCategory());
   a.setSubType(pt.getKeyName());
+  if (pt.getNameTag() != null) {
+    a.setName(nameValue);
+  }
   Iterator<Entry<String,String>> it=otherTags.entrySet().iterator();
   while (it.hasNext()) {
     Entry<String,String> e=it.next();
