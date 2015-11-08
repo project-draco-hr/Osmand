@@ -8,7 +8,9 @@
     int textColor=0;
     String key=e.getKey();
     String vl=e.getValue();
+    String textPrefix="";
     boolean isWiki=false;
+    boolean isText=false;
     boolean needLinks=!"population".equals(key);
     if (amenity.getType().isWiki()) {
       if (!hasWiki) {
@@ -72,22 +74,26 @@
         if (pType.getParentType() != null && pType.getParentType() instanceof PoiType) {
           icon=getRowIcon(view.getContext(),((PoiType)pType.getParentType()).getOsmTag() + "_" + pType.getOsmTag().replace(':','_')+ "_"+ pType.getOsmValue());
         }
-        if (pt instanceof PoiType && !((PoiType)pt).isText()) {
-          vl=pt.getTranslation();
+        if (!pType.isText()) {
+          vl=pType.getTranslation();
         }
  else {
-          vl=pt.getTranslation() + ": " + amenity.unzipContent(e.getValue());
+          isText=true;
+          iconId=R.drawable.ic_action_note_dark;
+          textPrefix=pType.getTranslation();
+          vl=amenity.unzipContent(e.getValue());
         }
       }
  else {
-        vl=Algorithms.capitalizeFirstLetterAndLowercase(e.getKey()) + ": " + amenity.unzipContent(e.getValue());
+        textPrefix=Algorithms.capitalizeFirstLetterAndLowercase(e.getKey());
+        vl=amenity.unzipContent(e.getValue());
       }
     }
     if (icon != null) {
-      buildRow(view,icon,vl,textColor,isWiki,needLinks);
+      buildRow(view,icon,vl,textPrefix,textColor,isWiki,isText,needLinks);
     }
  else {
-      buildRow(view,iconId,vl,textColor,isWiki,needLinks);
+      buildRow(view,iconId,vl,textPrefix,textColor,isWiki,isText,needLinks);
     }
   }
 }
