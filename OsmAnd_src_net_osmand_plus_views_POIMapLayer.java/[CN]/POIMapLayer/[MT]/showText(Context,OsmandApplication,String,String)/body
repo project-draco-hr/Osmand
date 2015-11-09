@@ -1,0 +1,38 @@
+{
+  final Dialog dialog=new Dialog(ctx,app.getSettings().isLightContent() ? R.style.OsmandLightTheme : R.style.OsmandDarkTheme);
+  LinearLayout ll=new LinearLayout(ctx);
+  ll.setOrientation(LinearLayout.VERTICAL);
+  final Toolbar topBar=new Toolbar(ctx);
+  topBar.setClickable(true);
+  Drawable back=app.getIconsCache().getIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+  topBar.setNavigationIcon(back);
+  topBar.setTitle(textPrefix);
+  topBar.setBackgroundColor(ctx.getResources().getColor(getResIdFromAttribute(ctx,R.attr.pstsTabBackground)));
+  topBar.setTitleTextColor(ctx.getResources().getColor(getResIdFromAttribute(ctx,R.attr.pstsTextColor)));
+  topBar.setNavigationOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    final View v){
+      dialog.dismiss();
+    }
+  }
+);
+  final TextView textView=new TextView(ctx);
+  LinearLayout.LayoutParams llTextParams=new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+  int textMargin=dpToPx(app,10f);
+  boolean light=app.getSettings().isLightContent();
+  textView.setLayoutParams(llTextParams);
+  textView.setPadding(textMargin,textMargin,textMargin,textMargin);
+  textView.setTextSize(16);
+  textView.setTextColor(app.getResources().getColor(light ? R.color.ctx_menu_info_text_light : R.color.ctx_menu_info_text_dark));
+  textView.setAutoLinkMask(Linkify.ALL);
+  textView.setLinksClickable(true);
+  textView.setText(text);
+  ScrollView scrollView=new ScrollView(ctx);
+  ll.addView(topBar);
+  LayoutParams lp=new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,0);
+  lp.weight=1;
+  ll.addView(scrollView,lp);
+  scrollView.addView(textView);
+  dialog.setContentView(ll);
+  dialog.setCancelable(true);
+  dialog.show();
+}
