@@ -1,5 +1,6 @@
 {
   Map<OsmPoint,String> loadErrorsMap=new HashMap<>();
+  boolean uploaded=false;
   for (  OsmPoint point : points) {
     if (interruptUploading)     break;
     if (point.getGroup() == OsmPoint.Group.POI) {
@@ -8,8 +9,9 @@
       if (OsmPoint.Action.CREATE != p.getAction()) {
         entityInfo=remotepoi.loadNode(p.getEntity());
       }
-      Node n=remotepoi.commitNodeImpl(p.getAction(),p.getEntity(),entityInfo,p.getComment(),closeChangeSet);
+      Node n=remotepoi.commitNodeImpl(p.getAction(),p.getEntity(),entityInfo,p.getComment(),false);
       if (n != null) {
+        uploaded=true;
         plugin.getDBPOI().deletePOI(p);
         publishProgress(p);
       }
@@ -33,6 +35,9 @@
       }
       loadErrorsMap.put(point,errorMessage);
     }
+  }
+  if (uploaded) {
+    remotepoi.closeChangeSet();
   }
   return loadErrorsMap;
 }
