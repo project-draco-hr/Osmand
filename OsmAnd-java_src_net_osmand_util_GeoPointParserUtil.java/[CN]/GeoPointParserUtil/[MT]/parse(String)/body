@@ -135,7 +135,16 @@
           return parseGoogleMapsPath(params.get("saddr"),params);
         }
  else         if (params.containsKey("q")) {
-          return parseGoogleMapsPath(params.get("q"),params);
+          String opath=params.get("q");
+          final String pref="loc:";
+          if (opath.contains(pref)) {
+            opath=opath.substring(opath.lastIndexOf(pref) + pref.length());
+          }
+          final String postf=" (You)";
+          if (opath.contains(postf)) {
+            opath=opath.substring(0,opath.indexOf(postf));
+          }
+          return parseGoogleMapsPath(opath,params);
         }
         if (fragment != null) {
           Pattern p=Pattern.compile(".*[!&]q=([^&!]+).*");
