@@ -1,0 +1,25 @@
+{
+  recordControl.setText(app.getString(R.string.shared_string_control_stop),"");
+  recordControl.setImageDrawable(activity.getResources().getDrawable(R.drawable.widget_icon_av_active));
+  final MapInfoLayer mil=mapActivity.getMapLayers().getMapInfoLayer();
+  final boolean contains=recordControl.isVisible();
+  if (!contains) {
+    recordControl.setExplicitlyVisible(true);
+    mil.recreateControls();
+    mapActivity.getMapView().refreshMap(true);
+  }
+  AccessibleToast.makeText(mapActivity,R.string.recording_is_recorded,Toast.LENGTH_LONG).show();
+  recordControl.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (!contains) {
+        recordControl.setExplicitlyVisible(false);
+        mil.recreateControls();
+      }
+      stopRecording(mapActivity);
+      SHOW_RECORDINGS.set(true);
+      mapActivity.getMapView().refreshMap();
+      updateWidgetIcon(recordControl);
+    }
+  }
+);
+}
