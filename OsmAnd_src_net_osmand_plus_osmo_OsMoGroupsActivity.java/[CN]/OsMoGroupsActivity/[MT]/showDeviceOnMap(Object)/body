@@ -1,0 +1,15 @@
+{
+  if (!checkOperationIsNotRunning()) {
+    return;
+  }
+  OsMoDevice device=(OsMoDevice)(o instanceof OsMoDevice ? o : null);
+  if (device != null) {
+    Location location=device.getLastLocation();
+    MapActivity.getSingleMapViewTrackingUtilities().setMapLinkedToLocation(false);
+    if (location != null) {
+      app.getSettings().setMapLocationToShow(location.getLatitude(),location.getLongitude(),app.getSettings().getLastKnownMapZoom(),new PointDescription(PointDescription.POINT_TYPE_MARKER,device.getVisibleName()),false,device);
+    }
+    OsMoPositionLayer.setFollowTrackerId(device,location);
+    MapActivity.launchMapActivityMoveToTop(OsMoGroupsActivity.this);
+  }
+}
