@@ -30,12 +30,15 @@
   updateStatus();
   setOnChildClickListener(new ExpandableListView.OnChildClickListener(){
     @Override public boolean onChildClick(    ExpandableListView parent,    View v,    int groupPosition,    int childPosition,    long id){
-      OsMoDevice model=adapter.getChild(groupPosition,childPosition);
-      if (model != selectedObject) {
-        enterSelectionMode(model);
-      }
+      OsMoDevice device=adapter.getChild(groupPosition,childPosition);
+      if (device != null) {
+        Location location=device.getLastLocation();
+        if (location != null) {
+          showDeviceOnMap(device);
+        }
  else {
-        quitSelectionMode();
+          showSettingsDialog(OsMoGroupsActivity.this,osMoPlugin,device);
+        }
       }
       return true;
     }
