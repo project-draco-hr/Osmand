@@ -3,7 +3,6 @@
     return;
   }
   actionMode=startSupportActionMode(new ActionMode.Callback(){
-    private OsMoDevice device;
     private OsMoGroup group;
     private Menu menu;
     private MenuItem createActionModeMenuItem(    final ActionMode actionMode,    Menu m,    int id,    int titleRes,    int icon,    int menuItemType){
@@ -27,18 +26,8 @@
         getClearToolbar(false);
       }
       this.menu=menu;
-      device=(OsMoDevice)(o instanceof OsMoDevice ? o : null);
       group=(OsMoGroup)(o instanceof OsMoGroup ? o : null);
       MenuItem mi=null;
-      if (device != null) {
-        mode.setTitle(device.getVisibleName());
-        if (device.getLastLocation() != null) {
-          createActionModeMenuItem(actionMode,menu,SHOW_ON_MAP_ID,R.string.shared_string_show_on_map,R.drawable.ic_action_marker_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-          MenuItem menuItem=createActionModeMenuItem(actionMode,menu,TRACK_DEV_ID,R.string.osmo_set_moving_target,R.drawable.ic_action_flage_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-          menuItem.setTitleCondensed(getString(R.string.osmo_follow));
-        }
-        createActionModeMenuItem(actionMode,menu,SETTINGS_DEV_ID,R.string.shared_string_settings,R.drawable.ic_action_settings,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-      }
       if (group != null) {
         createActionModeMenuItem(actionMode,menu,SHARE_ID,R.string.shared_string_share,R.drawable.ic_action_gshare_dark,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
         mode.setTitle(group.getVisibleName(OsMoGroupsActivity.this));
@@ -50,7 +39,7 @@
         FrameLayout l=new FrameLayout(OsMoGroupsActivity.this);
         View view=inflater.inflate(R.layout.check_item_rel,l);
         final CompoundButton check=(CompoundButton)view.findViewById(R.id.check_item);
-        check.setChecked((device != null && device.isActive() && device.isEnabled()) || (group != null && group.isActive() && group.isEnabled()));
+        check.setChecked(group != null && group.isActive() && group.isEnabled());
         check.setOnCheckedChangeListener(new OnCheckedChangeListener(){
           @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
             onOffAction(check);
@@ -72,19 +61,8 @@
       }
     }
     @Override public boolean onActionItemClicked(    ActionMode mode,    MenuItem item){
-      if (item.getItemId() == TRACK_DEV_ID) {
-        if (device != null && device.getLastLocation() != null) {
-          TargetPointsHelper targets=getMyApplication().getTargetPointsHelper();
-          targets.navigateToPoint(new LatLon(device.getLastLocation().getLatitude(),device.getLastLocation().getLongitude()),true,-1);
-          OsMoPositionLayer.setFollowDestination(device);
-          MapActivity.launchMapActivityMoveToTop(OsMoGroupsActivity.this);
-        }
-      }
- else       if (item.getItemId() == SETTINGS_DEV_ID) {
-        showSettingsDialog(device);
-      }
- else       if (item.getItemId() == DELETE_ACTION_ID) {
-        Builder bld=new AlertDialog.Builder(OsMoGroupsActivity.this);
+      if (item.getItemId() == DELETE_ACTION_ID) {
+        AlertDialog.Builder bld=new AlertDialog.Builder(OsMoGroupsActivity.this);
         String name=((OsMoGroup)selectedObject).getVisibleName(OsMoGroupsActivity.this);
         bld.setTitle(getString(R.string.osmo_leave_confirmation_msg,name));
         bld.setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
@@ -103,17 +81,6 @@
       }
  else       if (item.getItemId() == SHARE_ID) {
         shareOsMoGroup(group.getVisibleName(app),group.getGroupId());
-      }
- else       if (item.getItemId() == SHOW_ON_MAP_ID) {
-        if (device != null) {
-          Location location=device.getLastLocation();
-          MapActivity.getSingleMapViewTrackingUtilities().setMapLinkedToLocation(false);
-          if (location != null) {
-            app.getSettings().setMapLocationToShow(location.getLatitude(),location.getLongitude(),app.getSettings().getLastKnownMapZoom(),new PointDescription(PointDescription.POINT_TYPE_MARKER,device.getVisibleName()),false,device);
-          }
-          OsMoPositionLayer.setFollowTrackerId(device,location);
-          MapActivity.launchMapActivityMoveToTop(OsMoGroupsActivity.this);
-        }
       }
  else       if (item.getItemId() == ON_OFF_ACTION_ID) {
         CompoundButton bt=((CompoundButton)MenuItemCompat.getActionView(item).findViewById(R.id.check_item));

@@ -3,11 +3,12 @@
   final OsmandSettings settings=getMyApplication().getSettings();
   boolean isLightTheme=settings.OSMAND_THEME.get() == OsmandSettings.OSMAND_LIGHT_THEME;
   if (savedInstanceState != null) {
-    Map<String,String> mp=(Map<String,String>)savedInstanceState.getSerializable(TAGS_LIST);
+    @SuppressWarnings("unchecked") Map<String,String> mp=(Map<String,String>)savedInstanceState.getSerializable(TAGS_LIST);
     editPoiData.updateTags(mp);
   }
+  boolean isAddingPoi=getArguments().getBoolean(IS_ADDING_POI);
   Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
-  toolbar.setTitle(R.string.poi_create_title);
+  toolbar.setTitle(isAddingPoi ? R.string.poi_create_title : R.string.poi_edit_title);
   toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
   toolbar.setNavigationOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
@@ -109,9 +110,7 @@
   Button cancelButton=(Button)view.findViewById(R.id.cancelButton);
   cancelButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      FragmentManager fragmentManager=getActivity().getSupportFragmentManager();
-      fragmentManager.beginTransaction().remove(EditPoiDialogFragment.this).commit();
-      fragmentManager.popBackStack();
+      dismissCheckForChanges();
     }
   }
 );

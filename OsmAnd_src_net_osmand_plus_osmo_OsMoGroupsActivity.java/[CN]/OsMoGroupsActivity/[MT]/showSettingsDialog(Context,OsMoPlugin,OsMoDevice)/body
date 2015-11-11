@@ -1,0 +1,24 @@
+{
+  AlertDialog.Builder bld=new AlertDialog.Builder(ctx);
+  bld.setTitle(R.string.osmo_edit_device);
+  final LayoutInflater inflater=LayoutInflater.from(ctx);
+  View view=inflater.inflate(R.layout.osmo_edit_device,null);
+  final EditText name=(EditText)view.findViewById(R.id.Name);
+  if (device.getColor() == 0) {
+    plugin.getGroups().setDeviceProperties(device,device.getVisibleName(),ColorDialogs.getRandomColor());
+  }
+  int devColor=device.getColor();
+  bld.setView(view);
+  name.setText(device.getVisibleName());
+  final Spinner colorSpinner=(Spinner)view.findViewById(R.id.ColorSpinner);
+  final TIntArrayList list=new TIntArrayList();
+  ColorDialogs.setupColorSpinner(ctx,devColor,colorSpinner,list);
+  bld.setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      plugin.getGroups().setDeviceProperties(device,name.getText().toString(),list.get(colorSpinner.getSelectedItemPosition()));
+    }
+  }
+);
+  bld.setNegativeButton(R.string.shared_string_no,null);
+  bld.show();
+}
