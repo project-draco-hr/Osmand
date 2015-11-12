@@ -3,10 +3,37 @@
     data.queryNewData(tileBox);
     List<OpenStreetNote> objects=data.getResults();
     if (objects != null) {
+      float iconSize=resolvedNote.getWidth() * 3 / 2.5f;
+      QuadTree<QuadRect> boundIntersections=initBoundIntersections(tileBox);
+      List<OpenStreetNote> fullObjects=new ArrayList<>();
       for (      OpenStreetNote o : objects) {
-        int x=tileBox.getPixXFromLonNoRot(o.getLongitude());
-        int y=tileBox.getPixYFromLatNoRot(o.getLatitude());
-        canvas.drawCircle(x,y,getRadiusBug(tileBox),o.isLocal() ? pointNotSubmitedUI : (o.isOpened() ? pointOpenedUI : pointClosedUI));
+        float x=tileBox.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
+        float y=tileBox.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
+        if (intersects(boundIntersections,x,y,iconSize,iconSize)) {
+          Bitmap b;
+          if (o.isOpened()) {
+            b=unresolvedNoteSmall;
+          }
+ else {
+            b=resolvedNoteSmall;
+          }
+          canvas.drawBitmap(b,x - b.getWidth() / 2,y - b.getHeight() / 2,paintIcon);
+        }
+ else {
+          fullObjects.add(o);
+        }
+      }
+      for (      OpenStreetNote o : fullObjects) {
+        float x=tileBox.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
+        float y=tileBox.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
+        Bitmap b;
+        if (o.isOpened()) {
+          b=unresolvedNote;
+        }
+ else {
+          b=resolvedNote;
+        }
+        canvas.drawBitmap(b,x - b.getWidth() / 2,y - b.getHeight() / 2,paintIcon);
       }
     }
   }
