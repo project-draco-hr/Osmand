@@ -4,7 +4,7 @@
   OsmPoint.Action action=node.getId() == -1 ? OsmPoint.Action.CREATE : OsmPoint.Action.MODIFY;
   for (  Map.Entry<String,String> tag : editPoiData.getTagValues().entrySet()) {
     if (tag.getKey().equals(EditPoiData.POI_TYPE_TAG)) {
-      final PoiType poiType=allTranslatedSubTypes.get(tag.getValue().trim().toLowerCase());
+      final PoiType poiType=editPoiData.getAllTranslatedSubTypes().get(tag.getValue().trim().toLowerCase());
       if (poiType != null) {
         node.putTag(poiType.getOsmTag(),poiType.getOsmValue());
         if (poiType.getOsmTag2() != null) {
@@ -12,7 +12,7 @@
         }
       }
  else {
-        node.putTag(editPoiData.amenity.getType().getDefaultTag(),tag.getValue());
+        node.putTag(editPoiData.getPoiCategory().getDefaultTag(),tag.getValue());
       }
     }
  else     if (!Algorithms.isEmpty(tag.getKey()) && !Algorithms.isEmpty(tag.getValue())) {
@@ -22,10 +22,10 @@
   commitNode(action,node,mOpenstreetmapUtil.getEntityInfo(),"",false,new Runnable(){
     @Override public void run(){
       OsmEditingPlugin plugin=OsmandPlugin.getPlugin(OsmEditingPlugin.class);
-      if (plugin != null) {
+      if (plugin != null && mOpenstreetmapUtil instanceof OpenstreetmapLocalUtil) {
         List<OpenstreetmapPoint> points=plugin.getDBPOI().getOpenstreetmapPoints();
-        OsmPoint point=points.get(points.size() - 1);
-        if (getActivity() instanceof MapActivity) {
+        if (getActivity() instanceof MapActivity && points.size() > 0) {
+          OsmPoint point=points.get(points.size() - 1);
           MapActivity mapActivity=(MapActivity)getActivity();
           mapActivity.getContextMenu().showOrUpdate(new LatLon(point.getLatitude(),point.getLongitude()),plugin.getOsmEditsLayer(mapActivity).getObjectName(point),point);
         }
