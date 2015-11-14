@@ -1,0 +1,48 @@
+{
+  currentTrack.getModifiableGpxFile().modifiedTime=time;
+  List<Object> params=new ArrayList<>();
+  params.add(lat);
+  params.add(lon);
+  params.add(time);
+  params.add(description);
+  params.add(name);
+  params.add(category);
+  params.add(color);
+  params.add(pt.getLatitude());
+  params.add(pt.getLongitude());
+  params.add(pt.time);
+  StringBuilder sb=new StringBuilder();
+  String prefix="UPDATE " + POINT_NAME + " SET "+ POINT_COL_LAT+ "=?, "+ POINT_COL_LON+ "=?, "+ POINT_COL_DATE+ "=?, "+ POINT_COL_DESCRIPTION+ "=?, "+ POINT_COL_NAME+ "=?, "+ POINT_COL_CATEGORY+ "=?, "+ POINT_COL_COLOR+ "=? "+ "WHERE "+ POINT_COL_LAT+ "=? AND "+ POINT_COL_LON+ "=? AND "+ POINT_COL_DATE+ "=?";
+  sb.append(prefix);
+  if (pt.desc != null) {
+    sb.append(" AND ").append(POINT_COL_DESCRIPTION).append("=?");
+    params.add(pt.desc);
+  }
+ else {
+    sb.append(" AND ").append(POINT_COL_DESCRIPTION).append(" IS NULL");
+  }
+  if (pt.name != null) {
+    sb.append(" AND ").append(POINT_COL_NAME).append("=?");
+    params.add(pt.name);
+  }
+ else {
+    sb.append(" AND ").append(POINT_COL_NAME).append(" IS NULL");
+  }
+  if (pt.category != null) {
+    sb.append(" AND ").append(POINT_COL_CATEGORY).append("=?");
+    params.add(pt.category);
+  }
+ else {
+    sb.append(" AND ").append(POINT_COL_CATEGORY).append(" IS NULL");
+  }
+  execWithClose(sb.toString(),params.toArray());
+  pt.lat=lat;
+  pt.lon=lon;
+  pt.time=time;
+  pt.desc=description;
+  pt.name=name;
+  pt.category=category;
+  if (color != 0) {
+    pt.setColor(color);
+  }
+}
