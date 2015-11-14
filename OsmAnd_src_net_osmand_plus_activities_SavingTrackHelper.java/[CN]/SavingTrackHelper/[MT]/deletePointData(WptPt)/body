@@ -1,0 +1,34 @@
+{
+  currentTrack.getModifiableGpxFile().points.remove(pt);
+  currentTrack.getModifiableGpxFile().modifiedTime=System.currentTimeMillis();
+  points--;
+  List<Object> params=new ArrayList<>();
+  params.add(pt.getLatitude());
+  params.add(pt.getLongitude());
+  params.add(pt.time);
+  StringBuilder sb=new StringBuilder();
+  String prefix="DELETE FROM " + POINT_NAME + " WHERE "+ POINT_COL_LAT+ "=? AND "+ POINT_COL_LON+ "=? AND "+ POINT_COL_DATE+ "=?";
+  sb.append(prefix);
+  if (pt.desc != null) {
+    sb.append(" AND ").append(POINT_COL_DESCRIPTION).append("=?");
+    params.add(pt.desc);
+  }
+ else {
+    sb.append(" AND ").append(POINT_COL_DESCRIPTION).append(" IS NULL");
+  }
+  if (pt.name != null) {
+    sb.append(" AND ").append(POINT_COL_NAME).append("=?");
+    params.add(pt.name);
+  }
+ else {
+    sb.append(" AND ").append(POINT_COL_NAME).append(" IS NULL");
+  }
+  if (pt.category != null) {
+    sb.append(" AND ").append(POINT_COL_CATEGORY).append("=?");
+    params.add(pt.category);
+  }
+ else {
+    sb.append(" AND ").append(POINT_COL_CATEGORY).append(" IS NULL");
+  }
+  execWithClose(sb.toString(),params.toArray());
+}
