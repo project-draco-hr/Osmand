@@ -1,4 +1,5 @@
 {
+  OsmBugResult r=new OsmBugResult();
   try {
     HttpURLConnection connection=NetworkUtils.getHttpURLConnection(url);
     log.info("Editing poi " + url);
@@ -20,21 +21,21 @@
     log.info("Response : " + responseBody);
     connection.disconnect();
     if (!ok) {
-      return msg + "\n" + responseBody;
+      r.warning=msg + "\n" + responseBody;
     }
   }
  catch (  NullPointerException e) {
     String msg=app.getString(R.string.auth_failed);
     log.error(msg,e);
-    return app.getString(R.string.auth_failed) + "";
+    r.warning=app.getString(R.string.auth_failed) + "";
   }
 catch (  MalformedURLException e) {
     log.error(userOperation + " " + app.getString(R.string.failed_op),e);
-    return e.getMessage() + "";
+    r.warning=e.getMessage() + "";
   }
 catch (  IOException e) {
     log.error(userOperation + " " + app.getString(R.string.failed_op),e);
-    return e.getMessage() + " link unavailable";
+    r.warning=e.getMessage() + " link unavailable";
   }
-  return null;
+  return r;
 }

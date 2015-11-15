@@ -1,0 +1,62 @@
+{
+  AsyncTask<Void,Void,OsmBugResult> task=new AsyncTask<Void,Void,OsmBugResult>(){
+    private OsmBugsUtil osmbugsUtil;
+    @Override protected OsmBugResult doInBackground(    Void... params){
+      osmbugsUtil=getOsmbugsUtil(bug);
+      if (action == Action.REOPEN) {
+        return osmbugsUtil.reopenBug(bug.getLatitude(),bug.getLongitude(),bug.getId(),text);
+      }
+ else       if (action == Action.MODIFY) {
+        return osmbugsUtil.addingComment(bug.getLatitude(),bug.getLongitude(),bug.getId(),text);
+      }
+ else       if (action == Action.CLOSE) {
+        return osmbugsUtil.closingBug(bug.getLatitude(),bug.getLongitude(),bug.getId(),text);
+      }
+ else       if (action == Action.CREATE) {
+        return osmbugsUtil.createNewBug(bug.getLatitude(),bug.getLongitude(),text);
+      }
+      return null;
+    }
+    protected void onPostExecute(    OsmBugResult obj){
+      if (obj != null && obj.warning == null) {
+        if (local == osmbugsUtil) {
+          AccessibleToast.makeText(activity,R.string.osm_changes_added_to_local_edits,Toast.LENGTH_LONG).show();
+          if (obj.local != null) {
+            PointDescription pd=new PointDescription(PointDescription.POINT_TYPE_OSM_BUG,obj.local.getText());
+            activity.getContextMenu().show(new LatLon(obj.local.getLatitude(),obj.local.getLongitude()),pd,obj.local);
+          }
+        }
+ else {
+          if (action == Action.REOPEN) {
+            AccessibleToast.makeText(activity,R.string.osn_add_dialog_success,Toast.LENGTH_LONG).show();
+          }
+ else           if (action == Action.MODIFY) {
+            AccessibleToast.makeText(activity,R.string.osb_comment_dialog_success,Toast.LENGTH_LONG).show();
+          }
+ else           if (action == Action.CLOSE) {
+            AccessibleToast.makeText(activity,R.string.osn_close_dialog_success,Toast.LENGTH_LONG).show();
+          }
+ else           if (action == Action.CREATE) {
+            AccessibleToast.makeText(activity,R.string.osn_add_dialog_success,Toast.LENGTH_LONG).show();
+          }
+        }
+        clearCache();
+      }
+ else {
+        int r=R.string.osb_comment_dialog_error;
+        if (action == Action.REOPEN) {
+          r=R.string.osn_add_dialog_error;
+        }
+ else         if (action == Action.CLOSE) {
+          r=R.string.osn_close_dialog_error;
+        }
+ else         if (action == Action.CREATE) {
+          r=R.string.osn_add_dialog_error;
+        }
+        AccessibleToast.makeText(activity,activity.getResources().getString(r) + "\n" + obj,Toast.LENGTH_LONG).show();
+      }
+    }
+  }
+;
+  executeTaskInBackground(task);
+}
