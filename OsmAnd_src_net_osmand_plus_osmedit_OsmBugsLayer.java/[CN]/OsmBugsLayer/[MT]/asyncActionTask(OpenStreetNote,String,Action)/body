@@ -3,19 +3,11 @@
     private OsmBugsUtil osmbugsUtil;
     @Override protected OsmBugResult doInBackground(    Void... params){
       osmbugsUtil=getOsmbugsUtil(bug);
-      if (action == Action.REOPEN) {
-        return osmbugsUtil.reopenBug(bug.getLatitude(),bug.getLongitude(),bug.getId(),text);
-      }
- else       if (action == Action.MODIFY) {
-        return osmbugsUtil.addingComment(bug.getLatitude(),bug.getLongitude(),bug.getId(),text);
-      }
- else       if (action == Action.CLOSE) {
-        return osmbugsUtil.closingBug(bug.getLatitude(),bug.getLongitude(),bug.getId(),text);
-      }
- else       if (action == Action.CREATE) {
-        return osmbugsUtil.createNewBug(bug.getLatitude(),bug.getLongitude(),text);
-      }
-      return null;
+      OsmNotesPoint pnt=new OsmNotesPoint();
+      pnt.setId(bug.getId());
+      pnt.setLatitude(bug.getLatitude());
+      pnt.setLongitude(bug.getLongitude());
+      return osmbugsUtil.commit(pnt,text,action);
     }
     protected void onPostExecute(    OsmBugResult obj){
       if (obj != null && obj.warning == null) {
@@ -33,7 +25,7 @@
  else           if (action == Action.MODIFY) {
             AccessibleToast.makeText(activity,R.string.osb_comment_dialog_success,Toast.LENGTH_LONG).show();
           }
- else           if (action == Action.CLOSE) {
+ else           if (action == Action.DELETE) {
             AccessibleToast.makeText(activity,R.string.osn_close_dialog_success,Toast.LENGTH_LONG).show();
           }
  else           if (action == Action.CREATE) {
@@ -46,12 +38,18 @@
         int r=R.string.osb_comment_dialog_error;
         if (action == Action.REOPEN) {
           r=R.string.osn_add_dialog_error;
+          reopenBug(bug,text);
         }
- else         if (action == Action.CLOSE) {
+ else         if (action == Action.DELETE) {
           r=R.string.osn_close_dialog_error;
+          closeBug(bug,text);
         }
  else         if (action == Action.CREATE) {
           r=R.string.osn_add_dialog_error;
+          openBug(bug.getLatitude(),bug.getLongitude(),text);
+        }
+ else {
+          commentBug(bug,text);
         }
         AccessibleToast.makeText(activity,activity.getResources().getString(r) + "\n" + obj,Toast.LENGTH_LONG).show();
       }
