@@ -1,0 +1,32 @@
+{
+  AsyncTask<Void,Void,String> task=new AsyncTask<Void,Void,String>(){
+    private OsmBugsUtil osmbugsUtil;
+    @Override protected String doInBackground(    Void... params){
+      osmbugsUtil=getOsmbugsUtil(null);
+      return osmbugsUtil.createNewBug(latitude,longitude,text);
+    }
+    protected void onPostExecute(    String result){
+      if (result == null) {
+        if (local == osmbugsUtil) {
+          AccessibleToast.makeText(activity,R.string.osm_changes_added_to_local_edits,Toast.LENGTH_LONG).show();
+          List<OsmNotesPoint> points=plugin.getDBBug().getOsmbugsPoints();
+          if (points.size() > 0) {
+            OsmPoint point=points.get(points.size() - 1);
+            activity.getContextMenu().showOrUpdate(new LatLon(latitude,longitude),plugin.getOsmEditsLayer(activity).getObjectName(point),point);
+          }
+        }
+ else {
+          AccessibleToast.makeText(activity,R.string.osn_add_dialog_success,Toast.LENGTH_LONG).show();
+          activity.getContextMenu().close();
+        }
+        refreshMap();
+      }
+ else {
+        AccessibleToast.makeText(activity,activity.getResources().getString(R.string.osn_add_dialog_error) + "\n" + result,Toast.LENGTH_LONG).show();
+        openBug(latitude,longitude,text);
+      }
+    }
+  }
+;
+  executeTaskInBackground(task);
+}

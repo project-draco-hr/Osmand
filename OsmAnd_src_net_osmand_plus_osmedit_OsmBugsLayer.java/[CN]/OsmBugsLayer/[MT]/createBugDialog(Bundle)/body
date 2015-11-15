@@ -1,0 +1,60 @@
+{
+  final OpenStreetNote bug=(OpenStreetNote)args.getSerializable(KEY_BUG);
+  final Action action=OsmBugsUtil.Action.valueOf((String)args.getSerializable(KEY_ACTION));
+  AlertDialog.Builder builder=new AlertDialog.Builder(activity);
+  int title;
+  if (action == Action.CLOSE) {
+    title=R.string.osn_close_dialog_title;
+  }
+ else   if (action == Action.MODIFY) {
+    title=R.string.osn_comment_dialog_title;
+  }
+ else   if (action == Action.REOPEN) {
+    title=R.string.osn_reopen_dialog_title;
+  }
+ else {
+    title=R.string.osn_add_dialog_title;
+  }
+  builder.setTitle(title);
+  final View view=activity.getLayoutInflater().inflate(R.layout.open_bug,null);
+  builder.setView(view);
+  if (action == Action.CREATE && bug.comments.size() > 0) {
+    ((EditText)view.findViewById(R.id.messageEditText)).setText(bug.comments.get(0));
+  }
+  OsmBugsUtil util=getOsmbugsUtil(bug);
+  final boolean offline=util instanceof OsmBugsLocalUtil;
+  if (offline) {
+    view.findViewById(R.id.userNameEditText).setVisibility(View.GONE);
+    view.findViewById(R.id.userNameEditTextLabel).setVisibility(View.GONE);
+    view.findViewById(R.id.passwordEditText).setVisibility(View.GONE);
+    view.findViewById(R.id.passwordEditTextLabel).setVisibility(View.GONE);
+  }
+ else {
+    ((EditText)view.findViewById(R.id.userNameEditText)).setText(getUserName());
+    ((EditText)view.findViewById(R.id.passwordEditText)).setText(((OsmandApplication)activity.getApplication()).getSettings().USER_PASSWORD.get());
+  }
+  AndroidUtils.softKeyboardDelayed((EditText)view.findViewById(R.id.messageEditText));
+  builder.setNegativeButton(R.string.shared_string_cancel,null);
+  builder.setPositiveButton(title,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (bug != null) {
+        String text=offline ? getMessageText(view) : getTextAndUpdateUserPwd(view);
+        if (action == Action.CLOSE) {
+          closingAsync(bug,text);
+        }
+ else         if (action == Action.MODIFY) {
+          addingCommentAsync(bug,text);
+        }
+ else         if (action == Action.REOPEN) {
+          reopeningtAsync(bug,text);
+        }
+ else {
+          createNewBugAsync(bug.getLatitude(),bug.getLongitude(),text);
+        }
+        activity.getContextMenu().close();
+      }
+    }
+  }
+);
+  return builder.create();
+}
