@@ -89,7 +89,7 @@
       if (singleTapDetector.onTouchEvent(event)) {
         showOnMap(menu.getLatLon(),true,false);
         if (hasMoved) {
-          applyPosY(getViewY(),false,false);
+          applyPosY(getViewY(),false,false,0,0);
         }
         return true;
       }
@@ -145,13 +145,16 @@ menu.slideDown();
 }
 }
 int newMenuState=menu.getCurrentMenuState();
-boolean needMapAdjust=oldMenuState != newMenuState && newMenuState != MenuController.MenuState.FULL_SCREEN;
-applyPosY(currentY,needCloseMenu,needMapAdjust);
+boolean needMapAdjust=oldMenuState != newMenuState && newMenuState != MenuState.FULL_SCREEN;
+if (newMenuState != oldMenuState) {
+doBeforeMenuStateChange(oldMenuState,newMenuState);
+}
+applyPosY(currentY,needCloseMenu,needMapAdjust,oldMenuState,newMenuState);
 break;
 }
 return true;
 }
-private void applyPosY(final int currentY,final boolean needCloseMenu,boolean needMapAdjust){
+private void applyPosY(final int currentY,final boolean needCloseMenu,boolean needMapAdjust,final int previousMenuState,final int newMenuState){
 final int posY=getPosY(needCloseMenu);
 if (currentY != posY) {
 if (posY < currentY) {
@@ -165,6 +168,9 @@ menu.close();
 }
  else {
 updateMainViewLayout(posY);
+if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
+doAfterMenuStateChange(previousMenuState,newMenuState);
+}
 }
 }
 @Override public void onAnimationEnd(Animator animation){
@@ -173,6 +179,9 @@ menu.close();
 }
  else {
 updateMainViewLayout(posY);
+if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
+doAfterMenuStateChange(previousMenuState,newMenuState);
+}
 }
 }
 }
@@ -184,7 +193,15 @@ adjustMapPosition(posY,true);
 }
  else {
 setViewY(posY,false,needMapAdjust);
+if (needCloseMenu) {
+menu.close();
+}
+ else {
 updateMainViewLayout(posY);
+if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
+doAfterMenuStateChange(previousMenuState,newMenuState);
+}
+}
 }
 }
 }
