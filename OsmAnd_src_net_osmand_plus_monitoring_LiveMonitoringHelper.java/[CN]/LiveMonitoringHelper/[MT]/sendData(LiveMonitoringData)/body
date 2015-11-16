@@ -35,30 +35,28 @@ default :
 break;
 }
 }
-String url=MessageFormat.format(st,prm.toArray());
+String urlStr=MessageFormat.format(st,prm.toArray());
 try {
-HttpParams params=new BasicHttpParams();
-HttpConnectionParams.setConnectionTimeout(params,15000);
-DefaultHttpClient httpclient=new DefaultHttpClient(params);
-SSLSocketFactory sf=(SSLSocketFactory)httpclient.getConnectionManager().getSchemeRegistry().getScheme("https").getSocketFactory();
-sf.setHostnameVerifier(new AllowAllHostnameVerifier());
-URL u=new URL(url);
-URI uri=new URI(u.getProtocol(),u.getUserInfo(),u.getHost(),u.getPort(),u.getPath(),u.getQuery(),u.getRef());
-HttpRequestBase method=new HttpGet(uri);
+URL url=new URL(urlStr);
+HttpURLConnection urlConnection=(HttpURLConnection)url.openConnection();
+URI uri=new URI(url.getProtocol(),url.getUserInfo(),url.getHost(),url.getPort(),url.getPath(),url.getQuery(),url.getRef());
+urlConnection.setConnectTimeout(15000);
+urlConnection.setReadTimeout(15000);
+if (url.getProtocol() == "https") {
+((HttpsURLConnection)urlConnection).setHostnameVerifier(new HostnameVerifier(){
+public boolean verify(String host,SSLSession session){
+return (true);
+}
+}
+);
+}
 log.info("Monitor " + uri);
-HttpResponse response=httpclient.execute(method);
-if (response.getStatusLine() == null || response.getStatusLine().getStatusCode() != 200) {
-String msg;
-if (response.getStatusLine() == null) {
-msg=ctx.getString(R.string.failed_op);
-}
- else {
-msg=response.getStatusLine().getStatusCode() + " : " + response.getStatusLine().getReasonPhrase();
-}
+if (urlConnection.getResponseCode() != 200) {
+String msg=urlConnection.getResponseCode() + " : " + urlConnection.getResponseMessage();
 log.error("Error sending monitor request: " + msg);
 }
  else {
-InputStream is=response.getEntity().getContent();
+InputStream is=urlConnection.getInputStream();
 StringBuilder responseBody=new StringBuilder();
 if (is != null) {
 BufferedReader in=new BufferedReader(new InputStreamReader(is,"UTF-8"));
@@ -69,11 +67,11 @@ responseBody.append("\n");
 }
 is.close();
 }
-httpclient.getConnectionManager().shutdown();
-log.info("Monitor response (" + response.getFirstHeader("Content-Type") + "): "+ responseBody.toString());
+log.info("Monitor response (" + urlConnection.getHeaderField("Content-Type") + "): "+ responseBody.toString());
 }
+urlConnection.disconnect();
 }
  catch (Exception e) {
-log.error("Failed connect to " + url + ": "+ e.getMessage(),e);
+log.error("Failed connect to " + urlStr + ": "+ e.getMessage(),e);
 }
 }

@@ -1,0 +1,37 @@
+{
+  super(new MenuBuilder(app),pointDescription,mapActivity);
+  plugin=OsmandPlugin.getPlugin(OsmEditingPlugin.class);
+  this.bug=bug;
+  leftTitleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      if (plugin != null) {
+        OpenStreetNote bg=getBug();
+        if (bg.isOpened()) {
+          plugin.getBugsLayer(getMapActivity()).commentBug(bg,"");
+        }
+ else {
+          plugin.getBugsLayer(getMapActivity()).reopenBug(bg,"");
+        }
+      }
+    }
+  }
+;
+  if (bug.isOpened()) {
+    leftTitleButtonController.caption=getMapActivity().getString(R.string.poi_dialog_comment);
+  }
+ else {
+    leftTitleButtonController.caption=getMapActivity().getString(R.string.poi_dialog_reopen);
+  }
+  leftTitleButtonController.leftIconId=R.drawable.ic_action_note_dark;
+  rightTitleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      if (plugin != null) {
+        plugin.getBugsLayer(getMapActivity()).closeBug(getBug(),"");
+      }
+    }
+  }
+;
+  rightTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_close);
+  rightTitleButtonController.leftIconId=R.drawable.ic_action_remove_dark;
+  updateData();
+}

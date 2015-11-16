@@ -1,5 +1,6 @@
 {
   screenHeight=getScreenHeight();
+  skipHalfScreenStateLimit=screenHeight * SKIP_HALF_SCREEN_STATE_KOEF;
   viewHeight=screenHeight - getStatusBarHeight();
   fabPaddingTopPx=dpToPx(FAB_PADDING_TOP_DP);
   markerPaddingPx=dpToPx(MARKER_PADDING_DP);
@@ -88,7 +89,7 @@
       if (singleTapDetector.onTouchEvent(event)) {
         showOnMap(menu.getLatLon(),true,false);
         if (hasMoved) {
-          applyPosY(getViewY(),false,false);
+          applyPosY(getViewY(),false,false,0,0);
         }
         return true;
       }
@@ -128,22 +129,32 @@ int currentY=getViewY();
 slidingUp=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) < -50;
 slidingDown=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) > 50;
 velocity.recycle();
+boolean skipHalfScreenState=Math.abs(currentY - dyMain) > skipHalfScreenStateLimit;
 boolean needCloseMenu=false;
 int oldMenuState=menu.getCurrentMenuState();
 if (menuBottomViewHeight > 0 && slidingUp) {
 menu.slideUp();
+if (skipHalfScreenState) {
+menu.slideUp();
+}
 }
  else if (slidingDown) {
 needCloseMenu=!menu.slideDown();
+if (!needCloseMenu && skipHalfScreenState) {
+menu.slideDown();
+}
 }
 int newMenuState=menu.getCurrentMenuState();
-boolean needMapAdjust=oldMenuState != newMenuState && newMenuState != MenuController.MenuState.FULL_SCREEN;
-applyPosY(currentY,needCloseMenu,needMapAdjust);
+boolean needMapAdjust=oldMenuState != newMenuState && newMenuState != MenuState.FULL_SCREEN;
+if (newMenuState != oldMenuState) {
+doBeforeMenuStateChange(oldMenuState,newMenuState);
+}
+applyPosY(currentY,needCloseMenu,needMapAdjust,oldMenuState,newMenuState);
 break;
 }
 return true;
 }
-private void applyPosY(final int currentY,final boolean needCloseMenu,boolean needMapAdjust){
+private void applyPosY(final int currentY,final boolean needCloseMenu,boolean needMapAdjust,final int previousMenuState,final int newMenuState){
 final int posY=getPosY(needCloseMenu);
 if (currentY != posY) {
 if (posY < currentY) {
@@ -157,6 +168,9 @@ menu.close();
 }
  else {
 updateMainViewLayout(posY);
+if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
+doAfterMenuStateChange(previousMenuState,newMenuState);
+}
 }
 }
 @Override public void onAnimationEnd(Animator animation){
@@ -165,6 +179,9 @@ menu.close();
 }
  else {
 updateMainViewLayout(posY);
+if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
+doAfterMenuStateChange(previousMenuState,newMenuState);
+}
 }
 }
 }
@@ -176,7 +193,15 @@ adjustMapPosition(posY,true);
 }
  else {
 setViewY(posY,false,needMapAdjust);
+if (needCloseMenu) {
+menu.close();
+}
+ else {
 updateMainViewLayout(posY);
+if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
+doAfterMenuStateChange(previousMenuState,newMenuState);
+}
+}
 }
 }
 }
@@ -222,7 +247,12 @@ menu.buttonFavoritePressed();
 }
 );
 final ImageButton buttonWaypoint=(ImageButton)view.findViewById(R.id.context_menu_route_button);
+if (getMyApplication().getTargetPointsHelper().getPointToNavigate() == null) {
+buttonWaypoint.setImageDrawable(iconsCache.getIcon(R.drawable.ic_action_flag_dark,light ? R.color.icon_color : R.color.dashboard_subheader_text_dark));
+}
+ else {
 buttonWaypoint.setImageDrawable(iconsCache.getIcon(R.drawable.map_action_waypoints,light ? R.color.icon_color : R.color.dashboard_subheader_text_dark));
+}
 buttonWaypoint.setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
 menu.buttonWaypointPressed();

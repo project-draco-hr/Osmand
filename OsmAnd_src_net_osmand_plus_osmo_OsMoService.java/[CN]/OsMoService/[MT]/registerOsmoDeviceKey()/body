@@ -1,20 +1,20 @@
 {
-  HttpClient httpclient=new DefaultHttpClient();
-  HttpPost httppost=new HttpPost(plugin.useHttps() ? HTTPS_AUTH : HTTP_AUTH);
+  URL url=new URL(plugin.useHttps() ? HTTPS_AUTH : HTTP_AUTH);
   try {
-    List<NameValuePair> nameValuePairs=new ArrayList<NameValuePair>(2);
-    nameValuePairs.add(new BasicNameValuePair("android_id",Secure.getString(app.getContentResolver(),Secure.ANDROID_ID)));
-    nameValuePairs.add(new BasicNameValuePair("android_model",Build.MODEL));
-    nameValuePairs.add(new BasicNameValuePair("imei","0"));
-    nameValuePairs.add(new BasicNameValuePair("android_product",Build.PRODUCT));
-    nameValuePairs.add(new BasicNameValuePair("client",Version.getFullVersion(app)));
-    nameValuePairs.add(new BasicNameValuePair("osmand",Version.getFullVersion(app)));
-    httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-    HttpResponse response=httpclient.execute(httppost);
-    InputStream cm=response.getEntity().getContent();
-    BufferedReader reader=new BufferedReader(new InputStreamReader(cm));
+    HttpURLConnection conn=(HttpURLConnection)url.openConnection();
+    conn.setDoOutput(true);
+    HttpPostWriter postWriter=new HttpPostWriter(conn.getOutputStream());
+    postWriter.addPair("android_id",Secure.getString(app.getContentResolver(),Secure.ANDROID_ID));
+    postWriter.addPair("android_model",Build.MODEL);
+    postWriter.addPair("imei","0");
+    postWriter.addPair("android_product",Build.PRODUCT);
+    postWriter.addPair("client",Version.getFullVersion(app));
+    postWriter.addPair("osmand",Version.getFullVersion(app));
+    postWriter.flush();
+    BufferedReader reader=new BufferedReader(new InputStreamReader(conn.getInputStream()));
     String r=reader.readLine();
     reader.close();
+    conn.disconnect();
     log.info("Authorization key : " + r);
     final JSONObject obj=new JSONObject(r);
     if (obj.has("error")) {

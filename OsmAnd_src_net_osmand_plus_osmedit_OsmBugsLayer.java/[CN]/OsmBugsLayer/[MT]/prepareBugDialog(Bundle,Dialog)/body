@@ -1,0 +1,50 @@
+{
+  final OpenStreetNote bug=(OpenStreetNote)args.getSerializable(KEY_BUG);
+  final Action action=Action.valueOf((String)args.getSerializable(KEY_ACTION));
+  String text=(String)args.getSerializable(KEY_TEXT);
+  int title;
+  if (action == Action.DELETE) {
+    title=R.string.osn_close_dialog_title;
+  }
+ else   if (action == Action.MODIFY) {
+    title=R.string.osn_comment_dialog_title;
+  }
+ else   if (action == Action.REOPEN) {
+    title=R.string.osn_reopen_dialog_title;
+  }
+ else {
+    title=R.string.osn_add_dialog_title;
+  }
+  final AlertDialog dlg=(AlertDialog)dialog;
+  dlg.setTitle(title);
+  final View view=dlg.findViewById(R.id.layout);
+  Button btn=dlg.getButton(DialogInterface.BUTTON_POSITIVE);
+  btn.setText(title);
+  OsmBugsUtil util=getOsmbugsUtil(bug);
+  final boolean offline=util instanceof OsmBugsLocalUtil;
+  if (offline) {
+    view.findViewById(R.id.userNameEditText).setVisibility(View.GONE);
+    view.findViewById(R.id.userNameEditTextLabel).setVisibility(View.GONE);
+    view.findViewById(R.id.passwordEditText).setVisibility(View.GONE);
+    view.findViewById(R.id.passwordEditTextLabel).setVisibility(View.GONE);
+  }
+ else {
+    ((EditText)view.findViewById(R.id.userNameEditText)).setText(getUserName());
+    ((EditText)view.findViewById(R.id.passwordEditText)).setText(((OsmandApplication)activity.getApplication()).getSettings().USER_PASSWORD.get());
+  }
+  if (!Algorithms.isEmpty(text)) {
+    ((EditText)view.findViewById(R.id.messageEditText)).setText(text);
+  }
+  AndroidUtils.softKeyboardDelayed((EditText)view.findViewById(R.id.messageEditText));
+  btn.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View dialog){
+      if (bug != null) {
+        String text=offline ? getMessageText(view) : getTextAndUpdateUserPwd(view);
+        activity.getContextMenu().close();
+        asyncActionTask(bug,text,action);
+        dlg.dismiss();
+      }
+    }
+  }
+);
+}

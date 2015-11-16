@@ -1,0 +1,33 @@
+{
+  super(new MenuBuilder(app),pointDescription,mapActivity);
+  this.device=device;
+  leftTitleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      if (OsMoPositionLayer.getFollowDestinationId() != null) {
+        OsMoPositionLayer.setFollowDestination(null);
+      }
+ else {
+        OsMoDevice dev=getDevice();
+        if (dev.getLastLocation() != null) {
+          TargetPointsHelper targets=getMapActivity().getMyApplication().getTargetPointsHelper();
+          targets.navigateToPoint(new LatLon(dev.getLastLocation().getLatitude(),dev.getLastLocation().getLongitude()),true,-1);
+        }
+        OsMoPositionLayer.setFollowDestination(dev);
+      }
+      getMapActivity().getContextMenu().updateMenuUI();
+    }
+  }
+;
+  rightTitleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      OsMoPlugin osMoPlugin=OsmandPlugin.getEnabledPlugin(OsMoPlugin.class);
+      if (osMoPlugin != null) {
+        OsMoGroupsActivity.showSettingsDialog(getMapActivity(),osMoPlugin,getDevice());
+      }
+    }
+  }
+;
+  rightTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_settings);
+  rightTitleButtonController.leftIconId=R.drawable.ic_action_settings;
+  updateData();
+}

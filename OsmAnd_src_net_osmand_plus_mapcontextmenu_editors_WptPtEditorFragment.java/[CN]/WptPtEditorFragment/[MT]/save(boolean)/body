@@ -1,0 +1,27 @@
+{
+  String name=Algorithms.isEmpty(getNameTextValue()) ? null : getNameTextValue();
+  String category=Algorithms.isEmpty(getCategoryTextValue()) ? null : getCategoryTextValue();
+  String description=Algorithms.isEmpty(getDescriptionTextValue()) ? null : getDescriptionTextValue();
+  if (editor.isNew()) {
+    doAddWpt(name,category,description);
+  }
+ else {
+    doUpdateWpt(name,category,description);
+  }
+  getMapActivity().refreshMap();
+  if (needDismiss) {
+    dismiss(false);
+  }
+  MapContextMenu menu=getMapActivity().getContextMenu();
+  LatLon latLon=new LatLon(wpt.getLatitude(),wpt.getLongitude());
+  if (menu.getLatLon().equals(latLon)) {
+    menu.update(latLon,wpt.getPointDescription(getMapActivity()),wpt);
+  }
+  if (editor.isNew() && selectedGpxFile == null) {
+    selectedGpxHelper.setGpxFileToDisplay(savingTrackHelper.getCurrentGpx());
+  }
+ else   if (selectedGpxFile != null) {
+    selectedGpxHelper.setGpxFileToDisplay(selectedGpxFile.getGpxFile());
+  }
+  saved=true;
+}

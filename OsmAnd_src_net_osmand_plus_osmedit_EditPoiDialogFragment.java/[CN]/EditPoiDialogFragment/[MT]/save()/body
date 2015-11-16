@@ -1,5 +1,6 @@
 {
   Node original=editPoiData.getEntity();
+  final boolean offlineEdit=mOpenstreetmapUtil instanceof OpenstreetmapLocalUtil;
   Node node=new Node(original.getLatitude(),original.getLongitude(),original.getId());
   OsmPoint.Action action=node.getId() == -1 ? OsmPoint.Action.CREATE : OsmPoint.Action.MODIFY;
   for (  Map.Entry<String,String> tag : editPoiData.getTagValues().entrySet()) {
@@ -14,26 +15,38 @@
  else       if (!Algorithms.isEmpty(tag.getValue())) {
         node.putTag(editPoiData.getPoiCategory().getDefaultTag(),tag.getValue());
       }
+      if (offlineEdit && !Algorithms.isEmpty(tag.getValue())) {
+        node.putTag(tag.getKey(),tag.getValue());
+      }
     }
  else     if (!Algorithms.isEmpty(tag.getKey()) && !Algorithms.isEmpty(tag.getValue())) {
       node.putTag(tag.getKey(),tag.getValue());
     }
   }
-  commitNode(action,node,mOpenstreetmapUtil.getEntityInfo(),"",false,new Runnable(){
-    @Override public void run(){
-      OsmEditingPlugin plugin=OsmandPlugin.getPlugin(OsmEditingPlugin.class);
-      if (plugin != null && mOpenstreetmapUtil instanceof OpenstreetmapLocalUtil) {
-        List<OpenstreetmapPoint> points=plugin.getDBPOI().getOpenstreetmapPoints();
-        if (getActivity() instanceof MapActivity && points.size() > 0) {
-          OsmPoint point=points.get(points.size() - 1);
-          MapActivity mapActivity=(MapActivity)getActivity();
-          mapActivity.getContextMenu().showOrUpdate(new LatLon(point.getLatitude(),point.getLongitude()),plugin.getOsmEditsLayer(mapActivity).getObjectName(point),point);
+  commitNode(action,node,mOpenstreetmapUtil.getEntityInfo(node.getId()),"",false,new CallbackWithObject<Node>(){
+    @Override public boolean processResult(    Node result){
+      if (result != null) {
+        OsmEditingPlugin plugin=OsmandPlugin.getPlugin(OsmEditingPlugin.class);
+        if (plugin != null && offlineEdit) {
+          List<OpenstreetmapPoint> points=plugin.getDBPOI().getOpenstreetmapPoints();
+          if (getActivity() instanceof MapActivity && points.size() > 0) {
+            OsmPoint point=points.get(points.size() - 1);
+            MapActivity mapActivity=(MapActivity)getActivity();
+            mapActivity.getContextMenu().showOrUpdate(new LatLon(point.getLatitude(),point.getLongitude()),plugin.getOsmEditsLayer(mapActivity).getObjectName(point),point);
+          }
         }
+        if (getActivity() instanceof MapActivity) {
+          ((MapActivity)getActivity()).getMapView().refreshMap(true);
+        }
+        dismiss();
       }
-      if (getActivity() instanceof MapActivity) {
-        ((MapActivity)getActivity()).getMapView().refreshMap(true);
+ else {
+        OsmEditingPlugin plugin=OsmandPlugin.getPlugin(OsmEditingPlugin.class);
+        mOpenstreetmapUtil=plugin.getPoiModificationLocalUtil();
+        Button saveButton=(Button)view.findViewById(R.id.saveButton);
+        saveButton.setText(mOpenstreetmapUtil instanceof OpenstreetmapRemoteUtil ? R.string.shared_string_upload : R.string.shared_string_save);
       }
-      dismiss();
+      return false;
     }
   }
 ,getActivity(),mOpenstreetmapUtil);

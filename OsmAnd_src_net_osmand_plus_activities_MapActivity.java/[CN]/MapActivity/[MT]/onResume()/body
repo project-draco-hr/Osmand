@@ -3,8 +3,14 @@
   long tm=System.currentTimeMillis();
   if (app.isApplicationInitializing() || DashboardOnMap.staticVisible) {
     if (!dashboardOnMap.isVisible()) {
-      final OsmandSettings.CommonPreference<Boolean> shouldShowDashboardOnStart=settings.registerBooleanPreference(MapActivity.SHOULD_SHOW_DASHBOARD_ON_START,true);
-      if (shouldShowDashboardOnStart.get() || dashboardOnMap.hasCriticalMessages())       dashboardOnMap.setDashboardVisibility(true,DashboardOnMap.staticVisibleType);
+      if (settings.SHOW_DASHBOARD_ON_START.get()) {
+        dashboardOnMap.setDashboardVisibility(true,DashboardOnMap.staticVisibleType);
+      }
+ else {
+        if (ErrorBottomSheetDialog.shouldShow(settings,this)) {
+          new ErrorBottomSheetDialog().show(getFragmentManager(),"dialog");
+        }
+      }
     }
   }
   dashboardOnMap.updateLocation(true,true,false);

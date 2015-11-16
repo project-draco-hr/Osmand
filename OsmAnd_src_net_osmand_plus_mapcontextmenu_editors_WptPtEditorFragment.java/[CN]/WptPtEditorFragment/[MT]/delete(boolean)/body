@@ -1,0 +1,26 @@
+{
+  AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
+  builder.setMessage(getString(R.string.context_menu_item_delete_waypoint));
+  builder.setNegativeButton(R.string.shared_string_no,null);
+  builder.setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (isCurrentTrack()) {
+        savingTrackHelper.deletePointData(wpt);
+      }
+ else {
+        GPXFile gpx=selectedGpxFile.getModifiableGpxFile();
+        gpx.deleteWptPt(wpt);
+        new SaveGpxAsyncTask(getMyApplication(),gpx).execute();
+      }
+      saved=true;
+      if (needDismiss) {
+        dismiss(true);
+      }
+ else {
+        getMapActivity().refreshMap();
+      }
+    }
+  }
+);
+  builder.create().show();
+}

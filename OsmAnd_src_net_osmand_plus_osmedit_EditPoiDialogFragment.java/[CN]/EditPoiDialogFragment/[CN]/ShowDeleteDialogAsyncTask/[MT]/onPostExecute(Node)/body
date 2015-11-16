@@ -25,24 +25,11 @@
     builder.setView(ll);
   }
   builder.setNegativeButton(R.string.shared_string_cancel,null);
-  builder.setPositiveButton(R.string.shared_string_delete,new DialogInterface.OnClickListener(){
+  builder.setPositiveButton(isLocalEdit ? R.string.shared_string_save : R.string.shared_string_delete,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       String c=comment == null ? null : comment.getText().toString();
       boolean closeChangeSet=closeChangesetCheckBox != null && closeChangesetCheckBox.isChecked();
-      commitNode(OsmPoint.Action.DELETE,n,openstreetmapUtil.getEntityInfo(),c,closeChangeSet,new Runnable(){
-        @Override public void run(){
-          if (isLocalEdit) {
-            AccessibleToast.makeText(activity,R.string.osm_changes_added_to_local_edits,Toast.LENGTH_LONG).show();
-          }
- else {
-            AccessibleToast.makeText(activity,R.string.poi_remove_success,Toast.LENGTH_LONG).show();
-          }
-          if (activity instanceof MapActivity) {
-            ((MapActivity)activity).getMapView().refreshMap(true);
-          }
-        }
-      }
-,activity,openstreetmapUtil);
+      deleteNode(n,c,closeChangeSet);
     }
   }
 );

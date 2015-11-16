@@ -11,7 +11,15 @@
       EntityId id=new Entity.EntityId(EntityType.NODE,nodeId);
       Node entity=(Node)st.getRegisteredEntities().get(id);
       entityInfo=st.getRegisteredEntityInfo().get(id);
+      entityInfoId=id;
       if (entity != null && MapUtils.getDistance(entity.getLatLon(),n.getLocation()) < 50) {
+        PoiType poiType=n.getType().getPoiTypeByKeyName(n.getSubType());
+        if (poiType.getOsmValue().equals(entity.getTag(poiType.getOsmTag()))) {
+          entity.removeTag(poiType.getOsmTag());
+          entity.putTag(EditPoiData.POI_TYPE_TAG,poiType.getTranslation());
+        }
+ else {
+        }
         return entity;
       }
       return null;
