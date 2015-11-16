@@ -1,0 +1,51 @@
+{
+  final int posY=getPosY(needCloseMenu);
+  if (currentY != posY) {
+    if (posY < currentY) {
+      updateMainViewLayout(posY);
+    }
+    if (!oldAndroid()) {
+      mainView.animate().y(posY).setDuration(200).setInterpolator(new DecelerateInterpolator()).setListener(new AnimatorListenerAdapter(){
+        @Override public void onAnimationCancel(        Animator animation){
+          if (needCloseMenu) {
+            menu.close();
+          }
+ else {
+            updateMainViewLayout(posY);
+            if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
+              doAfterMenuStateChange(previousMenuState,newMenuState);
+            }
+          }
+        }
+        @Override public void onAnimationEnd(        Animator animation){
+          if (needCloseMenu) {
+            menu.close();
+          }
+ else {
+            updateMainViewLayout(posY);
+            if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
+              doAfterMenuStateChange(previousMenuState,newMenuState);
+            }
+          }
+        }
+      }
+).start();
+      fabView.animate().y(getFabY(posY)).setDuration(200).setInterpolator(new DecelerateInterpolator()).start();
+      if (needMapAdjust) {
+        adjustMapPosition(posY,true);
+      }
+    }
+ else {
+      setViewY(posY,false,needMapAdjust);
+      if (needCloseMenu) {
+        menu.close();
+      }
+ else {
+        updateMainViewLayout(posY);
+        if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
+          doAfterMenuStateChange(previousMenuState,newMenuState);
+        }
+      }
+    }
+  }
+}
