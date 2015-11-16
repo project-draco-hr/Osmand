@@ -1,55 +1,24 @@
 {
-  View view=getActivity().getLayoutInflater().inflate(R.layout.dash_error_fragment,container,false);
-  String msg=MessageFormat.format(getString(R.string.previous_run_crashed),OsmandApplication.EXCEPTION_PATH);
-  Typeface typeface=FontCache.getRobotoMedium(getActivity());
-  ImageView iv=((ImageView)view.findViewById(R.id.error_icon));
-  iv.setImageDrawable(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_crashlog));
-  TextView message=((TextView)view.findViewById(R.id.error_header));
-  message.setTypeface(typeface);
-  message.setText(msg);
-  Button errorBtn=((Button)view.findViewById(R.id.error_btn));
-  errorBtn.setTypeface(typeface);
-  errorBtn.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View view){
-      Intent intent=new Intent(Intent.ACTION_SEND);
-      intent.putExtra(Intent.EXTRA_EMAIL,new String[]{"crash@osmand.net"});
-      File file=getMyApplication().getAppPath(OsmandApplication.EXCEPTION_PATH);
-      intent.putExtra(Intent.EXTRA_STREAM,Uri.fromFile(file));
-      intent.setType("vnd.android.cursor.dir/email");
-      intent.putExtra(Intent.EXTRA_SUBJECT,"OsmAnd bug");
-      StringBuilder text=new StringBuilder();
-      text.append("\nDevice : ").append(Build.DEVICE);
-      text.append("\nBrand : ").append(Build.BRAND);
-      text.append("\nModel : ").append(Build.MODEL);
-      text.append("\nProduct : ").append(Build.PRODUCT);
-      text.append("\nBuild : ").append(Build.DISPLAY);
-      text.append("\nVersion : ").append(Build.VERSION.RELEASE);
-      text.append("\nApp Version : ").append(Version.getAppName(getMyApplication()));
-      try {
-        PackageInfo info=getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(),0);
-        if (info != null) {
-          text.append("\nApk Version : ").append(info.versionName).append(" ").append(info.versionCode);
-        }
-      }
- catch (      PackageManager.NameNotFoundException e) {
-        PlatformUtil.getLog(DashDashboardOrDrawerFragment.class).error("",e);
-      }
-      intent.putExtra(Intent.EXTRA_TEXT,text.toString());
-      startActivity(Intent.createChooser(intent,getString(R.string.send_report)));
+  View view=getActivity().getLayoutInflater().inflate(R.layout.dash_dashboard_or_drawer_fragment,container,false);
+  view.findViewById(R.id.useDashboardButton).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      final OsmandSettings settings=getMyApplication().getSettings();
+      settings.SHOW_DASHBOARD_ON_START.set(true);
+      settings.SHOW_DASHBOARD_ON_MAP_SCREEN.set(true);
+      settings.SHOW_CARD_TO_CHOOSE_DRAWER.set(false);
+      dashboard.hideFragmentByTag(TAG);
     }
   }
 );
-  Button cancelBtn=((Button)view.findViewById(R.id.error_cancel));
-  cancelBtn.setTypeface(typeface);
-  cancelBtn.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View view){
-      OsmandActionBarActivity dashboardActivity=((OsmandActionBarActivity)getActivity());
-      if (dashboardActivity != null) {
-        dashboardActivity.getSupportFragmentManager().beginTransaction().remove(DashDashboardOrDrawerFragment.this).commit();
-      }
+  view.findViewById(R.id.useDrawerButton).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      final OsmandSettings settings=getMyApplication().getSettings();
+      settings.SHOW_DASHBOARD_ON_START.set(false);
+      settings.SHOW_DASHBOARD_ON_MAP_SCREEN.set(false);
+      settings.SHOW_CARD_TO_CHOOSE_DRAWER.set(false);
+      dashboard.hideFragmentByTag(TAG);
     }
   }
 );
-  dismissCallback=new ErrorDismissListener(getParentView(),dashboard,TAG,view);
   return view;
 }
