@@ -29,14 +29,16 @@
   listAdapter=new SearchListAdapter(getDownloadActivity());
   listView.setOnItemClickListener(this);
   listView.setAdapter(listAdapter);
-  search=new SearchView(getActivity());
+  TypedValue typedValue=new TypedValue();
+  getActivity().getTheme().resolveAttribute(R.attr.toolbar_theme,typedValue,true);
+  searchView=new SearchView(new ContextThemeWrapper(getActivity(),typedValue.data));
   RelativeLayout.LayoutParams params=new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
   params.setMargins(0,0,0,0);
-  search.setLayoutParams(params);
-  toolbar.addView(search);
-  search.setOnCloseListener(new SearchView.OnCloseListener(){
+  searchView.setLayoutParams(params);
+  toolbar.addView(searchView);
+  searchView.setOnCloseListener(new SearchView.OnCloseListener(){
     @Override public boolean onClose(){
-      if (search.getQuery().length() == 0) {
+      if (searchView.getQuery().length() == 0) {
         dismiss();
         return true;
       }
@@ -44,12 +46,12 @@
     }
   }
 );
-  search.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener(){
+  searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener(){
     @Override public void onFocusChange(    View v,    boolean hasFocus){
     }
   }
 );
-  search.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
+  searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
     @Override public boolean onQueryTextSubmit(    String query){
       return false;
     }
