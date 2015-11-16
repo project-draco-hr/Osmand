@@ -33,7 +33,38 @@
       }
       item.description=GpxUiHelper.getDescription(app,analysis,true);
       item.analysis=analysis;
-      item.name=group.getName();
+      String name="";
+      if (!group.isSplitDistance()) {
+        name+=GpxUiHelper.getColorValue(distanceClr,OsmAndFormatter.getFormattedDistance(analysis.totalDistance,app));
+      }
+      if ((analysis.timeSpan > 0 || analysis.timeMoving > 0) && !group.isSplitTime()) {
+        long tm=analysis.timeMoving;
+        if (tm == 0) {
+          tm=analysis.timeSpan;
+        }
+        if (name.length() != 0)         name+=", ";
+        name+=GpxUiHelper.getColorValue(timeSpanClr,Algorithms.formatDuration((int)(tm / 1000)));
+      }
+      if (analysis.isSpeedSpecified()) {
+        if (name.length() != 0)         name+=", ";
+        name+=GpxUiHelper.getColorValue(speedClr,OsmAndFormatter.getFormattedSpeed(analysis.avgSpeed,app));
+      }
+      if (analysis.isElevationSpecified()) {
+        if (name.length() != 0)         name+=", ";
+        name+=GpxUiHelper.getColorValue(descClr,OsmAndFormatter.getFormattedAlt(analysis.minElevation,app));
+        name+=" - ";
+        name+=GpxUiHelper.getColorValue(ascClr,OsmAndFormatter.getFormattedAlt(analysis.maxElevation,app));
+      }
+      if (analysis.isElevationSpecified() && (analysis.diffElevationUp > eleThreshold || analysis.diffElevationDown > eleThreshold)) {
+        if (name.length() != 0)         name+=", ";
+        if (analysis.diffElevationDown > eleThreshold) {
+          name+=GpxUiHelper.getColorValue(descClr," \u2193 " + OsmAndFormatter.getFormattedAlt(analysis.diffElevationDown,app));
+        }
+        if (analysis.diffElevationUp > eleThreshold) {
+          name+=GpxUiHelper.getColorValue(ascClr," \u2191 " + OsmAndFormatter.getFormattedAlt(analysis.diffElevationUp,app));
+        }
+      }
+      item.name=name;
       item.locationStart=analysis.locationStart;
       item.locationEnd=analysis.locationEnd;
       list.add(item);

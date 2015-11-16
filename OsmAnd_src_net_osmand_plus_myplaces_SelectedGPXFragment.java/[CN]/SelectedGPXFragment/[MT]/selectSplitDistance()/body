@@ -58,11 +58,17 @@
         updateSplit(groups,distanceSplit,timeSplit,sp.getSelectedItemPosition(),vis.isChecked() ? sf : null);
       }
       if (vis.isChecked() && sf.getGpxFile() != null) {
-        WptPt wpt=sf.getGpxFile().findPointToShow();
-        if (wpt != null) {
-          app.getSettings().setMapLocationToShow(wpt.getLatitude(),wpt.getLongitude(),15,null,false,false);
-          MapActivity.launchMapActivityMoveToTop(activity);
+        if (groups.size() > 0 && groups.get(0).getModifiableList().size() > 0) {
+          GpxDisplayItem item=groups.get(0).getModifiableList().get(0);
+          app.getSettings().setMapLocationToShow(item.locationStart.lat,item.locationStart.lon,15,new PointDescription(PointDescription.POINT_TYPE_GPX_ITEM,item.group.getGpxName()),false,item);
         }
+ else {
+          WptPt wpt=sf.getGpxFile().findPointToShow();
+          if (wpt != null) {
+            app.getSettings().setMapLocationToShow(wpt.getLatitude(),wpt.getLongitude(),15,new PointDescription(PointDescription.POINT_TYPE_WPT,wpt.name),false,wpt);
+          }
+        }
+        MapActivity.launchMapActivityMoveToTop(activity);
       }
     }
   }
