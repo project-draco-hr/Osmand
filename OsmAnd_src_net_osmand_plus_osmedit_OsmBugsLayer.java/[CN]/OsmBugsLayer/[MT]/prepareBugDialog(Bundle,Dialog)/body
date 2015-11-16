@@ -1,8 +1,9 @@
 {
   final OpenStreetNote bug=(OpenStreetNote)args.getSerializable(KEY_BUG);
-  final Action action=OsmBugsUtil.Action.valueOf((String)args.getSerializable(KEY_ACTION));
+  final Action action=Action.valueOf((String)args.getSerializable(KEY_ACTION));
+  String text=(String)args.getSerializable(KEY_TEXT);
   int title;
-  if (action == Action.CLOSE) {
+  if (action == Action.DELETE) {
     title=R.string.osn_close_dialog_title;
   }
  else   if (action == Action.MODIFY) {
@@ -31,8 +32,8 @@
     ((EditText)view.findViewById(R.id.userNameEditText)).setText(getUserName());
     ((EditText)view.findViewById(R.id.passwordEditText)).setText(((OsmandApplication)activity.getApplication()).getSettings().USER_PASSWORD.get());
   }
-  if (action == Action.CREATE && bug.comments.size() > 0) {
-    ((EditText)view.findViewById(R.id.messageEditText)).setText(bug.comments.get(0));
+  if (!Algorithms.isEmpty(text)) {
+    ((EditText)view.findViewById(R.id.messageEditText)).setText(text);
   }
   AndroidUtils.softKeyboardDelayed((EditText)view.findViewById(R.id.messageEditText));
   btn.setOnClickListener(new View.OnClickListener(){

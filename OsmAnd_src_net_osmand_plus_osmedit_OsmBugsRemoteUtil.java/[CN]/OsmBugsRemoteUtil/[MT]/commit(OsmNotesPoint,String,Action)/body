@@ -1,0 +1,29 @@
+{
+  StringBuilder b=new StringBuilder();
+  String msg="";
+  if (action == OsmPoint.Action.CREATE) {
+    b.append(getNotesApi()).append("?");
+    b.append("lat=").append(point.getLatitude());
+    b.append("&lon=").append(point.getLongitude());
+    b.append("&text=").append(URLEncoder.encode(text));
+    msg="creating bug";
+  }
+ else {
+    b.append(getNotesApi()).append("/");
+    b.append(point.getId());
+    if (action == OsmPoint.Action.REOPEN) {
+      b.append("/reopen");
+      msg="reopen note";
+    }
+ else     if (action == OsmPoint.Action.MODIFY) {
+      b.append("/comment");
+      msg="adding comment";
+    }
+ else     if (action == OsmPoint.Action.DELETE) {
+      b.append("/close");
+      msg="close note";
+    }
+    b.append("?text=").append(URLEncoder.encode(text));
+  }
+  return editingPOI(b.toString(),"POST",msg);
+}
