@@ -1,0 +1,22 @@
+{
+  boolean needCloseMenu=false;
+  int oldMenuState=menu.getCurrentMenuState();
+  if (menuBottomViewHeight > 0 && slidingUp) {
+    menu.slideUp();
+    if (skipHalfScreenState) {
+      menu.slideUp();
+    }
+  }
+ else   if (slidingDown) {
+    needCloseMenu=!menu.slideDown();
+    if (!needCloseMenu && skipHalfScreenState) {
+      menu.slideDown();
+    }
+  }
+  int newMenuState=menu.getCurrentMenuState();
+  boolean needMapAdjust=oldMenuState != newMenuState && newMenuState != MenuState.FULL_SCREEN;
+  if (newMenuState != oldMenuState) {
+    doBeforeMenuStateChange(oldMenuState,newMenuState);
+  }
+  applyPosY(currentY,needCloseMenu,needMapAdjust,oldMenuState,newMenuState);
+}
