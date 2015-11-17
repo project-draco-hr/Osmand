@@ -5,5 +5,17 @@
   if (color != 0) {
     wpt.setColor(color);
   }
-  wpt=savingTrackHelper.insertPointData(wpt.getLatitude(),wpt.getLongitude(),System.currentTimeMillis(),description,name,category,color);
+  GPXFile gpx=editor.getGpxFile();
+  if (gpx != null) {
+    if (gpx.showCurrentTrack) {
+      wpt=savingTrackHelper.insertPointData(wpt.getLatitude(),wpt.getLongitude(),System.currentTimeMillis(),description,name,category,color);
+      if (!editor.isGpxSelected()) {
+        selectedGpxHelper.setGpxFileToDisplay(gpx);
+      }
+    }
+ else {
+      wpt=gpx.addWptPt(wpt.getLatitude(),wpt.getLongitude(),System.currentTimeMillis(),description,name,category,color);
+      new SaveGpxAsyncTask(getMyApplication(),gpx,editor.isGpxSelected()).execute();
+    }
+  }
 }

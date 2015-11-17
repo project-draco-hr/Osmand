@@ -1,10 +1,15 @@
 {
-  if (isCurrentTrack()) {
-    savingTrackHelper.updatePointData(wpt,wpt.getLatitude(),wpt.getLongitude(),System.currentTimeMillis(),description,name,category,color);
-  }
- else   if (selectedGpxFile != null) {
-    GPXFile gpx=selectedGpxFile.getModifiableGpxFile();
-    gpx.updateWptPt(wpt,wpt.getLatitude(),wpt.getLongitude(),System.currentTimeMillis(),description,name,category,color);
-    new SaveGpxAsyncTask(getMyApplication(),gpx).execute();
+  GPXFile gpx=editor.getGpxFile();
+  if (gpx != null) {
+    if (gpx.showCurrentTrack) {
+      savingTrackHelper.updatePointData(wpt,wpt.getLatitude(),wpt.getLongitude(),System.currentTimeMillis(),description,name,category,color);
+      if (!editor.isGpxSelected()) {
+        selectedGpxHelper.setGpxFileToDisplay(gpx);
+      }
+    }
+ else {
+      gpx.updateWptPt(wpt,wpt.getLatitude(),wpt.getLongitude(),System.currentTimeMillis(),description,name,category,color);
+      new SaveGpxAsyncTask(getMyApplication(),gpx,editor.isGpxSelected()).execute();
+    }
   }
 }
