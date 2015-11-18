@@ -91,11 +91,8 @@
     }
     @Override public void afterTextChanged(    Editable s){
       if (!getEditPoiData().isInEdit()) {
-        PoiType pt=getEditPoiData().getAllTranslatedSubTypes().get(s.toString().toLowerCase());
-        if (pt != null) {
-          poiTypeTextInputLayout.setHint(pt.getCategory().getTranslation());
-        }
         getEditPoiData().updateTypeTag(s.toString());
+        poiTypeTextInputLayout.setHint(editPoiData.getPoiCategory().getTranslation());
       }
     }
   }
@@ -103,6 +100,23 @@
   poiNameEditText.setOnEditorActionListener(mOnEditorActionListener);
   poiTypeEditText.setOnEditorActionListener(mOnEditorActionListener);
   poiTypeEditText.setText(editPoiData.getPoiTypeString());
+  poiTypeEditText.setOnTouchListener(new View.OnTouchListener(){
+    @Override public boolean onTouch(    final View v,    MotionEvent event){
+      final EditText editText=(EditText)v;
+      final int DRAWABLE_RIGHT=2;
+      if (event.getAction() == MotionEvent.ACTION_UP) {
+        if (event.getX() >= (editText.getRight() - editText.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width() - editText.getPaddingRight())) {
+          if (editPoiData.getPoiCategory() != null) {
+            DialogFragment dialogFragment=PoiSubTypeDialogFragment.createInstance(editPoiData.getPoiCategory());
+            dialogFragment.show(getChildFragmentManager(),"PoiSubTypeDialogFragment");
+          }
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+);
   Button saveButton=(Button)view.findViewById(R.id.saveButton);
   saveButton.setText(mOpenstreetmapUtil instanceof OpenstreetmapRemoteUtil ? R.string.shared_string_upload : R.string.shared_string_save);
   saveButton.setOnClickListener(new View.OnClickListener(){

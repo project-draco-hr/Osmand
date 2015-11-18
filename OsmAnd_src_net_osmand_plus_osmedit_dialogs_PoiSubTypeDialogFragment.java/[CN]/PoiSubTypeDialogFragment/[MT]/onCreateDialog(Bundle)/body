@@ -2,8 +2,12 @@
   MapPoiTypes poiTypes=((OsmandApplication)getActivity().getApplication()).getPoiTypes();
   AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
   final PoiCategory a=poiTypes.getPoiCategoryByName((String)getArguments().getSerializable(KEY_POI_CATEGORY));
-  final Map<String,PoiType> allTranslatedNames=poiTypes.getAllTranslatedNames(a,true);
-  Set<String> strings=allTranslatedNames.keySet();
+  List<String> strings=new ArrayList<>();
+  for (  PoiType s : a.getPoiTypes()) {
+    if (!s.isReference() && !s.isNotEditableOsm() && s.getBaseLangType() == null) {
+      strings.add(s.getTranslation());
+    }
+  }
   final String[] subCats=strings.toArray(new String[strings.size()]);
   builder.setItems(subCats,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
