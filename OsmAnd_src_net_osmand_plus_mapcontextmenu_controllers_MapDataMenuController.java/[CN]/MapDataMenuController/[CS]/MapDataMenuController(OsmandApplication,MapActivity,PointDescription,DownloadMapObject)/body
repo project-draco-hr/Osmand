@@ -1,0 +1,73 @@
+{
+  super(new MenuBuilder(app),pointDescription,mapActivity);
+  this.mapObject=mapObject;
+  indexItem=mapObject.getIndexItem();
+  downloadThread=app.getDownloadThread();
+  if (indexItem != null) {
+    otherIndexItems=new LinkedList<>(downloadThread.getIndexes().getIndexItems(mapObject.getWorldRegion()));
+    otherIndexItems.remove(indexItem);
+  }
+  srtmDisabled=OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) == null;
+  OsmandPlugin srtmPlugin=OsmandPlugin.getPlugin(SRTMPlugin.class);
+  srtmNeedsInstallation=srtmPlugin == null || srtmPlugin.needsInstallation();
+  leftTitleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      if (indexItem != null) {
+        if ((indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE || indexItem.getType() == DownloadActivityType.HILLSHADE_FILE) && srtmDisabled) {
+          getMapActivity().getContextMenu().close();
+          if (srtmNeedsInstallation) {
+            OsmandPlugin plugin=OsmandPlugin.getPlugin(SRTMPlugin.class);
+            if (plugin != null) {
+              mapActivity.startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(plugin.getInstallURL())));
+            }
+          }
+ else {
+            mapActivity.startActivity(new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getPluginsActivity()));
+            AccessibleToast.makeText(mapActivity,mapActivity.getString(R.string.activate_srtm_plugin),Toast.LENGTH_SHORT).show();
+          }
+        }
+ else {
+          new DownloadValidationManager(getMapActivity().getMyApplication()).startDownload(getMapActivity(),indexItem);
+        }
+      }
+    }
+  }
+;
+  leftTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_download);
+  leftTitleButtonController.leftIconId=R.drawable.ic_action_import;
+  rightTitleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      if (indexItem != null) {
+        deleteItem();
+      }
+    }
+  }
+;
+  rightTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_delete);
+  rightTitleButtonController.leftIconId=R.drawable.ic_action_delete_dark;
+  topRightTitleButtonController=new TitleButtonController(){
+    @Override public void buttonPressed(){
+      getMapActivity().getContextMenu().close();
+      Map<Object,IContextMenuProvider> selectedObjects=new HashMap<>();
+      IContextMenuProvider provider=mapActivity.getMapLayers().getDownloadedRegionsLayer();
+      for (      IndexItem item : otherIndexItems) {
+        selectedObjects.put(new DownloadMapObject(mapObject.getDataObject(),mapObject.getWorldRegion(),item),provider);
+      }
+      mapActivity.getContextMenu().getMultiSelectionMenu().show(mapActivity.getContextMenu().getLatLon(),selectedObjects);
+    }
+  }
+;
+  topRightTitleButtonController.caption=getMapActivity().getString(R.string.download_select_map_types);
+  titleProgressController=new TitleProgressController(){
+    @Override public void buttonPressed(){
+      if (indexItem != null) {
+        downloadThread.cancelDownload(indexItem);
+      }
+    }
+  }
+;
+  if (!downloadThread.getIndexes().isDownloadedFromInternet) {
+    downloadThread.runReloadIndexFiles();
+  }
+  updateData();
+}
