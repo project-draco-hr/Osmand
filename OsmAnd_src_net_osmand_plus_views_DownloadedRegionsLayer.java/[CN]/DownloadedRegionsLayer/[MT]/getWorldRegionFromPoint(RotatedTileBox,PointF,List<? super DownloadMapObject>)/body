@@ -1,0 +1,46 @@
+{
+  int zoom=tb.getZoom();
+  if (zoom >= ZOOM_TO_SHOW_SELECTION_ST && zoom < ZOOM_TO_SHOW_SELECTION && osmandRegions.isInitialized()) {
+    LatLon pointLatLon=tb.getLatLonFromPixel(point.x,point.y);
+    int point31x=MapUtils.get31TileNumberX(pointLatLon.getLongitude());
+    int point31y=MapUtils.get31TileNumberY(pointLatLon.getLatitude());
+    List<BinaryMapDataObject> result=new LinkedList<>(data.results);
+    Iterator<BinaryMapDataObject> it=result.iterator();
+    while (it.hasNext()) {
+      BinaryMapDataObject o=it.next();
+      if (!osmandRegions.isDownloadOfType(o,OsmandRegions.MAP_TYPE) || !osmandRegions.contain(o,point31x,point31y)) {
+        it.remove();
+      }
+    }
+    selectedObjects=result;
+    OsmandRegions osmandRegions=app.getRegions();
+    for (    BinaryMapDataObject o : result) {
+      String fullName=osmandRegions.getFullName(o);
+      WorldRegion region=osmandRegions.getRegionData(fullName);
+      if (region != null) {
+        List<IndexItem> indexItems=app.getDownloadThread().getIndexes().getIndexItems(region);
+        List<IndexItem> dataItems=new LinkedList<>();
+        IndexItem regularMapItem=null;
+        for (        IndexItem item : indexItems) {
+          if (item.isDownloaded()) {
+            dataItems.add(item);
+            if (item.getType() == DownloadActivityType.NORMAL_FILE) {
+              regularMapItem=item;
+            }
+          }
+        }
+        if (dataItems.isEmpty() && regularMapItem != null) {
+          dataItems.add(regularMapItem);
+        }
+        if (!dataItems.isEmpty()) {
+          for (          IndexItem item : dataItems) {
+            dataObjects.add(new DownloadMapObject(o,region,item));
+          }
+        }
+ else {
+          dataObjects.add(new DownloadMapObject(o,region,null));
+        }
+      }
+    }
+  }
+}
