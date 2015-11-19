@@ -1,2 +1,75 @@
 {
+  boolean isNight=nightMode != null && nightMode.isNightMode();
+  int shadw=isNight ? Color.TRANSPARENT : Color.WHITE;
+  int textColor=isNight ? mapActivity.getResources().getColor(R.color.widgettext_night) : Color.BLACK;
+  if (shadowColor != shadw) {
+    shadowColor=shadw;
+  }
+  boolean portrait=AndroidUiHelper.isOrientationPortrait(mapActivity);
+  boolean routePlanningMode=false;
+  RoutingHelper rh=mapActivity.getRoutingHelper();
+  if (rh.isRoutePlanningMode()) {
+    routePlanningMode=true;
+  }
+ else   if ((rh.isRouteCalculated() || rh.isRouteBeingCalculated()) && !rh.isFollowingMode()) {
+    routePlanningMode=true;
+  }
+  boolean routeFollowingMode=!routePlanningMode && rh.isFollowingMode();
+  boolean dialogOpened=optionsRouteControlDialog.isDialogVisible() || mapRouteInfoControlDialog.isDialogVisible();
+  boolean showRouteCalculationControls=routePlanningMode || ((System.currentTimeMillis() - touchEvent < TIMEOUT_TO_SHOW_BUTTONS) && routeFollowingMode);
+  boolean showMenuButton=(showRouteCalculationControls && portrait) || (!routeFollowingMode && !routePlanningMode);
+  updateMyLocation(rh,dialogOpened);
+  routePlanningBtn.setIconResId(R.drawable.map_directions);
+  routePlanningBtn.updateVisibility(!routeFollowingMode && !routePlanningMode);
+  menuControl.updateVisibility(showMenuButton && !dialogOpened);
+  mapZoomIn.updateVisibility(!dialogOpened);
+  mapZoomOut.updateVisibility(!dialogOpened);
+  compassHud.updateVisibility(!dialogOpened);
+  layersHud.updateVisibility(!dialogOpened);
+  if (routeFollowingMode || routePlanningMode) {
+    mapAppModeShadow.setVisibility(View.GONE);
+  }
+ else {
+    if (mapView.isZooming()) {
+      lastZoom=System.currentTimeMillis();
+    }
+    mapAppModeShadow.setVisibility(View.VISIBLE);
+    if ((System.currentTimeMillis() - lastZoom > 1000) || !OsmandPlugin.isDevelopment()) {
+      zoomText.setVisibility(View.GONE);
+      appModeIcon.setVisibility(View.VISIBLE);
+      appModeIcon.setImageDrawable(app.getIconsCache().getIcon(settings.getApplicationMode().getSmallIconDark(),!isNight));
+    }
+ else {
+      appModeIcon.setVisibility(View.GONE);
+      zoomText.setVisibility(View.VISIBLE);
+      zoomText.setText(getZoomLevel(tileBox));
+    }
+  }
+  int vis=showRouteCalculationControls ? View.VISIBLE : View.GONE;
+  if (showRouteCalculationControls) {
+    ((TextView)routeGoControl.iv).setTextColor(textColor);
+    String text=portrait ? mapActivity.getString(R.string.shared_string_go) : "";
+    if (startCounter > 0) {
+      int get=(int)((startCounter - System.currentTimeMillis()) / 1000l);
+      text+=" (" + get + ")";
+    }
+    ((TextView)routeGoControl.iv).setText(text);
+  }
+  if (routePreparationLayout.getVisibility() != vis) {
+    routePreparationLayout.setVisibility(vis);
+    mapDashControl.updateVisibility(showRouteCalculationControls && !portrait);
+    mapRouteInfoControlDialog.setVisible(showRouteCalculationControls);
+    if (showRouteCalculationControls) {
+      if (!mapActivity.getRoutingHelper().isFollowingMode() && !mapActivity.getRoutingHelper().isPauseNavigation()) {
+        startCounter();
+      }
+    }
+ else {
+      stopCounter();
+    }
+  }
+  updateCompass(isNight);
+  for (  MapHudButton mc : controls) {
+    mc.update(mapActivity.getMyApplication(),nightMode == null ? false : nightMode.isNightMode());
+  }
 }
