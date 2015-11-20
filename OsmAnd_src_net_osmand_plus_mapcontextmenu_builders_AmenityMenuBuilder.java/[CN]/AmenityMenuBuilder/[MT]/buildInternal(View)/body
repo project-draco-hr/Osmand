@@ -1,6 +1,11 @@
 {
   boolean hasWiki=false;
   MapPoiTypes poiTypes=app.getPoiTypes();
+  String preferredLang=app.getSettings().MAP_PREFERRED_LOCALE.get();
+  if (Algorithms.isEmpty(preferredLang)) {
+    preferredLang=app.getLanguage();
+  }
+  List<AmenityDescription> descriptions=new LinkedList<>();
   for (  Map.Entry<String,String> e : amenity.getAdditionalInfo().entrySet()) {
     int iconId;
     Drawable icon=null;
@@ -14,10 +19,6 @@
     if (amenity.getType().isWiki()) {
       if (!hasWiki) {
         iconId=R.drawable.ic_action_note_dark;
-        String preferredLang=app.getSettings().MAP_PREFERRED_LOCALE.get();
-        if (Algorithms.isEmpty(preferredLang)) {
-          preferredLang=app.getLanguage();
-        }
         String lng=amenity.getContentSelected("content",preferredLang,"en");
         if (Algorithms.isEmpty(lng)) {
           lng="en";
@@ -88,11 +89,29 @@
         vl=amenity.unzipContent(e.getValue());
       }
     }
-    if (icon != null) {
+    if (isText && iconId == R.drawable.ic_action_note_dark) {
+      descriptions.add(new AmenityDescription(key,textPrefix,vl));
+    }
+ else     if (icon != null) {
       buildRow(view,icon,vl,textPrefix,textColor,isWiki,isText,needLinks);
     }
  else {
       buildRow(view,iconId,vl,textPrefix,textColor,isWiki,isText,needLinks);
     }
+  }
+  String langSuffix=":" + preferredLang;
+  AmenityDescription descInPrefLang=null;
+  for (  AmenityDescription desc : descriptions) {
+    if (desc.key.length() > langSuffix.length() && desc.key.substring(desc.key.length() - langSuffix.length(),desc.key.length()).equals(langSuffix)) {
+      descInPrefLang=desc;
+      break;
+    }
+  }
+  if (descInPrefLang != null) {
+    descriptions.remove(descInPrefLang);
+    descriptions.add(0,descInPrefLang);
+  }
+  for (  AmenityDescription desc : descriptions) {
+    buildRow(view,R.drawable.ic_action_note_dark,desc.text,desc.textPrefix,0,false,true,true);
   }
 }
