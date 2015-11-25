@@ -148,20 +148,20 @@
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
       b.setTitle(R.string.map_preferred_locale);
-      final String[] txtValues=mapNamesIds;
-      final String[] txtNames=getMapNamesValues(activity);
+      final String[] txtIds=getSortedMapNamesIds(activity);
+      final String[] txtValues=getMapNamesValues(activity,txtIds);
       int selected=-1;
-      for (int i=0; i < txtValues.length; i++) {
-        if (view.getSettings().MAP_PREFERRED_LOCALE.get().equals(txtValues[i])) {
+      for (int i=0; i < txtIds.length; i++) {
+        if (view.getSettings().MAP_PREFERRED_LOCALE.get().equals(txtIds[i])) {
           selected=i;
           break;
         }
       }
-      b.setSingleChoiceItems(txtNames,selected,new DialogInterface.OnClickListener(){
+      b.setSingleChoiceItems(txtValues,selected,new DialogInterface.OnClickListener(){
         @Override public void onClick(        DialogInterface dialog,        int which){
-          view.getSettings().MAP_PREFERRED_LOCALE.set(txtValues[which]);
+          view.getSettings().MAP_PREFERRED_LOCALE.set(txtIds[which]);
           refreshMapComplete(activity);
-          adapter.setItemDescription(pos,txtValues[which]);
+          adapter.setItemDescription(pos,txtIds[which]);
           ad.notifyDataSetInvalidated();
           dialog.dismiss();
         }
