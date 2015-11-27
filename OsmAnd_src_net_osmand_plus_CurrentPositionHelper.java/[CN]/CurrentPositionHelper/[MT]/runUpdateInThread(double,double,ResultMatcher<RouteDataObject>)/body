@@ -6,17 +6,27 @@
       return null;
     }
   }
-  final RouteSegment sg=rp.findRouteSegment(lat,lon,ctx);
-  if (result != null) {
+  final RouteSegmentPoint sg=rp.findRouteSegment(lat,lon,true,ctx);
+  final RouteDataObject res;
+  if (sg == null) {
+    res=null;
+  }
+ else {
+    RouteSegmentPoint ff=rp.findRouteSegment(lat,lon,false,ctx);
+    if (ff == null || ff.dist + 70 * 70 < sg.dist) {
+      res=null;
+    }
+ else {
+      res=sg.getRoad();
+    }
+  }
+  if (resultMatcher != null) {
     app.runInUIThread(new Runnable(){
       public void run(){
-        result.publish(sg == null ? null : sg.getRoad());
+        resultMatcher.publish(res);
       }
     }
 );
   }
-  if (sg == null) {
-    return null;
-  }
-  return sg.getRoad();
+  return res;
 }
