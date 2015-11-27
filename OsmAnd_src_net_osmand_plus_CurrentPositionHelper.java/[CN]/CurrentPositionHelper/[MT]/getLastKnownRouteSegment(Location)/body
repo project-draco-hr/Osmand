@@ -1,16 +1,19 @@
 {
-  lastAskedLocation=loc;
+  Location last=lastAskedLocation;
   RouteDataObject r=lastFound;
   if (loc == null || loc.getAccuracy() > 50) {
     return null;
   }
+  if (last != null && last.distanceTo(loc) < 20) {
+    return r;
+  }
   if (r == null) {
-    scheduleRouteSegmentFind(loc,null);
+    scheduleRouteSegmentFind(loc,null,true);
     return null;
   }
   double d=getOrthogonalDistance(r,loc);
   if (d > 25) {
-    scheduleRouteSegmentFind(loc,null);
+    scheduleRouteSegmentFind(loc,null,true);
   }
   if (d < 70) {
     return r;
