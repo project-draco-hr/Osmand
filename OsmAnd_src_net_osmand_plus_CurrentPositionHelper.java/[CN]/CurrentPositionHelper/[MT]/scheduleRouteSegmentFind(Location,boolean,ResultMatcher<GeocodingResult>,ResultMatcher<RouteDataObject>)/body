@@ -1,0 +1,31 @@
+{
+  if (loc != null) {
+    Runnable run=new Runnable(){
+      @Override public void run(){
+        try {
+          final List<GeocodingResult> gr=runUpdateInThread(loc.getLatitude(),loc.getLongitude());
+          if (storeFound) {
+            lastAskedLocation=loc;
+            lastFound=gr.isEmpty() ? null : gr.get(0).point.getRoad();
+          }
+ else           if (geoCoding != null) {
+            justifyResult(gr,geoCoding);
+          }
+ else           if (result != null) {
+            app.runInUIThread(new Runnable(){
+              @Override public void run(){
+                result.publish(gr.isEmpty() ? null : gr.get(0).point.getRoad());
+              }
+            }
+);
+          }
+        }
+ catch (        IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+;
+    app.getRoutingHelper().startTaskInRouteThreadIfPossible(run);
+  }
+}
