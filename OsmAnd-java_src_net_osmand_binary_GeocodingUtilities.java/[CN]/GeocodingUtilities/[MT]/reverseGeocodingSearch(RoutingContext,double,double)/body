@@ -1,0 +1,39 @@
+{
+  RoutePlannerFrontEnd rp=new RoutePlannerFrontEnd(false);
+  List<GeocodingResult> lst=new ArrayList<GeocodingUtilities.GeocodingResult>();
+  List<RouteSegmentPoint> listR=new ArrayList<BinaryRoutePlanner.RouteSegmentPoint>();
+  rp.findRouteSegment(lat,lon,ctx,listR);
+  double dist=0;
+  TLongHashSet set=new TLongHashSet();
+  Set<String> streetNames=new HashSet<String>();
+  for (  RouteSegmentPoint p : listR) {
+    RouteDataObject road=p.getRoad();
+    if (!set.add(road.getId())) {
+      continue;
+    }
+    boolean emptyName=Algorithms.isEmpty(road.getName()) && Algorithms.isEmpty(road.getRef());
+    if (!emptyName) {
+      if (dist == 0) {
+        dist=p.dist;
+      }
+      GeocodingResult sr=new GeocodingResult();
+      sr.searchPoint=new LatLon(lat,lon);
+      sr.streetName=Algorithms.isEmpty(road.getName()) ? road.getRef() : road.getName();
+      sr.point=p;
+      sr.connectionPoint=new LatLon(MapUtils.get31LatitudeY(p.preciseY),MapUtils.get31LongitudeX(p.preciseX));
+      sr.regionFP=road.region.getFilePointer();
+      sr.regionLen=road.region.getLength();
+      if (streetNames.add(sr.streetName)) {
+        lst.add(sr);
+      }
+    }
+    if (p.dist > 100 * 100 && dist != 0 && p.dist > 4 * dist) {
+      break;
+    }
+    if (p.dist > 300 * 300) {
+      break;
+    }
+  }
+  Collections.sort(lst,GeocodingUtilities.DISTANCE_COMPARATOR);
+  return lst;
+}

@@ -1,0 +1,52 @@
+{
+  double minBuildingDistance=0;
+  List<GeocodingResult> complete=new ArrayList<GeocodingUtilities.GeocodingResult>();
+  for (  GeocodingResult r : res) {
+    if (minBuildingDistance > 0 && r.getDistance() > GeocodingUtilities.THRESHOLD_MULTIPLIER_SKIP_STREETS_AFTER * minBuildingDistance) {
+      break;
+    }
+    Collection<RegionAddressRepository> rar=app.getResourceManager().getAddressRepositories();
+    RegionAddressRepository foundRepo=null;
+    for (    RegionAddressRepository repo : rar) {
+      BinaryMapIndexReader reader=repo.getFile();
+      for (      RouteRegion rb : reader.getRoutingIndexes()) {
+        if (r.regionFP == rb.getFilePointer() && r.regionLen == rb.getLength()) {
+          foundRepo=repo;
+          break;
+        }
+      }
+      if (foundRepo != null) {
+        break;
+      }
+    }
+    if (foundRepo != null) {
+      List<GeocodingResult> justified=foundRepo.justifyReverseGeocodingSearch(r,minBuildingDistance);
+      if (!justified.isEmpty()) {
+        double md=justified.get(0).getDistance();
+        if (minBuildingDistance == 0) {
+          minBuildingDistance=md;
+        }
+ else {
+          minBuildingDistance=Math.min(md,minBuildingDistance);
+        }
+        complete.addAll(justified);
+      }
+    }
+ else {
+      complete.add(r);
+    }
+  }
+  Collections.sort(complete,GeocodingUtilities.DISTANCE_COMPARATOR);
+  for (  final GeocodingResult r : complete) {
+    if (r.building != null && r.getDistance() > minBuildingDistance * GeocodingUtilities.THRESHOLD_MULTIPLIER_SKIP_BUILDINGS_AFTER) {
+      continue;
+    }
+    app.runInUIThread(new Runnable(){
+      public void run(){
+        result.publish(r);
+      }
+    }
+);
+    break;
+  }
+}
