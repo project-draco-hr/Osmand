@@ -6,25 +6,20 @@
     }
     if (!oldAndroid()) {
       mainView.animate().y(posY).setDuration(200).setInterpolator(new DecelerateInterpolator()).setListener(new AnimatorListenerAdapter(){
+        boolean canceled=false;
         @Override public void onAnimationCancel(        Animator animation){
-          if (needCloseMenu) {
-            menu.close();
-          }
- else {
-            updateMainViewLayout(posY);
-            if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
-              doAfterMenuStateChange(previousMenuState,newMenuState);
-            }
-          }
+          canceled=true;
         }
         @Override public void onAnimationEnd(        Animator animation){
-          if (needCloseMenu) {
-            menu.close();
-          }
+          if (!canceled) {
+            if (needCloseMenu) {
+              menu.close();
+            }
  else {
-            updateMainViewLayout(posY);
-            if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
-              doAfterMenuStateChange(previousMenuState,newMenuState);
+              updateMainViewLayout(posY);
+              if (previousMenuState != 0 && newMenuState != 0 && previousMenuState != newMenuState) {
+                doAfterMenuStateChange(previousMenuState,newMenuState);
+              }
             }
           }
         }
