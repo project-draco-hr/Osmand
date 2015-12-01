@@ -1,27 +1,40 @@
 {
   final List<GeocodingResult> streetsList=new ArrayList<GeocodingResult>();
-  log.info("Search street by name " + r.streetName);
-  SearchRequest<MapObject> req=BinaryMapIndexReader.buildAddressByNameRequest(new ResultMatcher<MapObject>(){
-    @Override public boolean publish(    MapObject object){
-      if (object instanceof Street && object.getName().equalsIgnoreCase(r.streetName)) {
-        double d=MapUtils.getDistance(object.getLocation(),r.searchPoint.getLatitude(),r.searchPoint.getLongitude());
-        if (d < DISTANCE_STREET_NAME_PROXIMITY_BY_NAME) {
-          GeocodingResult rs=new GeocodingResult(r);
-          rs.street=(Street)object;
-          rs.city=rs.street.getCity();
-          streetsList.add(rs);
-          return true;
+  final List<String> streetNamePacked=prepareStreetName(r.streetName);
+  if (streetNamePacked.size() > 0) {
+    log.info("Search street by name " + r.streetName + " "+ streetNamePacked);
+    String mainWord="";
+    for (int i=0; i < streetNamePacked.size(); i++) {
+      String s=streetNamePacked.get(i);
+      if (!getSuffixesSet().contains(s) && s.length() > mainWord.length()) {
+        mainWord=s;
+      }
+    }
+    if (Algorithms.isEmpty(mainWord)) {
+      mainWord=streetNamePacked.get(0);
+    }
+    SearchRequest<MapObject> req=BinaryMapIndexReader.buildAddressByNameRequest(new ResultMatcher<MapObject>(){
+      @Override public boolean publish(      MapObject object){
+        if (object instanceof Street && prepareStreetName(object.getName()).equals(streetNamePacked)) {
+          double d=MapUtils.getDistance(object.getLocation(),r.searchPoint.getLatitude(),r.searchPoint.getLongitude());
+          if (d < DISTANCE_STREET_NAME_PROXIMITY_BY_NAME) {
+            GeocodingResult rs=new GeocodingResult(r);
+            rs.street=(Street)object;
+            rs.city=rs.street.getCity();
+            streetsList.add(rs);
+            return true;
+          }
+          return false;
         }
         return false;
       }
-      return false;
+      @Override public boolean isCancelled(){
+        return false;
+      }
     }
-    @Override public boolean isCancelled(){
-      return false;
-    }
+,mainWord);
+    reader.searchAddressDataByName(req);
   }
-,r.streetName);
-  reader.searchAddressDataByName(req);
   final List<GeocodingResult> res=new ArrayList<GeocodingResult>();
   if (streetsList.size() == 0) {
     res.add(r);
