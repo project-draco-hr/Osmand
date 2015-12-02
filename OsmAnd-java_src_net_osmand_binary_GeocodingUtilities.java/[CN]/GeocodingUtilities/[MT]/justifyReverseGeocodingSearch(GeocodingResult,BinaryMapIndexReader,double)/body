@@ -1,8 +1,8 @@
 {
   final List<GeocodingResult> streetsList=new ArrayList<GeocodingResult>();
-  final List<String> streetNamePacked=prepareStreetName(r.streetName);
+  final List<String> streetNamePacked=prepareStreetName(road.streetName);
   if (streetNamePacked.size() > 0) {
-    log.info("Search street by name " + r.streetName + " "+ streetNamePacked);
+    log.info("Search street by name " + road.streetName + " "+ streetNamePacked);
     String mainWord="";
     for (int i=0; i < streetNamePacked.size(); i++) {
       String s=streetNamePacked.get(i);
@@ -16,10 +16,11 @@
     SearchRequest<MapObject> req=BinaryMapIndexReader.buildAddressByNameRequest(new ResultMatcher<MapObject>(){
       @Override public boolean publish(      MapObject object){
         if (object instanceof Street && prepareStreetName(object.getName()).equals(streetNamePacked)) {
-          double d=MapUtils.getDistance(object.getLocation(),r.searchPoint.getLatitude(),r.searchPoint.getLongitude());
+          double d=MapUtils.getDistance(object.getLocation(),road.searchPoint.getLatitude(),road.searchPoint.getLongitude());
           if (d < DISTANCE_STREET_NAME_PROXIMITY_BY_NAME) {
-            GeocodingResult rs=new GeocodingResult(r);
+            GeocodingResult rs=new GeocodingResult(road);
             rs.street=(Street)object;
+            rs.connectionPoint=rs.street.getLocation();
             rs.city=rs.street.getCity();
             streetsList.add(rs);
             return true;
@@ -37,56 +38,20 @@
   }
   final List<GeocodingResult> res=new ArrayList<GeocodingResult>();
   if (streetsList.size() == 0) {
-    res.add(r);
+    res.add(road);
   }
  else {
-    for (    GeocodingResult s : streetsList) {
-      final List<GeocodingResult> streetBuildings=new ArrayList<GeocodingResult>();
-      reader.preloadBuildings(s.street,null);
-      log.info("Preload buildings " + s.street.getName() + " "+ s.city.getName()+ " "+ s.street.getId());
-      for (      Building b : s.street.getBuildings()) {
-        if (b.getLatLon2() != null) {
-          double slat=b.getLocation().getLatitude();
-          double slon=b.getLocation().getLongitude();
-          double tolat=b.getLatLon2().getLatitude();
-          double tolon=b.getLatLon2().getLongitude();
-          double coeff=MapUtils.getProjectionCoeff(r.searchPoint.getLatitude(),r.searchPoint.getLongitude(),slat,slon,tolat,tolon);
-          double plat=slat + (tolat - slat) * coeff;
-          double plon=slon + (tolon - slon) * coeff;
-          if (MapUtils.getDistance(r.searchPoint,plat,plon) < DISTANCE_BULDING_PROXIMITY) {
-            GeocodingResult bld=new GeocodingResult(s);
-            bld.building=b;
-            bld.connectionPoint=b.getLocation();
-            streetBuildings.add(bld);
-            if (!Algorithms.isEmpty(b.getName2())) {
-              int fi=Algorithms.extractFirstIntegerNumber(b.getName());
-              int si=Algorithms.extractFirstIntegerNumber(b.getName2());
-              if (si != 0 && fi != 0) {
-                int num=(int)(fi + (si - fi) * coeff);
-                BuildingInterpolation type=b.getInterpolationType();
-                if (type == BuildingInterpolation.EVEN || type == BuildingInterpolation.ODD) {
-                  if (num % 2 == (type == BuildingInterpolation.EVEN ? 1 : 0)) {
-                    num--;
-                  }
-                }
- else                 if (b.getInterpolationInterval() > 0) {
-                  int intv=b.getInterpolationInterval();
-                  if ((num - fi) % intv != 0) {
-                    num=((num - fi) / intv) * intv + fi;
-                  }
-                }
-                bld.buildingInterpolation=num + "";
-              }
-            }
-          }
-        }
- else         if (MapUtils.getDistance(b.getLocation(),r.searchPoint) < DISTANCE_BULDING_PROXIMITY) {
-          GeocodingResult bld=new GeocodingResult(s);
-          bld.building=b;
-          bld.connectionPoint=b.getLocation();
-          streetBuildings.add(bld);
-        }
+    Collections.sort(streetsList,DISTANCE_COMPARATOR);
+    double streetDistance=0;
+    for (    GeocodingResult street : streetsList) {
+      if (streetDistance == 0) {
+        streetDistance=street.getDistance();
       }
+ else       if (street.getDistance() > streetDistance + 1000) {
+        continue;
+      }
+      street.connectionPoint=road.connectionPoint;
+      final List<GeocodingResult> streetBuildings=loadStreetBuildings(road,reader,street);
       Collections.sort(streetBuildings,DISTANCE_COMPARATOR);
       if (streetBuildings.size() > 0) {
         Iterator<GeocodingResult> it=streetBuildings.iterator();
@@ -103,7 +68,7 @@
           res.add(nextBld);
         }
       }
-      res.add(s);
+      res.add(street);
     }
   }
   Collections.sort(res,DISTANCE_COMPARATOR);
