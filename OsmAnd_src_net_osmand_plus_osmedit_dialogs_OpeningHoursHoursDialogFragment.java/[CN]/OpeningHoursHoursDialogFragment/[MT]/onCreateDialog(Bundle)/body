@@ -1,11 +1,12 @@
 {
   Bundle args=getArguments();
   final boolean isStart=args.getBoolean(IS_START);
-  final int positionToAdd=args.getInt(POSITION_TO_ADD);
-  final boolean createNew=positionToAdd == -1;
   final OpeningHoursParser.BasicOpeningHourRule item=(OpeningHoursParser.BasicOpeningHourRule)args.getSerializable(BASIC_OPENING_HOUR_RULE);
+  final int rulePosition=args.getInt(RULE_POSITION);
+  final int timePosition=args.getInt(TIME_POSITION);
+  final boolean createNew=rulePosition == -1;
   AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
-  int time=isStart ? item.getStartTime() : item.getEndTime();
+  int time=isStart ? item.getStartTime(timePosition) : item.getEndTime(timePosition);
   int hour=time / 60;
   int minute=time - hour * 60;
   final TimePicker timePicker=new TimePicker(getActivity());
@@ -18,17 +19,17 @@
       int hourOfDay=timePicker.getCurrentHour();
       int time=minute + hourOfDay * 60;
       if (isStart && createNew) {
-        item.setStartTime(time);
-        OpeningHoursHoursDialogFragment.createInstance(item,positionToAdd,false).show(getFragmentManager(),"TimePickerDialogFragment");
+        item.setStartTime(time,timePosition);
+        OpeningHoursHoursDialogFragment.createInstance(item,rulePosition,false,timePosition).show(getFragmentManager(),"TimePickerDialogFragment");
       }
  else {
         if (isStart) {
-          item.setStartTime(time);
+          item.setStartTime(time,timePosition);
         }
  else {
-          item.setEndTime(time);
+          item.setEndTime(time,timePosition);
         }
-        ((BasicEditPoiFragment)getParentFragment()).setBasicOpeningHoursRule(item,positionToAdd);
+        ((BasicEditPoiFragment)getParentFragment()).setBasicOpeningHoursRule(item,rulePosition);
       }
     }
   }
