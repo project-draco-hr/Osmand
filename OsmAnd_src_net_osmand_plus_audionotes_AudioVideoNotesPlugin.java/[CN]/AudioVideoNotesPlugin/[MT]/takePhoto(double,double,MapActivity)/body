@@ -1,15 +1,15 @@
 {
   if (AV_EXTERNAL_PHOTO_CAM.get()) {
-    takeIntentPhoto(lat,lon,mapActivity);
+    takePhotoExternal(lat,lon,mapActivity);
   }
  else {
-    openCamera();
-    if (cam != null) {
-      initRecMenu(AVActionType.REC_PHOTO);
-      takePhotoWithCamera(lat,lon,mapActivity);
+    if (ActivityCompat.checkSelfPermission(mapActivity,Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+      takePhotoInternalOrExternal(lat,lon,mapActivity);
     }
  else {
-      takeIntentPhoto(lat,lon,mapActivity);
+      tempLat=lat;
+      tempLon=lon;
+      ActivityCompat.requestPermissions(mapActivity,new String[]{Manifest.permission.CAMERA},CAMERA_FOR_PHOTO_REQUEST_CODE);
     }
   }
 }

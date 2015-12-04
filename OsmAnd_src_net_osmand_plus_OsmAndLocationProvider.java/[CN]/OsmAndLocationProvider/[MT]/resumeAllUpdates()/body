@@ -7,28 +7,30 @@
       }
     }
   }
-  service.addGpsStatusListener(getGpsStatusListener(service));
-  try {
-    service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,gpsListener);
-  }
- catch (  IllegalArgumentException e) {
-    Log.d(PlatformUtil.TAG,"GPS location provider not available");
-  }
-  List<String> providers=service.getProviders(true);
-  if (providers == null) {
-    return;
-  }
-  for (  String provider : providers) {
-    if (provider == null || provider.equals(LocationManager.GPS_PROVIDER)) {
-      continue;
-    }
+  if (isLocationPermissionAvailable(app)) {
+    service.addGpsStatusListener(getGpsStatusListener(service));
     try {
-      NetworkListener networkListener=new NetworkListener();
-      service.requestLocationUpdates(provider,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,networkListener);
-      networkListeners.add(networkListener);
+      service.requestLocationUpdates(LocationManager.GPS_PROVIDER,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,gpsListener);
     }
  catch (    IllegalArgumentException e) {
-      Log.d(PlatformUtil.TAG,provider + " location provider not available");
+      Log.d(PlatformUtil.TAG,"GPS location provider not available");
+    }
+    List<String> providers=service.getProviders(true);
+    if (providers == null) {
+      return;
+    }
+    for (    String provider : providers) {
+      if (provider == null || provider.equals(LocationManager.GPS_PROVIDER)) {
+        continue;
+      }
+      try {
+        NetworkListener networkListener=new NetworkListener();
+        service.requestLocationUpdates(provider,GPS_TIMEOUT_REQUEST,GPS_DIST_REQUEST,networkListener);
+        networkListeners.add(networkListener);
+      }
+ catch (      IllegalArgumentException e) {
+        Log.d(PlatformUtil.TAG,provider + " location provider not available");
+      }
     }
   }
 }

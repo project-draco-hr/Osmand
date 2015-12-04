@@ -4,7 +4,12 @@
   controls.add(backToLocationControl);
   backToLocation.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      mapActivity.getMapViewTrackingUtilities().backToLocationImpl();
+      if (OsmAndLocationProvider.isLocationPermissionAvailable(mapActivity)) {
+        mapActivity.getMapViewTrackingUtilities().backToLocationImpl();
+      }
+ else {
+        ActivityCompat.requestPermissions(mapActivity,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},OsmAndLocationProvider.REQUEST_LOCATION_PERMISSION);
+      }
     }
   }
 );
@@ -35,7 +40,7 @@
   appModeIcon=(ImageView)mapActivity.findViewById(R.id.map_app_mode_icon);
   zoomText=(TextView)mapActivity.findViewById(R.id.map_app_mode_text);
   View routePlanButton=mapActivity.findViewById(R.id.map_route_info_button);
-  routePlanningBtn=createHudButton((ImageView)routePlanButton,R.drawable.map_directions).setBg(R.drawable.btn_round,R.drawable.btn_round_night);
+  routePlanningBtn=createHudButton(routePlanButton,R.drawable.map_directions).setBg(R.drawable.btn_round,R.drawable.btn_round_night);
   controls.add(routePlanningBtn);
   routePlanButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
