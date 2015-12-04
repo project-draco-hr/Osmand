@@ -1,0 +1,49 @@
+{
+  CurrentRecording recording=plugin.getCurrentRecording();
+  IconsCache iconsCache=plugin.getMapActivity().getMyApplication().getIconsCache();
+  ImageView showHideIcon=(ImageView)view.findViewById(R.id.showHideIcon);
+  View showHideView=view.findViewById(R.id.showHideView);
+  if (recording.getType() != AVActionType.REC_AUDIO) {
+    showHideIcon.setImageDrawable(iconsCache.getContentIcon(R.drawable.ic_action_minimize));
+    TextView showHideText=(TextView)view.findViewById(R.id.showHideText);
+    showHideText.setText(showViewfinder ? view.getResources().getString(R.string.shared_string_hide) : view.getResources().getString(R.string.shared_string_show));
+    showHideView.setVisibility(View.VISIBLE);
+    viewfinder.setVisibility(showViewfinder ? View.VISIBLE : View.GONE);
+  }
+ else {
+    showHideView.setVisibility(View.INVISIBLE);
+    viewfinder.setVisibility(View.GONE);
+  }
+  showHideView.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      showHideViewfinder();
+    }
+  }
+);
+  View recView=view.findViewById(R.id.recView);
+  ImageView recIcon=(ImageView)view.findViewById(R.id.recIcon);
+  TextView recText=(TextView)view.findViewById(R.id.recText);
+  View timeView=view.findViewById(R.id.timeView);
+switch (recording.getType()) {
+case REC_AUDIO:
+case REC_VIDEO:
+    recIcon.setImageDrawable(iconsCache.getContentIcon(R.drawable.ic_action_rec_stop));
+  recText.setText(view.getResources().getString(R.string.shared_string_control_stop));
+recText.setVisibility(View.VISIBLE);
+updateDuration();
+timeView.setVisibility(View.VISIBLE);
+break;
+case REC_PHOTO:
+recIcon.setImageDrawable(iconsCache.getContentIcon(R.drawable.ic_action_photo_dark));
+recText.setVisibility(View.GONE);
+timeView.setVisibility(View.INVISIBLE);
+break;
+}
+recView.setOnClickListener(new View.OnClickListener(){
+@Override public void onClick(View v){
+rec(plugin.getMapActivity());
+}
+}
+);
+applyViewfinderVisibility();
+}

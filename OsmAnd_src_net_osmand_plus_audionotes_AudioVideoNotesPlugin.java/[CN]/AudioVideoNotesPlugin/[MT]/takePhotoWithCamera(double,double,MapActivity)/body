@@ -1,0 +1,106 @@
+{
+  try {
+    lastTakingPhoto=getBaseFileName(lat,lon,app,IMG_EXTENSION);
+    final SurfaceView view=recordingMenu.prepareSurfaceView();
+    view.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+    view.getHolder().addCallback(new Callback(){
+      @Override public void surfaceDestroyed(      SurfaceHolder holder){
+      }
+      @Override public void surfaceCreated(      SurfaceHolder holder){
+        try {
+          if (AV_PHOTO_PLAY_SOUND.get()) {
+            if (sp == null)             sp=new SoundPool(5,AudioManager.STREAM_MUSIC,0);
+            log.info("Play sound on photo");
+            if (shotId == 0) {
+              try {
+                AssetFileDescriptor assetFileDescriptor=app.getAssets().openFd("sounds/camera_click.ogg");
+                shotId=sp.load(assetFileDescriptor,1);
+                assetFileDescriptor.close();
+                log.debug("loaded file sound ID: " + shotId);
+              }
+ catch (              Exception e) {
+                log.error("cannot get shotId for sounds/camera_click.ogg");
+              }
+            }
+          }
+          Parameters parameters=cam.getParameters();
+          List<Camera.Size> psps=parameters.getSupportedPictureSizes();
+          int index=AV_CAMERA_PICTURE_SIZE.get();
+          log.debug("takePhotoWithCamera() index=" + index);
+          if (index == AV_PHOTO_SIZE_DEFAULT) {
+            index=cameraPictureSizeDefault;
+            log.debug("takePhotoWithCamera() Default value of picture size. Set index to cameraPictureSizeDefault. Now index=" + index);
+          }
+          Camera.Size selectedCamPicSize=psps.get(index);
+          parameters.setPictureSize(selectedCamPicSize.width,selectedCamPicSize.height);
+          log.debug("takePhotoWithCamera() set Picture size: width=" + selectedCamPicSize.width + " height="+ selectedCamPicSize.height);
+          boolean autofocus=true;
+          parameters.setGpsLatitude(lat);
+          parameters.setGpsLongitude(lon);
+switch (AV_CAMERA_FOCUS_TYPE.get()) {
+case AV_CAMERA_FOCUS_HIPERFOCAL:
+            parameters.setFocusMode(Parameters.FOCUS_MODE_FIXED);
+          autofocus=false;
+        log.info("Osmand:AudioNotes set camera FOCUS_MODE_FIXED");
+      break;
+case AV_CAMERA_FOCUS_EDOF:
+    parameters.setFocusMode(Parameters.FOCUS_MODE_EDOF);
+  autofocus=false;
+log.info("Osmand:AudioNotes set camera FOCUS_MODE_EDOF");
+break;
+case AV_CAMERA_FOCUS_INFINITY:
+parameters.setFocusMode(Parameters.FOCUS_MODE_INFINITY);
+autofocus=false;
+log.info("Osmand:AudioNotes set camera FOCUS_MODE_INFINITY");
+break;
+case AV_CAMERA_FOCUS_MACRO:
+parameters.setFocusMode(Parameters.FOCUS_MODE_MACRO);
+log.info("Osmand:AudioNotes set camera FOCUS_MODE_MACRO");
+break;
+case AV_CAMERA_FOCUS_CONTINUOUS:
+parameters.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+log.info("Osmand:AudioNotes set camera FOCUS_MODE_CONTINUOUS_PICTURE");
+break;
+default :
+parameters.setFocusMode(Parameters.FOCUS_MODE_AUTO);
+log.info("Osmand:AudioNotes set camera FOCUS_MODE_AUTO");
+break;
+}
+parameters.setWhiteBalance(Parameters.WHITE_BALANCE_AUTO);
+parameters.setFlashMode(Parameters.FLASH_MODE_AUTO);
+int cameraOrientation=getCamOrientation(mapActivity,Camera.CameraInfo.CAMERA_FACING_BACK);
+cam.setDisplayOrientation(cameraOrientation);
+parameters.set("rotation",cameraOrientation);
+if (cameraOrientation == 0 || cameraOrientation == 180) {
+parameters.setPreviewSize(recordingMenu.getViewfinderWidth(),recordingMenu.getViewfinderHeight());
+}
+ else {
+parameters.setPreviewSize(recordingMenu.getViewfinderHeight(),recordingMenu.getViewfinderWidth());
+}
+cam.setParameters(parameters);
+cam.setPreviewDisplay(holder);
+cam.startPreview();
+if (autofocus) {
+cam.autoFocus(null);
+}
+}
+ catch (Exception e) {
+logErr(e);
+closeCamera();
+e.printStackTrace();
+}
+}
+private void printCamParams(Parameters parameters,boolean autoExposure){
+log.info("Cam params auto exposure=" + autoExposure + " focus_distances="+ parameters.get("focus-distances"));
+}
+@Override public void surfaceChanged(SurfaceHolder holder,int format,int width,int height){
+}
+}
+);
+recordingMenu.show();
+}
+ catch (RuntimeException e) {
+logErr(e);
+closeCamera();
+}
+}
