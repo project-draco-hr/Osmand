@@ -1,15 +1,22 @@
 {
-  MediaRecorder mr=new MediaRecorder();
-  final File f=getBaseFileName(lat,lon,app,THREEGP_EXTENSION);
-  mr.setAudioSource(MediaRecorder.AudioSource.MIC);
-  mr.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-  mr.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-  mr.setOutputFile(f.getAbsolutePath());
-  try {
-    runMediaRecorder(mapActivity,mr,f);
+  if (ActivityCompat.checkSelfPermission(mapActivity,Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+    MediaRecorder mr=new MediaRecorder();
+    final File f=getBaseFileName(lat,lon,app,THREEGP_EXTENSION);
+    mr.setAudioSource(MediaRecorder.AudioSource.MIC);
+    mr.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+    mr.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+    mr.setOutputFile(f.getAbsolutePath());
+    try {
+      runMediaRecorder(mapActivity,mr,f);
+    }
+ catch (    Exception e) {
+      log.error("Error starting audio recorder ",e);
+      AccessibleToast.makeText(app,app.getString(R.string.recording_error) + " : " + e.getMessage(),Toast.LENGTH_LONG).show();
+    }
   }
- catch (  Exception e) {
-    log.error("Error starting audio recorder ",e);
-    AccessibleToast.makeText(app,app.getString(R.string.recording_error) + " : " + e.getMessage(),Toast.LENGTH_LONG).show();
+ else {
+    tempLat=lat;
+    tempLon=lon;
+    ActivityCompat.requestPermissions(mapActivity,new String[]{Manifest.permission.RECORD_AUDIO},AUDIO_REQUEST_CODE);
   }
 }
