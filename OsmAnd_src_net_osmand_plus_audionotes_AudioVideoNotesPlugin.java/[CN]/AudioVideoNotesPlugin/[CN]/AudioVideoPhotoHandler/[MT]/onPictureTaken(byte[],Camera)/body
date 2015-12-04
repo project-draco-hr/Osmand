@@ -4,7 +4,6 @@
     fos.write(data);
     fos.close();
     indexFile(true,pictureFile);
-    dlg.dismiss();
     if (AV_PHOTO_PLAY_SOUND.get()) {
       if (sp != null && shotId != 0) {
         int ret=sp.play(shotId,0.7f,0.7f,0,0,1);
@@ -20,6 +19,16 @@
     logErr(error);
   }
  finally {
-    camera.release();
+    if (mapActivity != null) {
+      mapActivity.runOnUiThread(new Runnable(){
+        @Override public void run(){
+          recordingMenu.hide();
+          recordingMenu=null;
+          restoreScreenOrientation();
+        }
+      }
+);
+    }
+    closeCamera();
   }
 }

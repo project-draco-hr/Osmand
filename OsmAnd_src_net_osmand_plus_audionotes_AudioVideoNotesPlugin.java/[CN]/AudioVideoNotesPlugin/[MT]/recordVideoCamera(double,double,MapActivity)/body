@@ -1,29 +1,33 @@
 {
-  final Dialog dlg=new Dialog(mapActivity);
-  SurfaceView view=new SurfaceView(dlg.getContext());
+  SurfaceView view=recordingMenu.prepareSurfaceView();
   view.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
   view.getHolder().addCallback(new Callback(){
     @Override public void surfaceDestroyed(    SurfaceHolder holder){
     }
     @Override public void surfaceCreated(    SurfaceHolder holder){
       MediaRecorder mr=new MediaRecorder();
-      String ext=MPEG4_EXTENSION;
-      if (AV_VIDEO_FORMAT.get() == VIDEO_OUTPUT_3GP) {
-        ext=THREEGP_EXTENSION;
+      try {
+        Parameters parameters=cam.getParameters();
+        int cameraOrientation=getCamOrientation(mapActivity,Camera.CameraInfo.CAMERA_FACING_BACK);
+        cam.setDisplayOrientation(cameraOrientation);
+        parameters.set("rotation",cameraOrientation);
+        cam.setParameters(parameters);
+        cam.setPreviewDisplay(holder);
+        cam.startPreview();
+        cam.unlock();
+        mr.setCamera(cam);
       }
+ catch (      Exception e) {
+        logErr(e);
+        closeCamera();
+      }
+      String ext=MPEG4_EXTENSION;
       final File f=getBaseFileName(lat,lon,app,ext);
       mr.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
       mr.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-      if (AV_VIDEO_FORMAT.get() == VIDEO_OUTPUT_3GP) {
-        mr.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-      }
- else {
-        mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-      }
       giveMediaRecorderHintRotatedScreen(mapActivity,mr);
-      mr.setPreviewDisplay(holder.getSurface());
-      mr.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-      mr.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
+      CamcorderProfile p=CamcorderProfile.get(AV_VIDEO_QUALITY.get());
+      mr.setProfile(p);
       mr.setOutputFile(f.getAbsolutePath());
       try {
         runMediaRecorder(mapActivity,mr,f);
@@ -36,6 +40,5 @@
     }
   }
 );
-  dlg.setContentView(view);
-  dlg.show();
+  recordingMenu.show();
 }

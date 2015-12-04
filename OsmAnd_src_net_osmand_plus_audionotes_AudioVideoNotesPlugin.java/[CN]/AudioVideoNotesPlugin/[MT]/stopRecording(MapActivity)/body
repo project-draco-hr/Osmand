@@ -1,12 +1,16 @@
 {
-  if (mediaRec != null) {
-    mediaRec.stop();
-    mediaRec.release();
-    mediaRec=null;
-    indexFile(true,mediaRecFile);
-    mediaRecFile=null;
-  }
-  if (recordControl != null) {
-    setRecordListener(recordControl,mapActivity);
+  if (!recordingDone) {
+    recordingDone=true;
+    if (!recordControl.isVisible()) {
+      recordControl.setExplicitlyVisible(false);
+      mapActivity.getMapLayers().getMapInfoLayer().recreateControls();
+    }
+    stopCameraRecording(mapActivity);
+    SHOW_RECORDINGS.set(true);
+    mapActivity.getMapView().refreshMap();
+    updateWidgetIcon(recordControl);
+    recordingMenu.hide();
+    recordingMenu=null;
+    restoreScreenOrientation();
   }
 }

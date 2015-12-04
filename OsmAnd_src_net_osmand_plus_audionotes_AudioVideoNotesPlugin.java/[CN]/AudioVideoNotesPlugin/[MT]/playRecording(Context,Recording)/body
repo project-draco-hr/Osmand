@@ -1,71 +1,64 @@
 {
-  final MediaPlayer player=r.isPhoto() ? null : new MediaPlayer();
-  final AccessibleAlertBuilder dlg=new AccessibleAlertBuilder(ctx);
-  dlg.setPositiveButton(R.string.recording_open_external_player,new OnClickListener(){
-    @Override public void onClick(    DialogInterface v,    int w){
-      if (player == null) {
-        Intent vint=new Intent(Intent.ACTION_VIEW);
-        vint.setDataAndType(Uri.fromFile(r.file),"image/*");
-        vint.setFlags(0x10000000);
-        ctx.startActivity(vint);
-      }
- else {
-        if (player.isPlaying()) {
-          player.stop();
-        }
-        Intent vint=new Intent(Intent.ACTION_VIEW);
-        vint.setDataAndType(Uri.fromFile(r.file),"video/*");
-        vint.setFlags(0x10000000);
+  if (r.isVideo()) {
+    Intent vint=new Intent(Intent.ACTION_VIEW);
+    vint.setDataAndType(Uri.fromFile(r.file),"video/*");
+    vint.setFlags(0x10000000);
+    try {
+      ctx.startActivity(vint);
+    }
+ catch (    Exception e) {
+      e.printStackTrace();
+    }
+    return;
+  }
+ else   if (r.isPhoto()) {
+    Intent vint=new Intent(Intent.ACTION_VIEW);
+    vint.setDataAndType(Uri.fromFile(r.file),"image/*");
+    vint.setFlags(0x10000000);
+    ctx.startActivity(vint);
+    return;
+  }
+  if (isPlaying()) {
+    stopPlaying();
+  }
+  recordingPlaying=r;
+  player=new MediaPlayer();
+  try {
+    player.setDataSource(r.file.getAbsolutePath());
+    player.setOnPreparedListener(new OnPreparedListener(){
+      @Override public void onPrepared(      MediaPlayer mp){
         try {
-          ctx.startActivity(vint);
+          player.start();
+          if (playerTimer != null) {
+            playerTimer.cancel();
+          }
+          playerTimer=new Timer();
+          playerTimer.schedule(new TimerTask(){
+            @Override public void run(){
+              updateContextMenu();
+              if (!isPlaying()) {
+                cancel();
+                playerTimer=null;
+              }
+            }
+          }
+,10,1000);
         }
  catch (        Exception e) {
-          e.printStackTrace();
+          logErr(e);
         }
       }
     }
-  }
 );
-  dlg.setNegativeButton(R.string.shared_string_cancel,new OnClickListener(){
-    @Override public void onClick(    DialogInterface dialog,    int which){
-      if (player != null && player.isPlaying()) {
-        player.stop();
+    player.setOnCompletionListener(new MediaPlayer.OnCompletionListener(){
+      @Override public void onCompletion(      MediaPlayer mp){
+        recordingPlaying=null;
       }
     }
-  }
 );
-  try {
-    if (r.isPhoto()) {
-      ImageView img=new ImageView(ctx);
-      Options opts=new Options();
-      opts.inSampleSize=4;
-      int rot=r.getBitmapRotation();
-      Bitmap bmp=BitmapFactory.decodeFile(r.file.getAbsolutePath(),opts);
-      if (rot != 0) {
-        Matrix matrix=new Matrix();
-        matrix.postRotate(rot);
-        Bitmap resizedBitmap=Bitmap.createBitmap(bmp,0,0,bmp.getWidth(),bmp.getHeight(),matrix,true);
-        bmp.recycle();
-        bmp=resizedBitmap;
-      }
-      img.setImageBitmap(bmp);
-      dlg.setView(img);
-      dlg.show();
-    }
- else {
-      dlg.setMessage(ctx.getString(R.string.recording_playing,r.getDescription(ctx)));
-      player.setDataSource(r.file.getAbsolutePath());
-      player.setOnPreparedListener(new OnPreparedListener(){
-        @Override public void onPrepared(        MediaPlayer mp){
-          dlg.show();
-          player.start();
-        }
-      }
-);
-      player.prepareAsync();
-    }
+    player.prepareAsync();
   }
  catch (  Exception e) {
-    AccessibleToast.makeText(ctx,R.string.recording_can_not_be_played,Toast.LENGTH_SHORT).show();
+    logErr(e);
   }
 }
