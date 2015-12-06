@@ -44,7 +44,10 @@
   textView.setLayoutParams(llTextParams);
   textView.setTextSize(16);
   textView.setTextColor(app.getResources().getColor(light ? R.color.ctx_menu_info_text_light : R.color.ctx_menu_info_text_dark));
-  if (needLinks) {
+  if (isPhoneNumber || isUrl) {
+    textView.setTextColor(textView.getLinkTextColors());
+  }
+ else   if (needLinks) {
     textView.setAutoLinkMask(Linkify.ALL);
     textView.setLinksClickable(true);
   }
@@ -67,7 +70,43 @@
   llText.setLayoutParams(llTextViewParams);
   llText.addView(textView);
   ((LinearLayout)view).addView(ll);
-  if (isWiki) {
+  if (isPhoneNumber) {
+    ll.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      final View v){
+        final String[] phones=text.split(",|;");
+        if (phones.length > 1) {
+          AlertDialog.Builder dlg=new AlertDialog.Builder(v.getContext());
+          dlg.setNegativeButton(R.string.shared_string_cancel,null);
+          dlg.setItems(phones,new DialogInterface.OnClickListener(){
+            @Override public void onClick(            DialogInterface dialog,            int which){
+              Intent intent=new Intent(Intent.ACTION_DIAL);
+              intent.setData(Uri.parse("tel:" + phones[which]));
+              v.getContext().startActivity(intent);
+            }
+          }
+);
+          dlg.show();
+        }
+ else {
+          Intent intent=new Intent(Intent.ACTION_DIAL);
+          intent.setData(Uri.parse("tel:" + text));
+          v.getContext().startActivity(intent);
+        }
+      }
+    }
+);
+  }
+ else   if (isUrl) {
+    ll.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        Intent intent=new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(text));
+        v.getContext().startActivity(intent);
+      }
+    }
+);
+  }
+ else   if (isWiki) {
     ll.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View v){
         POIMapLayer.showWikipediaDialog(view.getContext(),app,amenity);
