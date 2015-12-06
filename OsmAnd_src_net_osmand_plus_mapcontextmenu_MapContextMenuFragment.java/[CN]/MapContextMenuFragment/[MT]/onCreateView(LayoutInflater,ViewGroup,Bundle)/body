@@ -94,6 +94,7 @@
     private boolean centered;
     @Override public boolean onTouch(    View v,    MotionEvent event){
       if (singleTapDetector.onTouchEvent(event)) {
+        moving=false;
         int posY=getViewY();
         if (!centered) {
           showOnMap(menu.getLatLon(),true,false,map.getCurrentRotatedTileBox().getPixHeight() / 2 < posY - markerPaddingPx);
@@ -117,6 +118,7 @@ case MotionEvent.ACTION_DOWN:
 velocityY=0;
 maxVelocityY=0;
 velocity.addMovement(event);
+moving=true;
 break;
 case MotionEvent.ACTION_MOVE:
 hasMoved=true;
@@ -137,6 +139,7 @@ if (velocityY > maxVelocityY) maxVelocityY=velocityY;
 break;
 case MotionEvent.ACTION_UP:
 case MotionEvent.ACTION_CANCEL:
+moving=false;
 int currentY=getViewY();
 slidingUp=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) < -50;
 slidingDown=Math.abs(maxVelocityY) > 500 && (currentY - dyMain) > 50;
