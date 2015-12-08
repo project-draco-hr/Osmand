@@ -4,7 +4,7 @@
   plugin=OsmandPlugin.getPlugin(OsmEditingPlugin.class);
   poiUploader=new ProgressDialogPoiUploader(){
     @Override public void showProgressDialog(    OsmPoint[] points,    boolean closeChangeSet){
-      ProgressDialog dialog=ProgressImplementation.createProgressDialog(getMapActivity(),getMapActivity().getString(R.string.uploading),getMapActivity().getString(R.string.local_openstreetmap_uploading),ProgressDialog.STYLE_HORIZONTAL).getDialog();
+      ProgressDialogFragment dialog=ProgressDialogFragment.createInstance(R.string.uploading,R.string.local_openstreetmap_uploading,ProgressDialog.STYLE_HORIZONTAL);
       OsmEditsUploadListener listener=new OsmEditsUploadListenerHelper(getMapActivity(),getMapActivity().getString(R.string.local_openstreetmap_were_uploaded)){
         @Override public void uploadEnded(        Map<OsmPoint,String> loadErrorsMap){
           super.uploadEnded(loadErrorsMap);
@@ -17,9 +17,9 @@
         }
       }
 ;
+      dialog.show(mapActivity.getSupportFragmentManager(),ProgressDialogFragment.TAG);
       UploadOpenstreetmapPointAsyncTask uploadTask=new UploadOpenstreetmapPointAsyncTask(dialog,listener,plugin,points.length,closeChangeSet);
       uploadTask.execute(points);
-      dialog.show();
     }
   }
 ;
