@@ -17,11 +17,10 @@
   boolean routeFollowingMode=!routePlanningMode && rh.isFollowingMode();
   boolean dialogOpened=optionsRouteControlDialog.isDialogVisible() || mapRouteInfoControlDialog.isDialogVisible();
   boolean showRouteCalculationControls=routePlanningMode || ((System.currentTimeMillis() - touchEvent < TIMEOUT_TO_SHOW_BUTTONS) && routeFollowingMode);
-  boolean showMenuButton=(showRouteCalculationControls && portrait) || (!routeFollowingMode && !routePlanningMode);
   updateMyLocation(rh,dialogOpened);
   routePlanningBtn.setIconResId(R.drawable.map_directions);
-  routePlanningBtn.updateVisibility(!routeFollowingMode && !routePlanningMode);
-  menuControl.updateVisibility(showMenuButton && !dialogOpened);
+  routePlanningBtn.updateVisibility(!dialogOpened);
+  menuControl.updateVisibility(!dialogOpened);
   mapZoomIn.updateVisibility(!dialogOpened);
   mapZoomOut.updateVisibility(!dialogOpened);
   compassHud.updateVisibility(!dialogOpened);
@@ -46,31 +45,17 @@
       zoomText.setText(getZoomLevel(tileBox));
     }
   }
-  int vis=showRouteCalculationControls ? View.VISIBLE : View.GONE;
+  mapRouteInfoControlDialog.setVisible(showRouteCalculationControls);
   if (showRouteCalculationControls) {
-    ((TextView)routeGoControl.iv).setTextColor(textColor);
-    String text=portrait ? mapActivity.getString(R.string.shared_string_go) : "";
-    if (startCounter > 0) {
-      int get=(int)((startCounter - System.currentTimeMillis()) / 1000l);
-      text+=" (" + get + ")";
+    if (!mapActivity.getRoutingHelper().isFollowingMode() && !mapActivity.getRoutingHelper().isPauseNavigation()) {
+      startCounter();
     }
-    ((TextView)routeGoControl.iv).setText(text);
   }
-  if (routePreparationLayout.getVisibility() != vis) {
-    routePreparationLayout.setVisibility(vis);
-    mapDashControl.updateVisibility(showRouteCalculationControls && !portrait);
-    mapRouteInfoControlDialog.setVisible(showRouteCalculationControls);
-    if (showRouteCalculationControls) {
-      if (!mapActivity.getRoutingHelper().isFollowingMode() && !mapActivity.getRoutingHelper().isPauseNavigation()) {
-        startCounter();
-      }
-    }
  else {
-      stopCounter();
-    }
+    stopCounter();
   }
   updateCompass(isNight);
   for (  MapHudButton mc : controls) {
-    mc.update(mapActivity.getMyApplication(),nightMode == null ? false : nightMode.isNightMode());
+    mc.update(mapActivity.getMyApplication(),nightMode != null && nightMode.isNightMode());
   }
 }
