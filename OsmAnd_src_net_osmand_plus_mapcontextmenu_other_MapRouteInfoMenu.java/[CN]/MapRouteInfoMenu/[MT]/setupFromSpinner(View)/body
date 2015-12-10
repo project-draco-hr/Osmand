@@ -1,0 +1,25 @@
+{
+  ArrayList<String> fromActions=new ArrayList<>();
+  fromActions.add(mapActivity.getString(R.string.route_descr_current_location));
+  fromActions.add(mapActivity.getString(R.string.shared_string_favorite) + mapActivity.getString(R.string.shared_string_ellipsis));
+  fromActions.add(mapActivity.getString(R.string.shared_string_select_on_map));
+  fromActions.add(mapActivity.getString(R.string.shared_string_address) + mapActivity.getString(R.string.shared_string_ellipsis));
+  TargetPoint start=getTargets().getPointToStart();
+  if (start != null) {
+    String oname=start.getOnlyName().length() > 0 ? start.getOnlyName() : (mapActivity.getString(R.string.route_descr_map_location) + " " + getRoutePointDescription(start.getLatitude(),start.getLongitude()));
+    fromActions.add(oname);
+  }
+  final Spinner fromSpinner=((Spinner)view.findViewById(R.id.FromSpinner));
+  ArrayAdapter<String> fromAdapter=new ArrayAdapter<>(view.getContext(),android.R.layout.simple_spinner_item,fromActions);
+  fromAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+  fromSpinner.setAdapter(fromAdapter);
+  if (start != null) {
+    fromSpinner.setSelection(fromActions.size() - 1);
+  }
+ else {
+    if (mapActivity.getMyApplication().getLocationProvider().getLastKnownLocation() == null) {
+      fromSpinner.setPromptId(R.string.search_poi_location);
+    }
+  }
+  return fromSpinner;
+}
