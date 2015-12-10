@@ -1,0 +1,17 @@
+{
+  for (  LocalIndexInfo localIndexInfo : dataShouldUpdate) {
+    OsmandSettings.CommonPreference<Boolean> preference=preferenceForLocalIndex(LIVE_UPDATES_ON_POSTFIX,localIndexInfo);
+    if (!preference.get()) {
+      dataShouldUpdate.remove(localIndexInfo);
+      dataShouldNotUpdate.add(localIndexInfo);
+    }
+  }
+  for (  LocalIndexInfo localIndexInfo : dataShouldNotUpdate) {
+    OsmandSettings.CommonPreference<Boolean> preference=preferenceForLocalIndex(LIVE_UPDATES_ON_POSTFIX,localIndexInfo);
+    if (preference.get()) {
+      dataShouldUpdate.add(localIndexInfo);
+      dataShouldNotUpdate.remove(localIndexInfo);
+    }
+  }
+  notifyDataSetChanged();
+}
