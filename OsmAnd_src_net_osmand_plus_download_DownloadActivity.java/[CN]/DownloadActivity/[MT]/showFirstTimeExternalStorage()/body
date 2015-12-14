@@ -1,7 +1,12 @@
 {
   final boolean firstTime=getMyApplication().getAppInitializer().isFirstTime(this);
   final boolean externalExists=getMyApplication().getSettings().getSecondaryStorage() != null;
-  if (firstTime && externalExists && DataStoragePlaceDialogFragment.isInterestedInFirstTime) {
-    new DataStoragePlaceDialogFragment().show(getSupportFragmentManager(),null);
+  if (firstTime && (externalExists || !hasPermissionToWriteExternalStorage()) && DataStoragePlaceDialogFragment.isInterestedInFirstTime) {
+    if (!hasPermissionToWriteExternalStorage()) {
+      ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+    }
+ else {
+      chooseDataStorage();
+    }
   }
 }
