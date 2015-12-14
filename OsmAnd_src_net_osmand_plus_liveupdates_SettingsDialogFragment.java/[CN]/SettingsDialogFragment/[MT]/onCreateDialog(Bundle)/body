@@ -1,0 +1,21 @@
+{
+  AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
+  final LocalIndexInfo localIndexInfo=getArguments().getParcelable(LOCAL_INDEX);
+  View view=LayoutInflater.from(getActivity()).inflate(R.layout.dialog_live_updates_item_settings,null);
+  final SwitchCompat liveUpdatesSwitch=(SwitchCompat)view.findViewById(R.id.liveUpdatesSwitch);
+  final OsmandSettings.CommonPreference<Boolean> liveUpdatePreference=preferenceForLocalIndex(LiveUpdatesFragment.LIVE_UPDATES_ON_POSTFIX,localIndexInfo);
+  liveUpdatesSwitch.setChecked(liveUpdatePreference.get());
+  builder.setView(view).setPositiveButton(R.string.shared_string_save,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      liveUpdatePreference.set(liveUpdatesSwitch.isChecked());
+      getLiveUpdatesFragment().notifyLiveUpdatesChanged();
+    }
+  }
+).setNegativeButton(R.string.shared_string_cancel,null).setNeutralButton(R.string.update_now,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      getLiveUpdatesFragment().runLiveUpdate(localIndexInfo);
+    }
+  }
+);
+  return builder.create();
+}

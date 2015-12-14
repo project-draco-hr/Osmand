@@ -1,0 +1,40 @@
+{
+  final TargetPointsHelper targets=getTargets();
+  final Spinner fromSpinner=setupFromSpinner(parentView);
+  fromSpinner.setClickable(false);
+  fromSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+    @Override public void onItemSelected(    AdapterView<?> parent,    View view,    int position,    long id){
+      if (position == 0) {
+        if (targets.getPointToStart() != null) {
+          targets.clearStartPoint(true);
+        }
+      }
+ else       if (position == 1) {
+        selectFavorite(parentView,false);
+      }
+ else       if (position == 2) {
+        selectOnScreen(false);
+      }
+ else       if (position == 3) {
+        Intent intent=new Intent(mapActivity,SearchAddressActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.putExtra(TARGET_SELECT,false);
+        mapActivity.startActivityForResult(intent,MapControlsLayer.REQUEST_ADDRESS_SELECT);
+      }
+    }
+    @Override public void onNothingSelected(    AdapterView<?> parent){
+    }
+  }
+);
+  parentView.findViewById(R.id.FromLayout).setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      fromSpinner.performClick();
+    }
+  }
+);
+  ImageView fromIcon=(ImageView)parentView.findViewById(R.id.fromIcon);
+  ApplicationMode appMode=mapActivity.getMyApplication().getSettings().getApplicationMode();
+  fromIcon.setImageDrawable(mapActivity.getResources().getDrawable(appMode.getResourceLocationDay()));
+  ImageView fromDropDownIcon=(ImageView)parentView.findViewById(R.id.fromDropDownIcon);
+  fromDropDownIcon.setImageDrawable(mapActivity.getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_arrow_drop_down,isLight()));
+}

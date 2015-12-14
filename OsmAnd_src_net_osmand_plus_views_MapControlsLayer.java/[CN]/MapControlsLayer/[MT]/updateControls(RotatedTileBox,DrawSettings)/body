@@ -5,7 +5,6 @@
   if (shadowColor != shadw) {
     shadowColor=shadw;
   }
-  boolean portrait=AndroidUiHelper.isOrientationPortrait(mapActivity);
   boolean routePlanningMode=false;
   RoutingHelper rh=mapActivity.getRoutingHelper();
   if (rh.isRoutePlanningMode()) {
@@ -15,12 +14,21 @@
     routePlanningMode=true;
   }
   boolean routeFollowingMode=!routePlanningMode && rh.isFollowingMode();
-  boolean dialogOpened=optionsRouteControlDialog.isDialogVisible() || mapRouteInfoControlDialog.isDialogVisible();
+  boolean dialogOpened=optionsRouteControlDialog.isDialogVisible() || mapRouteInfoMenu.isVisible();
   boolean showRouteCalculationControls=routePlanningMode || ((System.currentTimeMillis() - touchEvent < TIMEOUT_TO_SHOW_BUTTONS) && routeFollowingMode);
   updateMyLocation(rh,dialogOpened);
-  routePlanningBtn.setIconResId(R.drawable.map_directions);
-  routePlanningBtn.updateVisibility(!dialogOpened);
-  menuControl.updateVisibility(!dialogOpened);
+  boolean showButtons=(showRouteCalculationControls || !routeFollowingMode);
+  routePlanningBtn.setIconResId(routeFollowingMode ? R.drawable.ic_action_gabout_dark : R.drawable.map_directions);
+  if (routePlanningMode || routeFollowingMode) {
+    routePlanningBtn.setIconResId(R.drawable.map_start_navigation);
+    routePlanningBtn.setIconColorId(R.color.color_myloc_distance);
+  }
+ else {
+    routePlanningBtn.setIconResId(R.drawable.map_directions);
+    routePlanningBtn.resetIconColors();
+  }
+  routePlanningBtn.updateVisibility(showButtons);
+  menuControl.updateVisibility(showButtons);
   mapZoomIn.updateVisibility(!dialogOpened);
   mapZoomOut.updateVisibility(!dialogOpened);
   compassHud.updateVisibility(!dialogOpened);
@@ -45,15 +53,7 @@
       zoomText.setText(getZoomLevel(tileBox));
     }
   }
-  mapRouteInfoControlDialog.setVisible(showRouteCalculationControls);
-  if (showRouteCalculationControls) {
-    if (!mapActivity.getRoutingHelper().isFollowingMode() && !mapActivity.getRoutingHelper().isPauseNavigation()) {
-      startCounter();
-    }
-  }
- else {
-    stopCounter();
-  }
+  mapRouteInfoMenu.setVisible(showRouteCalculationControls);
   updateCompass(isNight);
   for (  MapHudButton mc : controls) {
     mc.update(mapActivity.getMyApplication(),nightMode != null && nightMode.isNightMode());

@@ -1,0 +1,25 @@
+{
+  ArrayList<RouteSpinnerRow> fromActions=new ArrayList<>();
+  fromActions.add(new RouteSpinnerRow(R.drawable.ic_action_get_my_location,mapActivity.getString(R.string.route_descr_current_location)));
+  fromActions.add(new RouteSpinnerRow(R.drawable.ic_action_fav_dark,mapActivity.getString(R.string.shared_string_favorite) + mapActivity.getString(R.string.shared_string_ellipsis)));
+  fromActions.add(new RouteSpinnerRow(R.drawable.ic_action_marker_dark,mapActivity.getString(R.string.shared_string_select_on_map)));
+  fromActions.add(new RouteSpinnerRow(R.drawable.ic_action_home_dark,mapActivity.getString(R.string.shared_string_address) + mapActivity.getString(R.string.shared_string_ellipsis)));
+  TargetPoint start=getTargets().getPointToStart();
+  if (start != null) {
+    String oname=start.getOnlyName().length() > 0 ? start.getOnlyName() : (mapActivity.getString(R.string.route_descr_map_location) + " " + getRoutePointDescription(start.getLatitude(),start.getLongitude()));
+    fromActions.add(new RouteSpinnerRow(R.drawable.ic_action_get_my_location,oname));
+  }
+  final Spinner fromSpinner=((Spinner)view.findViewById(R.id.FromSpinner));
+  RouteSpinnerArrayAdapter fromAdapter=new RouteSpinnerArrayAdapter(view.getContext());
+  fromAdapter.addAll(fromActions);
+  fromSpinner.setAdapter(fromAdapter);
+  if (start != null) {
+    fromSpinner.setSelection(fromActions.size() - 1);
+  }
+ else {
+    if (mapActivity.getMyApplication().getLocationProvider().getLastKnownLocation() == null) {
+      fromSpinner.setPromptId(R.string.search_poi_location);
+    }
+  }
+  return fromSpinner;
+}
