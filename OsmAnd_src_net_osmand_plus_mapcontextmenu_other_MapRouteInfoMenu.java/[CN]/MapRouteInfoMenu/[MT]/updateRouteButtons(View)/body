@@ -1,8 +1,9 @@
 {
+  mainView.findViewById(R.id.dividerToDropDown).setVisibility(View.VISIBLE);
   mainView.findViewById(R.id.RouteInfoControls).setVisibility(View.VISIBLE);
   final OsmandApplication ctx=mapActivity.getMyApplication();
   ImageView prev=(ImageView)mainView.findViewById(R.id.Prev);
-  prev.setImageDrawable(ctx.getIconsCache().getContentIcon(R.drawable.ic_prev));
+  prev.setImageDrawable(ctx.getIconsCache().getContentIcon(R.drawable.ic_prev,isLight()));
   if (directionInfo >= 0) {
     prev.setVisibility(View.VISIBLE);
     prev.setOnClickListener(new View.OnClickListener(){
@@ -29,7 +30,7 @@
   }
   ImageView next=(ImageView)mainView.findViewById(R.id.Next);
   next.setVisibility(View.VISIBLE);
-  next.setImageDrawable(ctx.getIconsCache().getContentIcon(R.drawable.ic_next));
+  next.setImageDrawable(ctx.getIconsCache().getContentIcon(R.drawable.ic_next,isLight()));
   next.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       if (routingHelper.getRouteDirections() != null && directionInfo < routingHelper.getRouteDirections().size() - 1) {
@@ -54,19 +55,42 @@
   }
 );
   TextView textView=(TextView)mainView.findViewById(R.id.InfoTextView);
-  ImageView iconView=(ImageView)mainView.findViewById(R.id.InfoIcon);
+  ImageView infoIcon=(ImageView)mainView.findViewById(R.id.InfoIcon);
+  ImageView durationIcon=(ImageView)mainView.findViewById(R.id.DurationIcon);
+  View infoDistanceView=mainView.findViewById(R.id.InfoDistance);
+  View infoDurationView=mainView.findViewById(R.id.InfoDuration);
   if (directionInfo >= 0) {
-    iconView.setVisibility(View.GONE);
+    infoIcon.setVisibility(View.GONE);
+    durationIcon.setVisibility(View.GONE);
+    infoDistanceView.setVisibility(View.GONE);
+    infoDurationView.setVisibility(View.GONE);
+    textView.setVisibility(View.VISIBLE);
   }
  else {
-    iconView.setImageDrawable(ctx.getIconsCache().getContentIcon(R.drawable.ic_action_info_dark));
-    iconView.setVisibility(View.VISIBLE);
+    infoIcon.setImageDrawable(ctx.getIconsCache().getContentIcon(R.drawable.ic_action_polygom_dark,isLight()));
+    infoIcon.setVisibility(View.VISIBLE);
+    durationIcon.setImageDrawable(ctx.getIconsCache().getContentIcon(R.drawable.ic_action_time,isLight()));
+    durationIcon.setVisibility(View.VISIBLE);
+    infoDistanceView.setVisibility(View.VISIBLE);
+    infoDurationView.setVisibility(View.VISIBLE);
+    textView.setVisibility(View.GONE);
   }
   if (directionInfo >= 0 && routingHelper.getRouteDirections() != null && directionInfo < routingHelper.getRouteDirections().size()) {
     RouteDirectionInfo ri=routingHelper.getRouteDirections().get(directionInfo);
     textView.setText((directionInfo + 1) + ". " + ri.getDescriptionRoutePart()+ " "+ OsmAndFormatter.getFormattedDistance(ri.distance,ctx));
   }
  else {
-    textView.setText(ctx.getRoutingHelper().getGeneralRouteInformation().replace(",",",\n"));
+    TextView distanceText=(TextView)mainView.findViewById(R.id.DistanceText);
+    TextView durationText=(TextView)mainView.findViewById(R.id.DurationText);
+    distanceText.setText(OsmAndFormatter.getFormattedDistance(ctx.getRoutingHelper().getLeftDistance(),ctx));
+    int leftTime=ctx.getRoutingHelper().getLeftTime();
+    int hours=leftTime / (60 * 60);
+    int minutes=(leftTime / 60) % 60;
+    if (hours > 0) {
+      durationText.setText(hours + " " + ctx.getString(R.string.osmand_parking_hour)+ (minutes > 0 ? " " + minutes + " "+ ctx.getString(R.string.osmand_parking_minute) : ""));
+    }
+ else {
+      durationText.setText(minutes + " " + ctx.getString(R.string.osmand_parking_minute));
+    }
   }
 }
