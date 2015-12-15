@@ -1,35 +1,4 @@
 {
   final String fnExt=Algorithms.getFileNameWithoutExtension(new File(info.getFileName()));
-  new AsyncTask<Object,Object,IncrementalChangesManager.IncrementalUpdateList>(){
-    protected void onPreExecute(){
-      getMyActivity().setSupportProgressBarIndeterminateVisibility(true);
-    }
-    @Override protected IncrementalChangesManager.IncrementalUpdateList doInBackground(    Object... params){
-      final OsmandApplication myApplication=getMyActivity().getMyApplication();
-      IncrementalChangesManager cm=myApplication.getResourceManager().getChangesManager();
-      return cm.getUpdatesByMonth(fnExt);
-    }
-    protected void onPostExecute(    IncrementalChangesManager.IncrementalUpdateList result){
-      getMyActivity().setSupportProgressBarIndeterminateVisibility(false);
-      if (result.errorMessage != null) {
-        Toast.makeText(getActivity(),result.errorMessage,Toast.LENGTH_SHORT).show();
-      }
- else {
-        List<IncrementalChangesManager.IncrementalUpdate> ll=result.getItemsForUpdate();
-        if (ll.isEmpty()) {
-          Toast.makeText(getActivity(),R.string.no_updates_available,Toast.LENGTH_SHORT).show();
-        }
- else {
-          int i=0;
-          IndexItem[] is=new IndexItem[ll.size()];
-          for (          IncrementalChangesManager.IncrementalUpdate iu : ll) {
-            IndexItem ii=new IndexItem(iu.fileName,"Incremental update",iu.timestamp,iu.sizeText,iu.contentSize,iu.containerSize,DownloadActivityType.LIVE_UPDATES_FILE);
-            is[i++]=ii;
-          }
-          getMyActivity().startDownload(is);
-        }
-      }
-    }
-  }
-.execute(new Object[]{fnExt});
+  new PerformLiveUpdateAsyncTask(getMyActivity()).execute(new String[]{fnExt});
 }
