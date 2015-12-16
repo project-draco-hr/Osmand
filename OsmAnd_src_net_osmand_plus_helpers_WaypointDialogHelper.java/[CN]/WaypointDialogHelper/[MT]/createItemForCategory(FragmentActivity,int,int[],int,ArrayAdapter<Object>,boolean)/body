@@ -1,0 +1,48 @@
+{
+  View v;
+  v=ctx.getLayoutInflater().inflate(R.layout.waypoint_header,null);
+  final CompoundButton btn=(CompoundButton)v.findViewById(R.id.check_item);
+  btn.setVisibility(waypointHelper.isTypeConfigurable(type) ? View.VISIBLE : View.GONE);
+  btn.setOnCheckedChangeListener(null);
+  final boolean checked=waypointHelper.isTypeEnabled(type);
+  btn.setChecked(checked);
+  btn.setEnabled(running[0] == -1);
+  v.findViewById(R.id.ProgressBar).setVisibility(position == running[0] ? View.VISIBLE : View.GONE);
+  btn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
+      running[0]=position;
+      thisAdapter.notifyDataSetInvalidated();
+      if (type == WaypointHelper.POI && isChecked) {
+        selectPoi(running,thisAdapter,type,isChecked,ctx);
+      }
+ else {
+        enableType(running,thisAdapter,type,isChecked);
+      }
+    }
+  }
+);
+  TextView tv=(TextView)v.findViewById(R.id.header_text);
+  AndroidUtils.setTextPrimaryColor(mapActivity,tv,nightMode);
+  tv.setText(getHeader(type,checked,ctx));
+  v.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View view){
+      if (type == WaypointHelper.POI && btn.isChecked()) {
+        running[0]=position;
+        thisAdapter.notifyDataSetInvalidated();
+        MapActivity map=(MapActivity)ctx;
+        final PoiUIFilter[] selected=new PoiUIFilter[1];
+        AlertDialog dlg=map.getMapLayers().selectPOIFilterLayer(map.getMapView(),selected);
+        dlg.setOnDismissListener(new OnDismissListener(){
+          @Override public void onDismiss(          DialogInterface dialog){
+            if (selected != null) {
+              enableType(running,thisAdapter,type,true);
+            }
+          }
+        }
+);
+      }
+    }
+  }
+);
+  return v;
+}

@@ -1,17 +1,21 @@
 {
+  Set<LocalIndexInfo> changedSet=new HashSet<>();
   for (  LocalIndexInfo localIndexInfo : dataShouldUpdate) {
     OsmandSettings.CommonPreference<Boolean> preference=preferenceForLocalIndex(LIVE_UPDATES_ON_POSTFIX,localIndexInfo);
     if (!preference.get()) {
-      dataShouldUpdate.remove(localIndexInfo);
-      dataShouldNotUpdate.add(localIndexInfo);
+      changedSet.add(localIndexInfo);
     }
   }
+  dataShouldUpdate.removeAll(changedSet);
+  dataShouldNotUpdate.addAll(changedSet);
+  changedSet.clear();
   for (  LocalIndexInfo localIndexInfo : dataShouldNotUpdate) {
     OsmandSettings.CommonPreference<Boolean> preference=preferenceForLocalIndex(LIVE_UPDATES_ON_POSTFIX,localIndexInfo);
     if (preference.get()) {
-      dataShouldUpdate.add(localIndexInfo);
-      dataShouldNotUpdate.remove(localIndexInfo);
+      changedSet.add(localIndexInfo);
     }
   }
+  dataShouldUpdate.addAll(changedSet);
+  dataShouldNotUpdate.removeAll(changedSet);
   notifyDataSetChanged();
 }

@@ -1,9 +1,16 @@
 {
+  boolean nightMode=getMyApplication().getDaynightHelper().isNightMode();
   final ListView menuItemsListView=(ListView)mapActivity.findViewById(R.id.menuItems);
+  if (nightMode) {
+    menuItemsListView.setBackgroundColor(mapActivity.getResources().getColor(R.color.bg_color_dark));
+  }
+ else {
+    menuItemsListView.setBackgroundColor(mapActivity.getResources().getColor(R.color.bg_color_light));
+  }
   menuItemsListView.setDivider(null);
   final ContextMenuAdapter contextMenuAdapter=createMainOptionsMenu();
   contextMenuAdapter.setDefaultLayoutId(R.layout.simple_list_menu_item);
-  final ArrayAdapter<?> simpleListAdapter=contextMenuAdapter.createListAdapter(mapActivity,settings.OSMAND_THEME.get() == OsmandSettings.OSMAND_LIGHT_THEME);
+  final ArrayAdapter<?> simpleListAdapter=contextMenuAdapter.createListAdapter(mapActivity,!nightMode);
   menuItemsListView.setAdapter(simpleListAdapter);
   menuItemsListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
     @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
