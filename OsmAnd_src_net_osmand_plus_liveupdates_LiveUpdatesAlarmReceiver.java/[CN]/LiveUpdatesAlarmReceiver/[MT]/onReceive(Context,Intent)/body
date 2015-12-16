@@ -1,4 +1,13 @@
 {
-  String localIndexInfo=intent.getAction();
-  new PerformLiveUpdateAsyncTask(context).execute(localIndexInfo);
+  String fileName=intent.getAction();
+  LocalIndexInfo localIndexInfo=intent.getParcelableExtra(LiveUpdatesSettingsDialogFragment.LOCAL_INDEX_INFO);
+  WifiManager wifi=(WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+  final OsmandApplication application=(OsmandApplication)context.getApplicationContext();
+  final OsmandSettings settings=application.getSettings();
+  if (!preferenceDownloadViaWiFi(localIndexInfo,settings).get() || wifi.isWifiEnabled()) {
+    new PerformLiveUpdateAsyncTask(context,localIndexInfo).execute(fileName);
+  }
+ else {
+    tryRescheduleDownload(context,settings,localIndexInfo);
+  }
 }
