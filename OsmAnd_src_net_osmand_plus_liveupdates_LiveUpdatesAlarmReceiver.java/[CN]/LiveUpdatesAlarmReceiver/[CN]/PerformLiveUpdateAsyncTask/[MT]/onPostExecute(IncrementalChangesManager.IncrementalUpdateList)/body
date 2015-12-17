@@ -1,8 +1,12 @@
 {
+  final OsmandApplication application=(OsmandApplication)context.getApplicationContext();
+  final OsmandSettings settings=application.getSettings();
   if (result.errorMessage != null) {
     Toast.makeText(context,result.errorMessage,Toast.LENGTH_SHORT).show();
+    tryRescheduleDownload(context,settings,localIndexInfo);
   }
  else {
+    settings.LIVE_UPDATES_RETRIES.resetToDefault();
     List<IncrementalChangesManager.IncrementalUpdate> ll=result.getItemsForUpdate();
     if (ll.isEmpty()) {
       Toast.makeText(context,R.string.no_updates_available,Toast.LENGTH_SHORT).show();
@@ -14,7 +18,6 @@
         IndexItem ii=new IndexItem(iu.fileName,"Incremental update",iu.timestamp,iu.sizeText,iu.contentSize,iu.containerSize,DownloadActivityType.LIVE_UPDATES_FILE);
         is[i++]=ii;
       }
-      final OsmandApplication application=(OsmandApplication)context.getApplicationContext();
       DownloadValidationManager downloadValidationManager=new DownloadValidationManager(application);
       downloadValidationManager.startDownload(context,is);
     }
