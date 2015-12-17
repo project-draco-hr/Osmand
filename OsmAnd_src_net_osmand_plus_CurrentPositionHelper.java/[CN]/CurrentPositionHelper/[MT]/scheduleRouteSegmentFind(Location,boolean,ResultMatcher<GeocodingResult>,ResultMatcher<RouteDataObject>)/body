@@ -6,7 +6,7 @@
           final List<GeocodingResult> gr=runUpdateInThread(loc.getLatitude(),loc.getLongitude());
           if (storeFound) {
             lastAskedLocation=loc;
-            lastFound=gr.isEmpty() ? null : gr.get(0).point.getRoad();
+            lastFound=gr == null || gr.isEmpty() ? null : gr.get(0).point.getRoad();
           }
  else           if (geoCoding != null) {
             justifyResult(gr,geoCoding);
@@ -14,7 +14,7 @@
  else           if (result != null) {
             app.runInUIThread(new Runnable(){
               @Override public void run(){
-                result.publish(gr.isEmpty() ? null : gr.get(0).point.getRoad());
+                result.publish(gr == null || gr.isEmpty() ? null : gr.get(0).point.getRoad());
               }
             }
 );
@@ -26,6 +26,8 @@
       }
     }
 ;
-    app.getRoutingHelper().startTaskInRouteThreadIfPossible(run);
+    if (!app.getRoutingHelper().startTaskInRouteThreadIfPossible(run) && result != null) {
+      result.publish(null);
+    }
   }
 }

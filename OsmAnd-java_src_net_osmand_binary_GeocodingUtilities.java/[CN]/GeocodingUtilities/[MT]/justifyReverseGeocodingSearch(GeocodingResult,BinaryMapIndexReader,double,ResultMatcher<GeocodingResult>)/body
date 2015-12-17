@@ -1,0 +1,76 @@
+{
+  final List<GeocodingResult> streetsList=new ArrayList<GeocodingResult>();
+  final List<String> streetNamePacked=prepareStreetName(road.streetName);
+  if (streetNamePacked.size() > 0) {
+    log.info("Search street by name " + road.streetName + " "+ streetNamePacked);
+    String mainWord="";
+    for (int i=0; i < streetNamePacked.size(); i++) {
+      String s=streetNamePacked.get(i);
+      if (!getSuffixesSet().contains(s) && s.length() > mainWord.length()) {
+        mainWord=s;
+      }
+    }
+    if (Algorithms.isEmpty(mainWord)) {
+      mainWord=streetNamePacked.get(0);
+    }
+    SearchRequest<MapObject> req=BinaryMapIndexReader.buildAddressByNameRequest(new ResultMatcher<MapObject>(){
+      @Override public boolean publish(      MapObject object){
+        if (object instanceof Street && prepareStreetName(object.getName()).equals(streetNamePacked)) {
+          double d=MapUtils.getDistance(object.getLocation(),road.searchPoint.getLatitude(),road.searchPoint.getLongitude());
+          if (d < DISTANCE_STREET_NAME_PROXIMITY_BY_NAME) {
+            GeocodingResult rs=new GeocodingResult(road);
+            rs.street=(Street)object;
+            rs.connectionPoint=rs.street.getLocation();
+            rs.city=rs.street.getCity();
+            streetsList.add(rs);
+            return true;
+          }
+          return false;
+        }
+        return false;
+      }
+      @Override public boolean isCancelled(){
+        return result.isCancelled();
+      }
+    }
+,mainWord);
+    reader.searchAddressDataByName(req);
+  }
+  final List<GeocodingResult> res=new ArrayList<GeocodingResult>();
+  if (streetsList.size() == 0) {
+    res.add(road);
+  }
+ else {
+    Collections.sort(streetsList,DISTANCE_COMPARATOR);
+    double streetDistance=0;
+    for (    GeocodingResult street : streetsList) {
+      if (streetDistance == 0) {
+        streetDistance=street.getDistance();
+      }
+ else       if (street.getDistance() > streetDistance + DISTANCE_STREET_FROM_CLOSEST_WITH_SAME_NAME) {
+        continue;
+      }
+      street.connectionPoint=road.connectionPoint;
+      final List<GeocodingResult> streetBuildings=loadStreetBuildings(road,reader,street);
+      Collections.sort(streetBuildings,DISTANCE_COMPARATOR);
+      if (streetBuildings.size() > 0) {
+        Iterator<GeocodingResult> it=streetBuildings.iterator();
+        if (knownMinBuidlingDistance == 0) {
+          GeocodingResult firstBld=it.next();
+          knownMinBuidlingDistance=firstBld.getDistance();
+          res.add(firstBld);
+        }
+        while (it.hasNext()) {
+          GeocodingResult nextBld=it.next();
+          if (nextBld.getDistance() > knownMinBuidlingDistance * THRESHOLD_MULTIPLIER_SKIP_BUILDINGS_AFTER) {
+            break;
+          }
+          res.add(nextBld);
+        }
+      }
+      res.add(street);
+    }
+  }
+  Collections.sort(res,DISTANCE_COMPARATOR);
+  return res;
+}

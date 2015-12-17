@@ -1,0 +1,35 @@
+{
+  RouteProvider.GPXRouteParamsBuilder rp=mapActivity.getRoutingHelper().getCurrentGPXRoute();
+  final PopupMenu optionsMenu=new PopupMenu(gpxSpinner.getContext(),gpxSpinner);
+  MenuItem item=optionsMenu.getMenu().add(mapActivity.getString(R.string.shared_string_none));
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      if (mapActivity.getRoutingHelper().getCurrentGPXRoute() != null) {
+        mapActivity.getRoutingHelper().setGpxParams(null);
+        settings.FOLLOW_THE_GPX_ROUTE.set(null);
+        mapActivity.getRoutingHelper().recalculateRouteDueToSettingsChange();
+      }
+      updateParameters();
+      return true;
+    }
+  }
+);
+  item=optionsMenu.getMenu().add(mapActivity.getString(R.string.select_gpx));
+  item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+    @Override public boolean onMenuItemClick(    MenuItem item){
+      openGPXFileSelection(gpxSpinner);
+      return true;
+    }
+  }
+);
+  if (rp != null) {
+    item=optionsMenu.getMenu().add(new File(rp.getFile().path).getName());
+    item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+      @Override public boolean onMenuItemClick(      MenuItem item){
+        return true;
+      }
+    }
+);
+  }
+  optionsMenu.show();
+}
