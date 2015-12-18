@@ -3,7 +3,7 @@
   String group=getGroup(groupPosition);
   if (v == null) {
     LayoutInflater inflater=LayoutInflater.from(ctx);
-    v=inflater.inflate(R.layout.download_item_list_section,parent,false);
+    v=inflater.inflate(R.layout.list_group_title_with_switch,parent,false);
   }
   TextView nameView=((TextView)v.findViewById(R.id.section_name));
   nameView.setText(group);
@@ -12,5 +12,22 @@
   Resources.Theme theme=ctx.getTheme();
   theme.resolveAttribute(R.attr.ctx_menu_info_view_bg,typedValue,true);
   v.setBackgroundColor(typedValue.data);
+  SwitchCompat liveUpdatesSwitch=(SwitchCompat)v.findViewById(R.id.liveUpdatesSwitch);
+  if (groupPosition == SHOULD_UPDATE_GROUP_POSITION) {
+    liveUpdatesSwitch.setVisibility(View.VISIBLE);
+    OsmandApplication application=(OsmandApplication)ctx.getApplicationContext();
+    final OsmandSettings settings=application.getSettings();
+    liveUpdatesSwitch.setChecked(settings.IS_LIVE_UPDATES_ON.get());
+    liveUpdatesSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+      @Override public void onCheckedChanged(      CompoundButton buttonView,      boolean isChecked){
+        settings.IS_LIVE_UPDATES_ON.set(isChecked);
+        int liveUpdatesStateId=isChecked ? R.string.shared_string_on : R.string.shared_string_off;
+      }
+    }
+);
+  }
+ else {
+    liveUpdatesSwitch.setVisibility(View.GONE);
+  }
   return v;
 }

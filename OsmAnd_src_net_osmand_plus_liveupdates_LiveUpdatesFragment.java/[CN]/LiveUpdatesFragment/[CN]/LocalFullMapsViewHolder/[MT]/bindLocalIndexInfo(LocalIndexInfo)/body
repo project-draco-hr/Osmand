@@ -1,7 +1,16 @@
 {
-  nameTextView.setText(item.getName());
-  descriptionTextView.setText(item.getDescription());
   OsmandApplication context=fragment.getMyActivity().getMyApplication();
+  final OsmandSettings.CommonPreference<Boolean> shouldUpdatePreference=preferenceLiveUpdatesOn(item,fragment.getSettings());
+  nameTextView.setText(item.getName());
+  if (shouldUpdatePreference.get()) {
+    final Integer frequencyId=preferenceUpdateFrequency(item,fragment.getSettings()).get();
+    final UpdateFrequency frequency=UpdateFrequency.values()[frequencyId];
+    subheaderTextView.setText(frequency.toString());
+  }
+ else {
+    subheaderTextView.setText(item.getSize() + "");
+  }
+  descriptionTextView.setText(item.getDescription());
   icon.setImageDrawable(context.getIconsCache().getContentIcon(R.drawable.ic_map));
   final View.OnClickListener clickListener=new View.OnClickListener(){
     @Override public void onClick(    View v){

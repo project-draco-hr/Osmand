@@ -1,22 +1,6 @@
 {
   View view=inflater.inflate(R.layout.fragment_live_updates,container,false);
   listView=(ExpandableListView)view.findViewById(android.R.id.list);
-  View header=inflater.inflate(R.layout.live_updates_header,listView,false);
-  final OsmandSettings settings=getMyActivity().getMyApplication().getSettings();
-  final TextView onOffTextView=(TextView)header.findViewById(R.id.onOffTextView);
-  int liveUpdatesStateId=settings.IS_LIVE_UPDATES_ON.get() ? R.string.shared_string_on : R.string.shared_string_off;
-  onOffTextView.setText(liveUpdatesStateId);
-  SwitchCompat liveUpdatesSwitch=(SwitchCompat)header.findViewById(R.id.liveUpdatesSwitch);
-  liveUpdatesSwitch.setChecked(settings.IS_LIVE_UPDATES_ON.get());
-  liveUpdatesSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
-      settings.IS_LIVE_UPDATES_ON.set(isChecked);
-      int liveUpdatesStateId=isChecked ? R.string.shared_string_on : R.string.shared_string_off;
-      onOffTextView.setText(liveUpdatesStateId);
-    }
-  }
-);
-  listView.addHeaderView(header);
   adapter=new LocalIndexesAdapter(this);
   listView.setAdapter(adapter);
   new LoadLocalIndexTask(adapter,this).execute();
