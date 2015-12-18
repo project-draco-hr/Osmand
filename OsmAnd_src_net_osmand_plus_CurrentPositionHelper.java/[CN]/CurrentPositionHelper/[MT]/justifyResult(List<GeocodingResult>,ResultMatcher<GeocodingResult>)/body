@@ -1,5 +1,5 @@
 {
-  List<GeocodingResult> complete=new ArrayList<GeocodingUtilities.GeocodingResult>();
+  List<GeocodingResult> complete=new ArrayList<>();
   double minBuildingDistance=0;
   for (  GeocodingResult r : res) {
     Collection<RegionAddressRepository> rar=app.getResourceManager().getAddressRepositories();
@@ -11,13 +11,19 @@
           foundRepo=repo;
           break;
         }
+        if (result.isCancelled()) {
+          break;
+        }
       }
-      if (foundRepo != null) {
+      if (foundRepo != null || result.isCancelled()) {
         break;
       }
     }
-    if (foundRepo != null) {
-      List<GeocodingResult> justified=foundRepo.justifyReverseGeocodingSearch(r,minBuildingDistance);
+    if (result.isCancelled()) {
+      break;
+    }
+ else     if (foundRepo != null) {
+      List<GeocodingResult> justified=foundRepo.justifyReverseGeocodingSearch(r,minBuildingDistance,result);
       if (!justified.isEmpty()) {
         double md=justified.get(0).getDistance();
         if (minBuildingDistance == 0) {
@@ -32,6 +38,15 @@
  else {
       complete.add(r);
     }
+  }
+  if (result.isCancelled()) {
+    app.runInUIThread(new Runnable(){
+      public void run(){
+        result.publish(null);
+      }
+    }
+);
+    return;
   }
   Collections.sort(complete,GeocodingUtilities.DISTANCE_COMPARATOR);
   final GeocodingResult rts=complete.size() > 0 ? complete.get(0) : new GeocodingResult();
