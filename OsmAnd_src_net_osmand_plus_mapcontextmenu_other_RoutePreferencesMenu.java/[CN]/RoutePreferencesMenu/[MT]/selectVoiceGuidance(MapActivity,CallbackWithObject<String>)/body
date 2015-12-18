@@ -2,26 +2,33 @@
   final ContextMenuAdapter adapter=new ContextMenuAdapter(mapActivity);
   String[] entries;
   final String[] entrieValues;
-  Set<String> voiceFiles=getVoiceFiles();
+  Set<String> voiceFiles=getVoiceFiles(mapActivity);
   entries=new String[voiceFiles.size() + 2];
   entrieValues=new String[voiceFiles.size() + 2];
   int k=0;
+  int selected=-1;
+  String selectedValue=mapActivity.getMyApplication().getSettings().VOICE_PROVIDER.get();
   entrieValues[k]=OsmandSettings.VOICE_PROVIDER_NOT_USE;
-  entries[k]=getString(R.string.shared_string_do_not_use);
+  entries[k]=mapActivity.getResources().getString(R.string.shared_string_do_not_use);
   adapter.item(entries[k]).reg();
+  if (OsmandSettings.VOICE_PROVIDER_NOT_USE.equals(selectedValue)) {
+    selected=k;
+  }
   k++;
   for (  String s : voiceFiles) {
-    entries[k]=(s.contains("tts") ? getString(R.string.ttsvoice) + " " : "") + FileNameTranslationHelper.getVoiceName(mapActivity,s);
+    entries[k]=(s.contains("tts") ? mapActivity.getResources().getString(R.string.ttsvoice) + " " : "") + FileNameTranslationHelper.getVoiceName(mapActivity,s);
     entrieValues[k]=s;
     adapter.item(entries[k]).reg();
+    if (s.equals(selectedValue)) {
+      selected=k;
+    }
     k++;
   }
   entrieValues[k]=MORE_VALUE;
-  entries[k]=getString(R.string.install_more);
+  entries[k]=mapActivity.getResources().getString(R.string.install_more);
   adapter.item(entries[k]).reg();
-  final AlertDialog.Builder builder=new AlertDialog.Builder(mapActivity);
-  final ArrayAdapter<?> listAdapter=adapter.createListAdapter(mapActivity,settings.isLightContent());
-  builder.setAdapter(listAdapter,new DialogInterface.OnClickListener(){
+  AlertDialog.Builder bld=new AlertDialog.Builder(mapActivity);
+  bld.setSingleChoiceItems(entries,selected,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       String value=entrieValues[which];
       if (MORE_VALUE.equals(value)) {
@@ -31,12 +38,13 @@
         mapActivity.startActivity(intent);
       }
  else {
-        settings.VOICE_PROVIDER.set(value);
-        app.showDialogInitializingCommandPlayer(mapActivity,false);
-        updateParameters();
+        if (callback != null) {
+          callback.processResult(value);
+        }
       }
+      dialog.dismiss();
     }
   }
 );
-  builder.create().show();
+  bld.show();
 }

@@ -60,13 +60,41 @@
         btn.setText(voiceProviderStr);
         btn.setOnClickListener(new View.OnClickListener(){
           @Override public void onClick(          View v){
-            selectVoiceGuidance();
+            selectVoiceGuidance(mapActivity,new CallbackWithObject<String>(){
+              @Override public boolean processResult(              String result){
+                applyVoiceProvider(mapActivity,result);
+                updateParameters();
+                return true;
+              }
+            }
+);
           }
         }
 );
         TextView tv=(TextView)v.findViewById(R.id.header_text);
         AndroidUtils.setTextPrimaryColor(mapActivity,tv,nightMode);
         tv.setText(getString(R.string.voice_provider));
+        return v;
+      }
+      if (parameter instanceof InterruptMusicRoutingParameter) {
+        View v=mapActivity.getLayoutInflater().inflate(R.layout.switch_select_list_item,null);
+        v.findViewById(R.id.select_button).setVisibility(View.GONE);
+        v.findViewById(R.id.icon).setVisibility(View.GONE);
+        final CompoundButton btn=(CompoundButton)v.findViewById(R.id.check_item);
+        btn.setVisibility(View.VISIBLE);
+        btn.setChecked(settings.INTERRUPT_MUSIC.get());
+        btn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+          @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
+            switchMusic();
+          }
+        }
+);
+        TextView tv=(TextView)v.findViewById(R.id.header_text);
+        AndroidUtils.setTextPrimaryColor(mapActivity,tv,nightMode);
+        tv.setText(getString(R.string.interrupt_music));
+        TextView tvDesc=(TextView)v.findViewById(R.id.description_text);
+        AndroidUtils.setTextSecondaryColor(mapActivity,tvDesc,nightMode);
+        tvDesc.setText(getString(R.string.interrupt_music_descr));
         return v;
       }
       if (parameter instanceof GpxLocalRoutingParameter) {

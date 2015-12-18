@@ -2,39 +2,37 @@
   String voiceProvider=osmandSettings.VOICE_PROVIDER.get();
   if (voiceProvider == null || OsmandSettings.VOICE_PROVIDER_NOT_USE.equals(voiceProvider)) {
     if (warningNoneProvider && voiceProvider == null) {
-      AlertDialog.Builder builder=new AccessibleAlertBuilder(uiContext);
-      LinearLayout ll=new LinearLayout(uiContext);
-      ll.setOrientation(LinearLayout.VERTICAL);
-      final TextView tv=new TextView(uiContext);
-      tv.setPadding(7,3,7,0);
-      tv.setText(R.string.voice_is_not_available_msg);
-      tv.setTextSize(TypedValue.COMPLEX_UNIT_DIP,19);
-      ll.addView(tv);
-      final CheckBox cb=new CheckBox(uiContext);
-      cb.setText(R.string.shared_string_remember_my_choice);
-      LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT);
-      lp.setMargins(7,10,7,0);
-      cb.setLayoutParams(lp);
-      ll.addView(cb);
+      final AlertDialog.Builder builder=new AlertDialog.Builder(uiContext);
+      View view=uiContext.getLayoutInflater().inflate(R.layout.select_voice_first,null);
+      ((ImageView)view.findViewById(R.id.icon)).setImageDrawable(getIconsCache().getContentIcon(R.drawable.ic_action_volume_up,getSettings().isLightContent()));
+      view.findViewById(R.id.spinner).setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        final View v){
+          RoutePreferencesMenu.selectVoiceGuidance((MapActivity)uiContext,new CallbackWithObject<String>(){
+            @Override public boolean processResult(            String result){
+              boolean acceptableValue=!RoutePreferencesMenu.MORE_VALUE.equals(firstSelectedVoiceProvider);
+              if (acceptableValue) {
+                ((TextView)v.findViewById(R.id.selectText)).setText(RoutePreferencesMenu.getVoiceProviderName(uiContext,result));
+                firstSelectedVoiceProvider=result;
+              }
+              return acceptableValue;
+            }
+          }
+);
+        }
+      }
+);
+      ((ImageView)view.findViewById(R.id.dropDownIcon)).setImageDrawable(getIconsCache().getContentIcon(R.drawable.ic_action_arrow_drop_down,getSettings().isLightContent()));
       builder.setCancelable(true);
-      builder.setNegativeButton(R.string.shared_string_cancel,new DialogInterface.OnClickListener(){
+      builder.setNegativeButton(R.string.shared_string_cancel,null);
+      builder.setPositiveButton(R.string.shared_string_apply,new DialogInterface.OnClickListener(){
         @Override public void onClick(        DialogInterface dialog,        int which){
-          if (cb.isChecked()) {
-            osmandSettings.VOICE_PROVIDER.set(OsmandSettings.VOICE_PROVIDER_NOT_USE);
+          if (!Algorithms.isEmpty(firstSelectedVoiceProvider)) {
+            RoutePreferencesMenu.applyVoiceProvider((MapActivity)uiContext,firstSelectedVoiceProvider);
           }
         }
       }
 );
-      builder.setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          Intent intent=new Intent(uiContext,SettingsActivity.class);
-          intent.putExtra(SettingsActivity.INTENT_KEY_SETTINGS_SCREEN,SettingsActivity.SCREEN_GENERAL_SETTINGS);
-          uiContext.startActivity(intent);
-        }
-      }
-);
-      builder.setTitle(R.string.voice_is_not_available_title);
-      builder.setView(ll);
+      builder.setView(view);
       builder.show();
     }
   }
