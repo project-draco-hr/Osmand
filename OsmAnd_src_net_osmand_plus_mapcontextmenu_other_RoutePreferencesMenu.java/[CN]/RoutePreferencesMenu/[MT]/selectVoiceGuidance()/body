@@ -1,5 +1,42 @@
 {
-  mapActivity.getDashboard().setDashboardVisibility(false,DashboardOnMap.DashboardType.ROUTE_PREFERENCES);
-  controlsLayer.getMapRouteInfoMenu().hide();
-  app.getAvoidSpecificRoads().showDialog(mapActivity);
+  final ContextMenuAdapter adapter=new ContextMenuAdapter(mapActivity);
+  String[] entries;
+  final String[] entrieValues;
+  Set<String> voiceFiles=getVoiceFiles();
+  entries=new String[voiceFiles.size() + 2];
+  entrieValues=new String[voiceFiles.size() + 2];
+  int k=0;
+  entrieValues[k]=OsmandSettings.VOICE_PROVIDER_NOT_USE;
+  entries[k]=getString(R.string.shared_string_do_not_use);
+  adapter.item(entries[k]).reg();
+  k++;
+  for (  String s : voiceFiles) {
+    entries[k]=(s.contains("tts") ? getString(R.string.ttsvoice) + " " : "") + FileNameTranslationHelper.getVoiceName(mapActivity,s);
+    entrieValues[k]=s;
+    adapter.item(entries[k]).reg();
+    k++;
+  }
+  entrieValues[k]=MORE_VALUE;
+  entries[k]=getString(R.string.install_more);
+  adapter.item(entries[k]).reg();
+  final AlertDialog.Builder builder=new AlertDialog.Builder(mapActivity);
+  final ArrayAdapter<?> listAdapter=adapter.createListAdapter(mapActivity,settings.isLightContent());
+  builder.setAdapter(listAdapter,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      String value=entrieValues[which];
+      if (MORE_VALUE.equals(value)) {
+        final Intent intent=new Intent(mapActivity,DownloadActivity.class);
+        intent.putExtra(DownloadActivity.TAB_TO_OPEN,DownloadActivity.DOWNLOAD_TAB);
+        intent.putExtra(DownloadActivity.FILTER_CAT,DownloadActivityType.VOICE_FILE.getTag());
+        mapActivity.startActivity(intent);
+      }
+ else {
+        settings.VOICE_PROVIDER.set(value);
+        app.showDialogInitializingCommandPlayer(mapActivity,false);
+        updateParameters();
+      }
+    }
+  }
+);
+  builder.create().show();
 }
