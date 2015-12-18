@@ -6,7 +6,7 @@
         View v=mapActivity.getLayoutInflater().inflate(R.layout.switch_select_list_item,null);
         v.findViewById(R.id.description_text).setVisibility(View.GONE);
         v.findViewById(R.id.select_button).setVisibility(View.GONE);
-        ((ImageView)v.findViewById(R.id.icon)).setImageDrawable(mapActivity.getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_volume_up,!nightMode));
+        ((ImageView)v.findViewById(R.id.icon)).setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.ic_action_volume_up,!nightMode));
         final CompoundButton btn=(CompoundButton)v.findViewById(R.id.check_item);
         btn.setVisibility(View.VISIBLE);
         btn.setChecked(!routingHelper.getVoiceRouter().isMute());
@@ -23,7 +23,7 @@
       }
       if (parameter instanceof AvoidRoadsRoutingParameter) {
         View v=mapActivity.getLayoutInflater().inflate(R.layout.switch_select_list_item,null);
-        ((ImageView)v.findViewById(R.id.icon)).setImageDrawable(mapActivity.getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_road_works_dark,!nightMode));
+        ((ImageView)v.findViewById(R.id.icon)).setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.ic_action_road_works_dark,!nightMode));
         v.findViewById(R.id.check_item).setVisibility(View.GONE);
         final TextView btn=(TextView)v.findViewById(R.id.select_button);
         btn.setTextColor(btn.getLinkTextColors());
@@ -49,7 +49,13 @@
         final TextView btn=(TextView)v.findViewById(R.id.select_button);
         btn.setTextColor(btn.getLinkTextColors());
         String voiceProvider=settings.VOICE_PROVIDER.get();
-        String voiceProviderStr=FileNameTranslationHelper.getVoiceName(mapActivity,voiceProvider);
+        String voiceProviderStr;
+        if (OsmandSettings.VOICE_PROVIDER_NOT_USE.equals(voiceProvider)) {
+          voiceProviderStr=getString(R.string.shared_string_do_not_use);
+        }
+ else {
+          voiceProviderStr=FileNameTranslationHelper.getVoiceName(mapActivity,voiceProvider);
+        }
         voiceProviderStr+=voiceProvider.contains("tts") ? " TTS" : "";
         btn.setText(voiceProviderStr);
         btn.setOnClickListener(new View.OnClickListener(){
@@ -74,7 +80,7 @@
       if (parameter instanceof OtherSettingsRoutingParameter) {
         View v=mapActivity.getLayoutInflater().inflate(R.layout.layers_list_activity_item,null);
         final ImageView icon=(ImageView)v.findViewById(R.id.icon);
-        icon.setImageDrawable(mapActivity.getMyApplication().getIconsCache().getContentIcon(R.drawable.map_action_settings,!nightMode));
+        icon.setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.map_action_settings,!nightMode));
         icon.setVisibility(View.VISIBLE);
         TextView titleView=(TextView)v.findViewById(R.id.title);
         titleView.setText(R.string.routing_settings_2);
