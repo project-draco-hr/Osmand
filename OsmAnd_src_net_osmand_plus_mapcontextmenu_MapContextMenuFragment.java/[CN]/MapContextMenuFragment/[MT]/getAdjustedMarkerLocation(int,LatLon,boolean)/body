@@ -1,0 +1,44 @@
+{
+  double markerLat=reqMarkerLocation.getLatitude();
+  double markerLon=reqMarkerLocation.getLongitude();
+  RotatedTileBox box=map.getCurrentRotatedTileBox().copy();
+  LatLon latlon;
+  if (center) {
+    latlon=reqMarkerLocation;
+  }
+ else {
+    latlon=mapCenter;
+  }
+  if (menu.isLandscapeLayout()) {
+    int markerX=(int)box.getPixXFromLatLon(markerLat,markerLon);
+    int x=dpToPx(menu.getLandscapeWidthDp());
+    if (markerX - markerPaddingXPx < x || markerX > origMarkerX) {
+      int dx=(x + markerPaddingXPx) - markerX;
+      int dy=0;
+      QuadPoint cp=box.getCenterPixelPoint();
+      if (center) {
+        int markerY=(int)box.getPixYFromLatLon(markerLat,markerLon);
+        dy=(int)cp.y - markerY;
+      }
+      if (dx > 0 || center) {
+        latlon=box.getLatLonFromPixel(cp.x - dx,cp.y - dy);
+      }
+    }
+  }
+ else {
+    int markerY=(int)box.getPixYFromLatLon(markerLat,markerLon);
+    if (markerY + markerPaddingPx > y || markerY < origMarkerY) {
+      int dx=0;
+      int dy=markerY - (y - markerPaddingPx);
+      if (markerY - dy <= origMarkerY) {
+        QuadPoint cp=box.getCenterPixelPoint();
+        if (center) {
+          int markerX=(int)box.getPixXFromLatLon(markerLat,markerLon);
+          dx=markerX - (int)cp.x;
+        }
+        latlon=box.getLatLonFromPixel(cp.x + dx,cp.y + dy);
+      }
+    }
+  }
+  return latlon;
+}
