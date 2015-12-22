@@ -7,8 +7,18 @@
   mapContextMenu.setMapActivity(this);
   super.onCreate(savedInstanceState);
   setContentView(R.layout.main);
-  mapView=new OsmandMapTileView(this,getWindow().getDecorView().getWidth(),getWindow().getDecorView().getHeight());
-  if (app.getAppInitializer().checkAppVersionChanged(this)) {
+  int statusBarHeight=0;
+  int resourceId=getResources().getIdentifier("status_bar_height","dimen","android");
+  if (resourceId > 0) {
+    statusBarHeight=getResources().getDimensionPixelSize(resourceId);
+  }
+  DisplayMetrics dm=new DisplayMetrics();
+  getWindowManager().getDefaultDisplay().getMetrics(dm);
+  int w=dm.widthPixels;
+  int h=dm.heightPixels - statusBarHeight;
+  mapView=new OsmandMapTileView(this,w,h);
+  if (app.getAppInitializer().checkAppVersionChanged(this) && WhatsNewDialogFragment.SHOW) {
+    WhatsNewDialogFragment.SHOW=false;
     new WhatsNewDialogFragment().show(getSupportFragmentManager(),null);
   }
   mapActions=new MapActivityActions(this);
@@ -62,7 +72,8 @@
     System.err.println("OnCreate for MapActivity took " + (System.currentTimeMillis() - tm) + " ms");
   }
   mapView.refreshMap(true);
-  if (getMyApplication().getAppInitializer().isFirstTime(this)) {
+  if (getMyApplication().getAppInitializer().isFirstTime(this) && FirstUsageFragment.SHOW) {
+    FirstUsageFragment.SHOW=false;
     getSupportFragmentManager().beginTransaction().add(R.id.fragmentContainer,new FirstUsageFragment(),FirstUsageFragment.TAG).commit();
   }
   mapActions.updateDrawerMenu();
