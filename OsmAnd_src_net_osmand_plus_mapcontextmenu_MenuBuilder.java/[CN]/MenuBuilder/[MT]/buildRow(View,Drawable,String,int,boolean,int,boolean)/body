@@ -36,7 +36,10 @@
   textView.setLayoutParams(llTextParams);
   textView.setTextSize(16);
   textView.setTextColor(app.getResources().getColor(light ? R.color.ctx_menu_info_text_light : R.color.ctx_menu_info_text_dark));
-  if (needLinks) {
+  if (isUrl) {
+    textView.setTextColor(textView.getLinkTextColors());
+  }
+ else   if (needLinks) {
     textView.setAutoLinkMask(Linkify.ALL);
     textView.setLinksClickable(true);
   }
@@ -53,6 +56,16 @@
   llTextViewParams.gravity=Gravity.CENTER_VERTICAL;
   llText.setLayoutParams(llTextViewParams);
   llText.addView(textView);
+  if (isUrl) {
+    ll.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        Intent intent=new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(text));
+        v.getContext().startActivity(intent);
+      }
+    }
+);
+  }
   ((LinearLayout)view).addView(ll);
   rowBuilt();
   return ll;
