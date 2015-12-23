@@ -4,6 +4,7 @@
   IncrementalChangesManager changesManager=context.getResourceManager().getChangesManager();
   final String fileNameWithoutExtension=Algorithms.getFileNameWithoutExtension(new File(item.getFileName()));
   nameTextView.setText(getNameToDisplay(item,fragment.getMyActivity()));
+  AbsListView.LayoutParams layoutParams=(AbsListView.LayoutParams)view.getLayoutParams();
   if (shouldUpdatePreference.get()) {
     final Integer frequencyId=preferenceUpdateFrequency(item,fragment.getSettings()).get();
     final UpdateFrequency frequency=UpdateFrequency.values()[frequencyId];
@@ -11,22 +12,15 @@
     subheaderTextView.setTextColor(fragment.getActivity().getResources().getColor(R.color.osmand_orange));
     icon.setImageDrawable(context.getIconsCache().getIcon(R.drawable.ic_map,R.color.osmand_orange));
     options.setImageDrawable(getSecondaryColorPaintedIcon(R.drawable.ic_overflow_menu_white));
+    layoutParams.height=(int)dpToPx(view.getContext(),UPDATES_ENABLED_ITEM_HEIGHT);
   }
  else {
-    String size;
-    long updatesSize=changesManager.getUpdatesSize(fileNameWithoutExtension);
-    updatesSize/=(1 << 10);
-    if (updatesSize > 100) {
-      size=DownloadActivity.formatMb.format(new Object[]{(float)updatesSize / (1 << 10)});
-    }
- else {
-      size=updatesSize + " KB";
-    }
-    subheaderTextView.setText(size);
-    subheaderTextView.setTextColor(secondaryColor);
+    subheaderTextView.setVisibility(View.GONE);
     icon.setImageDrawable(getSecondaryColorPaintedIcon(R.drawable.ic_map));
     options.setImageDrawable(getSecondaryColorPaintedIcon(R.drawable.ic_action_plus));
+    layoutParams.height=(int)dpToPx(view.getContext(),UPDATES_DISABLED_ITEM_HEIGHT);
   }
+  view.setLayoutParams(layoutParams);
   final long timestamp=changesManager.getTimestamp(fileNameWithoutExtension);
   String formattedDate=formatDateTime(fragment.getActivity(),timestamp);
   descriptionTextView.setText(context.getString(R.string.last_update,formattedDate));
