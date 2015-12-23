@@ -1,7 +1,31 @@
 {
   try {
     lastTakingPhoto=getBaseFileName(lat,lon,app,IMG_EXTENSION);
-    final SurfaceView view=recordingMenu.prepareSurfaceView();
+    final Camera.Size mPreviewSize;
+    Parameters parameters=cam.getParameters();
+    List<Camera.Size> psps=parameters.getSupportedPictureSizes();
+    int camPicSizeIndex=AV_CAMERA_PICTURE_SIZE.get();
+    log.debug("takePhotoWithCamera() index=" + camPicSizeIndex);
+    if (camPicSizeIndex == AV_PHOTO_SIZE_DEFAULT) {
+      camPicSizeIndex=cameraPictureSizeDefault;
+      log.debug("takePhotoWithCamera() Default value of picture size. Set index to cameraPictureSizeDefault. Now index=" + camPicSizeIndex);
+    }
+    final Camera.Size selectedCamPicSize=psps.get(camPicSizeIndex);
+    if (mSupportedPreviewSizes != null) {
+      int width=selectedCamPicSize.width;
+      int height=selectedCamPicSize.height;
+      mPreviewSize=getOptimalPreviewSize(mSupportedPreviewSizes,width,height);
+    }
+ else {
+      mPreviewSize=null;
+    }
+    final SurfaceView view;
+    if (mPreviewSize != null) {
+      view=recordingMenu.prepareSurfaceView(mPreviewSize.width,mPreviewSize.height);
+    }
+ else {
+      view=recordingMenu.prepareSurfaceView();
+    }
     view.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     view.getHolder().addCallback(new Callback(){
       @Override public void surfaceDestroyed(      SurfaceHolder holder){
@@ -10,13 +34,11 @@
         try {
           if (AV_PHOTO_PLAY_SOUND.get()) {
             if (sp == null)             sp=new SoundPool(5,AudioManager.STREAM_MUSIC,0);
-            log.info("Play sound on photo");
             if (shotId == 0) {
               try {
                 AssetFileDescriptor assetFileDescriptor=app.getAssets().openFd("sounds/camera_click.ogg");
                 shotId=sp.load(assetFileDescriptor,1);
                 assetFileDescriptor.close();
-                log.debug("loaded file sound ID: " + shotId);
               }
  catch (              Exception e) {
                 log.error("cannot get shotId for sounds/camera_click.ogg");
@@ -24,17 +46,9 @@
             }
           }
           Parameters parameters=cam.getParameters();
-          List<Camera.Size> psps=parameters.getSupportedPictureSizes();
-          int index=AV_CAMERA_PICTURE_SIZE.get();
-          log.debug("takePhotoWithCamera() index=" + index);
-          if (index == AV_PHOTO_SIZE_DEFAULT) {
-            index=cameraPictureSizeDefault;
-            log.debug("takePhotoWithCamera() Default value of picture size. Set index to cameraPictureSizeDefault. Now index=" + index);
-          }
-          Camera.Size selectedCamPicSize=psps.get(index);
           parameters.setPictureSize(selectedCamPicSize.width,selectedCamPicSize.height);
           log.debug("takePhotoWithCamera() set Picture size: width=" + selectedCamPicSize.width + " height="+ selectedCamPicSize.height);
-          boolean autofocus=true;
+          autofocus=true;
           parameters.setGpsLatitude(lat);
           parameters.setGpsLongitude(lon);
 switch (AV_CAMERA_FOCUS_TYPE.get()) {
@@ -71,12 +85,13 @@ parameters.setFlashMode(Parameters.FLASH_MODE_AUTO);
 int cameraOrientation=getCamOrientation(mapActivity,Camera.CameraInfo.CAMERA_FACING_BACK);
 cam.setDisplayOrientation(cameraOrientation);
 parameters.set("rotation",cameraOrientation);
+if (mPreviewSize != null) {
+parameters.setPreviewSize(mPreviewSize.width,mPreviewSize.height);
+}
 cam.setParameters(parameters);
 cam.setPreviewDisplay(holder);
 cam.startPreview();
-if (autofocus) {
-cam.autoFocus(null);
-}
+internalShoot();
 }
  catch (Exception e) {
 logErr(e);
@@ -85,9 +100,6 @@ closeCamera();
 finishRecording();
 e.printStackTrace();
 }
-}
-private void printCamParams(Parameters parameters,boolean autoExposure){
-log.info("Cam params auto exposure=" + autoExposure + " focus_distances="+ parameters.get("focus-distances"));
 }
 @Override public void surfaceChanged(SurfaceHolder holder,int format,int width,int height){
 }

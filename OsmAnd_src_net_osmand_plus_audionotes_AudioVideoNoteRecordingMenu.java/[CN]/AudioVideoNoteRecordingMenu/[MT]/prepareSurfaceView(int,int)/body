@@ -1,0 +1,30 @@
+{
+  int w=width;
+  int h=height;
+  if (w != ViewGroup.LayoutParams.MATCH_PARENT && h != ViewGroup.LayoutParams.MATCH_PARENT) {
+    int vfw=getViewfinderWidth();
+    int vfh=getViewfinderHeight();
+    float vfRatio=vfw / (float)vfh;
+    float sourceRatio;
+    if (vfRatio > 1) {
+      sourceRatio=width / (float)height;
+    }
+ else {
+      sourceRatio=height / (float)width;
+    }
+    if (sourceRatio > vfRatio) {
+      w=vfw;
+      h=(int)(w / sourceRatio);
+    }
+ else {
+      h=vfh;
+      w=(int)(h * sourceRatio);
+    }
+  }
+  viewfinder.removeAllViews();
+  SurfaceView surfaceView=new SurfaceView(viewfinder.getContext());
+  surfaceView.setLayoutParams(new LinearLayout.LayoutParams(w,h));
+  surfaceView.setZOrderMediaOverlay(true);
+  viewfinder.addView(surfaceView);
+  return surfaceView;
+}

@@ -1,5 +1,29 @@
 {
-  SurfaceView view=recordingMenu.prepareSurfaceView();
+  final CamcorderProfile p=CamcorderProfile.get(AV_VIDEO_QUALITY.get());
+  final Camera.Size mPreviewSize;
+  if (mSupportedPreviewSizes != null) {
+    int width;
+    int height;
+    if (recordingMenu.isLandscapeLayout()) {
+      width=p.videoFrameWidth;
+      height=p.videoFrameHeight;
+    }
+ else {
+      height=p.videoFrameWidth;
+      width=p.videoFrameHeight;
+    }
+    mPreviewSize=getOptimalPreviewSize(mSupportedPreviewSizes,width,height);
+  }
+ else {
+    mPreviewSize=null;
+  }
+  final SurfaceView view;
+  if (mPreviewSize != null) {
+    view=recordingMenu.prepareSurfaceView(mPreviewSize.width,mPreviewSize.height);
+  }
+ else {
+    view=recordingMenu.prepareSurfaceView();
+  }
   view.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
   view.getHolder().addCallback(new Callback(){
     @Override public void surfaceDestroyed(    SurfaceHolder holder){
@@ -8,9 +32,16 @@
       MediaRecorder mr=new MediaRecorder();
       try {
         Parameters parameters=cam.getParameters();
+        List<String> sfm=parameters.getSupportedFocusModes();
+        if (sfm.contains("continuous-video")) {
+          parameters.setFocusMode("continuous-video");
+        }
         int cameraOrientation=getCamOrientation(mapActivity,Camera.CameraInfo.CAMERA_FACING_BACK);
         cam.setDisplayOrientation(cameraOrientation);
         parameters.set("rotation",cameraOrientation);
+        if (mPreviewSize != null) {
+          parameters.setPreviewSize(mPreviewSize.width,mPreviewSize.height);
+        }
         cam.setParameters(parameters);
         cam.setPreviewDisplay(holder);
         cam.startPreview();
@@ -29,7 +60,6 @@
       mr.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
       mr.setVideoSource(MediaRecorder.VideoSource.CAMERA);
       giveMediaRecorderHintRotatedScreen(mapActivity,mr);
-      CamcorderProfile p=CamcorderProfile.get(AV_VIDEO_QUALITY.get());
       mr.setProfile(p);
       mr.setOutputFile(f.getAbsolutePath());
       try {
