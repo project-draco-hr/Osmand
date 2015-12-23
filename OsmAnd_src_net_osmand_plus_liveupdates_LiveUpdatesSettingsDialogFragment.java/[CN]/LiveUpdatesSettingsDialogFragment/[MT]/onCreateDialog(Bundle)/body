@@ -3,10 +3,10 @@
   final LocalIndexInfo localIndexInfo=getArguments().getParcelable(LOCAL_INDEX);
   View view=LayoutInflater.from(getActivity()).inflate(R.layout.dialog_live_updates_item_settings,null);
   final TextView regionNameTextView=(TextView)view.findViewById(R.id.regionNameTextView);
-  final TextView countryNameTextView=(TextView)view.findViewById(R.id.countryNameTextView);
+  final TextView lastCheckTextView=(TextView)view.findViewById(R.id.lastCheckTextView);
   final TextView lastUpdateTextView=(TextView)view.findViewById(R.id.lastUpdateTextView);
   final SwitchCompat liveUpdatesSwitch=(SwitchCompat)view.findViewById(R.id.liveUpdatesSwitch);
-  final CheckBox downloadOverWiFiSwitch=(CheckBox)view.findViewById(R.id.downloadOverWiFiSwitch);
+  final CheckBox downloadOverWiFiCheckBox=(CheckBox)view.findViewById(R.id.downloadOverWiFiSwitch);
   final Spinner updateFrequencySpinner=(Spinner)view.findViewById(R.id.updateFrequencySpinner);
   final Spinner updateTimesOfDaySpinner=(Spinner)view.findViewById(R.id.updateTimesOfDaySpinner);
   final TextView updateTimesOfDayTextView=(TextView)view.findViewById(R.id.updateTimesOfDayLabel);
@@ -16,14 +16,17 @@
   final String fileNameWithoutExtension=Algorithms.getFileNameWithoutExtension(new File(localIndexInfo.getFileName()));
   final IncrementalChangesManager changesManager=getMyApplication().getResourceManager().getChangesManager();
   final long timestamp=changesManager.getTimestamp(fileNameWithoutExtension);
-  String formattedDate=formatDateTime(getActivity(),timestamp);
-  lastUpdateTextView.setText(getString(R.string.update_date_pattern,formattedDate));
+  String lastUpdateDate=formatDateTime(getActivity(),timestamp);
+  OsmandSettings.CommonPreference<Long> lastCheckPreference=preferenceLastCheck(localIndexInfo,getSettings());
+  String lastCheckDate=formatDateTime(getActivity(),lastCheckPreference.get());
+  String lastCheck=lastCheckPreference.get() != -1 ? lastCheckDate : lastUpdateDate;
+  lastCheckTextView.setText(getString(R.string.last_check_date,lastCheck));
+  lastUpdateTextView.setText(getString(R.string.update_date_pattern,lastUpdateDate));
   final OsmandSettings.CommonPreference<Boolean> liveUpdatePreference=preferenceForLocalIndex(localIndexInfo,getSettings());
   final OsmandSettings.CommonPreference<Boolean> downloadViaWiFiPreference=preferenceDownloadViaWiFi(localIndexInfo,getSettings());
   final OsmandSettings.CommonPreference<Integer> updateFrequencePreference=preferenceUpdateFrequency(localIndexInfo,getSettings());
   final OsmandSettings.CommonPreference<Integer> timeOfDayPreference=preferenceTimeOfDayToUpdate(localIndexInfo,getSettings());
-  liveUpdatesSwitch.setChecked(true);
-  downloadOverWiFiSwitch.setChecked(downloadViaWiFiPreference.get());
+  downloadOverWiFiCheckBox.setChecked(!liveUpdatePreference.get() || downloadViaWiFiPreference.get());
   updateSize(fileNameWithoutExtension,changesManager,sizeTextView);
   updateFrequencySpinner.setSelection(updateFrequencePreference.get());
   updateFrequencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
@@ -87,7 +90,7 @@ default :
 throw new IllegalStateException("Unexpected update frequency:" + updateFrequency);
 }
 liveUpdatePreference.set(liveUpdatesSwitch.isChecked());
-downloadViaWiFiPreference.set(downloadOverWiFiSwitch.isChecked());
+downloadViaWiFiPreference.set(downloadOverWiFiCheckBox.isChecked());
 alarmMgr.cancel(alarmIntent);
 if (liveUpdatesSwitch.isChecked()) {
 alarmMgr.setInexactRepeating(AlarmManager.RTC,timeOfFirstUpdate,updateInterval,alarmIntent);

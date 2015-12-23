@@ -1,12 +1,19 @@
 {
-  activity.setSupportProgressBarIndeterminateVisibility(false);
+  if (context instanceof AbstractDownloadActivity) {
+    AbstractDownloadActivity activity=(AbstractDownloadActivity)context;
+    activity.setSupportProgressBarIndeterminateVisibility(false);
+  }
+  final OsmandApplication application=(OsmandApplication)context.getApplicationContext();
+  final OsmandSettings settings=application.getSettings();
   if (result.errorMessage != null) {
-    Toast.makeText(activity,result.errorMessage,Toast.LENGTH_SHORT).show();
+    Toast.makeText(context,result.errorMessage,Toast.LENGTH_SHORT).show();
+    tryRescheduleDownload(context,settings,localIndexInfo);
   }
  else {
+    settings.LIVE_UPDATES_RETRIES.resetToDefault();
     List<IncrementalChangesManager.IncrementalUpdate> ll=result.getItemsForUpdate();
     if (ll.isEmpty()) {
-      Toast.makeText(activity,R.string.no_updates_available,Toast.LENGTH_SHORT).show();
+      Toast.makeText(context,R.string.no_updates_available,Toast.LENGTH_SHORT).show();
     }
  else {
       int i=0;
@@ -15,7 +22,8 @@
         IndexItem ii=new IndexItem(iu.fileName,"Incremental update",iu.timestamp,iu.sizeText,iu.contentSize,iu.containerSize,DownloadActivityType.LIVE_UPDATES_FILE);
         is[i++]=ii;
       }
-      activity.startDownload(is);
+      DownloadValidationManager downloadValidationManager=new DownloadValidationManager(application);
+      downloadValidationManager.startDownload(context,is);
     }
   }
 }
