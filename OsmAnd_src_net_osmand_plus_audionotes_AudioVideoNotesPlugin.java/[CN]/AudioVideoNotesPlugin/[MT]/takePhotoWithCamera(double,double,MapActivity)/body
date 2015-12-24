@@ -48,70 +48,33 @@
           Parameters parameters=cam.getParameters();
           parameters.setPictureSize(selectedCamPicSize.width,selectedCamPicSize.height);
           log.debug("takePhotoWithCamera() set Picture size: width=" + selectedCamPicSize.width + " height="+ selectedCamPicSize.height);
-          autofocus=true;
-          parameters.setGpsLatitude(lat);
-          parameters.setGpsLongitude(lon);
-switch (AV_CAMERA_FOCUS_TYPE.get()) {
-case AV_CAMERA_FOCUS_HIPERFOCAL:
-            parameters.setFocusMode(Parameters.FOCUS_MODE_FIXED);
           autofocus=false;
-        log.info("Osmand:AudioNotes set camera FOCUS_MODE_FIXED");
-      break;
-case AV_CAMERA_FOCUS_EDOF:
-    parameters.setFocusMode(Parameters.FOCUS_MODE_EDOF);
-  autofocus=false;
-log.info("Osmand:AudioNotes set camera FOCUS_MODE_EDOF");
-break;
-case AV_CAMERA_FOCUS_INFINITY:
-parameters.setFocusMode(Parameters.FOCUS_MODE_INFINITY);
-autofocus=false;
-log.info("Osmand:AudioNotes set camera FOCUS_MODE_INFINITY");
-break;
-case AV_CAMERA_FOCUS_MACRO:
-parameters.setFocusMode(Parameters.FOCUS_MODE_MACRO);
-log.info("Osmand:AudioNotes set camera FOCUS_MODE_MACRO");
-break;
-case AV_CAMERA_FOCUS_CONTINUOUS:
-parameters.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-log.info("Osmand:AudioNotes set camera FOCUS_MODE_CONTINUOUS_PICTURE");
-break;
-default :
-parameters.setFocusMode(Parameters.FOCUS_MODE_AUTO);
-log.info("Osmand:AudioNotes set camera FOCUS_MODE_AUTO");
-break;
-}
-if (parameters.getSupportedWhiteBalance() != null && parameters.getSupportedWhiteBalance().contains(Parameters.WHITE_BALANCE_AUTO)) {
-parameters.setWhiteBalance(Parameters.WHITE_BALANCE_AUTO);
-}
-if (parameters.getSupportedFlashModes() != null && parameters.getSupportedFlashModes().contains(Parameters.FLASH_MODE_AUTO)) {
-parameters.setFlashMode(Parameters.FLASH_MODE_AUTO);
-}
-int cameraOrientation=getCamOrientation(mapActivity,Camera.CameraInfo.CAMERA_FACING_BACK);
-parameters.set("rotation",cameraOrientation);
-if (mPreviewSize != null) {
-parameters.setPreviewSize(mPreviewSize.width,mPreviewSize.height);
-}
-cam.setParameters(parameters);
-cam.setPreviewDisplay(holder);
-cam.startPreview();
-internalShoot();
-}
- catch (Exception e) {
-logErr(e);
-closeRecordingMenu();
-closeCamera();
-finishRecording();
-e.printStackTrace();
-}
-}
-@Override public void surfaceChanged(SurfaceHolder holder,int format,int width,int height){
-}
-}
+          int cameraOrientation=getCamOrientation(mapActivity,Camera.CameraInfo.CAMERA_FACING_BACK);
+          parameters.set("rotation",cameraOrientation);
+          if (mPreviewSize != null) {
+            parameters.setPreviewSize(mPreviewSize.width,mPreviewSize.height);
+          }
+          cam.setParameters(parameters);
+          cam.setPreviewDisplay(holder);
+          cam.startPreview();
+          internalShoot();
+        }
+ catch (        Exception e) {
+          logErr(e);
+          closeRecordingMenu();
+          closeCamera();
+          finishRecording();
+          e.printStackTrace();
+        }
+      }
+      @Override public void surfaceChanged(      SurfaceHolder holder,      int format,      int width,      int height){
+      }
+    }
 );
-recordingMenu.show();
-}
- catch (RuntimeException e) {
-logErr(e);
-closeCamera();
-}
+    recordingMenu.show();
+  }
+ catch (  RuntimeException e) {
+    logErr(e);
+    closeCamera();
+  }
 }
