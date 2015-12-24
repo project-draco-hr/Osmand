@@ -1,22 +1,21 @@
 {
-  Intent sharingIntent=new Intent(Intent.ACTION_SEND);
-  if (recording.isPhoto()) {
-    Uri screenshotUri=Uri.parse(recording.getFile().getAbsolutePath());
-    sharingIntent.setType("image/*");
-    sharingIntent.putExtra(Intent.EXTRA_STREAM,screenshotUri);
+  String path=recording.getFile().getAbsolutePath();
+  MediaScannerConnection.scanFile(getMapActivity(),new String[]{path},null,new MediaScannerConnection.OnScanCompletedListener(){
+    public void onScanCompleted(    String path,    Uri uri){
+      Intent shareIntent=new Intent(android.content.Intent.ACTION_SEND);
+      if (recording.isPhoto()) {
+        shareIntent.setType("image/*");
+      }
+ else       if (recording.isAudio()) {
+        shareIntent.setType("audio/*");
+      }
+ else       if (recording.isVideo()) {
+        shareIntent.setType("video/*");
+      }
+      shareIntent.putExtra(Intent.EXTRA_STREAM,uri);
+      shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+      getMapActivity().startActivity(Intent.createChooser(shareIntent,getMapActivity().getString(R.string.share_note)));
+    }
   }
- else   if (recording.isAudio()) {
-    Uri audioUri=Uri.parse(recording.getFile().getAbsolutePath());
-    sharingIntent.setType("audio/*");
-    sharingIntent.putExtra(Intent.EXTRA_STREAM,audioUri);
-  }
- else   if (recording.isVideo()) {
-    Uri videoUri=Uri.parse(recording.getFile().getAbsolutePath());
-    sharingIntent.setType("video/*");
-    sharingIntent.putExtra(Intent.EXTRA_STREAM,videoUri);
-  }
-  WeakReference<MapContextMenuFragment> fragmentRef=getMapActivity().getContextMenu().findMenuFragment();
-  if (fragmentRef != null) {
-    fragmentRef.get().startActivity(Intent.createChooser(sharingIntent,getMapActivity().getString(R.string.share_note)));
-  }
+);
 }
