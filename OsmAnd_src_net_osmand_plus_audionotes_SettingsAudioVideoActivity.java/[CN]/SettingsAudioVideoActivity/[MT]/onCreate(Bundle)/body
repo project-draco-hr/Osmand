@@ -130,6 +130,52 @@
     }
     ListPreference lp=createListPreference(p.AV_VIDEO_QUALITY,qNames.toArray(new String[qNames.size()]),qValues.toArray(new Integer[qValues.size()]),R.string.av_video_quality,R.string.av_video_quality_descr);
     video.addPreference(lp);
+    PreferenceCategory recSplit=new PreferenceCategory(this);
+    recSplit.setTitle(R.string.rec_split);
+    grp.addPreference(recSplit);
+    recSplit.addPreference(createCheckBoxPreference(p.AV_RECORDER_SPLIT,R.string.rec_split_title,R.string.rec_split_desc));
+    intValues=new Integer[]{1,2,3,4,5,7,10,15,20,25,30};
+    entries=new String[intValues.length];
+    int i=0;
+    String minStr=getString(R.string.int_min);
+    for (    int v : intValues) {
+      entries[i++]=String.valueOf(v) + " " + minStr;
+    }
+    lp=createListPreference(p.AV_RS_CLIP_LENGTH,entries,intValues,R.string.rec_split_clip_length,R.string.rec_split_clip_length_desc);
+    recSplit.addPreference(lp);
+    File dir=getMyApplication().getAppPath("").getParentFile();
+    long size=0;
+    if (dir.canRead()) {
+      StatFs fs=new StatFs(dir.getAbsolutePath());
+      size=((long)fs.getBlockSize() * (long)fs.getBlockCount()) / (1 << 30);
+    }
+    if (size > 0) {
+      int value=1;
+      ArrayList<Integer> gbList=new ArrayList<>();
+      while (value < size) {
+        gbList.add(value);
+        if (value < 5) {
+          value++;
+        }
+ else {
+          value+=5;
+        }
+      }
+      if (value != size) {
+        gbList.add((int)size);
+      }
+      MessageFormat formatGb=new MessageFormat("{0, number,#.##} GB",Locale.US);
+      entries=new String[gbList.size()];
+      intValues=new Integer[gbList.size()];
+      i=0;
+      for (      int v : gbList) {
+        intValues[i]=v;
+        entries[i]=formatGb.format(new Object[]{(float)v});
+        i++;
+      }
+      lp=createListPreference(p.AV_RS_STORAGE_SIZE,entries,intValues,R.string.rec_split_storage_size,R.string.rec_split_storage_size_desc);
+      recSplit.addPreference(lp);
+    }
     PreferenceCategory audio=new PreferenceCategory(this);
     audio.setTitle(R.string.shared_string_audio);
     grp.addPreference(audio);
