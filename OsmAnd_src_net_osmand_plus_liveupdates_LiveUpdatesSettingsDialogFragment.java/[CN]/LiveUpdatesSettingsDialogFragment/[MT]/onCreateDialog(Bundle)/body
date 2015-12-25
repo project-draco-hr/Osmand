@@ -23,11 +23,11 @@
   lastUpdateTextView.setText(getString(R.string.last_update,lastUpdateDate));
   final OsmandSettings.CommonPreference<Boolean> liveUpdatePreference=preferenceForLocalIndex(localIndexInfo,getSettings());
   final OsmandSettings.CommonPreference<Boolean> downloadViaWiFiPreference=preferenceDownloadViaWiFi(localIndexInfo,getSettings());
-  final OsmandSettings.CommonPreference<Integer> updateFrequencePreference=preferenceUpdateFrequency(localIndexInfo,getSettings());
+  final OsmandSettings.CommonPreference<Integer> updateFrequencyPreference=preferenceUpdateFrequency(localIndexInfo,getSettings());
   final OsmandSettings.CommonPreference<Integer> timeOfDayPreference=preferenceTimeOfDayToUpdate(localIndexInfo,getSettings());
   downloadOverWiFiCheckBox.setChecked(!liveUpdatePreference.get() || downloadViaWiFiPreference.get());
   updateSize(fileNameWithoutExtension,changesManager,sizeTextView);
-  updateFrequencySpinner.setSelection(updateFrequencePreference.get());
+  updateFrequencySpinner.setSelection(updateFrequencyPreference.get());
   updateFrequencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
     @Override public void onItemSelected(    AdapterView<?> parent,    View view,    int position,    long id){
       UpdateFrequency updateFrequency=UpdateFrequency.values()[position];
@@ -57,42 +57,21 @@ updateSize(fileNameWithoutExtension,changesManager,sizeTextView);
 );
 builder.setView(view).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
 @Override public void onClick(DialogInterface dialog,int which){
-final int updateFrequencyInt=updateFrequencySpinner.getSelectedItemPosition();
-updateFrequencePreference.set(updateFrequencyInt);
-UpdateFrequency updateFrequency=UpdateFrequency.values()[updateFrequencyInt];
-AlarmManager alarmMgr=(AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
-Intent intent=new Intent(getActivity(),LiveUpdatesAlarmReceiver.class);
-final File file=new File(localIndexInfo.getFileName());
-final String fileName=Algorithms.getFileNameWithoutExtension(file);
-intent.putExtra(LOCAL_INDEX_INFO,localIndexInfo);
-intent.setAction(fileName);
-PendingIntent alarmIntent=PendingIntent.getBroadcast(getActivity(),0,intent,0);
-final int timeOfDayInt=updateTimesOfDaySpinner.getSelectedItemPosition();
-timeOfDayPreference.set(timeOfDayInt);
-TimeOfDay timeOfDayToUpdate=TimeOfDay.values()[timeOfDayInt];
-long timeOfFirstUpdate;
-long updateInterval;
-switch (updateFrequency) {
-case HOURLY:
-timeOfFirstUpdate=System.currentTimeMillis() + SHIFT;
-updateInterval=AlarmManager.INTERVAL_HOUR;
-break;
-case DAILY:
-timeOfFirstUpdate=getNextUpdateTime(timeOfDayToUpdate);
-updateInterval=AlarmManager.INTERVAL_DAY;
-break;
-case WEEKLY:
-timeOfFirstUpdate=getNextUpdateTime(timeOfDayToUpdate);
-updateInterval=AlarmManager.INTERVAL_DAY * 7;
-break;
-default :
-throw new IllegalStateException("Unexpected update frequency:" + updateFrequency);
-}
 liveUpdatePreference.set(liveUpdatesSwitch.isChecked());
 downloadViaWiFiPreference.set(downloadOverWiFiCheckBox.isChecked());
+final int updateFrequencyInt=updateFrequencySpinner.getSelectedItemPosition();
+updateFrequencyPreference.set(updateFrequencyInt);
+AlarmManager alarmMgr=(AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
+PendingIntent alarmIntent=getPendingIntent(getActivity(),localIndexInfo);
+final int timeOfDayInt=updateTimesOfDaySpinner.getSelectedItemPosition();
+timeOfDayPreference.set(timeOfDayInt);
+if (liveUpdatesSwitch.isChecked() && getSettings().IS_LIVE_UPDATES_ON.get()) {
+UpdateFrequency updateFrequency=UpdateFrequency.values()[updateFrequencyInt];
+TimeOfDay timeOfDayToUpdate=TimeOfDay.values()[timeOfDayInt];
+setAlarmForPendingIntent(alarmIntent,alarmMgr,updateFrequency,timeOfDayToUpdate);
+}
+ else {
 alarmMgr.cancel(alarmIntent);
-if (liveUpdatesSwitch.isChecked()) {
-alarmMgr.setInexactRepeating(AlarmManager.RTC,timeOfFirstUpdate,updateInterval,alarmIntent);
 }
 getLiveUpdatesFragment().notifyLiveUpdatesChanged();
 }

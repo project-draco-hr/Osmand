@@ -3,7 +3,7 @@
     AbstractDownloadActivity activity=(AbstractDownloadActivity)context;
     activity.setSupportProgressBarIndeterminateVisibility(false);
   }
-  final OsmandApplication application=(OsmandApplication)context.getApplicationContext();
+  final OsmandApplication application=getMyApplication();
   final OsmandSettings settings=application.getSettings();
   if (result.errorMessage != null) {
     Toast.makeText(context,result.errorMessage,Toast.LENGTH_SHORT).show();
@@ -16,17 +16,40 @@
       Toast.makeText(context,R.string.no_updates_available,Toast.LENGTH_SHORT).show();
     }
  else {
-      int i=0;
-      IndexItem[] is=new IndexItem[ll.size()];
+      ArrayList<IndexItem> itemsToDownload=new ArrayList<>(ll.size());
       for (      IncrementalChangesManager.IncrementalUpdate iu : ll) {
-        IndexItem ii=new IndexItem(iu.fileName,"Incremental update",iu.timestamp,iu.sizeText,iu.contentSize,iu.containerSize,DownloadActivityType.LIVE_UPDATES_FILE);
-        is[i++]=ii;
+        IndexItem indexItem=new IndexItem(iu.fileName,"Incremental update",iu.timestamp,iu.sizeText,iu.contentSize,iu.containerSize,DownloadActivityType.LIVE_UPDATES_FILE);
+        itemsToDownload.add(indexItem);
       }
-      DownloadValidationManager downloadValidationManager=new DownloadValidationManager(application);
+      DownloadIndexesThread downloadThread=application.getDownloadThread();
       if (context instanceof DownloadIndexesThread.DownloadEvents) {
-        downloadValidationManager.getDownloadThread().setUiActivity((DownloadIndexesThread.DownloadEvents)context);
+        downloadThread.setUiActivity((DownloadIndexesThread.DownloadEvents)context);
       }
-      downloadValidationManager.startDownload(context,is);
+      boolean downloadViaWiFi=LiveUpdatesHelper.preferenceDownloadViaWiFi(localIndexInfo,settings).get();
+      if (getMyApplication().getSettings().isInternetConnectionAvailable()) {
+        if (settings.isWifiConnected() || downloadViaWiFi) {
+          long szLong=0;
+          int i=0;
+          for (          IndexItem es : downloadThread.getCurrentDownloadingItems()) {
+            szLong+=es.getContentSize();
+            i++;
+          }
+          for (          IndexItem es : itemsToDownload) {
+            szLong+=es.getContentSize();
+            i++;
+          }
+          double sz=((double)szLong) / (1 << 20);
+          double asz=downloadThread.getAvailableSpace();
+          if (asz == -1 || asz <= 0 || sz / asz <= 0.4) {
+            IndexItem[] itemsArray=new IndexItem[itemsToDownload.size()];
+            itemsArray=itemsToDownload.toArray(itemsArray);
+            downloadThread.runDownloadFiles(itemsArray);
+            if (context instanceof DownloadIndexesThread.DownloadEvents) {
+              ((DownloadIndexesThread.DownloadEvents)context).downloadInProgress();
+            }
+          }
+        }
+      }
     }
   }
 }
