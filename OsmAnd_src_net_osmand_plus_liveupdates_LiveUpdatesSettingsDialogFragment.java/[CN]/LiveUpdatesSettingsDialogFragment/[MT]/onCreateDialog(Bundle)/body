@@ -17,10 +17,10 @@
   final IncrementalChangesManager changesManager=getMyApplication().getResourceManager().getChangesManager();
   final long timestamp=changesManager.getTimestamp(fileNameWithoutExtension);
   String lastUpdateDate=formatDateTime(getActivity(),timestamp);
-  final long mapTimestamp=changesManager.getMapTimestamp(fileNameWithoutExtension);
-  String lastCheckDate=formatDateTime(getActivity(),mapTimestamp);
-  lastMapChangeTextView.setText(getString(R.string.last_map_change,lastCheckDate));
-  lastUpdateTextView.setText(getString(R.string.last_update,lastUpdateDate));
+  final long lastCheck=preferenceLastCheck(localIndexInfo,getSettings()).get();
+  String lastCheckDate=formatDateTime(getActivity(),lastCheck != DEFAULT_LAST_CHECK ? lastCheck : timestamp);
+  lastMapChangeTextView.setText(getString(R.string.last_map_change,lastUpdateDate));
+  lastUpdateTextView.setText(getString(R.string.last_update,lastCheckDate));
   final OsmandSettings.CommonPreference<Boolean> liveUpdatePreference=preferenceForLocalIndex(localIndexInfo,getSettings());
   final OsmandSettings.CommonPreference<Boolean> downloadViaWiFiPreference=preferenceDownloadViaWiFi(localIndexInfo,getSettings());
   final OsmandSettings.CommonPreference<Integer> updateFrequencyPreference=preferenceUpdateFrequency(localIndexInfo,getSettings());
@@ -57,7 +57,12 @@ updateSize(fileNameWithoutExtension,changesManager,sizeTextView);
 );
 builder.setView(view).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
 @Override public void onClick(DialogInterface dialog,int which){
+if (liveUpdatePreference.get() != liveUpdatesSwitch.isChecked()) {
 liveUpdatePreference.set(liveUpdatesSwitch.isChecked());
+if (liveUpdatesSwitch.isChecked()) {
+runLiveUpdate(localIndexInfo);
+}
+}
 downloadViaWiFiPreference.set(downloadOverWiFiCheckBox.isChecked());
 final int updateFrequencyInt=updateFrequencySpinner.getSelectedItemPosition();
 updateFrequencyPreference.set(updateFrequencyInt);
