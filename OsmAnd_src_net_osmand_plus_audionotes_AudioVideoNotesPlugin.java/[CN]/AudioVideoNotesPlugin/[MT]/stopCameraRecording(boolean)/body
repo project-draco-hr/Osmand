@@ -1,0 +1,36 @@
+{
+  boolean res=true;
+  if (mediaRec != null) {
+    mediaRec.stop();
+    AVActionType type=currentRecording.type;
+    indexFile(true,mediaRecFile);
+    mediaRec.release();
+    mediaRec=null;
+    mediaRecFile=null;
+    if (restart) {
+      try {
+        cam.lock();
+        if (AV_RECORDER_SPLIT.get()) {
+          cleanupSpace();
+        }
+        currentRecording=new CurrentRecording(type);
+        MediaRecorder mr=new MediaRecorder();
+        LatLon latLon=getNextRecordingLocation();
+        final File f=getBaseFileName(latLon.getLatitude(),latLon.getLongitude(),app,MPEG4_EXTENSION);
+        cam.unlock();
+        mr.setCamera(cam);
+        initMediaRecorder(mr,CamcorderProfile.get(AV_VIDEO_QUALITY.get()),f);
+        mr.prepare();
+        mr.start();
+        mediaRec=mr;
+        mediaRecFile=f;
+      }
+ catch (      Exception e) {
+        AccessibleToast.makeText(app,e.getMessage(),Toast.LENGTH_LONG).show();
+        e.printStackTrace();
+        res=false;
+      }
+    }
+  }
+  return res;
+}

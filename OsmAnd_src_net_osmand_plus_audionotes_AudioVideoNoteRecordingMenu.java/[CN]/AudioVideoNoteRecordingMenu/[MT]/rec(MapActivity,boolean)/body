@@ -1,0 +1,27 @@
+{
+  stopCounter();
+  final CurrentRecording recording=plugin.getCurrentRecording();
+  int delay;
+  if (recording != null && recording.getType() == AVActionType.REC_PHOTO) {
+    delay=200;
+  }
+ else {
+    delay=1;
+  }
+  handler.postDelayed(new Runnable(){
+    @Override public void run(){
+      if (recording != null) {
+        if (recording.getType() == AVActionType.REC_PHOTO) {
+          plugin.shoot();
+        }
+ else {
+          plugin.stopRecording(mapActivity,restart);
+          if (restart) {
+            startCounter();
+          }
+        }
+      }
+    }
+  }
+,delay);
+}
