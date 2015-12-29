@@ -1,0 +1,58 @@
+{
+  File[] files=app.getAppPath(IndexConstants.AV_INDEX_DIR).listFiles(new FilenameFilter(){
+    @Override public boolean accept(    File dir,    String filename){
+      return filename.endsWith("." + MPEG4_EXTENSION);
+    }
+  }
+);
+  if (files != null) {
+    double usedSpace=0;
+    for (    File f : files) {
+      usedSpace+=f.length();
+    }
+    usedSpace/=(1 << 30);
+    final CamcorderProfile p=CamcorderProfile.get(AV_VIDEO_QUALITY.get());
+    double bitrate=(((p.videoBitRate + p.audioBitRate) / 8f) * 60f) / (1 << 30);
+    double clipSpace=bitrate * AV_RS_CLIP_LENGTH.get();
+    double storageSize=AV_RS_STORAGE_SIZE.get();
+    double availableSpace=storageSize;
+    File dir=app.getAppPath("").getParentFile();
+    if (dir.canRead()) {
+      StatFs fs=new StatFs(dir.getAbsolutePath());
+      availableSpace=(double)(fs.getAvailableBlocks()) * fs.getBlockSize() / (1 << 30) - clipSpace;
+    }
+    if (usedSpace + clipSpace > storageSize || clipSpace > availableSpace) {
+      Arrays.sort(files,new Comparator<File>(){
+        @Override public int compare(        File lhs,        File rhs){
+          return lhs.lastModified() < rhs.lastModified() ? -1 : (lhs.lastModified() == rhs.lastModified() ? 0 : 1);
+        }
+      }
+);
+      boolean wasAnyDeleted=false;
+      ArrayList<File> arr=new ArrayList<>(Arrays.asList(files));
+      while (arr.size() > 0 && (usedSpace + clipSpace > storageSize || clipSpace > availableSpace)) {
+        File f=arr.remove(0);
+        double length=((double)f.length()) / (1 << 30);
+        Recording r=recordingByFileName.get(f.getName());
+        if (r != null) {
+          deleteRecording(r,false);
+          wasAnyDeleted=true;
+          usedSpace-=length;
+          availableSpace+=length;
+        }
+ else         if (f.delete()) {
+          usedSpace-=length;
+          availableSpace+=length;
+        }
+      }
+      if (wasAnyDeleted) {
+        app.runInUIThread(new Runnable(){
+          @Override public void run(){
+            mapActivity.refreshMap();
+          }
+        }
+,20);
+      }
+    }
+  }
+}

@@ -1,22 +1,6 @@
 {
   final CamcorderProfile p=CamcorderProfile.get(AV_VIDEO_QUALITY.get());
-  final Camera.Size mPreviewSize;
-  if (mSupportedPreviewSizes != null) {
-    int width;
-    int height;
-    if (recordingMenu.isLandscapeLayout()) {
-      width=p.videoFrameWidth;
-      height=p.videoFrameHeight;
-    }
- else {
-      height=p.videoFrameWidth;
-      width=p.videoFrameHeight;
-    }
-    mPreviewSize=getOptimalPreviewSize(mSupportedPreviewSizes,width,height);
-  }
- else {
-    mPreviewSize=null;
-  }
+  final Camera.Size mPreviewSize=getPreviewSize();
   final SurfaceView view;
   if (mPreviewSize != null) {
     view=recordingMenu.prepareSurfaceView(mPreviewSize.width,mPreviewSize.height);
@@ -31,20 +15,7 @@
     @Override public void surfaceCreated(    SurfaceHolder holder){
       MediaRecorder mr=new MediaRecorder();
       try {
-        Parameters parameters=cam.getParameters();
-        List<String> sfm=parameters.getSupportedFocusModes();
-        if (sfm.contains("continuous-video")) {
-          parameters.setFocusMode("continuous-video");
-        }
-        int cameraOrientation=getCamOrientation(mapActivity,Camera.CameraInfo.CAMERA_FACING_BACK);
-        cam.setDisplayOrientation(cameraOrientation);
-        parameters.set("rotation",cameraOrientation);
-        if (mPreviewSize != null) {
-          parameters.setPreviewSize(mPreviewSize.width,mPreviewSize.height);
-        }
-        cam.setParameters(parameters);
-        cam.setPreviewDisplay(holder);
-        cam.startPreview();
+        startCamera(mPreviewSize,holder);
         cam.unlock();
         mr.setCamera(cam);
       }
@@ -55,14 +26,12 @@
         finishRecording();
         return;
       }
-      String ext=MPEG4_EXTENSION;
-      final File f=getBaseFileName(lat,lon,app,ext);
-      mr.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
-      mr.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-      giveMediaRecorderHintRotatedScreen(mapActivity,mr);
-      mr.setProfile(p);
-      mr.setOutputFile(f.getAbsolutePath());
+      final File f=getBaseFileName(lat,lon,app,MPEG4_EXTENSION);
+      initMediaRecorder(mr,p,f);
       try {
+        if (AV_RECORDER_SPLIT.get()) {
+          cleanupSpace();
+        }
         runMediaRecorder(mapActivity,mr,f);
       }
  catch (      Exception e) {
