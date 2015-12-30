@@ -4,7 +4,11 @@
   final OpeningHoursParser.BasicOpeningHourRule item=(OpeningHoursParser.BasicOpeningHourRule)args.getSerializable(BASIC_OPENING_HOUR_RULE);
   final int rulePosition=args.getInt(RULE_POSITION);
   final int timePosition=args.getInt(TIME_POSITION);
-  final boolean createNew=rulePosition == -1;
+  boolean newTimeSpan=timePosition == item.timesSize();
+  if (newTimeSpan) {
+    item.addTimeRange(9 * 60,18 * 60);
+  }
+  final boolean createNew=rulePosition == -1 || newTimeSpan;
   AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
   int time=isStart ? item.getStartTime(timePosition) : item.getEndTime(timePosition);
   int hour=time / 60;
