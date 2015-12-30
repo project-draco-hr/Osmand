@@ -9,7 +9,7 @@
   final CheckBox downloadOverWiFiCheckBox=(CheckBox)view.findViewById(R.id.downloadOverWiFiSwitch);
   final Spinner updateFrequencySpinner=(Spinner)view.findViewById(R.id.updateFrequencySpinner);
   final Spinner updateTimesOfDaySpinner=(Spinner)view.findViewById(R.id.updateTimesOfDaySpinner);
-  final View updateTimesOfDayList=view.findViewById(R.id.updateTimesOfDayList);
+  final View updateTimesOfDayLayout=view.findViewById(R.id.updateTimesOfDayLayout);
   final TextView sizeTextView=(TextView)view.findViewById(R.id.sizeTextView);
   regionNameTextView.setText(getNameToDisplay(localIndexInfo,getMyActivity()));
   final String fileNameWithoutExtension=Algorithms.getFileNameWithoutExtension(new File(localIndexInfo.getFileName()));
@@ -27,6 +27,7 @@
   downloadOverWiFiCheckBox.setChecked(!liveUpdatePreference.get() || downloadViaWiFiPreference.get());
   updateSize(fileNameWithoutExtension,changesManager,sizeTextView);
   updateTimesOfDaySpinner.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.action_spinner_item,getResources().getStringArray(R.array.update_times_of_day)));
+  updateTimesOfDaySpinner.setSelection(timeOfDayPreference.get());
   updateFrequencySpinner.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.action_spinner_item,getResources().getStringArray(R.array.update_frequencies_array)));
   updateFrequencySpinner.setSelection(updateFrequencyPreference.get());
   updateFrequencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
@@ -34,11 +35,11 @@
       UpdateFrequency updateFrequency=UpdateFrequency.values()[position];
 switch (updateFrequency) {
 case HOURLY:
-        updateTimesOfDayList.setVisibility(View.GONE);
+        updateTimesOfDayLayout.setVisibility(View.GONE);
       break;
 case DAILY:
 case WEEKLY:
-    updateTimesOfDayList.setVisibility(View.VISIBLE);
+    updateTimesOfDayLayout.setVisibility(View.VISIBLE);
   break;
 }
 }
@@ -51,7 +52,7 @@ builder.setView(view).setPositiveButton(R.string.shared_string_ok,new DialogInte
 if (liveUpdatePreference.get() != liveUpdatesSwitch.isChecked()) {
 liveUpdatePreference.set(liveUpdatesSwitch.isChecked());
 if (liveUpdatesSwitch.isChecked()) {
-  runLiveUpdate(localIndexInfo);
+  runLiveUpdate(localIndexInfo,false);
 }
 }
 downloadViaWiFiPreference.set(downloadOverWiFiCheckBox.isChecked());
@@ -74,7 +75,7 @@ getLiveUpdatesFragment().notifyLiveUpdatesChanged();
 }
 ).setNegativeButton(R.string.shared_string_cancel,null).setNeutralButton(R.string.update_now,new DialogInterface.OnClickListener(){
 @Override public void onClick(DialogInterface dialog,int which){
-runLiveUpdate(localIndexInfo);
+runLiveUpdate(localIndexInfo,true);
 updateSize(fileNameWithoutExtension,changesManager,sizeTextView);
 }
 }
