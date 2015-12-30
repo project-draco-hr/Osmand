@@ -25,7 +25,7 @@
   final OsmandSettings.CommonPreference<Integer> updateFrequencyPreference=preferenceUpdateFrequency(localIndexInfo,getSettings());
   final OsmandSettings.CommonPreference<Integer> timeOfDayPreference=preferenceTimeOfDayToUpdate(localIndexInfo,getSettings());
   downloadOverWiFiCheckBox.setChecked(!liveUpdatePreference.get() || downloadViaWiFiPreference.get());
-  updateSize(fileNameWithoutExtension,changesManager,sizeTextView);
+  sizeTextView.setText(getUpdatesSize(fileNameWithoutExtension,changesManager));
   updateTimesOfDaySpinner.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.action_spinner_item,getResources().getStringArray(R.array.update_times_of_day)));
   updateTimesOfDaySpinner.setSelection(timeOfDayPreference.get());
   updateFrequencySpinner.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.action_spinner_item,getResources().getStringArray(R.array.update_frequencies_array)));
@@ -54,6 +54,12 @@ liveUpdatePreference.set(liveUpdatesSwitch.isChecked());
 if (liveUpdatesSwitch.isChecked()) {
   runLiveUpdate(localIndexInfo,false);
 }
+ else {
+  long updatesSize=changesManager.getUpdatesSize(fileNameWithoutExtension);
+  if (updatesSize != 0) {
+    ClearUpdatesDialogFragment.createInstance(localIndexInfo).show(getParentFragment().getChildFragmentManager(),null);
+  }
+}
 }
 downloadViaWiFiPreference.set(downloadOverWiFiCheckBox.isChecked());
 final int updateFrequencyInt=updateFrequencySpinner.getSelectedItemPosition();
@@ -76,7 +82,7 @@ getLiveUpdatesFragment().notifyLiveUpdatesChanged();
 ).setNegativeButton(R.string.shared_string_cancel,null).setNeutralButton(R.string.update_now,new DialogInterface.OnClickListener(){
 @Override public void onClick(DialogInterface dialog,int which){
 runLiveUpdate(localIndexInfo,true);
-updateSize(fileNameWithoutExtension,changesManager,sizeTextView);
+sizeTextView.setText(getUpdatesSize(fileNameWithoutExtension,changesManager));
 }
 }
 );
