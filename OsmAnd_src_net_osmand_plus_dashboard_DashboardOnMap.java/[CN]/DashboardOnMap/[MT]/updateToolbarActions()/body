@@ -2,8 +2,7 @@
   TextView tv=(TextView)dashboardView.findViewById(R.id.toolbar_text);
   tv.setText("");
   boolean waypointsVisible=visibleType == DashboardType.WAYPOINTS || visibleType == DashboardType.WAYPOINTS_FLAT;
-  boolean waypointsEdit=visibleType == DashboardType.WAYPOINTS_EDIT;
-  if (waypointsVisible || waypointsEdit) {
+  if (waypointsVisible) {
     tv.setText(R.string.waypoints);
   }
  else   if (visibleType == DashboardType.CONFIGURE_MAP) {
@@ -37,23 +36,6 @@
   }
 );
   if (waypointsVisible && getMyApplication().getWaypointHelper().getAllPoints().size() > 0) {
-    if (mapActivity.getMyApplication().getTargetPointsHelper().getIntermediatePoints().size() > 0) {
-      sort.setVisibility(View.VISIBLE);
-      sort.setOnClickListener(new View.OnClickListener(){
-        @Override public void onClick(        View v){
-          hideDashboard();
-          IntermediatePointsDialog.openIntermediatePointsDialog(mapActivity,getMyApplication(),true);
-        }
-      }
-);
-    }
-    edit.setVisibility(View.VISIBLE);
-    edit.setOnClickListener(new View.OnClickListener(){
-      @Override public void onClick(      View v){
-        setDashboardVisibility(true,DashboardType.WAYPOINTS_EDIT);
-      }
-    }
-);
     if (getMyApplication().getWaypointHelper().isRouteCalculated()) {
       flat.setVisibility(View.VISIBLE);
       final boolean flatNow=visibleType == DashboardType.WAYPOINTS_FLAT;
@@ -66,16 +48,7 @@
 );
     }
   }
-  if (waypointsEdit) {
-    ok.setVisibility(View.VISIBLE);
-    ok.setOnClickListener(new View.OnClickListener(){
-      @Override public void onClick(      View v){
-        mapActivity.getMyApplication().getWaypointHelper().removeVisibleLocationPoint(deletedPoints);
-        hideDashboard();
-      }
-    }
-);
-  }
+  mapActivity.getMyApplication().getWaypointHelper().removeVisibleLocationPoint(deletedPoints);
   if (visibleType == DashboardType.DASHBOARD || visibleType == DashboardType.LIST_MENU) {
     settingsButton.setVisibility(View.VISIBLE);
     settingsButton.setOnClickListener(new View.OnClickListener(){

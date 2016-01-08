@@ -10,7 +10,26 @@
         points.add(true);
       }
       points.add(i);
-      if ((i == WaypointHelper.POI || i == WaypointHelper.FAVORITES || i == WaypointHelper.WAYPOINTS) && rc) {
+      if (i == WaypointHelper.TARGETS && rc) {
+        TargetPoint start=app.getTargetPointsHelper().getPointToStart();
+        if (start == null) {
+          LatLon latLon;
+          Location loc=app.getLocationProvider().getLastKnownLocation();
+          if (loc != null) {
+            latLon=new LatLon(loc.getLatitude(),loc.getLongitude());
+          }
+ else {
+            latLon=new LatLon(mapActivity.getMapView().getLatitude(),mapActivity.getMapView().getLongitude());
+          }
+          start=TargetPoint.createStartPoint(latLon,new PointDescription(PointDescription.POINT_TYPE_MY_LOCATION,mapActivity.getString(R.string.shared_string_my_location)));
+        }
+ else {
+          String oname=start.getOnlyName().length() > 0 ? start.getOnlyName() : (mapActivity.getString(R.string.route_descr_map_location) + " " + mapActivity.getString(R.string.route_descr_lat_lon,start.getLatitude(),start.getLongitude()));
+          start=TargetPoint.createStartPoint(new LatLon(start.getLatitude(),start.getLongitude()),new PointDescription(PointDescription.POINT_TYPE_LOCATION,oname));
+        }
+        points.add(new LocationPointWrapper(null,WaypointHelper.TARGETS,start,0f,0));
+      }
+ else       if ((i == WaypointHelper.POI || i == WaypointHelper.FAVORITES || i == WaypointHelper.WAYPOINTS) && rc) {
         if (waypointHelper.isTypeEnabled(i)) {
           points.add(new RadiusItem(i));
         }

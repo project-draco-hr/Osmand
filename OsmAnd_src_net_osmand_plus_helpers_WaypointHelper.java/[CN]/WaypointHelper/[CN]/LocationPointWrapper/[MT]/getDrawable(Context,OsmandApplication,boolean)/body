@@ -1,0 +1,85 @@
+{
+  if (type == POI) {
+    Amenity amenity=((AmenityLocationPoint)point).a;
+    PoiType st=amenity.getType().getPoiTypeByKeyName(amenity.getSubType());
+    if (st != null) {
+      if (RenderingIcons.containsBigIcon(st.getIconKeyName())) {
+        return uiCtx.getResources().getDrawable(RenderingIcons.getBigIconResourceId(st.getIconKeyName()));
+      }
+ else       if (RenderingIcons.containsBigIcon(st.getOsmTag() + "_" + st.getOsmValue())) {
+        return uiCtx.getResources().getDrawable(RenderingIcons.getBigIconResourceId(st.getOsmTag() + "_" + st.getOsmValue()));
+      }
+    }
+    return null;
+  }
+ else   if (type == TARGETS) {
+    IconsCache iconsCache=app.getIconsCache();
+    if (((TargetPoint)point).start) {
+      ApplicationMode appMode=app.getSettings().getApplicationMode();
+      return uiCtx.getResources().getDrawable(appMode.getResourceLocationDay());
+    }
+ else     if (((TargetPoint)point).intermediate) {
+      if (!nightMode) {
+        return iconsCache.getIcon(R.drawable.widget_intermediate_day,0,0f);
+      }
+ else {
+        return iconsCache.getIcon(R.drawable.widget_intermediate_night,0,0f);
+      }
+    }
+ else {
+      if (!nightMode) {
+        return iconsCache.getIcon(R.drawable.widget_target_day,0,0f);
+      }
+ else {
+        return iconsCache.getIcon(R.drawable.widget_target_night,0,0f);
+      }
+    }
+  }
+ else   if (type == FAVORITES || type == WAYPOINTS) {
+    return FavoriteImageDrawable.getOrCreate(uiCtx,point.getColor(),false);
+  }
+ else   if (type == ALARMS) {
+    if (((AlarmInfo)point).getType().toString().equals("SPEED_CAMERA")) {
+      return uiCtx.getResources().getDrawable(R.drawable.mx_highway_speed_camera);
+    }
+ else     if (((AlarmInfo)point).getType().toString().equals("BORDER_CONTROL")) {
+      return uiCtx.getResources().getDrawable(R.drawable.mx_barrier_border_control);
+    }
+ else     if (((AlarmInfo)point).getType().toString().equals("RAILWAY")) {
+      if (app.getSettings().DRIVING_REGION.get().americanSigns) {
+        return uiCtx.getResources().getDrawable(R.drawable.list_warnings_railways_us);
+      }
+ else {
+        return uiCtx.getResources().getDrawable(R.drawable.list_warnings_railways);
+      }
+    }
+ else     if (((AlarmInfo)point).getType().toString().equals("TRAFFIC_CALMING")) {
+      if (app.getSettings().DRIVING_REGION.get().americanSigns) {
+        return uiCtx.getResources().getDrawable(R.drawable.list_warnings_traffic_calming_us);
+      }
+ else {
+        return uiCtx.getResources().getDrawable(R.drawable.list_warnings_traffic_calming);
+      }
+    }
+ else     if (((AlarmInfo)point).getType().toString().equals("TOLL_BOOTH")) {
+      return uiCtx.getResources().getDrawable(R.drawable.mx_toll_booth);
+    }
+ else     if (((AlarmInfo)point).getType().toString().equals("STOP")) {
+      return uiCtx.getResources().getDrawable(R.drawable.list_stop);
+    }
+ else     if (((AlarmInfo)point).getType().toString().equals("PEDESTRIAN")) {
+      if (app.getSettings().DRIVING_REGION.get().americanSigns) {
+        return uiCtx.getResources().getDrawable(R.drawable.list_warnings_pedestrian_us);
+      }
+ else {
+        return uiCtx.getResources().getDrawable(R.drawable.list_warnings_pedestrian);
+      }
+    }
+ else {
+      return null;
+    }
+  }
+ else {
+    return null;
+  }
+}
