@@ -1,10 +1,36 @@
 {
   View v;
-  IconsCache iconsCache=app.getIconsCache();
-  v=ctx.getLayoutInflater().inflate(R.layout.drawer_list_radius,null);
+  if (type == WaypointHelper.POI) {
+    v=ctx.getLayoutInflater().inflate(R.layout.drawer_list_radius_ex,null);
+    AndroidUtils.setTextPrimaryColor(mapActivity,(TextView)v.findViewById(R.id.titleEx),nightMode);
+    String descEx=waypointHelper.getPoiFilter() == null ? ctx.getString(R.string.poi) : waypointHelper.getPoiFilter().getName();
+    ((TextView)v.findViewById(R.id.title)).setText(ctx.getString(R.string.search_radius_proximity) + ":");
+    ((TextView)v.findViewById(R.id.titleEx)).setText(ctx.getString(R.string.shared_string_type) + ":");
+    final TextView radiusEx=(TextView)v.findViewById(R.id.descriptionEx);
+    radiusEx.setText(descEx);
+    radiusEx.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View view){
+        running[0]=position;
+        thisAdapter.notifyDataSetInvalidated();
+        MapActivity map=(MapActivity)ctx;
+        final PoiUIFilter[] selected=new PoiUIFilter[1];
+        AlertDialog dlg=map.getMapLayers().selectPOIFilterLayer(map.getMapView(),selected);
+        dlg.setOnDismissListener(new OnDismissListener(){
+          @Override public void onDismiss(          DialogInterface dialog){
+            enableType(running,thisAdapter,type,true);
+          }
+        }
+);
+      }
+    }
+);
+  }
+ else {
+    v=ctx.getLayoutInflater().inflate(R.layout.drawer_list_radius,null);
+    ((TextView)v.findViewById(R.id.title)).setText(ctx.getString(R.string.search_radius_proximity));
+  }
   AndroidUtils.setTextPrimaryColor(mapActivity,(TextView)v.findViewById(R.id.title),nightMode);
   final TextView radius=(TextView)v.findViewById(R.id.description);
-  ((ImageView)v.findViewById(R.id.waypoint_icon)).setImageDrawable(iconsCache.getContentIcon(R.drawable.ic_poi_radius_dark,!nightMode));
   radius.setText(OsmAndFormatter.getFormattedDistance(waypointHelper.getSearchDeviationRadius(type),app));
   radius.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View view){

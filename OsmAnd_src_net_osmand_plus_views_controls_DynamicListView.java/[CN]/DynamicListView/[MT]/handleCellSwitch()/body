@@ -1,0 +1,40 @@
+{
+  final int deltaY=mLastEventY - mDownY;
+  final int deltaYTotal=mHoverCellOriginalBounds.top + mTotalOffset + deltaY;
+  View belowView=getViewForID(mBelowItemId);
+  View mobileView=getViewForID(mMobileItemId);
+  View aboveView=getViewForID(mAboveItemId);
+  boolean isBelow=(belowView != null) && (deltaYTotal > belowView.getTop());
+  boolean isAbove=(aboveView != null) && (deltaYTotal < aboveView.getTop());
+  if (isBelow || isAbove) {
+    final long switchItemID=isBelow ? mBelowItemId : mAboveItemId;
+    View switchView=isBelow ? belowView : aboveView;
+    final int originalItem=getPositionForView(mobileView) - getHeaderViewsCount();
+    final int switchItem=getPositionForView(switchView) - getHeaderViewsCount();
+    swapElements(originalItem,switchItem);
+    getStableAdapter().notifyDataSetChanged();
+    mDownY=mLastEventY;
+    final int switchViewStartTop=switchView.getTop();
+    if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.KITKAT) {
+      mobileView.setVisibility(View.VISIBLE);
+      switchView.setVisibility(View.INVISIBLE);
+    }
+    updateNeighborViewsForID(mMobileItemId);
+    final ViewTreeObserver observer=getViewTreeObserver();
+    observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener(){
+      public boolean onPreDraw(){
+        observer.removeOnPreDrawListener(this);
+        View switchView=getViewForID(switchItemID);
+        mTotalOffset+=deltaY;
+        int switchViewNewTop=switchView.getTop();
+        int delta=switchViewStartTop - switchViewNewTop;
+        switchView.setTranslationY(delta);
+        ObjectAnimator animator=ObjectAnimator.ofFloat(switchView,View.TRANSLATION_Y,0);
+        animator.setDuration(MOVE_DURATION);
+        animator.start();
+        return true;
+      }
+    }
+);
+  }
+}

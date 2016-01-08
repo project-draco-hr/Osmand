@@ -1,0 +1,30 @@
+{
+  getMyApplication().runInUIThread(new Runnable(){
+    @Override public void run(){
+      if (visibleType == DashboardType.WAYPOINTS) {
+        List<TargetPoint> allTargets=new ArrayList<>();
+        if (items != null) {
+          for (          Object obj : items) {
+            if (obj instanceof LocationPointWrapper) {
+              LocationPointWrapper p=(LocationPointWrapper)obj;
+              if (p.getPoint() instanceof TargetPoint) {
+                TargetPoint t=(TargetPoint)p.getPoint();
+                if (!t.start) {
+                  t.intermediate=true;
+                  allTargets.add(t);
+                }
+              }
+            }
+          }
+          if (allTargets.size() > 0) {
+            allTargets.get(allTargets.size() - 1).intermediate=false;
+          }
+        }
+        getMyApplication().getTargetPointsHelper().reorderAllTargetPoints(allTargets,false);
+        newRouteIsCalculated(false,null);
+        getMyApplication().getTargetPointsHelper().updateRouteAndReferesh(true);
+      }
+    }
+  }
+,50);
+}
