@@ -1,0 +1,27 @@
+{
+  final ViewGroup.LayoutParams lp=listItemView.getLayoutParams();
+  final int originalLayoutHeight=lp.height;
+  if (android.os.Build.VERSION.SDK_INT < 12) {
+    mPendingDismisses.add(new PendingDismissData(dismissPosition,dismissView,listItemView));
+    finishDismiss(dismissView,originalLayoutHeight);
+  }
+ else {
+    int originalHeight=listItemView.getHeight();
+    ValueAnimator animator=ValueAnimator.ofInt(originalHeight,1).setDuration(mAnimationTime);
+    animator.addListener(new AnimatorListenerAdapter(){
+      @Override public void onAnimationEnd(      Animator animation){
+        finishDismiss(dismissView,originalLayoutHeight);
+      }
+    }
+);
+    animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener(){
+      @Override public void onAnimationUpdate(      ValueAnimator valueAnimator){
+        lp.height=(Integer)valueAnimator.getAnimatedValue();
+        listItemView.setLayoutParams(lp);
+      }
+    }
+);
+    mPendingDismisses.add(new PendingDismissData(dismissPosition,dismissView,listItemView));
+    animator.start();
+  }
+}
