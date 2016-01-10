@@ -1,0 +1,133 @@
+{
+  if (mViewWidth < 2) {
+    mViewWidth=mListView.getWidth();
+  }
+switch (ev.getActionMasked()) {
+case MotionEvent.ACTION_DOWN:
+{
+      if (mSwipePaused) {
+        return false;
+      }
+      Rect rect=new Rect();
+      int childCount=mListView.getChildCount();
+      int[] listViewCoords=new int[2];
+      mListView.getLocationOnScreen(listViewCoords);
+      int x=(int)ev.getRawX() - listViewCoords[0];
+      int y=(int)ev.getRawY() - listViewCoords[1];
+      View child;
+      for (int i=mListView.getHeaderViewsCount(); i < childCount; i++) {
+        child=mListView.getChildAt(i);
+        if (child != null) {
+          child.getHitRect(rect);
+          if (rect.contains(x,y)) {
+            if (mSwipingLayout > 0) {
+              View swipingView=child.findViewById(mSwipingLayout);
+              if (swipingView != null) {
+                mSwipeDownView=swipingView;
+                mSwipeDownChild=child;
+                break;
+              }
+            }
+            mSwipeDownView=mSwipeDownChild=child;
+            break;
+          }
+        }
+      }
+      if (mSwipeDownView != null) {
+        int position=mListView.getPositionForView(mSwipeDownView) - mListView.getHeaderViewsCount();
+        if (mCallbacks == null || mCallbacks.canDismiss(position)) {
+          mDownX=ev.getRawX();
+          mDownPosition=position;
+          mVelocityTracker=VelocityTracker.obtain();
+          mVelocityTracker.addMovement(ev);
+        }
+ else {
+          mSwipeDownView=mSwipeDownChild=null;
+        }
+      }
+      return false;
+    }
+case MotionEvent.ACTION_CANCEL:
+{
+    if (mVelocityTracker == null) {
+      break;
+    }
+    if (mSwipeDownView != null && mSwiping) {
+      ViewCompat.animate(mSwipeDownView).translationX(0).alpha(1).setDuration(mAnimationTime).setListener(null);
+    }
+    mVelocityTracker.recycle();
+    mVelocityTracker=null;
+    mDownX=0;
+    mSwipeDownView=mSwipeDownChild=null;
+    mDownPosition=ListView.INVALID_POSITION;
+    mSwiping=false;
+    break;
+  }
+case MotionEvent.ACTION_UP:
+{
+  if (mVelocityTracker == null) {
+    break;
+  }
+  float deltaX=ev.getRawX() - mDownX;
+  mVelocityTracker.addMovement(ev);
+  mVelocityTracker.computeCurrentVelocity(1000);
+  float velocityX=Math.abs(mVelocityTracker.getXVelocity());
+  float velocityY=Math.abs(mVelocityTracker.getYVelocity());
+  boolean dismiss=false;
+  boolean dismissRight=false;
+  if (Math.abs(deltaX) > mViewWidth / 2 && mSwiping) {
+    dismiss=true;
+    dismissRight=deltaX > 0;
+  }
+ else   if (mMinFlingVelocity <= velocityX && velocityX <= mMaxFlingVelocity && velocityY < velocityX && mSwiping && isSwipeDirectionValid(mVelocityTracker.getXVelocity()) && deltaX >= mViewWidth * 0.2f) {
+    dismiss=true;
+    dismissRight=mVelocityTracker.getXVelocity() > 0;
+  }
+  if (dismiss) {
+    slideOutView(mSwipeDownView,mSwipeDownChild,mDownPosition,dismissRight);
+  }
+ else   if (mSwiping) {
+    ViewCompat.animate(mSwipeDownView).translationX(0).alpha(1).setDuration(mAnimationTime).setListener(null);
+  }
+  mVelocityTracker=null;
+  mDownX=0;
+  mSwipeDownView=null;
+  mSwipeDownChild=null;
+  mDownPosition=AbsListView.INVALID_POSITION;
+  mSwiping=false;
+  break;
+}
+case MotionEvent.ACTION_MOVE:
+{
+if (mVelocityTracker == null || mSwipePaused) {
+  break;
+}
+mVelocityTracker.addMovement(ev);
+float deltaX=ev.getRawX() - mDownX;
+if (isSwipeDirectionValid(deltaX)) {
+  ViewParent parent=mListView.getParent();
+  if (parent != null) {
+    parent.requestDisallowInterceptTouchEvent(true);
+  }
+  if (Math.abs(deltaX) > mSlop) {
+    mSwiping=true;
+    mListView.requestDisallowInterceptTouchEvent(true);
+    MotionEvent cancelEvent=MotionEvent.obtain(ev);
+    cancelEvent.setAction(MotionEvent.ACTION_CANCEL | (ev.getActionIndex() << MotionEvent.ACTION_POINTER_INDEX_SHIFT));
+    mListView.onTouchEvent(cancelEvent);
+  }
+}
+ else {
+  mDownX=ev.getRawX();
+  deltaX=0;
+}
+if (mSwiping) {
+  mSwipeDownView.setTranslationX(deltaX);
+  mSwipeDownView.setAlpha(Math.max(0f,Math.min(1f,1f - 2f * Math.abs(deltaX) / mViewWidth)));
+  return true;
+}
+break;
+}
+}
+return false;
+}
