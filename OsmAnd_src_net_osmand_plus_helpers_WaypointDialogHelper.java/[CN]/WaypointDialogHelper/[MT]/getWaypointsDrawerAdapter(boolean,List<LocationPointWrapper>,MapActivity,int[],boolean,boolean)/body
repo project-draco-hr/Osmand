@@ -8,6 +8,18 @@
   }
   List<Object> activePoints=getActivePoints(points);
   return new StableArrayAdapter(ctx,R.layout.waypoint_reached,R.id.title,points,activePoints){
+    @Override public boolean isEnabled(    int position){
+      Object obj=getItem(position);
+      boolean labelView=(obj instanceof Integer);
+      boolean topDividerView=(obj instanceof Boolean) && ((Boolean)obj);
+      boolean bottomDividerView=(obj instanceof Boolean) && !((Boolean)obj);
+      boolean enabled=!labelView && !topDividerView && !bottomDividerView;
+      if (enabled && obj instanceof RadiusItem) {
+        int type=((RadiusItem)obj).type;
+        enabled=type != WaypointHelper.POI;
+      }
+      return enabled;
+    }
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
       final ArrayAdapter<Object> thisAdapter=this;
