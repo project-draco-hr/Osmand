@@ -1,0 +1,77 @@
+{
+  WaypointHelper wh=app.getWaypointHelper();
+  final LocationPoint point=ps.getPoint();
+  TextView text=(TextView)localView.findViewById(R.id.waypoint_text);
+  AndroidUtils.setTextPrimaryColor(activity,text,nightMode);
+  TextView textShadow=(TextView)localView.findViewById(R.id.waypoint_text_shadow);
+  if (!edit) {
+    localView.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View view){
+        showOnMap(app,activity,point,mapCenter);
+      }
+    }
+);
+  }
+  TextView textDist=(TextView)localView.findViewById(R.id.waypoint_dist);
+  ((ImageView)localView.findViewById(R.id.waypoint_icon)).setImageDrawable(ps.getDrawable(activity,app,nightMode));
+  int dist=-1;
+  boolean startPoint=ps.type == WaypointHelper.TARGETS && ((TargetPoint)ps.point).start;
+  if (!startPoint) {
+    if (!wh.isRouteCalculated()) {
+      if (activity instanceof MapActivity) {
+        dist=(int)MapUtils.getDistance(((MapActivity)activity).getMapView().getLatitude(),((MapActivity)activity).getMapView().getLongitude(),point.getLatitude(),point.getLongitude());
+      }
+    }
+ else {
+      dist=wh.getRouteDistance(ps);
+    }
+  }
+  String pointDescription="";
+  TextView descText=(TextView)localView.findViewById(R.id.waypoint_desc_text);
+  if (descText != null) {
+    AndroidUtils.setTextSecondaryColor(activity,descText,nightMode);
+switch (ps.type) {
+case WaypointHelper.TARGETS:
+      TargetPoint targetPoint=(TargetPoint)ps.point;
+    if (targetPoint.start) {
+      pointDescription=activity.getResources().getString(R.string.starting_point);
+    }
+ else {
+      pointDescription=targetPoint.getPointDescription(activity).getTypeName();
+    }
+  break;
+case WaypointHelper.FAVORITES:
+FavouritePoint favPoint=(FavouritePoint)ps.point;
+pointDescription=favPoint.getCategory();
+break;
+}
+}
+if (dist > 0) {
+String dd=OsmAndFormatter.getFormattedDistance(dist,app);
+if (ps.deviationDistance > 0) {
+dd+="  +" + OsmAndFormatter.getFormattedDistance(ps.deviationDistance,app);
+}
+textDist.setText(dd);
+if (!Algorithms.isEmpty(pointDescription)) {
+pointDescription="  ???  " + pointDescription;
+}
+}
+ else {
+textDist.setText("");
+}
+if (descText != null) {
+descText.setText(pointDescription);
+}
+String descr;
+PointDescription pd=point.getPointDescription(app);
+if (Algorithms.isEmpty(pd.getName())) {
+descr=pd.getTypeName();
+}
+ else {
+descr=pd.getName();
+}
+if (textShadow != null) {
+textShadow.setText(descr);
+}
+text.setText(descr);
+}

@@ -1,0 +1,48 @@
+{
+  final View mobileView=getViewForID(mMobileItemId);
+  if (mCellIsMobile || mIsWaitingForScrollFinish) {
+    mCellIsMobile=false;
+    mIsWaitingForScrollFinish=false;
+    mIsMobileScrolling=false;
+    mActivePointerId=INVALID_POINTER_ID;
+    if (mScrollState != OnScrollListener.SCROLL_STATE_IDLE) {
+      mIsWaitingForScrollFinish=true;
+      return;
+    }
+    mHoverCellCurrentBounds.offsetTo(mHoverCellOriginalBounds.left,mobileView.getTop());
+    if (android.os.Build.VERSION.SDK_INT < 12) {
+      finishTouch();
+    }
+ else {
+      TypeEvaluator<Rect> sBoundEvaluator=new TypeEvaluator<Rect>(){
+        public Rect evaluate(        float fraction,        Rect startValue,        Rect endValue){
+          return new Rect(interpolate(startValue.left,endValue.left,fraction),interpolate(startValue.top,endValue.top,fraction),interpolate(startValue.right,endValue.right,fraction),interpolate(startValue.bottom,endValue.bottom,fraction));
+        }
+        public int interpolate(        int start,        int end,        float fraction){
+          return (int)(start + fraction * (end - start));
+        }
+      }
+;
+      ObjectAnimator hoverViewAnimator=ObjectAnimator.ofObject(mHoverCell,"bounds",sBoundEvaluator,mHoverCellCurrentBounds);
+      hoverViewAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener(){
+        @Override public void onAnimationUpdate(        ValueAnimator valueAnimator){
+          invalidate();
+        }
+      }
+);
+      hoverViewAnimator.addListener(new AnimatorListenerAdapter(){
+        @Override public void onAnimationStart(        Animator animation){
+          setEnabled(false);
+        }
+        @Override public void onAnimationEnd(        Animator animation){
+          finishTouch();
+        }
+      }
+);
+      hoverViewAnimator.start();
+    }
+  }
+ else {
+    touchEventsCancelled();
+  }
+}

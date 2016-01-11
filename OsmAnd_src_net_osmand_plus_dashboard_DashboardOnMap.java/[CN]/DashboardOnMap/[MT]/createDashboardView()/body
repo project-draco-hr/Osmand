@@ -3,7 +3,7 @@
   waypointDialogHelper=new WaypointDialogHelper(mapActivity);
   landscape=!AndroidUiHelper.isOrientationPortrait(mapActivity);
   dashboardView=(FrameLayout)mapActivity.findViewById(R.id.dashboard);
-  View.OnClickListener listener=new View.OnClickListener(){
+  final View.OnClickListener listener=new View.OnClickListener(){
     @Override public void onClick(    View v){
       hideDashboard();
     }
@@ -12,6 +12,60 @@
   toolbar=((Toolbar)dashboardView.findViewById(R.id.toolbar));
   ObservableScrollView scrollView=((ObservableScrollView)dashboardView.findViewById(R.id.main_scroll));
   listView=(ListView)dashboardView.findViewById(R.id.dash_list_view);
+  listView.setDrawSelectorOnTop(true);
+  ((DynamicListView)listView).setDynamicListViewCallbacks(this);
+  swipeDismissListener=new SwipeDismissListViewTouchListener(listView,new SwipeDismissListViewTouchListener.DismissCallbacks(){
+    @Override public boolean canDismiss(    int position){
+      boolean res=false;
+      if (listAdapter instanceof StableArrayAdapter) {
+        List<Object> activeObjects=((StableArrayAdapter)listAdapter).getActiveObjects();
+        Object obj=listAdapter.getItem(position);
+        res=activeObjects.contains(obj);
+      }
+      return res;
+    }
+    @Override public Undoable onDismiss(    final int position){
+      final Object item;
+      final StableArrayAdapter stableAdapter;
+      final int activeObjPos;
+      if (listAdapter instanceof StableArrayAdapter) {
+        stableAdapter=(StableArrayAdapter)listAdapter;
+        item=stableAdapter.getItem(position);
+        stableAdapter.setNotifyOnChange(false);
+        stableAdapter.remove(item);
+        stableAdapter.getObjects().remove(item);
+        activeObjPos=stableAdapter.getActiveObjects().indexOf(item);
+        stableAdapter.getActiveObjects().remove(item);
+        stableAdapter.notifyDataSetChanged();
+      }
+ else {
+        item=null;
+        stableAdapter=null;
+        activeObjPos=0;
+      }
+      return new Undoable(){
+        @Override public void undo(){
+          if (item != null) {
+            stableAdapter.setNotifyOnChange(false);
+            stableAdapter.insert(item,position);
+            stableAdapter.getObjects().add(position,item);
+            stableAdapter.getActiveObjects().add(activeObjPos,item);
+            stableAdapter.updateIdMap();
+            onItemsSwapped(stableAdapter.getActiveObjects());
+          }
+        }
+      }
+;
+    }
+    @Override public void onHidePopup(){
+      if (listAdapter instanceof StableArrayAdapter) {
+        StableArrayAdapter stableAdapter=(StableArrayAdapter)listAdapter;
+        stableAdapter.updateIdMap();
+        onItemsSwapped(stableAdapter.getActiveObjects());
+      }
+    }
+  }
+);
   gradientToolbar=mapActivity.getResources().getDrawable(R.drawable.gradient_toolbar).mutate();
   if (AndroidUiHelper.isOrientationPortrait(mapActivity)) {
     this.portrait=true;

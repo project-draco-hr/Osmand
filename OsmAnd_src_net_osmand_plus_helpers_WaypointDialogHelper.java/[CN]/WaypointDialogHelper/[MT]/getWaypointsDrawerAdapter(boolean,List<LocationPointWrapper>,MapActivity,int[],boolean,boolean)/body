@@ -6,7 +6,20 @@
  else {
     points=getPoints();
   }
-  return new ArrayAdapter<Object>(ctx,R.layout.waypoint_reached,R.id.title,points){
+  List<Object> activePoints=getActivePoints(points);
+  return new StableArrayAdapter(ctx,R.layout.waypoint_reached,R.id.title,points,activePoints){
+    @Override public boolean isEnabled(    int position){
+      Object obj=getItem(position);
+      boolean labelView=(obj instanceof Integer);
+      boolean topDividerView=(obj instanceof Boolean) && ((Boolean)obj);
+      boolean bottomDividerView=(obj instanceof Boolean) && !((Boolean)obj);
+      boolean enabled=!labelView && !topDividerView && !bottomDividerView;
+      if (enabled && obj instanceof RadiusItem) {
+        int type=((RadiusItem)obj).type;
+        enabled=type != WaypointHelper.POI;
+      }
+      return enabled;
+    }
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
       final ArrayAdapter<Object> thisAdapter=this;
@@ -17,21 +30,11 @@
       if (obj instanceof RadiusItem) {
         final int type=((RadiusItem)obj).type;
         v=createItemForRadiusProximity(ctx,type,running,position,thisAdapter,nightMode);
-        if (nightMode) {
-          v.setBackgroundColor(mapActivity.getResources().getColor(R.color.bg_color_dark));
-        }
- else {
-          v.setBackgroundColor(mapActivity.getResources().getColor(R.color.bg_color_light));
-        }
+        AndroidUtils.setListItemBackground(mapActivity,v,nightMode);
       }
  else       if (labelView) {
         v=createItemForCategory(ctx,(Integer)obj,running,position,thisAdapter,nightMode);
-        if (nightMode) {
-          v.setBackgroundColor(mapActivity.getResources().getColor(R.color.bg_color_dark));
-        }
- else {
-          v.setBackgroundColor(mapActivity.getResources().getColor(R.color.bg_color_light));
-        }
+        AndroidUtils.setListItemBackground(mapActivity,v,nightMode);
       }
  else       if (topDividerView) {
         v=ctx.getLayoutInflater().inflate(R.layout.card_top_divider,null);
@@ -41,13 +44,8 @@
       }
  else       if (obj instanceof LocationPointWrapper) {
         LocationPointWrapper point=(LocationPointWrapper)obj;
-        v=updateWaypointItemView(edit,deletedPoints,app,ctx,v,point,this,nightMode);
-        if (nightMode) {
-          v.setBackgroundColor(mapActivity.getResources().getColor(R.color.bg_color_dark));
-        }
- else {
-          v.setBackgroundColor(mapActivity.getResources().getColor(R.color.bg_color_light));
-        }
+        v=updateWaypointItemView(edit,deletedPoints,app,ctx,v,point,this,nightMode,flat);
+        AndroidUtils.setListItemBackground(mapActivity,v,nightMode);
       }
       return v;
     }
