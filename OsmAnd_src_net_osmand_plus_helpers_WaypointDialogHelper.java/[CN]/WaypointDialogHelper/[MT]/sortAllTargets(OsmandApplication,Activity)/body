@@ -1,0 +1,77 @@
+{
+  new AsyncTask<Void,Void,int[]>(){
+    ProgressDialog dlg=null;
+    long startDialogTime=0;
+    List<TargetPoint> intermediates;
+    protected void onPreExecute(){
+      startDialogTime=System.currentTimeMillis();
+      dlg=new ProgressDialog(activity);
+      dlg.setTitle("");
+      dlg.setMessage(activity.getResources().getString(R.string.intermediate_items_sort_by_distance));
+      dlg.show();
+    }
+    protected int[] doInBackground(    Void[] params){
+      TargetPointsHelper targets=app.getTargetPointsHelper();
+      intermediates=targets.getIntermediatePointsWithTarget();
+      Location cll=app.getLocationProvider().getLastKnownLocation();
+      ArrayList<TargetPoint> lt=new ArrayList<>(intermediates);
+      TargetPoint start;
+      if (cll != null) {
+        LatLon ll=new LatLon(cll.getLatitude(),cll.getLongitude());
+        start=TargetPoint.create(ll,null);
+      }
+ else       if (app.getTargetPointsHelper().getPointToStart() != null) {
+        TargetPoint ps=app.getTargetPointsHelper().getPointToStart();
+        LatLon ll=new LatLon(ps.getLatitude(),ps.getLongitude());
+        start=TargetPoint.create(ll,null);
+      }
+ else {
+        start=lt.get(0);
+      }
+      TargetPoint end=lt.remove(lt.size() - 1);
+      ArrayList<LatLon> al=new ArrayList<>();
+      for (      TargetPoint p : lt) {
+        al.add(p.point);
+      }
+      return new TspAnt().readGraph(al,start.point,end.point).solve();
+    }
+    protected void onPostExecute(    int[] result){
+      if (dlg != null) {
+        long t=System.currentTimeMillis();
+        if (t - startDialogTime < 500) {
+          app.runInUIThread(new Runnable(){
+            @Override public void run(){
+              dlg.dismiss();
+            }
+          }
+,500 - (t - startDialogTime));
+        }
+ else {
+          dlg.dismiss();
+        }
+      }
+      List<TargetPoint> alocs=new ArrayList<>();
+      for (      int i : result) {
+        if (i > 0) {
+          TargetPoint loc=intermediates.get(i - 1);
+          alocs.add(loc);
+        }
+      }
+      intermediates.clear();
+      intermediates.addAll(alocs);
+      TargetPointsHelper targets=app.getTargetPointsHelper();
+      List<TargetPoint> cur=targets.getIntermediatePointsWithTarget();
+      boolean eq=true;
+      for (int j=0; j < cur.size() && j < intermediates.size(); j++) {
+        if (cur.get(j) != intermediates.get(j)) {
+          eq=false;
+          break;
+        }
+      }
+      if (!eq) {
+        targets.reorderAllTargetPoints(intermediates,true);
+      }
+    }
+  }
+.execute();
+}
