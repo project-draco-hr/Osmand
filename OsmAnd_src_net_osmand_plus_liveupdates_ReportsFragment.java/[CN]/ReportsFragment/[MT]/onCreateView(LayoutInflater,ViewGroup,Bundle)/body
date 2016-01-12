@@ -12,5 +12,18 @@
   setThemedDrawable(view,R.id.regionIconImageView,R.drawable.ic_world_globe_dark);
   setThemedDrawable(view,R.id.numberOfContributorsIcon,R.drawable.ic_group);
   setThemedDrawable(view,R.id.numberOfEditsIcon,R.drawable.ic_group);
+  final TextView contributorsTextView=(TextView)view.findViewById(R.id.contributorsTextView);
+  final TextView editsTextView=(TextView)view.findViewById(R.id.editsTextView);
+  GetJsonAsyncTask<Protocol.TotalChangesByMonthResponse> totalChangesByMontAsyncTask=new GetJsonAsyncTask<>(Protocol.TotalChangesByMonthResponse.class);
+  totalChangesByMontAsyncTask.setOnResponseListener(new GetJsonAsyncTask.OnResponseListener<Protocol.TotalChangesByMonthResponse>(){
+    @Override public void onResponse(    Protocol.TotalChangesByMonthResponse response){
+      contributorsTextView.setText(String.valueOf(response.users));
+      editsTextView.setText(String.valueOf(response.changes));
+    }
+  }
+);
+  int monthItemPosition=montReportsSpinner.getSelectedItemPosition();
+  String monthUrlString=monthsForReportsAdapter.getQueryString(monthItemPosition);
+  totalChangesByMontAsyncTask.execute(TOTAL_CHANGES_BY_MONTH_URL + monthUrlString);
   return view;
 }
