@@ -1,0 +1,74 @@
+{
+  int color;
+  int pointColor;
+  if (nightMode) {
+    color=ctx.getResources().getColor(R.color.dashboard_divider_dark);
+    pointColor=ctx.getResources().getColor(R.color.dashboard_divider_dark);
+  }
+ else {
+    color=ctx.getResources().getColor(R.color.dashboard_divider_light);
+    pointColor=ctx.getResources().getColor(R.color.ctx_menu_info_divider_light);
+  }
+  Shape fullDividerShape=new ListDividerShape(color,0);
+  Shape halfDividerShape=new ListDividerShape(color,AndroidUtils.dpToPx(ctx,56f));
+  Shape halfPointDividerShape=new ListDividerShape(color,AndroidUtils.dpToPx(ctx,56f),pointColor,AndroidUtils.dpToPx(ctx,1.5f),true);
+  Shape headerDividerShape=new ListDividerShape(color,AndroidUtils.dpToPx(ctx,16f));
+  final ShapeDrawable fullDivider=new ShapeDrawable(fullDividerShape);
+  final ShapeDrawable halfDivider=new ShapeDrawable(halfDividerShape);
+  final ShapeDrawable halfPointDivider=new ShapeDrawable(halfPointDividerShape);
+  final ShapeDrawable headerDivider=new ShapeDrawable(headerDividerShape);
+  final Drawable startingPointDivider=app.getIconsCache().getIcon(R.drawable.bg_shadow_list_bottom);
+  int divHeight=AndroidUtils.dpToPx(ctx,1f);
+  fullDivider.setIntrinsicHeight(divHeight);
+  halfDivider.setIntrinsicHeight(divHeight);
+  halfPointDivider.setIntrinsicHeight(divHeight);
+  headerDivider.setIntrinsicHeight(divHeight);
+  List<Drawable> res=new ArrayList<>();
+  for (int i=0; i < points.size(); i++) {
+    Object obj=points.get(i);
+    Object objNext=i + 1 < points.size() ? points.get(i + 1) : null;
+    if (objNext == null) {
+      break;
+    }
+    boolean labelView=(obj instanceof Integer);
+    boolean bottomDividerViewNext=(objNext instanceof Boolean) && !((Boolean)objNext);
+    boolean locationPoint=(obj instanceof LocationPointWrapper);
+    boolean locationPointNext=(objNext instanceof LocationPointWrapper);
+    Drawable d=null;
+    if (locationPointNext) {
+      if (locationPoint) {
+        LocationPointWrapper w=(LocationPointWrapper)obj;
+        if (w.type == WaypointHelper.TARGETS && ((TargetPoint)w.point).start) {
+          d=startingPointDivider;
+        }
+ else {
+          if (w.type == WaypointHelper.TARGETS) {
+            d=halfPointDivider;
+          }
+ else {
+            d=halfDivider;
+          }
+        }
+      }
+ else {
+        LocationPointWrapper w=(LocationPointWrapper)objNext;
+        if (w.type == WaypointHelper.TARGETS) {
+          if (!((TargetPoint)w.point).start) {
+            d=fullDivider;
+          }
+        }
+ else {
+          d=fullDivider;
+        }
+      }
+    }
+ else     if (objNext instanceof RadiusItem && labelView) {
+      d=headerDivider;
+    }
+ else     if (locationPoint && !bottomDividerViewNext) {
+      d=fullDivider;
+    }
+    res.add(d);
+  }
+  return res;
+}
