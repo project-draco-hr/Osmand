@@ -1,13 +1,21 @@
 {
+  if (singleTapDetector.onTouchEvent(event)) {
+    if (tag != null) {
+      tag.onClick();
+    }
+    touchEventsCancelled();
+    return true;
+  }
 switch (event.getAction() & MotionEvent.ACTION_MASK) {
 case MotionEvent.ACTION_DOWN:
     if (!mCellIsMobile && mHoverCell == null) {
-      mDownX=(int)event.getX();
-      mDownY=(int)event.getY();
-      mActivePointerId=event.getPointerId(0);
-      View v=findViewAtPositionWithTag(getRootView(),(int)event.getRawX(),(int)event.getRawY(),TAG_DRAG_ICON);
-      if ((v != null) && (v.getTag() != null) && (v.getTag().equals(TAG_DRAG_ICON))) {
+      View v=findViewAtPositionWithDragIconTag(getRootView(),(int)event.getRawX(),(int)event.getRawY());
+      if ((v != null) && (v.getTag() != null) && (v.getTag() instanceof DragIcon)) {
+        mDownX=(int)event.getX();
+        mDownY=(int)event.getY();
+        mActivePointerId=event.getPointerId(0);
         mTotalOffset=0;
+        tag=(DragIcon)v.getTag();
         int position=pointToPosition(mDownX,mDownY);
         if (position != INVALID_POSITION) {
           Object item=getAdapter().getItem(position);

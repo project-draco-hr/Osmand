@@ -1,0 +1,81 @@
+{
+  if (v == null || v.findViewById(R.id.info_close) == null) {
+    v=ctx.getLayoutInflater().inflate(R.layout.waypoint_reached,null);
+  }
+  updatePointInfoView(app,ctx,v,point,true,nightMode,edit);
+  final View more=v.findViewById(R.id.all_points);
+  final View move=v.findViewById(R.id.info_move);
+  final View remove=v.findViewById(R.id.info_close);
+  if (!edit) {
+    remove.setVisibility(View.GONE);
+    move.setVisibility(View.GONE);
+    more.setVisibility(View.GONE);
+  }
+ else   if (point.type == WaypointHelper.TARGETS && !flat) {
+    if (((TargetPoint)point.point).start) {
+      remove.setVisibility(View.GONE);
+      move.setVisibility(View.GONE);
+      more.setVisibility(View.VISIBLE);
+      ((ImageButton)more).setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.map_overflow_menu_white,!nightMode));
+      more.setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        View view){
+          final PopupMenu optionsMenu=new PopupMenu(ctx,more);
+          DirectionsDialogs.setupPopUpMenuIcon(optionsMenu);
+          MenuItem item;
+          item=optionsMenu.getMenu().add(R.string.intermediate_items_sort_by_distance).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_sort_waypoint_dark));
+          item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+            @Override public boolean onMenuItemClick(            MenuItem item){
+              return true;
+            }
+          }
+);
+          item=optionsMenu.getMenu().add(R.string.switch_start_finish).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_action_undo_dark));
+          item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+            @Override public boolean onMenuItemClick(            MenuItem item){
+              return true;
+            }
+          }
+);
+          optionsMenu.show();
+        }
+      }
+);
+    }
+ else {
+      remove.setVisibility(View.GONE);
+      move.setVisibility(View.VISIBLE);
+      more.setVisibility(View.GONE);
+      ((ImageView)move).setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.ic_flat_list_dark,!nightMode));
+      move.setTag(new DragIcon(){
+        @Override public void onClick(){
+          final PopupMenu optionsMenu=new PopupMenu(ctx,move);
+          DirectionsDialogs.setupPopUpMenuIcon(optionsMenu);
+          MenuItem item;
+          item=optionsMenu.getMenu().add(R.string.shared_string_delete).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_action_remove_dark));
+          item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+            @Override public boolean onMenuItemClick(            MenuItem item){
+              deletePoint(app,adapter,helper,point,deletedPoints,true);
+              return true;
+            }
+          }
+);
+          optionsMenu.show();
+        }
+      }
+);
+    }
+  }
+ else {
+    remove.setVisibility(View.VISIBLE);
+    move.setVisibility(View.GONE);
+    more.setVisibility(View.GONE);
+    ((ImageButton)remove).setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.ic_action_remove_dark,!nightMode));
+    remove.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View view){
+        deletePoint(app,adapter,helper,point,deletedPoints,true);
+      }
+    }
+);
+  }
+  return v;
+}
