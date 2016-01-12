@@ -1,12 +1,9 @@
 {
-  final List<Object> points;
-  if (flat) {
-    points=new ArrayList<Object>(waypointHelper.getAllPoints());
-  }
- else {
-    points=getPoints();
-  }
+  this.flat=flat;
+  this.deletedPoints=deletedPoints;
+  final List<Object> points=getPoints();
   List<Object> activePoints=getActivePoints(points);
+  final WaypointDialogHelper helper=this;
   return new StableArrayAdapter(ctx,R.layout.waypoint_reached,R.id.title,points,activePoints){
     @Override public void buildDividers(){
       dividers=getCustomDividers(ctx,getObjects(),nightMode);
@@ -47,7 +44,7 @@
       }
  else       if (obj instanceof LocationPointWrapper) {
         LocationPointWrapper point=(LocationPointWrapper)obj;
-        v=updateWaypointItemView(edit,deletedPoints,app,ctx,v,point,this,nightMode,flat);
+        v=updateWaypointItemView(edit,deletedPoints,app,ctx,helper,v,point,this,nightMode,flat);
         AndroidUtils.setListItemBackground(mapActivity,v,nightMode);
       }
       return v;
