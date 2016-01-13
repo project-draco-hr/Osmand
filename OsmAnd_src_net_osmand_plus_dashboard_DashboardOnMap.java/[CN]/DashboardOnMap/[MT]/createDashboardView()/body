@@ -1,6 +1,7 @@
 {
   baseColor=mapActivity.getResources().getColor(R.color.osmand_orange) & 0x00ffffff;
   waypointDialogHelper=new WaypointDialogHelper(mapActivity);
+  waypointDialogHelper.setPointDeleteCallback(this);
   landscape=!AndroidUiHelper.isOrientationPortrait(mapActivity);
   dashboardView=(FrameLayout)mapActivity.findViewById(R.id.dashboard);
   final View.OnClickListener listener=new View.OnClickListener(){
@@ -17,7 +18,7 @@
   swipeDismissListener=new SwipeDismissListViewTouchListener(listView,new SwipeDismissListViewTouchListener.DismissCallbacks(){
     @Override public boolean canDismiss(    int position){
       boolean res=false;
-      if (listAdapter instanceof StableArrayAdapter) {
+      if (visibleType == DashboardType.WAYPOINTS && listAdapter instanceof StableArrayAdapter) {
         List<Object> activeObjects=((StableArrayAdapter)listAdapter).getActiveObjects();
         Object obj=listAdapter.getItem(position);
         res=activeObjects.contains(obj);
