@@ -2,8 +2,19 @@
   if (tb.getZoom() < 3) {
     return;
   }
-  int index=0;
   TargetPointsHelper targetPoints=map.getMyApplication().getTargetPointsHelper();
+  TargetPoint pointToStart=targetPoints.getPointToStart();
+  if (pointToStart != null) {
+    if (isLocationVisible(tb,pointToStart)) {
+      int marginX=startPoint.getWidth() / 6;
+      int marginY=startPoint.getHeight();
+      int locationX=tb.getPixXFromLonNoRot(pointToStart.getLongitude());
+      int locationY=tb.getPixYFromLatNoRot(pointToStart.getLatitude());
+      canvas.rotate(-tb.getRotate(),locationX,locationY);
+      canvas.drawBitmap(startPoint,locationX - marginX,locationY - marginY,bitmapPaint);
+    }
+  }
+  int index=0;
   for (  TargetPoint ip : targetPoints.getIntermediatePoints()) {
     index++;
     if (isLocationVisible(tb,ip)) {
