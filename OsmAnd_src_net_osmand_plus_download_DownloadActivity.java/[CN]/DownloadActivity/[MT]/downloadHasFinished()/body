@@ -1,12 +1,18 @@
 {
   visibleBanner.updateBannerInProgress();
   if (downloadItem != null && downloadItem != getMyApplication().getRegions().getWorldRegion() && !WorldRegion.WORLD_BASEMAP.equals(downloadItem.getRegionDownloadNameLC())) {
-    boolean firstMap=!getMyApplication().getSettings().FIRST_MAP_IS_DOWNLOADED.get();
-    if (firstMap) {
-      initSettingsFirstMap(downloadItem);
+    if (!Algorithms.isEmpty(downloadTargetFileName)) {
+      File f=new File(downloadTargetFileName);
+      if (f.exists() && f.lastModified() > System.currentTimeMillis() - 10000) {
+        boolean firstMap=!getMyApplication().getSettings().FIRST_MAP_IS_DOWNLOADED.get();
+        if (firstMap) {
+          initSettingsFirstMap(downloadItem);
+        }
+        showGoToMap(downloadItem);
+      }
     }
-    showGoToMap(downloadItem);
     downloadItem=null;
+    downloadTargetFileName=null;
   }
   for (  WeakReference<Fragment> ref : fragSet) {
     Fragment f=ref.get();
