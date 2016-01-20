@@ -1,0 +1,38 @@
+{
+  if (event.getPointerCount() != 1) {
+    return false;
+  }
+  long currentTime=System.currentTimeMillis();
+  if (event.getAction() == MotionEvent.ACTION_UP) {
+    if (isDoubleTapping) {
+      isDoubleTapping=false;
+      listener.onZoomEnded(1,0);
+      return true;
+    }
+ else {
+      startTime=currentTime;
+      return true;
+    }
+  }
+ else   if (event.getAction() == MotionEvent.ACTION_DOWN && !isDoubleTapping && currentTime - startTime < DOUBLE_TAPPING_DELTA) {
+    isDoubleTapping=true;
+    startX=event.getX();
+    startY=event.getY();
+    listener.onGestureInit(startX,startY,startX,startY);
+    listener.onZoomStarted(new PointF(startX,startY));
+    return true;
+  }
+ else   if (event.getAction() == MotionEvent.ACTION_MOVE) {
+    if (isDoubleTapping) {
+      float delta=convertPxToDp((int)(startY - event.getY()));
+      float scaleDelta=delta / DP_PER_1X;
+      float scale=1 - scaleDelta;
+      listener.onZoomingOrRotating(scale,0);
+      return true;
+    }
+ else {
+      return false;
+    }
+  }
+  return false;
+}
