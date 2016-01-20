@@ -9,7 +9,18 @@
     if (i > 0) {
       via.append(" ");
     }
-    via.append(getRoutePointDescription(points.get(i).point,points.get(i).getOnlyName()));
+    String description=points.get(i).getOnlyName();
+    via.append(getRoutePointDescription(points.get(i).point,description));
+    boolean needAddress=new PointDescription(PointDescription.POINT_TYPE_LOCATION,description).isSearchingAddress(mapActivity);
+    if (needAddress) {
+      AddressLookupRequest lookupRequest=new AddressLookupRequest(points.get(i).point,new GeocodingLookupService.OnAddressLookupResult(){
+        @Override public void geocodingDone(        String address){
+          updateMenu();
+        }
+      }
+,null);
+      geocodingLookupService.lookupAddress(lookupRequest);
+    }
   }
   return via.toString();
 }

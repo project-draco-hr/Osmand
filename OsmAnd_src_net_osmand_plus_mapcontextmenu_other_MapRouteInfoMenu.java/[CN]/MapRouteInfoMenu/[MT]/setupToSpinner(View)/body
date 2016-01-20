@@ -2,8 +2,23 @@
   final Spinner toSpinner=((Spinner)view.findViewById(R.id.ToSpinner));
   final TargetPointsHelper targets=getTargets();
   ArrayList<RouteSpinnerRow> toActions=new ArrayList<>();
-  if (targets.getPointToNavigate() != null) {
+  TargetPoint finish=getTargets().getPointToNavigate();
+  if (finish != null) {
     toActions.add(new RouteSpinnerRow(SPINNER_FINISH_ID,R.drawable.ic_action_get_my_location,getRoutePointDescription(targets.getPointToNavigate().point,targets.getPointToNavigate().getOnlyName())));
+    final LatLon latLon=finish.point;
+    final PointDescription pointDescription=finish.getOriginalPointDescription();
+    boolean needAddress=pointDescription != null && pointDescription.isSearchingAddress(mapActivity);
+    cancelTargetPointAddressRequest();
+    if (needAddress) {
+      targetPointRequest=new AddressLookupRequest(latLon,new GeocodingLookupService.OnAddressLookupResult(){
+        @Override public void geocodingDone(        String address){
+          targetPointRequest=null;
+          updateMenu();
+        }
+      }
+,null);
+      geocodingLookupService.lookupAddress(targetPointRequest);
+    }
   }
  else {
     toSpinner.setPromptId(R.string.route_descr_select_destination);

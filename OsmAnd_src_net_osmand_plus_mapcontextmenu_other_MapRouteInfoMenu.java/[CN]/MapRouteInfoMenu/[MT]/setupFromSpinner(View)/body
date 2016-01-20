@@ -8,6 +8,20 @@
   if (start != null) {
     String oname=start.getOnlyName().length() > 0 ? start.getOnlyName() : (mapActivity.getString(R.string.route_descr_map_location) + " " + getRoutePointDescription(start.getLatitude(),start.getLongitude()));
     fromActions.add(new RouteSpinnerRow(SPINNER_START_ID,R.drawable.ic_action_get_my_location,oname));
+    final LatLon latLon=start.point;
+    final PointDescription pointDescription=start.getOriginalPointDescription();
+    boolean needAddress=pointDescription != null && pointDescription.isSearchingAddress(mapActivity);
+    cancelStartPointAddressRequest();
+    if (needAddress) {
+      startPointRequest=new AddressLookupRequest(latLon,new GeocodingLookupService.OnAddressLookupResult(){
+        @Override public void geocodingDone(        String address){
+          startPointRequest=null;
+          updateMenu();
+        }
+      }
+,null);
+      geocodingLookupService.lookupAddress(startPointRequest);
+    }
   }
   final Spinner fromSpinner=((Spinner)view.findViewById(R.id.FromSpinner));
   RouteSpinnerArrayAdapter fromAdapter=new RouteSpinnerArrayAdapter(view.getContext());

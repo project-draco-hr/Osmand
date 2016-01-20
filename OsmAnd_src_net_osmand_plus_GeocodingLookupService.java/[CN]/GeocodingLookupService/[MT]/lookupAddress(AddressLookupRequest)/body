@@ -1,0 +1,33 @@
+{
+synchronized (this) {
+    LatLon requestedLocation=request.latLon;
+    LatLon existingLocation=null;
+    if (requestedLocation.equals(currentRequestedLocation)) {
+      existingLocation=currentRequestedLocation;
+      requestedLocation=existingLocation;
+      request.latLon=existingLocation;
+    }
+ else     if (lookupLocations.contains(requestedLocation)) {
+      for (      LatLon latLon : lookupLocations) {
+        if (latLon.equals(requestedLocation)) {
+          existingLocation=latLon;
+          requestedLocation=latLon;
+          request.latLon=latLon;
+          break;
+        }
+      }
+    }
+    List<AddressLookupRequest> list=addressLookupRequestsMap.get(requestedLocation);
+    if (list == null) {
+      list=new ArrayList<>();
+      addressLookupRequestsMap.put(requestedLocation,list);
+    }
+    list.add(request);
+    if (existingLocation == null) {
+      lookupLocations.add(requestedLocation);
+    }
+    if (currentRequestedLocation == null) {
+      execute(new AddressLookupRequestsAsyncTask(app));
+    }
+  }
+}
