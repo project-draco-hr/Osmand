@@ -6,16 +6,13 @@
   final OsmandApplication application=getMyApplication();
   final OsmandSettings settings=application.getSettings();
   if (result.errorMessage != null) {
-    Toast.makeText(context,result.errorMessage,Toast.LENGTH_SHORT).show();
+    LOG.info(result.errorMessage);
     tryRescheduleDownload(context,settings,localIndexInfo);
   }
  else {
     settings.LIVE_UPDATES_RETRIES.resetToDefault();
     List<IncrementalChangesManager.IncrementalUpdate> ll=result.getItemsForUpdate();
-    if (ll.isEmpty()) {
-      Toast.makeText(context,R.string.no_updates_available,Toast.LENGTH_SHORT).show();
-    }
- else {
+    if (!ll.isEmpty()) {
       ArrayList<IndexItem> itemsToDownload=new ArrayList<>(ll.size());
       for (      IncrementalChangesManager.IncrementalUpdate iu : ll) {
         IndexItem indexItem=new IndexItem(iu.fileName,"Incremental update",iu.timestamp,iu.sizeText,iu.contentSize,iu.containerSize,DownloadActivityType.LIVE_UPDATES_FILE);

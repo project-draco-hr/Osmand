@@ -1,0 +1,28 @@
+{
+  OsmandSettings settings=app.getSettings();
+  if (!settings.IS_LIVE_UPDATES_ON.get()) {
+    return;
+  }
+  LocalIndexHelper helper=new LocalIndexHelper(app);
+  List<LocalIndexInfo> fullMaps=helper.getLocalFullMaps(new AbstractLoadLocalIndexTask(){
+    @Override public void loadFile(    LocalIndexInfo... loaded){
+    }
+  }
+);
+  AlarmManager alarmMgr=(AlarmManager)app.getSystemService(Context.ALARM_SERVICE);
+  for (  LocalIndexInfo fullMap : fullMaps) {
+    if (!preferenceLiveUpdatesOn(fullMap,settings).get()) {
+      continue;
+    }
+    int updateFrequencyOrd=preferenceUpdateFrequency(fullMap,settings).get();
+    LiveUpdatesHelper.UpdateFrequency updateFrequency=LiveUpdatesHelper.UpdateFrequency.values()[updateFrequencyOrd];
+    long lastCheck=preferenceLastCheck(fullMap,settings).get();
+    if (System.currentTimeMillis() - lastCheck > updateFrequency.getTime() * 2) {
+      runLiveUpdate(app,fullMap,false);
+      PendingIntent alarmIntent=getPendingIntent(app,fullMap);
+      int timeOfDayOrd=preferenceTimeOfDayToUpdate(fullMap,settings).get();
+      LiveUpdatesHelper.TimeOfDay timeOfDayToUpdate=LiveUpdatesHelper.TimeOfDay.values()[timeOfDayOrd];
+      setAlarmForPendingIntent(alarmIntent,alarmMgr,updateFrequency,timeOfDayToUpdate);
+    }
+  }
+}

@@ -26,9 +26,19 @@
   final OsmandSettings.CommonPreference<Integer> timeOfDayPreference=preferenceTimeOfDayToUpdate(localIndexInfo,getSettings());
   downloadOverWiFiCheckBox.setChecked(!liveUpdatePreference.get() || downloadViaWiFiPreference.get());
   sizeTextView.setText(getUpdatesSize(fileNameWithoutExtension,changesManager));
-  updateTimesOfDaySpinner.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.action_spinner_item,getResources().getStringArray(R.array.update_times_of_day)));
+  TimeOfDay[] timeOfDays=TimeOfDay.values();
+  String[] timeOfDaysStrings=new String[timeOfDays.length];
+  for (int i=0; i < timeOfDays.length; i++) {
+    timeOfDaysStrings[i]=getString(timeOfDays[i].getLocalizedId());
+  }
+  updateTimesOfDaySpinner.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.action_spinner_item,timeOfDaysStrings));
   updateTimesOfDaySpinner.setSelection(timeOfDayPreference.get());
-  updateFrequencySpinner.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.action_spinner_item,getResources().getStringArray(R.array.update_frequencies_array)));
+  UpdateFrequency[] updateFrequencies=UpdateFrequency.values();
+  String[] updateFrequenciesStrings=new String[updateFrequencies.length];
+  for (int i=0; i < updateFrequencies.length; i++) {
+    updateFrequenciesStrings[i]=getString(updateFrequencies[i].getLocalizedId());
+  }
+  updateFrequencySpinner.setAdapter(new ArrayAdapter<String>(getActivity(),R.layout.action_spinner_item,updateFrequenciesStrings));
   updateFrequencySpinner.setSelection(updateFrequencyPreference.get());
   updateFrequencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
     @Override public void onItemSelected(    AdapterView<?> parent,    View view,    int position,    long id){
@@ -66,7 +76,7 @@ PendingIntent alarmIntent=getPendingIntent(getActivity(),localIndexInfo);
 final int timeOfDayInt=updateTimesOfDaySpinner.getSelectedItemPosition();
 timeOfDayPreference.set(timeOfDayInt);
 if (liveUpdatesSwitch.isChecked() && getSettings().IS_LIVE_UPDATES_ON.get()) {
-runLiveUpdate(localIndexInfo,false);
+runLiveUpdate(getActivity(),localIndexInfo,false);
 UpdateFrequency updateFrequency=UpdateFrequency.values()[updateFrequencyInt];
 TimeOfDay timeOfDayToUpdate=TimeOfDay.values()[timeOfDayInt];
 setAlarmForPendingIntent(alarmIntent,alarmMgr,updateFrequency,timeOfDayToUpdate);
@@ -79,7 +89,7 @@ getLiveUpdatesFragment().notifyLiveUpdatesChanged();
 }
 ).setNegativeButton(R.string.shared_string_cancel,null).setNeutralButton(R.string.update_now,new DialogInterface.OnClickListener(){
 @Override public void onClick(DialogInterface dialog,int which){
-runLiveUpdate(localIndexInfo,true);
+runLiveUpdate(getActivity(),localIndexInfo,true);
 sizeTextView.setText(getUpdatesSize(fileNameWithoutExtension,changesManager));
 }
 }
