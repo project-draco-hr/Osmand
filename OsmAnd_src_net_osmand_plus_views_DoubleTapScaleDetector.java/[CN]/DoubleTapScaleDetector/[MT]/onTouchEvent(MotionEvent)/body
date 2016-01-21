@@ -10,28 +10,31 @@
       return true;
     }
  else {
-      startTime=currentTime;
-      return true;
+      firstUp=MotionEvent.obtain(event);
     }
   }
- else   if (event.getAction() == MotionEvent.ACTION_DOWN && !isDoubleTapping && currentTime - startTime < DOUBLE_TAPPING_DELTA) {
-    isDoubleTapping=true;
-    startX=event.getX();
-    startY=event.getY();
-    listener.onGestureInit(startX,startY,startX,startY);
-    listener.onZoomStarted(new PointF(startX,startY));
-    return true;
-  }
- else   if (event.getAction() == MotionEvent.ACTION_MOVE) {
-    if (isDoubleTapping) {
-      float delta=convertPxToDp((int)(startY - event.getY()));
-      float scaleDelta=delta / DP_PER_1X;
-      scale=1 - scaleDelta;
-      listener.onZoomingOrRotating(scale,0);
-      return true;
-    }
  else {
-      return false;
+    if (event.getAction() == MotionEvent.ACTION_DOWN && !isDoubleTapping) {
+      if (isConsideredDoubleTap(firstDown,firstUp,event)) {
+        isDoubleTapping=true;
+        float x=event.getX();
+        float y=event.getY();
+        listener.onGestureInit(x,y,x,y);
+        listener.onZoomStarted(new PointF(x,y));
+        return true;
+      }
+ else {
+        firstDown=MotionEvent.obtain(event);
+      }
+    }
+ else     if (event.getAction() == MotionEvent.ACTION_MOVE) {
+      if (isDoubleTapping) {
+        float delta=convertPxToDp((int)(firstDown.getY() - event.getY()));
+        float scaleDelta=delta / DP_PER_1X;
+        scale=1 - scaleDelta;
+        listener.onZoomingOrRotating(scale,0);
+        return true;
+      }
     }
   }
   return false;
