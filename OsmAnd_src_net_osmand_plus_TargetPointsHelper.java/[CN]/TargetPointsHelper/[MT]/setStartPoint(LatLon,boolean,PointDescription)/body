@@ -7,30 +7,14 @@
  else {
       pointDescription=name;
     }
-    boolean needAddress=false;
     if (pointDescription.isLocation() && Algorithms.isEmpty(pointDescription.getName())) {
       pointDescription.setName(PointDescription.getSearchAddressStr(ctx));
-      needAddress=true;
     }
     settings.setPointToStart(startPoint.getLatitude(),startPoint.getLongitude(),pointDescription);
-    cancelStartPointAddressRequest();
-    if (needAddress) {
-      startPointRequest=new AddressLookupRequest(startPoint,new GeocodingLookupService.OnAddressLookupResult(){
-        @Override public void geocodingDone(        String address){
-          startPointRequest=null;
-          pointDescription.setName(address);
-          settings.setPointToStart(startPoint.getLatitude(),startPoint.getLongitude(),pointDescription);
-          readFromSettings(settings);
-          updateRouteAndRefresh(false);
-        }
-      }
-,null);
-      ctx.getGeocodingLookupService().lookupAddress(startPointRequest);
-    }
   }
  else {
     settings.clearPointToStart();
   }
-  readFromSettings(settings);
+  readFromSettings();
   updateRouteAndRefresh(updateRoute);
 }

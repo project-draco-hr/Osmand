@@ -1,0 +1,14 @@
+{
+  if (targetPoint != null && targetPoint.pointDescription.isSearchingAddress(ctx)) {
+    cancelPointAddressRequests(targetPoint.point);
+    AddressLookupRequest lookupRequest=new AddressLookupRequest(targetPoint.point,new GeocodingLookupService.OnAddressLookupResult(){
+      @Override public void geocodingDone(      String address){
+        targetPoint.pointDescription.setName(address);
+        settings.updateIntermediatePoint(targetPoint.point.getLatitude(),targetPoint.point.getLongitude(),targetPoint.pointDescription);
+        updateRouteAndRefresh(false);
+      }
+    }
+,null);
+    ctx.getGeocodingLookupService().lookupAddress(lookupRequest);
+  }
+}

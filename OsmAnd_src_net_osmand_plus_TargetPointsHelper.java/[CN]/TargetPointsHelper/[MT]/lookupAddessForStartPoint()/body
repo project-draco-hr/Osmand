@@ -1,0 +1,15 @@
+{
+  if (pointToStart != null && pointToStart.isSearchingAddress(ctx) && (startPointRequest == null || !startPointRequest.getLatLon().equals(pointToStart.point))) {
+    cancelStartPointAddressRequest();
+    startPointRequest=new AddressLookupRequest(pointToStart.point,new GeocodingLookupService.OnAddressLookupResult(){
+      @Override public void geocodingDone(      String address){
+        startPointRequest=null;
+        pointToStart.pointDescription.setName(address);
+        settings.setPointToStart(pointToStart.point.getLatitude(),pointToStart.point.getLongitude(),pointToStart.pointDescription);
+        updateRouteAndRefresh(false);
+      }
+    }
+,null);
+    ctx.getGeocodingLookupService().lookupAddress(startPointRequest);
+  }
+}

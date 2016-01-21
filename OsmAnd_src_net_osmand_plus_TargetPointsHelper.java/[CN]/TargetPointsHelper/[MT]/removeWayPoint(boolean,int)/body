@@ -1,5 +1,6 @@
 {
   if (index < 0) {
+    cancelTargetPointAddressRequest();
     settings.clearPointToNavigate();
     pointToNavigate=null;
     int sz=intermediatePoints.size();
@@ -8,11 +9,13 @@
       pointToNavigate=intermediatePoints.remove(sz - 1);
       pointToNavigate.intermediate=false;
       settings.setPointToNavigate(pointToNavigate.getLatitude(),pointToNavigate.getLongitude(),pointToNavigate.pointDescription);
+      lookupAddressForPointToNavigate();
     }
   }
  else {
     settings.deleteIntermediatePoint(index);
-    intermediatePoints.remove(index);
+    TargetPoint targetPoint=intermediatePoints.remove(index);
+    cancelPointAddressRequests(targetPoint.point);
     int ind=0;
     for (    TargetPoint tp : intermediatePoints) {
       tp.index=ind++;
