@@ -19,38 +19,49 @@
       ((ImageButton)more).setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.map_overflow_menu_white,!nightMode));
       more.setOnClickListener(new View.OnClickListener(){
         @Override public void onClick(        View view){
+          boolean hasActivePoints=false;
+          if (adapter instanceof StableArrayAdapter) {
+            hasActivePoints=((StableArrayAdapter)adapter).getActiveObjects().size() > 0;
+          }
           final PopupMenu optionsMenu=new PopupMenu(ctx,more);
           DirectionsDialogs.setupPopUpMenuIcon(optionsMenu);
           MenuItem item;
-          item=optionsMenu.getMenu().add(R.string.intermediate_items_sort_by_distance).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_sort_waypoint_dark));
-          item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
-            @Override public boolean onMenuItemClick(            MenuItem item){
-              sortAllTargets(app,ctx);
-              return true;
+          if (hasActivePoints) {
+            item=optionsMenu.getMenu().add(R.string.intermediate_items_sort_by_distance).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_sort_waypoint_dark));
+            item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+              @Override public boolean onMenuItemClick(              MenuItem item){
+                sortAllTargets(app,ctx,helper);
+                return true;
+              }
             }
-          }
 );
-          item=optionsMenu.getMenu().add(R.string.switch_start_finish).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_action_undo_dark));
-          item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
-            @Override public boolean onMenuItemClick(            MenuItem item){
-              TargetPointsHelper targetPointsHelper=app.getTargetPointsHelper();
-              TargetPoint start=targetPointsHelper.getPointToStart();
-              TargetPoint finish=targetPointsHelper.getPointToNavigate();
-              targetPointsHelper.setStartPoint(new LatLon(finish.getLatitude(),finish.getLongitude()),false,finish.getPointDescription(ctx));
-              if (start == null) {
-                Location loc=app.getLocationProvider().getLastKnownLocation();
-                if (loc != null) {
-                  targetPointsHelper.navigateToPoint(new LatLon(loc.getLatitude(),loc.getLongitude()),true,-1);
+            item=optionsMenu.getMenu().add(R.string.switch_start_finish).setIcon(app.getIconsCache().getContentIcon(R.drawable.ic_action_undo_dark));
+            item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+              @Override public boolean onMenuItemClick(              MenuItem item){
+                TargetPointsHelper targetPointsHelper=app.getTargetPointsHelper();
+                TargetPoint start=targetPointsHelper.getPointToStart();
+                TargetPoint finish=targetPointsHelper.getPointToNavigate();
+                targetPointsHelper.setStartPoint(new LatLon(finish.getLatitude(),finish.getLongitude()),false,finish.getPointDescription(ctx));
+                if (start == null) {
+                  Location loc=app.getLocationProvider().getLastKnownLocation();
+                  if (loc != null) {
+                    targetPointsHelper.navigateToPoint(new LatLon(loc.getLatitude(),loc.getLongitude()),true,-1);
+                  }
                 }
-              }
  else {
-                targetPointsHelper.navigateToPoint(new LatLon(start.getLatitude(),start.getLongitude()),true,-1,start.getPointDescription(ctx));
+                  targetPointsHelper.navigateToPoint(new LatLon(start.getLatitude(),start.getLongitude()),true,-1,start.getPointDescription(ctx));
+                }
+                if (helper.helperCallbacks != null) {
+                  helper.helperCallbacks.reloadAdapter();
+                }
+                return true;
               }
-              return true;
             }
-          }
 );
-          optionsMenu.show();
+          }
+          if (optionsMenu.getMenu().size() > 0) {
+            optionsMenu.show();
+          }
         }
       }
 );
