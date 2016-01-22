@@ -4,6 +4,7 @@
   }
   long currentTime=System.currentTimeMillis();
   if (event.getAction() == MotionEvent.ACTION_UP) {
+    secondDown=null;
     if (isDoubleTapping) {
       isDoubleTapping=false;
       listener.onZoomEnded(scale,0);
@@ -16,7 +17,7 @@
  else {
     if (event.getAction() == MotionEvent.ACTION_DOWN && !isDoubleTapping) {
       if (isConsideredDoubleTap(firstDown,firstUp,event)) {
-        isDoubleTapping=true;
+        secondDown=MotionEvent.obtain(event);
         float x=event.getX();
         float y=event.getY();
         listener.onGestureInit(x,y,x,y);
@@ -28,6 +29,9 @@
       }
     }
  else     if (event.getAction() == MotionEvent.ACTION_MOVE) {
+      if (isConfirmedScale(secondDown,event)) {
+        isDoubleTapping=true;
+      }
       if (isDoubleTapping) {
         float delta=convertPxToDp((int)(firstDown.getY() - event.getY()));
         float scaleDelta=delta / (displayHeightPx / SCALE_PER_SCREEN);
