@@ -10,14 +10,20 @@
   final LatLon r=calc.getLatLonFromPixel(cp.x + dx,cp.y + dy);
   setLatLon(r.getLatitude(),r.getLongitude());
   int baseZoom=initialViewport.getZoom();
+  LOG.debug("baseZoom=" + baseZoom);
   while (initialViewport.getZoomFloatPart() + dz > 1) {
     dz--;
-    baseZoom++;
+    if (baseZoom < mainLayer.getMaximumShownMapZoom()) {
+      baseZoom++;
+    }
   }
   while (initialViewport.getZoomFloatPart() + dz < 0) {
     dz++;
-    baseZoom--;
+    if (baseZoom > mainLayer.getMinimumShownMapZoom()) {
+      baseZoom--;
+    }
   }
+  LOG.debug("baseZoom=" + baseZoom);
   zoomToAnimate(baseZoom,dz,true);
   rotateToAnimate(calcRotate);
 }
