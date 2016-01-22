@@ -2,7 +2,12 @@
   StringBuilder response=new StringBuilder();
   error=NetworkUtils.sendGetRequest(params[0],null,response);
   if (error == null) {
-    return gson.fromJson(response.toString(),protocolClass);
+    try {
+      return gson.fromJson(response.toString(),protocolClass);
+    }
+ catch (    JsonSyntaxException e) {
+      error=e.getLocalizedMessage();
+    }
   }
   LOG.error(error);
   return null;
