@@ -7,15 +7,60 @@
     }
   }
 );
+  initCountries();
+  userName=settings.BILLING_USER_NAME.get();
+  final EditText userNameEdit=(EditText)view.findViewById(R.id.userNameEdit);
+  if (!Algorithms.isEmpty(userName)) {
+    userNameEdit.setText(userName);
+  }
+  email=settings.BILLING_USER_EMAIL.get();
+  final EditText emailEdit=(EditText)view.findViewById(R.id.emailEdit);
+  if (!Algorithms.isEmpty(email)) {
+    emailEdit.setText(email);
+  }
+  country=settings.BILLING_USER_COUNTRY.get();
+  final EditText selectCountryEdit=(EditText)view.findViewById(R.id.selectCountryEdit);
+  if (!Algorithms.isEmpty(country)) {
+    selectCountryEdit.setText(country);
+  }
+  selectCountryEdit.setOnTouchListener(new View.OnTouchListener(){
+    @Override public boolean onTouch(    View v,    MotionEvent event){
+      if (event.getAction() == MotionEvent.ACTION_UP) {
+        SearchSelectionFragment countrySearchSelectionFragment=searchSelectionFragment;
+        countrySearchSelectionFragment.show(getChildFragmentManager(),"CountriesSearchSelectionFragment");
+      }
+      return false;
+    }
+  }
+);
   Button subscribeButton=(Button)view.findViewById(R.id.subscribeButton);
   subscribeButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       if (inAppHelper != null) {
-        inAppHelper.purchaseLiveUpdates(getActivity(),"1@1.1","userName","Ukraine");
+        userName=userNameEdit.getText().toString().trim();
+        email=emailEdit.getText().toString().trim();
+        country=selectCountryEdit.getText().toString().trim();
+        if (Algorithms.isEmpty(userName)) {
+          getMyApplication().showToastMessage("Please enter visible name");
+          return;
+        }
+        if (Algorithms.isEmpty(email) || !AndroidUtils.isValidEmail(email)) {
+          getMyApplication().showToastMessage("Please enter valid E-mail address");
+          return;
+        }
+        settings.BILLING_USER_NAME.set(userName);
+        settings.BILLING_USER_EMAIL.set(email);
+        settings.BILLING_USER_COUNTRY.set(country);
+        final WorldRegion world=getMyApplication().getRegions().getWorldRegion();
+        String countryParam=country.equals(world.getLocaleName()) ? "" : country;
+        inAppHelper.purchaseLiveUpdates(getActivity(),email,userName,countryParam);
       }
     }
   }
 );
+  setThemedDrawable((ImageView)view.findViewById(R.id.userNameIcon),R.drawable.ic_person);
+  setThemedDrawable((ImageView)view.findViewById(R.id.emailIcon),R.drawable.ic_action_message);
+  setThemedDrawable((ImageView)view.findViewById(R.id.countryIcon),R.drawable.ic_world_globe_dark);
   dlg=new ProgressDialog(getActivity());
   dlg.setTitle("");
   dlg.setMessage(getString(R.string.wait_current_task_finished));
