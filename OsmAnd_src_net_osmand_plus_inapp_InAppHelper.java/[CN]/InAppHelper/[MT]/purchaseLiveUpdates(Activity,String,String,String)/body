@@ -17,7 +17,13 @@
     @Override protected String doInBackground(    Void... params){
       userId=ctx.getSettings().BILLING_USER_ID.get();
       if (Algorithms.isEmpty(userId)) {
-        return sendRequest("http://download.osmand.net/subscription/register?email=" + email + "&visibleName="+ userName+ "&preferredCountry="+ country+ (Algorithms.isEmpty(userId) ? "&status=new" : ""),"POST","Requesting userId...");
+        try {
+          return sendRequest("http://download.osmand.net/subscription/register?email=" + URLEncoder.encode(email,"UTF-8") + "&visibleName="+ URLEncoder.encode(userName,"UTF-8")+ "&preferredCountry="+ URLEncoder.encode(country,"UTF-8")+ (Algorithms.isEmpty(userId) ? "&status=new" : ""),"POST","Requesting userId...");
+        }
+ catch (        Exception e) {
+          Log.e(TAG,e.getMessage());
+          return null;
+        }
       }
  else {
         return null;
