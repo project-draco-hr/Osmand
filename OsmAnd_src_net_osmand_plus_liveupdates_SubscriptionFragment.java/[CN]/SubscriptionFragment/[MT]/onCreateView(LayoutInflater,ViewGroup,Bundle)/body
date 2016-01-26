@@ -7,7 +7,6 @@
     }
   }
 );
-  initCountries();
   userName=settings.BILLING_USER_NAME.get();
   final EditText userNameEdit=(EditText)view.findViewById(R.id.userNameEdit);
   if (!Algorithms.isEmpty(userName)) {
@@ -18,43 +17,54 @@
   if (!Algorithms.isEmpty(email)) {
     emailEdit.setText(email);
   }
-  country=settings.BILLING_USER_COUNTRY.get();
+  countrySelectionFragment.initCountries(getMyApplication());
+  String countryDownloadName=settings.BILLING_USER_COUNTRY_DOWNLOAD_NAME.get();
+  if (Algorithms.isEmpty(countryDownloadName)) {
+    selectedCountryItem=countrySelectionFragment.getCountryItems().get(0);
+  }
+ else {
+    selectedCountryItem=countrySelectionFragment.getCountryItem(countryDownloadName);
+  }
   final EditText selectCountryEdit=(EditText)view.findViewById(R.id.selectCountryEdit);
-  if (!Algorithms.isEmpty(country)) {
-    selectCountryEdit.setText(country);
+  if (selectedCountryItem != null) {
+    selectCountryEdit.setText(selectedCountryItem.getLocalName());
   }
   selectCountryEdit.setOnTouchListener(new View.OnTouchListener(){
     @Override public boolean onTouch(    View v,    MotionEvent event){
       if (event.getAction() == MotionEvent.ACTION_UP) {
-        SearchSelectionFragment countrySearchSelectionFragment=searchSelectionFragment;
-        countrySearchSelectionFragment.show(getChildFragmentManager(),"CountriesSearchSelectionFragment");
+        CountrySelectionFragment countryCountrySelectionFragment=countrySelectionFragment;
+        countryCountrySelectionFragment.show(getChildFragmentManager(),"CountriesSearchSelectionFragment");
       }
       return false;
     }
   }
 );
-  updatePrice();
-  Button subscribeButton=(Button)view.findViewById(R.id.subscribeButton);
+  updatePrice(view);
+  final Button subscribeButton=(Button)view.findViewById(R.id.subscribeButton);
+  final CheckBox hideUserNameCheckbox=(CheckBox)view.findViewById(R.id.hideUserNameCheckbox);
+  boolean hideUserName=settings.BILLING_HIDE_USER_NAME.get();
+  hideUserNameCheckbox.setChecked(hideUserName);
   subscribeButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       if (inAppHelper != null) {
         userName=userNameEdit.getText().toString().trim();
         email=emailEdit.getText().toString().trim();
-        country=selectCountryEdit.getText().toString().trim();
-        if (Algorithms.isEmpty(userName)) {
-          getMyApplication().showToastMessage("Please enter visible name");
-          return;
-        }
+        String countryName=selectedCountryItem != null ? selectedCountryItem.getLocalName() : "";
+        String countryDownloadName=selectedCountryItem != null ? selectedCountryItem.getDownloadName() : "";
         if (Algorithms.isEmpty(email) || !AndroidUtils.isValidEmail(email)) {
           getMyApplication().showToastMessage("Please enter valid E-mail address");
           return;
         }
+        if (Algorithms.isEmpty(userName) && !hideUserNameCheckbox.isChecked()) {
+          getMyApplication().showToastMessage("Please enter Public Name");
+          return;
+        }
         settings.BILLING_USER_NAME.set(userName);
         settings.BILLING_USER_EMAIL.set(email);
-        settings.BILLING_USER_COUNTRY.set(country);
-        final WorldRegion world=getMyApplication().getRegions().getWorldRegion();
-        String countryParam=country.equals(world.getLocaleName()) ? "" : country;
-        inAppHelper.purchaseLiveUpdates(getActivity(),email,userName,countryParam);
+        settings.BILLING_USER_COUNTRY.set(countryName);
+        settings.BILLING_USER_COUNTRY_DOWNLOAD_NAME.set(countryDownloadName);
+        settings.BILLING_HIDE_USER_NAME.set(hideUserNameCheckbox.isChecked());
+        inAppHelper.purchaseLiveUpdates(getActivity(),email,userName,countryDownloadName);
       }
     }
   }
