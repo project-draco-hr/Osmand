@@ -18,9 +18,15 @@
       userId=ctx.getSettings().BILLING_USER_ID.get();
       if (Algorithms.isEmpty(userId)) {
         try {
-          return sendRequest("http://download.osmand.net/subscription/register?email=" + URLEncoder.encode(email,"UTF-8") + "&visibleName="+ URLEncoder.encode(userName,"UTF-8")+ "&preferredCountry="+ URLEncoder.encode(country,"UTF-8")+ (Algorithms.isEmpty(userId) ? "&status=new" : ""),"POST","Requesting userId...");
+          Map<String,String> parameters=new HashMap<>();
+          parameters.put("visibleName",userName);
+          parameters.put("preferredCountry",countryDownloadName);
+          parameters.put("email",email);
+          parameters.put("status","new");
+          return sendRequest("http://download.osmand.net/subscription/register.php",parameters,"Requesting userId...");
         }
  catch (        Exception e) {
+          Log.e(TAG,"sendRequest Error",e);
           return null;
         }
       }
@@ -32,6 +38,7 @@
       if (Algorithms.isEmpty(userId)) {
         Log.d(TAG,"Response=" + response);
         if (response == null) {
+          complain("Cannot retrieve userId from server.");
           if (callbacks != null) {
             callbacks.dismissProgress();
             callbacks.onError("Cannot retrieve userId from server.");
@@ -49,9 +56,11 @@
             Log.d(TAG,"UserId=" + userId);
           }
  catch (          JSONException e) {
+            String message="JSON parsing error: " + (e.getMessage() == null ? "unknown" : e.getMessage());
+            complain(message);
             if (callbacks != null) {
               callbacks.dismissProgress();
-              callbacks.onError("JSON parsing error: " + (e.getMessage() == null ? "unknown" : e.getMessage()));
+              callbacks.onError(message);
             }
             if (stopAfterResult) {
               stop();

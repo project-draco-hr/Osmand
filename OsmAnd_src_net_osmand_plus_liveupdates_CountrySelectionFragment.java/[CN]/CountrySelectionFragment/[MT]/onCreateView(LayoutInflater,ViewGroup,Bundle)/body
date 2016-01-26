@@ -1,0 +1,39 @@
+{
+  if (countryItems.size() == 0) {
+    initCountries(getMyApplication());
+  }
+  View view=inflater.inflate(R.layout.fragment_search_list,container,false);
+  ListView listView=(ListView)view.findViewById(android.R.id.list);
+  final ArrayAdapter<CountryItem> adapter=new ListAdapter(getListItemIcon());
+  if (countryItems.size() > 0) {
+    adapter.addAll(countryItems);
+  }
+  listView.setAdapter(adapter);
+  listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+    @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
+      mListener.onSearchResult(adapter.getItem(position));
+      dismiss();
+    }
+  }
+);
+  final EditText searchEditText=(EditText)view.findViewById(R.id.searchEditText);
+  searchEditText.addTextChangedListener(new TextWatcher(){
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+    @Override public void afterTextChanged(    Editable s){
+      adapter.getFilter().filter(s);
+    }
+  }
+);
+  ImageButton clearButton=(ImageButton)view.findViewById(R.id.clearButton);
+  setThemedDrawable(clearButton,R.drawable.ic_action_remove_dark);
+  clearButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismiss();
+    }
+  }
+);
+  return view;
+}
