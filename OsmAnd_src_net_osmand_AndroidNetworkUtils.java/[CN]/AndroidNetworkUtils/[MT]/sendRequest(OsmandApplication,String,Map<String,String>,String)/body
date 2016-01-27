@@ -1,0 +1,80 @@
+{
+  HttpURLConnection connection=null;
+  try {
+    connection=NetworkUtils.getHttpURLConnection(url);
+    connection.setRequestProperty("Accept-Charset","UTF-8");
+    connection.setRequestProperty("User-Agent",Version.getFullVersion(ctx));
+    connection.setConnectTimeout(15000);
+    if (parameters != null && parameters.size() > 0) {
+      StringBuilder sb=new StringBuilder();
+      for (      Map.Entry<String,String> entry : parameters.entrySet()) {
+        if (sb.length() > 0) {
+          sb.append("&");
+        }
+        sb.append(entry.getKey()).append("=").append(URLEncoder.encode(entry.getValue(),"UTF-8"));
+      }
+      String params=sb.toString();
+      connection.setDoInput(true);
+      connection.setDoOutput(true);
+      connection.setUseCaches(false);
+      connection.setRequestMethod("POST");
+      connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded;charset=UTF-8");
+      connection.setRequestProperty("Content-Length",String.valueOf(params.getBytes("UTF-8").length));
+      connection.setFixedLengthStreamingMode(params.getBytes("UTF-8").length);
+      OutputStream output=new BufferedOutputStream(connection.getOutputStream());
+      output.write(params.getBytes("UTF-8"));
+      output.flush();
+      output.close();
+    }
+ else {
+      connection.setRequestMethod("GET");
+      connection.connect();
+    }
+    if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+      String msg=userOperation + " " + ctx.getString(R.string.failed_op)+ " : "+ connection.getResponseMessage();
+      showToast(ctx,msg);
+    }
+ else {
+      StringBuilder responseBody=new StringBuilder();
+      responseBody.setLength(0);
+      InputStream i=connection.getInputStream();
+      if (i != null) {
+        BufferedReader in=new BufferedReader(new InputStreamReader(i,"UTF-8"),256);
+        String s;
+        boolean f=true;
+        while ((s=in.readLine()) != null) {
+          if (!f) {
+            responseBody.append("\n");
+          }
+ else {
+            f=false;
+          }
+          responseBody.append(s);
+        }
+        try {
+          in.close();
+          i.close();
+        }
+ catch (        Exception e) {
+        }
+      }
+      return responseBody.toString();
+    }
+  }
+ catch (  NullPointerException e) {
+    String msg=ctx.getString(R.string.auth_failed);
+    showToast(ctx,msg);
+  }
+catch (  MalformedURLException e) {
+    showToast(ctx,MessageFormat.format(ctx.getResources().getString(R.string.shared_string_action_template) + ": " + ctx.getResources().getString(R.string.shared_string_unexpected_error),userOperation));
+  }
+catch (  IOException e) {
+    showToast(ctx,MessageFormat.format(ctx.getResources().getString(R.string.shared_string_action_template) + ": " + ctx.getResources().getString(R.string.shared_string_io_error),userOperation));
+  }
+ finally {
+    if (connection != null) {
+      connection.disconnect();
+    }
+  }
+  return null;
+}

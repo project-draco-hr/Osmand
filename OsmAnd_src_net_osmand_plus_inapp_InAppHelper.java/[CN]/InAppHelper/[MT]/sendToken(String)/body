@@ -1,0 +1,34 @@
+{
+  String userId=ctx.getSettings().BILLING_USER_ID.get();
+  String email=ctx.getSettings().BILLING_USER_EMAIL.get();
+  try {
+    Map<String,String> parameters=new HashMap<>();
+    parameters.put("userid",userId);
+    parameters.put("sku",SKU_LIVE_UPDATES);
+    parameters.put("purchaseToken",token);
+    parameters.put("email",email);
+    AndroidNetworkUtils.sendRequestAsync(ctx,"http://download.osmand.net/subscription/purchased.php",parameters,"Sending purchase info...",new OnRequestResultListener(){
+      @Override public void onResult(      String result){
+        if (result != null) {
+          try {
+            JSONObject obj=new JSONObject(result);
+            if (!obj.has("error")) {
+              ctx.getSettings().BILLING_PURCHASE_TOKEN_SENT.set(true);
+            }
+ else {
+              complain("SendToken Error: " + obj.getString("error"));
+            }
+          }
+ catch (          JSONException e) {
+            logError("sendToken",e);
+            complain("SendToken Error: " + (e.getMessage() != null ? e.getMessage() : "JSONException"));
+          }
+        }
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    logError("sendToken Error",e);
+  }
+}
