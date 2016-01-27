@@ -1,10 +1,16 @@
 {
   super.onCreate(savedInstanceState);
-  settings=getMyApplication().getSettings();
-  inAppHelper=new InAppHelper(getMyApplication(),this);
-  Activity activity=getActivity();
-  if (activity instanceof OsmLiveActivity) {
-    ((OsmLiveActivity)activity).setInAppHelper(inAppHelper);
+  if (savedInstanceState != null) {
+    editMode=savedInstanceState.getBoolean(EDIT_MODE_ID);
   }
-  inAppHelper.start(false);
+  settings=getMyApplication().getSettings();
+  prevEmail=settings.BILLING_USER_EMAIL.get();
+  if (!editMode) {
+    inAppHelper=new InAppHelper(getMyApplication(),this);
+    Activity activity=getActivity();
+    if (activity instanceof OsmLiveActivity) {
+      ((OsmLiveActivity)activity).setInAppHelper(inAppHelper);
+    }
+    inAppHelper.start(false);
+  }
 }

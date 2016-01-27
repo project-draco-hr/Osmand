@@ -1,0 +1,87 @@
+{
+  if (!mHelper.subscriptionsSupported()) {
+    complain("Subscriptions not supported on your device yet. Sorry!");
+    if (callbacks != null) {
+      callbacks.onError("Subscriptions not supported on your device yet. Sorry!");
+    }
+    if (stopAfterResult) {
+      stop();
+    }
+    return;
+  }
+  if (callbacks != null) {
+    callbacks.showProgress();
+  }
+  new AsyncTask<Void,Void,String>(){
+    private String userId;
+    @Override protected String doInBackground(    Void... params){
+      userId=ctx.getSettings().BILLING_USER_ID.get();
+      try {
+        Map<String,String> parameters=new HashMap<>();
+        parameters.put("visibleName",hideUserName ? "" : userName);
+        parameters.put("preferredCountry",countryDownloadName);
+        parameters.put("email",email);
+        if (Algorithms.isEmpty(userId)) {
+          parameters.put("status","new");
+        }
+        return AndroidNetworkUtils.sendRequest(ctx,"http://download.osmand.net/subscription/register.php",parameters,"Requesting userId...");
+      }
+ catch (      Exception e) {
+        logError("sendRequest Error",e);
+        return null;
+      }
+    }
+    @Override protected void onPostExecute(    String response){
+      logDebug("Response=" + response);
+      if (response == null) {
+        complain("Cannot retrieve userId from server.");
+        if (callbacks != null) {
+          callbacks.dismissProgress();
+          callbacks.onError("Cannot retrieve userId from server.");
+        }
+        if (stopAfterResult) {
+          stop();
+        }
+        return;
+      }
+ else {
+        try {
+          JSONObject obj=new JSONObject(response);
+          userId=obj.getString("userid");
+          ctx.getSettings().BILLING_USER_ID.set(userId);
+          logDebug("UserId=" + userId);
+        }
+ catch (        JSONException e) {
+          String message="JSON parsing error: " + (e.getMessage() == null ? "unknown" : e.getMessage());
+          complain(message);
+          if (callbacks != null) {
+            callbacks.dismissProgress();
+            callbacks.onError(message);
+          }
+          if (stopAfterResult) {
+            stop();
+          }
+        }
+      }
+      if (callbacks != null) {
+        callbacks.dismissProgress();
+      }
+      if (!Algorithms.isEmpty(userId)) {
+        logDebug("Launching purchase flow for live updates subscription for userId=" + userId);
+        String payload=userId;
+        if (mHelper != null) {
+          mHelper.launchPurchaseFlow(activity,SKU_LIVE_UPDATES,IabHelper.ITEM_TYPE_SUBS,RC_REQUEST,mPurchaseFinishedListener,payload);
+        }
+      }
+ else {
+        if (callbacks != null) {
+          callbacks.onError("Empty userId");
+        }
+        if (stopAfterResult) {
+          stop();
+        }
+      }
+    }
+  }
+.execute((Void)null);
+}
