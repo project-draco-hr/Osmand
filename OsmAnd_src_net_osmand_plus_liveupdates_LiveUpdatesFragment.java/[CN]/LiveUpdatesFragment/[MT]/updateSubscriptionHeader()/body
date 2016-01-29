@@ -5,41 +5,20 @@
     ImageView statusIcon=(ImageView)subscriptionHeader.findViewById(R.id.statusIcon);
     TextView statusTextView=(TextView)subscriptionHeader.findViewById(R.id.statusTextView);
     TextView regionNameTextView=(TextView)subscriptionHeader.findViewById(R.id.regionTextView);
-    if (InAppHelper.isSubscribedToLiveUpdates()) {
-      statusTextView.setText(getString(R.string.osm_live_active));
-      statusIcon.setImageDrawable(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_done));
-    }
- else {
-      statusTextView.setText(getString(R.string.osm_live_not_active));
-      statusIcon.setImageDrawable(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_remove_dark));
-    }
-    OsmandSettings settings=getMyApplication().getSettings();
-    String countryName=settings.BILLING_USER_COUNTRY.get();
+    statusTextView.setText(getString(R.string.osm_live_active));
+    statusIcon.setImageDrawable(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_done));
+    String countryName=getSettings().BILLING_USER_COUNTRY.get();
     if (Algorithms.isEmpty(countryName)) {
       WorldRegion world=getMyApplication().getRegions().getWorldRegion();
       countryName=world.getLocaleName();
     }
     regionNameTextView.setText(countryName);
-    View subscribeButtonRow=subscriptionHeader.findViewById(R.id.subscribeButtonRow);
-    if (InAppHelper.isSubscribedToLiveUpdates()) {
-      subscribeButtonRow.setVisibility(View.GONE);
-    }
- else {
-      subscribeButtonRow.setVisibility(View.VISIBLE);
-      Button subscribeButton=(Button)subscriptionHeader.findViewById(R.id.subscribeButton);
-      subscribeButton.setOnClickListener(new View.OnClickListener(){
-        @Override public void onClick(        View v){
-          SubscriptionFragment subscriptionFragment=new SubscriptionFragment();
-          subscriptionFragment.show(getChildFragmentManager(),SubscriptionFragment.TAG);
-        }
-      }
-);
-    }
     subscriptionBanner.setVisibility(View.GONE);
     subscriptionInfo.setVisibility(View.VISIBLE);
   }
  else {
     Button readMoreBtn=(Button)subscriptionHeader.findViewById(R.id.read_more_button);
+    readMoreBtn.setEnabled(!processing);
     readMoreBtn.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View v){
         Uri uri=Uri.parse("http://osmand.net/osm_live.php");
@@ -49,6 +28,7 @@
     }
 );
     Button subscriptionButton=(Button)subscriptionHeader.findViewById(R.id.subscription_button);
+    subscriptionButton.setEnabled(!processing);
     subscriptionButton.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View v){
         SubscriptionFragment subscriptionFragment=new SubscriptionFragment();
