@@ -1,17 +1,13 @@
 {
   if (!mHelper.subscriptionsSupported()) {
     complain("Subscriptions not supported on your device yet. Sorry!");
-    if (callbacks != null) {
-      callbacks.onError("Subscriptions not supported on your device yet. Sorry!");
-    }
+    notifyError("Subscriptions not supported on your device yet. Sorry!");
     if (stopAfterResult) {
       stop();
     }
     return;
   }
-  if (callbacks != null) {
-    callbacks.showProgress();
-  }
+  notifyShowProgress();
   new AsyncTask<Void,Void,String>(){
     private String userId;
     @Override protected String doInBackground(    Void... params){
@@ -35,10 +31,8 @@
       logDebug("Response=" + response);
       if (response == null) {
         complain("Cannot retrieve userId from server.");
-        if (callbacks != null) {
-          callbacks.dismissProgress();
-          callbacks.onError("Cannot retrieve userId from server.");
-        }
+        notifyDismissProgress();
+        notifyError("Cannot retrieve userId from server.");
         if (stopAfterResult) {
           stop();
         }
@@ -54,18 +48,14 @@
  catch (        JSONException e) {
           String message="JSON parsing error: " + (e.getMessage() == null ? "unknown" : e.getMessage());
           complain(message);
-          if (callbacks != null) {
-            callbacks.dismissProgress();
-            callbacks.onError(message);
-          }
+          notifyDismissProgress();
+          notifyError(message);
           if (stopAfterResult) {
             stop();
           }
         }
       }
-      if (callbacks != null) {
-        callbacks.dismissProgress();
-      }
+      notifyDismissProgress();
       if (!Algorithms.isEmpty(userId)) {
         logDebug("Launching purchase flow for live updates subscription for userId=" + userId);
         String payload=userId;
@@ -74,9 +64,7 @@
         }
       }
  else {
-        if (callbacks != null) {
-          callbacks.onError("Empty userId");
-        }
+        notifyError("Empty userId");
         if (stopAfterResult) {
           stop();
         }

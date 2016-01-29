@@ -10,19 +10,19 @@
       logDebug("Setup finished.");
       if (!result.isSuccess()) {
         complain("Problem setting up in-app billing: " + result);
-        if (callbacks != null) {
-          callbacks.onError(result.getMessage());
-        }
+        notifyError(result.getMessage());
         if (stopAfterResult) {
           stop();
         }
         return;
       }
       if (mHelper == null)       return;
-      logDebug("Setup successful. Querying inventory.");
-      List<String> skus=new ArrayList<>();
-      skus.add(SKU_LIVE_UPDATES);
-      mHelper.queryInventoryAsync(true,skus,mGotInventoryListener);
+      if (!mSubscribedToLiveUpdates || !ctx.getSettings().BILLING_PURCHASE_TOKEN_SENT.get() || System.currentTimeMillis() - lastValidationCheckTime > PURCHASE_VALIDATION_PERIOD_MSEC) {
+        logDebug("Setup successful. Querying inventory.");
+        List<String> skus=new ArrayList<>();
+        skus.add(SKU_LIVE_UPDATES);
+        mHelper.queryInventoryAsync(true,skus,mGotInventoryListener);
+      }
     }
   }
 );

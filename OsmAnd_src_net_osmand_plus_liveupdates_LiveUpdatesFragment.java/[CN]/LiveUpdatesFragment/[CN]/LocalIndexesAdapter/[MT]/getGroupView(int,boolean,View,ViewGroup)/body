@@ -8,7 +8,7 @@
   TextView nameView=((TextView)view.findViewById(R.id.section_name));
   nameView.setText(group);
   view.setOnClickListener(null);
-  SwitchCompat liveUpdatesSwitch=(SwitchCompat)view.findViewById(R.id.liveUpdatesSwitch);
+  final SwitchCompat liveUpdatesSwitch=(SwitchCompat)view.findViewById(R.id.liveUpdatesSwitch);
   View topShadowView=view.findViewById(R.id.bottomShadowView);
   if (groupPosition == SHOULD_UPDATE_GROUP_POSITION) {
     topShadowView.setVisibility(View.GONE);
@@ -16,22 +16,22 @@
     OsmandApplication application=(OsmandApplication)ctx.getApplicationContext();
     final OsmandSettings settings=application.getSettings();
     liveUpdatesSwitch.setChecked(settings.IS_LIVE_UPDATES_ON.get());
+    liveUpdatesSwitch.setEnabled(!processing);
     liveUpdatesSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
       @Override public void onCheckedChanged(      CompoundButton buttonView,      boolean isChecked){
-        settings.IS_LIVE_UPDATES_ON.set(isChecked);
-        AlarmManager alarmMgr=(AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
-        for (        LocalIndexInfo localIndexInfo : dataShouldUpdate) {
-          PendingIntent alarmIntent=getPendingIntent(getActivity(),localIndexInfo);
-          if (isChecked) {
-            final OsmandSettings.CommonPreference<Integer> updateFrequencyPreference=preferenceUpdateFrequency(localIndexInfo,getSettings());
-            final OsmandSettings.CommonPreference<Integer> timeOfDayPreference=preferenceTimeOfDayToUpdate(localIndexInfo,getSettings());
-            UpdateFrequency updateFrequency=UpdateFrequency.values()[updateFrequencyPreference.get()];
-            TimeOfDay timeOfDayToUpdate=TimeOfDay.values()[timeOfDayPreference.get()];
-            setAlarmForPendingIntent(alarmIntent,alarmMgr,updateFrequency,timeOfDayToUpdate);
+        if (isChecked) {
+          if (InAppHelper.isSubscribedToLiveUpdates()) {
+            settings.IS_LIVE_UPDATES_ON.set(true);
+            enableLiveUpdates(true);
           }
  else {
-            alarmMgr.cancel(alarmIntent);
+            liveUpdatesSwitch.setChecked(false);
+            getMyApplication().showToastMessage(getString(R.string.osm_live_ask_for_purchase));
           }
+        }
+ else {
+          settings.IS_LIVE_UPDATES_ON.set(false);
+          enableLiveUpdates(false);
         }
       }
     }

@@ -1,0 +1,16 @@
+{
+  AlarmManager alarmMgr=(AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
+  for (  LocalIndexInfo localIndexInfo : dataShouldUpdate) {
+    PendingIntent alarmIntent=getPendingIntent(getActivity(),localIndexInfo);
+    if (enable) {
+      final OsmandSettings.CommonPreference<Integer> updateFrequencyPreference=preferenceUpdateFrequency(localIndexInfo,getSettings());
+      final OsmandSettings.CommonPreference<Integer> timeOfDayPreference=preferenceTimeOfDayToUpdate(localIndexInfo,getSettings());
+      UpdateFrequency updateFrequency=UpdateFrequency.values()[updateFrequencyPreference.get()];
+      TimeOfDay timeOfDayToUpdate=TimeOfDay.values()[timeOfDayPreference.get()];
+      setAlarmForPendingIntent(alarmIntent,alarmMgr,updateFrequency,timeOfDayToUpdate);
+    }
+ else {
+      alarmMgr.cancel(alarmIntent);
+    }
+  }
+}
