@@ -1,0 +1,69 @@
+{
+  String userId=ctx.getSettings().BILLING_USER_ID.get();
+  String email=ctx.getSettings().BILLING_USER_EMAIL.get();
+  try {
+    Map<String,String> parameters=new HashMap<>();
+    parameters.put("userid",userId);
+    parameters.put("sku",SKU_LIVE_UPDATES);
+    parameters.put("purchaseToken",purchaseToken);
+    parameters.put("email",email);
+    parameters.put("token",token);
+    AndroidNetworkUtils.sendRequestAsync(ctx,"http://download.osmand.net/subscription/purchased.php",parameters,"Sending purchase info...",new OnRequestResultListener(){
+      @Override public void onResult(      String result){
+        if (result != null) {
+          try {
+            JSONObject obj=new JSONObject(result);
+            if (!obj.has("error")) {
+              ctx.getSettings().BILLING_PURCHASE_TOKEN_SENT.set(true);
+              if (obj.has("visibleName") && !Algorithms.isEmpty(obj.getString("visibleName"))) {
+                ctx.getSettings().BILLING_USER_NAME.set(obj.getString("visibleName"));
+                ctx.getSettings().BILLING_HIDE_USER_NAME.set(false);
+              }
+ else {
+                ctx.getSettings().BILLING_HIDE_USER_NAME.set(true);
+              }
+              if (obj.has("preferredCountry")) {
+                String prefferedCountry=obj.getString("preferredCountry");
+                if (!ctx.getSettings().BILLING_USER_COUNTRY_DOWNLOAD_NAME.get().equals(prefferedCountry)) {
+                  ctx.getSettings().BILLING_USER_COUNTRY_DOWNLOAD_NAME.set(prefferedCountry);
+                  CountrySelectionFragment countrySelectionFragment=new CountrySelectionFragment();
+                  countrySelectionFragment.initCountries(ctx);
+                  CountryItem countryItem;
+                  if (Algorithms.isEmpty(prefferedCountry)) {
+                    countryItem=countrySelectionFragment.getCountryItems().get(0);
+                  }
+ else {
+                    countryItem=countrySelectionFragment.getCountryItem(prefferedCountry);
+                  }
+                  if (countryItem != null) {
+                    ctx.getSettings().BILLING_USER_COUNTRY.set(countryItem.getLocalName());
+                  }
+                }
+              }
+              if (obj.has("email")) {
+                ctx.getSettings().BILLING_USER_EMAIL.set(obj.getString("email"));
+              }
+            }
+ else {
+              complain("SendToken Error: " + obj.getString("error"));
+            }
+          }
+ catch (          JSONException e) {
+            logError("SendToken",e);
+            complain("SendToken Error: " + (e.getMessage() != null ? e.getMessage() : "JSONException"));
+          }
+        }
+        if (listener != null) {
+          listener.onResult("OK");
+        }
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    logError("SendToken Error",e);
+    if (listener != null) {
+      listener.onResult("Error");
+    }
+  }
+}

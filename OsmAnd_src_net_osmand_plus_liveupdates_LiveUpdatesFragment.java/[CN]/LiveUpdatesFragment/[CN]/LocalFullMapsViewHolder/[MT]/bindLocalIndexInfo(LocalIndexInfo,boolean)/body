@@ -32,15 +32,20 @@
   final long lastCheck=preferenceLastCheck(item,fragment.getSettings()).get();
   String lastCheckString=formatDateTime(fragment.getActivity(),lastCheck != DEFAULT_LAST_CHECK ? lastCheck : timestamp);
   descriptionTextView.setText(context.getString(R.string.last_update,lastCheckString));
-  final View.OnClickListener clickListener=new View.OnClickListener(){
-    @Override public void onClick(    View v){
-      final FragmentManager fragmentManager=fragment.getChildFragmentManager();
-      LiveUpdatesSettingsDialogFragment.createInstance(item).show(fragmentManager,"settings");
+  if (!fragment.isProcessing() && InAppHelper.isSubscribedToLiveUpdates()) {
+    final View.OnClickListener clickListener=new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        final FragmentManager fragmentManager=fragment.getChildFragmentManager();
+        LiveUpdatesSettingsDialogFragment.createInstance(item).show(fragmentManager,"settings");
+      }
     }
-  }
 ;
-  options.setEnabled(!fragment.isProcessing());
-  options.setOnClickListener(clickListener);
+    options.setOnClickListener(clickListener);
+    options.setEnabled(true);
+  }
+ else {
+    options.setEnabled(false);
+  }
   if (isLastChild) {
     divider.setVisibility(View.GONE);
   }

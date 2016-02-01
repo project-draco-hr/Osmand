@@ -17,11 +17,17 @@
         return;
       }
       if (mHelper == null)       return;
-      if (!mSubscribedToLiveUpdates || !ctx.getSettings().BILLING_PURCHASE_TOKEN_SENT.get() || System.currentTimeMillis() - lastValidationCheckTime > PURCHASE_VALIDATION_PERIOD_MSEC) {
+      if (!isDeveloperVersion && (!mSubscribedToLiveUpdates || !ctx.getSettings().BILLING_PURCHASE_TOKEN_SENT.get() || System.currentTimeMillis() - lastValidationCheckTime > PURCHASE_VALIDATION_PERIOD_MSEC)) {
         logDebug("Setup successful. Querying inventory.");
         List<String> skus=new ArrayList<>();
         skus.add(SKU_LIVE_UPDATES);
         mHelper.queryInventoryAsync(true,skus,mGotInventoryListener);
+      }
+ else {
+        notifyDismissProgress();
+        if (stopAfterResult) {
+          stop();
+        }
       }
     }
   }

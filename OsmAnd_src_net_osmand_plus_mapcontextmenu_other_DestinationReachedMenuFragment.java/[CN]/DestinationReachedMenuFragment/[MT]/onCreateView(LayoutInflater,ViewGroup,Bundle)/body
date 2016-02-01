@@ -1,0 +1,58 @@
+{
+  View view=inflater.inflate(R.layout.dest_reached_menu_fragment,container,false);
+  view.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismissMenu();
+    }
+  }
+);
+  IconsCache iconsCache=getMapActivity().getMyApplication().getIconsCache();
+  ImageButton closeImageButton=(ImageButton)view.findViewById(R.id.closeImageButton);
+  closeImageButton.setImageDrawable(iconsCache.getContentIcon(R.drawable.ic_action_remove_dark));
+  closeImageButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismissMenu();
+    }
+  }
+);
+  Button removeDestButton=(Button)view.findViewById(R.id.removeDestButton);
+  removeDestButton.setCompoundDrawablesWithIntrinsicBounds(iconsCache.getContentIcon(R.drawable.ic_action_delete_dark),null,null,null);
+  removeDestButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      getMapActivity().getMyApplication().getTargetPointsHelper().removeWayPoint(true,-1);
+      Object contextMenuObj=getMapActivity().getContextMenu().getObject();
+      if (getMapActivity().getContextMenu().isActive() && contextMenuObj != null && contextMenuObj instanceof TargetPoint) {
+        TargetPoint targetPoint=(TargetPoint)contextMenuObj;
+        if (!targetPoint.start && !targetPoint.intermediate) {
+          getMapActivity().getContextMenu().close();
+        }
+      }
+      dismissMenu();
+    }
+  }
+);
+  Button findParkingButton=(Button)view.findViewById(R.id.findParkingButton);
+  findParkingButton.setCompoundDrawablesWithIntrinsicBounds(iconsCache.getContentIcon(R.drawable.ic_action_parking_dark),null,null,null);
+  findParkingButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      PoiFiltersHelper helper=getMapActivity().getMyApplication().getPoiFilters();
+      PoiUIFilter parkingFilter=helper.getFilterById(PoiUIFilter.STD_PREFIX + "parking");
+      if (parkingFilter != null) {
+        final Intent newIntent=new Intent(getActivity(),SearchPOIActivity.class);
+        newIntent.putExtra(SearchPOIActivity.AMENITY_FILTER,parkingFilter.getFilterId());
+        newIntent.putExtra(SearchActivity.SEARCH_NEARBY,true);
+        startActivityForResult(newIntent,0);
+      }
+      dismissMenu();
+    }
+  }
+);
+  View mainView=view.findViewById(R.id.main_view);
+  if (menu.isLandscapeLayout()) {
+    AndroidUtils.setBackground(view.getContext(),mainView,!menu.isLight(),R.drawable.bg_left_menu_light,R.drawable.bg_left_menu_dark);
+  }
+ else {
+    AndroidUtils.setBackground(view.getContext(),mainView,!menu.isLight(),R.drawable.bg_bottom_menu_light,R.drawable.bg_bottom_menu_dark);
+  }
+  return view;
+}
