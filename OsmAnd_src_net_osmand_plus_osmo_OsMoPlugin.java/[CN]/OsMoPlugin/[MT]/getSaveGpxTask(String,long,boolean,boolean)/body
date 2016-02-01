@@ -19,8 +19,25 @@
       boolean changed=false;
       if (!ps.exists() || (ps.lastModified() / 1000) != (timestamp / 1000)) {
         changed=true;
-        GPXFile g=new GPXFile();
-        g.points.addAll(Arrays.asList(params));
+        GPXFile g;
+        if (isGroupConnect) {
+          g=new GPXFile();
+        }
+ else {
+          g=GPXUtilities.loadGPXFile(app,ps);
+        }
+        for (        WptPt point : params) {
+          if (point.deleted) {
+            for (            WptPt pointInTrack : g.points) {
+              if (pointInTrack.getExtensionsToRead().get("u").equals(point.getExtensionsToRead().get("u"))) {
+                g.points.remove(pointInTrack);
+              }
+            }
+          }
+ else {
+            g.points.add(point);
+          }
+        }
         errors=GPXUtilities.writeGpxFile(ps,g,app);
         ps.setLastModified(timestamp);
         if (errors == null) {
