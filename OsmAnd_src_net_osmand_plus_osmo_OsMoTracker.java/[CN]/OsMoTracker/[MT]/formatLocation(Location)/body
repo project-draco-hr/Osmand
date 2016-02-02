@@ -1,20 +1,28 @@
 {
-  StringBuilder cmd=new StringBuilder();
-  cmd.append("L").append((float)loc.getLatitude()).append(":").append((float)loc.getLongitude());
+  StringBuffer cmd=new StringBuffer();
+  cmd.append("L");
+  floatingPointFormat.format(loc.getLatitude(),cmd,new FieldPosition(cmd.length()));
+  cmd.append(":");
+  floatingPointFormat.format(loc.getLongitude(),cmd,new FieldPosition(cmd.length()));
   if (loc.hasAccuracy()) {
-    cmd.append("H").append((int)loc.getAccuracy());
+    cmd.append("H");
+    integerFormat.format(loc.getAccuracy(),cmd,new FieldPosition(cmd.length()));
   }
   if (loc.hasAltitude()) {
-    cmd.append("A").append((int)loc.getAltitude());
+    cmd.append("A");
+    integerFormat.format(loc.getAltitude(),cmd,new FieldPosition(cmd.length()));
   }
   if (loc.hasSpeed() && (int)(loc.getSpeed() * 100) != 0) {
-    cmd.append("S").append((float)((int)(loc.getSpeed() * 100)) / 100f);
+    cmd.append("S");
+    twoDigitsFormat.format(loc.getSpeed(),cmd,new FieldPosition(cmd.length()));
   }
   if (loc.hasBearing()) {
-    cmd.append("C").append((int)loc.getBearing());
+    cmd.append("C");
+    integerFormat.format(loc.getBearing(),cmd,new FieldPosition(cmd.length()));
   }
   if ((System.currentTimeMillis() - loc.getTime()) > 30000 && loc.getTime() != 0) {
-    cmd.append("T").append(loc.getTime());
+    cmd.append("T");
+    integerFormat.format(loc.getTime(),cmd,new FieldPosition(cmd.length()));
   }
   LOG.debug("formatLocation cmd=" + cmd);
   return cmd.toString();
