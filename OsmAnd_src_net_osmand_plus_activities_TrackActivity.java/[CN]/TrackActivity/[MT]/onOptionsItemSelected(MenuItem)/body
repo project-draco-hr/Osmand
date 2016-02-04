@@ -2,8 +2,15 @@
   int itemId=item.getItemId();
 switch (itemId) {
 case android.R.id.home:
-    finish();
-  return true;
+    if (getIntent().hasExtra(MapActivity.INTENT_KEY_PARENT_MAP_ACTIVITY)) {
+      OsmAndAppCustomization appCustomization=getMyApplication().getAppCustomization();
+      final Intent favorites=new Intent(this,appCustomization.getFavoritesActivity());
+      getMyApplication().getSettings().FAVORITES_TAB.set(FavoritesActivity.GPX_TAB);
+      favorites.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+      startActivity(favorites);
+    }
+  finish();
+return true;
 }
 return false;
 }
