@@ -1,0 +1,50 @@
+{
+  OsmandApplication app=getMyApplication();
+  TextView text=(TextView)localView.findViewById(R.id.waypoint_text);
+  AndroidUtils.setTextPrimaryColor(this,text,nightMode);
+  TextView textShadow=(TextView)localView.findViewById(R.id.waypoint_text_shadow);
+  localView.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View view){
+      showOnMap(marker);
+    }
+  }
+);
+  TextView textDist=(TextView)localView.findViewById(R.id.waypoint_dist);
+  ((ImageView)localView.findViewById(R.id.waypoint_icon)).setImageDrawable(getMapMarkerIcon(marker.colorIndex));
+  LatLon lastKnownMapLocation=app.getSettings().getLastKnownMapLocation();
+  int dist=(int)(MapUtils.getDistance(marker.getLatitude(),marker.getLongitude(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
+  if (dist > 0) {
+    textDist.setText(OsmAndFormatter.getFormattedDistance(dist,app));
+  }
+ else {
+    textDist.setText("");
+  }
+  localView.findViewById(R.id.waypoint_deviation).setVisibility(View.GONE);
+  String descr;
+  PointDescription pd=marker.getPointDescription(app);
+  if (Algorithms.isEmpty(pd.getName())) {
+    descr=pd.getTypeName();
+  }
+ else {
+    descr=pd.getName();
+  }
+  if (textShadow != null) {
+    textShadow.setText(descr);
+  }
+  text.setText(descr);
+  String pointDescription="";
+  TextView descText=(TextView)localView.findViewById(R.id.waypoint_desc_text);
+  if (descText != null) {
+    AndroidUtils.setTextSecondaryColor(this,descText,nightMode);
+    pointDescription=marker.getPointDescription(this).getTypeName();
+  }
+  if (descr.equals(pointDescription)) {
+    pointDescription="";
+  }
+  if (dist > 0 && !Algorithms.isEmpty(pointDescription)) {
+    pointDescription="  ???  " + pointDescription;
+  }
+  if (descText != null) {
+    descText.setText(pointDescription);
+  }
+}
