@@ -3,6 +3,47 @@
   super.onCreate(savedInstanceState);
   setContentView(R.layout.map_markers);
   getSupportActionBar().setTitle(R.string.map_markers);
+  ((DynamicListView)getListView()).setDynamicListViewCallbacks(this);
+  swipeDismissListener=new SwipeDismissListViewTouchListener(getListView(),new SwipeDismissListViewTouchListener.DismissCallbacks(){
+    @Override public boolean canDismiss(    int position){
+      List<Object> activeObjects=getListAdapter().getActiveObjects();
+      Object obj=getListAdapter().getItem(position);
+      return activeObjects.contains(obj);
+    }
+    @Override public SwipeDismissListViewTouchListener.Undoable onDismiss(    final int position){
+      final Object item;
+      final StableArrayAdapter stableAdapter=getListAdapter();
+      final int activeObjPos;
+      item=stableAdapter.getItem(position);
+      stableAdapter.setNotifyOnChange(false);
+      stableAdapter.remove(item);
+      stableAdapter.getObjects().remove(item);
+      activeObjPos=stableAdapter.getActiveObjects().indexOf(item);
+      stableAdapter.getActiveObjects().remove(item);
+      stableAdapter.refreshData();
+      stableAdapter.notifyDataSetChanged();
+      return new SwipeDismissListViewTouchListener.Undoable(){
+        @Override public void undo(){
+          if (item != null) {
+            stableAdapter.setNotifyOnChange(false);
+            stableAdapter.insert(item,position);
+            stableAdapter.getObjects().add(position,item);
+            stableAdapter.getActiveObjects().add(activeObjPos,item);
+            stableAdapter.refreshData();
+          }
+        }
+      }
+;
+    }
+    @Override public void onHidePopup(){
+      StableArrayAdapter stableAdapter=getListAdapter();
+      stableAdapter.refreshData();
+      if (stableAdapter.getActiveObjects().size() == 0) {
+        finish();
+      }
+    }
+  }
+);
   nightMode=!getMyApplication().getSettings().isLightContent();
   setListAdapter(getMapMarkersListAdapter());
 }
