@@ -1,10 +1,18 @@
 {
   OsmandApplication app=getMyApplication();
   TextView text=(TextView)localView.findViewById(R.id.waypoint_text);
-  AndroidUtils.setTextPrimaryColor(this,text,nightMode);
   TextView textShadow=(TextView)localView.findViewById(R.id.waypoint_text_shadow);
   TextView textDist=(TextView)localView.findViewById(R.id.waypoint_dist);
-  ((ImageView)localView.findViewById(R.id.waypoint_icon)).setImageDrawable(getMapMarkerIcon(app,marker.colorIndex));
+  if (!marker.history) {
+    ((ImageView)localView.findViewById(R.id.waypoint_icon)).setImageDrawable(getMapMarkerIcon(app,marker.colorIndex));
+    AndroidUtils.setTextPrimaryColor(this,text,nightMode);
+    textDist.setTextColor(getResources().getColor(R.color.color_myloc_distance));
+  }
+ else {
+    ((ImageView)localView.findViewById(R.id.waypoint_icon)).setImageDrawable(getMyApplication().getIconsCache().getContentIcon(R.drawable.ic_action_flag_dark,!nightMode));
+    AndroidUtils.setTextSecondaryColor(this,text,nightMode);
+    AndroidUtils.setTextSecondaryColor(this,textDist,nightMode);
+  }
   LatLon lastKnownMapLocation=app.getSettings().getLastKnownMapLocation();
   int dist=(int)(MapUtils.getDistance(marker.getLatitude(),marker.getLongitude(),lastKnownMapLocation.getLatitude(),lastKnownMapLocation.getLongitude()));
   textDist.setText(OsmAndFormatter.getFormattedDistance(dist,app));
