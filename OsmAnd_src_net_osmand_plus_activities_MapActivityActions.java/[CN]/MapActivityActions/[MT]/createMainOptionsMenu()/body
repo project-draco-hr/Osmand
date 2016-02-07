@@ -4,6 +4,7 @@
   ContextMenuAdapter optionsMenuHelper=new ContextMenuAdapter(app);
   optionsMenuHelper.item(R.string.home).iconColor(R.drawable.map_dashboard).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      MapActivity.clearPrevActivityIntent();
       mapActivity.closeDrawer();
       mapActivity.getDashboard().setDashboardVisibility(true,DashboardType.DASHBOARD);
       return true;
@@ -12,15 +13,15 @@
 ).reg();
   optionsMenuHelper.item(R.string.map_markers).iconColor(R.drawable.ic_action_waypoint).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
-      Intent newIntent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getMapMarkersActivity());
-      newIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-      mapActivity.startActivity(newIntent);
-      return true;
+      MapActivity.clearPrevActivityIntent();
+      mapActivity.getDashboard().setDashboardVisibility(true,DashboardType.WAYPOINTS);
+      return false;
     }
   }
 ).reg();
   optionsMenuHelper.item(R.string.get_directions).iconColor(R.drawable.ic_action_gdirections_dark).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      MapActivity.clearPrevActivityIntent();
       if (!routingHelper.isFollowingMode() && !routingHelper.isRoutePlanningMode()) {
         enterRoutePlanningMode(null,null);
       }
@@ -58,6 +59,7 @@
 ).reg();
   optionsMenuHelper.item(R.string.show_point_options).iconColor(R.drawable.ic_action_marker_dark).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      MapActivity.clearPrevActivityIntent();
       mapActivity.getMapLayers().getContextMenuLayer().showContextMenu(mapView.getLatitude(),mapView.getLongitude(),true);
       return true;
     }
@@ -65,6 +67,7 @@
 ).reg();
   optionsMenuHelper.item(R.string.configure_map).iconColor(R.drawable.ic_action_layers_dark).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      MapActivity.clearPrevActivityIntent();
       mapActivity.getDashboard().setDashboardVisibility(true,DashboardType.CONFIGURE_MAP);
       return false;
     }
@@ -72,6 +75,7 @@
 ).reg();
   optionsMenuHelper.item(R.string.layer_map_appearance).iconColor(R.drawable.ic_configure_screen_dark).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+      MapActivity.clearPrevActivityIntent();
       mapActivity.getDashboard().setDashboardVisibility(true,DashboardType.CONFIGURE_SCREEN);
       return false;
     }
@@ -87,6 +91,7 @@
   optionsMenuHelper.item(R.string.index_settings).name(d).iconColor(R.drawable.ic_type_archive).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
       Intent newIntent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getDownloadActivity());
+      newIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
       mapActivity.startActivity(newIntent);
       return true;
     }
@@ -95,6 +100,7 @@
   optionsMenuHelper.item(R.string.osm_live).iconColor(R.drawable.ic_action_osm_live).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
       Intent intent=new Intent(mapActivity,OsmLiveActivity.class);
+      intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
       mapActivity.startActivity(intent);
       return false;
     }
@@ -103,6 +109,7 @@
   optionsMenuHelper.item(R.string.prefs_plugins).iconColor(R.drawable.ic_extension_dark).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
       Intent newIntent=new Intent(mapActivity,mapActivity.getMyApplication().getAppCustomization().getPluginsActivity());
+      newIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
       mapActivity.startActivity(newIntent);
       return true;
     }
@@ -111,6 +118,7 @@
   optionsMenuHelper.item(R.string.shared_string_settings).iconColor(R.drawable.ic_action_settings).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
       final Intent settings=new Intent(mapActivity,getMyApplication().getAppCustomization().getSettingsActivity());
+      settings.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
       mapActivity.startActivity(settings);
       return true;
     }
@@ -118,7 +126,9 @@
 ).reg();
   optionsMenuHelper.item(R.string.shared_string_help).iconColor(R.drawable.ic_action_help).listen(new OnContextMenuClick(){
     @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
-      mapActivity.startActivity(new Intent(mapActivity,HelpActivity.class));
+      Intent intent=new Intent(mapActivity,HelpActivity.class);
+      intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+      mapActivity.startActivity(intent);
       return true;
     }
   }
