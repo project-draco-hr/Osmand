@@ -1,0 +1,31 @@
+{
+  final List<Object> objects=new ArrayList<>();
+  final MapMarkersHelper markersHelper=app.getMapMarkersHelper();
+  LatLon mapLocation=new LatLon(mapActivity.getMapView().getLatitude(),mapActivity.getMapView().getLongitude());
+  List<MapMarker> activeMarkers=new ArrayList<>(markersHelper.getActiveMapMarkers());
+  calcDistance(mapLocation,activeMarkers);
+  if (sorted) {
+    Collections.sort(activeMarkers,new Comparator<MapMarker>(){
+      @Override public int compare(      MapMarker lhs,      MapMarker rhs){
+        return lhs.dist < rhs.dist ? -1 : (lhs.dist == rhs.dist ? 0 : 1);
+      }
+    }
+);
+  }
+  if (activeMarkers.size() > 0) {
+    objects.add(ACTIVE_MARKERS);
+    objects.addAll(activeMarkers);
+    objects.add(false);
+  }
+  List<MapMarker> markersHistory=new ArrayList<>(markersHelper.getMapMarkersHistory());
+  calcDistance(mapLocation,markersHistory);
+  if (markersHistory.size() > 0) {
+    if (activeMarkers.size() > 0) {
+      objects.add(true);
+    }
+    objects.add(MARKERS_HISTORY);
+    objects.addAll(markersHistory);
+    objects.add(false);
+  }
+  return objects;
+}

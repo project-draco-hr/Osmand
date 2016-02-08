@@ -2,6 +2,7 @@
   baseColor=mapActivity.getResources().getColor(R.color.osmand_orange) & 0x00ffffff;
   waypointDialogHelper=new WaypointDialogHelper(mapActivity);
   waypointDialogHelper.setWaypointDialogHelperCallbacks(this);
+  mapMarkerDialogHelper=new MapMarkerDialogHelper(mapActivity);
   landscape=!AndroidUiHelper.isOrientationPortrait(mapActivity);
   dashboardView=(FrameLayout)mapActivity.findViewById(R.id.dashboard);
   final View.OnClickListener listener=new View.OnClickListener(){
@@ -15,10 +16,11 @@
   listView=(ListView)dashboardView.findViewById(R.id.dash_list_view);
   listView.setDrawSelectorOnTop(true);
   ((DynamicListView)listView).setDynamicListViewCallbacks(this);
-  swipeDismissListener=new SwipeDismissListViewTouchListener(listView,new SwipeDismissListViewTouchListener.DismissCallbacks(){
+  swipeDismissListener=new SwipeDismissListViewTouchListener(listView,new DismissCallbacks(){
+    private List<Object> deletedMarkers=new ArrayList<>();
     @Override public boolean canDismiss(    int position){
       boolean res=false;
-      if (visibleType == DashboardType.WAYPOINTS && listAdapter instanceof StableArrayAdapter) {
+      if (listAdapter instanceof StableArrayAdapter) {
         List<Object> activeObjects=((StableArrayAdapter)listAdapter).getActiveObjects();
         Object obj=listAdapter.getItem(position);
         res=activeObjects.contains(obj);
@@ -32,6 +34,11 @@
       if (listAdapter instanceof StableArrayAdapter) {
         stableAdapter=(StableArrayAdapter)listAdapter;
         item=stableAdapter.getItem(position);
+        if (visibleType == DashboardType.MAP_MARKERS) {
+          if (!((MapMarker)item).history) {
+            deletedMarkers.add(item);
+          }
+        }
         stableAdapter.setNotifyOnChange(false);
         stableAdapter.remove(item);
         stableAdapter.getObjects().remove(item);
@@ -53,11 +60,18 @@
             stableAdapter.getObjects().add(position,item);
             stableAdapter.getActiveObjects().add(activeObjPos,item);
             stableAdapter.refreshData();
-            onItemsSwapped(stableAdapter.getActiveObjects());
+            if (visibleType == DashboardType.WAYPOINTS || visibleType == DashboardType.WAYPOINTS_FLAT) {
+              onItemsSwapped(stableAdapter.getActiveObjects());
+            }
+ else             if (visibleType == DashboardType.MAP_MARKERS) {
+              deletedMarkers.remove(item);
+              updateMapMarkers(stableAdapter.getActiveObjects());
+              reloadAdapter();
+            }
           }
         }
         @Override public String getTitle(){
-          if (visibleType == DashboardType.WAYPOINTS && (getMyApplication().getRoutingHelper().isRoutePlanningMode() || getMyApplication().getRoutingHelper().isFollowingMode()) && item != null && stableAdapter.getActiveObjects().size() == 0) {
+          if ((visibleType == DashboardType.WAYPOINTS || visibleType == DashboardType.WAYPOINTS_FLAT) && (getMyApplication().getRoutingHelper().isRoutePlanningMode() || getMyApplication().getRoutingHelper().isFollowingMode()) && item != null && stableAdapter.getActiveObjects().size() == 0) {
             return mapActivity.getResources().getString(R.string.cancel_navigation);
           }
  else {
@@ -71,13 +85,43 @@
       if (listAdapter instanceof StableArrayAdapter) {
         StableArrayAdapter stableAdapter=(StableArrayAdapter)listAdapter;
         stableAdapter.refreshData();
-        onItemsSwapped(stableAdapter.getActiveObjects());
+        if (visibleType == DashboardType.WAYPOINTS || visibleType == DashboardType.WAYPOINTS_FLAT) {
+          onItemsSwapped(stableAdapter.getActiveObjects());
+        }
+ else         if (visibleType == DashboardType.MAP_MARKERS) {
+          updateMapMarkers(stableAdapter.getActiveObjects());
+        }
         if (stableAdapter.getActiveObjects().size() == 0) {
           hideDashboard();
-          mapActivity.getMapActions().stopNavigationWithoutConfirm();
-          mapActivity.getMapLayers().getMapControlsLayer().getMapRouteInfoMenu().hide();
+          if (visibleType == DashboardType.WAYPOINTS || visibleType == DashboardType.WAYPOINTS_FLAT) {
+            mapActivity.getMapActions().stopNavigationWithoutConfirm();
+            mapActivity.getMapLayers().getMapControlsLayer().getMapRouteInfoMenu().hide();
+          }
+        }
+ else {
+          if (visibleType == DashboardType.MAP_MARKERS) {
+            reloadAdapter();
+          }
         }
       }
+    }
+    private void updateMapMarkers(    List<Object> objects){
+      List<MapMarker> markers=new ArrayList<>();
+      List<MapMarker> markersHistory=new ArrayList<>();
+      for (      Object obj : objects) {
+        MapMarker marker=(MapMarker)obj;
+        if (!marker.history) {
+          markers.add(marker);
+        }
+ else {
+          markersHistory.add(marker);
+        }
+      }
+      for (int i=deletedMarkers.size() - 1; i >= 0; i--) {
+        markersHistory.add(0,(MapMarker)deletedMarkers.get(i));
+      }
+      deletedMarkers.clear();
+      getMyApplication().getMapMarkersHelper().saveMapMarkers(markers,markersHistory);
     }
   }
 );

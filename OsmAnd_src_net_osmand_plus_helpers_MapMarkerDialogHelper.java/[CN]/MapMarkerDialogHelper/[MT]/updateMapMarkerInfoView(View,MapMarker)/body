@@ -1,0 +1,31 @@
+{
+  TextView text=(TextView)localView.findViewById(R.id.waypoint_text);
+  TextView textShadow=(TextView)localView.findViewById(R.id.waypoint_text_shadow);
+  TextView textDist=(TextView)localView.findViewById(R.id.waypoint_dist);
+  if (!marker.history) {
+    ((ImageView)localView.findViewById(R.id.waypoint_icon)).setImageDrawable(getMapMarkerIcon(app,marker.colorIndex));
+    AndroidUtils.setTextPrimaryColor(mapActivity,text,nightMode);
+    textDist.setTextColor(mapActivity.getResources().getColor(R.color.color_myloc_distance));
+  }
+ else {
+    ((ImageView)localView.findViewById(R.id.waypoint_icon)).setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.ic_action_flag_dark,!nightMode));
+    AndroidUtils.setTextSecondaryColor(mapActivity,text,nightMode);
+    AndroidUtils.setTextSecondaryColor(mapActivity,textDist,nightMode);
+  }
+  int dist=marker.dist;
+  textDist.setText(OsmAndFormatter.getFormattedDistance(dist,app));
+  localView.findViewById(R.id.waypoint_deviation).setVisibility(View.GONE);
+  String descr;
+  PointDescription pd=marker.getPointDescription(app);
+  if (Algorithms.isEmpty(pd.getName())) {
+    descr=pd.getTypeName();
+  }
+ else {
+    descr=pd.getName();
+  }
+  if (textShadow != null) {
+    textShadow.setText(descr);
+  }
+  text.setText(descr);
+  localView.findViewById(R.id.waypoint_desc_text).setVisibility(View.GONE);
+}

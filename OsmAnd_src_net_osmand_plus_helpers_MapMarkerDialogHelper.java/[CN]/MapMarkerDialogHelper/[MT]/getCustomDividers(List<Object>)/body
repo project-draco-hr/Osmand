@@ -1,0 +1,41 @@
+{
+  int color;
+  if (nightMode) {
+    color=mapActivity.getResources().getColor(R.color.dashboard_divider_dark);
+  }
+ else {
+    color=mapActivity.getResources().getColor(R.color.dashboard_divider_light);
+  }
+  Shape fullDividerShape=new ListDividerShape(color,0);
+  Shape halfDividerShape=new ListDividerShape(color,AndroidUtils.dpToPx(mapActivity,56f));
+  final ShapeDrawable fullDivider=new ShapeDrawable(fullDividerShape);
+  final ShapeDrawable halfDivider=new ShapeDrawable(halfDividerShape);
+  int divHeight=AndroidUtils.dpToPx(mapActivity,1f);
+  fullDivider.setIntrinsicHeight(divHeight);
+  halfDivider.setIntrinsicHeight(divHeight);
+  List<Drawable> res=new ArrayList<>();
+  for (int i=0; i < points.size(); i++) {
+    Object obj=points.get(i);
+    Object objNext=i + 1 < points.size() ? points.get(i + 1) : null;
+    if (objNext == null) {
+      break;
+    }
+    boolean bottomDividerViewNext=(objNext instanceof Boolean) && !((Boolean)objNext);
+    boolean mapMarker=(obj instanceof MapMarker);
+    boolean mapMarkerNext=(objNext instanceof MapMarker);
+    Drawable d=null;
+    if (mapMarkerNext) {
+      if (mapMarker) {
+        d=halfDivider;
+      }
+ else {
+        d=fullDivider;
+      }
+    }
+ else     if (mapMarker && !bottomDividerViewNext) {
+      d=fullDivider;
+    }
+    res.add(d);
+  }
+  return res;
+}
