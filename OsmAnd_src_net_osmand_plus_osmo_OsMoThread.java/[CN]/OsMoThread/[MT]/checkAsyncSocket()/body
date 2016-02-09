@@ -18,16 +18,27 @@
     if (activeChannel != null && !activeChannel.isConnected()) {
       activeChannel=null;
     }
-    String msg=e.getMessage();
+    final String msg=e.getMessage();
     for (    OsMoReactor sender : getReactors()) {
       sender.onDisconnected(msg);
     }
     delay=HEARTBEAT_FAILED_DELAY;
-    if (lastSendCommand != 0 && System.currentTimeMillis() - lastSendCommand > TIMEOUT_TO_RECONNECT) {
-      reconnect=true;
+    if (e instanceof OsMoConnectionException) {
+      stopThread=true;
+      new Handler(Looper.getMainLooper()).post(new Runnable(){
+        @Override public void run(){
+          Toast.makeText(service.getMyApplication(),msg,Toast.LENGTH_LONG).show();
+        }
+      }
+);
     }
- else     if (failures++ > LIMIT_OF_FAILURES_RECONNECT) {
-      reconnect=true;
+ else {
+      if (lastSendCommand != 0 && System.currentTimeMillis() - lastSendCommand > TIMEOUT_TO_RECONNECT) {
+        reconnect=true;
+      }
+ else       if (failures++ > LIMIT_OF_FAILURES_RECONNECT) {
+        reconnect=true;
+      }
     }
   }
   if (stopThread) {
