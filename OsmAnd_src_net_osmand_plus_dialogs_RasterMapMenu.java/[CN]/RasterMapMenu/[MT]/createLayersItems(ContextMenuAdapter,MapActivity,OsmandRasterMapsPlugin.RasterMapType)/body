@@ -27,7 +27,7 @@
       Log.v(TAG,"onRowItemClick(" + "adapter=" + adapter + ", view="+ view+ ", itemId="+ itemId+ ", pos="+ pos+ ")");
       return super.onRowItemClick(adapter,view,itemId,pos);
     }
-    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+    @Override public boolean onContextMenuClick(    final ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
       Log.v(TAG,"onContextMenuClick(" + "adapter=" + adapter + ", itemId="+ itemId+ ", pos="+ pos+ ", isChecked="+ isChecked+ ")");
       if (itemId == R.string.shared_string_show) {
         MapActivityLayers mapLayers=mapActivity.getMapLayers();
@@ -37,16 +37,23 @@
  else {
           mapLayers.getMapControlsLayer().hideTransparencyBar(mapTransparencyPreference);
         }
-        plugin.toggleUnderlayState(mapActivity,type);
+        plugin.toggleUnderlayState(mapActivity,type,new OsmandRasterMapsPlugin.OnMapSelectedCallback(){
+          @Override public void onMapSelected(){
+            mapActivity.getDashboard().refreshContent(true);
+          }
+        }
+);
       }
  else       if (itemId == R.string.show_polygons) {
         hidePolygonsPref.set(!isChecked);
+        refreshMapComplete(mapActivity);
       }
       return false;
     }
   }
 ;
-  adapter.item(R.string.shared_string_show).listen(l).selected(rasterMapLayer != null && rasterMapLayer.getMap() != null ? 1 : 0).reg();
+  int selected=mapTypePreference.get() != null ? 1 : 0;
+  contextMenuAdapter.item(R.string.shared_string_show).listen(l).selected(selected).reg();
   ContextMenuAdapter.OnIntegerValueChangedListener integerListener=new ContextMenuAdapter.OnIntegerValueChangedListener(){
     @Override public boolean onIntegerValueChangedListener(    int newValue){
       mapTransparencyPreference.set(newValue);
@@ -55,7 +62,7 @@
     }
   }
 ;
-  adapter.item(R.string.map_transparency).layout(R.layout.progress_list_item).progress(mapTransparencyPreference.get()).listenInteger(integerListener).reg();
-  adapter.item(mapTypeString).layout(R.layout.two_line_list_item).description(mapTypePreference.get()).reg();
-  adapter.item(R.string.show_polygons).listen(l).selected(hidePolygonsPref.get() ? 0 : 1).reg();
+  contextMenuAdapter.item(R.string.map_transparency).layout(R.layout.progress_list_item).progress(mapTransparencyPreference.get()).listenInteger(integerListener).reg();
+  contextMenuAdapter.item(mapTypeString).layout(R.layout.two_line_list_item).description(mapTypePreference.get()).reg();
+  contextMenuAdapter.item(R.string.show_polygons).listen(l).selected(hidePolygonsPref.get() ? 0 : 1).reg();
 }
