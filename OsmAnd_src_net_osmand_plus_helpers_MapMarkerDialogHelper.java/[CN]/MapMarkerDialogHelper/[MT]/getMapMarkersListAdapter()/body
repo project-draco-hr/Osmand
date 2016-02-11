@@ -1,7 +1,9 @@
 {
+  screenOrientation=DashLocationFragment.getScreenOrientation(mapActivity);
+  calculateLocationParams();
   final List<Object> objects=getListObjects();
   List<Object> activeObjects=getActiveObjects(objects);
-  final StableArrayAdapter listAdapter=new StableArrayAdapter(mapActivity,R.layout.waypoint_reached,R.id.title,objects,activeObjects){
+  final StableArrayAdapter listAdapter=new StableArrayAdapter(mapActivity,R.layout.map_marker_item,R.id.title,objects,activeObjects){
     @Override public void buildDividers(){
       dividers=getCustomDividers(getObjects());
     }
@@ -34,19 +36,5 @@
     }
   }
 ;
-  for (  Object p : objects) {
-    if (p instanceof MapMarker) {
-      final MapMarker marker=(MapMarker)p;
-      if (marker.getOriginalPointDescription() != null && marker.getOriginalPointDescription().isSearchingAddress(mapActivity)) {
-        GeocodingLookupService.AddressLookupRequest lookupRequest=new GeocodingLookupService.AddressLookupRequest(marker.point,new GeocodingLookupService.OnAddressLookupResult(){
-          @Override public void geocodingDone(          String address){
-            reloadListAdapter(listAdapter);
-          }
-        }
-,null);
-        app.getGeocodingLookupService().lookupAddress(lookupRequest);
-      }
-    }
-  }
   return listAdapter;
 }

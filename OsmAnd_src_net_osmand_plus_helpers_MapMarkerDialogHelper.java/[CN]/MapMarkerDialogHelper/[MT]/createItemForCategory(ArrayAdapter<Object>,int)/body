@@ -13,8 +13,13 @@
         builder.setMessage(mapActivity.getString(R.string.clear_markers_history_q)).setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
           @Override public void onClick(          DialogInterface dialog,          int which){
             listAdapter.notifyDataSetInvalidated();
-            app.getMapMarkersHelper().removeMarkersHistory();
-            reloadListAdapter(listAdapter);
+            markersHelper.removeMarkersHistory();
+            if (markersHelper.getActiveMapMarkers().size() == 0) {
+              mapActivity.getDashboard().hideDashboard();
+            }
+ else {
+              reloadListAdapter(listAdapter);
+            }
           }
         }
 ).setNegativeButton(R.string.shared_string_no,null).show();
@@ -24,8 +29,13 @@
         builder.setMessage(mapActivity.getString(R.string.clear_active_markers_q)).setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
           @Override public void onClick(          DialogInterface dialog,          int which){
             listAdapter.notifyDataSetInvalidated();
-            app.getMapMarkersHelper().removeActiveMarkers();
-            reloadListAdapter(listAdapter);
+            markersHelper.removeActiveMarkers();
+            if (markersHelper.getMapMarkersHistory().size() == 0) {
+              mapActivity.getDashboard().hideDashboard();
+            }
+ else {
+              reloadListAdapter(listAdapter);
+            }
           }
         }
 ).setNegativeButton(R.string.shared_string_no,null).show();
