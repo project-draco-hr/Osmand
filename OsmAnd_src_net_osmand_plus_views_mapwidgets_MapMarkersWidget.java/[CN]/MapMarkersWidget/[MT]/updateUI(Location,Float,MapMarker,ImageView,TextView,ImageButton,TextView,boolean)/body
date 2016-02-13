@@ -1,0 +1,41 @@
+{
+  float[] mes=new float[2];
+  if (loc != null && marker.point != null) {
+    Location.distanceBetween(marker.getLatitude(),marker.getLongitude(),loc.getLatitude(),loc.getLongitude(),mes);
+  }
+  boolean newImage=false;
+  DirectionDrawable dd;
+  if (!(arrowImg.getDrawable() instanceof DirectionDrawable)) {
+    newImage=true;
+    dd=new DirectionDrawable(map,arrowImg.getWidth(),arrowImg.getHeight());
+  }
+ else {
+    dd=(DirectionDrawable)arrowImg.getDrawable();
+  }
+  dd.setImage(R.drawable.map_arrow_to_destination,MapMarkerDialogHelper.getMapMarkerColorId(marker.colorIndex));
+  if (loc == null || heading == null || marker.point == null) {
+    dd.setAngle(0);
+  }
+ else {
+    dd.setAngle(mes[1] - heading + 90 + screenOrientation);
+  }
+  if (newImage) {
+    arrowImg.setImageDrawable(dd);
+  }
+  arrowImg.invalidate();
+  int dist=(int)mes[0];
+  distText.setText(OsmAndFormatter.getFormattedDistance(dist,map.getMyApplication()));
+  updateVisibility(okButton,dist < MIN_DIST_OK_VISIBLE);
+  String descr;
+  PointDescription pd=marker.getPointDescription(map);
+  if (Algorithms.isEmpty(pd.getName())) {
+    descr=pd.getTypeName();
+  }
+ else {
+    descr=pd.getName();
+  }
+  if (!firstLine) {
+    descr=" ??? " + descr;
+  }
+  addressText.setText(descr);
+}
