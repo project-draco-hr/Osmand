@@ -1,0 +1,21 @@
+{
+  mapMarkers.clear();
+  mapMarkersHistory.clear();
+  List<LatLon> ips=settings.getMapMarkersPoints();
+  List<String> desc=settings.getMapMarkersPointDescriptions(ips.size());
+  List<Integer> colors=settings.getMapMarkersColors(ips.size());
+  for (int i=0; i < ips.size(); i++) {
+    MapMarker mapMarker=new MapMarker(ips.get(i),PointDescription.deserializeFromString(desc.get(i),ips.get(i)),colors.get(i),i);
+    mapMarkers.add(mapMarker);
+    lookupAddress(mapMarker,false);
+  }
+  ips=settings.getMapMarkersHistoryPoints();
+  desc=settings.getMapMarkersHistoryPointDescriptions(ips.size());
+  colors=settings.getMapMarkersHistoryColors(ips.size());
+  for (int i=0; i < ips.size(); i++) {
+    MapMarker mapMarker=new MapMarker(ips.get(i),PointDescription.deserializeFromString(desc.get(i),ips.get(i)),colors.get(i),i);
+    mapMarker.history=true;
+    mapMarkersHistory.add(mapMarker);
+    lookupAddress(mapMarker,true);
+  }
+}

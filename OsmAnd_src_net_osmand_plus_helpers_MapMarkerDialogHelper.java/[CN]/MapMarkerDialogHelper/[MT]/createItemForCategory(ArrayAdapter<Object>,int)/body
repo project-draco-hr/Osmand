@@ -1,0 +1,50 @@
+{
+  View v=mapActivity.getLayoutInflater().inflate(R.layout.waypoint_header,null);
+  v.findViewById(R.id.check_item).setVisibility(View.GONE);
+  v.findViewById(R.id.ProgressBar).setVisibility(View.GONE);
+  final Button btn=(Button)v.findViewById(R.id.header_button);
+  btn.setTextColor(!nightMode ? mapActivity.getResources().getColor(R.color.map_widget_blue) : mapActivity.getResources().getColor(R.color.osmand_orange));
+  btn.setText(mapActivity.getString(R.string.shared_string_clear));
+  btn.setVisibility(View.VISIBLE);
+  btn.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (type == MARKERS_HISTORY) {
+        AlertDialog.Builder builder=new AlertDialog.Builder(mapActivity);
+        builder.setMessage(mapActivity.getString(R.string.clear_markers_history_q)).setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            listAdapter.notifyDataSetInvalidated();
+            markersHelper.removeMarkersHistory();
+            if (markersHelper.getActiveMapMarkers().size() == 0) {
+              mapActivity.getDashboard().hideDashboard();
+            }
+ else {
+              reloadListAdapter(listAdapter);
+            }
+          }
+        }
+).setNegativeButton(R.string.shared_string_no,null).show();
+      }
+ else       if (type == ACTIVE_MARKERS) {
+        AlertDialog.Builder builder=new AlertDialog.Builder(mapActivity);
+        builder.setMessage(mapActivity.getString(R.string.clear_active_markers_q)).setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            listAdapter.notifyDataSetInvalidated();
+            markersHelper.removeActiveMarkers();
+            if (markersHelper.getMapMarkersHistory().size() == 0) {
+              mapActivity.getDashboard().hideDashboard();
+            }
+ else {
+              reloadListAdapter(listAdapter);
+            }
+          }
+        }
+).setNegativeButton(R.string.shared_string_no,null).show();
+      }
+    }
+  }
+);
+  TextView tv=(TextView)v.findViewById(R.id.header_text);
+  AndroidUtils.setTextPrimaryColor(mapActivity,tv,nightMode);
+  tv.setText(getHeader(type));
+  return v;
+}

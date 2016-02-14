@@ -37,6 +37,7 @@ case MotionEvent.ACTION_DOWN:
         int position=mListView.getPositionForView(mSwipeDownView) - mListView.getHeaderViewsCount();
         if (mCallbacks == null || mCallbacks.canDismiss(position)) {
           mDownX=ev.getRawX();
+          mDownY=ev.getRawY();
           mDownPosition=position;
           mVelocityTracker=VelocityTracker.obtain();
           mVelocityTracker.addMovement(ev);
@@ -58,6 +59,7 @@ case MotionEvent.ACTION_CANCEL:
     mVelocityTracker.recycle();
     mVelocityTracker=null;
     mDownX=0;
+    mDownY=0;
     mSwipeDownView=mSwipeDownChild=null;
     mDownPosition=ListView.INVALID_POSITION;
     mSwiping=false;
@@ -91,6 +93,7 @@ case MotionEvent.ACTION_UP:
   }
   mVelocityTracker=null;
   mDownX=0;
+  mDownY=0;
   mSwipeDownView=null;
   mSwipeDownChild=null;
   mDownPosition=AbsListView.INVALID_POSITION;
@@ -104,12 +107,13 @@ if (mVelocityTracker == null || mSwipePaused) {
 }
 mVelocityTracker.addMovement(ev);
 float deltaX=ev.getRawX() - mDownX;
+float deltaY=ev.getRawY() - mDownY;
 if (isSwipeDirectionValid(deltaX)) {
   ViewParent parent=mListView.getParent();
   if (parent != null) {
     parent.requestDisallowInterceptTouchEvent(true);
   }
-  if (Math.abs(deltaX) > mSlop) {
+  if (Math.abs(deltaX) > mSlop && Math.abs(deltaY) < Math.abs(deltaX) / 2) {
     mSwiping=true;
     mListView.requestDisallowInterceptTouchEvent(true);
     MotionEvent cancelEvent=MotionEvent.obtain(ev);
