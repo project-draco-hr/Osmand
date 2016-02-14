@@ -1,0 +1,37 @@
+{
+  widget.updateInfo(tb.getZoom());
+  if (tb.getZoom() < 3) {
+    return;
+  }
+  List<MapMarker> hiddenMarkers=new ArrayList<>();
+  MapMarkersHelper markersHelper=map.getMyApplication().getMapMarkersHelper();
+  for (  MapMarker marker : markersHelper.getActiveMapMarkers()) {
+    if (isLocationVisible(tb,marker)) {
+      Bitmap bmp=getMapMarkerBitmap(marker.colorIndex);
+      int marginX=bmp.getWidth() / 6;
+      int marginY=bmp.getHeight();
+      int locationX=tb.getPixXFromLonNoRot(marker.getLongitude());
+      int locationY=tb.getPixYFromLatNoRot(marker.getLatitude());
+      canvas.rotate(-tb.getRotate(),locationX,locationY);
+      canvas.drawBitmap(bmp,locationX - marginX,locationY - marginY,bitmapPaint);
+      canvas.rotate(tb.getRotate(),locationX,locationY);
+    }
+ else {
+      hiddenMarkers.add(marker);
+    }
+  }
+  for (  MapMarker marker : hiddenMarkers) {
+    boolean show=true;
+    if (show) {
+      canvas.save();
+      net.osmand.Location.distanceBetween(view.getLatitude(),view.getLongitude(),marker.getLatitude(),marker.getLongitude(),calculations);
+      float bearing=calculations[1] - 90;
+      float radiusBearing=DIST_TO_SHOW * tb.getDensity();
+      final QuadPoint cp=tb.getCenterPixelPoint();
+      canvas.rotate(bearing,cp.x,cp.y);
+      canvas.translate(-24 * tb.getDensity() + radiusBearing,-22 * tb.getDensity());
+      canvas.drawBitmap(arrowToDestination,cp.x,cp.y,getMarkerDestPaint(marker.colorIndex));
+      canvas.restore();
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  TextView textDist=(TextView)localView.findViewById(R.id.waypoint_dist);
+  ImageView arrow=(ImageView)localView.findViewById(R.id.direction);
+  if (textDist == null || arrow == null) {
+    return;
+  }
+  float[] mes=new float[2];
+  if (loc != null && marker.point != null) {
+    Location.distanceBetween(marker.getLatitude(),marker.getLongitude(),loc.getLatitude(),loc.getLongitude(),mes);
+  }
+  boolean newImage=false;
+  int arrowResId=R.drawable.ic_destination_arrow_white;
+  DirectionDrawable dd;
+  if (!(arrow.getDrawable() instanceof DirectionDrawable)) {
+    newImage=true;
+    dd=new DirectionDrawable(mapActivity,arrow.getWidth(),arrow.getHeight());
+  }
+ else {
+    dd=(DirectionDrawable)arrow.getDrawable();
+  }
+  if (!marker.history) {
+    dd.setImage(arrowResId,useCenter ? R.color.color_distance : R.color.color_myloc_distance);
+  }
+ else {
+    dd.setImage(arrowResId,nightMode ? R.color.secondary_text_dark : R.color.secondary_text_light);
+  }
+  if (loc == null || heading == null || marker.point == null) {
+    dd.setAngle(0);
+  }
+ else {
+    dd.setAngle(mes[1] - heading + 180 + screenOrientation);
+  }
+  if (newImage) {
+    arrow.setImageDrawable(dd);
+  }
+  arrow.invalidate();
+  int dist=(int)mes[0];
+  textDist.setText(OsmAndFormatter.getFormattedDistance(dist,app));
+}
