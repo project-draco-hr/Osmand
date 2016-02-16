@@ -1,11 +1,13 @@
 {
-  widget.updateInfo(tb.getZoom());
+  widget.updateInfo(useFingerLocation ? fingerLocation : null,tb.getZoom());
   if (tb.getZoom() < 3 || !map.getMyApplication().getSettings().USE_MAP_MARKERS.get()) {
     return;
   }
   List<MapMarker> hiddenMarkers=new ArrayList<>();
   MapMarkersHelper markersHelper=map.getMyApplication().getMapMarkersHelper();
-  for (  MapMarker marker : markersHelper.getActiveMapMarkers()) {
+  List<MapMarker> activeMapMarkers=markersHelper.getActiveMapMarkers();
+  for (int i=0; i < activeMapMarkers.size(); i++) {
+    MapMarker marker=activeMapMarkers.get(i);
     if (isLocationVisible(tb,marker)) {
       Bitmap bmp=getMapMarkerBitmap(marker.colorIndex);
       int marginX=bmp.getWidth() / 6;
@@ -16,15 +18,15 @@
       canvas.drawBitmap(bmp,locationX - marginX,locationY - marginY,bitmapPaint);
       canvas.rotate(tb.getRotate(),locationX,locationY);
     }
- else {
+ else     if (i < 2) {
       hiddenMarkers.add(marker);
     }
   }
-  for (  MapMarker marker : hiddenMarkers) {
-    boolean show=true;
-    if (show) {
+  boolean show=useFingerLocation && map.getMyApplication().getSettings().SHOW_DESTINATION_ARROW.get();
+  if (show && fingerLocation != null) {
+    for (    MapMarker marker : hiddenMarkers) {
       canvas.save();
-      net.osmand.Location.distanceBetween(view.getLatitude(),view.getLongitude(),marker.getLatitude(),marker.getLongitude(),calculations);
+      net.osmand.Location.distanceBetween(fingerLocation.getLatitude(),fingerLocation.getLongitude(),marker.getLatitude(),marker.getLongitude(),calculations);
       float bearing=calculations[1] - 90;
       float radiusBearing=DIST_TO_SHOW * tb.getDensity();
       final QuadPoint cp=tb.getCenterPixelPoint();

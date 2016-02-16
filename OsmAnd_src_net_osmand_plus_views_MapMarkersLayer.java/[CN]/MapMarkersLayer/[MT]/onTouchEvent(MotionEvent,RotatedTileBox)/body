@@ -1,0 +1,39 @@
+{
+  if (!longTapDetector.onTouchEvent(event)) {
+switch (event.getAction()) {
+case MotionEvent.ACTION_DOWN:
+      float x=event.getX();
+    float y=event.getY();
+  fingerLocation=tileBox.getLatLonFromPixel(x,y);
+hasMoved=false;
+moving=true;
+break;
+case MotionEvent.ACTION_MOVE:
+if (!hasMoved) {
+if (!handler.hasMessages(MAP_REFRESH_MESSAGE)) {
+Message msg=Message.obtain(handler,new Runnable(){
+@Override public void run(){
+  handler.removeMessages(MAP_REFRESH_MESSAGE);
+  if (moving) {
+    if (!useFingerLocation) {
+      useFingerLocation=true;
+      map.refreshMap();
+    }
+  }
+}
+}
+);
+msg.what=MAP_REFRESH_MESSAGE;
+handler.sendMessageDelayed(msg,USE_FINGER_LOCATION_DELAY);
+}
+hasMoved=true;
+}
+break;
+case MotionEvent.ACTION_UP:
+case MotionEvent.ACTION_CANCEL:
+cancelFingerAction();
+break;
+}
+}
+return super.onTouchEvent(event,tileBox);
+}
