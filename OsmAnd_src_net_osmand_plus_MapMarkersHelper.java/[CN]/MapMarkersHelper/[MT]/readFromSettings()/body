@@ -4,16 +4,29 @@
   List<LatLon> ips=settings.getMapMarkersPoints();
   List<String> desc=settings.getMapMarkersPointDescriptions(ips.size());
   List<Integer> colors=settings.getMapMarkersColors(ips.size());
+  List<Integer> positions=settings.getMapMarkersPositions(ips.size());
+  int colorIndex=0;
+  int pos=0;
   for (int i=0; i < ips.size(); i++) {
-    MapMarker mapMarker=new MapMarker(ips.get(i),PointDescription.deserializeFromString(desc.get(i),ips.get(i)),colors.get(i),i);
+    if (colors.size() > i) {
+      colorIndex=colors.get(i);
+    }
+    if (positions.size() > i) {
+      pos=positions.get(i);
+    }
+ else {
+      pos++;
+    }
+    MapMarker mapMarker=new MapMarker(ips.get(i),PointDescription.deserializeFromString(desc.get(i),ips.get(i)),colorIndex,pos,i);
     mapMarkers.add(mapMarker);
     lookupAddress(mapMarker,false);
   }
+  updatePositionArray();
   ips=settings.getMapMarkersHistoryPoints();
   desc=settings.getMapMarkersHistoryPointDescriptions(ips.size());
   colors=settings.getMapMarkersHistoryColors(ips.size());
   for (int i=0; i < ips.size(); i++) {
-    MapMarker mapMarker=new MapMarker(ips.get(i),PointDescription.deserializeFromString(desc.get(i),ips.get(i)),colors.get(i),i);
+    MapMarker mapMarker=new MapMarker(ips.get(i),PointDescription.deserializeFromString(desc.get(i),ips.get(i)),colors.get(i),0,i);
     mapMarker.history=true;
     mapMarkersHistory.add(mapMarker);
     lookupAddress(mapMarker,true);
