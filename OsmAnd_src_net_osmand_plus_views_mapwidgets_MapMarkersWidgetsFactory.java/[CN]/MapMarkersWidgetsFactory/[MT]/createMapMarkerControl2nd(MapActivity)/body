@@ -1,0 +1,41 @@
+{
+  final TextInfoWidget mapMarkerControl=new TextInfoWidget(map){
+    private int cachedMarkerColorIndex=-1;
+    private String cachedMarkerDistText;
+    @Override public boolean updateInfo(    DrawSettings d){
+      if (markerColorIndex2nd != -1 && markerDistText2nd != null) {
+        boolean res=false;
+        if (markerColorIndex2nd != cachedMarkerColorIndex) {
+          setImageDrawable(map.getMyApplication().getIconsCache().getIcon(R.drawable.widget_intermediate_day,MapMarkerDialogHelper.getMapMarkerColorId(markerColorIndex2nd)));
+          res=true;
+        }
+        if (!markerDistText2nd.equals(cachedMarkerDistText)) {
+          int ls=markerDistText2nd.lastIndexOf(' ');
+          if (ls == -1) {
+            setText(markerDistText2nd,null);
+          }
+ else {
+            setText(markerDistText2nd.substring(0,ls),markerDistText2nd.substring(ls + 1));
+          }
+          res=true;
+        }
+        return res;
+      }
+ else       if (cachedMarkerDistText != null) {
+        cachedMarkerDistText=null;
+        setText(null,null);
+        return true;
+      }
+      return false;
+    }
+  }
+;
+  mapMarkerControl.setText(null,null);
+  mapMarkerControl.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      showMarkerOnMap(1);
+    }
+  }
+);
+  return mapMarkerControl;
+}
