@@ -1,8 +1,9 @@
 {
   baseColor=mapActivity.getResources().getColor(R.color.osmand_orange) & 0x00ffffff;
   waypointDialogHelper=new WaypointDialogHelper(mapActivity);
-  waypointDialogHelper.setWaypointDialogHelperCallbacks(this);
+  waypointDialogHelper.setHelperCallbacks(this);
   mapMarkerDialogHelper=new MapMarkerDialogHelper(mapActivity);
+  mapMarkerDialogHelper.setHelperCallbacks(this);
   landscape=!AndroidUiHelper.isOrientationPortrait(mapActivity);
   dashboardView=(FrameLayout)mapActivity.findViewById(R.id.dashboard);
   final View.OnClickListener listener=new View.OnClickListener(){
@@ -21,9 +22,15 @@
     @Override public boolean canDismiss(    int position){
       boolean res=false;
       if (listAdapter instanceof StableArrayAdapter) {
-        List<Object> activeObjects=((StableArrayAdapter)listAdapter).getActiveObjects();
-        Object obj=listAdapter.getItem(position);
-        res=activeObjects.contains(obj);
+        if (visibleType == DashboardType.WAYPOINTS || visibleType == DashboardType.WAYPOINTS_FLAT) {
+          List<Object> activeObjects=((StableArrayAdapter)listAdapter).getActiveObjects();
+          Object obj=listAdapter.getItem(position);
+          res=activeObjects.contains(obj);
+        }
+ else         if (visibleType == DashboardType.MAP_MARKERS) {
+          Object obj=listAdapter.getItem(position);
+          res=obj instanceof MapMarker;
+        }
       }
       return res;
     }
