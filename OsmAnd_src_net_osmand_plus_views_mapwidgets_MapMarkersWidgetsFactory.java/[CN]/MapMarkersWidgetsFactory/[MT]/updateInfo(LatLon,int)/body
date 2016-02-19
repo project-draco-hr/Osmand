@@ -19,10 +19,19 @@
   }
   Float heading=map.getMapViewTrackingUtilities().getHeading();
   MapMarker marker=markers.get(0);
-  updateUI(loc,heading,marker,arrowImg,distText,okButton,addressText,true);
+  updateUI(loc,heading,marker,arrowImg,distText,okButton,addressText,true,customLocation != null);
   if (markers.size() > 1) {
     marker=markers.get(1);
-    updateUI(loc,heading,marker,arrowImg2nd,distText2nd,okButton2nd,addressText2nd,false);
+    if (loc != null) {
+      for (int i=1; i < markers.size(); i++) {
+        MapMarker m=markers.get(i);
+        m.dist=(int)(MapUtils.getDistance(m.getLatitude(),m.getLongitude(),loc.getLatitude(),loc.getLongitude()));
+        if (m.dist < MIN_DIST_2ND_ROW_SHOW && marker.dist > m.dist) {
+          marker=m;
+        }
+      }
+    }
+    updateUI(loc,heading,marker,arrowImg2nd,distText2nd,okButton2nd,addressText2nd,false,customLocation != null);
     updateVisibility(topBar2nd,true);
   }
  else {
