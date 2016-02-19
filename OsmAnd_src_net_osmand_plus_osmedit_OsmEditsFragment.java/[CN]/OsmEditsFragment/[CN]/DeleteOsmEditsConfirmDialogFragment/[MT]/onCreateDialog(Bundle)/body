@@ -1,27 +1,2 @@
 {
-  final OsmEditsFragment parentFragment=(OsmEditsFragment)getParentFragment();
-  final OsmEditingPlugin plugin=OsmandPlugin.getEnabledPlugin(OsmEditingPlugin.class);
-  final ArrayList<OsmPoint> points=(ArrayList<OsmPoint>)getArguments().getSerializable(POINTS_LIST);
-  AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
-  builder.setMessage(getString(R.string.local_osm_changes_delete_all_confirm,points.size()));
-  builder.setPositiveButton(R.string.shared_string_delete,new DialogInterface.OnClickListener(){
-    @Override public void onClick(    DialogInterface dialog,    int which){
-      Iterator<OsmPoint> it=points.iterator();
-      while (it.hasNext()) {
-        OsmPoint osmPoint=it.next();
-        if (osmPoint.getGroup() == OsmPoint.Group.POI) {
-          plugin.getDBPOI().deletePOI((OpenstreetmapPoint)osmPoint);
-        }
- else         if (osmPoint.getGroup() == OsmPoint.Group.BUG) {
-          plugin.getDBBug().deleteAllBugModifications((OsmNotesPoint)osmPoint);
-        }
-        it.remove();
-        parentFragment.deletePoint(osmPoint);
-      }
-      parentFragment.notifyDataSetChanged();
-    }
-  }
-);
-  builder.setNegativeButton(R.string.shared_string_cancel,null);
-  return builder.create();
 }
