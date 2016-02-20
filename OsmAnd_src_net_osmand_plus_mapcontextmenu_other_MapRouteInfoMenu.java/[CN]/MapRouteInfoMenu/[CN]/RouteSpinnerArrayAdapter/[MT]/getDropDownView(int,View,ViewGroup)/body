@@ -1,16 +1,28 @@
 {
+  long id=getItemId(position);
   TextView label=(TextView)super.getDropDownView(position,convertView,parent);
   RouteSpinnerRow row=getItem(position);
-  long id=getItemId(position);
   label.setText(row.text);
   if (id != SPINNER_HINT_ID) {
-    Drawable icon=mapActivity.getMyApplication().getIconsCache().getContentIcon(row.iconId);
+    Drawable icon=null;
+    if (row.icon != null) {
+      icon=row.icon;
+    }
+ else     if (row.iconId > 0) {
+      icon=mapActivity.getMyApplication().getIconsCache().getContentIcon(row.iconId);
+    }
     label.setCompoundDrawablesWithIntrinsicBounds(icon,null,null,null);
     label.setCompoundDrawablePadding(AndroidUtils.dpToPx(mapActivity,16f));
   }
  else {
     label.setCompoundDrawablesWithIntrinsicBounds(null,null,null,null);
     label.setCompoundDrawablePadding(0);
+  }
+  if (id == SPINNER_MAP_MARKER_MORE_ID) {
+    label.setTextColor(!mapActivity.getMyApplication().getSettings().isLightContent() ? mapActivity.getResources().getColor(R.color.color_dialog_buttons_dark) : mapActivity.getResources().getColor(R.color.color_dialog_buttons_light));
+  }
+ else {
+    label.setTextColor(!mapActivity.getMyApplication().getSettings().isLightContent() ? ContextCompat.getColorStateList(mapActivity,android.R.color.primary_text_dark) : ContextCompat.getColorStateList(mapActivity,android.R.color.primary_text_light));
   }
   label.setPadding(AndroidUtils.dpToPx(mapActivity,16f),0,0,0);
   return label;
