@@ -6,6 +6,7 @@
     List<PointDescription> pointDescriptions=new ArrayList<>();
     int[] colorIndexes=new int[points.size()];
     int[] positions=new int[points.size()];
+    boolean[] selections=new boolean[points.size()];
     int[] indexes=new int[points.size()];
     for (int i=0; i < points.size(); i++) {
       LatLon point=points.get(i);
@@ -35,14 +36,11 @@
       longitudes[i]=point.getLongitude();
       pointDescriptions.add(pointDescription);
       colorIndexes[i]=colorIndex;
-      positions[i]=0 - i;
+      positions[i]=-1 - i;
+      selections[i]=false;
       indexes[i]=0;
     }
-    if (sortedMapMarkers.size() > 0) {
-      MapMarker firstMarker=sortedMapMarkers.get(0);
-      settings.updateMapMarker(firstMarker.getLatitude(),firstMarker.getLongitude(),firstMarker.pointDescription,firstMarker.colorIndex,-points.size());
-    }
-    settings.insertMapMarkers(latitudes,longitudes,pointDescriptions,colorIndexes,positions,indexes);
+    settings.insertMapMarkers(latitudes,longitudes,pointDescriptions,colorIndexes,positions,selections,indexes);
     readFromSettings();
     normalizePositions();
   }
