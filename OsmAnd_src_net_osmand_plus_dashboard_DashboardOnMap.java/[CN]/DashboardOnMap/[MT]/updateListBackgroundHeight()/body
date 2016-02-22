@@ -1,14 +1,16 @@
 {
-  if (listBackgroundView == null || listBackgroundView.getHeight() > 0) {
-    return;
-  }
-  final View contentView=mapActivity.getWindow().getDecorView().findViewById(android.R.id.content);
-  if (contentView.getHeight() > 0) {
-    listBackgroundView.getLayoutParams().height=contentView.getHeight();
-  }
+  if (listBackgroundView != null) {
+    final View contentView=mapActivity.getWindow().getDecorView().findViewById(android.R.id.content);
+    ViewTreeObserver vto=contentView.getViewTreeObserver();
+    vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
+      @Override public void onGlobalLayout(){
+        ViewTreeObserver obs=contentView.getViewTreeObserver();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+          obs.removeOnGlobalLayoutListener(this);
+        }
  else {
-    contentView.post(new Runnable(){
-      @Override public void run(){
+          obs.removeGlobalOnLayoutListener(this);
+        }
         listBackgroundView.getLayoutParams().height=contentView.getHeight();
       }
     }

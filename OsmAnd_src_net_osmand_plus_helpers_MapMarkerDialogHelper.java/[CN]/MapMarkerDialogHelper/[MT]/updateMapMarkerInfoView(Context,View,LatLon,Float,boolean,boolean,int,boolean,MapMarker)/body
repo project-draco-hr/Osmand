@@ -6,7 +6,7 @@
   ImageView waypointIcon=(ImageView)localView.findViewById(R.id.waypoint_icon);
   TextView waypointDeviation=(TextView)localView.findViewById(R.id.waypoint_deviation);
   TextView descText=(TextView)localView.findViewById(R.id.waypoint_desc_text);
-  CheckBox checkBox=(CheckBox)localView.findViewById(R.id.checkbox);
+  final CheckBox checkBox=(CheckBox)localView.findViewById(R.id.checkbox);
   if (text == null || textDist == null || arrow == null || waypointIcon == null || waypointDeviation == null || descText == null) {
     return;
   }
@@ -41,7 +41,7 @@
   }
   arrow.setVisibility(View.VISIBLE);
   arrow.invalidate();
-  OsmandApplication app=(OsmandApplication)ctx.getApplicationContext();
+  final OsmandApplication app=(OsmandApplication)ctx.getApplicationContext();
   if (!marker.history) {
     waypointIcon.setImageDrawable(getMapMarkerIcon(app,marker.colorIndex));
     AndroidUtils.setTextPrimaryColor(ctx,text,nightMode);
@@ -69,9 +69,18 @@
   text.setText(descr);
   descText.setVisibility(View.GONE);
   if (selectionMode) {
+    checkBox.setChecked(marker.selected);
     checkBox.setVisibility(View.VISIBLE);
+    checkBox.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        marker.selected=checkBox.isChecked();
+        app.getMapMarkersHelper().updateMapMarker(marker,false);
+      }
+    }
+);
   }
  else {
     checkBox.setVisibility(View.GONE);
+    checkBox.setOnClickListener(null);
   }
 }
