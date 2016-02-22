@@ -5,7 +5,10 @@
   nightMode=mapActivity.getMyApplication().getDaynightHelper().isNightModeForMapControls();
   this.previousVisibleType=prevItem;
   this.visible=visible;
-  boolean refresh=this.visibleType == type;
+  ApplicationMode currentAppMode=getMyApplication().getSettings().APPLICATION_MODE.get();
+  boolean appModeChanged=currentAppMode != previousAppMode;
+  boolean refresh=this.visibleType == type && !appModeChanged;
+  previousAppMode=currentAppMode;
   this.visibleType=type;
   DashboardOnMap.staticVisible=visible;
   DashboardOnMap.staticVisibleType=type;
@@ -50,7 +53,7 @@
         updateListBackgroundHeight();
       }
       applyDayNightMode();
-      if (visibleType == DashboardType.MAP_MARKERS) {
+      if (visibleType == DashboardType.MAP_MARKERS || visibleType == DashboardType.MAP_MARKERS_SELECTION) {
         getMyApplication().getMapMarkersHelper().addListener(this);
       }
     }
@@ -68,7 +71,7 @@
     mapActivity.getRoutingHelper().addListener(this);
   }
  else {
-    if (visibleType == DashboardType.MAP_MARKERS) {
+    if (visibleType == DashboardType.MAP_MARKERS || visibleType == DashboardType.MAP_MARKERS_SELECTION) {
       getMyApplication().getMapMarkersHelper().removeListener(this);
     }
     if (swipeDismissListener != null) {
