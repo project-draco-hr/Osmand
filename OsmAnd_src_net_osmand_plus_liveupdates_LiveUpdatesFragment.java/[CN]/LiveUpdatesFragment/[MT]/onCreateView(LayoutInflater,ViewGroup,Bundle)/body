@@ -19,19 +19,21 @@
   }
 );
   progressBar=(ProgressBar)view.findViewById(R.id.progress);
-  subscriptionHeader=inflater.inflate(R.layout.live_updates_header,listView,false);
-  updateSubscriptionHeader();
-  listView.addHeaderView(subscriptionHeader);
-  listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-    @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
-      if (position == 0 && !processing && InAppHelper.isSubscribedToLiveUpdates()) {
-        SubscriptionFragment subscriptionFragment=new SubscriptionFragment();
-        subscriptionFragment.setEditMode(true);
-        subscriptionFragment.show(getChildFragmentManager(),SubscriptionFragment.TAG);
+  if (!Version.isDeveloperVersion(getMyApplication())) {
+    subscriptionHeader=inflater.inflate(R.layout.live_updates_header,listView,false);
+    updateSubscriptionHeader();
+    listView.addHeaderView(subscriptionHeader);
+    listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+      @Override public void onItemClick(      AdapterView<?> parent,      View view,      int position,      long id){
+        if (position == 0 && !processing && InAppHelper.isSubscribedToLiveUpdates()) {
+          SubscriptionFragment subscriptionFragment=new SubscriptionFragment();
+          subscriptionFragment.setEditMode(true);
+          subscriptionFragment.show(getChildFragmentManager(),SubscriptionFragment.TAG);
+        }
       }
     }
-  }
 );
+  }
   loadLocalIndexesTask=new LoadLocalIndexTask(adapter,this).execute();
   return view;
 }
