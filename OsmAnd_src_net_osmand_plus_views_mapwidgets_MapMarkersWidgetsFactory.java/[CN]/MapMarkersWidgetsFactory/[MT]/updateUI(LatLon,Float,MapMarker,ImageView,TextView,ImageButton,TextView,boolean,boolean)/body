@@ -21,14 +21,18 @@
   }
   arrowImg.invalidate();
   int dist=(int)mes[0];
-  String txt;
+  String txt=null;
   if (loc != null) {
     txt=OsmAndFormatter.getFormattedDistance(dist,map.getMyApplication());
   }
  else {
-    txt="???";
+    if ((firstLine && marker != this.marker) || (!firstLine && marker != this.marker2nd)) {
+      txt="???";
+    }
   }
-  distText.setText(txt);
+  if (txt != null) {
+    distText.setText(txt);
+  }
   updateVisibility(okButton,!customLocation && loc != null && dist < MIN_DIST_OK_VISIBLE);
   String descr;
   PointDescription pd=marker.getPointDescription(map);
@@ -43,11 +47,17 @@
   }
   addressText.setText(descr);
   if (firstLine) {
+    this.marker=marker;
     markerColorIndex=marker.colorIndex;
-    markerDistText=txt;
+    if (txt != null) {
+      markerDistText=txt;
+    }
   }
  else {
+    this.marker2nd=marker;
     markerColorIndex2nd=marker.colorIndex;
-    markerDistText2nd=txt;
+    if (txt != null) {
+      markerDistText2nd=txt;
+    }
   }
 }
