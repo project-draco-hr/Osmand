@@ -1,6 +1,14 @@
 {
-  final OsmandSettings settings=app.getSettings();
   final MapActivityLayers layers=activity.getMapLayers();
+  if (!force && exMapPref.get() != null) {
+    mapPref.set(exMapPref.get());
+    if (callback != null) {
+      callback.onMapSelected();
+    }
+    updateMapLayers(mapView,mapPref,layers);
+    return;
+  }
+  final OsmandSettings settings=app.getSettings();
   Map<String,String> entriesMap=settings.getTileSourceEntries();
   final ArrayList<String> keys=new ArrayList<>(entriesMap.keySet());
   AlertDialog.Builder builder=new AlertDialog.Builder(activity);
@@ -20,13 +28,14 @@
             if (object == null) {
               if (count == 1) {
                 mapPref.set(template.getName());
+                exMapPref.set(template.getName());
                 if (callback != null) {
                   callback.onMapSelected();
                 }
                 updateMapLayers(mapView,mapPref,layers);
               }
  else {
-                selectMapOverlayLayer(mapView,mapPref,activity,null);
+                selectMapOverlayLayer(mapView,mapPref,exMapPref,false,activity,null);
               }
             }
  else {
@@ -43,6 +52,7 @@
       }
  else {
         mapPref.set(keys.get(which));
+        exMapPref.set(keys.get(which));
         if (callback != null) {
           callback.onMapSelected();
         }
