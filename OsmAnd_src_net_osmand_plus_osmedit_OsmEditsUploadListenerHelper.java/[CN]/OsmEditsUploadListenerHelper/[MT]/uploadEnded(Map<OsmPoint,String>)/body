@@ -13,8 +13,22 @@
     Log.v(TAG,"in if1");
     OsmPoint point=loadErrorsMap.keySet().iterator().next();
     String message=loadErrorsMap.get(point);
-    DialogFragment dialogFragment=UploadingErrorDialogFragment.getInstance(message,point);
-    dialogFragment.show(activity.getSupportFragmentManager(),"error_loading");
+    if (message.equals(activity.getString(R.string.auth_failed))) {
+      SendPoiDialogFragment dialogFragment=SendPoiDialogFragment.createInstance(new OsmPoint[]{point});
+      if (activity instanceof MapActivity) {
+        dialogFragment.setPoiUploader(new SendPoiDialogFragment.SimpleProgressDialogPoiUploader(){
+          @NonNull @Override protected MapActivity getMapActivity(){
+            return (MapActivity)activity;
+          }
+        }
+);
+      }
+      dialogFragment.show(activity.getSupportFragmentManager(),"error_loading");
+    }
+ else {
+      DialogFragment dialogFragment=UploadingErrorDialogFragment.getInstance(message,point);
+      dialogFragment.show(activity.getSupportFragmentManager(),"error_loading");
+    }
   }
  else {
     UploadingMultipleErrorDialogFragment dialogFragment=UploadingMultipleErrorDialogFragment.createInstance(loadErrorsMap);
