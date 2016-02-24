@@ -3,6 +3,13 @@
   montReportsSpinner=(Spinner)view.findViewById(R.id.montReportsSpinner);
   monthsForReportsAdapter=new MonthsForReportsAdapter(getActivity());
   montReportsSpinner.setAdapter(monthsForReportsAdapter);
+  view.findViewById(R.id.show_all).setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse("http://osmand.net/osm_live"));
+      startActivity(intent);
+    }
+  }
+);
   View regionReportsButton=view.findViewById(R.id.reportsButton);
   regionReportsButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
@@ -10,6 +17,23 @@
     }
   }
 );
+  OnClickListener listener=new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      int monthItemPosition=montReportsSpinner.getSelectedItemPosition();
+      String monthUrlString=monthsForReportsAdapter.getQueryString(monthItemPosition);
+      String countryUrlString=selectedCountryItem.getDownloadName();
+      if (countryUrlString.length() > 0) {
+        Bundle bl=new Bundle();
+        bl.putString(UsersReportFragment.URL_REQUEST,String.format(USERS_RANKING_BY_MONTH,monthUrlString,countryUrlString));
+        userReportFragment.setArguments(bl);
+        userReportFragment.show(getChildFragmentManager(),"NumberOfEditsFramgnet");
+      }
+    }
+  }
+;
+  view.findViewById(R.id.numberOfContributorsLayout).setOnClickListener(listener);
+  view.findViewById(R.id.numberOfEditsLayout).setOnClickListener(listener);
+  ;
   countrySelectionFragment.initCountries(getMyApplication());
   selectedCountryItem=countrySelectionFragment.getCountryItems().get(0);
   countryNameTextView=(TextView)regionReportsButton.findViewById(android.R.id.text1);
@@ -17,14 +41,22 @@
   setThemedDrawable(view,R.id.calendarImageView,R.drawable.ic_action_data);
   setThemedDrawable(view,R.id.regionIconImageView,R.drawable.ic_world_globe_dark);
   numberOfContributorsIcon=(ImageView)view.findViewById(R.id.numberOfContributorsIcon);
-  setThemedDrawable(numberOfContributorsIcon,R.drawable.ic_group);
   numberOfEditsIcon=(ImageView)view.findViewById(R.id.numberOfEditsIcon);
+  numberOfRecipientsIcon=(ImageView)view.findViewById(R.id.numberOfRecipientsIcon);
+  donationsIcon=(ImageView)view.findViewById(R.id.donationsIcon);
+  setThemedDrawable(numberOfContributorsIcon,R.drawable.ic_group);
+  setThemedDrawable(numberOfRecipientsIcon,R.drawable.ic_group);
+  setThemedDrawable(donationsIcon,R.drawable.ic_action_message);
   setThemedDrawable(numberOfEditsIcon,R.drawable.ic_map);
   numberOfContributorsTitle=(TextView)view.findViewById(R.id.numberOfContributorsTitle);
   numberOfEditsTitle=(TextView)view.findViewById(R.id.numberOfEditsTitle);
+  donationsTitle=(TextView)view.findViewById(R.id.donationsTitle);
+  numberOfRecipientsTitle=(TextView)view.findViewById(R.id.numberOfRecipientsTitle);
   progressBar=(ProgressBar)view.findViewById(R.id.progress);
   contributorsTextView=(TextView)view.findViewById(R.id.contributorsTextView);
   editsTextView=(TextView)view.findViewById(R.id.editsTextView);
+  donationsTextView=(TextView)view.findViewById(R.id.donationsTextView);
+  recipientsTextView=(TextView)view.findViewById(R.id.recipientsTextView);
   requestAndUpdateUi();
   AdapterView.OnItemSelectedListener onItemSelectedListener=new AdapterView.OnItemSelectedListener(){
     @Override public void onItemSelected(    AdapterView<?> parent,    View view,    int position,    long id){

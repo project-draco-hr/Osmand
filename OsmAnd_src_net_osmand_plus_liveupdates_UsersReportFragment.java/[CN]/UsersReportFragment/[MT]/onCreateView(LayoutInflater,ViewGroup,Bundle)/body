@@ -1,0 +1,26 @@
+{
+  final View view=inflater.inflate(R.layout.fragment_simple_list,container,false);
+  ListView listView=(ListView)view.findViewById(android.R.id.list);
+  final ArrayAdapter<UserRankingByMonth> adapter=new ListAdapter(getListItemIcon());
+  String url=getArguments().getString(URL_REQUEST);
+  view.findViewById(R.id.progress).setVisibility(View.VISIBLE);
+  ((TextView)view.findViewById(R.id.titleTextView)).setText(R.string.osm_editors_ranking);
+  GetJsonAsyncTask<RankingUserByMonthResponse> task=new GetJsonAsyncTask<>(RankingUserByMonthResponse.class);
+  task.setOnResponseListener(new OnResponseListener<Protocol.RankingUserByMonthResponse>(){
+    @Override public void onResponse(    RankingUserByMonthResponse response){
+      adapter.addAll(Arrays.asList(response.rows));
+      view.findViewById(R.id.progress).setVisibility(View.GONE);
+    }
+  }
+);
+  task.execute(url);
+  listView.setAdapter(adapter);
+  ImageButton clearButton=(ImageButton)view.findViewById(R.id.closeButton);
+  clearButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismiss();
+    }
+  }
+);
+  return view;
+}

@@ -31,4 +31,28 @@
   totalChangesByMontAsyncTask.setOnErrorListener(onErrorListener);
   String finalUrl=String.format(TOTAL_CHANGES_BY_MONTH_URL_PATTERN,monthUrlString,regionUrlString);
   totalChangesByMontAsyncTask.execute(finalUrl);
+  GetJsonAsyncTask<Protocol.RecipientsByMonth> recChangesByMontAsyncTask=new GetJsonAsyncTask<>(Protocol.RecipientsByMonth.class);
+  GetJsonAsyncTask.OnResponseListener<Protocol.RecipientsByMonth> recResponseListener=new GetJsonAsyncTask.OnResponseListener<Protocol.RecipientsByMonth>(){
+    @Override public void onResponse(    Protocol.RecipientsByMonth response){
+      if (response != null) {
+        if (recipientsTextView != null) {
+          recipientsTextView.setText(String.valueOf(response.regionCount));
+        }
+        if (donationsTextView != null) {
+          donationsTextView.setText(String.format("%.3f",response.regionBtc * 1000.0) + " mBTC");
+        }
+      }
+      disableProgress();
+    }
+  }
+;
+  recChangesByMontAsyncTask.setOnResponseListener(recResponseListener);
+  if (recipientsTextView != null) {
+    recipientsTextView.setText("-");
+  }
+  if (donationsTextView != null) {
+    donationsTextView.setText("-");
+  }
+  String recfinalUrl=String.format(RECIPIENTS_BY_MONTH,monthUrlString,regionUrlString);
+  recChangesByMontAsyncTask.execute(recfinalUrl);
 }
