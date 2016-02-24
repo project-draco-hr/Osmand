@@ -1,0 +1,20 @@
+{
+  ProgressDialogFragment dialog=ProgressDialogFragment.createInstance(R.string.uploading,R.string.local_openstreetmap_uploading,ProgressDialog.STYLE_HORIZONTAL);
+  final MapActivity mapActivity=getMapActivity();
+  OsmEditingPlugin plugin=OsmandPlugin.getPlugin(OsmEditingPlugin.class);
+  OsmEditsUploadListener listener=new OsmEditsUploadListenerHelper(mapActivity,mapActivity.getString(R.string.local_openstreetmap_were_uploaded)){
+    @Override public void uploadEnded(    Map<OsmPoint,String> loadErrorsMap){
+      super.uploadEnded(loadErrorsMap);
+      mapActivity.getContextMenu().close();
+      OsmBugsLayer l=mapActivity.getMapView().getLayerByClass(OsmBugsLayer.class);
+      if (l != null) {
+        l.clearCache();
+        mapActivity.refreshMap();
+      }
+    }
+  }
+;
+  dialog.show(mapActivity.getSupportFragmentManager(),ProgressDialogFragment.TAG);
+  UploadOpenstreetmapPointAsyncTask uploadTask=new UploadOpenstreetmapPointAsyncTask(dialog,listener,plugin,points.length,closeChangeSet,anonymously);
+  uploadTask.execute(points);
+}
