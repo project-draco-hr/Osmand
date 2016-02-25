@@ -1,0 +1,47 @@
+{
+  DistanceToPointInfoControl ctrl=new DistanceToPointInfoControl(map,0,0){
+    private int cachedMarkerColorIndex=-1;
+    @Override public LatLon getPointToNavigate(){
+      MapMarker marker=getMarker();
+      if (marker != null) {
+        return marker.point;
+      }
+      return null;
+    }
+    private MapMarker getMarker(){
+      List<MapMarker> markers=helper.getSortedMapMarkers();
+      if (firstMarker) {
+        if (markers.size() > 0) {
+          return markers.get(0);
+        }
+      }
+ else {
+        if (markers.size() > 1) {
+          return markers.get(1);
+        }
+      }
+      return null;
+    }
+    @Override public boolean updateInfo(    DrawSettings drawSettings){
+      MapMarker marker=getMarker();
+      if (marker == null) {
+        setText(null,null);
+        return false;
+      }
+      boolean res=super.updateInfo(drawSettings);
+      if (marker.colorIndex != -1) {
+        if (marker.colorIndex != cachedMarkerColorIndex) {
+          setImageDrawable(map.getMyApplication().getIconsCache().getIcon(R.drawable.widget_marker_day,MapMarkerDialogHelper.getMapMarkerColorId(marker.colorIndex)));
+          cachedMarkerColorIndex=marker.colorIndex;
+        }
+      }
+      return res;
+    }
+    @Override protected void click(    OsmandMapTileView view){
+      showMarkerOnMap(firstMarker ? 0 : 1);
+    }
+  }
+;
+  ctrl.setAutoHide(false);
+  return ctrl;
+}
