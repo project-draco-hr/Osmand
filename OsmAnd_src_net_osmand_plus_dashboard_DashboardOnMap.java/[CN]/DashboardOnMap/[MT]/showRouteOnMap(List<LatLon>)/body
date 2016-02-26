@@ -1,0 +1,31 @@
+{
+  if (points.size() > 0 && mapActivity != null) {
+    OsmandMapTileView mapView=mapActivity.getMapView();
+    double left=0, right=0;
+    double top=0, bottom=0;
+    for (    LatLon l : points) {
+      if (left == 0) {
+        left=l.getLongitude();
+        right=l.getLongitude();
+        top=l.getLatitude();
+        bottom=l.getLatitude();
+      }
+ else {
+        left=Math.min(left,l.getLongitude());
+        right=Math.max(right,l.getLongitude());
+        top=Math.max(top,l.getLatitude());
+        bottom=Math.min(bottom,l.getLatitude());
+      }
+    }
+    RotatedTileBox tb=mapView.getCurrentRotatedTileBox().copy();
+    int tileBoxWidthPx=0;
+    int tileBoxHeightPx=0;
+    if (landscape) {
+      tileBoxWidthPx=tb.getPixWidth() - dashboardView.getWidth();
+    }
+ else     if (listBackgroundView != null) {
+      tileBoxHeightPx=3 * (mFlexibleSpaceImageHeight - mFlexibleBlurSpaceHeight) / 4;
+    }
+    mapView.fitRectToMap(left,right,top,bottom,tileBoxWidthPx,tileBoxHeightPx,mFlexibleBlurSpaceHeight * 3 / 2);
+  }
+}
