@@ -4,12 +4,21 @@
   }
   lastUpdateTime=System.currentTimeMillis();
   try {
+    LatLon prevMyLoc=myLoc;
     calculateLocationParams();
     for (int i=listView.getFirstVisiblePosition(); i <= listView.getLastVisiblePosition(); i++) {
       Object obj=listView.getItemAtPosition(i);
       View v=listView.getChildAt(i - listView.getFirstVisiblePosition());
       if (obj instanceof MapMarker && v != null) {
         updateMapMarkerArrowDistanceView(v,(MapMarker)obj);
+      }
+    }
+    if (markersHelper.isStartFromMyLocation() && prevMyLoc == null && myLoc != null) {
+      if (helperCallbacks != null) {
+        helperCallbacks.showMarkersRouteOnMap();
+      }
+ else {
+        mapActivity.refreshMap();
       }
     }
   }

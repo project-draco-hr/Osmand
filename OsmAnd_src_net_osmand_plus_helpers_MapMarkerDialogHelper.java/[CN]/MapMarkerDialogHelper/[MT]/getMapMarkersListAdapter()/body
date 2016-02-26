@@ -17,7 +17,7 @@
     }
     @Override public boolean isEnabled(    int position){
       Object obj=getItem(position);
-      return obj instanceof MapMarker;
+      return obj instanceof MapMarker || (obj instanceof Integer && (Integer)obj == MY_LOCATION);
     }
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
@@ -26,7 +26,12 @@
       boolean topDividerView=(obj instanceof Boolean) && ((Boolean)obj);
       boolean bottomDividerView=(obj instanceof Boolean) && !((Boolean)obj);
       if (labelView) {
-        v=createItemForCategory(this,(Integer)obj);
+        if ((Integer)obj == MY_LOCATION) {
+          v=updateMyLocationView(v);
+        }
+ else {
+          v=createItemForCategory(this,(Integer)obj);
+        }
         AndroidUtils.setListItemBackground(mapActivity,v,nightMode);
       }
  else       if (topDividerView) {

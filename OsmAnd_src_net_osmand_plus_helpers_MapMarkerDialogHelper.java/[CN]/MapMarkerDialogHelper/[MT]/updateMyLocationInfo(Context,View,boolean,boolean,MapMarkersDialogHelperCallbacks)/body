@@ -1,0 +1,43 @@
+{
+  TextView text=(TextView)localView.findViewById(R.id.waypoint_text);
+  TextView textDist=(TextView)localView.findViewById(R.id.waypoint_dist);
+  ImageView arrow=(ImageView)localView.findViewById(R.id.direction);
+  ImageView waypointIcon=(ImageView)localView.findViewById(R.id.waypoint_icon);
+  TextView waypointDeviation=(TextView)localView.findViewById(R.id.waypoint_deviation);
+  TextView descText=(TextView)localView.findViewById(R.id.waypoint_desc_text);
+  final CheckBox checkBox=(CheckBox)localView.findViewById(R.id.checkbox);
+  if (text == null || textDist == null || arrow == null || waypointIcon == null || waypointDeviation == null || descText == null) {
+    return;
+  }
+  arrow.setVisibility(View.GONE);
+  textDist.setVisibility(View.GONE);
+  waypointDeviation.setVisibility(View.GONE);
+  final OsmandApplication app=(OsmandApplication)ctx.getApplicationContext();
+  ApplicationMode appMode=app.getSettings().getApplicationMode();
+  waypointIcon.setImageDrawable(ctx.getResources().getDrawable(appMode.getResourceLocationDay()));
+  text.setText(ctx.getString(R.string.shared_string_my_location));
+  descText.setText(ctx.getResources().getString(R.string.starting_point));
+  descText.setVisibility(View.VISIBLE);
+  AndroidUtils.setTextPrimaryColor(ctx,text,nightMode);
+  AndroidUtils.setTextSecondaryColor(ctx,descText,nightMode);
+  if (selectionMode) {
+    checkBox.setChecked(app.getMapMarkersHelper().isStartFromMyLocation());
+    checkBox.setVisibility(View.VISIBLE);
+    checkBox.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        app.getMapMarkersHelper().setStartFromMyLocation(checkBox.isChecked());
+        if (helperCallbacks != null) {
+          helperCallbacks.showMarkersRouteOnMap();
+        }
+ else         if (ctx instanceof MapActivity) {
+          ((MapActivity)ctx).refreshMap();
+        }
+      }
+    }
+);
+  }
+ else {
+    checkBox.setVisibility(View.GONE);
+    checkBox.setOnClickListener(null);
+  }
+}

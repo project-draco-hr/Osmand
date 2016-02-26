@@ -3,9 +3,17 @@
   if (tb.getZoom() < 3 || !map.getMyApplication().getSettings().USE_MAP_MARKERS.get()) {
     return;
   }
+  MapMarkersHelper markersHelper=map.getMyApplication().getMapMarkersHelper();
   if (route.size() > 0) {
     path.reset();
     boolean first=true;
+    Location myLocation=map.getMapViewTrackingUtilities().getMyLocation();
+    if (markersHelper.isStartFromMyLocation() && myLocation != null) {
+      int locationX=tb.getPixXFromLonNoRot(myLocation.getLongitude());
+      int locationY=tb.getPixYFromLatNoRot(myLocation.getLatitude());
+      path.moveTo(locationX,locationY);
+      first=false;
+    }
     for (    LatLon point : route) {
       int locationX=tb.getPixXFromLonNoRot(point.getLongitude());
       int locationY=tb.getPixYFromLatNoRot(point.getLatitude());
@@ -19,7 +27,6 @@
     }
     canvas.drawPath(path,paint);
   }
-  MapMarkersHelper markersHelper=map.getMyApplication().getMapMarkersHelper();
   List<MapMarker> activeMapMarkers=markersHelper.getActiveMapMarkers();
   for (int i=0; i < activeMapMarkers.size(); i++) {
     MapMarker marker=activeMapMarkers.get(i);
