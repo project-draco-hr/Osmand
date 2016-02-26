@@ -2,6 +2,7 @@
   if (visible == this.visible && type == visibleType) {
     return;
   }
+  mapActivity.getRoutingHelper().removeListener(this);
   nightMode=mapActivity.getMyApplication().getDaynightHelper().isNightModeForMapControls();
   this.previousVisibleType=prevItem;
   this.visible=visible;
@@ -13,6 +14,13 @@
   DashboardOnMap.staticVisible=visible;
   DashboardOnMap.staticVisibleType=type;
   mapActivity.enableDrawer();
+  getMyApplication().getMapMarkersHelper().removeListener(this);
+  if (mapActivity.getMapLayers().getMapMarkersLayer().clearRoute()) {
+    mapActivity.refreshMap();
+  }
+  if (swipeDismissListener != null) {
+    swipeDismissListener.discardUndo();
+  }
   if (visible) {
     mapActivity.getContextMenu().hideMenues();
     mapViewLocation=mapActivity.getMapLocation();
@@ -22,11 +30,6 @@
     mapActivity.getMapViewTrackingUtilities().setDashboard(this);
     mapActivity.disableDrawer();
     dashboardView.setVisibility(View.VISIBLE);
-    if (visibleType == DashboardType.MAP_MARKERS || previousVisibleType == DashboardType.MAP_MARKERS_SELECTION) {
-      if (mapActivity.getMapLayers().getMapMarkersLayer().clearRoute()) {
-        mapActivity.refreshMap();
-      }
-    }
     if (isActionButtonVisible()) {
       setActionButton(visibleType);
       actionButton.setVisibility(View.VISIBLE);
@@ -78,14 +81,6 @@
     mapActivity.getRoutingHelper().addListener(this);
   }
  else {
-    if (visibleType == DashboardType.MAP_MARKERS || visibleType == DashboardType.MAP_MARKERS_SELECTION) {
-      getMyApplication().getMapMarkersHelper().removeListener(this);
-      mapActivity.getMapLayers().getMapMarkersLayer().clearRoute();
-    }
-    if (swipeDismissListener != null) {
-      swipeDismissListener.discardUndo();
-    }
-    mapActivity.getRoutingHelper().removeListener(this);
     mapActivity.getMapViewTrackingUtilities().setDashboard(null);
     hide(dashboardView.findViewById(R.id.animateContent),animation);
     if (!mapActivity.getMapLayers().getMapControlsLayer().getMapRouteInfoMenu().isVisible()) {

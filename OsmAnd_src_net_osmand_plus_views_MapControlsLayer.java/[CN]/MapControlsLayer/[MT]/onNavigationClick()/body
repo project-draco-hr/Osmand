@@ -2,12 +2,19 @@
   MapActivity.clearPrevActivityIntent();
   RoutingHelper routingHelper=mapActivity.getRoutingHelper();
   if (!routingHelper.isFollowingMode() && !routingHelper.isRoutePlanningMode()) {
-    if (settings.USE_MAP_MARKERS.get()) {
+    if (settings.USE_MAP_MARKERS.get() && !hasTargets) {
       mapActivity.getMapActions().setFirstMapMarkerAsTarget();
     }
-    mapActivity.getMapActions().enterRoutePlanningMode(null,null);
+    TargetPoint start=getTargets().getPointToStart();
+    if (hasTargets && start != null) {
+      mapActivity.getMapActions().enterRoutePlanningMode(new LatLon(start.getLatitude(),start.getLongitude()),start.getOriginalPointDescription());
+    }
+ else {
+      mapActivity.getMapActions().enterRoutePlanningMode(null,null);
+    }
   }
  else {
     showRouteInfoControlDialog();
   }
+  hasTargets=false;
 }

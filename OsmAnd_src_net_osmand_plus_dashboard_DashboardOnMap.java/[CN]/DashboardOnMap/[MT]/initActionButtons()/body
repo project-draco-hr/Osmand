@@ -37,8 +37,36 @@
   routeButton.icon=mapActivity.getResources().getDrawable(R.drawable.map_directions);
   routeButton.onClickListener=new View.OnClickListener(){
     @Override public void onClick(    View v){
-      mapActivity.getMapLayers().getMapControlsLayer().doRoute();
+      boolean hasTargets=false;
+      if (visibleType == DashboardType.MAP_MARKERS_SELECTION) {
+        TargetPointsHelper targetPointsHelper=getMyApplication().getTargetPointsHelper();
+        MapMarkersHelper markersHelper=getMyApplication().getMapMarkersHelper();
+        List<MapMarker> markers=markersHelper.getSelectedMarkers();
+        if (markers.size() > 0) {
+          int i=0;
+          if (markersHelper.isStartFromMyLocation()) {
+            targetPointsHelper.clearStartPoint(false);
+          }
+ else {
+            MapMarker m=markers.get(i++);
+            targetPointsHelper.setStartPoint(new LatLon(m.getLatitude(),m.getLongitude()),false,m.getPointDescription(mapActivity));
+          }
+          List<TargetPoint> targetPoints=new ArrayList<>();
+          for (int k=i; k < markers.size(); k++) {
+            MapMarker m=markers.get(k);
+            TargetPoint t=new TargetPoint(new LatLon(m.getLatitude(),m.getLongitude()),m.getPointDescription(mapActivity));
+            targetPoints.add(t);
+          }
+          targetPointsHelper.reorderAllTargetPoints(targetPoints,false);
+          hasTargets=true;
+        }
+ else {
+          targetPointsHelper.clearStartPoint(false);
+          targetPointsHelper.clearPointToNavigate(false);
+        }
+      }
       hideDashboard();
+      mapActivity.getMapLayers().getMapControlsLayer().doRoute(hasTargets);
     }
   }
 ;
