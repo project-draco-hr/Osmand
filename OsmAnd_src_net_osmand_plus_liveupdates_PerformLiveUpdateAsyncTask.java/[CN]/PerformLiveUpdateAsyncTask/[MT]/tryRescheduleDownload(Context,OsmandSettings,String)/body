@@ -1,17 +1,12 @@
 {
-  final OsmandSettings.CommonPreference<Integer> updateFrequencyPreference=preferenceUpdateFrequency(localIndexInfo,settings);
+  final OsmandSettings.CommonPreference<Integer> updateFrequencyPreference=preferenceUpdateFrequency(localIndexFileName,settings);
   final Integer frequencyOrdinal=updateFrequencyPreference.get();
   if (LiveUpdatesHelper.UpdateFrequency.values()[frequencyOrdinal] == LiveUpdatesHelper.UpdateFrequency.HOURLY) {
     return;
   }
   final Integer retriesLeft=settings.LIVE_UPDATES_RETRIES.get();
   if (retriesLeft > 0) {
-    Intent intent=new Intent(context,LiveUpdatesAlarmReceiver.class);
-    final File file=new File(localIndexInfo);
-    final String fileName=Algorithms.getFileNameWithoutExtension(file);
-    intent.putExtra(LiveUpdatesHelper.LOCAL_INDEX_INFO,localIndexInfo);
-    intent.setAction(fileName);
-    PendingIntent alarmIntent=PendingIntent.getBroadcast(context,0,intent,0);
+    PendingIntent alarmIntent=LiveUpdatesHelper.getPendingIntent(context,localIndexFileName);
     long timeToRetry=System.currentTimeMillis() + AlarmManager.INTERVAL_HOUR;
     AlarmManager alarmMgr=(AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
     alarmMgr.set(AlarmManager.RTC,timeToRetry,alarmIntent);
