@@ -1,0 +1,39 @@
+{
+  routes.clear();
+  List<TransportIndexRepository> reps=getMapActivity().getMyApplication().getResourceManager().searchTransportRepositories(transportStop.getLocation().getLatitude(),transportStop.getLocation().getLongitude());
+  boolean useEnglishNames=getMapActivity().getMyApplication().getSettings().usingEnglishNames();
+  for (  TransportIndexRepository t : reps) {
+    if (t.acceptTransportStop(transportStop)) {
+      List<String> l;
+      if (useEnglishNames) {
+        l=t.getRouteDescriptionsForStop(transportStop,"{1} {0} - {3}");
+      }
+ else {
+        l=t.getRouteDescriptionsForStop(transportStop,"{1} {0} - {2}");
+      }
+      if (l != null) {
+        List<TransportStopRoute> routeList=new ArrayList<>();
+        for (        String s : l) {
+          int firstSpaceIndex=s.indexOf(' ');
+          if (firstSpaceIndex != -1) {
+            String typeName=s.substring(0,firstSpaceIndex);
+            TransportStopType type=TransportStopType.findType(typeName);
+            TransportStopRoute r=new TransportStopRoute();
+            r.type=type;
+            if (type == null) {
+              r.desc=s;
+            }
+ else {
+              r.desc=s.substring(firstSpaceIndex + 1);
+            }
+            routeList.add(r);
+            if (!hasTramRoute && type != null && type == TransportStopType.TRAM) {
+              hasTramRoute=true;
+            }
+          }
+        }
+        routes.add(routeList);
+      }
+    }
+  }
+}
