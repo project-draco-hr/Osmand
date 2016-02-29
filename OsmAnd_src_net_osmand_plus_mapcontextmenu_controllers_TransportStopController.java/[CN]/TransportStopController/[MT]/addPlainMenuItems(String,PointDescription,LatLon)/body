@@ -1,0 +1,20 @@
+{
+  List<TransportIndexRepository> reps=getMapActivity().getMyApplication().getResourceManager().searchTransportRepositories(transportStop.getLocation().getLatitude(),transportStop.getLocation().getLongitude());
+  boolean useEnglishNames=getMapActivity().getMyApplication().getSettings().usingEnglishNames();
+  for (  TransportIndexRepository t : reps) {
+    if (t.acceptTransportStop(transportStop)) {
+      List<String> l;
+      if (useEnglishNames) {
+        l=t.getRouteDescriptionsForStop(transportStop,"{1} {0} - {3}");
+      }
+ else {
+        l=t.getRouteDescriptionsForStop(transportStop,"{1} {0} - {2}");
+      }
+      if (l != null) {
+        for (        String s : l) {
+          addPlainMenuItem(R.drawable.ic_action_polygom_dark,s,false,false);
+        }
+      }
+    }
+  }
+}
