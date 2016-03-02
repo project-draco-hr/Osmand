@@ -1,0 +1,30 @@
+{
+  MapMarker marker=getMarker();
+  if (marker == null) {
+    setText(null,null);
+    return false;
+  }
+  boolean res=false;
+  int d=getDistance();
+  if (cachedMeters != d) {
+    cachedMeters=d;
+    String ds=OsmAndFormatter.getFormattedDistance(cachedMeters,view.getApplication());
+    int ls=ds.lastIndexOf(' ');
+    if (ls == -1) {
+      setText(ds,null);
+    }
+ else {
+      setText(ds.substring(0,ls),ds.substring(ls + 1));
+    }
+    res=true;
+  }
+  if (marker.colorIndex != -1) {
+    if (marker.colorIndex != cachedMarkerColorIndex || cachedNightMode == null || cachedNightMode != isNight()) {
+      setImageDrawable(map.getMyApplication().getIconsCache().getIcon(isNight() ? R.drawable.widget_marker_night : R.drawable.widget_marker_day,R.drawable.widget_marker_triangle,MapMarkerDialogHelper.getMapMarkerColorId(marker.colorIndex)));
+      cachedMarkerColorIndex=marker.colorIndex;
+      cachedNightMode=isNight();
+      res=true;
+    }
+  }
+  return res;
+}

@@ -1,13 +1,26 @@
 {
-  if (tb.getZoom() >= startZoom) {
+  if (tileBox.getZoom() >= startZoom) {
     objects.clear();
-    final QuadRect latLonBounds=tb.getLatLonBounds();
-    view.getApplication().getResourceManager().searchTransportAsync(latLonBounds.top,latLonBounds.left,latLonBounds.bottom,latLonBounds.right,tb.getZoom(),objects);
-    int r=3 * getRadiusPoi(tb) / 4;
+    float iconSize=stopBus.getWidth() * 3 / 2.5f;
+    QuadTree<QuadRect> boundIntersections=initBoundIntersections(tileBox);
+    final QuadRect latLonBounds=tileBox.getLatLonBounds();
+    view.getApplication().getResourceManager().searchTransportAsync(latLonBounds.top,latLonBounds.left,latLonBounds.bottom,latLonBounds.right,tileBox.getZoom(),objects);
+    List<TransportStop> fullObjects=new ArrayList<>();
     for (    TransportStop o : objects) {
-      int x=tb.getPixXFromLonNoRot(o.getLocation().getLongitude());
-      int y=tb.getPixYFromLatNoRot(o.getLocation().getLatitude());
-      canvas.drawRect(x - r,y - r,x + r,y + r,pointAltUI);
+      float x=tileBox.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+      float y=tileBox.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+      if (intersects(boundIntersections,x,y,iconSize,iconSize)) {
+        canvas.drawBitmap(stopSmall,x - stopSmall.getWidth() / 2,y - stopSmall.getHeight() / 2,paintIcon);
+      }
+ else {
+        fullObjects.add(o);
+      }
+    }
+    for (    TransportStop o : fullObjects) {
+      float x=tileBox.getPixXFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+      float y=tileBox.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
+      Bitmap b=stopBus;
+      canvas.drawBitmap(b,x - b.getWidth() / 2,y - b.getHeight() / 2,paintIcon);
     }
   }
 }
