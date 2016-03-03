@@ -16,7 +16,18 @@
   appCustomization=new OsmAndAppCustomization();
   appCustomization.setup(this);
   osmandSettings=appCustomization.getOsmandSettings();
+  appInitializer.initVariables();
+  if (appInitializer.isAppVersionChanged() && appInitializer.getPrevAppVersion() < AppInitializer.VERSION_2_3) {
+    osmandSettings.freezeExternalStorageDirectory();
+  }
+ else   if (appInitializer.isFirstTime()) {
+    osmandSettings.initExternalStorageDirectory();
+  }
   externalStorageDirectory=osmandSettings.getExternalStorageDirectory();
+  if (!OsmandSettings.isWritable(externalStorageDirectory)) {
+    externalStorageDirectoryReadOnly=true;
+    externalStorageDirectory=osmandSettings.getInternalAppPath();
+  }
   checkPreferredLocale();
   appInitializer.onCreateApplication();
   startApplication();
