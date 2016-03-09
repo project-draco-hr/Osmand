@@ -96,7 +96,21 @@
         moving=false;
         int posY=getViewY();
         if (!centered) {
+          if (!zoomIn) {
+            LatLon centerLatLon=map.getCurrentRotatedTileBox().getCenterLatLon();
+            if (centerLatLon.equals(menu.getLatLon())) {
+              zoomIn=true;
+            }
+          }
           centerMarkerLocation();
+        }
+ else         if (!zoomIn) {
+          int fZoom=getZoom();
+          zoomIn=true;
+          if (fZoom < ZOOM_IN_STANDARD) {
+            AnimateDraggingMapThread thread=map.getAnimatedDraggingThread();
+            thread.startZooming(ZOOM_IN_STANDARD,map.getZoomFractionalPart(),true);
+          }
         }
         if (hasMoved) {
           applyPosY(posY,false,false,0,0);
