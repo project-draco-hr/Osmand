@@ -6,6 +6,8 @@
       QuadTree<QuadRect> boundIntersections=initBoundIntersections(tileBox);
       final QuadRect latLonBounds=tileBox.getLatLonBounds();
       List<LocationPoint> fullObjects=new ArrayList<>();
+      List<LatLon> fullObjectsLatLon=new ArrayList<>();
+      List<LatLon> smallObjectsLatLon=new ArrayList<>();
       for (      LocationPoint o : getPoints()) {
         if (!o.isVisible()) {
           continue;
@@ -16,14 +18,18 @@
           int col=o.getColor() == 0 || o.getColor() == Color.BLACK ? defaultColor : o.getColor();
           paintIcon.setColorFilter(new PorterDuffColorFilter(col,PorterDuff.Mode.MULTIPLY));
           canvas.drawBitmap(pointSmall,x - pointSmall.getWidth() / 2,y - pointSmall.getHeight() / 2,paintIcon);
+          smallObjectsLatLon.add(new LatLon(o.getLatitude(),o.getLongitude()));
         }
  else {
           fullObjects.add(o);
+          fullObjectsLatLon.add(new LatLon(o.getLatitude(),o.getLongitude()));
         }
       }
       for (      LocationPoint o : fullObjects) {
         drawPoint(canvas,tileBox,latLonBounds,o);
       }
+      this.fullObjectsLatLon=fullObjectsLatLon;
+      this.smallObjectsLatLon=smallObjectsLatLon;
     }
   }
   if (textLayer.isVisible()) {

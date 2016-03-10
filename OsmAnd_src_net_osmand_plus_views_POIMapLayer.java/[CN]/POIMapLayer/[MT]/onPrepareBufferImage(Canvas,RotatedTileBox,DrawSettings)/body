@@ -11,6 +11,8 @@
   }
   List<Amenity> objects=Collections.emptyList();
   List<Amenity> fullObjects=new ArrayList<>();
+  List<LatLon> fullObjectsLatLon=new ArrayList<>();
+  List<LatLon> smallObjectsLatLon=new ArrayList<>();
   if (filter != null) {
     if (tileBox.getZoom() >= startZoom) {
       data.queryNewData(tileBox);
@@ -23,9 +25,11 @@
           float y=tileBox.getPixYFromLatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude());
           if (intersects(boundIntersections,x,y,iconSize,iconSize)) {
             canvas.drawBitmap(poiBackgroundSmall,x - poiBackgroundSmall.getWidth() / 2,y - poiBackgroundSmall.getHeight() / 2,paintIconBackground);
+            smallObjectsLatLon.add(new LatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude()));
           }
  else {
             fullObjects.add(o);
+            fullObjectsLatLon.add(new LatLon(o.getLocation().getLatitude(),o.getLocation().getLongitude()));
           }
         }
         for (        Amenity o : fullObjects) {
@@ -49,6 +53,8 @@
             }
           }
         }
+        this.fullObjectsLatLon=fullObjectsLatLon;
+        this.smallObjectsLatLon=smallObjectsLatLon;
       }
     }
   }

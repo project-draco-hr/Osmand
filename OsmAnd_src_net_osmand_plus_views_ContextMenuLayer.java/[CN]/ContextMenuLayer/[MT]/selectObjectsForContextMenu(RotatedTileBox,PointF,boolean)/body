@@ -1,0 +1,30 @@
+{
+  List<LatLon> pressedLatLonFull=new ArrayList<>();
+  List<LatLon> pressedLatLonSmall=new ArrayList<>();
+  Map<Object,IContextMenuProvider> selectedObjects=new HashMap<>();
+  List<Object> s=new ArrayList<>();
+  for (  OsmandMapLayer lt : view.getLayers()) {
+    if (lt instanceof ContextMenuLayer.IContextMenuProvider) {
+      s.clear();
+      final IContextMenuProvider l=(ContextMenuLayer.IContextMenuProvider)lt;
+      l.collectObjectsFromPoint(point,tileBox,s);
+      for (      Object o : s) {
+        selectedObjects.put(o,l);
+        if (acquireObjLatLon && l.isObjectClickable(o)) {
+          LatLon latLon=l.getObjectLocation(o);
+          if (lt.isPresentInFullObjects(latLon) && !pressedLatLonFull.contains(latLon)) {
+            pressedLatLonFull.add(latLon);
+          }
+ else           if (lt.isPresentInSmallObjects(latLon) && !pressedLatLonSmall.contains(latLon)) {
+            pressedLatLonSmall.add(latLon);
+          }
+        }
+      }
+    }
+  }
+  if (acquireObjLatLon) {
+    this.pressedLatLonFull=pressedLatLonFull;
+    this.pressedLatLonSmall=pressedLatLonSmall;
+  }
+  return selectedObjects;
+}

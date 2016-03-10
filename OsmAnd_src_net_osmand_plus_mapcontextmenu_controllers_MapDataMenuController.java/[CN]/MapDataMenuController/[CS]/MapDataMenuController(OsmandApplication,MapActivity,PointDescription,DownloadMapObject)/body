@@ -1,11 +1,16 @@
 {
   super(new MenuBuilder(app),pointDescription,mapActivity);
   this.mapObject=mapObject;
+  rm=app.getResourceManager();
   indexItem=mapObject.getIndexItem();
   downloadThread=app.getDownloadThread();
   if (indexItem != null) {
+    downloaded=indexItem.isDownloaded();
     otherIndexItems=new LinkedList<>(downloadThread.getIndexes().getIndexItems(mapObject.getWorldRegion()));
     otherIndexItems.remove(indexItem);
+  }
+ else {
+    downloaded=checkIfObjectDownloaded(rm.getOsmandRegions().getDownloadName(mapObject.getDataObject()));
   }
   srtmDisabled=OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) == null;
   OsmandPlugin srtmPlugin=OsmandPlugin.getPlugin(SRTMPlugin.class);
@@ -39,6 +44,8 @@
     @Override public void buttonPressed(){
       if (indexItem != null) {
         deleteItem();
+      }
+ else       if (downloaded) {
       }
     }
   }
