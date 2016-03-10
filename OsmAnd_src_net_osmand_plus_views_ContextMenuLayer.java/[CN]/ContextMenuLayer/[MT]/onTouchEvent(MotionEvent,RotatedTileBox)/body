@@ -7,5 +7,33 @@
       multiSelectionMenu.hide();
     }
   }
-  return false;
+switch (event.getAction()) {
+case MotionEvent.ACTION_DOWN:
+    PointF point=new PointF(event.getX(),event.getY());
+  Map<Object,IContextMenuProvider> selectedObjects=selectObjectsForContextMenu(tileBox,point);
+if (selectedObjects.size() == 1) {
+  Object selectedObj=selectedObjects.keySet().iterator().next();
+  IContextMenuProvider contextObject=selectedObjects.get(selectedObj);
+  LatLon latLon=null;
+  PointDescription pointDescription=null;
+  if (contextObject != null) {
+    latLon=contextObject.getObjectLocation(selectedObj);
+    pointDescription=contextObject.getObjectName(selectedObj);
+  }
+  if (latLon == null) {
+    latLon=getLatLon(point,tileBox);
+  }
+  if (isObjectClickable(selectedObj,pointDescription)) {
+    pressedLatLon=latLon;
+    view.refreshMap();
+  }
+}
+break;
+case MotionEvent.ACTION_UP:
+case MotionEvent.ACTION_CANCEL:
+pressedLatLon=null;
+view.refreshMap();
+break;
+}
+return false;
 }
