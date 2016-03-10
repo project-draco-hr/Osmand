@@ -102,24 +102,27 @@
   if (System.currentTimeMillis() - tm > 50) {
     System.err.println("OnCreate for MapActivity took " + (System.currentTimeMillis() - tm) + " ms");
   }
-  if (!permissionAsked) {
-    if (app.isExternalStorageDirectoryReadOnly() && getSupportFragmentManager().findFragmentByTag(DataStoragePlaceDialogFragment.TAG) == null) {
-      if (DownloadActivity.hasPermissionToWriteExternalStorage(this)) {
+  if (!permissionDone) {
+    if (!permissionAsked) {
+      if (app.isExternalStorageDirectoryReadOnly() && getSupportFragmentManager().findFragmentByTag(DataStoragePlaceDialogFragment.TAG) == null) {
+        if (DownloadActivity.hasPermissionToWriteExternalStorage(this)) {
+          DataStoragePlaceDialogFragment.showInstance(getSupportFragmentManager(),true);
+        }
+ else {
+          ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},DownloadActivity.PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+        }
+      }
+    }
+ else {
+      if (permissionGranted) {
+        restartApp();
+      }
+ else       if (getSupportFragmentManager().findFragmentByTag(DataStoragePlaceDialogFragment.TAG) == null) {
         DataStoragePlaceDialogFragment.showInstance(getSupportFragmentManager(),true);
       }
- else {
-        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},DownloadActivity.PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
-      }
+      permissionAsked=false;
+      permissionGranted=false;
+      permissionDone=true;
     }
-  }
- else {
-    if (permissionGranted) {
-      restartApp();
-    }
- else     if (getSupportFragmentManager().findFragmentByTag(DataStoragePlaceDialogFragment.TAG) == null) {
-      DataStoragePlaceDialogFragment.showInstance(getSupportFragmentManager(),true);
-    }
-    permissionAsked=false;
-    permissionGranted=false;
   }
 }
