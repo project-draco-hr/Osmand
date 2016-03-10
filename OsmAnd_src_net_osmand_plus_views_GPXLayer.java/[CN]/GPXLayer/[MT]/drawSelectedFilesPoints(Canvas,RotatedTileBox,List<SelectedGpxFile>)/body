@@ -8,6 +8,8 @@
     for (    SelectedGpxFile g : selectedGPXFiles) {
       List<WptPt> pts=getListStarPoints(g);
       List<WptPt> fullObjects=new ArrayList<>();
+      List<LatLon> fullObjectsLatLon=new ArrayList<>();
+      List<LatLon> smallObjectsLatLon=new ArrayList<>();
       int fcolor=g.getColor() == 0 ? defPointColor : g.getColor();
       for (      WptPt o : pts) {
         if (o.lat >= latLonBounds.bottom && o.lat <= latLonBounds.top && o.lon >= latLonBounds.left && o.lon <= latLonBounds.right) {
@@ -19,9 +21,11 @@
             int col=visit ? visitedColor : o.getColor(fcolor);
             paintIcon.setColorFilter(new PorterDuffColorFilter(col,PorterDuff.Mode.MULTIPLY));
             canvas.drawBitmap(pointSmall,x - pointSmall.getWidth() / 2,y - pointSmall.getHeight() / 2,paintIcon);
+            smallObjectsLatLon.add(new LatLon(o.lat,o.lon));
           }
  else {
             fullObjects.add(o);
+            fullObjectsLatLon.add(new LatLon(o.lat,o.lon));
           }
         }
       }
@@ -33,6 +37,8 @@
         FavoriteImageDrawable fid=FavoriteImageDrawable.getOrCreate(view.getContext(),pointColor,true);
         fid.drawBitmapInCenter(canvas,x,y);
       }
+      this.fullObjectsLatLon=fullObjectsLatLon;
+      this.smallObjectsLatLon=smallObjectsLatLon;
     }
   }
 }
