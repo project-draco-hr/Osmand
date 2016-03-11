@@ -33,11 +33,20 @@
         }
         if (!dataItems.isEmpty()) {
           for (          IndexItem item : dataItems) {
-            dataObjects.add(new DownloadMapObject(o,region,item));
+            dataObjects.add(new DownloadMapObject(o,region,item,null));
           }
         }
  else {
-          dataObjects.add(new DownloadMapObject(o,region,null));
+          String downloadName=osmandRegions.getDownloadName(o);
+          List<LocalIndexInfo> infos=helper.getLocalIndexInfos(downloadName);
+          if (infos.size() == 0) {
+            dataObjects.add(new DownloadMapObject(o,region,null,null));
+          }
+ else {
+            for (            LocalIndexInfo info : infos) {
+              dataObjects.add(new DownloadMapObject(o,region,null,info));
+            }
+          }
         }
       }
     }

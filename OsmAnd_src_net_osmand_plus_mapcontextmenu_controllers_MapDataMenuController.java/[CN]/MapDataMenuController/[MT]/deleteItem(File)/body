@@ -1,6 +1,5 @@
 {
   final OsmandApplication app=getMapActivity().getMyApplication();
-  final File fl=indexItem.getTargetFile(app);
   if (fl.exists()) {
     AlertDialog.Builder confirm=new AlertDialog.Builder(getMapActivity());
     confirm.setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
@@ -27,7 +26,13 @@
     }
 );
     confirm.setNegativeButton(R.string.shared_string_no,null);
-    String fn=FileNameTranslationHelper.getFileName(getMapActivity(),app.getRegions(),indexItem.getVisibleName(getMapActivity(),app.getRegions()));
+    String fn;
+    if (indexItem != null) {
+      fn=FileNameTranslationHelper.getFileName(getMapActivity(),app.getRegions(),indexItem.getVisibleName(getMapActivity(),app.getRegions()));
+    }
+ else {
+      fn=getPointDescription().getName();
+    }
     confirm.setMessage(getMapActivity().getString(R.string.delete_confirmation_msg,fn));
     confirm.show();
   }

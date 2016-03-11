@@ -1,23 +1,37 @@
 {
   super(new MenuBuilder(app),pointDescription,mapActivity);
   this.mapObject=mapObject;
-  rm=app.getResourceManager();
   indexItem=mapObject.getIndexItem();
+  localIndexInfo=mapObject.getLocalIndexInfo();
   downloadThread=app.getDownloadThread();
   if (indexItem != null) {
     downloaded=indexItem.isDownloaded();
+    backuped=indexItem.getBackupFile(getMapActivity().getMyApplication()).exists();
     otherIndexItems=new LinkedList<>(downloadThread.getIndexes().getIndexItems(mapObject.getWorldRegion()));
     otherIndexItems.remove(indexItem);
   }
- else {
-    downloaded=checkIfObjectDownloaded(rm.getOsmandRegions().getDownloadName(mapObject.getDataObject()));
+ else   if (localIndexInfo != null) {
+    downloaded=true;
+    backuped=localIndexInfo.isBackupedData();
+    LocalIndexHelper helper=new LocalIndexHelper(app);
+    otherLocalIndexInfos=helper.getLocalIndexInfos(mapObject.getWorldRegion().getRegionDownloadName());
+    for (Iterator<LocalIndexInfo> iterator=otherLocalIndexInfos.iterator(); iterator.hasNext(); ) {
+      LocalIndexInfo info=iterator.next();
+      if (info.getPathToData().equals(localIndexInfo.getPathToData())) {
+        iterator.remove();
+        break;
+      }
+    }
   }
   srtmDisabled=OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) == null;
   OsmandPlugin srtmPlugin=OsmandPlugin.getPlugin(SRTMPlugin.class);
   srtmNeedsInstallation=srtmPlugin == null || srtmPlugin.needsInstallation();
   leftTitleButtonController=new TitleButtonController(){
     @Override public void buttonPressed(){
-      if (indexItem != null) {
+      if (backuped) {
+        restoreFromBackup();
+      }
+ else       if (indexItem != null) {
         if ((indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE || indexItem.getType() == DownloadActivityType.HILLSHADE_FILE) && srtmDisabled) {
           getMapActivity().getContextMenu().close();
           if (srtmNeedsInstallation) {
@@ -43,9 +57,15 @@
   rightTitleButtonController=new TitleButtonController(){
     @Override public void buttonPressed(){
       if (indexItem != null) {
-        deleteItem();
+        if (backuped) {
+          deleteItem(indexItem.getBackupFile(app));
+        }
+ else {
+          deleteItem(indexItem.getTargetFile(app));
+        }
       }
- else       if (downloaded) {
+ else       if (localIndexInfo != null) {
+        deleteItem(new File(localIndexInfo.getPathToData()));
       }
     }
   }
@@ -57,8 +77,15 @@
       getMapActivity().getContextMenu().close();
       Map<Object,IContextMenuProvider> selectedObjects=new HashMap<>();
       IContextMenuProvider provider=mapActivity.getMapLayers().getDownloadedRegionsLayer();
-      for (      IndexItem item : otherIndexItems) {
-        selectedObjects.put(new DownloadMapObject(mapObject.getDataObject(),mapObject.getWorldRegion(),item),provider);
+      if (otherIndexItems != null && otherIndexItems.size() > 0) {
+        for (        IndexItem item : otherIndexItems) {
+          selectedObjects.put(new DownloadMapObject(mapObject.getDataObject(),mapObject.getWorldRegion(),item,null),provider);
+        }
+      }
+ else       if (otherLocalIndexInfos != null && otherLocalIndexInfos.size() > 0) {
+        for (        LocalIndexInfo info : otherLocalIndexInfos) {
+          selectedObjects.put(new DownloadMapObject(mapObject.getDataObject(),mapObject.getWorldRegion(),null,info),provider);
+        }
       }
       mapActivity.getContextMenu().getMultiSelectionMenu().show(mapActivity.getContextMenu().getLatLon(),selectedObjects);
     }

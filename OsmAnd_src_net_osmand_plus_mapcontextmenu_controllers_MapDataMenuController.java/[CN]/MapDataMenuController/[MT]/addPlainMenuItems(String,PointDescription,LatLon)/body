@@ -1,7 +1,35 @@
 {
   if (indexItem != null) {
     addPlainMenuItem(R.drawable.ic_action_info_dark,indexItem.getType().getString(getMapActivity()),false,false);
-    addPlainMenuItem(R.drawable.ic_action_info_dark,indexItem.getSizeDescription(getMapActivity()),false,false);
+    StringBuilder sizeStr=new StringBuilder();
+    sizeStr.append(indexItem.getSizeDescription(getMapActivity()));
+    if (backuped) {
+      sizeStr.append(" ??? ").append(LocalIndexType.DEACTIVATED.getHumanString(getMapActivity()));
+    }
+    addPlainMenuItem(R.drawable.ic_action_info_dark,sizeStr.toString(),false,false);
+  }
+ else   if (localIndexInfo != null) {
+    if (getDownloadActivityType() != null) {
+      addPlainMenuItem(R.drawable.ic_action_info_dark,getDownloadActivityType().getString(getMapActivity()),false,false);
+    }
+    StringBuilder sizeStr=new StringBuilder();
+    if (localIndexInfo.getSize() >= 0) {
+      if (localIndexInfo.getSize() > 100) {
+        sizeStr.append(DownloadActivity.formatMb.format(new Object[]{(float)localIndexInfo.getSize() / (1 << 10)}));
+      }
+ else {
+        sizeStr.append(localIndexInfo.getSize()).append(" KB");
+      }
+    }
+    if (backuped) {
+      if (sizeStr.length() > 0) {
+        sizeStr.append(" ??? ").append(LocalIndexType.DEACTIVATED.getHumanString(getMapActivity()));
+      }
+ else {
+        sizeStr.append(LocalIndexType.DEACTIVATED.getHumanString(getMapActivity()));
+      }
+    }
+    addPlainMenuItem(R.drawable.ic_action_info_dark,sizeStr.toString(),false,false);
   }
   if (!Algorithms.isEmpty(mapObject.getWorldRegion().getParams().getWikiLink())) {
     String[] items=mapObject.getWorldRegion().getParams().getWikiLink().split(":");
@@ -31,5 +59,8 @@
   if (indexItem != null) {
     DateFormat dateFormat=android.text.format.DateFormat.getMediumDateFormat(getMapActivity());
     addPlainMenuItem(R.drawable.ic_action_data,indexItem.getRemoteDate(dateFormat),false,false);
+  }
+ else   if (localIndexInfo != null) {
+    addPlainMenuItem(R.drawable.ic_action_data,localIndexInfo.getDescription(),false,false);
   }
 }

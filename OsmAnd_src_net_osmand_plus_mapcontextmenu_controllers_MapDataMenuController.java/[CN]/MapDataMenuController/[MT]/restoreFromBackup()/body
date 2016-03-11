@@ -1,0 +1,27 @@
+{
+  final OsmandApplication app=getMapActivity().getMyApplication();
+  new AsyncTask<Void,Void,Void>(){
+    @Override protected void onPreExecute(){
+      getMapActivity().getContextMenu().close();
+    }
+    @Override protected Void doInBackground(    Void... params){
+      if (localIndexInfo != null) {
+        LocalIndexInfo info=localIndexInfo;
+        move(new File(info.getPathToData()),getFileToRestore(info));
+        app.getResourceManager().reloadIndexes(IProgress.EMPTY_PROGRESS,new ArrayList<String>());
+        app.getDownloadThread().updateLoadedFiles();
+      }
+ else       if (indexItem != null) {
+        move(indexItem.getBackupFile(app),indexItem.getTargetFile(app));
+        app.getResourceManager().reloadIndexes(IProgress.EMPTY_PROGRESS,new ArrayList<String>());
+        app.getDownloadThread().updateLoadedFiles();
+      }
+      return null;
+    }
+    protected void onPostExecute(    Void result){
+      getMapActivity().getMapLayers().getDownloadedRegionsLayer().updateObjects();
+      getMapActivity().refreshMap();
+    }
+  }
+.execute((Void)null);
+}
