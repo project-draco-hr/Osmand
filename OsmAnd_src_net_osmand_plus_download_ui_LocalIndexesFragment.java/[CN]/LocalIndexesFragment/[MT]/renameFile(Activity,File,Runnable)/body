@@ -6,31 +6,59 @@
     final String originalName=xt == -1 ? f.getName() : f.getName().substring(0,xt);
     final EditText editText=new EditText(a);
     editText.setText(originalName);
-    b.setView(editText);
-    b.setPositiveButton(R.string.shared_string_save,new DialogInterface.OnClickListener(){
-      @Override public void onClick(      DialogInterface dialog,      int which){
-        String newName=editText.getText().toString() + ext;
-        File dest=new File(f.getParentFile(),newName);
-        if (dest.exists()) {
-          AccessibleToast.makeText(a,R.string.file_with_name_already_exists,Toast.LENGTH_LONG).show();
-        }
- else {
-          if (!dest.getParentFile().exists()) {
-            dest.getParentFile().mkdirs();
-          }
-          if (f.renameTo(dest)) {
-            if (callback != null) {
-              callback.run();
-            }
-          }
- else {
-            AccessibleToast.makeText(a,R.string.file_can_not_be_renamed,Toast.LENGTH_LONG).show();
+    editText.addTextChangedListener(new TextWatcher(){
+      @Override public void beforeTextChanged(      CharSequence s,      int start,      int count,      int after){
+      }
+      @Override public void onTextChanged(      CharSequence s,      int start,      int before,      int count){
+      }
+      @Override public void afterTextChanged(      Editable s){
+        Editable text=editText.getText();
+        if (text.length() >= 1) {
+          if (ILLEGAL_FILE_NAME_CHARACTERS.matcher(text).find()) {
+            editText.setError(a.getString(R.string.file_name_containes_illegal_char));
           }
         }
       }
     }
 );
+    b.setView(editText);
+    b.setPositiveButton(R.string.shared_string_save,null);
     b.setNegativeButton(R.string.shared_string_cancel,null);
-    b.show();
+    final AlertDialog alertDialog=b.create();
+    alertDialog.setOnShowListener(new DialogInterface.OnShowListener(){
+      @Override public void onShow(      DialogInterface dialog){
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener(){
+          @Override public void onClick(          View v){
+            String newName=editText.getText().toString() + ext;
+            if (ILLEGAL_FILE_NAME_CHARACTERS.matcher(newName).find()) {
+              Toast.makeText(a,R.string.file_name_containes_illegal_char,Toast.LENGTH_LONG).show();
+              return;
+            }
+            File dest=new File(f.getParentFile(),newName);
+            if (dest.exists()) {
+              AccessibleToast.makeText(a,R.string.file_with_name_already_exists,Toast.LENGTH_LONG).show();
+              return;
+            }
+ else {
+              if (!dest.getParentFile().exists()) {
+                dest.getParentFile().mkdirs();
+              }
+              if (f.renameTo(dest)) {
+                if (callback != null) {
+                  callback.run();
+                }
+              }
+ else {
+                AccessibleToast.makeText(a,R.string.file_can_not_be_renamed,Toast.LENGTH_LONG).show();
+              }
+            }
+            alertDialog.dismiss();
+          }
+        }
+);
+      }
+    }
+);
+    alertDialog.show();
   }
 }
