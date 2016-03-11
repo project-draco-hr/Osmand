@@ -8,35 +8,30 @@
     if (data.results != null) {
       currentObjects.addAll(data.results);
     }
-    final List<BinaryMapDataObject> downloadingObjects=new LinkedList<>(this.downloadingObjects);
-    final List<BinaryMapDataObject> outdatedObjects=new LinkedList<>(this.outdatedObjects);
     final List<BinaryMapDataObject> selectedObjects=new LinkedList<>(this.selectedObjects);
     if (selectedObjects.size() > 0) {
       removeObjectsFromList(currentObjects,selectedObjects);
       drawBorders(canvas,tileBox,selectedObjects,pathSelected,paintSelected);
     }
     if (zoom >= ZOOM_TO_SHOW_BORDERS_ST && zoom < ZOOM_TO_SHOW_BORDERS) {
-      removeObjectsFromList(downloadingObjects,selectedObjects);
-      if (downloadingObjects.size() > 0) {
-        removeObjectsFromList(currentObjects,downloadingObjects);
-        drawBorders(canvas,tileBox,downloadingObjects,pathDownloading,paintDownloading);
-      }
-      removeObjectsFromList(outdatedObjects,selectedObjects);
-      if (outdatedObjects.size() > 0) {
-        removeObjectsFromList(currentObjects,outdatedObjects);
-        drawBorders(canvas,tileBox,outdatedObjects,pathOutdated,paintOutdated);
-      }
       if (currentObjects.size() > 0) {
-        Iterator<BinaryMapDataObject> it=currentObjects.iterator();
-        while (it.hasNext()) {
-          BinaryMapDataObject o=it.next();
+        List<BinaryMapDataObject> downloadedObjects=new ArrayList<>();
+        List<BinaryMapDataObject> backupedObjects=new ArrayList<>();
+        for (        BinaryMapDataObject o : currentObjects) {
           boolean downloaded=checkIfObjectDownloaded(osmandRegions.getDownloadName(o));
-          if (!downloaded) {
-            it.remove();
+          boolean backuped=checkIfObjectBackuped(osmandRegions.getDownloadName(o));
+          if (downloaded) {
+            downloadedObjects.add(o);
+          }
+ else           if (backuped) {
+            backupedObjects.add(o);
           }
         }
-        if (currentObjects.size() > 0) {
-          drawBorders(canvas,tileBox,currentObjects,pathDownloaded,paintDownloaded);
+        if (backupedObjects.size() > 0) {
+          drawBorders(canvas,tileBox,backupedObjects,pathBackuped,paintBackuped);
+        }
+        if (downloadedObjects.size() > 0) {
+          drawBorders(canvas,tileBox,downloadedObjects,pathDownloaded,paintDownloaded);
         }
       }
     }
