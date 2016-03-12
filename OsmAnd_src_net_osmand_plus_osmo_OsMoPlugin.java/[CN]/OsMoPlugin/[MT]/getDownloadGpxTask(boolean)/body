@@ -16,6 +16,7 @@
               color=Algorithms.parseColor(obj.getString("color"));
             }
  catch (            RuntimeException e) {
+              LOG.warn("",e);
             }
           }
           boolean visible=obj.has("visible");
@@ -24,12 +25,10 @@
             long len=!f.exists() ? -1 : f.length();
             boolean sizeEqual=obj.has("size") && obj.getLong("size") == len;
             boolean modifySupported=f.setLastModified(timestamp - 1);
-            if (sizeEqual && !modifySupported) {
-            }
- else {
+            if (!sizeEqual || modifySupported) {
               changed=true;
               String url=obj.getString("url");
-              log.info("Download gpx " + url);
+              LOG.info("Download gpx " + url);
               DownloadFileHelper df=new DownloadFileHelper(app);
               InputStream is=df.getInputStreamToDownload(new URL(url),false);
               int av=is.available();
@@ -50,18 +49,14 @@
             app.getSelectedGpxHelper().setGpxFileToDisplay(selectGPXFile);
           }
         }
- catch (        JSONException e) {
-          e.printStackTrace();
-          errors+=e.getMessage() + "\n";
-        }
-catch (        IOException e) {
+ catch (        JSONException|IOException e) {
           e.printStackTrace();
           errors+=e.getMessage() + "\n";
         }
       }
       return errors;
     }
-    private void redownloadFile(    File f,    long timestamp,    int color,    InputStream is) throws FileNotFoundException, IOException {
+    private void redownloadFile(    File f,    long timestamp,    int color,    InputStream is) throws IOException {
       FileOutputStream fout=new FileOutputStream(f);
       byte[] buf=new byte[1024];
       int k;
@@ -71,7 +66,7 @@ catch (        IOException e) {
       fout.close();
       is.close();
       if (!f.setLastModified(timestamp)) {
-        log.error("Timestamp updates are not supported");
+        LOG.error("Timestamp updates are not supported");
       }
     }
     protected void onProgressUpdate(    String... values){
