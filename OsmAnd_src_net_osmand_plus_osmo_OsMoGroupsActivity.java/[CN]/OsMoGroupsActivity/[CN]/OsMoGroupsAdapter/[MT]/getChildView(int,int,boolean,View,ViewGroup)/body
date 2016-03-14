@@ -4,8 +4,8 @@
     LayoutInflater inflater=getLayoutInflater();
     row=inflater.inflate(R.layout.osmo_group_list_item,parent,false);
   }
-  final OsMoDevice model=getChild(groupPosition,childPosition);
-  row.setTag(model);
+  final OsMoDevice osmoDevice=getChild(groupPosition,childPosition);
+  row.setTag(osmoDevice);
   if (app.getSettings().isLightContent()) {
     row.setBackgroundResource(R.drawable.expandable_list_item_background_light);
   }
@@ -15,54 +15,48 @@
   TextView label=(TextView)row.findViewById(R.id.osmo_label);
   TextView labelTime=(TextView)row.findViewById(R.id.osmo_label_time);
   ImageView icon=(ImageView)row.findViewById(R.id.osmo_user_icon);
-  Location location=model.getLastLocation();
-  if (model.getTrackerId().equals(osMoPlugin.getService().getMyGroupTrackerId())) {
+  Location location=osmoDevice.getLastLocation();
+  if (osmoDevice.getTrackerId().equals(osMoPlugin.getService().getMyGroupTrackerId())) {
     location=tracker.getLastSendLocation();
   }
-  int color=getResources().getColor(R.color.color_unknown);
-  int activeColor=model.getColor();
-  if (activeColor == 0) {
-    activeColor=ColorDialogs.getRandomColor();
-    osMoPlugin.getGroups().setGenColor(model,activeColor);
-  }
-  if (!model.isEnabled()) {
+  int color=osmoDevice.getColor();
+  if (!osmoDevice.isEnabled()) {
     icon.setVisibility(View.INVISIBLE);
     label.setTypeface(Typeface.DEFAULT,Typeface.ITALIC);
-    label.setText(model.getVisibleName());
+    label.setText(osmoDevice.getVisibleName());
     labelTime.setText("");
   }
  else   if (location == null || mapLocation == null) {
     label.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
     icon.setVisibility(View.VISIBLE);
-    NonDirectionDrawable draw;
-    if (icon.getDrawable() instanceof NonDirectionDrawable) {
-      draw=(NonDirectionDrawable)icon.getDrawable();
+    NonDirectionDrawable nonDirectionDrawable;
+    nonDirectionDrawable=nonDireactionDrawables.get(color);
+    if (nonDirectionDrawable == null) {
+      nonDirectionDrawable=new NonDirectionDrawable(getResources(),widthInPx,heightInPx);
+      nonDirectionDrawable.setColor(color);
+      nonDireactionDrawables.put(color,nonDirectionDrawable);
     }
- else {
-      draw=new NonDirectionDrawable();
-    }
-    draw.setColor(model.isEnabled() ? activeColor : color);
-    icon.setImageDrawable(draw);
-    label.setText(model.getVisibleName());
+    icon.setImageDrawable(nonDirectionDrawable);
+    label.setText(osmoDevice.getVisibleName());
     labelTime.setText("");
   }
  else {
     label.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
     icon.setVisibility(View.VISIBLE);
-    DirectionDrawable draw;
-    if (icon.getDrawable() instanceof DirectionDrawable) {
-      draw=(DirectionDrawable)icon.getDrawable();
-    }
- else {
-      draw=new DirectionDrawable();
-    }
     float[] mes=new float[2];
     net.osmand.Location.distanceBetween(location.getLatitude(),location.getLongitude(),mapLocation.getLatitude(),mapLocation.getLongitude(),mes);
-    draw.setAngle(mes[1] - lastCompass + 180);
     long now=System.currentTimeMillis();
     final boolean recent=Math.abs(now - location.getTime()) < RECENT_THRESHOLD;
-    draw.setColor(recent ? activeColor : color);
-    icon.setImageDrawable(draw);
+    color=recent ? color : getResources().getColor(R.color.color_unknown);
+    DirectionDrawable directionDrawable;
+    directionDrawable=direactionDrawables.get(color);
+    if (directionDrawable == null) {
+      directionDrawable=new DirectionDrawable(getResources(),widthInPx,heightInPx);
+      directionDrawable.setColor(color);
+      direactionDrawables.put(color,directionDrawable);
+    }
+    directionDrawable.setAngle(mes[1] - lastCompass + 180);
+    icon.setImageDrawable(directionDrawable);
     int dist=(int)mes[0];
     long seconds=Math.max(0,(now - location.getTime()) / 1000);
     String time="";
@@ -77,7 +71,7 @@
       time=(seconds / (60 * 60)) + " " + getString(R.string.hours_ago);
     }
     String distance=OsmAndFormatter.getFormattedDistance(dist,getMyApplication()) + "  ";
-    String visibleName=model.getVisibleName();
+    String visibleName=osmoDevice.getVisibleName();
     String firstPart=distance + visibleName;
     label.setText(firstPart,TextView.BufferType.SPANNABLE);
     ((Spannable)label.getText()).setSpan(new ForegroundColorSpan(getResources().getColor(R.color.color_distance)),0,distance.length() - 1,0);
