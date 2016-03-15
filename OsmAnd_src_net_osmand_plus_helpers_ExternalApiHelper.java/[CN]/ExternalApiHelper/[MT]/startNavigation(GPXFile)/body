@@ -1,0 +1,18 @@
+{
+  OsmandApplication app=mapActivity.getMyApplication();
+  RoutingHelper routingHelper=app.getRoutingHelper();
+  mapActivity.getMapActions().enterRoutePlanningModeGivenGpx(gpx,null,null,false,false);
+  if (!app.getTargetPointsHelper().checkPointToNavigateShort()) {
+    mapActivity.getMapLayers().getMapControlsLayer().getMapRouteInfoMenu().show();
+  }
+ else {
+    app.getSettings().APPLICATION_MODE.set(routingHelper.getAppMode());
+    mapActivity.getMapViewTrackingUtilities().backToLocationImpl();
+    app.getSettings().FOLLOW_THE_ROUTE.set(true);
+    routingHelper.setFollowingMode(true);
+    routingHelper.setRoutePlanningMode(false);
+    mapActivity.getMapViewTrackingUtilities().switchToRoutePlanningMode();
+    app.getRoutingHelper().notifyIfRouteIsCalculated();
+    routingHelper.setCurrentLocation(app.getLocationProvider().getLastKnownLocation(),false);
+  }
+}

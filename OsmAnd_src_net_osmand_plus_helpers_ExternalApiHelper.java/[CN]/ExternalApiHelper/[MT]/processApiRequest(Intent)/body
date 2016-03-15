@@ -1,0 +1,135 @@
+{
+  Intent result=new Intent();
+  OsmandApplication app=(OsmandApplication)mapActivity.getApplication();
+  try {
+    Uri uri=intent.getData();
+    String cmd=uri.getHost().toLowerCase();
+    if (API_CMD_SHOW_GPX.equals(cmd) || API_CMD_NAVIGATE_GPX.equals(cmd)) {
+      boolean navigate=API_CMD_NAVIGATE_GPX.equals(cmd);
+      String path=uri.getQueryParameter(PARAM_PATH);
+      GPXFile gpx=null;
+      if (path != null) {
+        File f=new File(path);
+        if (f.exists()) {
+          gpx=GPXUtilities.loadGPXFile(mapActivity,f);
+        }
+      }
+ else       if (intent.getStringExtra(PARAM_DATA) != null) {
+        String gpxStr=intent.getStringExtra(PARAM_DATA);
+        if (!Algorithms.isEmpty(gpxStr)) {
+          gpx=GPXUtilities.loadGPXFile(mapActivity,new ByteArrayInputStream(gpxStr.getBytes()));
+        }
+      }
+ else {
+        resultCode=RESULT_CODE_ERROR_GPX_NOT_FOUND;
+      }
+      if (gpx != null) {
+        if (navigate) {
+          final RoutingHelper routingHelper=app.getRoutingHelper();
+          if (routingHelper.isFollowingMode()) {
+            final GPXFile gpxFile=gpx;
+            AlertDialog dlg=mapActivity.getMapActions().stopNavigationActionConfirm();
+            dlg.setOnDismissListener(new DialogInterface.OnDismissListener(){
+              @Override public void onDismiss(              DialogInterface dialog){
+                if (!routingHelper.isFollowingMode()) {
+                  startNavigation(gpxFile);
+                }
+              }
+            }
+);
+          }
+ else {
+            startNavigation(gpx);
+          }
+        }
+ else {
+          app.getSelectedGpxHelper().setGpxFileToDisplay(gpx);
+        }
+        resultCode=RESULT_CODE_OK;
+      }
+ else {
+        resultCode=RESULT_CODE_ERROR_GPX_NOT_FOUND;
+      }
+    }
+ else     if (API_CMD_CALC_ROUTE.equals(cmd)) {
+    }
+ else     if (API_CMD_REC_AV_NOTE.equals(cmd)) {
+    }
+ else     if (API_CMD_GET_INFO.equals(cmd)) {
+      finish=true;
+      resultCode=RESULT_CODE_OK;
+    }
+ else     if (API_CMD_ADD_FAVORITE.equals(cmd)) {
+      String name=uri.getQueryParameter(PARAM_NAME);
+      String desc=uri.getQueryParameter(PARAM_DESC);
+      String category=uri.getQueryParameter(PARAM_CATEGORY);
+      double lat=Double.parseDouble(uri.getQueryParameter(PARAM_LAT));
+      double lon=Double.parseDouble(uri.getQueryParameter(PARAM_LON));
+      String colorTag=uri.getQueryParameter(PARAM_COLOR);
+      String visibleStr=uri.getQueryParameter(PARAM_VISIBLE);
+      if (name == null) {
+        name="";
+      }
+      if (desc == null) {
+        desc="";
+      }
+      if (category == null) {
+        category="";
+      }
+      int color=0;
+      if (!Algorithms.isEmpty(colorTag)) {
+        color=ColorDialogs.getColorByTag(colorTag);
+        if (color == 0) {
+          LOG.error("Wrong color tag: " + colorTag);
+        }
+      }
+      boolean visible=true;
+      if (!Algorithms.isEmpty(visibleStr)) {
+        visible=Boolean.parseBoolean(visibleStr);
+      }
+      FavouritePoint fav=new FavouritePoint(lat,lon,name,category);
+      fav.setDescription(desc);
+      fav.setColor(color);
+      fav.setVisible(visible);
+      FavouritesDbHelper helper=app.getFavorites();
+      helper.addFavourite(fav);
+      resultCode=RESULT_CODE_OK;
+    }
+ else     if (API_CMD_ADD_MAP_MARKER.equals(cmd)) {
+      double lat=Double.parseDouble(uri.getQueryParameter(PARAM_LAT));
+      double lon=Double.parseDouble(uri.getQueryParameter(PARAM_LON));
+      String name=uri.getQueryParameter(PARAM_NAME);
+      PointDescription pd=new PointDescription(PointDescription.POINT_TYPE_MAP_MARKER,name != null ? name : "");
+      MapMarkersHelper markersHelper=app.getMapMarkersHelper();
+      markersHelper.addMapMarker(new LatLon(lat,lon),pd);
+      resultCode=RESULT_CODE_OK;
+    }
+ else     if (API_CMD_START_GPX_REC.equals(cmd)) {
+      OsmandMonitoringPlugin plugin=OsmandPlugin.getPlugin(OsmandMonitoringPlugin.class);
+      if (plugin == null) {
+        resultCode=RESULT_CODE_ERROR_GPX_PLUGIN_INACTIVE;
+      }
+ else {
+        plugin.startGPXMonitoring(null);
+      }
+      resultCode=RESULT_CODE_OK;
+    }
+ else     if (API_CMD_STOP_GPX_REC.equals(cmd)) {
+      OsmandMonitoringPlugin plugin=OsmandPlugin.getPlugin(OsmandMonitoringPlugin.class);
+      if (plugin == null) {
+        resultCode=RESULT_CODE_ERROR_GPX_PLUGIN_INACTIVE;
+      }
+ else {
+        plugin.stopRecording();
+      }
+      resultCode=RESULT_CODE_OK;
+    }
+ else     if (API_CMD_SUBSCRIBE_VOICE_NOTIFICATIONS.equals(cmd)) {
+    }
+  }
+ catch (  Exception e) {
+    LOG.error("Error processApiRequest:",e);
+    resultCode=RESULT_CODE_ERROR_UNKNOWN;
+  }
+  return result;
+}
