@@ -1,12 +1,20 @@
 {
   OsmandApplication app=mapActivity.getMyApplication();
   RoutingHelper routingHelper=app.getRoutingHelper();
-  mapActivity.getMapActions().enterRoutePlanningModeGivenGpx(gpx,null,null,false,false);
+  if (gpx == null) {
+    app.getSettings().APPLICATION_MODE.set(mode);
+    final TargetPointsHelper targets=mapActivity.getMyApplication().getTargetPointsHelper();
+    targets.removeAllWayPoints(false,true);
+    targets.navigateToPoint(to,true,-1,toDesc);
+  }
+  mapActivity.getMapActions().enterRoutePlanningModeGivenGpx(gpx,from,fromDesc,true,false);
   if (!app.getTargetPointsHelper().checkPointToNavigateShort()) {
     mapActivity.getMapLayers().getMapControlsLayer().getMapRouteInfoMenu().show();
   }
  else {
-    app.getSettings().APPLICATION_MODE.set(routingHelper.getAppMode());
+    if (app.getSettings().APPLICATION_MODE.get() != routingHelper.getAppMode()) {
+      app.getSettings().APPLICATION_MODE.set(routingHelper.getAppMode());
+    }
     mapActivity.getMapViewTrackingUtilities().backToLocationImpl();
     app.getSettings().FOLLOW_THE_ROUTE.set(true);
     routingHelper.setFollowingMode(true);
