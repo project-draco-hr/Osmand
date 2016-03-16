@@ -1,57 +1,54 @@
 {
-  if (command.equals("LISTEN")) {
+switch (command) {
+case "LISTEN":
     return true;
-  }
- else   if (command.equals("UNLISTEN")) {
-    return true;
-  }
- else   if (command.equals("TRACKER_SESSION_CLOSE")) {
-    return true;
-  }
- else   if (command.equals("TRACKER_SESSION_OPEN")) {
-    try {
-      sessionURL=obj.getString("url");
-    }
- catch (    JSONException e) {
-      service.showErrorMessage(e.getMessage());
-      e.printStackTrace();
-    }
-    return true;
-  }
- else   if (command.equals("LT")) {
-    double lat=0;
-    double lon=0;
-    double speed=0;
-    int k=0;
-    for (int i=1; i <= data.length(); i++) {
-      boolean separator=i == data.length() || !(Character.isDigit(data.charAt(i)) || data.charAt(i) == ':' || data.charAt(i) == '.' || data.charAt(i) == '-');
-      if (separator) {
-        char ch=data.charAt(k);
-        String vl=data.substring(k + 1,i);
-        if (ch == 'L') {
-          int l=vl.indexOf(":");
-          lat=Double.parseDouble(vl.substring(0,l));
-          lon=Double.parseDouble(vl.substring(l + 1));
-        }
- else         if (ch == 'S') {
-          speed=Double.parseDouble(vl);
-        }
-        k=i;
-      }
-    }
-    if (lat != 0 || lon != 0) {
-      Location loc=new Location("osmo");
-      loc.setTime(System.currentTimeMillis());
-      loc.setLatitude(lat);
-      loc.setLongitude(lon);
-      if (speed > 0) {
-        loc.setSpeed((float)speed);
-      }
-      if (trackerListener != null) {
-        trackerListener.locationChange(tid,loc);
-      }
-    }
-    return true;
-  }
-  return false;
+case "UNLISTEN":
+  return true;
+case "TRACKER_SESSION_CLOSE":
+return true;
+case "TRACKER_SESSION_OPEN":
+try {
+sessionURL=obj.getString("url");
+}
+ catch (JSONException e) {
+service.showErrorMessage(e.getMessage());
+e.printStackTrace();
+}
+return true;
+case "LT":
+double lat=0;
+double lon=0;
+double speed=0;
+int k=0;
+for (int i=1; i <= data.length(); i++) {
+boolean separator=i == data.length() || !(Character.isDigit(data.charAt(i)) || data.charAt(i) == ':' || data.charAt(i) == '.' || data.charAt(i) == '-');
+if (separator) {
+char ch=data.charAt(k);
+String vl=data.substring(k + 1,i);
+if (ch == 'L') {
+int l=vl.indexOf(":");
+lat=Double.parseDouble(vl.substring(0,l));
+lon=Double.parseDouble(vl.substring(l + 1));
+}
+ else if (ch == 'S') {
+speed=Double.parseDouble(vl);
+}
+k=i;
+}
+}
+if (lat != 0 || lon != 0) {
+Location loc=new Location("osmo");
+loc.setTime(System.currentTimeMillis());
+loc.setLatitude(lat);
+loc.setLongitude(lon);
+if (speed > 0) {
+loc.setSpeed((float)speed);
+}
+if (trackerListener != null) {
+trackerListener.locationChange(tid,loc);
+}
+}
+return true;
+}
+return false;
 }
