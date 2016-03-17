@@ -58,6 +58,7 @@
   checkExternalStorage();
   showAndHideMapPosition();
   readLocationToShow();
+  OsmandPlugin.onMapActivityResume(this);
   final Intent intent=getIntent();
   if (intent != null) {
     if (Intent.ACTION_VIEW.equals(intent.getAction())) {
@@ -75,6 +76,14 @@
  else         if ("google.navigation".equals(scheme) || "osmand.navigation".equals(scheme)) {
           parseNavigationIntent(data);
         }
+ else         if ("osmand.api".equals(scheme)) {
+          ExternalApiHelper apiHelper=new ExternalApiHelper(this);
+          Intent result=apiHelper.processApiRequest(intent);
+          setResult(apiHelper.getResultCode(),result);
+          if (apiHelper.needFinish()) {
+            finish();
+          }
+        }
       }
     }
     if (intent.getStringExtra(ShowRouteInfoActivity.START_NAVIGATION) != null) {
@@ -85,7 +94,6 @@
   if (progress != null) {
     app.getResourceManager().setBusyIndicator(new BusyIndicator(this,progress));
   }
-  OsmandPlugin.onMapActivityResume(this);
   mapView.refreshMap(true);
   if (atlasMapRendererView != null) {
     atlasMapRendererView.handleOnResume();

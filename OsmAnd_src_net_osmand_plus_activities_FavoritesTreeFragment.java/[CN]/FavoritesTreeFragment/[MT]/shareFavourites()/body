@@ -12,13 +12,25 @@
       }
       @Override protected void onPostExecute(      GPXFile gpxFile){
         hideProgressBar();
-        final Intent sendIntent=new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT,"Favourites.gpx:\n\n\n" + GPXUtilities.asString(gpxFile,getMyApplication()));
-        sendIntent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.share_fav_subject));
-        sendIntent.putExtra(Intent.EXTRA_STREAM,Uri.fromFile(helper.getExternalFile()));
-        sendIntent.setType("text/plain");
-        startActivity(sendIntent);
+        File dir=new File(getActivity().getCacheDir(),"share");
+        if (!dir.exists()) {
+          dir.mkdir();
+        }
+        File src=helper.getExternalFile();
+        File dst=new File(dir,src.getName());
+        try {
+          Algorithms.fileCopy(src,dst);
+          final Intent sendIntent=new Intent();
+          sendIntent.setAction(Intent.ACTION_SEND);
+          sendIntent.putExtra(Intent.EXTRA_TEXT,"Favourites.gpx:\n\n\n" + GPXUtilities.asString(gpxFile,getMyApplication()));
+          sendIntent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.share_fav_subject));
+          sendIntent.putExtra(Intent.EXTRA_STREAM,FileProvider.getUriForFile(getActivity(),"net.osmand.fileprovider",dst));
+          sendIntent.setType("text/plain");
+          startActivity(sendIntent);
+        }
+ catch (        IOException e) {
+          e.printStackTrace();
+        }
       }
     }
 ;

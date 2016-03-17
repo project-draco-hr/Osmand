@@ -1,0 +1,22 @@
+{
+  settings.USE_INTERMEDIATE_POINTS_NAVIGATION.set(useIntermediatePointsByDefault);
+  OsmandApplication app=mapActivity.getMyApplication();
+  TargetPointsHelper targets=app.getTargetPointsHelper();
+  ApplicationMode mode=getRouteMode(from);
+  app.getRoutingHelper().setAppMode(mode);
+  app.initVoiceCommandPlayer(mapActivity);
+  settings.FOLLOW_THE_ROUTE.set(false);
+  app.getRoutingHelper().setFollowingMode(false);
+  app.getRoutingHelper().setRoutePlanningMode(true);
+  targets.setStartPoint(from,false,fromName);
+  setGPXRouteParams(gpxFile);
+  targets.updateRouteAndRefresh(true);
+  mapActivity.getMapViewTrackingUtilities().switchToRoutePlanningMode();
+  mapActivity.getMapView().refreshMap(true);
+  if (showDialog) {
+    mapActivity.getMapLayers().getMapControlsLayer().showDialog();
+  }
+  if (targets.hasTooLongDistanceToNavigate()) {
+    app.showToastMessage(R.string.route_is_too_long);
+  }
+}
