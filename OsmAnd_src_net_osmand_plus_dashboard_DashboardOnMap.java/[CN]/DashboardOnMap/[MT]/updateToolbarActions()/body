@@ -47,6 +47,8 @@
     }
   }
 );
+  ImageView refreshToolbarItem=(ImageView)dashboardView.findViewById(R.id.toolbar_refresh);
+  refreshToolbarItem.setVisibility(View.GONE);
   if (waypointsVisible && getMyApplication().getWaypointHelper().getAllPoints().size() > 0) {
     if (getMyApplication().getWaypointHelper().isRouteCalculated()) {
       flat.setVisibility(View.VISIBLE);
@@ -83,6 +85,21 @@
       @Override public void onClick(      View v){
         hideDashboard(false);
         mapActivity.openDrawer();
+      }
+    }
+);
+  }
+  if (visibleType == DashboardType.CONFIGURE_SCREEN) {
+    refreshToolbarItem.setVisibility(View.VISIBLE);
+    settingsButton.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        MapWidgetRegistry registry=mapActivity.getMapLayers().getMapWidgetRegistry();
+        registry.resetToDefault();
+        MapInfoLayer mil=mapActivity.getMapLayers().getMapInfoLayer();
+        if (mil != null) {
+          mil.recreateControls();
+        }
+        updateListAdapter(registry.getViewConfigureMenuAdapter(mapActivity));
       }
     }
 );
