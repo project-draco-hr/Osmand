@@ -2,7 +2,15 @@
   super.onResume();
   if (profileSettings) {
     previousAppMode=settings.getApplicationMode();
-    boolean found=setSelectedAppMode(previousAppMode);
+    boolean found;
+    if (getIntent() != null && getIntent().hasExtra(INTENT_APP_MODE)) {
+      String modeStr=getIntent().getStringExtra(INTENT_APP_MODE);
+      ApplicationMode mode=ApplicationMode.valueOfStringKey(modeStr,previousAppMode);
+      found=setSelectedAppMode(mode);
+    }
+ else {
+      found=setSelectedAppMode(previousAppMode);
+    }
     if (!found) {
       getSpinner().setSelection(0);
     }
