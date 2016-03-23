@@ -8,7 +8,7 @@
         v.findViewById(R.id.description_text).setVisibility(View.GONE);
         v.findViewById(R.id.select_button).setVisibility(View.GONE);
         ((ImageView)v.findViewById(R.id.icon)).setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.ic_action_volume_up,!nightMode));
-        final CompoundButton btn=(CompoundButton)v.findViewById(R.id.check_item);
+        final CompoundButton btn=(CompoundButton)v.findViewById(R.id.toggle_item);
         btn.setVisibility(View.VISIBLE);
         btn.setChecked(!routingHelper.getVoiceRouter().isMute());
         btn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
@@ -26,7 +26,7 @@
         View v=mapActivity.getLayoutInflater().inflate(R.layout.switch_select_list_item,null);
         AndroidUtils.setListItemBackground(mapActivity,v,nightMode);
         ((ImageView)v.findViewById(R.id.icon)).setImageDrawable(app.getIconsCache().getContentIcon(R.drawable.ic_action_road_works_dark,!nightMode));
-        v.findViewById(R.id.check_item).setVisibility(View.GONE);
+        v.findViewById(R.id.toggle_item).setVisibility(View.GONE);
         final TextView btn=(TextView)v.findViewById(R.id.select_button);
         btn.setTextColor(btn.getLinkTextColors());
         btn.setOnClickListener(new View.OnClickListener(){
@@ -48,7 +48,7 @@
         AndroidUtils.setListItemBackground(mapActivity,v,nightMode);
         v.findViewById(R.id.icon).setVisibility(View.GONE);
         v.findViewById(R.id.description_text).setVisibility(View.GONE);
-        v.findViewById(R.id.check_item).setVisibility(View.GONE);
+        v.findViewById(R.id.toggle_item).setVisibility(View.GONE);
         final TextView btn=(TextView)v.findViewById(R.id.select_button);
         btn.setTextColor(btn.getLinkTextColors());
         String voiceProvider=settings.VOICE_PROVIDER.get();
@@ -82,7 +82,7 @@
         AndroidUtils.setListItemBackground(mapActivity,v,nightMode);
         v.findViewById(R.id.select_button).setVisibility(View.GONE);
         v.findViewById(R.id.icon).setVisibility(View.GONE);
-        final CompoundButton btn=(CompoundButton)v.findViewById(R.id.check_item);
+        final CompoundButton btn=(CompoundButton)v.findViewById(R.id.toggle_item);
         btn.setVisibility(View.VISIBLE);
         btn.setChecked(settings.INTERRUPT_MUSIC.get());
         btn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
@@ -118,7 +118,7 @@
         TextView titleView=(TextView)v.findViewById(R.id.title);
         titleView.setText(R.string.routing_settings_2);
         AndroidUtils.setTextPrimaryColor(mapActivity,titleView,nightMode);
-        v.findViewById(R.id.check_item).setVisibility(View.GONE);
+        v.findViewById(R.id.toggle_item).setVisibility(View.GONE);
         return v;
       }
       return inflateRoutingParameter(position);
@@ -127,13 +127,13 @@
       View v=mapActivity.getLayoutInflater().inflate(R.layout.layers_list_activity_item,null);
       AndroidUtils.setListItemBackground(mapActivity,v,nightMode);
       final TextView tv=(TextView)v.findViewById(R.id.title);
-      final CheckBox ch=((CheckBox)v.findViewById(R.id.check_item));
+      final CheckBox ch=((CheckBox)v.findViewById(R.id.toggle_item));
       final LocalRoutingParameter rp=getItem(position);
       AndroidUtils.setTextPrimaryColor(mapActivity,tv,nightMode);
       tv.setText(rp.getText(mapActivity));
       ch.setOnCheckedChangeListener(null);
       if (rp.routingParameter != null && rp.routingParameter.getId().equals("short_way")) {
-        ch.setChecked(!settings.FAST_ROUTE_MODE.get());
+        ch.setChecked(!settings.FAST_ROUTE_MODE.getModeValue(routingHelper.getAppMode()));
       }
  else {
         ch.setChecked(rp.isSelected(settings));
@@ -142,7 +142,7 @@
       ch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
         @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
           if (rp.routingParameter != null && rp.routingParameter.getId().equals("short_way")) {
-            settings.FAST_ROUTE_MODE.set(!isChecked);
+            settings.FAST_ROUTE_MODE.setModeValue(routingHelper.getAppMode(),!isChecked);
           }
           rp.setSelected(settings,isChecked);
           if (rp instanceof OtherLocalRoutingParameter) {

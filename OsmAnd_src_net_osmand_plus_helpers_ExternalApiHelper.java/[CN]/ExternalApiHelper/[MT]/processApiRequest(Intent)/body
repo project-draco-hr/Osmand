@@ -142,13 +142,26 @@
         result.putExtra(PARAM_LON,location.getLongitude());
       }
       final RoutingHelper routingHelper=app.getRoutingHelper();
-      if (routingHelper.isFollowingMode()) {
+      if (routingHelper.isRouteCalculated()) {
         int time=routingHelper.getLeftTime();
         result.putExtra(PARAM_TIME_LEFT,time);
         long eta=time + System.currentTimeMillis() / 1000;
         result.putExtra(PARAM_ETA,eta);
         result.putExtra(PARAM_DISTANCE_LEFT,routingHelper.getLeftDistance());
+        NextDirectionInfo ni=routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(),true);
+        if (ni.distanceTo > 0) {
+          updateTurnInfo("next_",result,ni);
+          ni=routingHelper.getNextRouteDirectionInfoAfter(ni,new NextDirectionInfo(),true);
+          if (ni.distanceTo > 0) {
+            updateTurnInfo("after_next",result,ni);
+          }
+        }
+        routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(),false);
+        if (ni.distanceTo > 0) {
+          updateTurnInfo("no_speak_next_",result,ni);
+        }
       }
+      result.putExtra(PARAM_VERSION,VERSION_CODE);
       finish=true;
       resultCode=RESULT_CODE_OK;
     }
