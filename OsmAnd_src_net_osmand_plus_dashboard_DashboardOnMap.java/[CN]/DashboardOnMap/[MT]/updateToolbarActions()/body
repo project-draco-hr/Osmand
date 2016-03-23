@@ -88,20 +88,22 @@
 );
   }
   toolbar.getMenu().clear();
-  toolbar.inflateMenu(R.menu.refresh_menu);
-  toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener(){
-    @Override public boolean onMenuItemClick(    MenuItem menuItem){
-      if (menuItem.getItemId() == R.id.action_refresh) {
-        MapWidgetRegistry registry=mapActivity.getMapLayers().getMapWidgetRegistry();
-        registry.resetToDefault();
-        MapInfoLayer mil=mapActivity.getMapLayers().getMapInfoLayer();
-        if (mil != null) {
-          mil.recreateControls();
+  if (visibleType == DashboardType.CONFIGURE_SCREEN) {
+    toolbar.inflateMenu(R.menu.refresh_menu);
+    toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener(){
+      @Override public boolean onMenuItemClick(      MenuItem menuItem){
+        if (menuItem.getItemId() == R.id.action_refresh) {
+          MapWidgetRegistry registry=mapActivity.getMapLayers().getMapWidgetRegistry();
+          registry.resetToDefault();
+          MapInfoLayer mil=mapActivity.getMapLayers().getMapInfoLayer();
+          if (mil != null) {
+            mil.recreateControls();
+          }
+          updateListAdapter(registry.getViewConfigureMenuAdapter(mapActivity));
         }
-        updateListAdapter(registry.getViewConfigureMenuAdapter(mapActivity));
+        return false;
       }
-      return false;
     }
-  }
 );
+  }
 }

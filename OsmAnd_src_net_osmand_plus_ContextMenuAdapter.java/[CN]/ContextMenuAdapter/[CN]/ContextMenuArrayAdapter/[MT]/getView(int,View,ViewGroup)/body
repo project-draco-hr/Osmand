@@ -17,7 +17,6 @@
   }
   if (convertView == null || (!lid.equals(convertView.getTag()))) {
     convertView=activity.getLayoutInflater().inflate(lid,parent,false);
-    AndroidUtils.setListItemBackground(ctx,convertView,!holoLight);
     convertView.setTag(lid);
   }
   TextView tv=(TextView)convertView.findViewById(R.id.title);
@@ -27,7 +26,7 @@
   tv.setText(isCategory(position) ? getItemName(position).toUpperCase() : getItemName(position));
   if (layoutId == R.layout.simple_list_menu_item) {
     int color=activity.getResources().getColor(holoLight ? R.color.icon_color : R.color.dashboard_subheader_text_dark);
-    Drawable imageId=app.getIconsCache().getPaintedContentIcon(iconListLight.get(position),color);
+    Drawable imageId=app.getIconsCache().getPaintedContentIcon(lightIconList.get(position),color);
     float density=activity.getResources().getDisplayMetrics().density;
     int paddingInPixels=(int)(24 * density);
     int drawableSizeInPixels=(int)(24 * density);
@@ -36,13 +35,28 @@
     tv.setCompoundDrawablePadding(paddingInPixels);
   }
  else {
-    Drawable imageId=getImage(app,position,holoLight);
-    if (imageId != null) {
-      ((ImageView)convertView.findViewById(R.id.icon)).setImageDrawable(imageId);
+    Drawable drawable=getImage(app,position,holoLight);
+    if (drawable != null) {
+      ((ImageView)convertView.findViewById(R.id.icon)).setImageDrawable(drawable);
       convertView.findViewById(R.id.icon).setVisibility(View.VISIBLE);
     }
  else     if (convertView.findViewById(R.id.icon) != null) {
       convertView.findViewById(R.id.icon).setVisibility(View.GONE);
+    }
+  }
+  @DrawableRes int secondaryLightDrawable=secondaryLightIconList.get(position);
+  if (secondaryLightDrawable != 0) {
+    int color=ContextCompat.getColor(ctx,holoLight ? R.color.icon_color : R.color.dashboard_subheader_text_dark);
+    Drawable drawable=getSecondaryImage(app,position,holoLight);
+    DrawableCompat.setTint(drawable,color);
+    ImageView imageView=(ImageView)convertView.findViewById(R.id.secondary_icon);
+    imageView.setImageDrawable(drawable);
+    imageView.setVisibility(View.VISIBLE);
+  }
+ else {
+    ImageView imageView=(ImageView)convertView.findViewById(R.id.secondary_icon);
+    if (imageView != null) {
+      imageView.setVisibility(View.GONE);
     }
   }
   if (isCategory(position)) {
@@ -51,8 +65,8 @@
  else {
     tv.setTypeface(null);
   }
-  if (convertView.findViewById(R.id.check_item) != null) {
-    final CompoundButton ch=(CompoundButton)convertView.findViewById(R.id.check_item);
+  if (convertView.findViewById(R.id.toggle_item) != null) {
+    final CompoundButton ch=(CompoundButton)convertView.findViewById(R.id.toggle_item);
     if (selectedList.get(position) != -1) {
       ch.setOnCheckedChangeListener(null);
       ch.setVisibility(View.VISIBLE);
