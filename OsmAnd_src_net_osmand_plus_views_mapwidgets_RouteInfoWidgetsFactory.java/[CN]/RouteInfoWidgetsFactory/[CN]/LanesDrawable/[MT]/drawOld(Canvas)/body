@@ -1,0 +1,22 @@
+{
+  float w=72 * scaleCoefficient / miniCoeff;
+  if (lanes != null && lanes.length > 0) {
+    canvas.save();
+    for (int i=0; i < lanes.length; i++) {
+      int turnType;
+      if ((lanes[i] & 1) == 1) {
+        paintRouteDirection.setColor(imminent ? ctx.getResources().getColor(R.color.nav_arrow_imminent) : ctx.getResources().getColor(R.color.nav_arrow));
+        turnType=TurnType.getPrimaryTurn(lanes[i]);
+      }
+ else {
+        paintRouteDirection.setColor(ctx.getResources().getColor(R.color.nav_arrow_distant));
+        turnType=TurnType.getPrimaryTurn(lanes[i]);
+      }
+      Path p=getPathFromTurnType(paths,turnType,laneStraight,scaleCoefficient / miniCoeff);
+      canvas.drawPath(p,paintBlack);
+      canvas.drawPath(p,paintRouteDirection);
+      canvas.translate(w,0);
+    }
+    canvas.restore();
+  }
+}
