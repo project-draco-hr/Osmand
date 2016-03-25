@@ -8,14 +8,14 @@
     final String propertyDescr=SettingsActivity.getStringPropertyDescription(view.getContext(),p.getAttrName(),p.getName());
     if (p.isBoolean()) {
       final OsmandSettings.CommonPreference<Boolean> pref=view.getApplication().getSettings().getCustomRenderBooleanProperty(p.getAttrName());
-      adapter.item(propertyName).listen(new OnContextMenuClick(){
+      adapter.addItem(ContextMenuItem.createBuilder(propertyName).setListener(new OnContextMenuClick(){
         @Override public boolean onContextMenuClick(        ArrayAdapter<?> adapter,        int itemId,        int pos,        boolean isChecked){
           pref.set(!pref.get());
           refreshMapComplete(activity);
           return false;
         }
       }
-).selected(pref.get() ? 1 : 0).reg();
+).setSelected(pref.get()).createItem());
     }
  else {
       final OsmandSettings.CommonPreference<String> pref=view.getApplication().getSettings().getCustomRenderProperty(p.getAttrName());
@@ -26,7 +26,7 @@
  else {
         descr=SettingsActivity.getStringPropertyValue(view.getContext(),p.getDefaultValueDescription());
       }
-      adapter.item(propertyName).listen(new OnContextMenuClick(){
+      adapter.addItem(ContextMenuItem.createBuilder(propertyName).setListener(new OnContextMenuClick(){
         @Override public boolean onContextMenuClick(        final ArrayAdapter<?> ad,        int itemId,        final int pos,        boolean isChecked){
           AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
           b.setTitle(propertyDescr);
@@ -61,7 +61,7 @@
           return false;
         }
       }
-).description(descr).layout(R.layout.drawer_list_doubleitem).reg();
+).setDescription(descr).setLayout(R.layout.drawer_list_doubleitem).createItem());
     }
   }
 }
