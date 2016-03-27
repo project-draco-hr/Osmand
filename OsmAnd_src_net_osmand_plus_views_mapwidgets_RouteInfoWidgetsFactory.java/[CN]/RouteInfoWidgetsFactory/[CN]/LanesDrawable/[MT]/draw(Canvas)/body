@@ -4,17 +4,26 @@
     canvas.save();
     for (int i=0; i < lanes.length; i++) {
       int turnType;
+      int secondTurnType;
       if ((lanes[i] & 1) == 1) {
         paintRouteDirection.setColor(imminent ? ctx.getResources().getColor(R.color.nav_arrow_imminent) : ctx.getResources().getColor(R.color.nav_arrow));
-        turnType=TurnType.getPrimaryTurn(lanes[i]);
       }
  else {
         paintRouteDirection.setColor(ctx.getResources().getColor(R.color.nav_arrow_distant));
-        turnType=TurnType.getPrimaryTurn(lanes[i]);
       }
-      Path p=getPathFromTurnType(paths,turnType,laneStraight,scaleCoefficient / miniCoeff);
-      canvas.drawPath(p,paintBlack);
-      canvas.drawPath(p,paintRouteDirection);
+      turnType=TurnType.getPrimaryTurn(lanes[i]);
+      secondTurnType=TurnType.getSecondaryTurn(lanes[i]);
+      Bitmap b=getPathBitmapFromTurnType(ctx.getResources(),pathBitmaps,turnType,secondTurnType,laneStraightBitmap,scaleCoefficient / miniCoeff);
+      if (secondTurnType > 0) {
+        Bitmap bSecond=null;
+        bSecond=getPathBitmapFromTurnType(ctx.getResources(),pathBitmaps,secondTurnType,secondTurnType,laneStraightBitmap,scaleCoefficient / miniCoeff);
+        if (bSecond != null) {
+          paintSecondTurn.setColorFilter(new PorterDuffColorFilter(paintSecondTurn.getColor(),PorterDuff.Mode.SRC_ATOP));
+          canvas.drawBitmap(bSecond,0f,0f,paintSecondTurn);
+        }
+      }
+      paintRouteDirection.setColorFilter(new PorterDuffColorFilter(paintRouteDirection.getColor(),PorterDuff.Mode.SRC_ATOP));
+      canvas.drawBitmap(b,0f,0f,paintRouteDirection);
       canvas.translate(w,0);
     }
     canvas.restore();

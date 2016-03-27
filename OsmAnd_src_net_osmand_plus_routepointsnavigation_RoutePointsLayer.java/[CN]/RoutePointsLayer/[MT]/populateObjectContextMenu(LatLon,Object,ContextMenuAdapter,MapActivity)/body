@@ -1,0 +1,44 @@
+{
+  if (o != null && o instanceof GPXUtilities.WptPt && plugin.getCurrentRoute() != null) {
+    final GPXUtilities.WptPt point=(GPXUtilities.WptPt)o;
+    ContextMenuAdapter.OnContextMenuClick listener=new ContextMenuAdapter.OnContextMenuClick(){
+      @Override public boolean onContextMenuClick(      ArrayAdapter<?> adapter,      int itemId,      int pos,      boolean isChecked){
+        if (itemId == R.string.mark_as_not_visited) {
+          plugin.getCurrentRoute().markPoint(point,false);
+          plugin.saveCurrentRoute();
+        }
+ else         if (itemId == R.string.mark_as_visited) {
+          plugin.getCurrentRoute().markPoint(point,true);
+          plugin.saveCurrentRoute();
+        }
+ else         if (itemId == R.string.mark_as_current) {
+          plugin.getCurrentRoute().markPoint(point,false);
+          plugin.getCurrentRoute().navigateToPoint(point);
+          plugin.saveCurrentRoute();
+        }
+ else         if (itemId == R.string.navigate_to_next) {
+          plugin.getCurrentRoute().navigateToNextPoint();
+          plugin.saveCurrentRoute();
+        }
+        map.refreshMap();
+        return true;
+      }
+    }
+;
+    if (plugin.getCurrentRoute().getPointStatus(point)) {
+      adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.mark_as_not_visited,mapActivity).setColorIcon(R.drawable.ic_action_gremove_dark).setListener(listener).createItem());
+    }
+ else {
+      adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.mark_as_visited,mapActivity).setColorIcon(R.drawable.ic_action_done).setListener(listener).createItem());
+    }
+    RoutePointsPlugin.RoutePoint routePoint=plugin.getCurrentRoute().getRoutePointFromWpt(point);
+    if (routePoint != null) {
+      if (routePoint.isNextNavigate) {
+        adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.navigate_to_next,mapActivity).setColorIcon(R.drawable.ic_action_gnext_dark).setListener(listener).createItem());
+      }
+ else {
+        adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.mark_as_current,mapActivity).setColorIcon(R.drawable.ic_action_signpost_dark).setListener(listener).createItem());
+      }
+    }
+  }
+}

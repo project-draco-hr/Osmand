@@ -1,8 +1,9 @@
 {
+  final ContextMenuItem item=getItem(position);
   Integer lid=getLayoutId(position);
   if (lid == R.layout.mode_toggles) {
     final Set<ApplicationMode> selected=new LinkedHashSet<ApplicationMode>();
-    return AppModeDialog.prepareAppModeDrawerView(activity,visibleModes,selected,allModes,true,new View.OnClickListener(){
+    return AppModeDialog.prepareAppModeDrawerView((Activity)getContext(),selected,allModes,true,new View.OnClickListener(){
       @Override public void onClick(      View view){
         if (selected.size() > 0) {
           app.getSettings().APPLICATION_MODE.set(selected.iterator().next());
@@ -16,18 +17,19 @@
 );
   }
   if (convertView == null || (!lid.equals(convertView.getTag()))) {
-    convertView=activity.getLayoutInflater().inflate(lid,parent,false);
+    convertView=LayoutInflater.from(getContext()).inflate(lid,parent,false);
     convertView.setTag(lid);
   }
   TextView tv=(TextView)convertView.findViewById(R.id.title);
   if (!isCategory(position)) {
-    AndroidUtils.setTextPrimaryColor(ctx,tv,!holoLight);
+    AndroidUtils.setTextPrimaryColor(getContext(),tv,!holoLight);
   }
   tv.setText(isCategory(position) ? getItemName(position).toUpperCase() : getItemName(position));
   if (layoutId == R.layout.simple_list_menu_item) {
-    int color=activity.getResources().getColor(holoLight ? R.color.icon_color : R.color.dashboard_subheader_text_dark);
-    Drawable imageId=app.getIconsCache().getPaintedContentIcon(lightIconList.get(position),color);
-    float density=activity.getResources().getDisplayMetrics().density;
+    int color=ContextCompat.getColor(getContext(),holoLight ? R.color.icon_color : R.color.dashboard_subheader_text_dark);
+    Drawable imageId=ContextCompat.getDrawable(getContext(),item.getLightIcon());
+    DrawableCompat.setTint(imageId,color);
+    float density=getContext().getResources().getDisplayMetrics().density;
     int paddingInPixels=(int)(24 * density);
     int drawableSizeInPixels=(int)(24 * density);
     imageId.setBounds(0,0,drawableSizeInPixels,drawableSizeInPixels);
@@ -44,9 +46,9 @@
       convertView.findViewById(R.id.icon).setVisibility(View.GONE);
     }
   }
-  @DrawableRes int secondaryLightDrawable=secondaryLightIconList.get(position);
-  if (secondaryLightDrawable != 0) {
-    int color=ContextCompat.getColor(ctx,holoLight ? R.color.icon_color : R.color.dashboard_subheader_text_dark);
+  @DrawableRes int secondaryLightDrawable=item.getSecondaryLightIcon();
+  if (secondaryLightDrawable != -1) {
+    int color=ContextCompat.getColor(getContext(),holoLight ? R.color.icon_color : R.color.dashboard_subheader_text_dark);
     Drawable drawable=getSecondaryImage(app,position,holoLight);
     DrawableCompat.setTint(drawable,color);
     ImageView imageView=(ImageView)convertView.findViewById(R.id.secondary_icon);
@@ -67,15 +69,15 @@
   }
   if (convertView.findViewById(R.id.toggle_item) != null) {
     final CompoundButton ch=(CompoundButton)convertView.findViewById(R.id.toggle_item);
-    if (selectedList.get(position) != -1) {
+    if (item.getSelected() != null) {
       ch.setOnCheckedChangeListener(null);
       ch.setVisibility(View.VISIBLE);
-      ch.setChecked(selectedList.get(position) > 0);
-      final ArrayAdapter<String> la=this;
+      ch.setChecked(item.getSelected());
+      final ArrayAdapter<ContextMenuItem> la=this;
       final OnCheckedChangeListener listener=new OnCheckedChangeListener(){
         @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
           OnContextMenuClick ca=getClickAdapter(position);
-          selectedList.set(position,isChecked ? 1 : 0);
+          item.setSelected(isChecked);
           if (ca != null) {
             ca.onContextMenuClick(la,getElementId(position),position,isChecked);
           }
@@ -91,12 +93,12 @@
   }
   if (convertView.findViewById(R.id.seekbar) != null) {
     SeekBar seekBar=(SeekBar)convertView.findViewById(R.id.seekbar);
-    if (progressList.get(position) != -1) {
+    if (item.getProgress() != -1) {
       seekBar.setProgress(getProgress(position));
       seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
         @Override public void onProgressChanged(        SeekBar seekBar,        int progress,        boolean fromUser){
           OnIntegerValueChangedListener listener=getIntegerLister(position);
-          progressList.set(position,progress);
+          item.setProgress(progress);
           if (listener != null && fromUser) {
             listener.onIntegerValueChangedListener(progress);
           }
@@ -115,7 +117,7 @@
   }
   if (convertView.findViewById(R.id.ProgressBar) != null) {
     ProgressBar bar=(ProgressBar)convertView.findViewById(R.id.ProgressBar);
-    if (loadingList.get(position) == 1) {
+    if (item.isLoading()) {
       bar.setVisibility(View.VISIBLE);
     }
  else {
