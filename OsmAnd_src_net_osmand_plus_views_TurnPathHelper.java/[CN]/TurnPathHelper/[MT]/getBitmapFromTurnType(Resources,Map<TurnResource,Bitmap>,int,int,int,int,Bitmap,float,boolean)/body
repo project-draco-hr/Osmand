@@ -1,0 +1,44 @@
+{
+  int firstTurnType=TurnType.valueOf(firstTurn,leftSide).getValue();
+  int secondTurnType=TurnType.valueOf(secondTurn,leftSide).getValue();
+  int thirdTurnType=TurnType.valueOf(thirdTurn,leftSide).getValue();
+  TurnResource turnResource=new TurnResource(R.drawable.map_turn_forward_small,false);
+  if (turn == 1) {
+    if (firstTurn == 0)     return defaultType;
+    if (secondTurnType == 0) {
+      turnResource=getTallArrow(firstTurnType);
+    }
+ else     if (secondTurnType != TurnType.C) {
+      if (firstTurnType == TurnType.TU || firstTurnType == TurnType.TRU) {
+        turnResource=getShortArrow(firstTurnType);
+      }
+ else {
+        turnResource=getTallArrow(firstTurnType);
+      }
+    }
+ else {
+      turnResource=getShortArrow(firstTurnType);
+    }
+  }
+ else   if (turn == 2) {
+    if (firstTurnType == TurnType.C) {
+      turnResource=getShortArrow(secondTurnType);
+    }
+ else {
+      turnResource=getTallArrow(secondTurnType);
+    }
+  }
+ else   if (turn == 3) {
+    if (secondTurnType == TurnType.C) {
+      turnResource=getShortArrow(thirdTurnType);
+    }
+ else {
+    }
+  }
+  Bitmap b=cache.get(turnResource);
+  if (b == null) {
+    b=turnResource.flip ? getFlippedBitmap(res,turnResource.resourceId) : BitmapFactory.decodeResource(res,turnResource.resourceId);
+    cache.put(turnResource,b);
+  }
+  return b;
+}
