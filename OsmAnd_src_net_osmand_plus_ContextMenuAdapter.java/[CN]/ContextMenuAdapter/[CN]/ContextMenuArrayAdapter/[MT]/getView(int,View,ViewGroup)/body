@@ -1,30 +1,31 @@
 {
   final ContextMenuItem item=getItem(position);
-  Integer lid=getLayoutId(position);
+  int lid=item.getLayout();
+  lid=lid != -1 ? lid : DEFAULT_LAYOUT_ID;
   if (lid == R.layout.mode_toggles) {
     final Set<ApplicationMode> selected=new LinkedHashSet<ApplicationMode>();
-    return AppModeDialog.prepareAppModeDrawerView((Activity)getContext(),selected,allModes,true,new View.OnClickListener(){
+    return AppModeDialog.prepareAppModeDrawerView((Activity)getContext(),selected,true,new View.OnClickListener(){
       @Override public void onClick(      View view){
         if (selected.size() > 0) {
           app.getSettings().APPLICATION_MODE.set(selected.iterator().next());
           notifyDataSetChanged();
         }
         if (changeAppModeListener != null) {
-          changeAppModeListener.onClick(allModes.getResult());
+          changeAppModeListener.onClick();
         }
       }
     }
 );
   }
-  if (convertView == null || (!lid.equals(convertView.getTag()))) {
+  if (convertView == null || (lid != convertView.getTag())) {
     convertView=LayoutInflater.from(getContext()).inflate(lid,parent,false);
     convertView.setTag(lid);
   }
   TextView tv=(TextView)convertView.findViewById(R.id.title);
-  if (!isCategory(position)) {
+  if (!item.isCategory()) {
     AndroidUtils.setTextPrimaryColor(getContext(),tv,!holoLight);
   }
-  tv.setText(isCategory(position) ? getItemName(position).toUpperCase() : getItemName(position));
+  tv.setText(item.isCategory() ? item.getTitle().toUpperCase() : item.getTitle());
   if (layoutId == R.layout.simple_list_menu_item) {
     int color=ContextCompat.getColor(getContext(),holoLight ? R.color.icon_color : R.color.dashboard_subheader_text_dark);
     Drawable imageId=ContextCompat.getDrawable(getContext(),item.getLightIcon());
@@ -49,7 +50,7 @@
   @DrawableRes int secondaryLightDrawable=item.getSecondaryLightIcon();
   if (secondaryLightDrawable != -1) {
     int color=ContextCompat.getColor(getContext(),holoLight ? R.color.icon_color : R.color.dashboard_subheader_text_dark);
-    Drawable drawable=getSecondaryImage(app,position,holoLight);
+    Drawable drawable=ContextCompat.getDrawable(getContext(),item.getSecondaryLightIcon());
     DrawableCompat.setTint(drawable,color);
     ImageView imageView=(ImageView)convertView.findViewById(R.id.secondary_icon);
     imageView.setImageDrawable(drawable);
@@ -61,13 +62,13 @@
       imageView.setVisibility(View.GONE);
     }
   }
-  if (isCategory(position)) {
+  if (item.isCategory()) {
     tv.setTypeface(Typeface.DEFAULT_BOLD);
   }
  else {
     tv.setTypeface(null);
   }
-  if (convertView.findViewById(R.id.toggle_item) != null) {
+  if (convertView.findViewById(R.id.toggle_item) != null && !item.isCategory()) {
     final CompoundButton ch=(CompoundButton)convertView.findViewById(R.id.toggle_item);
     if (item.getSelected() != null) {
       ch.setOnCheckedChangeListener(null);
@@ -76,10 +77,10 @@
       final ArrayAdapter<ContextMenuItem> la=this;
       final OnCheckedChangeListener listener=new OnCheckedChangeListener(){
         @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
-          OnContextMenuClick ca=getClickAdapter(position);
+          OnContextMenuClick ca=item.getCheckBoxListener();
           item.setSelected(isChecked);
           if (ca != null) {
-            ca.onContextMenuClick(la,getElementId(position),position,isChecked);
+            ca.onContextMenuClick(la,item.getTitleId(),position,isChecked);
           }
         }
       }
@@ -94,10 +95,10 @@
   if (convertView.findViewById(R.id.seekbar) != null) {
     SeekBar seekBar=(SeekBar)convertView.findViewById(R.id.seekbar);
     if (item.getProgress() != -1) {
-      seekBar.setProgress(getProgress(position));
+      seekBar.setProgress(item.getProgress());
       seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
         @Override public void onProgressChanged(        SeekBar seekBar,        int progress,        boolean fromUser){
-          OnIntegerValueChangedListener listener=getIntegerLister(position);
+          OnIntegerValueChangedListener listener=item.getIntegerListener();
           item.setProgress(progress);
           if (listener != null && fromUser) {
             listener.onIntegerValueChangedListener(progress);
@@ -124,7 +125,7 @@
       bar.setVisibility(View.INVISIBLE);
     }
   }
-  String itemDescr=getItemDescr(position);
+  String itemDescr=item.getDescription();
   if (convertView.findViewById(R.id.description) != null) {
     ((TextView)convertView.findViewById(R.id.description)).setText(itemDescr);
   }
