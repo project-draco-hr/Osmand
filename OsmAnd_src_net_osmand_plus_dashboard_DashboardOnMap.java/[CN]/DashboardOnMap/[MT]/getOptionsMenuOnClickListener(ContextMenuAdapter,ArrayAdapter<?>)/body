@@ -1,9 +1,10 @@
 {
   return new AdapterView.OnItemClickListener(){
     @Override public void onItemClick(    AdapterView<?> parent,    View view,    int which,    long id){
-      OnContextMenuClick click=cm.getClickAdapter(which);
+      ContextMenuItem item=cm.getItem(which);
+      OnContextMenuClick click=item.getCheckBoxListener();
       if (click instanceof OnRowItemClick) {
-        boolean cl=((OnRowItemClick)click).onRowItemClick(listAdapter,view,cm.getElementId(which),which);
+        boolean cl=((OnRowItemClick)click).onRowItemClick(listAdapter,view,item.getTitleId(),which);
         if (cl) {
           hideDashboard();
         }
@@ -14,13 +15,15 @@
           btn.setChecked(!btn.isChecked());
         }
  else {
-          if (click.onContextMenuClick(listAdapter,cm.getElementId(which),which,false)) {
+          if (click.onContextMenuClick(listAdapter,item.getTitleId(),which,false)) {
             hideDashboard();
           }
         }
       }
  else {
-        hideDashboard();
+        if (!item.isCategory()) {
+          hideDashboard();
+        }
       }
     }
   }
