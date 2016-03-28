@@ -1,14 +1,16 @@
 {
   culled=resampleTrack(rs.getPoints(),segmentSize);
-  int halfC=getColor2(0.5);
-  Double max=Double.NEGATIVE_INFINITY;
-  Double min=Double.POSITIVE_INFINITY;
-  for (  GPXUtilities.WptPt pt : culled) {
-    max=Math.max(max,pt.ele);
-    min=Math.min(min,pt.ele);
-    pt.colourARGB=halfC;
+  if (!isCancelled()) {
+    int halfC=getRainbowColour(0.5);
+    Double max=Double.NEGATIVE_INFINITY;
+    Double min=Double.POSITIVE_INFINITY;
+    for (    GPXUtilities.WptPt pt : culled) {
+      max=Math.max(max,pt.ele);
+      min=Math.min(min,pt.ele);
+      pt.colourARGB=halfC;
+    }
+    Double elevationRange=max - min;
+    if (elevationRange > 0)     for (    GPXUtilities.WptPt pt : culled)     pt.colourARGB=getRainbowColour((pt.ele - min) / elevationRange);
   }
-  Double elevationRange=max - min;
-  if (elevationRange > 0)   for (  GPXUtilities.WptPt pt : culled)   pt.colourARGB=getColor2((pt.ele - min) / elevationRange);
-  return "OK";
+  return isCancelled() ? "" : "OK";
 }
