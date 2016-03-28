@@ -1,0 +1,33 @@
+{
+  List<GPXUtilities.WptPt> pts=culled == null ? points : culled;
+  final QuadRect latLonBounds=tileBox.getLatLonBounds();
+  int startIndex=-1;
+  int endIndex=-1;
+  int prevCross=0;
+  double shift=0;
+  for (int i=0; i < pts.size(); i++) {
+    GPXUtilities.WptPt ls=pts.get(i);
+    int cross=0;
+    cross|=(ls.lon < latLonBounds.left - shift ? 1 : 0);
+    cross|=(ls.lon > latLonBounds.right + shift ? 2 : 0);
+    cross|=(ls.lat > latLonBounds.top + shift ? 4 : 0);
+    cross|=(ls.lat < latLonBounds.bottom - shift ? 8 : 0);
+    if (i > 0) {
+      if ((prevCross & cross) == 0) {
+        if (endIndex == i - 1 && startIndex != -1) {
+        }
+ else {
+          if (startIndex >= 0) {
+            drawSegment(pts,p,canvas,tileBox,startIndex,endIndex);
+          }
+          startIndex=i - 1;
+        }
+        endIndex=i;
+      }
+    }
+    prevCross=cross;
+  }
+  if (startIndex != -1) {
+    drawSegment(pts,p,canvas,tileBox,startIndex,endIndex);
+  }
+}

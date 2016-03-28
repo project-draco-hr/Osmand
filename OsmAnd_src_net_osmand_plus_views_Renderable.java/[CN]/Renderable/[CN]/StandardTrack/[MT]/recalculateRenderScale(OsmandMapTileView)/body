@@ -1,0 +1,14 @@
+{
+  double zoom=view.getZoom();
+  if (points != null) {
+    double hashCode=points.hashCode() + zoom;
+    if (culled == null || hash != hashCode) {
+      if (culler != null)       culler.cancel(true);
+      hash=hashCode;
+      double cullDistance=Math.pow(2.0,base - zoom);
+      culler=new AsynchronousResampler.RamerDouglasPeucer(this,cullDistance);
+      culled=null;
+      culler.execute("");
+    }
+  }
+}
