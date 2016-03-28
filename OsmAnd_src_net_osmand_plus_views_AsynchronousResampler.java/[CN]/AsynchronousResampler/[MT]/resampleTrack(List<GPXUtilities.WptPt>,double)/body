@@ -1,0 +1,27 @@
+{
+  ArrayList<GPXUtilities.WptPt> newPts=new ArrayList<GPXUtilities.WptPt>();
+  int ptCt=pts.size();
+  if (pts != null && ptCt > 0) {
+    GPXUtilities.WptPt lastPt=pts.get(0);
+    double segSub=0;
+    double cumDist=0;
+    for (int i=1; i < ptCt; i++) {
+      GPXUtilities.WptPt pt=pts.get(i);
+      double segLength=MapUtils.getDistance(pt.getLatitude(),pt.getLongitude(),lastPt.getLatitude(),lastPt.getLongitude());
+      while (segSub < segLength) {
+        double partial=segSub / segLength;
+        GPXUtilities.WptPt newPoint=new GPXUtilities.WptPt(lastPt.getLatitude() + partial * (pt.getLatitude() - lastPt.getLatitude()),lastPt.getLongitude() + partial * (pt.getLongitude() - lastPt.getLongitude()),(long)(lastPt.time + partial * (pt.time - lastPt.time)),lastPt.ele + partial * (pt.ele - lastPt.ele),lastPt.speed + partial * (pt.speed - lastPt.speed),lastPt.hdop + partial * (pt.hdop - lastPt.hdop));
+        newPoint.setDistance(cumDist + segLength * partial);
+        newPts.add(newPts.size(),newPoint);
+        segSub+=dist;
+      }
+      segSub-=segLength;
+      cumDist+=segLength;
+      lastPt=pt;
+    }
+    GPXUtilities.WptPt newPoint=new GPXUtilities.WptPt(lastPt.getLatitude(),lastPt.getLongitude(),lastPt.time,lastPt.ele,lastPt.speed,lastPt.hdop);
+    newPoint.setDistance(cumDist);
+    newPts.add(newPts.size(),newPoint);
+  }
+  return newPts;
+}
