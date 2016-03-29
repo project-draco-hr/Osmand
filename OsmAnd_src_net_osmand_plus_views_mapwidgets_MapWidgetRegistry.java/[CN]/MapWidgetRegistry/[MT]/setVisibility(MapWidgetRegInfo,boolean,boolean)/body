@@ -1,0 +1,24 @@
+{
+  ApplicationMode mode=settings.APPLICATION_MODE.get();
+  defineDefaultSettingsElement(mode);
+  this.visibleElementsFromSettings.get(mode).remove(m.key);
+  this.visibleElementsFromSettings.get(mode).remove(COLLAPSED_PREFIX + m.key);
+  this.visibleElementsFromSettings.get(mode).remove(HIDE_PREFIX + m.key);
+  m.visibleModes.remove(mode);
+  m.visibleCollapsible.remove(mode);
+  if (visible && collapsed) {
+    m.visibleCollapsible.add(mode);
+    this.visibleElementsFromSettings.get(mode).add(COLLAPSED_PREFIX + m.key);
+  }
+ else   if (visible) {
+    m.visibleModes.add(mode);
+    this.visibleElementsFromSettings.get(mode).add(SHOW_PREFIX + m.key);
+  }
+ else {
+    this.visibleElementsFromSettings.get(mode).add(HIDE_PREFIX + m.key);
+  }
+  saveVisibleElementsToSettings(mode);
+  if (m.stateChangeListener != null) {
+    m.stateChangeListener.run();
+  }
+}
