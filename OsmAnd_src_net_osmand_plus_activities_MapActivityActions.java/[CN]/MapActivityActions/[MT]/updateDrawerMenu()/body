@@ -2,20 +2,21 @@
   boolean nightMode=getMyApplication().getDaynightHelper().isNightModeForMapControls();
   final ListView menuItemsListView=(ListView)mapActivity.findViewById(R.id.menuItems);
   if (nightMode) {
-    menuItemsListView.setBackgroundColor(mapActivity.getResources().getColor(R.color.bg_color_dark));
+    menuItemsListView.setBackgroundColor(ContextCompat.getColor(mapActivity,R.color.bg_color_dark));
   }
  else {
-    menuItemsListView.setBackgroundColor(mapActivity.getResources().getColor(R.color.bg_color_light));
+    menuItemsListView.setBackgroundColor(ContextCompat.getColor(mapActivity,R.color.bg_color_light));
   }
   menuItemsListView.setDivider(null);
   final ContextMenuAdapter contextMenuAdapter=createMainOptionsMenu();
   contextMenuAdapter.setDefaultLayoutId(R.layout.simple_list_menu_item);
-  final ArrayAdapter<?> simpleListAdapter=contextMenuAdapter.createListAdapter(mapActivity,!nightMode);
+  final ArrayAdapter<ContextMenuItem> simpleListAdapter=contextMenuAdapter.createListAdapter(mapActivity,!nightMode);
   menuItemsListView.setAdapter(simpleListAdapter);
   menuItemsListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
     @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
-      ContextMenuAdapter.OnContextMenuClick click=contextMenuAdapter.getClickAdapter(position);
-      if (click.onContextMenuClick(simpleListAdapter,contextMenuAdapter.getElementId(position),position,false)) {
+      ContextMenuItem item=contextMenuAdapter.getItem(position);
+      ContextMenuAdapter.ItemClickListener click=item.getItemClickListener();
+      if (click.onContextMenuClick(simpleListAdapter,item.getTitleId(),position,false)) {
         mapActivity.closeDrawer();
       }
     }

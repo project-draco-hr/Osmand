@@ -8,8 +8,8 @@
     final String propertyDescr=SettingsActivity.getStringPropertyDescription(view.getContext(),p.getAttrName(),p.getName());
     if (p.isBoolean()) {
       final OsmandSettings.CommonPreference<Boolean> pref=view.getApplication().getSettings().getCustomRenderBooleanProperty(p.getAttrName());
-      adapter.addItem(ContextMenuItem.createBuilder(propertyName).setListener(new OnContextMenuClick(){
-        @Override public boolean onContextMenuClick(        ArrayAdapter<?> adapter,        int itemId,        int pos,        boolean isChecked){
+      adapter.addItem(ContextMenuItem.createBuilder(propertyName).setListener(new ContextMenuAdapter.ItemClickListener(){
+        @Override public boolean onContextMenuClick(        ArrayAdapter<ContextMenuItem> adapter,        int itemId,        int pos,        boolean isChecked){
           pref.set(!pref.get());
           refreshMapComplete(activity);
           return false;
@@ -26,8 +26,8 @@
  else {
         descr=SettingsActivity.getStringPropertyValue(view.getContext(),p.getDefaultValueDescription());
       }
-      adapter.addItem(ContextMenuItem.createBuilder(propertyName).setListener(new OnContextMenuClick(){
-        @Override public boolean onContextMenuClick(        final ArrayAdapter<?> ad,        int itemId,        final int pos,        boolean isChecked){
+      adapter.addItem(ContextMenuItem.createBuilder(propertyName).setListener(new ContextMenuAdapter.ItemClickListener(){
+        @Override public boolean onContextMenuClick(        final ArrayAdapter<ContextMenuItem> ad,        int itemId,        final int pos,        boolean isChecked){
           AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
           b.setTitle(propertyDescr);
           int i=Arrays.asList(p.getPossibleValues()).indexOf(pref.get());
@@ -51,7 +51,7 @@
                 pref.set(p.getPossibleValues()[which - 1]);
               }
               refreshMapComplete(activity);
-              adapter.setItemDescription(pos,SettingsActivity.getStringPropertyValue(activity,pref.get()));
+              adapter.getItem(pos).setDescription(SettingsActivity.getStringPropertyValue(activity,pref.get()));
               dialog.dismiss();
               ad.notifyDataSetInvalidated();
             }

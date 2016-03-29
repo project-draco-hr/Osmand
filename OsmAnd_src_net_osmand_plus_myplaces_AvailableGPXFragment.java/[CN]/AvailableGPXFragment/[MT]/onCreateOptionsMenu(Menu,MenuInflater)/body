@@ -37,8 +37,8 @@
     ((FavoritesActivity)getActivity()).getClearToolbar(false);
   }
   optionsMenuAdapter=new ContextMenuAdapter();
-  OnContextMenuClick listener=new OnContextMenuClick(){
-    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    final int itemId,    int pos,    boolean isChecked){
+  ItemClickListener listener=new ContextMenuAdapter.ItemClickListener(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<ContextMenuItem> adapter,    final int itemId,    int pos,    boolean isChecked){
       if (itemId == R.string.local_index_mi_reload) {
         asyncLoader=new LoadGpxTask();
         asyncLoader.execute(getActivity());
@@ -58,13 +58,14 @@
     }
   }
 ;
-  optionsMenuAdapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.shared_string_show_on_map,getActivity()).setIcon(R.drawable.ic_show_on_map).setListener(listener).createItem());
-  optionsMenuAdapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.shared_string_delete,getActivity()).setIcon(R.drawable.ic_action_delete_dark).setListener(listener).createItem());
-  optionsMenuAdapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.local_index_mi_reload,getActivity()).setIcon(R.drawable.ic_action_refresh_dark).setListener(listener).createItem());
+  optionsMenuAdapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.shared_string_show_on_map,getActivity()).setColorIcon(R.drawable.ic_show_on_map).setListener(listener).createItem());
+  optionsMenuAdapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.shared_string_delete,getActivity()).setColorIcon(R.drawable.ic_action_delete_dark).setListener(listener).createItem());
+  optionsMenuAdapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.local_index_mi_reload,getActivity()).setColorIcon(R.drawable.ic_action_refresh_dark).setListener(listener).createItem());
   OsmandPlugin.onOptionsMenuActivity(getActivity(),this,optionsMenuAdapter);
   for (int j=0; j < optionsMenuAdapter.length(); j++) {
     final MenuItem item;
-    item=menu.add(0,optionsMenuAdapter.getElementId(j),j + 1,optionsMenuAdapter.getItemName(j));
+    ContextMenuItem contextMenuItem=optionsMenuAdapter.getItem(j);
+    item=menu.add(0,contextMenuItem.getTitleId(),j + 1,contextMenuItem.getTitle());
     MenuItemCompat.setShowAsAction(item,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
     if (AndroidUiHelper.isOrientationPortrait(getActivity())) {
       item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
@@ -75,9 +76,8 @@
       }
 );
     }
-    OsmandApplication app=getMyApplication();
-    if (optionsMenuAdapter.getImage(app,j,isLightActionBar()) != null) {
-      item.setIcon(optionsMenuAdapter.getImage(app,j,isLightActionBar()));
+    if (contextMenuItem.getLightIcon() != -1) {
+      item.setIcon(contextMenuItem.getLightIcon());
     }
   }
 }
