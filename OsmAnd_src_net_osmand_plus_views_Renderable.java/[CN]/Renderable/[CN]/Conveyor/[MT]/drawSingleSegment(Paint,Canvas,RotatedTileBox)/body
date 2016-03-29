@@ -1,36 +1,43 @@
 {
-  if (culled == null)   return;
-  canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
-  int pCol=p.getColor();
-  float pSw=p.getStrokeWidth();
-  p.setColor(getComplementaryColor(p.getColor()));
-  float lastx=Float.NEGATIVE_INFINITY;
-  float lasty=Float.NEGATIVE_INFINITY;
-  Path path=new Path();
-  int h=tileBox.getPixHeight();
-  int w=tileBox.getPixWidth();
-  boolean broken=true;
-  int intp=conveyor;
-  for (  GPXUtilities.WptPt pt : culled) {
-    intp--;
-    if ((intp & 7) < 3) {
-      float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
-      float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
-      if ((isIn(x,y,w,h) || isIn(lastx,lasty,w,h))) {
-        if (broken) {
-          path.moveTo(x,y);
-          broken=false;
+  if (culled != null && !culled.isEmpty()) {
+    canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+    int pCol=p.getColor();
+    float pSw=p.getStrokeWidth();
+    p.setColor(getComplementaryColor(p.getColor()));
+    float lastx=Float.NEGATIVE_INFINITY;
+    float lasty=Float.NEGATIVE_INFINITY;
+    Path path=new Path();
+    int h=tileBox.getPixHeight();
+    int w=tileBox.getPixWidth();
+    boolean broken=true;
+    int intp=conveyor;
+    for (    GPXUtilities.WptPt pt : culled) {
+      intp--;
+      if ((intp & 7) < 3) {
+        float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
+        float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
+        if ((isIn(x,y,w,h) || isIn(lastx,lasty,w,h))) {
+          if (broken) {
+            path.moveTo(x,y);
+            broken=false;
+          }
+ else {
+            path.lineTo(x,y);
+          }
+          lastx=x;
+          lasty=y;
         }
- else         path.lineTo(x,y);
-        lastx=x;
-        lasty=y;
+ else {
+          broken=true;
+        }
       }
- else       broken=true;
+ else {
+        broken=true;
+      }
     }
- else     broken=true;
+    canvas.drawPath(path,p);
+    canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+    p.setStrokeWidth(pSw);
+    p.setColor(pCol);
   }
-  canvas.drawPath(path,p);
-  canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
-  p.setStrokeWidth(pSw);
-  p.setColor(pCol);
 }

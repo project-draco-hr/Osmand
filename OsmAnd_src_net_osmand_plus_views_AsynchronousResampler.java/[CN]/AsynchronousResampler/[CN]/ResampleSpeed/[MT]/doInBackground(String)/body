@@ -7,19 +7,26 @@
     for (int i=1; i < points.size(); i++) {
       GPXUtilities.WptPt pt=points.get(i);
       double delta=pt.time - lastPt.time;
-      if (delta > 0)       pt.speed=MapUtils.getDistance(pt.getLatitude(),pt.getLongitude(),lastPt.getLatitude(),lastPt.getLongitude()) / delta;
- else       pt.speed=0;
+      if (delta > 0) {
+        pt.speed=MapUtils.getDistance(pt.getLatitude(),pt.getLongitude(),lastPt.getLatitude(),lastPt.getLongitude()) / delta;
+      }
+ else {
+        pt.speed=0;
+      }
       lastPt=pt;
     }
+    int halfC=Algorithms.getRainbowColor(0.5);
     Double max=Double.NEGATIVE_INFINITY;
     Double min=Double.POSITIVE_INFINITY;
     for (    GPXUtilities.WptPt pt : points) {
       max=Math.max(max,pt.speed);
       min=Math.min(min,pt.speed);
-      pt.colourARGB=getRainbowColour(0.5);
+      pt.colourARGB=halfC;
     }
-    Double range=max - min;
-    if (range > 0)     for (    GPXUtilities.WptPt pt : points)     pt.colourARGB=getRainbowColour((pt.speed - min) / range);
+    Double speedRange=max - min;
+    if (speedRange > 0) {
+      for (      GPXUtilities.WptPt pt : points)       pt.colourARGB=Algorithms.getRainbowColor((pt.speed - min) / speedRange);
+    }
   }
   return isCancelled() ? "" : "OK";
 }

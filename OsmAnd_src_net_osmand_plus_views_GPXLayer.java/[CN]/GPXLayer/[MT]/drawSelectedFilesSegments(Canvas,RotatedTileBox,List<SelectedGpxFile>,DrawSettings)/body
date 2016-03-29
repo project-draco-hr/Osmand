@@ -2,13 +2,13 @@
   for (  SelectedGpxFile g : selectedGPXFiles) {
     List<TrkSegment> segments=g.getPointsToDisplay();
     for (    TrkSegment ts : segments) {
-      if (ts.renders.size() == 0) {
+      if (ts.renders.size() == 0 && !ts.points.isEmpty()) {
+        ts.renders.add(new Renderable.Altitude(ts.points,50,128));
         ts.renders.add(new Renderable.StandardTrack(ts.points,17));
-        ts.renders.add(new Renderable.AltitudeColours(ts.points,50,128));
-        ts.renders.add(new Renderable.Conveyor(ts.points,view,20,250));
-        ts.renders.add(new Renderable.DistanceMarker(ts.points,1000,1));
+        ts.renders.add(new Renderable.DistanceMarker(ts.points,view,1000));
+        ts.renders.add(new Renderable.Arrows(ts.points,view,10,250));
       }
-      ts.recalculateRenderScales(view);
+      ts.recalculateRenderScales(view.getZoom());
       updatePaints(ts.getColor(cachedColor),g.isRoutePoints(),g.isShowCurrentTrack(),settings,tileBox);
       ts.drawRenderers(paint,canvas,tileBox);
     }

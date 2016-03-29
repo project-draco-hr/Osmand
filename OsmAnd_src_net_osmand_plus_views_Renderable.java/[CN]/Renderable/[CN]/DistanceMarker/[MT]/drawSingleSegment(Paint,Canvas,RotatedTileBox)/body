@@ -1,2 +1,32 @@
 {
+  if (culled != null && !culled.isEmpty() && !QuadRect.trivialOverlap(tileBox.getLatLonBounds(),trackBounds)) {
+    Paint px=new Paint();
+    px.setStrokeCap(Paint.Cap.ROUND);
+    canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+    float viewScale=view.getScaleCoefficient() / 4.0f;
+    float density=view.getDensity();
+    float ds=160 / viewScale;
+    float sw=p.getStrokeWidth();
+    int w=tileBox.getPixWidth();
+    int h=tileBox.getPixHeight();
+    for (    GPXUtilities.WptPt pt : culled) {
+      float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
+      float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
+      if (isIn(x,y,w,h)) {
+        px.setColor(0xFF000000);
+        px.setStrokeWidth(sw + 4);
+        canvas.drawPoint(x,y,px);
+        px.setStrokeWidth(sw + 2);
+        px.setColor(0xFFFFFFFF);
+        canvas.drawPoint(x,y,px);
+        if (view.getZoom() > 11) {
+          px.setColor(Color.BLACK);
+          px.setStrokeWidth(1);
+          px.setTextSize(ds);
+          canvas.drawText(getLabel(pt.getDistance()),x + ds / 2,y + ds / 2,px);
+        }
+      }
+      canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+    }
+  }
 }

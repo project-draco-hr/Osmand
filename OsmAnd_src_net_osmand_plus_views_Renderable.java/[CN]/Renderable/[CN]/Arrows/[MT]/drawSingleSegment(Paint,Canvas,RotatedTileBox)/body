@@ -1,36 +1,54 @@
 {
-  if (culled == null)   return;
-  canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
-  int pCol=p.getColor();
-  float pSw=p.getStrokeWidth();
-  p.setColor(getComplementaryColor(p.getColor()));
-  float lastx=Float.NEGATIVE_INFINITY;
-  float lasty=Float.NEGATIVE_INFINITY;
-  Path path=new Path();
-  int h=tileBox.getPixHeight();
-  int w=tileBox.getPixWidth();
-  boolean broken=true;
-  int intp=conveyor;
-  for (  GPXUtilities.WptPt pt : culled) {
-    intp--;
-    if ((intp & 7) < 3) {
-      float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
-      float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
-      if ((isIn(x,y,w,h) || isIn(lastx,lasty,w,h))) {
-        if (broken) {
+  if (culled != null && !culled.isEmpty()) {
+    canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+    float sizer=(float)Math.pow(2.0,zoom - 18) * 512;
+    int pCol=p.getColor();
+    p.setColor(getComplementaryColor(p.getColor()));
+    float lastx=Float.NEGATIVE_INFINITY;
+    float lasty=Float.NEGATIVE_INFINITY;
+    Path path=new Path();
+    int h=tileBox.getPixHeight();
+    int w=tileBox.getPixWidth();
+    boolean broken=true;
+    int intp=conveyor;
+    for (    GPXUtilities.WptPt pt : culled) {
+      intp--;
+      if ((intp & 15) < 8) {
+        float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
+        float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
+        if ((intp & 15) == 0) {
+          double angle=Math.atan2(lasty - y,lastx - x);
+          float newx1=x + (float)Math.sin(angle - 0.4 + Math.PI / 2) * sizer;
+          float newy1=y - (float)Math.cos(angle - 0.4 + Math.PI / 2) * sizer;
+          float newx2=x + (float)Math.sin(angle + 0.4 + Math.PI / 2) * sizer;
+          float newy2=y - (float)Math.cos(angle + 0.4 + Math.PI / 2) * sizer;
+          if (broken) {
+            path.moveTo(x,y);
+          }
+          path.lineTo(x,y);
+          path.moveTo(newx1,newy1);
+          path.lineTo(x,y);
+          path.lineTo(newx2,newy2);
           path.moveTo(x,y);
           broken=false;
         }
- else         path.lineTo(x,y);
-        lastx=x;
-        lasty=y;
+        if ((isIn(x,y,w,h) || isIn(lastx,lasty,w,h))) {
+          if (broken) {
+            path.moveTo(x,y);
+            broken=false;
+          }
+ else {
+            path.lineTo(x,y);
+          }
+          lastx=x;
+          lasty=y;
+        }
+ else         broken=true;
       }
  else       broken=true;
     }
- else     broken=true;
+    canvas.drawPath(path,p);
+    canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+    p.setColor(pCol);
   }
-  canvas.drawPath(path,p);
-  canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
-  p.setStrokeWidth(pSw);
-  p.setColor(pCol);
 }
