@@ -8,20 +8,45 @@
     if ("map_marker_1st".equals(r.key) || "map_marker_2nd".equals(r.key)) {
       continue;
     }
-    adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(r.messageId,map).setSelected(r.visibleCollapsed(mode) || r.visible(mode)).setColorIcon(r.drawableMenu).setSecondaryIcon(R.drawable.ic_action_additional_option).setListener(new ContextMenuAdapter.OnRowItemClick(){
-      @Override public boolean onContextMenuClick(      ArrayAdapter<?> a,      int itemId,      int pos,      boolean isChecked){
-        changeVisibility(r);
-        MapInfoLayer mil=map.getMapLayers().getMapInfoLayer();
-        if (mil != null) {
-          mil.recreateControls();
-        }
-        adapter.setItemName(pos,getText(mil.getMapActivity(),mode,r));
-        adapter.setSelection(pos,r.visibleCollapsed(mode) || r.visible(mode));
-        a.notifyDataSetChanged();
-        return false;
-      }
-    }
+    contextMenuAdapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(r.messageId,map).setSelected(r.visibleCollapsed(mode) || r.visible(mode)).setColorIcon(r.drawableMenu).setSecondaryIcon(R.drawable.ic_action_additional_option).setListener(new ContextMenuAdapter.OnRowItemClick(){
+      @Override public boolean onRowItemClick(      final ArrayAdapter<ContextMenuItem> adapter,      final View view,      final int itemId,      final int pos){
+        PopupMenu popup=new PopupMenu(view.getContext(),view,Gravity.CENTER_VERTICAL);
+        MenuInflater inflater=popup.getMenuInflater();
+        inflater.inflate(R.menu.vidget_visibility_menu,popup.getMenu());
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener(){
+          @Override public boolean onMenuItemClick(          MenuItem menuItem){
+switch (menuItem.getItemId()) {
+case R.id.action_show:
+              setVisibility(adapter,pos,true,false);
+            return true;
+case R.id.action_hide:
+          setVisibility(adapter,pos,false,false);
+        return true;
+case R.id.action_collapse:
+      setVisibility(adapter,pos,true,true);
+    return true;
+}
+return false;
+}
+}
+);
+popup.show();
+return false;
+}
+@Override public boolean onContextMenuClick(ArrayAdapter<ContextMenuItem> a,int itemId,int pos,boolean isChecked){
+setVisibility(a,pos,isChecked,false);
+return false;
+}
+private void setVisibility(ArrayAdapter<ContextMenuItem> adapter,int position,boolean visible,boolean collapsed){
+MapWidgetRegistry.this.setVisibility(r,visible,collapsed);
+MapInfoLayer mil=map.getMapLayers().getMapInfoLayer();
+if (mil != null) {
+mil.recreateControls();
+}
+adapter.getItem(position).setSelected(visible);
+adapter.notifyDataSetChanged();
+}
+}
 ).createItem());
-    adapter.setItemName(adapter.length() - 1,getText(map,mode,r));
-  }
+}
 }
