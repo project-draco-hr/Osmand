@@ -6,17 +6,19 @@
     float viewScale=view.getScaleCoefficient() / 4.0f;
     float density=view.getDensity();
     float ds=160 / viewScale;
-    float sw=p.getStrokeWidth();
-    int w=tileBox.getPixWidth();
-    int h=tileBox.getPixHeight();
+    float stroke=p.getStrokeWidth();
+    float clipL=-stroke / 2f;
+    float clipB=-stroke / 2f;
+    float clipT=canvas.getHeight() + stroke / 2f;
+    float clipR=canvas.getWidth() + stroke / 2f;
     for (    GPXUtilities.WptPt pt : culled) {
       float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
       float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
-      if (isIn(x,y,w,h)) {
+      if (x < clipR && x > clipL && y < clipT && y > clipB) {
         px.setColor(0xFF000000);
-        px.setStrokeWidth(sw + 4);
+        px.setStrokeWidth(stroke + 4);
         canvas.drawPoint(x,y,px);
-        px.setStrokeWidth(sw + 2);
+        px.setStrokeWidth(stroke + 2);
         px.setColor(0xFFFFFFFF);
         canvas.drawPoint(x,y,px);
         if (view.getZoom() > 11) {

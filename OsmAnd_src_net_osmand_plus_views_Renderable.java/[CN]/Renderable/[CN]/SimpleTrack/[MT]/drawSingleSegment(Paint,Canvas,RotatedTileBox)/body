@@ -1,31 +1,26 @@
 {
-  if (culled != null && !culled.isEmpty()) {
+  List<GPXUtilities.WptPt> pts=culled == null ? points : culled;
+  if (pts != null && !pts.isEmpty() && QuadRect.trivialOverlap(tileBox.getLatLonBounds(),trackBounds)) {
     canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
-    int pCol=p.getColor();
-    float stroke=p.getStrokeWidth() / 2f;
-    p.setColor(getComplementaryColor(p.getColor()));
+    float stroke=p.getStrokeWidth() / 2;
     float clipL=-stroke;
     float clipB=-stroke;
     float clipT=canvas.getHeight() + stroke;
     float clipR=canvas.getWidth() + stroke;
-    GPXUtilities.WptPt pt=culled.get(0);
+    GPXUtilities.WptPt pt=pts.get(0);
     float lastx=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
     float lasty=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
-    int intp=conveyor;
-    for (int i=1; i < culled.size(); i++, intp--) {
-      pt=culled.get(i);
+    int size=pts.size();
+    for (int i=1; i < size; i++) {
+      pt=pts.get(i);
       float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
       float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
-      if ((intp & 7) < 3) {
-        if (Math.min(x,lastx) < clipR && Math.max(x,lastx) > clipL && Math.min(y,lasty) < clipT && Math.max(y,lasty) > clipB) {
-          canvas.drawLine(lastx,lasty,x,y,p);
-        }
+      if (Math.min(x,lastx) < clipR && Math.max(x,lastx) > clipL && Math.min(y,lasty) < clipT && Math.max(y,lasty) > clipB) {
+        canvas.drawLine(lastx,lasty,x,y,p);
       }
       lastx=x;
       lasty=y;
     }
     canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
-    p.setStrokeWidth(stroke * 2f);
-    p.setColor(pCol);
   }
 }

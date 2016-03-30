@@ -4,18 +4,22 @@
     Canvas canvas2=new Canvas(newBitmap);
     canvas2.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
     alphaPaint.setAlpha(255);
-    float stroke=(p.getStrokeWidth() + 16) / 2;
+    float stroke=(p.getStrokeWidth() + colorBandWidth) / 2;
     alphaPaint.setStrokeWidth(stroke * 2);
-    float lastx=Float.NEGATIVE_INFINITY;
-    float lasty=0;
-    for (    GPXUtilities.WptPt pt : culled) {
+    float clipL=-stroke;
+    float clipB=-stroke;
+    float clipT=canvas.getHeight() + stroke;
+    float clipR=canvas.getWidth() + stroke;
+    GPXUtilities.WptPt pt=culled.get(0);
+    float lastx=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
+    float lasty=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
+    for (int i=1; i < culled.size(); i++) {
+      pt=culled.get(i);
       float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
       float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
-      if (lastx != Float.NEGATIVE_INFINITY) {
-        if (Math.min(x,lastx) < canvas.getWidth() + stroke && Math.max(x,lastx) > 0 - stroke && Math.min(y,lasty) < canvas.getHeight() + stroke && Math.max(y,lasty) > 0 - stroke) {
-          alphaPaint.setColor(pt.colourARGB);
-          canvas2.drawLine(lastx,lasty,x,y,alphaPaint);
-        }
+      if (Math.min(x,lastx) < clipR && Math.max(x,lastx) > clipL && Math.min(y,lasty) < clipT && Math.max(y,lasty) > clipB) {
+        alphaPaint.setColor(pt.colourARGB);
+        canvas2.drawLine(lastx,lasty,x,y,alphaPaint);
       }
       lastx=x;
       lasty=y;
