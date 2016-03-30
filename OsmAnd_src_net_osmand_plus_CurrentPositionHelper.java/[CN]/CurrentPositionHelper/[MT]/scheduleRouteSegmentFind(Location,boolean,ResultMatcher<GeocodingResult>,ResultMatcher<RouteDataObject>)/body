@@ -1,32 +1,18 @@
 {
   boolean res=false;
   if (loc != null) {
-    new Thread(new Runnable(){
-      @Override public void run(){
+    new AsyncTask<Void,Void,Void>(){
+      @Override protected Void doInBackground(      Void... params){
         try {
-          final List<GeocodingResult> gr=runUpdateInThread(loc.getLatitude(),loc.getLongitude(),geoCoding != null);
-          if (storeFound) {
-            lastAskedLocation=loc;
-            lastFound=gr == null || gr.isEmpty() ? null : gr.get(0).point.getRoad();
-          }
- else           if (geoCoding != null) {
-            justifyResult(gr,geoCoding);
-          }
- else           if (result != null) {
-            app.runInUIThread(new Runnable(){
-              @Override public void run(){
-                result.publish(gr == null || gr.isEmpty() ? null : gr.get(0).point.getRoad());
-              }
-            }
-);
-          }
+          processGeocoding(loc,geoCoding,storeFound,result);
         }
  catch (        IOException e) {
           e.printStackTrace();
         }
+        return null;
       }
     }
-,"Geocoding...").start();
+.execute((Void)null);
     res=true;
   }
   return res;
