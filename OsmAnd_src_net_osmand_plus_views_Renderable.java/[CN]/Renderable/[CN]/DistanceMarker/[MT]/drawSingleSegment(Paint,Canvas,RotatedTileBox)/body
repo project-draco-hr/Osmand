@@ -1,34 +1,28 @@
 {
-  if (culled != null && !culled.isEmpty() && !QuadRect.trivialOverlap(tileBox.getLatLonBounds(),trackBounds)) {
-    Paint px=new Paint();
-    px.setStrokeCap(Paint.Cap.ROUND);
+  if (culled != null && !culled.isEmpty() && QuadRect.trivialOverlap(tileBox.getLatLonBounds(),trackBounds)) {
     canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
-    float viewScale=view.getScaleCoefficient() / 4.0f;
-    float density=view.getDensity();
-    float ds=160 / viewScale;
     float stroke=p.getStrokeWidth();
-    float clipL=-stroke / 2f;
-    float clipB=-stroke / 2f;
-    float clipT=canvas.getHeight() + stroke / 2f;
-    float clipR=canvas.getWidth() + stroke / 2f;
-    for (    GPXUtilities.WptPt pt : culled) {
+    int col=p.getColor();
+    float ts=p.getTextSize();
+    for (int i=culled.size() - 1; --i >= 0; ) {
+      GPXUtilities.WptPt pt=culled.get(i);
       float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
       float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
-      if (x < clipR && x > clipL && y < clipT && y > clipB) {
-        px.setColor(0xFF000000);
-        px.setStrokeWidth(stroke + 4);
-        canvas.drawPoint(x,y,px);
-        px.setStrokeWidth(stroke + 2);
-        px.setColor(0xFFFFFFFF);
-        canvas.drawPoint(x,y,px);
-        if (view.getZoom() > 11) {
-          px.setColor(Color.BLACK);
-          px.setStrokeWidth(1);
-          px.setTextSize(ds);
-          canvas.drawText(getLabel(pt.getDistance()),x + ds / 2,y + ds / 2,px);
-        }
+      p.setTextSize(50);
+      p.setStrokeWidth(3);
+      Rect bounds=new Rect();
+      String lab=getKmLabel(pt.getDistance());
+      p.getTextBounds(lab,0,lab.length(),bounds);
+      int rectH=bounds.height();
+      int rectW=bounds.width();
+      if (x < canvas.getWidth() + rectW / 2 + 20 && x > -rectW / 2 + 20 && y < canvas.getHeight() + rectH / 2f && y > -rectH / 2f) {
+        p.setColor(Color.BLACK);
+        canvas.drawText(lab,x - rectW / 2 + 20,y + rectH / 2,p);
       }
       canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
     }
+    p.setStrokeWidth(stroke);
+    p.setColor(col);
+    p.setTextSize(ts);
   }
 }
