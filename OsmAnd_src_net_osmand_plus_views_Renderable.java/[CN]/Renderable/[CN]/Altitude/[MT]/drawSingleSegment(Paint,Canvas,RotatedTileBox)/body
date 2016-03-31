@@ -1,15 +1,16 @@
 {
   if (culled != null && !culled.isEmpty() && QuadRect.trivialOverlap(tileBox.getLatLonBounds(),trackBounds)) {
-    Bitmap newBitmap=Bitmap.createBitmap(canvas.getWidth(),canvas.getHeight(),Bitmap.Config.ARGB_8888);
-    Canvas canvas2=new Canvas(newBitmap);
-    canvas2.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
-    alphaPaint.setAlpha(255);
-    float stroke=(p.getStrokeWidth() + colorBandWidth) / 2;
-    alphaPaint.setStrokeWidth(stroke * 2);
-    float clipL=-stroke;
-    float clipB=-stroke;
-    float clipT=canvas.getHeight() + stroke;
-    float clipR=canvas.getWidth() + stroke;
+    canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+    Paint.Cap cap=p.getStrokeCap();
+    float stroke=p.getStrokeWidth();
+    int col=p.getColor();
+    p.setStrokeCap(Paint.Cap.ROUND);
+    float bandWidth=stroke * 3f;
+    p.setStrokeWidth(bandWidth);
+    float clipL=-bandWidth / 2f;
+    float clipB=-bandWidth / 2f;
+    float clipT=canvas.getHeight() + bandWidth / 2f;
+    float clipR=canvas.getWidth() + bandWidth / 2f;
     GPXUtilities.WptPt pt=culled.get(0);
     float lastx=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
     float lasty=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
@@ -18,14 +19,15 @@
       float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
       float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
       if (Math.min(x,lastx) < clipR && Math.max(x,lastx) > clipL && Math.min(y,lasty) < clipT && Math.max(y,lasty) > clipB) {
-        alphaPaint.setColor(pt.colourARGB);
-        canvas2.drawLine(lastx,lasty,x,y,alphaPaint);
+        p.setColor(pt.colourARGB);
+        canvas.drawLine(lastx,lasty,x,y,p);
       }
       lastx=x;
       lasty=y;
     }
-    canvas2.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
-    alphaPaint.setAlpha(alpha);
-    canvas.drawBitmap(newBitmap,0,0,alphaPaint);
+    canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+    p.setStrokeCap(cap);
+    p.setStrokeWidth(stroke);
+    p.setColor(col);
   }
 }
