@@ -2,15 +2,21 @@
   CompoundButton enableDisableButton=(CompoundButton)findViewById(R.id.plugin_enable_disable);
   Button getButton=(Button)findViewById(R.id.plugin_get);
   Button settingsButton=(Button)findViewById(R.id.plugin_settings);
-  IconsCache ic=((OsmandApplication)getApplication()).getIconsCache();
-  settingsButton.setCompoundDrawablesWithIntrinsicBounds(ic.getContentIcon(R.drawable.ic_action_settings),null,null,null);
+  settingsButton.setCompoundDrawablesWithIntrinsicBounds(IconsCache.getContentIconCompat(this,R.drawable.ic_action_settings),null,null,null);
   View installHeader=findViewById(R.id.plugin_install_header);
   if (plugin.needsInstallation()) {
     getButton.setVisibility(View.VISIBLE);
     enableDisableButton.setVisibility(View.GONE);
     settingsButton.setVisibility(View.GONE);
     installHeader.setVisibility(View.VISIBLE);
-    ((ImageView)installHeader.findViewById(R.id.ic_world_globe)).setBackgroundDrawable(ic.getContentIcon(R.drawable.ic_world_globe_dark));
+    View worldGlobeIcon=installHeader.findViewById(R.id.ic_world_globe);
+    Drawable worldGlobeDrawable=IconsCache.getContentIconCompat(this,R.drawable.ic_world_globe_dark);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+      worldGlobeIcon.setBackground(worldGlobeDrawable);
+    }
+ else {
+      worldGlobeIcon.setBackgroundDrawable(worldGlobeDrawable);
+    }
   }
  else {
     getButton.setVisibility(View.GONE);
