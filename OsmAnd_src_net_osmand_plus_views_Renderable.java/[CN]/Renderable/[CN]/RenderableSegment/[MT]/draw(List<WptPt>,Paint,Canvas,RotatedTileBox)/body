@@ -1,23 +1,21 @@
 {
-  if (culled != null && culled.size() > 1 && QuadRect.trivialOverlap(tileBox.getLatLonBounds(),trackBounds)) {
+  if (pts.size() > 1 && QuadRect.trivialOverlap(tileBox.getLatLonBounds(),trackBounds)) {
     updateLocalPaint(p);
     canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
-    float bandWidth=paint.getStrokeWidth() * 3;
-    paint.setStrokeWidth(bandWidth);
-    float clipL=-bandWidth / 2;
-    float clipB=-bandWidth / 2;
-    float clipT=canvas.getHeight() + bandWidth / 2;
-    float clipR=canvas.getWidth() + bandWidth / 2;
-    WptPt pt=culled.get(0);
+    float stroke=paint.getStrokeWidth() / 2;
+    float clipL=-stroke;
+    float clipB=-stroke;
+    float clipT=canvas.getHeight() + stroke;
+    float clipR=canvas.getWidth() + stroke;
+    WptPt pt=pts.get(0);
     float lastx=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
     float lasty=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
-    int size=culled.size();
+    int size=pts.size();
     for (int i=1; i < size; i++) {
-      pt=culled.get(i);
+      pt=pts.get(i);
       float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
       float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
       if (Math.min(x,lastx) < clipR && Math.max(x,lastx) > clipL && Math.min(y,lasty) < clipT && Math.max(y,lasty) > clipB) {
-        paint.setColor(pt.colourARGB);
         canvas.drawLine(lastx,lasty,x,y,paint);
       }
       lastx=x;

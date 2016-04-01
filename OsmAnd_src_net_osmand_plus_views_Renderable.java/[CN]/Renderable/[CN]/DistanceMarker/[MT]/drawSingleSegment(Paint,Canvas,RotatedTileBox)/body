@@ -1,37 +1,28 @@
 {
   if (culled != null && !culled.isEmpty() && zoom > 12 && QuadRect.trivialOverlap(tileBox.getLatLonBounds(),trackBounds)) {
+    updateLocalPaint(p);
     canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
     float scale=50;
-    float stroke=p.getStrokeWidth();
-    int col=p.getColor();
-    float ts=p.getTextSize();
-    Paint.Style st=p.getStyle();
-    p.setStyle(Paint.Style.FILL);
+    float stroke=paint.getStrokeWidth();
     for (int i=culled.size() - 1; --i >= 0; ) {
-      GPXUtilities.WptPt pt=culled.get(i);
+      WptPt pt=culled.get(i);
       float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
       float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
-      p.setTextSize(scale);
-      p.setStrokeWidth(3);
+      paint.setTextSize(scale);
+      paint.setStrokeWidth(3);
       Rect bounds=new Rect();
       String lab=getKmLabel(pt.getDistance());
-      p.getTextBounds(lab,0,lab.length(),bounds);
+      paint.getTextBounds(lab,0,lab.length(),bounds);
       int rectH=bounds.height();
       int rectW=bounds.width();
       if (x < canvas.getWidth() + rectW / 2 + scale && x > -rectW / 2 + scale && y < canvas.getHeight() + rectH / 2f && y > -rectH / 2f) {
-        p.setStyle(Paint.Style.FILL);
-        p.setColor(Color.BLACK);
-        p.setStrokeWidth(stroke);
-        canvas.drawPoint(x,y,p);
-        p.setStrokeWidth(4);
-        p.setColor(Color.BLACK);
-        canvas.drawText(lab,x - rectW / 2 + 40,y + rectH / 2,p);
+        paint.setColor(Color.BLACK);
+        paint.setStrokeWidth(stroke);
+        canvas.drawPoint(x,y,paint);
+        paint.setStrokeWidth(4);
+        canvas.drawText(lab,x - rectW / 2 + 40,y + rectH / 2,paint);
       }
       canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
     }
-    p.setStyle(st);
-    p.setStrokeWidth(stroke);
-    p.setColor(col);
-    p.setTextSize(ts);
   }
 }
