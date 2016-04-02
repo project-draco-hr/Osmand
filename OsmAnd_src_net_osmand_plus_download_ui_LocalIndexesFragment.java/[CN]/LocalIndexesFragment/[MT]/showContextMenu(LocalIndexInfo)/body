@@ -1,14 +1,14 @@
 {
   AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
-  final ContextMenuAdapter adapter=new ContextMenuAdapter(getActivity());
+  final ContextMenuAdapter adapter=new ContextMenuAdapter();
   basicFileOperation(info,adapter);
   OsmandPlugin.onContextMenuActivity(getActivity(),null,info,adapter);
   String[] values=adapter.getItemNames();
   builder.setItems(values,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
-      OnContextMenuClick clk=adapter.getClickAdapter(which);
-      if (clk != null) {
-        clk.onContextMenuClick(null,adapter.getElementId(which),which,false);
+      ContextMenuItem item=adapter.getItem(which);
+      if (item.getItemClickListener() != null) {
+        item.getItemClickListener().onContextMenuClick(null,item.getTitleId(),which,false);
       }
     }
   }

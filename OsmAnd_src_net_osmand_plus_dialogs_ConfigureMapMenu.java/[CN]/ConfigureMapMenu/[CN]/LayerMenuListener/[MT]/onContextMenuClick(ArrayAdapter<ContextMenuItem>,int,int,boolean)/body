@@ -1,0 +1,47 @@
+{
+  final OsmandSettings settings=ma.getMyApplication().getSettings();
+  if (itemId == R.string.layer_poi) {
+    settings.SELECTED_POI_FILTER_FOR_MAP.set(null);
+    if (isChecked) {
+      selectPOILayer(settings);
+    }
+  }
+ else   if (itemId == R.string.layer_amenity_label) {
+    settings.SHOW_POI_LABEL.set(isChecked);
+  }
+ else   if (itemId == R.string.shared_string_favorites) {
+    settings.SHOW_FAVORITES.set(isChecked);
+  }
+ else   if (itemId == R.string.layer_gpx_layer) {
+    if (ma.getMyApplication().getSelectedGpxHelper().isShowingAnyGpxFiles()) {
+      ma.getMyApplication().getSelectedGpxHelper().clearAllGpxFileToShow();
+    }
+ else {
+      AlertDialog dialog=ma.getMapLayers().showGPXFileLayer(getAlreadySelectedGpx(),ma.getMapView());
+      dialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
+        @Override public void onDismiss(        DialogInterface dialog){
+          boolean areAnyGpxTracksVisible=ma.getMyApplication().getSelectedGpxHelper().isShowingAnyGpxFiles();
+          cm.getItem(pos).setSelected(areAnyGpxTracksVisible);
+          adapter.notifyDataSetChanged();
+        }
+      }
+);
+    }
+  }
+ else   if (itemId == R.string.layer_map) {
+    if (OsmandPlugin.getEnabledPlugin(OsmandRasterMapsPlugin.class) == null) {
+      Intent intent=new Intent(ma,PluginActivity.class);
+      intent.putExtra(PluginActivity.EXTRA_PLUGIN_ID,OsmandRasterMapsPlugin.ID);
+      ma.startActivity(intent);
+    }
+ else {
+      ma.getMapLayers().selectMapLayer(ma.getMapView());
+    }
+  }
+ else   if (itemId == R.string.layer_transport_route) {
+    ma.getMapLayers().getTransportInfoLayer().setVisible(isChecked);
+  }
+  ma.getMapLayers().updateLayers(ma.getMapView());
+  ma.getMapView().refreshMap();
+  return false;
+}

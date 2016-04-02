@@ -1,8 +1,8 @@
 {
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_map_rendering,activity).setCategory(true).setLayout(R.layout.drawer_list_sub_header).createItem());
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_map_rendering,activity).setCategory(true).setLayout(R.layout.list_group_title_with_switch).createItem());
   String descr=getRenderDescr(activity);
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_renderer,activity).setListener(new OnContextMenuClick(){
-    @Override public boolean onContextMenuClick(    final ArrayAdapter<?> ad,    int itemId,    final int pos,    boolean isChecked){
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_renderer,activity).setListener(new ContextMenuAdapter.ItemClickListener(){
+    @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       AlertDialog.Builder bld=new AlertDialog.Builder(activity);
       bld.setTitle(R.string.renderers);
       final OsmandApplication app=activity.getMyApplication();
@@ -30,7 +30,7 @@
  else {
             AccessibleToast.makeText(app,R.string.renderer_load_exception,Toast.LENGTH_SHORT).show();
           }
-          adapter.setItemDescription(pos,getRenderDescr(activity));
+          adapter.getItem(pos).setDescription(getRenderDescr(activity));
           activity.getDashboard().refreshContent(true);
           dialog.dismiss();
         }
@@ -41,8 +41,8 @@
     }
   }
 ).setDescription(descr).setLayout(R.layout.drawer_list_doubleitem).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_day_night,activity).setDescription(getDayNightDescr(activity)).setListener(new OnContextMenuClick(){
-    @Override public boolean onContextMenuClick(    final ArrayAdapter<?> ad,    int itemId,    final int pos,    boolean isChecked){
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_day_night,activity).setDescription(getDayNightDescr(activity)).setListener(new ItemClickListener(){
+    @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder bld=new AlertDialog.Builder(view.getContext());
       bld.setTitle(R.string.daynight);
@@ -65,14 +65,14 @@
     }
   }
 ).setLayout(R.layout.drawer_list_doubleitem).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_magnifier,activity).setListener(new OnContextMenuClick(){
-    @Override public boolean onContextMenuClick(    final ArrayAdapter<?> ad,    int itemId,    final int pos,    boolean isChecked){
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_magnifier,activity).setListener(new ContextMenuAdapter.ItemClickListener(){
+    @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       final OsmandSettings.OsmandPreference<Float> mapDensity=view.getSettings().MAP_DENSITY;
       final AlertDialog.Builder bld=new AlertDialog.Builder(view.getContext());
       int p=(int)(mapDensity.get() * 100);
       final TIntArrayList tlist=new TIntArrayList(new int[]{33,50,75,100,150,200,300,400});
-      final List<String> values=new ArrayList<String>();
+      final List<String> values=new ArrayList<>();
       int i=-1;
       for (int k=0; k <= tlist.size(); k++) {
         final boolean end=k == tlist.size();
@@ -102,7 +102,7 @@
           if (mapContext != null) {
             mapContext.updateMapSettings();
           }
-          adapter.setItemDescription(pos,String.format("%.0f",100f * activity.getMyApplication().getSettings().MAP_DENSITY.get()) + " %");
+          adapter.getItem(pos).setDescription(String.format("%.0f",100f * activity.getMyApplication().getSettings().MAP_DENSITY.get()) + " %");
           ad.notifyDataSetInvalidated();
           dialog.dismiss();
         }
@@ -113,8 +113,8 @@
     }
   }
 ).setDescription(String.format("%.0f",100f * activity.getMyApplication().getSettings().MAP_DENSITY.get()) + " %").setLayout(R.layout.drawer_list_doubleitem).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.text_size,activity).setListener(new OnContextMenuClick(){
-    @Override public boolean onContextMenuClick(    final ArrayAdapter<?> ad,    int itemId,    final int pos,    boolean isChecked){
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.text_size,activity).setListener(new ContextMenuAdapter.ItemClickListener(){
+    @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
       b.setTitle(R.string.text_size);
@@ -131,7 +131,7 @@
         @Override public void onClick(        DialogInterface dialog,        int which){
           view.getSettings().TEXT_SCALE.set(txtValues[which]);
           refreshMapComplete(activity);
-          adapter.setItemDescription(pos,getScale(activity));
+          adapter.getItem(pos).setDescription(getScale(activity));
           ad.notifyDataSetInvalidated();
           dialog.dismiss();
         }
@@ -142,8 +142,8 @@
     }
   }
 ).setDescription(getScale(activity)).setLayout(R.layout.drawer_list_doubleitem).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_locale,activity).setListener(new OnContextMenuClick(){
-    @Override public boolean onContextMenuClick(    final ArrayAdapter<?> ad,    int itemId,    final int pos,    boolean isChecked){
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_locale,activity).setListener(new ContextMenuAdapter.ItemClickListener(){
+    @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
       b.setTitle(R.string.map_preferred_locale);
@@ -160,7 +160,7 @@
         @Override public void onClick(        DialogInterface dialog,        int which){
           view.getSettings().MAP_PREFERRED_LOCALE.set(txtIds[which]);
           refreshMapComplete(activity);
-          adapter.setItemDescription(pos,txtIds[which]);
+          adapter.getItem(pos).setDescription(txtIds[which]);
           ad.notifyDataSetInvalidated();
           dialog.dismiss();
         }
@@ -173,7 +173,7 @@
 ).setDescription(activity.getMyApplication().getSettings().MAP_PREFERRED_LOCALE.get()).setLayout(R.layout.drawer_list_doubleitem).createItem());
   RenderingRulesStorage renderer=activity.getMyApplication().getRendererRegistry().getCurrentSelectedRenderer();
   if (renderer != null) {
-    List<RenderingRuleProperty> customRules=new ArrayList<RenderingRuleProperty>();
+    List<RenderingRuleProperty> customRules=new ArrayList<>();
     for (    RenderingRuleProperty p : renderer.PROPS.getCustomRules()) {
       if (!RenderingRuleStorageProperties.UI_CATEGORY_HIDDEN.equals(p.getCategory())) {
         customRules.add(p);
@@ -184,7 +184,7 @@
     createProperties(customRules,R.string.rendering_category_hide,"hide",adapter,activity);
     createProperties(customRules,R.string.rendering_category_routes,"routes",adapter,activity);
     if (customRules.size() > 0) {
-      adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.rendering_category_others,activity).setCategory(true).setLayout(R.layout.drawer_list_sub_header).createItem());
+      adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.rendering_category_others,activity).setCategory(true).setLayout(R.layout.list_group_title_with_switch).createItem());
       createCustomRenderingProperties(adapter,activity,customRules);
     }
   }

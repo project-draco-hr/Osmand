@@ -2,7 +2,6 @@
   final OsmandApplication app=(OsmandApplication)activity.getApplication();
   final File dir=app.getAppPath(IndexConstants.GPX_INDEX_DIR);
   AlertDialog.Builder builder=new AlertDialog.Builder(activity);
-  final boolean light=app.getSettings().isLightContent();
   final int layout=R.layout.list_menu_item_native;
   final ArrayAdapter<String> listAdapter=new ArrayAdapter<String>(activity,layout,R.id.title,adapter.getItemNames()){
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
@@ -10,44 +9,49 @@
       if (v == null) {
         v=activity.getLayoutInflater().inflate(layout,null);
       }
-      ImageView icon=(ImageView)v.findViewById(R.id.icon);
-      icon.setImageDrawable(adapter.getImage(app,position,light));
+      final ContextMenuItem item=adapter.getItem(position);
+      ImageView iconView=(ImageView)v.findViewById(R.id.icon);
+      Drawable icon=ContextCompat.getDrawable(activity,item.getIcon());
+      icon=DrawableCompat.wrap(icon);
+      icon.mutate();
+      DrawableCompat.setTint(icon,item.getThemedColor(activity));
+      iconView.setImageDrawable(icon);
       final ArrayAdapter<String> arrayAdapter=this;
-      icon.setOnClickListener(new View.OnClickListener(){
+      iconView.setOnClickListener(new View.OnClickListener(){
         @Override public void onClick(        View v){
           if (showCurrentGpx && position == 0) {
             return;
           }
-          int nline=adapter.getItemName(position).indexOf('\n');
+          int nline=item.getTitle().indexOf('\n');
           if (nline == -1) {
             setDescripionInDialog(arrayAdapter,adapter,activity,dir,list.get(position),position);
           }
  else {
-            adapter.setItemName(position,adapter.getItemName(position).substring(0,nline));
+            item.setTitle(item.getTitle().substring(0,nline));
             arrayAdapter.notifyDataSetInvalidated();
           }
         }
       }
 );
       if (showCurrentGpx && position == 0) {
-        icon.setVisibility(View.INVISIBLE);
+        iconView.setVisibility(View.INVISIBLE);
       }
  else {
-        icon.setVisibility(View.VISIBLE);
+        iconView.setVisibility(View.VISIBLE);
       }
       TextView tv=(TextView)v.findViewById(R.id.title);
-      tv.setText(adapter.getItemName(position));
+      tv.setText(item.getTitle());
       tv.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
       final CheckBox ch=((CheckBox)v.findViewById(R.id.toggle_item));
-      if (adapter.getSelection(position) == null) {
+      if (item.getSelected() == null) {
         ch.setVisibility(View.INVISIBLE);
       }
  else {
         ch.setOnCheckedChangeListener(null);
-        ch.setChecked(adapter.getSelection(position));
+        ch.setChecked(item.getSelected());
         ch.setOnCheckedChangeListener(new OnCheckedChangeListener(){
           @Override public void onCheckedChanged(          CompoundButton buttonView,          boolean isChecked){
-            adapter.setSelection(position,isChecked);
+            item.setSelected(isChecked);
           }
         }
 );
@@ -70,12 +74,12 @@
         if (app != null && app.getSelectedGpxHelper() != null) {
           app.getSelectedGpxHelper().clearAllGpxFileToShow();
         }
-        if (showCurrentGpx && adapter.getSelection(0)) {
+        if (app != null && showCurrentGpx && adapter.getItem(0).getSelected()) {
           currentGPX=app.getSavingTrackHelper().getCurrentGpx();
         }
         List<String> s=new ArrayList<>();
         for (int i=(showCurrentGpx ? 1 : 0); i < adapter.length(); i++) {
-          if (adapter.getSelection(i)) {
+          if (adapter.getItem(i).getSelected()) {
             s.add(list.get(i));
           }
         }
@@ -90,7 +94,8 @@
   dlg.getListView().setOnItemClickListener(new OnItemClickListener(){
     @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
       if (multipleChoice) {
-        adapter.setSelection(position,!adapter.getSelection(position));
+        ContextMenuItem item=adapter.getItem(position);
+        item.setSelected(!item.getSelected());
         listAdapter.notifyDataSetInvalidated();
       }
  else {

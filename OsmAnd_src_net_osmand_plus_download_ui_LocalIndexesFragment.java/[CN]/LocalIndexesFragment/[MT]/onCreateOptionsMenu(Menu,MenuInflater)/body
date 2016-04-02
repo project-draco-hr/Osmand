@@ -12,9 +12,9 @@
   }
   ActionBar actionBar=getDownloadActivity().getSupportActionBar();
   actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-  optionsMenuAdapter=new ContextMenuAdapter(getDownloadActivity());
-  OnContextMenuClick listener=new OnContextMenuClick(){
-    @Override public boolean onContextMenuClick(    ArrayAdapter<?> adapter,    int itemId,    int pos,    boolean isChecked){
+  optionsMenuAdapter=new ContextMenuAdapter();
+  ItemClickListener listener=new ContextMenuAdapter.ItemClickListener(){
+    @Override public boolean onContextMenuClick(    ArrayAdapter<ContextMenuItem> adapter,    int itemId,    int pos,    boolean isChecked){
       localOptionsMenu(itemId);
       return true;
     }
@@ -28,6 +28,7 @@
   SubMenu split=null;
   for (int j=0; j < optionsMenuAdapter.length(); j++) {
     MenuItem item;
+    ContextMenuItem contextMenuItem=optionsMenuAdapter.getItem(j);
     if (j + 1 >= max && optionsMenuAdapter.length() > max) {
       if (split == null) {
         split=menu.addSubMenu(0,1,j + 1,R.string.shared_string_more_actions);
@@ -35,16 +36,15 @@
         split.getItem();
         MenuItemCompat.setShowAsAction(split.getItem(),MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
       }
-      item=split.add(0,optionsMenuAdapter.getElementId(j),j + 1,optionsMenuAdapter.getItemName(j));
+      item=split.add(0,contextMenuItem.getTitleId(),j + 1,contextMenuItem.getTitle());
       MenuItemCompat.setShowAsAction(item,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
     }
  else {
-      item=menu.add(0,optionsMenuAdapter.getElementId(j),j + 1,optionsMenuAdapter.getItemName(j));
+      item=menu.add(0,contextMenuItem.getTitleId(),j + 1,contextMenuItem.getTitle());
       MenuItemCompat.setShowAsAction(item,MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
     }
-    OsmandApplication app=getMyApplication();
-    if (optionsMenuAdapter.getImage(app,j,isLightActionBar()) != null) {
-      item.setIcon(optionsMenuAdapter.getImage(app,j,isLightActionBar()));
+    if (contextMenuItem.getIcon() != -1) {
+      item.setIcon(contextMenuItem.getIcon());
     }
   }
   if (operationTask == null || operationTask.getStatus() == AsyncTask.Status.FINISHED) {
