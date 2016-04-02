@@ -1,0 +1,30 @@
+{
+  if (culled.size() > 1) {
+    updateLocalPaint(p);
+    canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+    paint.setColor(getComplementaryColor(p.getColor()));
+    float strokeRadius=paint.getStrokeWidth() / 2;
+    float clipL=-strokeRadius;
+    float clipB=-strokeRadius;
+    float clipT=canvas.getHeight() + strokeRadius;
+    float clipR=canvas.getWidth() + strokeRadius;
+    WptPt pt=culled.get(0);
+    float lastx=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
+    float lasty=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
+    int intp=conveyor;
+    int size=culled.size();
+    for (int i=1; i < size; i++, intp--) {
+      pt=culled.get(i);
+      float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
+      float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
+      if ((intp & 7) < 3) {
+        if (Math.min(x,lastx) < clipR && Math.max(x,lastx) > clipL && Math.min(y,lasty) < clipT && Math.max(y,lasty) > clipB) {
+          canvas.drawLine(lastx,lasty,x,y,paint);
+        }
+      }
+      lastx=x;
+      lasty=y;
+    }
+    canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+  }
+}
