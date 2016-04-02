@@ -1,8 +1,7 @@
 {
   float scale=internal ? 0.6f : 1.0f;
   float stroke=paint.getStrokeWidth();
-  double zoomlimit=zoom > 15 ? 15f : zoom;
-  float arrowSize=(float)Math.pow(2.0,zoomlimit - 18) * 800;
+  float arrowSize=75f;
   boolean broken=true;
   int intp=cachedC;
   float clipL=-arrowSize;
@@ -20,10 +19,10 @@
     boolean nextBroken=true;
     if (Math.min(x,lastx) < clipR && Math.max(x,lastx) > clipL && Math.min(y,lasty) < clipT && Math.max(y,lasty) > clipB) {
       float segment=intp & 15;
-      if (segment < 6) {
+      if (segment < 5) {
         paint.setColor(internal ? Algorithms.getRainbowColor(((double)(i)) / ((double)size)) : Color.BLACK);
-        float segpiece=6 - segment;
-        if (segpiece > 4)         segpiece=4;
+        float segpiece=5 - segment;
+        if (segpiece > 3)         segpiece=3;
         if (!broken) {
           float sw=stroke * segpiece * scale;
           paint.setStrokeWidth(sw);
@@ -31,7 +30,7 @@
         }
         nextBroken=false;
         if (segment == 0 && lasty != -Float.NEGATIVE_INFINITY) {
-          float sw=stroke * (6 - segment) / 2f * scale;
+          float sw=stroke * segpiece * scale;
           paint.setStrokeWidth(sw);
           double angle=Math.atan2(lasty - y,lastx - x);
           float extendx=x - (float)Math.cos(angle) * arrowSize / 2;
