@@ -1,32 +1,30 @@
 {
-  List<GPXUtilities.WptPt> points=rs.points;
-  culled=resampleTrack(points,segmentSize);
+  culled=resampleTrack(rs.points,segmentSize);
   if (!isCancelled() && !culled.isEmpty()) {
-    GPXUtilities.WptPt lastPt=points.get(0);
+    WptPt lastPt=culled.get(0);
     lastPt.speed=0;
-    for (int i=1; i < points.size(); i++) {
-      GPXUtilities.WptPt pt=points.get(i);
+    int size=culled.size();
+    for (int i=1; i < size; i++) {
+      WptPt pt=culled.get(i);
       double delta=pt.time - lastPt.time;
-      if (delta > 0) {
-        pt.speed=MapUtils.getDistance(pt.getLatitude(),pt.getLongitude(),lastPt.getLatitude(),lastPt.getLongitude()) / delta;
-      }
- else {
-        pt.speed=0;
-      }
+      pt.speed=delta > 0 ? MapUtils.getDistance(pt.getLatitude(),pt.getLongitude(),lastPt.getLatitude(),lastPt.getLongitude()) / delta : 0;
       lastPt=pt;
     }
+    if (size > 1) {
+      culled.get(0).speed=culled.get(1).speed;
+    }
+    double max=lastPt.speed;
+    double min=max;
     int halfC=Algorithms.getRainbowColor(0.5);
-    Double max=Double.NEGATIVE_INFINITY;
-    Double min=Double.POSITIVE_INFINITY;
-    for (    GPXUtilities.WptPt pt : points) {
+    for (    WptPt pt : culled) {
       max=Math.max(max,pt.speed);
       min=Math.min(min,pt.speed);
       pt.colourARGB=halfC;
     }
-    Double speedRange=max - min;
+    double speedRange=max - min;
     if (speedRange > 0) {
-      for (      GPXUtilities.WptPt pt : points)       pt.colourARGB=Algorithms.getRainbowColor((pt.speed - min) / speedRange);
+      for (      WptPt pt : culled)       pt.colourARGB=Algorithms.getRainbowColor((pt.speed - min) / speedRange);
     }
   }
-  return isCancelled() ? "" : "OK";
+  return null;
 }
