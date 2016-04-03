@@ -2,24 +2,30 @@
   if (pts.size() > 1) {
     updateLocalPaint(p);
     canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
-    float stroke=paint.getStrokeWidth() / 2;
-    float clipL=-stroke;
-    float clipB=-stroke;
-    float clipT=canvas.getHeight() + stroke;
-    float clipR=canvas.getWidth() + stroke;
-    WptPt pt=pts.get(0);
-    float lastx=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
-    float lasty=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
+    QuadRect tileBounds=tileBox.getLatLonBounds();
+    WptPt lastPt=pts.get(0);
+    float lastx=tileBox.getPixXFromLatLon(lastPt.lat,lastPt.lon);
+    float lasty=tileBox.getPixYFromLatLon(lastPt.lat,lastPt.lon);
+    boolean last=false;
     int size=pts.size();
     for (int i=1; i < size; i++) {
-      pt=pts.get(i);
-      float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
-      float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
-      if (Math.min(x,lastx) < clipR && Math.max(x,lastx) > clipL && Math.min(y,lasty) < clipT && Math.max(y,lasty) > clipB) {
+      WptPt pt=pts.get(i);
+      if (Math.min(pt.lon,lastPt.lon) < tileBounds.right && Math.max(pt.lon,lastPt.lon) > tileBounds.left && Math.min(pt.lat,lastPt.lat) < tileBounds.top && Math.max(pt.lat,lastPt.lat) > tileBounds.bottom) {
+        if (!last) {
+          lastx=tileBox.getPixXFromLatLon(lastPt.lat,lastPt.lon);
+          lasty=tileBox.getPixYFromLatLon(lastPt.lat,lastPt.lon);
+          last=true;
+        }
+        float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
+        float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
         canvas.drawLine(lastx,lasty,x,y,paint);
+        lastx=x;
+        lasty=y;
       }
-      lastx=x;
-      lasty=y;
+ else {
+        last=false;
+      }
+      lastPt=pt;
     }
     canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
   }
