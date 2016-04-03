@@ -4,17 +4,17 @@
     canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
     QuadRect tileBounds=tileBox.getLatLonBounds();
     WptPt lastPt=pts.get(0);
-    float lastx=tileBox.getPixXFromLatLon(lastPt.lat,lastPt.lon);
-    float lasty=tileBox.getPixYFromLatLon(lastPt.lat,lastPt.lon);
-    boolean last=false;
+    float lastx=0;
+    float lasty=0;
+    boolean reCalculateLastXY=true;
     int size=pts.size();
     for (int i=1; i < size; i++) {
       WptPt pt=pts.get(i);
       if (Math.min(pt.lon,lastPt.lon) < tileBounds.right && Math.max(pt.lon,lastPt.lon) > tileBounds.left && Math.min(pt.lat,lastPt.lat) < tileBounds.top && Math.max(pt.lat,lastPt.lat) > tileBounds.bottom) {
-        if (!last) {
+        if (reCalculateLastXY) {
           lastx=tileBox.getPixXFromLatLon(lastPt.lat,lastPt.lon);
           lasty=tileBox.getPixYFromLatLon(lastPt.lat,lastPt.lon);
-          last=true;
+          reCalculateLastXY=false;
         }
         float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
         float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
@@ -23,7 +23,7 @@
         lasty=y;
       }
  else {
-        last=false;
+        reCalculateLastXY=true;
       }
       lastPt=pt;
     }
