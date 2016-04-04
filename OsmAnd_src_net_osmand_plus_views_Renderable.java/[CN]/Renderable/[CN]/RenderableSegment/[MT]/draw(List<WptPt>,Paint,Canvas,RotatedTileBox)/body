@@ -1,0 +1,32 @@
+{
+  if (pts.size() > 1) {
+    updateLocalPaint(p);
+    canvas.rotate(-tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+    QuadRect tileBounds=tileBox.getLatLonBounds();
+    WptPt lastPt=pts.get(0);
+    float lastx=0;
+    float lasty=0;
+    boolean reCalculateLastXY=true;
+    int size=pts.size();
+    for (int i=1; i < size; i++) {
+      WptPt pt=pts.get(i);
+      if (Math.min(pt.lon,lastPt.lon) < tileBounds.right && Math.max(pt.lon,lastPt.lon) > tileBounds.left && Math.min(pt.lat,lastPt.lat) < tileBounds.top && Math.max(pt.lat,lastPt.lat) > tileBounds.bottom) {
+        if (reCalculateLastXY) {
+          lastx=tileBox.getPixXFromLatLon(lastPt.lat,lastPt.lon);
+          lasty=tileBox.getPixYFromLatLon(lastPt.lat,lastPt.lon);
+          reCalculateLastXY=false;
+        }
+        float x=tileBox.getPixXFromLatLon(pt.lat,pt.lon);
+        float y=tileBox.getPixYFromLatLon(pt.lat,pt.lon);
+        canvas.drawLine(lastx,lasty,x,y,paint);
+        lastx=x;
+        lasty=y;
+      }
+ else {
+        reCalculateLastXY=true;
+      }
+      lastPt=pt;
+    }
+    canvas.rotate(tileBox.getRotate(),tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+  }
+}
