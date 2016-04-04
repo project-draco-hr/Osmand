@@ -63,6 +63,7 @@ case MotionEvent.ACTION_CANCEL:
     mSwipeDownView=mSwipeDownChild=null;
     mDownPosition=ListView.INVALID_POSITION;
     mSwiping=false;
+    mSwipeCanceled=false;
     break;
   }
 case MotionEvent.ACTION_UP:
@@ -98,16 +99,21 @@ case MotionEvent.ACTION_UP:
   mSwipeDownChild=null;
   mDownPosition=AbsListView.INVALID_POSITION;
   mSwiping=false;
+  mSwipeCanceled=false;
   break;
 }
 case MotionEvent.ACTION_MOVE:
 {
-if (mVelocityTracker == null || mSwipePaused) {
+if (mVelocityTracker == null || mSwipePaused || mSwipeCanceled) {
   break;
 }
 mVelocityTracker.addMovement(ev);
 float deltaX=ev.getRawX() - mDownX;
 float deltaY=ev.getRawY() - mDownY;
+if (!mSwiping && Math.abs(deltaY) > mSlop * 2) {
+  mSwipeCanceled=true;
+  break;
+}
 if (isSwipeDirectionValid(deltaX)) {
   ViewParent parent=mListView.getParent();
   if (parent != null) {
