@@ -1,5 +1,10 @@
 {
   final OsmandSettings settings=ma.getMyApplication().getSettings();
+  final ContextMenuItem item=cm.getItem(pos);
+  if (item.getSelected() != null) {
+    item.setColorRes(isChecked ? R.color.osmand_orange : defaultColor);
+    adapter.notifyDataSetChanged();
+  }
   if (itemId == R.string.layer_poi) {
     settings.SELECTED_POI_FILTER_FOR_MAP.set(null);
     if (isChecked) {
@@ -21,7 +26,8 @@
       dialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
         @Override public void onDismiss(        DialogInterface dialog){
           boolean areAnyGpxTracksVisible=ma.getMyApplication().getSelectedGpxHelper().isShowingAnyGpxFiles();
-          cm.getItem(pos).setSelected(areAnyGpxTracksVisible);
+          item.setSelected(areAnyGpxTracksVisible);
+          item.setColorRes(areAnyGpxTracksVisible ? R.color.osmand_orange : defaultColor);
           adapter.notifyDataSetChanged();
         }
       }

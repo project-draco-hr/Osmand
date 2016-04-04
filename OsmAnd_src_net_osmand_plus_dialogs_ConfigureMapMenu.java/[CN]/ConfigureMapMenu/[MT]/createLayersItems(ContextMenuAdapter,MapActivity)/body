@@ -1,15 +1,21 @@
 {
+  @ColorRes final int defaultColor=IconsCache.getDefaultColorRes(activity);
   OsmandApplication app=activity.getMyApplication();
   OsmandSettings settings=app.getSettings();
   LayerMenuListener l=new LayerMenuListener(activity,adapter);
   adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.shared_string_show,activity).setCategory(true).setLayout(R.layout.list_group_title_with_switch).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.layer_poi,activity).setSelected(settings.SELECTED_POI_FILTER_FOR_MAP.get() != null).setIcon(R.drawable.ic_action_info_dark).setSecondaryIcon(R.drawable.ic_action_additional_option).setListener(l).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.layer_amenity_label,activity).setSelected(settings.SHOW_POI_LABEL.get()).setIcon(R.drawable.ic_action_text_dark).setListener(l).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.shared_string_favorites,activity).setSelected(settings.SHOW_FAVORITES.get()).setIcon(R.drawable.ic_action_fav_dark).setListener(l).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.layer_gpx_layer,activity).setSelected(app.getSelectedGpxHelper().isShowingAnyGpxFiles()).setIcon(R.drawable.ic_action_polygom_dark).setSecondaryIcon(R.drawable.ic_action_additional_option).setListener(l).createItem());
+  boolean selected=settings.SHOW_FAVORITES.get();
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.shared_string_favorites,activity).setSelected(settings.SHOW_FAVORITES.get()).setColor(selected ? R.color.osmand_orange : defaultColor).setIcon(R.drawable.ic_action_fav_dark).setListener(l).createItem());
+  selected=settings.SELECTED_POI_FILTER_FOR_MAP.get() != null;
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.layer_poi,activity).setSelected(settings.SELECTED_POI_FILTER_FOR_MAP.get() != null).setColor(selected ? R.color.osmand_orange : defaultColor).setIcon(R.drawable.ic_action_info_dark).setSecondaryIcon(R.drawable.ic_action_additional_option).setListener(l).createItem());
+  selected=settings.SHOW_POI_LABEL.get();
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.layer_amenity_label,activity).setSelected(settings.SHOW_POI_LABEL.get()).setColor(selected ? R.color.osmand_orange : defaultColor).setIcon(R.drawable.ic_action_text_dark).setListener(l).createItem());
+  selected=app.getSelectedGpxHelper().isShowingAnyGpxFiles();
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.layer_gpx_layer,activity).setSelected(app.getSelectedGpxHelper().isShowingAnyGpxFiles()).setColor(selected ? R.color.osmand_orange : defaultColor).setIcon(R.drawable.ic_action_polygom_dark).setSecondaryIcon(R.drawable.ic_action_additional_option).setListener(l).createItem());
   adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.layer_map,activity).setIcon(R.drawable.ic_world_globe_dark).setListener(l).createItem());
   if (TransportRouteHelper.getInstance().routeIsCalculated()) {
-    adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.layer_transport_route,activity).setSelected(true).setIcon(R.drawable.ic_action_bus_dark).setListener(l).createItem());
+    selected=true;
+    adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.layer_transport_route,activity).setSelected(true).setColor(selected ? R.color.osmand_orange : defaultColor).setIcon(R.drawable.ic_action_bus_dark).setListener(l).createItem());
   }
   OsmandPlugin.registerLayerContextMenu(activity.getMapView(),adapter,activity);
   app.getAppCustomization().prepareLayerContextMenu(activity,adapter);
