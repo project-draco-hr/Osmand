@@ -1,7 +1,7 @@
 {
   adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_map_rendering,activity).setCategory(true).setLayout(R.layout.list_group_title_with_switch).createItem());
   String descr=getRenderDescr(activity);
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_renderer,activity).setListener(new ContextMenuAdapter.ItemClickListener(){
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_renderer,activity).setDescription(descr).setLayout(R.layout.list_item_single_line_descrition_narrow).setIcon(R.drawable.ic_map).setListener(new ContextMenuAdapter.ItemClickListener(){
     @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       AlertDialog.Builder bld=new AlertDialog.Builder(activity);
       bld.setTitle(R.string.renderers);
@@ -40,8 +40,8 @@
       return false;
     }
   }
-).setDescription(descr).setLayout(R.layout.list_item_single_line_descrition_narrow).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_day_night,activity).setDescription(getDayNightDescr(activity)).setListener(new ItemClickListener(){
+).createItem());
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_day_night,activity).setDescription(getDayNightDescr(activity)).setLayout(R.layout.list_item_single_line_descrition_narrow).setIcon(R.drawable.ic_action_map_night).setListener(new ItemClickListener(){
     @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder bld=new AlertDialog.Builder(view.getContext());
@@ -64,8 +64,8 @@
       return false;
     }
   }
-).setLayout(R.layout.list_item_single_line_descrition_narrow).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_magnifier,activity).setListener(new ContextMenuAdapter.ItemClickListener(){
+).createItem());
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_magnifier,activity).setDescription(String.format("%.0f",100f * activity.getMyApplication().getSettings().MAP_DENSITY.get()) + " %").setLayout(R.layout.list_item_single_line_descrition_narrow).setIcon(R.drawable.ic_action_map_magnifier).setListener(new ContextMenuAdapter.ItemClickListener(){
     @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       final OsmandSettings.OsmandPreference<Float> mapDensity=view.getSettings().MAP_DENSITY;
@@ -112,8 +112,8 @@
       return false;
     }
   }
-).setDescription(String.format("%.0f",100f * activity.getMyApplication().getSettings().MAP_DENSITY.get()) + " %").setLayout(R.layout.list_item_single_line_descrition_narrow).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.text_size,activity).setListener(new ContextMenuAdapter.ItemClickListener(){
+).createItem());
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.text_size,activity).setDescription(getScale(activity)).setLayout(R.layout.list_item_single_line_descrition_narrow).setIcon(R.drawable.ic_action_map_text_size).setListener(new ContextMenuAdapter.ItemClickListener(){
     @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
@@ -141,8 +141,8 @@
       return false;
     }
   }
-).setDescription(getScale(activity)).setLayout(R.layout.list_item_single_line_descrition_narrow).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_locale,activity).setListener(new ContextMenuAdapter.ItemClickListener(){
+).createItem());
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_locale,activity).setDescription(activity.getMyApplication().getSettings().MAP_PREFERRED_LOCALE.get()).setLayout(R.layout.list_item_single_line_descrition_narrow).setIcon(R.drawable.ic_action_map_language).setListener(new ContextMenuAdapter.ItemClickListener(){
     @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
@@ -170,7 +170,7 @@
       return false;
     }
   }
-).setDescription(activity.getMyApplication().getSettings().MAP_PREFERRED_LOCALE.get()).setLayout(R.layout.list_item_single_line_descrition_narrow).createItem());
+).createItem());
   RenderingRulesStorage renderer=activity.getMyApplication().getRendererRegistry().getCurrentSelectedRenderer();
   if (renderer != null) {
     List<RenderingRuleProperty> customRules=new ArrayList<>();
@@ -179,10 +179,10 @@
         customRules.add(p);
       }
     }
-    createProperties(customRules,R.string.rendering_category_transport,"transport",adapter,activity);
-    createProperties(customRules,R.string.rendering_category_details,"details",adapter,activity);
-    createProperties(customRules,R.string.rendering_category_hide,"hide",adapter,activity);
-    createProperties(customRules,R.string.rendering_category_routes,"routes",adapter,activity);
+    createProperties(customRules,R.string.rendering_category_transport,R.drawable.ic_action_bus_dark,"transport",adapter,activity);
+    createProperties(customRules,R.string.rendering_category_details,R.drawable.widget_no_icon,"details",adapter,activity);
+    createProperties(customRules,R.string.rendering_category_hide,R.drawable.ic_action_hide,"hide",adapter,activity);
+    createProperties(customRules,R.string.rendering_category_routes,R.drawable.ic_action_map_routes,"routes",adapter,activity);
     if (customRules.size() > 0) {
       adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.rendering_category_others,activity).setCategory(true).setLayout(R.layout.list_group_title_with_switch).createItem());
       createCustomRenderingProperties(adapter,activity,customRules);
