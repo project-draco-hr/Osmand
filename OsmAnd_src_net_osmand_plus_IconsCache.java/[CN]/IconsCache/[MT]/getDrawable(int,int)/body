@@ -1,3 +1,14 @@
 {
-  return getDrawable(resId,clrId,0);
+  long hash=((long)resId << 31l) + clrId;
+  Drawable d=drawable.get(hash);
+  if (d == null) {
+    d=ContextCompat.getDrawable(app,resId);
+    d=DrawableCompat.wrap(d);
+    d.mutate();
+    if (clrId != 0) {
+      DrawableCompat.setTint(d,ContextCompat.getColor(app,clrId));
+    }
+    drawable.put(hash,d);
+  }
+  return d;
 }
