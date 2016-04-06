@@ -8,7 +8,7 @@
   if (itemId == R.string.layer_poi) {
     settings.SELECTED_POI_FILTER_FOR_MAP.set(null);
     if (isChecked) {
-      selectPOILayer(settings);
+      selectPOILayer(adapter,adapter.getItem(pos));
     }
  else {
       adapter.getItem(pos).setDescription(POIMapLayer.getSelectedPoiName(ma.getMyApplication()));
@@ -27,16 +27,7 @@
       adapter.getItem(pos).setDescription(selectedGpxHelper.getGpxDescription());
     }
  else {
-      AlertDialog dialog=ma.getMapLayers().showGPXFileLayer(getAlreadySelectedGpx(),ma.getMapView());
-      dialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
-        @Override public void onDismiss(        DialogInterface dialog){
-          boolean areAnyGpxTracksVisible=selectedGpxHelper.isShowingAnyGpxFiles();
-          item.setSelected(areAnyGpxTracksVisible);
-          item.setColorRes(areAnyGpxTracksVisible ? R.color.osmand_orange : defaultColor);
-          adapter.notifyDataSetChanged();
-        }
-      }
-);
+      showGpxSelectionDialog();
     }
   }
  else   if (itemId == R.string.layer_map) {
