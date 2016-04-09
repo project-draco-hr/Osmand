@@ -1,7 +1,6 @@
 {
   adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_map_rendering,activity).setCategory(true).setLayout(R.layout.list_group_title_with_switch).createItem());
-  String descr=getRenderDescr(activity);
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_renderer,activity).setDescription(descr).setLayout(R.layout.list_item_single_line_descrition_narrow).setIcon(R.drawable.ic_map).setListener(new ContextMenuAdapter.ItemClickListener(){
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_renderer,activity).setDescription(getRenderDescr(activity)).setLayout(R.layout.list_item_single_line_descrition_narrow).setIcon(R.drawable.ic_map).setListener(new ContextMenuAdapter.ItemClickListener(){
     @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       AlertDialog.Builder bld=new AlertDialog.Builder(activity);
       bld.setTitle(R.string.renderers);
@@ -28,7 +27,7 @@
             refreshMapComplete(activity);
           }
  else {
-            AccessibleToast.makeText(app,R.string.renderer_load_exception,Toast.LENGTH_SHORT).show();
+            Toast.makeText(app,R.string.renderer_load_exception,Toast.LENGTH_SHORT).show();
           }
           adapter.getItem(pos).setDescription(getRenderDescr(activity));
           activity.getDashboard().refreshContent(true);
@@ -41,7 +40,7 @@
     }
   }
 ).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_day_night,activity).setDescription(getDayNightDescr(activity)).setLayout(R.layout.list_item_single_line_descrition_narrow).setIcon(getDayNightIcon(activity)).setListener(new ItemClickListener(){
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_mode,activity).setDescription(getDayNightDescr(activity)).setLayout(R.layout.list_item_single_line_descrition_narrow).setIcon(getDayNightIcon(activity)).setListener(new ItemClickListener(){
     @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder bld=new AlertDialog.Builder(view.getContext());
@@ -142,7 +141,9 @@
     }
   }
 ).createItem());
-  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_locale,activity).setDescription(activity.getMyApplication().getSettings().MAP_PREFERRED_LOCALE.get()).setLayout(R.layout.list_item_single_line_descrition_narrow).setIcon(R.drawable.ic_action_map_language).setListener(new ContextMenuAdapter.ItemClickListener(){
+  String localeDescr=activity.getMyApplication().getSettings().MAP_PREFERRED_LOCALE.get();
+  localeDescr=localeDescr == null || localeDescr.equals("") ? activity.getString(R.string.local_map_names) : localeDescr;
+  adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_locale,activity).setDescription(localeDescr).setLayout(R.layout.list_item_single_line_descrition_narrow).setIcon(R.drawable.ic_action_map_language).setListener(new ContextMenuAdapter.ItemClickListener(){
     @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
@@ -160,7 +161,9 @@
         @Override public void onClick(        DialogInterface dialog,        int which){
           view.getSettings().MAP_PREFERRED_LOCALE.set(txtIds[which]);
           refreshMapComplete(activity);
-          adapter.getItem(pos).setDescription(txtIds[which]);
+          String localeDescr=txtIds[which];
+          localeDescr=localeDescr == null || localeDescr.equals("") ? activity.getString(R.string.local_map_names) : localeDescr;
+          adapter.getItem(pos).setDescription(localeDescr);
           ad.notifyDataSetInvalidated();
           dialog.dismiss();
         }
