@@ -1,9 +1,9 @@
 {
-  boolean tl=TurnType.TL == t.getValue();
-  boolean tr=TurnType.TR == t.getValue();
+  boolean tl=TurnType.isLeftTurnNoUTurn(t.getValue());
+  boolean tr=TurnType.isRightTurnNoUTurn(t.getValue());
   if (tl || tr) {
     TurnType tnext=result.get(i + 1).getTurnType();
-    if (tnext != null && result.get(i).getDistance() < 35) {
+    if (tnext != null && result.get(i).getDistance() < 50) {
       boolean ut=true;
       if (i > 0) {
         double uTurn=MapUtils.degreesDiff(result.get(i - 1).getBearingEnd(),result.get(i + 1).getBearingBegin());
@@ -15,13 +15,20 @@
       if (highway == null || highway.endsWith("track") || highway.endsWith("services") || highway.endsWith("service") || highway.endsWith("path")) {
         ut=false;
       }
+      if (result.get(i).getObject().getOneway() == 0 || result.get(i + 1).getObject().getOneway() == 0) {
+        ut=false;
+      }
       if (ut) {
         tnext.setSkipToSpeak(true);
-        if (tl && TurnType.TL == tnext.getValue()) {
-          return TurnType.valueOf(TurnType.TU,false);
+        if (tl && TurnType.isLeftTurnNoUTurn(t.getValue())) {
+          TurnType tt=TurnType.valueOf(TurnType.TU,false);
+          tt.setLanes(t.getLanes());
+          return tt;
         }
- else         if (tr && TurnType.TR == tnext.getValue()) {
-          return TurnType.valueOf(TurnType.TU,true);
+ else         if (tr && TurnType.isRightTurnNoUTurn(t.getValue())) {
+          TurnType tt=TurnType.valueOf(TurnType.TU,true);
+          tt.setLanes(t.getLanes());
+          return tt;
         }
       }
     }
