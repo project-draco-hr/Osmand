@@ -18,14 +18,14 @@
 );
   }
   if (convertView == null || !(convertView.getTag() instanceof Integer) || (layoutId != (Integer)convertView.getTag())) {
-    int themeRes=holoLight ? R.style.OsmandLightTheme : R.style.OsmandDarkTheme;
+    int themeRes=lightTheme ? R.style.OsmandLightTheme : R.style.OsmandDarkTheme;
     convertView=View.inflate(new ContextThemeWrapper(getContext(),themeRes),layoutId,null);
     convertView.setTag(layoutId);
   }
   TextView tv=(TextView)convertView.findViewById(R.id.title);
   tv.setText(item.getTitle());
   if (this.layoutId == R.layout.simple_list_menu_item) {
-    @ColorRes int color=holoLight ? R.color.icon_color : R.color.dashboard_subheader_text_dark;
+    @ColorRes int color=lightTheme ? R.color.icon_color : R.color.dashboard_subheader_text_dark;
     Drawable drawable=mIconsCache.getIcon(item.getIcon(),color);
     float density=getContext().getResources().getDisplayMetrics().density;
     int paddingInPixels=(int)(24 * density);
@@ -36,7 +36,11 @@
   }
  else {
     if (item.getIcon() != ContextMenuItem.INVALID_ID) {
-      Drawable drawable=mIconsCache.getIcon(item.getIcon(),item.getThemedColorRes(getContext()));
+      int colorRes=item.getColorRes();
+      if (colorRes == ContextMenuItem.INVALID_ID) {
+        colorRes=lightTheme ? R.color.icon_color : R.color.color_white;
+      }
+      Drawable drawable=mIconsCache.getIcon(item.getIcon(),colorRes);
       ((AppCompatImageView)convertView.findViewById(R.id.icon)).setImageDrawable(drawable);
       convertView.findViewById(R.id.icon).setVisibility(View.VISIBLE);
     }
@@ -46,7 +50,7 @@
   }
   @DrawableRes int secondaryDrawable=item.getSecondaryIcon();
   if (secondaryDrawable != ContextMenuItem.INVALID_ID) {
-    @ColorRes int colorRes=holoLight ? R.color.icon_color_light : R.color.dialog_inactive_text_color_dark;
+    @ColorRes int colorRes=lightTheme ? R.color.icon_color_light : R.color.dialog_inactive_text_color_dark;
     Drawable drawable=mIconsCache.getIcon(item.getSecondaryIcon(),colorRes);
     ImageView imageView=(ImageView)convertView.findViewById(R.id.secondary_icon);
     imageView.setImageDrawable(drawable);
