@@ -1,0 +1,33 @@
+{
+  if (i == null || !router.getSettings().SPEAK_STREET_NAMES.get()) {
+    return empty;
+  }
+  if (player != null && player.supportsStructuredStreetNames()) {
+    if (fullDest == true) {
+      Struct next=new Struct(new Term[]{getTermString(getSpeakablePointName(i.getRef())),getTermString(getSpeakablePointName(i.getStreetName())),getTermString(getSpeakablePointName(i.getDestinationName()))});
+    }
+ else {
+      Struct next=new Struct(new Term[]{getTermString(getSpeakablePointName(i.getRef())),getTermString(getSpeakablePointName(i.getStreetName())),empty});
+    }
+    Term current=empty;
+    if (currentSegment != null) {
+      if (fullDest == true) {
+        RouteDataObject obj=currentSegment.getObject();
+        current=new Struct(new Term[]{getTermString(getSpeakablePointName(obj.getRef())),getTermString(getSpeakablePointName(obj.getName(settings.MAP_PREFERRED_LOCALE.get()))),getTermString(getSpeakablePointName(obj.getDestinationName(settings.MAP_PREFERRED_LOCALE.get())))});
+      }
+ else {
+        RouteDataObject obj=currentSegment.getObject();
+        current=new Struct(new Term[]{getTermString(getSpeakablePointName(obj.getRef())),getTermString(getSpeakablePointName(obj.getName(settings.MAP_PREFERRED_LOCALE.get()))),empty});
+      }
+    }
+    Struct voice=new Struct("voice",next,current);
+    return voice;
+  }
+ else {
+    Term rf=getTermString(getSpeakablePointName(i.getRef()));
+    if (rf == empty) {
+      rf=getTermString(getSpeakablePointName(i.getStreetName()));
+    }
+    return rf;
+  }
+}
