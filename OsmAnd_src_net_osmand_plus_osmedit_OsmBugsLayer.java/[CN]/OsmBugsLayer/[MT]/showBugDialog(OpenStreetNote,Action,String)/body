@@ -1,7 +1,4 @@
 {
-  final OpenStreetNote bug=(OpenStreetNote)args.getSerializable(KEY_BUG);
-  final Action action=Action.valueOf((String)args.getSerializable(KEY_ACTION));
-  String text=(String)args.getSerializable(KEY_TEXT);
   int title;
   if (action == Action.DELETE) {
     title=R.string.osn_close_dialog_title;
@@ -15,13 +12,9 @@
  else {
     title=R.string.osn_add_dialog_title;
   }
-  final AlertDialog dlg=(AlertDialog)dialog;
-  dlg.setTitle(title);
-  final View view=dlg.findViewById(R.id.layout);
-  Button btn=dlg.getButton(DialogInterface.BUTTON_POSITIVE);
-  btn.setText(title);
   OsmBugsUtil util=getOsmbugsUtil(bug);
   final boolean offline=util instanceof OsmBugsLocalUtil;
+  final View view=LayoutInflater.from(activity).inflate(R.layout.open_bug,null);
   if (offline) {
     view.findViewById(R.id.user_name_field).setVisibility(View.GONE);
     view.findViewById(R.id.userNameEditTextLabel).setVisibility(View.GONE);
@@ -36,15 +29,19 @@
     ((EditText)view.findViewById(R.id.message_field)).setText(text);
   }
   AndroidUtils.softKeyboardDelayed(view.findViewById(R.id.message_field));
-  btn.setOnClickListener(new View.OnClickListener(){
-    @Override public void onClick(    View dialog){
+  final AlertDialog.Builder builder=new AlertDialog.Builder(activity);
+  builder.setTitle(R.string.shared_string_commit);
+  builder.setView(view);
+  builder.setPositiveButton(title,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
       if (bug != null) {
         String text=offline ? getMessageText(view) : getTextAndUpdateUserPwd(view);
         activity.getContextMenu().close();
         asyncActionTask(bug,text,action);
-        dlg.dismiss();
       }
     }
   }
 );
+  builder.setNegativeButton(R.string.shared_string_cancel,null);
+  builder.create().show();
 }
