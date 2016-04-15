@@ -1,7 +1,10 @@
 {
   float w=72 * scaleCoefficient / miniCoeff;
+  Bitmap src=Bitmap.createBitmap(canvas.getWidth(),canvas.getHeight(),Bitmap.Config.ARGB_8888);
+  Canvas srcCanvas=new Canvas(src);
+  srcCanvas.drawColor(0,PorterDuff.Mode.CLEAR);
   if (lanes != null && lanes.length > 0) {
-    canvas.save();
+    srcCanvas.save();
     for (int i=0; i < lanes.length; i++) {
       if ((lanes[i] & 1) == 1) {
         paintRouteDirection.setColor(imminent ? ctx.getResources().getColor(R.color.nav_arrow_imminent) : ctx.getResources().getColor(R.color.nav_arrow));
@@ -18,7 +21,7 @@
         bSecond=TurnPathHelper.getBitmapFromTurnType(ctx.getResources(),bitmapCache,turnType,secondTurnType,thirdTurnType,TurnPathHelper.THIRD_TURN,coef,leftSide);
         if (bSecond != null) {
           paintSecondTurn.setColorFilter(new PorterDuffColorFilter(paintSecondTurn.getColor(),PorterDuff.Mode.SRC_ATOP));
-          canvas.drawBitmap(bSecond,0f,0f,paintSecondTurn);
+          srcCanvas.drawBitmap(bSecond,0f,0f,paintSecondTurn);
         }
       }
       if (secondTurnType > 0) {
@@ -26,16 +29,25 @@
         bSecond=TurnPathHelper.getBitmapFromTurnType(ctx.getResources(),bitmapCache,turnType,secondTurnType,thirdTurnType,TurnPathHelper.SECOND_TURN,coef,leftSide);
         if (bSecond != null) {
           paintSecondTurn.setColorFilter(new PorterDuffColorFilter(paintSecondTurn.getColor(),PorterDuff.Mode.SRC_ATOP));
-          canvas.drawBitmap(bSecond,0f,0f,paintSecondTurn);
+          srcCanvas.drawBitmap(bSecond,0f,0f,paintSecondTurn);
         }
       }
       Bitmap b=TurnPathHelper.getBitmapFromTurnType(ctx.getResources(),bitmapCache,turnType,secondTurnType,thirdTurnType,TurnPathHelper.FIRST_TURN,coef,leftSide);
       if (b != null) {
         paintRouteDirection.setColorFilter(new PorterDuffColorFilter(paintRouteDirection.getColor(),PorterDuff.Mode.SRC_ATOP));
-        canvas.drawBitmap(b,0f,0f,paintRouteDirection);
-        canvas.translate(w,0);
+        srcCanvas.drawBitmap(b,0f,0f,paintRouteDirection);
+        srcCanvas.translate(w,0);
       }
     }
-    canvas.restore();
+    srcCanvas.restore();
   }
+  Paint ptBlur=new Paint();
+  ptBlur.setMaskFilter(new BlurMaskFilter(5,Blur.OUTER));
+  int[] offsetXY=new int[2];
+  Bitmap bmAlpha=src.extractAlpha(ptBlur,offsetXY);
+  Paint ptAlphaColor=new Paint();
+  ptAlphaColor.setColor(0xFF000000);
+  canvas.drawBitmap(bmAlpha,offsetXY[0],offsetXY[1],ptAlphaColor);
+  bmAlpha.recycle();
+  canvas.drawBitmap(src,0,0,null);
 }
