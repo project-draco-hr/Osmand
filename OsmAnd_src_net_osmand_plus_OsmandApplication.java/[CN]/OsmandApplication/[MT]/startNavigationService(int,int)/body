@@ -1,10 +1,12 @@
 {
   final Intent serviceIntent=new Intent(this,NavigationService.class);
-  serviceIntent.putExtra(NavigationService.USAGE_INTENT,intent);
-  serviceIntent.putExtra(NavigationService.USAGE_OFF_INTERVAL,interval);
   if (getNavigationService() != null) {
+    intent|=getNavigationService().getUsedBy();
+    interval=Math.min(getNavigationService().getServiceOffInterval(),interval);
     getNavigationService().stopSelf();
   }
+  serviceIntent.putExtra(NavigationService.USAGE_INTENT,intent);
+  serviceIntent.putExtra(NavigationService.USAGE_OFF_INTERVAL,interval);
   startService(serviceIntent);
   getNotificationHelper().showNotification();
 }
