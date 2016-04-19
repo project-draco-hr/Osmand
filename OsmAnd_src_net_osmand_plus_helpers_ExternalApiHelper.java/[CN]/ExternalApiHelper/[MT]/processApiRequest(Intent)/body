@@ -21,6 +21,25 @@
           gpx=GPXUtilities.loadGPXFile(mapActivity,new ByteArrayInputStream(gpxStr.getBytes()));
         }
       }
+ else       if (uri.getBooleanQueryParameter(PARAM_URI,false)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+          LOG.debug("uriString=" + intent.getClipData().getItemAt(0).getUri());
+          Uri gpxUri=intent.getClipData().getItemAt(0).getUri();
+          ParcelFileDescriptor gpxParcelDescriptor=mapActivity.getContentResolver().openFileDescriptor(gpxUri,"r");
+          if (gpxParcelDescriptor != null) {
+            FileDescriptor fileDescriptor=gpxParcelDescriptor.getFileDescriptor();
+            gpx=GPXUtilities.loadGPXFile(mapActivity,new FileInputStream(fileDescriptor));
+          }
+ else {
+            finish=true;
+            resultCode=RESULT_CODE_ERROR_GPX_NOT_FOUND;
+          }
+        }
+ else {
+          finish=true;
+          resultCode=RESULT_CODE_ERROR_GPX_NOT_FOUND;
+        }
+      }
  else {
         finish=true;
         resultCode=RESULT_CODE_ERROR_GPX_NOT_FOUND;
