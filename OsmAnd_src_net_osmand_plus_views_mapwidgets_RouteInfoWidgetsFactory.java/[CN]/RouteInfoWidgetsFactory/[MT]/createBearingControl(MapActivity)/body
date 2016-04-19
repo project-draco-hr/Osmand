@@ -12,7 +12,9 @@
       return p == null ? null : p.point;
     }
     @Override public boolean updateInfo(    DrawSettings drawSettings){
-      int b=getBearing(showRelativeBearing.get());
+      boolean relative=showRelativeBearing.get();
+      setContentTitle(relative ? R.string.map_widget_bearing : R.string.map_widget_magnetic_bearing);
+      int b=getBearing(relative);
       if (distChanged(cachedDegrees,b)) {
         cachedDegrees=b;
         if (b != -1000) {
@@ -74,12 +76,12 @@
   bearingControl.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       showRelativeBearing.set(!showRelativeBearing.get());
-      bearingControl.setIcons(showRelativeBearing.get() ? bearingResId : relativeBearingResId,showRelativeBearing.get() ? bearingNightResId : relativeBearingNightResId);
+      bearingControl.setIcons(!showRelativeBearing.get() ? bearingResId : relativeBearingResId,!showRelativeBearing.get() ? bearingNightResId : relativeBearingNightResId);
       map.getMapView().refreshMap();
     }
   }
 );
   bearingControl.setText(null,null);
-  bearingControl.setIcons(showRelativeBearing.get() ? bearingResId : relativeBearingResId,showRelativeBearing.get() ? bearingNightResId : relativeBearingNightResId);
+  bearingControl.setIcons(!showRelativeBearing.get() ? bearingResId : relativeBearingResId,!showRelativeBearing.get() ? bearingNightResId : relativeBearingNightResId);
   return bearingControl;
 }
