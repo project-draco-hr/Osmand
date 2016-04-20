@@ -13,13 +13,13 @@
     }
     @Override public boolean updateInfo(    DrawSettings drawSettings){
       boolean relative=showRelativeBearing.get();
-      setIcons(relative ? relativeBearingResId : bearingResId,relative ? relativeBearingNightResId : bearingNightResId);
+      boolean modeChanged=setIcons(relative ? relativeBearingResId : bearingResId,relative ? relativeBearingNightResId : bearingNightResId);
       setContentTitle(relative ? R.string.map_widget_bearing : R.string.map_widget_magnetic_bearing);
       int b=getBearing(relative);
-      if (distChanged(cachedDegrees,b)) {
+      if (degreesChanged(cachedDegrees,b) || modeChanged) {
         cachedDegrees=b;
         if (b != -1000) {
-          setText(String.valueOf(b) + "??",null);
+          setText(String.valueOf(b) + "??" + (relative ? "" : " M"),null);
         }
  else {
           setText(null,null);
@@ -77,8 +77,7 @@
   bearingControl.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
       showRelativeBearing.set(!showRelativeBearing.get());
-      bearingControl.setIcons(!showRelativeBearing.get() ? bearingResId : relativeBearingResId,!showRelativeBearing.get() ? bearingNightResId : relativeBearingNightResId);
-      map.getMapView().refreshMap();
+      map.refreshMap();
     }
   }
 );
