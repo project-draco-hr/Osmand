@@ -1,0 +1,40 @@
+{
+  if ((currentLocation != null) && (point != null)) {
+    RelativeDirection direction=new RelativeDirection(point,heading);
+    Integer inclination=direction.getInclination();
+    if (targetDirectionFlag && ((inclination == null) || (inclination != 0))) {
+      targetDirectionFlag=false;
+      if (settings.DIRECTION_AUDIO_FEEDBACK.get()) {
+        AccessibilityPlugin accessibilityPlugin=OsmandPlugin.getEnabledPlugin(AccessibilityPlugin.class);
+        if (accessibilityPlugin != null) {
+          if (inclination == null) {
+            accessibilityPlugin.playSoundIcon(AccessibilityPlugin.DIRECTION_NOTIFICATION);
+          }
+ else           if (inclination > 0) {
+            accessibilityPlugin.playSoundIcon(AccessibilityPlugin.INCLINATION_LEFT);
+          }
+ else {
+            accessibilityPlugin.playSoundIcon(AccessibilityPlugin.INCLINATION_RIGHT);
+          }
+        }
+      }
+      if (settings.DIRECTION_HAPTIC_FEEDBACK.get()) {
+        Vibrator haptic=(Vibrator)app.getSystemService(Context.VIBRATOR_SERVICE);
+        if ((haptic != null) && haptic.hasVibrator()) {
+          if (inclination == null) {
+            haptic.vibrate(200);
+          }
+ else           if (inclination > 0) {
+            haptic.vibrate(HAPTIC_INCLINATION_LEFT,-1);
+          }
+ else {
+            haptic.vibrate(HAPTIC_INCLINATION_RIGHT,-1);
+          }
+        }
+      }
+    }
+ else     if ((!targetDirectionFlag) && (direction.getValue() == 0)) {
+      targetDirectionFlag=true;
+    }
+  }
+}
