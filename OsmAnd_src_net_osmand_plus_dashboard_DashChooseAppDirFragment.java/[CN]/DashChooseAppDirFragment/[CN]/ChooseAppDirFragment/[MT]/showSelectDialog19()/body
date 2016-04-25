@@ -11,14 +11,12 @@
     types.add(OsmandSettings.EXTERNAL_STORAGE_TYPE_SPECIFIED);
   }
   File df=settings.getDefaultInternalStorage();
-  if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_DEFAULT || OsmandSettings.isWritable(df)) {
-    if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_DEFAULT) {
-      selected=items.size();
-    }
-    items.add(getString(R.string.storage_directory_shared));
-    paths.add(df.getAbsolutePath());
-    types.add(OsmandSettings.EXTERNAL_STORAGE_TYPE_DEFAULT);
+  if (type == OsmandSettings.EXTERNAL_STORAGE_TYPE_DEFAULT) {
+    selected=items.size();
   }
+  items.add(getString(R.string.storage_directory_shared));
+  paths.add(df.getAbsolutePath());
+  types.add(OsmandSettings.EXTERNAL_STORAGE_TYPE_DEFAULT);
   File[] externals=getMyApplication().getExternalFilesDirs(null);
   if (externals != null) {
     int i=1;
@@ -64,11 +62,19 @@
         showOtherDialog();
       }
  else {
-        mapsCopied=false;
-        type=types.get(which);
-        selectedFile=new File(paths.get(which));
-        dialog.dismiss();
-        updateView();
+        if (types.get(which) == OsmandSettings.EXTERNAL_STORAGE_TYPE_DEFAULT && !DownloadActivity.hasPermissionToWriteExternalStorage(activity)) {
+          typeTemp=types.get(which);
+          selectedFileTemp=new File(paths.get(which));
+          dialog.dismiss();
+          ActivityCompat.requestPermissions(activity,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},DownloadActivity.PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+        }
+ else {
+          mapsCopied=false;
+          type=types.get(which);
+          selectedFile=new File(paths.get(which));
+          dialog.dismiss();
+          updateView();
+        }
       }
     }
   }
