@@ -1,19 +1,14 @@
 {
-  if (!Algorithms.objectEquals(this.settings.SELECTED_POI_FILTER_FOR_MAP.get(),filter == null ? null : filter.getFilterId())) {
-    if (this.settings.SELECTED_POI_FILTER_FOR_MAP.get() == null) {
-      this.filter=null;
-    }
- else {
-      PoiFiltersHelper pfh=app.getPoiFilters();
-      this.filter=pfh.getFilterById(this.settings.SELECTED_POI_FILTER_FOR_MAP.get());
-    }
+  Set<PoiUIFilter> selectedPoiFilters=app.getPoiFilters().getSelectedPoiFilters();
+  if (!this.filters.equals(selectedPoiFilters)) {
+    this.filters=new TreeSet<>(selectedPoiFilters);
     data.clearCache();
   }
   List<Amenity> objects=Collections.emptyList();
   List<Amenity> fullObjects=new ArrayList<>();
   List<LatLon> fullObjectsLatLon=new ArrayList<>();
   List<LatLon> smallObjectsLatLon=new ArrayList<>();
-  if (filter != null) {
+  if (!filters.isEmpty()) {
     if (tileBox.getZoom() >= startZoom) {
       data.queryNewData(tileBox);
       objects=data.getResults();
