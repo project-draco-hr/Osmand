@@ -1,0 +1,23 @@
+{
+  Set<PoiUIFilter> standardFilters=new TreeSet<>();
+  for (  PoiUIFilter filter : filters) {
+    if ((filter.isStandardFilter() && filter.filterId.startsWith(PoiUIFilter.STD_PREFIX)) || filter.filterId.startsWith(PoiUIFilter.CUSTOM_FILTER_ID)) {
+      standardFilters.add(filter);
+    }
+  }
+  if (!standardFilters.isEmpty()) {
+    PoiUIFilter standardFiltersCombined=null;
+    for (    PoiUIFilter f : standardFilters) {
+      if (standardFiltersCombined == null) {
+        standardFiltersCombined=f;
+        f.filterId=PoiUIFilter.STD_PREFIX + "combined";
+        f.name=app.getPoiFilters().getFiltersName(standardFilters);
+      }
+ else {
+        standardFiltersCombined.combineWithPoiFilter(f);
+      }
+    }
+    filters.removeAll(standardFilters);
+    filters.add(standardFiltersCombined);
+  }
+}

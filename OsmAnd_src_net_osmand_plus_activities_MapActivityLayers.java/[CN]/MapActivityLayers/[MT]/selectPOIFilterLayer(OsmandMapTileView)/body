@@ -8,11 +8,14 @@
   for (  PoiUIFilter f : poiFilters.getTopDefinedPoiFilters()) {
     addFilterToList(adapter,list,f);
   }
+  for (  PoiUIFilter f : poiFilters.getSearchPoiFilters()) {
+    addFilterToList(adapter,list,f);
+  }
   AlertDialog.Builder builder=new AlertDialog.Builder(activity);
   ListAdapter listAdapter=adapter.createListAdapter(activity,app.getSettings().isLightContent());
   builder.setAdapter(listAdapter,new DialogInterface.OnClickListener(){
-    @Override public void onClick(    DialogInterface dialog,    int which){
-      PoiUIFilter pf=list.get(which);
+    @Override public void onClick(    DialogInterface dialog,    int position){
+      PoiUIFilter pf=list.get(position);
       String filterId=pf.getFilterId();
       if (filterId.equals(PoiUIFilter.CUSTOM_FILTER_ID)) {
         Intent search=new Intent(activity,SearchActivity.class);
@@ -20,20 +23,14 @@
         activity.getMyApplication().getSettings().SEARCH_TAB.set(SearchActivity.POI_TAB_INDEX);
         activity.startActivity(search);
       }
- else {
-        pf=poiFilters.getFilterById(filterId);
-        if (pf != null) {
-          pf.setFilterByName(pf.getSavedFilterByName());
-        }
-        getApplication().getSettings().SELECTED_POI_FILTER_FOR_MAP.set(filterId);
-        mapView.refreshMap();
-        if (selected != null && selected.length > 0) {
-          selected[0]=pf;
-        }
-      }
     }
   }
 );
-  builder.setNegativeButton(R.string.shared_string_cancel,null);
+  builder.setTitle(R.string.show_poi_over_map).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      mapView.refreshMap();
+    }
+  }
+).setNegativeButton(R.string.shared_string_cancel,null);
   return builder.show();
 }
