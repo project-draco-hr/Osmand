@@ -2,8 +2,8 @@
   transparencyBarLayout=(LinearLayout)mapActivity.findViewById(R.id.map_transparency_layout);
   transparencyBar=(SeekBar)mapActivity.findViewById(R.id.map_transparency_seekbar);
   transparencyBar.setMax(255);
-  if (settingsToTransparency != null) {
-    transparencyBar.setProgress(settingsToTransparency.get());
+  if (transparencySetting != null) {
+    transparencyBar.setProgress(transparencySetting.get());
     transparencyBarLayout.setVisibility(View.VISIBLE);
   }
  else {
@@ -15,8 +15,8 @@
     @Override public void onStartTrackingTouch(    SeekBar seekBar){
     }
     @Override public void onProgressChanged(    SeekBar seekBar,    int progress,    boolean fromUser){
-      if (settingsToTransparency != null) {
-        settingsToTransparency.set(progress);
+      if (transparencySetting != null) {
+        transparencySetting.set(progress);
         mapActivity.getMapView().refreshMap();
       }
     }
@@ -26,9 +26,20 @@
   imageButton.setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       transparencyBarLayout.setVisibility(View.GONE);
-      settings.SHOW_LAYER_TRANSPARENCY_SEEKBAR.set(false);
-      hideTransparencyBar(settingsToTransparency);
+      settings.LAYER_TRANSPARENCY_SEEKBAR_MODE.set(LayerTransparencySeekbarMode.OFF);
+      hideTransparencyBar(transparencySetting);
     }
   }
 );
+  LayerTransparencySeekbarMode seekbarMode=settings.LAYER_TRANSPARENCY_SEEKBAR_MODE.get();
+  if (seekbarMode == LayerTransparencySeekbarMode.OVERLAY && settings.MAP_OVERLAY.get() != null) {
+    showTransparencyBar(settings.MAP_OVERLAY_TRANSPARENCY);
+    setTransparencyBarEnabled(true);
+    Log.e("111","init: show OVERLAY");
+  }
+ else   if (seekbarMode == LayerTransparencySeekbarMode.UNDERLAY && settings.MAP_UNDERLAY.get() != null) {
+    showTransparencyBar(settings.MAP_TRANSPARENCY);
+    setTransparencyBarEnabled(true);
+    Log.e("111","init: show UNDERLAY");
+  }
 }

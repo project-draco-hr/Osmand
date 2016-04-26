@@ -2,23 +2,44 @@
   OsmandMapTileView mapView=mapActivity.getMapView();
   CommonPreference<String> mapTypePreference;
   CommonPreference<String> exMapTypePreference;
+  OsmandSettings.CommonPreference<Integer> mapTransparencyPreference;
   ITileSource map;
   if (type == RasterMapType.OVERLAY) {
+    mapTransparencyPreference=settings.MAP_OVERLAY_TRANSPARENCY;
     mapTypePreference=settings.MAP_OVERLAY;
     exMapTypePreference=settings.MAP_OVERLAY_PREVIOUS;
     map=overlayLayer.getMap();
   }
  else {
+    mapTransparencyPreference=settings.MAP_TRANSPARENCY;
     mapTypePreference=settings.MAP_UNDERLAY;
     exMapTypePreference=settings.MAP_UNDERLAY_PREVIOUS;
     map=underlayLayer.getMap();
+  }
+  boolean isChecked=map == null;
+  boolean showSeekbar=isChecked && RasterMapMenu.isSeekbarVisible(app,type);
+  boolean hideSeekbar=!isChecked && RasterMapMenu.isSeekbarVisible(app,type);
+  MapActivityLayers mapLayers=mapActivity.getMapLayers();
+  CommonPreference<LayerTransparencySeekbarMode> seekbarModePref=settings.LAYER_TRANSPARENCY_SEEKBAR_MODE;
+  if (showSeekbar) {
+    mapLayers.getMapControlsLayer().showTransparencyBar(mapTransparencyPreference);
+    mapLayers.getMapControlsLayer().setTransparencyBarEnabled(true);
+    if (seekbarModePref.get() == LayerTransparencySeekbarMode.UNDEFINED) {
+      final OsmandSettings.LayerTransparencySeekbarMode currentMapTypeSeekbarMode=type == OsmandRasterMapsPlugin.RasterMapType.OVERLAY ? OsmandSettings.LayerTransparencySeekbarMode.OVERLAY : OsmandSettings.LayerTransparencySeekbarMode.UNDERLAY;
+      seekbarModePref.set(currentMapTypeSeekbarMode);
+    }
+    Log.e("111","toggleUnderlayState: show");
+  }
+ else   if (hideSeekbar) {
+    mapLayers.getMapControlsLayer().hideTransparencyBar(mapTransparencyPreference);
+    mapLayers.getMapControlsLayer().setTransparencyBarEnabled(false);
+    Log.e("111","toggleUnderlayState: hide");
   }
   if (map != null) {
     mapTypePreference.set(null);
     if (callback != null) {
       callback.onMapSelected();
     }
-    MapActivityLayers mapLayers=mapActivity.getMapLayers();
     updateMapLayers(mapView,null,mapLayers);
   }
  else {
