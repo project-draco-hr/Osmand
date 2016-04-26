@@ -38,10 +38,23 @@
     }
     List<RoutingSubregionTile> subregions=indexedSubregions.get(tileId);
     if (subregions != null) {
-      TLongHashSet duplicates=new TLongHashSet();
+      boolean load=false;
       for (      RoutingSubregionTile ts : subregions) {
         if (!ts.isLoaded()) {
-          loadSubregionTile(ts,loadOptions == OPTION_IN_MEMORY_LOAD,null,duplicates);
+          load=true;
+        }
+      }
+      if (load) {
+        TLongHashSet excludeIds=new TLongHashSet();
+        for (        RoutingSubregionTile ts : subregions) {
+          if (!ts.isLoaded()) {
+            loadSubregionTile(ts,loadOptions == OPTION_IN_MEMORY_LOAD,null,excludeIds);
+          }
+ else {
+            if (ts.excludedIds != null) {
+              excludeIds.addAll(ts.excludedIds);
+            }
+          }
         }
       }
     }
