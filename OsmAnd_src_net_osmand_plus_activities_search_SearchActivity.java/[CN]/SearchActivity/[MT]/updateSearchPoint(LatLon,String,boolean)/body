@@ -1,10 +1,16 @@
 {
-  spinnerAdapter.remove(spinnerAdapter.getItem(0));
-  String suffix="";
+  String oldState=spinnerAdapter.getItem(0);
+  String newState=message;
   if (showLoc && searchPoint != null) {
-    suffix=formatLatLon(searchPoint);
+    newState+=formatLatLon(searchPoint);
   }
-  spinnerAdapter.insert(message + suffix,0);
+  if (!oldState.equals(newState)) {
+    if (getSupportActionBar().getSelectedNavigationIndex() != 0) {
+      accessibilityAssistant.lockEvents();
+    }
+    spinnerAdapter.remove(oldState);
+    spinnerAdapter.insert(newState,0);
+  }
   this.searchPoint=searchPoint;
   for (  WeakReference<Fragment> ref : fragList) {
     Fragment f=ref.get();
@@ -15,4 +21,5 @@
     }
   }
   getSupportActionBar().setSelectedNavigationItem(0);
+  accessibilityAssistant.unlockEvents();
 }

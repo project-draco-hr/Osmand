@@ -5,6 +5,9 @@
     String text=filter.getFilterByName() != null ? filter.getFilterByName() : "";
     searchFilter.setText(text);
     searchFilterLayout.setVisibility(text.length() > 0 || isNameSearch() ? View.VISIBLE : View.GONE);
+    app.getLocationProvider().removeCompassListener(app.getLocationProvider().getNavigationInfo());
+    app.getLocationProvider().addCompassListener(this);
+    app.getLocationProvider().registerOrUnregisterCompassListener(true);
   }
   if (searchNearBy) {
     app.getLocationProvider().addLocationListener(this);
@@ -12,8 +15,4 @@
     app.getLocationProvider().resumeAllUpdates();
   }
   updateLocation(location);
-  if (!app.accessibilityEnabled()) {
-    app.getLocationProvider().addCompassListener(this);
-    app.getLocationProvider().registerOrUnregisterCompassListener(true);
-  }
 }

@@ -2,9 +2,23 @@
   float lastHeading=heading != null ? heading : 99;
   heading=value;
   if (heading != null && Math.abs(MapUtils.degreesDiff(lastHeading,heading)) > 5) {
+    accessibilityAssistant.lockEvents();
     amenityAdapter.notifyDataSetChanged();
+    accessibilityAssistant.unlockEvents();
   }
  else {
     heading=lastHeading;
+  }
+  final View selected=accessibilityAssistant.getFocusedView();
+  if (selected != null) {
+    try {
+      int position=getListView().getPositionForView(selected);
+      if (position != AdapterView.INVALID_POSITION) {
+        navigationInfo.updateTargetDirection(amenityAdapter.getItem(position).getLocation(),heading.floatValue());
+      }
+    }
+ catch (    Exception e) {
+      return;
+    }
   }
 }
