@@ -1,14 +1,23 @@
 {
   ((OsmandApplication)getApplication()).applyTheme(this);
   super.onCreate(savedInstanceState);
-  FrameLayout frame=new FrameLayout(this);
-  frame.setId(DIALOG);
-  setContentView(frame,new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
-  if (savedInstanceState == null) {
-    Fragment newFragment=new HelpScreenDialogFragment();
-    FragmentTransaction ft=getSupportFragmentManager().beginTransaction();
-    ft.add(DIALOG,newFragment).commit();
-  }
+  setContentView(R.layout.fragment_help_screen);
+  ContextMenuAdapter contextMenuAdapter=new ContextMenuAdapter();
+  contextMenuAdapter.setDefaultLayoutId(R.layout.list_item_icon_and_menu);
+  contextMenuAdapter.addItem(createCategory(R.string.begin_with_osmand_menu_group));
+  createBeginWithOsmandItems(contextMenuAdapter);
+  contextMenuAdapter.addItem(createCategory(R.string.features_menu_group));
+  createFeaturesItems(contextMenuAdapter);
+  contextMenuAdapter.addItem(createCategory(R.string.plugins_menu_group));
+  createPluginsItems(contextMenuAdapter);
+  contextMenuAdapter.addItem(createCategory(R.string.help_us_to_improve_menu_group));
+  createHelpUsToImproveItems(contextMenuAdapter);
+  contextMenuAdapter.addItem(createCategory(R.string.other_menu_group));
+  createOtherItems(contextMenuAdapter);
+  mAdapter=contextMenuAdapter.createListAdapter(this,getMyApplication().getSettings().isLightContent());
+  ListView listView=(ListView)findViewById(android.R.id.list);
+  listView.setAdapter(mAdapter);
+  listView.setOnItemClickListener(this);
   setTitle(R.string.shared_string_help);
   setupHomeButton();
 }
