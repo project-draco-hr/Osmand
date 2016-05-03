@@ -1,5 +1,5 @@
 {
-  OsmandApplication app=getApplication();
+  final OsmandApplication app=getApplication();
   final PoiFiltersHelper poiFilters=app.getPoiFilters();
   final ContextMenuAdapter adapter=new ContextMenuAdapter();
   final List<PoiUIFilter> list=new ArrayList<>();
@@ -33,11 +33,20 @@
 );
   builder.setTitle(R.string.show_poi_over_map);
   builder.setNegativeButton(R.string.shared_string_cancel,null);
-  builder.setNeutralButton("Multichoice",new DialogInterface.OnClickListener(){
+  builder.setNeutralButton(" ",new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       showMultichoicePoiFilterDialog(mapView,listener);
     }
   }
 );
-  builder.show();
+  final AlertDialog alertDialog=builder.create();
+  alertDialog.setOnShowListener(new DialogInterface.OnShowListener(){
+    @Override public void onShow(    DialogInterface dialog){
+      Button neutralButton=alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+      Drawable drawable=app.getIconsCache().getThemedIcon(R.drawable.ic_action_multiselect);
+      neutralButton.setCompoundDrawablesWithIntrinsicBounds(drawable,null,null,null);
+    }
+  }
+);
+  alertDialog.show();
 }
