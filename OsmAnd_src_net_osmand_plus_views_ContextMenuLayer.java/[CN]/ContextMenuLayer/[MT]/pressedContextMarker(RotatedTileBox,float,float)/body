@@ -1,12 +1,22 @@
 {
-  if (menu.isActive()) {
-    LatLon latLon=menu.getLatLon();
-    Rect bs=contextMarker.getDrawable().getBounds();
-    int dx=(int)(px - tb.getPixXFromLatLon(latLon.getLatitude(),latLon.getLongitude()));
-    int dy=(int)(py - tb.getPixYFromLatLon(latLon.getLatitude(),latLon.getLongitude()));
-    int bx=dx + bs.width() / 2;
-    int by=dy + bs.height();
-    return (bs.contains(bx,by));
+  float markerX;
+  float markerY;
+  if (mInChangeMarkerPositionMode) {
+    markerX=tb.getCenterPixelX();
+    markerY=tb.getCenterPixelY();
   }
-  return false;
+ else   if (menu.isActive()) {
+    LatLon latLon=menu.getLatLon();
+    markerX=tb.getPixXFromLatLon(latLon.getLatitude(),latLon.getLongitude());
+    markerY=tb.getPixYFromLatLon(latLon.getLatitude(),latLon.getLongitude());
+  }
+ else {
+    return false;
+  }
+  Rect bs=contextMarker.getDrawable().getBounds();
+  int dx=(int)(px - markerX);
+  int dy=(int)(py - markerY);
+  int bx=dx + bs.width() / 2;
+  int by=dy + bs.height();
+  return (bs.contains(bx,by));
 }
