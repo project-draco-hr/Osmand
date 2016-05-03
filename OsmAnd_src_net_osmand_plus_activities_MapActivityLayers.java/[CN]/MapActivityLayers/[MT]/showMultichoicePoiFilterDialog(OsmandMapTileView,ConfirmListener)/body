@@ -1,17 +1,17 @@
 {
-  OsmandApplication app=getApplication();
+  final OsmandApplication app=getApplication();
   final PoiFiltersHelper poiFilters=app.getPoiFilters();
   final ContextMenuAdapter adapter=new ContextMenuAdapter();
   final List<PoiUIFilter> list=new ArrayList<>();
   list.add(poiFilters.getCustomPOIFilter());
   for (  PoiUIFilter f : poiFilters.getTopDefinedPoiFilters()) {
-    addFilterToList(adapter,list,f);
+    addFilterToList(adapter,list,f,true);
   }
   for (  PoiUIFilter f : poiFilters.getSearchPoiFilters()) {
-    addFilterToList(adapter,list,f);
+    addFilterToList(adapter,list,f,true);
   }
-  AlertDialog.Builder builder=new AlertDialog.Builder(activity);
   final ArrayAdapter<ContextMenuItem> listAdapter=adapter.createListAdapter(activity,app.getSettings().isLightContent());
+  AlertDialog.Builder builder=new AlertDialog.Builder(activity);
   final ListView listView=new ListView(activity);
   listView.setDivider(null);
   listView.setClickable(true);
@@ -25,13 +25,26 @@
     }
   }
 );
-  builder.setView(listView);
-  builder.setTitle(R.string.show_poi_over_map).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
+  builder.setView(listView).setTitle(R.string.show_poi_over_map).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       mapView.refreshMap();
       listener.confirm();
     }
   }
-).setNegativeButton(R.string.shared_string_cancel,null).setNeutralButton("",null);
-  builder.show();
+).setNegativeButton(R.string.shared_string_cancel,null).setNeutralButton(" ",new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      showSingleChoicePoiFilterDialog(mapView,listener);
+    }
+  }
+);
+  final AlertDialog alertDialog=builder.create();
+  alertDialog.setOnShowListener(new DialogInterface.OnShowListener(){
+    @Override public void onShow(    DialogInterface dialog){
+      Button neutralButton=alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+      Drawable drawable=app.getIconsCache().getThemedIcon(R.drawable.ic_action_singleselect);
+      neutralButton.setCompoundDrawablesWithIntrinsicBounds(drawable,null,null,null);
+    }
+  }
+);
+  alertDialog.show();
 }
