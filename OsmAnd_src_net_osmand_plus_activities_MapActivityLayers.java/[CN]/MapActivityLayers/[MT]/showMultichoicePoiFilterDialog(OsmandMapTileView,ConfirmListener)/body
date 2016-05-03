@@ -5,13 +5,13 @@
   final List<PoiUIFilter> list=new ArrayList<>();
   list.add(poiFilters.getCustomPOIFilter());
   for (  PoiUIFilter f : poiFilters.getTopDefinedPoiFilters()) {
-    addFilterToList(adapter,list,f);
+    addFilterToList(adapter,list,f,true);
   }
   for (  PoiUIFilter f : poiFilters.getSearchPoiFilters()) {
-    addFilterToList(adapter,list,f);
+    addFilterToList(adapter,list,f,true);
   }
-  AlertDialog.Builder builder=new AlertDialog.Builder(activity);
   final ArrayAdapter<ContextMenuItem> listAdapter=adapter.createListAdapter(activity,app.getSettings().isLightContent());
+  AlertDialog.Builder builder=new AlertDialog.Builder(activity);
   final ListView listView=new ListView(activity);
   listView.setDivider(null);
   listView.setClickable(true);
@@ -25,13 +25,17 @@
     }
   }
 );
-  builder.setView(listView);
-  builder.setTitle(R.string.show_poi_over_map).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
+  builder.setView(listView).setTitle(R.string.show_poi_over_map).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       mapView.refreshMap();
       listener.confirm();
     }
   }
-).setNegativeButton(R.string.shared_string_cancel,null).setNeutralButton("",null);
+).setNegativeButton(R.string.shared_string_cancel,null).setNeutralButton("Single choice",new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      showSingleChoicePoiFilterDialog(mapView,listener);
+    }
+  }
+);
   builder.show();
 }
