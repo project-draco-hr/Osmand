@@ -4,7 +4,7 @@
     return;
   }
   final OsmandSettings settings=getApplication().getSettings();
-  final LinkedHashMap<String,String> entriesMap=new LinkedHashMap<String,String>();
+  final LinkedHashMap<String,String> entriesMap=new LinkedHashMap<>();
   final String layerOsmVector="LAYER_OSM_VECTOR";
   final String layerInstallMore="LAYER_INSTALL_MORE";
   final String layerEditInstall="LAYER_EDIT";
@@ -12,7 +12,7 @@
   entriesMap.putAll(settings.getTileSourceEntries());
   entriesMap.put(layerInstallMore,getString(R.string.install_more));
   entriesMap.put(layerEditInstall,getString(R.string.maps_define_edit));
-  final List<Entry<String,String>> entriesMapList=new ArrayList<Entry<String,String>>(entriesMap.entrySet());
+  final List<Entry<String,String>> entriesMapList=new ArrayList<>(entriesMap.entrySet());
   AlertDialog.Builder builder=new AlertDialog.Builder(activity);
   String selectedTileSourceKey=settings.MAP_TILE_SOURCES.get();
   int selectedItem=-1;
@@ -41,59 +41,61 @@
   builder.setSingleChoiceItems(items,selectedItem,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
       String layerKey=entriesMapList.get(which).getKey();
-      if (layerKey.equals(layerOsmVector)) {
+switch (layerKey) {
+case layerOsmVector:
         settings.MAP_ONLINE_DATA.set(false);
-        updateMapSource(mapView,null);
-      }
- else       if (layerKey.equals(layerEditInstall)) {
-        OsmandRasterMapsPlugin.defineNewEditLayer(activity,new ResultMatcher<TileSourceTemplate>(){
-          @Override public boolean publish(          TileSourceTemplate object){
-            settings.MAP_TILE_SOURCES.set(object.getName());
-            settings.MAP_ONLINE_DATA.set(true);
-            updateMapSource(mapView,settings.MAP_TILE_SOURCES);
-            return true;
-          }
-          @Override public boolean isCancelled(){
-            return false;
-          }
-        }
-);
-      }
- else       if (layerKey.equals(layerInstallMore)) {
-        OsmandRasterMapsPlugin.installMapLayers(activity,new ResultMatcher<TileSourceTemplate>(){
-          TileSourceTemplate template=null;
-          int count=0;
-          @Override public boolean publish(          TileSourceTemplate object){
-            if (object == null) {
-              if (count == 1) {
-                settings.MAP_TILE_SOURCES.set(template.getName());
-                settings.MAP_ONLINE_DATA.set(true);
-                updateMapSource(mapView,settings.MAP_TILE_SOURCES);
-              }
- else {
-                selectMapLayer(mapView);
-              }
-            }
- else {
-              count++;
-              template=object;
-            }
-            return false;
-          }
-          @Override public boolean isCancelled(){
-            return false;
-          }
-        }
-);
-      }
- else {
-        settings.MAP_TILE_SOURCES.set(layerKey);
-        settings.MAP_ONLINE_DATA.set(true);
-        updateMapSource(mapView,settings.MAP_TILE_SOURCES);
-      }
-      dialog.dismiss();
+      updateMapSource(mapView,null);
+    break;
+case layerEditInstall:
+  OsmandRasterMapsPlugin.defineNewEditLayer(activity,new ResultMatcher<TileSourceTemplate>(){
+    @Override public boolean publish(    TileSourceTemplate object){
+      settings.MAP_TILE_SOURCES.set(object.getName());
+      settings.MAP_ONLINE_DATA.set(true);
+      updateMapSource(mapView,settings.MAP_TILE_SOURCES);
+      return true;
+    }
+    @Override public boolean isCancelled(){
+      return false;
     }
   }
 );
-  builder.show();
+break;
+case layerInstallMore:
+OsmandRasterMapsPlugin.installMapLayers(activity,new ResultMatcher<TileSourceTemplate>(){
+TileSourceTemplate template=null;
+int count=0;
+@Override public boolean publish(TileSourceTemplate object){
+  if (object == null) {
+    if (count == 1) {
+      settings.MAP_TILE_SOURCES.set(template.getName());
+      settings.MAP_ONLINE_DATA.set(true);
+      updateMapSource(mapView,settings.MAP_TILE_SOURCES);
+    }
+ else {
+      selectMapLayer(mapView);
+    }
+  }
+ else {
+    count++;
+    template=object;
+  }
+  return false;
+}
+@Override public boolean isCancelled(){
+  return false;
+}
+}
+);
+break;
+default :
+settings.MAP_TILE_SOURCES.set(layerKey);
+settings.MAP_ONLINE_DATA.set(true);
+updateMapSource(mapView,settings.MAP_TILE_SOURCES);
+break;
+}
+dialog.dismiss();
+}
+}
+);
+builder.show();
 }
