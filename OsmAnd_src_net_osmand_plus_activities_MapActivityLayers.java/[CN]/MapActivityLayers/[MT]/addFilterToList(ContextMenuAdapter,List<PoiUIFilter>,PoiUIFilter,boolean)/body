@@ -2,19 +2,15 @@
   list.add(f);
   ContextMenuItem.ItemBuilder builder=new ContextMenuItem.ItemBuilder();
   if (multichoice) {
+    builder.setSelected(getApplication().getPoiFilters().isPoiFilterSelected(f));
     builder.setListener(new ContextMenuAdapter.ItemClickListener(){
       @Override public boolean onContextMenuClick(      ArrayAdapter<ContextMenuItem> adapter,      int itemId,      int position,      boolean isChecked){
-        if (isChecked) {
-          getApplication().getPoiFilters().addSelectedPoiFilter(f);
-        }
- else {
-          getApplication().getPoiFilters().removeSelectedPoiFilter(f);
-        }
-        return true;
+        ContextMenuItem item=adapter.getItem(position);
+        item.setSelected(isChecked);
+        return false;
       }
     }
 );
-    builder.setSelected(getApplication().getPoiFilters().isPoiFilterSelected(f));
   }
   builder.setTitle(f.getName());
   if (RenderingIcons.containsBigIcon(f.getIconId())) {

@@ -3,13 +3,13 @@
   final PoiFiltersHelper poiFilters=app.getPoiFilters();
   final ContextMenuAdapter adapter=new ContextMenuAdapter();
   final List<PoiUIFilter> list=new ArrayList<>();
-  list.add(poiFilters.getCustomPOIFilter());
   for (  PoiUIFilter f : poiFilters.getTopDefinedPoiFilters()) {
     addFilterToList(adapter,list,f,true);
   }
   for (  PoiUIFilter f : poiFilters.getSearchPoiFilters()) {
     addFilterToList(adapter,list,f,true);
   }
+  list.add(poiFilters.getCustomPOIFilter());
   final ArrayAdapter<ContextMenuItem> listAdapter=adapter.createListAdapter(activity,app.getSettings().isLightContent());
   AlertDialog.Builder builder=new AlertDialog.Builder(activity);
   final ListView listView=new ListView(activity);
@@ -27,6 +27,16 @@
 );
   builder.setView(listView).setTitle(R.string.show_poi_over_map).setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
+      for (int i=0; i < listAdapter.getCount(); i++) {
+        ContextMenuItem item=listAdapter.getItem(i);
+        PoiUIFilter filter=list.get(i);
+        if (item.getSelected()) {
+          getApplication().getPoiFilters().addSelectedPoiFilter(filter);
+        }
+ else {
+          getApplication().getPoiFilters().removeSelectedPoiFilter(filter);
+        }
+      }
       mapView.refreshMap();
     }
   }
