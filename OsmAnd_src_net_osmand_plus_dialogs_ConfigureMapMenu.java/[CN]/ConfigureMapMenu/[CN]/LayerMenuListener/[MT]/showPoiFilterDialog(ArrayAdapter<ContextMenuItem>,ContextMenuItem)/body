@@ -1,6 +1,7 @@
 {
-  ma.getMapLayers().showSingleChoicePoiFilterDialog(ma.getMapView(),new MapActivityLayers.ConfirmListener(){
-    @Override public void confirm(){
+  final PoiFiltersHelper poiFiltersHelper=ma.getMyApplication().getPoiFilters();
+  MapActivityLayers.DismissListener dismissListener=new MapActivityLayers.DismissListener(){
+    @Override public void dismiss(){
       PoiFiltersHelper pf=ma.getMyApplication().getPoiFilters();
       boolean selected=pf.isShowingAnyPoi();
       item.setSelected(selected);
@@ -9,5 +10,11 @@
       adapter.notifyDataSetChanged();
     }
   }
-);
+;
+  if (poiFiltersHelper.getSelectedPoiFilters().size() > 1) {
+    ma.getMapLayers().showMultichoicePoiFilterDialog(ma.getMapView(),dismissListener);
+  }
+ else {
+    ma.getMapLayers().showSingleChoicePoiFilterDialog(ma.getMapView(),dismissListener);
+  }
 }
