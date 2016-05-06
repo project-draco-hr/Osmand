@@ -3,14 +3,24 @@
     return false;
   }
   if (pressedContextMarker(tileBox,point.x,point.y)) {
-    Vibrator vibrator=(Vibrator)activity.getSystemService(Context.VIBRATOR_SERVICE);
-    vibrator.vibrate(VIBRATE_SHORT);
-    mInChangeMarkerPositionMode=true;
-    activity.getContextMenu().hide();
-    LatLon latLon=tileBox.getCenterLatLon();
-    mMoveMarkerBottomSheetHelper.show(latLon.getLatitude(),latLon.getLongitude());
-    view.tryMovingObject(selectedObj);
-    return true;
+    Object obj=menu.getObject();
+    if (obj != null && isObjectMoveable(obj)) {
+      Vibrator vibrator=(Vibrator)activity.getSystemService(Context.VIBRATOR_SERVICE);
+      vibrator.vibrate(VIBRATE_SHORT);
+      mInChangeMarkerPositionMode=true;
+      activity.getContextMenu().hide();
+      LatLon ll=menu.getLatLon();
+      RotatedTileBox rb=new RotatedTileBox(tileBox);
+      PointF pf=getMoveableCenterPoint(rb);
+      rb.setCenterLocation(pf.x,pf.y);
+      rb.setLatLonCenter(ll.getLatitude(),ll.getLongitude());
+      double lat=rb.getLatFromPixel(tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+      double lon=rb.getLonFromPixel(tileBox.getCenterPixelX(),tileBox.getCenterPixelY());
+      view.setLatLon(lat,lon);
+      mMoveMarkerBottomSheetHelper.show(menu.getLeftIcon());
+      return true;
+    }
+    return false;
   }
   showContextMenu(point,tileBox,true);
   view.refreshMap();
