@@ -15,7 +15,7 @@
         float x=tileBox.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
         float y=tileBox.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
         if (intersects(boundIntersections,x,y,iconSize,iconSize)) {
-          int col=o.getColor() == 0 || o.getColor() == Color.BLACK ? defaultColor : o.getColor();
+          @ColorInt int col=o.getColor() == 0 || o.getColor() == Color.BLACK ? defaultColor : o.getColor();
           paintIcon.setColorFilter(new PorterDuffColorFilter(col,PorterDuff.Mode.MULTIPLY));
           canvas.drawBitmap(pointSmall,x - pointSmall.getWidth() / 2,y - pointSmall.getHeight() / 2,paintIcon);
           smallObjectsLatLon.add(new LatLon(o.getLatitude(),o.getLongitude()));
@@ -26,7 +26,9 @@
         }
       }
       for (      LocationPoint o : fullObjects) {
-        drawPoint(canvas,tileBox,latLonBounds,o);
+        if (o != objectInMotion) {
+          drawPoint(canvas,tileBox,latLonBounds,o);
+        }
       }
       this.fullObjectsLatLon=fullObjectsLatLon;
       this.smallObjectsLatLon=smallObjectsLatLon;
