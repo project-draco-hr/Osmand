@@ -2,12 +2,16 @@
   if (!mInChangeMarkerPositionMode) {
     throw new IllegalStateException("Not in change marker position mode");
   }
-  Object obj=getMoveableObject();
-  quitMovingMarker();
   RotatedTileBox tileBox=activity.getMapView().getCurrentRotatedTileBox();
   PointF newMarkerPosition=getMoveableCenterPoint(tileBox);
   LatLon ll=tileBox.getLatLonFromPixel(newMarkerPosition.x,newMarkerPosition.y);
+  Object obj=getMoveableObject();
   applyMovedObject(obj,ll);
-  showContextMenu(newMarkerPosition,tileBox,true);
+  quitMovingMarker();
+  PointDescription pointDescription=null;
+  if (selectedObjectContextMenuProvider != null) {
+    pointDescription=selectedObjectContextMenuProvider.getObjectName(obj);
+  }
+  menu.show(ll,pointDescription,obj);
   view.refreshMap();
 }

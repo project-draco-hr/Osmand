@@ -2,29 +2,30 @@
   Map<Object,IContextMenuProvider> selectedObjects=selectObjectsForContextMenu(tileBox,point,false);
   if (selectedObjects.size() == 1) {
     Object selectedObj=selectedObjects.keySet().iterator().next();
-    IContextMenuProvider contextObject=selectedObjects.get(selectedObj);
+    selectedObjectContextMenuProvider=selectedObjects.get(selectedObj);
     LatLon latLon=null;
     PointDescription pointDescription=null;
-    if (contextObject != null) {
-      latLon=contextObject.getObjectLocation(selectedObj);
-      pointDescription=contextObject.getObjectName(selectedObj);
+    if (selectedObjectContextMenuProvider != null) {
+      latLon=selectedObjectContextMenuProvider.getObjectLocation(selectedObj);
+      pointDescription=selectedObjectContextMenuProvider.getObjectName(selectedObj);
     }
     if (latLon == null) {
       latLon=getLatLon(point,tileBox);
     }
     hideVisibleMenues();
-    activity.getMapViewTrackingUtilities().locationChanged(latLon.getLatitude(),latLon.getLongitude(),this);
+    activity.getMapViewTrackingUtilities().setMapLinkedToLocation(false);
     menu.show(latLon,pointDescription,selectedObj);
     return true;
   }
  else   if (selectedObjects.size() > 1) {
+    selectedObjectContextMenuProvider=null;
     showContextMenuForSelectedObjects(getLatLon(point,tileBox),selectedObjects);
     return true;
   }
  else   if (showUnknownLocation) {
     hideVisibleMenues();
     LatLon latLon=getLatLon(point,tileBox);
-    activity.getMapViewTrackingUtilities().locationChanged(latLon.getLatitude(),latLon.getLongitude(),this);
+    activity.getMapViewTrackingUtilities().setMapLinkedToLocation(false);
     menu.show(latLon,null,null);
     return true;
   }
