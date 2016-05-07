@@ -5,17 +5,17 @@
       float iconSize=FavoriteImageDrawable.getOrCreate(view.getContext(),0,true).getIntrinsicWidth() * 3 / 2.5f;
       QuadTree<QuadRect> boundIntersections=initBoundIntersections(tileBox);
       final QuadRect latLonBounds=tileBox.getLatLonBounds();
-      List<LocationPoint> fullObjects=new ArrayList<>();
+      List<FavouritePoint> fullObjects=new ArrayList<>();
       List<LatLon> fullObjectsLatLon=new ArrayList<>();
       List<LatLon> smallObjectsLatLon=new ArrayList<>();
-      for (      LocationPoint o : getPoints()) {
+      for (      FavouritePoint o : getPoints()) {
         if (!o.isVisible()) {
           continue;
         }
         float x=tileBox.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
         float y=tileBox.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
         if (intersects(boundIntersections,x,y,iconSize,iconSize)) {
-          int col=o.getColor() == 0 || o.getColor() == Color.BLACK ? defaultColor : o.getColor();
+          @ColorInt int col=o.getColor() == 0 || o.getColor() == Color.BLACK ? defaultColor : o.getColor();
           paintIcon.setColorFilter(new PorterDuffColorFilter(col,PorterDuff.Mode.MULTIPLY));
           canvas.drawBitmap(pointSmall,x - pointSmall.getWidth() / 2,y - pointSmall.getHeight() / 2,paintIcon);
           smallObjectsLatLon.add(new LatLon(o.getLatitude(),o.getLongitude()));
@@ -25,8 +25,10 @@
           fullObjectsLatLon.add(new LatLon(o.getLatitude(),o.getLongitude()));
         }
       }
-      for (      LocationPoint o : fullObjects) {
-        drawPoint(canvas,tileBox,latLonBounds,o);
+      for (      FavouritePoint o : fullObjects) {
+        if (o != contextMenuLayer.getMoveableObject()) {
+          drawPoint(canvas,tileBox,latLonBounds,o);
+        }
       }
       this.fullObjectsLatLon=fullObjectsLatLon;
       this.smallObjectsLatLon=smallObjectsLatLon;
