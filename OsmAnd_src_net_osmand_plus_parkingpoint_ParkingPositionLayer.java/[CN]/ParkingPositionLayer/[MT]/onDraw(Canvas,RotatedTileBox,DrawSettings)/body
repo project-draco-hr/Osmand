@@ -1,5 +1,6 @@
 {
   LatLon parkingPoint=getParkingPoint();
+  boolean inMotion=parkingPoint == contextMenuLayer.getMoveableObject();
   if (parkingPoint == null)   return;
   Bitmap parkingIcon;
   if (!timeLimit) {
@@ -10,11 +11,20 @@
   }
   double latitude=parkingPoint.getLatitude();
   double longitude=parkingPoint.getLongitude();
-  if (isLocationVisible(tb,latitude,longitude)) {
+  if (isLocationVisible(tileBox,latitude,longitude) || inMotion) {
     int marginX=parkingNoLimitIcon.getWidth() / 2;
     int marginY=parkingNoLimitIcon.getHeight() / 2;
-    int locationX=tb.getPixXFromLonNoRot(longitude);
-    int locationY=tb.getPixYFromLatNoRot(latitude);
+    float locationX;
+    float locationY;
+    if (inMotion) {
+      PointF pf=contextMenuLayer.getMoveableCenterPoint(tileBox);
+      locationX=pf.x;
+      locationY=pf.y;
+    }
+ else {
+      locationX=tileBox.getPixXFromLonNoRot(longitude);
+      locationY=tileBox.getPixYFromLatNoRot(latitude);
+    }
     canvas.rotate(-view.getRotate(),locationX,locationY);
     canvas.drawBitmap(parkingIcon,locationX - marginX,locationY - marginY,bitmapPaint);
   }
