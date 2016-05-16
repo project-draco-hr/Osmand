@@ -3,10 +3,13 @@
     cancelPointAddressRequests(targetPoint.point);
     AddressLookupRequest lookupRequest=new AddressLookupRequest(targetPoint.point,new GeocodingLookupService.OnAddressLookupResult(){
       @Override public void geocodingDone(      String address){
-        if (intermediatePoints.contains(targetPoint)) {
-          targetPoint.pointDescription.setName(address);
-          settings.updateIntermediatePoint(targetPoint.point.getLatitude(),targetPoint.point.getLongitude(),targetPoint.pointDescription);
-          updateRouteAndRefresh(false);
+        for (        TargetPoint p : intermediatePoints) {
+          if (p.point.equals(targetPoint.point)) {
+            p.pointDescription.setName(address);
+            settings.updateIntermediatePoint(p.point.getLatitude(),p.point.getLongitude(),p.pointDescription);
+            updateRouteAndRefresh(false);
+            break;
+          }
         }
       }
     }
