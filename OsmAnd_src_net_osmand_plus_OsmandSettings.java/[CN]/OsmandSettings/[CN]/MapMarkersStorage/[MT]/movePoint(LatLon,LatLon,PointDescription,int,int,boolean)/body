@@ -1,2 +1,32 @@
 {
+  List<LatLon> ps=getPoints();
+  List<String> ds=getPointDescriptions(ps.size());
+  List<Integer> cs=getColors(ps.size());
+  List<Integer> ns=getPositions(ps.size());
+  List<Boolean> bs=getSelections(ps.size());
+  int index=ps.indexOf(latLonEx);
+  if (index != -1) {
+    if (ps.size() > index) {
+      ps.set(index,latLonNew);
+    }
+    ds.set(index,PointDescription.serializeToString(historyDescription));
+    if (cs.size() > index) {
+      cs.set(index,colorIndex);
+    }
+    if (ns.size() > index) {
+      ns.set(index,pos);
+    }
+    if (bs.size() > index) {
+      bs.set(index,selected);
+    }
+    if (historyDescription != null && !historyDescription.isSearchingAddress(ctx)) {
+      double lat=latLonNew.getLatitude();
+      double lon=latLonNew.getLongitude();
+      SearchHistoryHelper.getInstance(ctx).addNewItemToHistory(lat,lon,historyDescription);
+    }
+    return savePoints(ps,ds,cs,ns,bs);
+  }
+ else {
+    return false;
+  }
 }
