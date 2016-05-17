@@ -1,9 +1,8 @@
 {
   String[] cityType_String=new String[]{"Cities/Towns section","Villages section","Postcodes section"};
   int[] cityType=new int[]{BinaryMapAddressReaderAdapter.CITY_TOWN_TYPE,BinaryMapAddressReaderAdapter.VILLAGES_TYPE,BinaryMapAddressReaderAdapter.POSTCODES_TYPE};
-  String lang="en";
-  for (int j=0; j < cityType.length; j++) {
-    int type=cityType[j];
+  for (int j=0; j < BinaryMapAddressReaderAdapter.CITY_TYPES.length; j++) {
+    int type=BinaryMapAddressReaderAdapter.CITY_TYPES[j];
     final List<City> cities=index.getCities(region,null,type);
     print(MessageFormat.format("\t{0}, {1,number,#} group(s)",new Object[]{cityType_String[j],cities.size()}));
     if (BinaryMapAddressReaderAdapter.CITY_TOWN_TYPE == type) {
@@ -20,7 +19,7 @@
     for (    City c : cities) {
       int size=index.preloadStreets(c,null);
       List<Street> streets=new ArrayList<Street>(c.getStreets());
-      String cityDescription=(j == BinaryMapAddressReaderAdapter.POSTCODES_TYPE ? MessageFormat.format("\t\t''{0}'' {1,number,#} street(s) size {2,number,#} bytes",c.getName(lang),streets.size(),size) : MessageFormat.format("\t\t''{0}'' [{1,number,#}], {2,number,#} street(s) size {3,number,#} bytes",c.getName(lang),c.getId(),streets.size(),size));
+      String cityDescription=(j == BinaryMapAddressReaderAdapter.POSTCODES_TYPE ? MessageFormat.format("\t\t''{0}'' {1,number,#} street(s) size {2,number,#} bytes",c.getName(verbose.lang),streets.size(),size) : MessageFormat.format("\t\t''{0}'' [{1,number,#}], {2,number,#} street(s) size {3,number,#} bytes",c.getName(verbose.lang),c.getId(),streets.size(),size));
       print(cityDescription);
       if (!verbose.vstreets) {
         println("");
@@ -43,7 +42,7 @@
         if (intersections != null && !intersections.isEmpty() && verbose.vintersections) {
           print("\t\t\t\tIntersects with:");
           for (          Street s : intersections) {
-            println("\t\t\t\t\t" + s.getName(lang));
+            println("\t\t\t\t\t" + s.getName(verbose.lang));
           }
         }
       }
