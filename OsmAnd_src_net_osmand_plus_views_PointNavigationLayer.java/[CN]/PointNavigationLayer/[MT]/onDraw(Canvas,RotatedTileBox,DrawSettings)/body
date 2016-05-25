@@ -6,55 +6,55 @@
   TargetPoint pointToStart=targetPoints.getPointToStart();
   if (pointToStart != null) {
     if (isLocationVisible(tb,pointToStart)) {
-      int marginX=startPoint.getWidth() / 6;
-      int marginY=startPoint.getHeight();
-      int locationX=tb.getPixXFromLonNoRot(pointToStart.getLongitude());
-      int locationY=tb.getPixYFromLatNoRot(pointToStart.getLatitude());
+      int marginX=mStartPoint.getWidth() / 6;
+      int marginY=mStartPoint.getHeight();
+      float locationX=getPointX(tb,pointToStart);
+      float locationY=getPointY(tb,pointToStart);
       canvas.rotate(-tb.getRotate(),locationX,locationY);
-      canvas.drawBitmap(startPoint,locationX - marginX,locationY - marginY,bitmapPaint);
+      canvas.drawBitmap(mStartPoint,locationX - marginX,locationY - marginY,mBitmapPaint);
     }
   }
   int index=0;
   for (  TargetPoint ip : targetPoints.getIntermediatePoints()) {
     index++;
     if (isLocationVisible(tb,ip)) {
-      int marginX=intermediatePoint.getWidth() / 6;
-      int marginY=intermediatePoint.getHeight();
-      int locationX=tb.getPixXFromLonNoRot(ip.getLongitude());
-      int locationY=tb.getPixYFromLatNoRot(ip.getLatitude());
+      int marginX=mIntermediatePoint.getWidth() / 6;
+      int marginY=mIntermediatePoint.getHeight();
+      float locationX=getPointX(tb,ip);
+      float locationY=getPointY(tb,ip);
       canvas.rotate(-tb.getRotate(),locationX,locationY);
-      canvas.drawBitmap(intermediatePoint,locationX - marginX,locationY - marginY,bitmapPaint);
-      marginX=intermediatePoint.getWidth() / 3;
-      canvas.drawText(index + "",locationX + marginX,locationY - 3 * marginY / 5,textPaint);
+      canvas.drawBitmap(mIntermediatePoint,locationX - marginX,locationY - marginY,mBitmapPaint);
+      marginX=mIntermediatePoint.getWidth() / 3;
+      canvas.drawText(index + "",locationX + marginX,locationY - 3 * marginY / 5,mTextPaint);
       canvas.rotate(tb.getRotate(),locationX,locationY);
     }
   }
   TargetPoint pointToNavigate=targetPoints.getPointToNavigate();
   if (isLocationVisible(tb,pointToNavigate)) {
-    int marginX=targetPoint.getWidth() / 6;
-    int marginY=targetPoint.getHeight();
-    int locationX=tb.getPixXFromLonNoRot(pointToNavigate.getLongitude());
-    int locationY=tb.getPixYFromLatNoRot(pointToNavigate.getLatitude());
+    int marginX=mTargetPoint.getWidth() / 6;
+    int marginY=mTargetPoint.getHeight();
+    float locationX=getPointX(tb,pointToNavigate);
+    float locationY=getPointY(tb,pointToNavigate);
     canvas.rotate(-tb.getRotate(),locationX,locationY);
-    canvas.drawBitmap(targetPoint,locationX - marginX,locationY - marginY,bitmapPaint);
+    canvas.drawBitmap(mTargetPoint,locationX - marginX,locationY - marginY,mBitmapPaint);
   }
   Iterator<TargetPoint> it=targetPoints.getIntermediatePoints().iterator();
   if (it.hasNext()) {
     pointToNavigate=it.next();
   }
   if (pointToNavigate != null && !isLocationVisible(tb,pointToNavigate)) {
-    boolean show=!view.getApplication().getRoutingHelper().isRouteCalculated();
-    if (view.getSettings().SHOW_DESTINATION_ARROW.isSet()) {
-      show=view.getSettings().SHOW_DESTINATION_ARROW.get();
+    boolean show=!mView.getApplication().getRoutingHelper().isRouteCalculated();
+    if (mView.getSettings().SHOW_DESTINATION_ARROW.isSet()) {
+      show=mView.getSettings().SHOW_DESTINATION_ARROW.get();
     }
     if (show) {
-      net.osmand.Location.distanceBetween(view.getLatitude(),view.getLongitude(),pointToNavigate.getLatitude(),pointToNavigate.getLongitude(),calculations);
-      float bearing=calculations[1] - 90;
+      net.osmand.Location.distanceBetween(mView.getLatitude(),mView.getLongitude(),pointToNavigate.getLatitude(),pointToNavigate.getLongitude(),mCalculations);
+      float bearing=mCalculations[1] - 90;
       float radiusBearing=DIST_TO_SHOW * tb.getDensity();
       final QuadPoint cp=tb.getCenterPixelPoint();
       canvas.rotate(bearing,cp.x,cp.y);
       canvas.translate(-24 * tb.getDensity() + radiusBearing,-22 * tb.getDensity());
-      canvas.drawBitmap(arrowToDestination,cp.x,cp.y,bitmapPaint);
+      canvas.drawBitmap(mArrowToDestination,cp.x,cp.y,mBitmapPaint);
     }
   }
 }

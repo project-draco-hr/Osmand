@@ -9,31 +9,23 @@
     List<LatLon> fullObjectsLatLon=new ArrayList<>();
     List<LatLon> smallObjectsLatLon=new ArrayList<>();
     for (    Recording o : objects) {
-      float x=tileBox.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
-      float y=tileBox.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
-      if (intersects(boundIntersections,x,y,iconSize,iconSize)) {
-        canvas.drawBitmap(pointSmall,x - pointSmall.getWidth() / 2,y - pointSmall.getHeight() / 2,paintIcon);
-        smallObjectsLatLon.add(new LatLon(o.getLatitude(),o.getLongitude()));
-      }
+      if (o != contextMenuLayer.getMoveableObject()) {
+        float x=tileBox.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
+        float y=tileBox.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
+        if (intersects(boundIntersections,x,y,iconSize,iconSize)) {
+          canvas.drawBitmap(pointSmall,x - pointSmall.getWidth() / 2,y - pointSmall.getHeight() / 2,paintIcon);
+          smallObjectsLatLon.add(new LatLon(o.getLatitude(),o.getLongitude()));
+        }
  else {
-        fullObjects.add(o);
-        fullObjectsLatLon.add(new LatLon(o.getLatitude(),o.getLongitude()));
+          fullObjects.add(o);
+          fullObjectsLatLon.add(new LatLon(o.getLatitude(),o.getLongitude()));
+        }
       }
     }
     for (    Recording o : fullObjects) {
       float x=tileBox.getPixXFromLatLon(o.getLatitude(),o.getLongitude());
       float y=tileBox.getPixYFromLatLon(o.getLatitude(),o.getLongitude());
-      Bitmap b;
-      if (o.isPhoto()) {
-        b=photo;
-      }
- else       if (o.isAudio()) {
-        b=audio;
-      }
- else {
-        b=video;
-      }
-      canvas.drawBitmap(b,x - b.getWidth() / 2,y - b.getHeight() / 2,paintIcon);
+      drawRecording(canvas,o,x,y);
     }
     this.fullObjectsLatLon=fullObjectsLatLon;
     this.smallObjectsLatLon=smallObjectsLatLon;

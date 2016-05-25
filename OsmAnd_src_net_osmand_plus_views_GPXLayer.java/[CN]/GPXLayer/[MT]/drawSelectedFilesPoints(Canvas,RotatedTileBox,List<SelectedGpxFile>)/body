@@ -1,6 +1,4 @@
 {
-  int defPointColor=view.getResources().getColor(R.color.gpx_color_point);
-  int visitedColor=view.getContext().getResources().getColor(R.color.color_ok);
   if (tileBox.getZoom() >= startZoom) {
     float iconSize=FavoriteImageDrawable.getOrCreate(view.getContext(),0,true).getIntrinsicWidth() * 3 / 2.5f;
     QuadTree<QuadRect> boundIntersections=initBoundIntersections(tileBox);
@@ -10,16 +8,15 @@
     for (    SelectedGpxFile g : selectedGPXFiles) {
       List<WptPt> pts=getListStarPoints(g);
       List<WptPt> fullObjects=new ArrayList<>();
-      int fcolor=g.getColor() == 0 ? defPointColor : g.getColor();
+      @ColorInt int fileColor=getFileColor(g);
       for (      WptPt o : pts) {
-        if (o.lat >= latLonBounds.bottom && o.lat <= latLonBounds.top && o.lon >= latLonBounds.left && o.lon <= latLonBounds.right) {
+        if (o.lat >= latLonBounds.bottom && o.lat <= latLonBounds.top && o.lon >= latLonBounds.left && o.lon <= latLonBounds.right && o != contextMenuLayer.getMoveableObject()) {
           cache.add(o);
           float x=tileBox.getPixXFromLatLon(o.lat,o.lon);
           float y=tileBox.getPixYFromLatLon(o.lat,o.lon);
           if (intersects(boundIntersections,x,y,iconSize,iconSize)) {
-            boolean visit=isPointVisited(o);
-            int col=visit ? visitedColor : o.getColor(fcolor);
-            paintIcon.setColorFilter(new PorterDuffColorFilter(col,PorterDuff.Mode.MULTIPLY));
+            @ColorInt int pointColor=getPointColor(o,fileColor);
+            paintIcon.setColorFilter(new PorterDuffColorFilter(pointColor,PorterDuff.Mode.MULTIPLY));
             canvas.drawBitmap(pointSmall,x - pointSmall.getWidth() / 2,y - pointSmall.getHeight() / 2,paintIcon);
             smallObjectsLatLon.add(new LatLon(o.lat,o.lon));
           }
@@ -28,14 +25,12 @@
             fullObjectsLatLon.add(new LatLon(o.lat,o.lon));
           }
         }
+        pointFileMap.put(o,g);
       }
       for (      WptPt o : fullObjects) {
         float x=tileBox.getPixXFromLatLon(o.lat,o.lon);
         float y=tileBox.getPixYFromLatLon(o.lat,o.lon);
-        boolean visit=isPointVisited(o);
-        int pointColor=visit ? visitedColor : o.getColor(fcolor);
-        FavoriteImageDrawable fid=FavoriteImageDrawable.getOrCreate(view.getContext(),pointColor,true);
-        fid.drawBitmapInCenter(canvas,x,y);
+        drawBigPoint(canvas,o,fileColor,x,y);
       }
     }
     this.fullObjectsLatLon=fullObjectsLatLon;

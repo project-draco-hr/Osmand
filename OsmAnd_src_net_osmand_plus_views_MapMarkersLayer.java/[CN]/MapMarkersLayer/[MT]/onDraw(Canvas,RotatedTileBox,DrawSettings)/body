@@ -1,6 +1,6 @@
 {
-  widgetsFactory.updateInfo(useFingerLocation ? fingerLocation : null,tb.getZoom());
-  if (tb.getZoom() < 3 || !map.getMyApplication().getSettings().USE_MAP_MARKERS.get()) {
+  widgetsFactory.updateInfo(useFingerLocation ? fingerLocation : null,tileBox.getZoom());
+  if (tileBox.getZoom() < 3 || !map.getMyApplication().getSettings().USE_MAP_MARKERS.get()) {
     return;
   }
   MapMarkersHelper markersHelper=map.getMyApplication().getMapMarkersHelper();
@@ -9,14 +9,14 @@
     boolean first=true;
     Location myLocation=map.getMapViewTrackingUtilities().getMyLocation();
     if (markersHelper.isStartFromMyLocation() && myLocation != null) {
-      int locationX=tb.getPixXFromLonNoRot(myLocation.getLongitude());
-      int locationY=tb.getPixYFromLatNoRot(myLocation.getLatitude());
+      int locationX=tileBox.getPixXFromLonNoRot(myLocation.getLongitude());
+      int locationY=tileBox.getPixYFromLatNoRot(myLocation.getLatitude());
       path.moveTo(locationX,locationY);
       first=false;
     }
     for (    LatLon point : route) {
-      int locationX=tb.getPixXFromLonNoRot(point.getLongitude());
-      int locationY=tb.getPixYFromLatNoRot(point.getLatitude());
+      int locationX=tileBox.getPixXFromLonNoRot(point.getLongitude());
+      int locationY=tileBox.getPixYFromLatNoRot(point.getLatitude());
       if (first) {
         path.moveTo(locationX,locationY);
         first=false;
@@ -28,37 +28,36 @@
     canvas.drawPath(path,paint);
   }
   List<MapMarker> activeMapMarkers=markersHelper.getActiveMapMarkers();
-  for (int i=0; i < activeMapMarkers.size(); i++) {
-    MapMarker marker=activeMapMarkers.get(i);
-    if (isLocationVisible(tb,marker) && !overlappedByWaypoint(marker)) {
+  for (  MapMarker marker : activeMapMarkers) {
+    if (isLocationVisible(tileBox,marker) && !overlappedByWaypoint(marker) && !isInMotion(marker)) {
       Bitmap bmp=getMapMarkerBitmap(marker.colorIndex);
       int marginX=bmp.getWidth() / 6;
       int marginY=bmp.getHeight();
-      int locationX=tb.getPixXFromLonNoRot(marker.getLongitude());
-      int locationY=tb.getPixYFromLatNoRot(marker.getLatitude());
-      canvas.rotate(-tb.getRotate(),locationX,locationY);
+      int locationX=tileBox.getPixXFromLonNoRot(marker.getLongitude());
+      int locationY=tileBox.getPixYFromLatNoRot(marker.getLatitude());
+      canvas.rotate(-tileBox.getRotate(),locationX,locationY);
       canvas.drawBitmap(bmp,locationX - marginX,locationY - marginY,bitmapPaint);
-      canvas.rotate(tb.getRotate(),locationX,locationY);
+      canvas.rotate(tileBox.getRotate(),locationX,locationY);
     }
   }
   boolean show=useFingerLocation || (map.getMyApplication().getSettings().MAP_MARKERS_MODE.get() == OsmandSettings.MapMarkersMode.WIDGETS && map.getMyApplication().getSettings().SHOW_DESTINATION_ARROW.get());
   if (show) {
     LatLon loc=fingerLocation;
     if (!useFingerLocation) {
-      loc=tb.getCenterLatLon();
+      loc=tileBox.getCenterLatLon();
     }
     if (loc != null) {
       List<MapMarker> sortedMapMarkers=markersHelper.getSortedMapMarkers();
       int i=0;
       for (      MapMarker marker : sortedMapMarkers) {
-        if (!isLocationVisible(tb,marker)) {
+        if (!isLocationVisible(tileBox,marker) && !isInMotion(marker)) {
           canvas.save();
           net.osmand.Location.distanceBetween(loc.getLatitude(),loc.getLongitude(),marker.getLatitude(),marker.getLongitude(),calculations);
           float bearing=calculations[1] - 90;
-          float radiusBearing=DIST_TO_SHOW * tb.getDensity();
-          final QuadPoint cp=tb.getCenterPixelPoint();
+          float radiusBearing=DIST_TO_SHOW * tileBox.getDensity();
+          final QuadPoint cp=tileBox.getCenterPixelPoint();
           canvas.rotate(bearing,cp.x,cp.y);
-          canvas.translate(-24 * tb.getDensity() + radiusBearing,-22 * tb.getDensity());
+          canvas.translate(-24 * tileBox.getDensity() + radiusBearing,-22 * tileBox.getDensity());
           canvas.drawBitmap(arrowToDestination,cp.x,cp.y,getMarkerDestPaint(marker.colorIndex));
           canvas.restore();
         }
@@ -68,5 +67,16 @@
         }
       }
     }
+  }
+  if (contextMenuLayer.getMoveableObject() instanceof MapMarker) {
+    MapMarker objectInMotion=(MapMarker)contextMenuLayer.getMoveableObject();
+    Bitmap bitmap=getMapMarkerBitmap(objectInMotion.colorIndex);
+    PointF pf=contextMenuLayer.getMoveableCenterPoint(tileBox);
+    int marginX=bitmap.getWidth() / 6;
+    int marginY=bitmap.getHeight();
+    float locationX=pf.x;
+    float locationY=pf.y;
+    canvas.rotate(-tileBox.getRotate(),locationX,locationY);
+    canvas.drawBitmap(bitmap,locationX - marginX,locationY - marginY,bitmapPaint);
   }
 }
