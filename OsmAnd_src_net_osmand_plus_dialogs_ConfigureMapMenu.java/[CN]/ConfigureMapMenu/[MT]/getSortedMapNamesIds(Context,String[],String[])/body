@@ -1,14 +1,20 @@
 {
-  String[] vls=getMapNamesValues(ctx,mapNamesIds);
   final Map<String,String> mp=new HashMap<>();
-  for (int i=0; i < mapNamesIds.length; i++) {
-    mp.put(mapNamesIds[i],vls[i]);
+  for (int i=0; i < ids.length; i++) {
+    mp.put(ids[i],values[i]);
   }
   ArrayList<String> lst=new ArrayList<>(mp.keySet());
+  final String systemLocale=ctx.getString(R.string.system_locale) + " (" + ctx.getString(R.string.system_locale_no_translate)+ ")";
+  final String englishLocale=ctx.getString(R.string.lang_en);
   Collections.sort(lst,new Comparator<String>(){
     @Override public int compare(    String lhs,    String rhs){
       int i1=Algorithms.isEmpty(lhs) ? 0 : (lhs.equals("en") ? 1 : 2);
       int i2=Algorithms.isEmpty(rhs) ? 0 : (rhs.equals("en") ? 1 : 2);
+      if (i1 != i2) {
+        return i1 < i2 ? -1 : 1;
+      }
+      i1=systemLocale.equals(lhs) ? 0 : (englishLocale.equals(lhs) ? 1 : 2);
+      i2=systemLocale.equals(rhs) ? 0 : (englishLocale.equals(rhs) ? 1 : 2);
       if (i1 != i2) {
         return i1 < i2 ? -1 : 1;
       }
