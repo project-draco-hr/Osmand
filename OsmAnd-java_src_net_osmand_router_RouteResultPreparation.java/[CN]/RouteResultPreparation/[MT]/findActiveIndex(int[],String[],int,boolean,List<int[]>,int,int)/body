@@ -1,0 +1,36 @@
+{
+  int activeStartIndex=-1;
+  boolean lookupSlightTurn=addRoads > 0;
+  Set<String> addedTurns=new TreeSet<String>();
+  int diffTurnRoads=roads;
+  for (  int[] li : lanesInfo) {
+    TIntHashSet set=new TIntHashSet();
+    if (li != null) {
+      for (int k=0; k < li.length; k++) {
+        TurnType.collectTurnTypes(li[k],set);
+      }
+    }
+    diffTurnRoads+=Math.max(set.size() - 1,0);
+  }
+  for (int i=0; i < rawLanes.length; i++) {
+    int ind=left ? i : (rawLanes.length - i - 1);
+    if (!lookupSlightTurn || TurnType.isSlightTurn(TurnType.getPrimaryTurn(rawLanes[ind])) || TurnType.isSlightTurn(TurnType.getSecondaryTurn(rawLanes[ind]))) {
+      String[] laneTurns=splitLaneOptions[ind].split(";");
+      int cnt=0;
+      for (      String lTurn : laneTurns) {
+        boolean added=addedTurns.add(lTurn);
+        if (added) {
+          cnt++;
+          diffTurnRoads--;
+        }
+      }
+      lanes-=cnt;
+      lookupSlightTurn=false;
+    }
+    if (lanes < 0 || diffTurnRoads < 0) {
+      activeStartIndex=ind;
+      break;
+    }
+  }
+  return activeStartIndex;
+}

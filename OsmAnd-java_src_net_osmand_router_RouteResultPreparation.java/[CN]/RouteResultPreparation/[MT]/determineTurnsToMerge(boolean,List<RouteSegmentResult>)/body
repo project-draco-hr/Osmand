@@ -21,36 +21,7 @@
       }
       if (!changed) {
         TurnType tt=currentSegment.getTurnType();
-        boolean goForward=false;
-        if (tt.getValue() == TurnType.C && tt.getLanes() != null) {
-          for (int it=0; it < tt.getLanes().length; it++) {
-            int turn=tt.getLanes()[it];
-            if (TurnType.getPrimaryTurn(turn) == TurnType.C || TurnType.getSecondaryTurn(turn) == TurnType.C || TurnType.getTertiaryTurn(turn) == TurnType.C) {
-              goForward=true;
-              break;
-            }
-          }
-        }
-        if (goForward) {
-          for (int it=0; it < tt.getLanes().length; it++) {
-            int turn=tt.getLanes()[it];
-            if (TurnType.getPrimaryTurn(turn) != TurnType.C) {
-              if (TurnType.getSecondaryTurn(turn) == TurnType.C) {
-                int st=TurnType.getSecondaryTurn(turn);
-                TurnType.setSecondaryTurn(tt.getLanes(),it,TurnType.getPrimaryTurn(turn));
-                TurnType.setPrimaryTurn(tt.getLanes(),it,st);
-              }
- else               if (TurnType.getTertiaryTurn(turn) == TurnType.C) {
-                int st=TurnType.getTertiaryTurn(turn);
-                TurnType.setTertiaryTurn(tt.getLanes(),it,TurnType.getPrimaryTurn(turn));
-                TurnType.setPrimaryTurn(tt.getLanes(),it,st);
-              }
- else {
-                tt.getLanes()[it]=turn & (~1);
-              }
-            }
-          }
-        }
+        inferActiveTurnLanesFromTurn(tt,TurnType.C);
       }
       nextSegment=currentSegment;
       dist=0;

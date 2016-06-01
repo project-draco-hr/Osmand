@@ -3,8 +3,8 @@
   int[] rawLanes=calculateRawTurnLanes(turnLanes,TurnType.C);
   if (rs.keepLeft || rs.keepRight) {
     String[] splitLaneOptions=turnLanes.split("\\|",-1);
-    int activeBeginIndex=findActiveIndex(rawLanes,splitLaneOptions,rs.leftLanes,true,rs.roadsOnLeft,rs.addRoadsOnLeft);
-    int activeEndIndex=findActiveIndex(rawLanes,splitLaneOptions,rs.rightLanes,false,rs.roadsOnRight,rs.addRoadsOnRight);
+    int activeBeginIndex=findActiveIndex(rawLanes,splitLaneOptions,rs.leftLanes,true,rs.leftLanesInfo,rs.roadsOnLeft,rs.addRoadsOnLeft);
+    int activeEndIndex=findActiveIndex(rawLanes,splitLaneOptions,rs.rightLanes,false,rs.rightLanesInfo,rs.roadsOnRight,rs.addRoadsOnRight);
     if (activeBeginIndex == -1 || activeEndIndex == -1 || activeBeginIndex > activeEndIndex) {
       return createSimpleKeepLeftRightTurn(leftSide,prevSegm,currentSegm,rs);
     }
@@ -24,11 +24,11 @@
       int sturn=TurnType.getSecondaryTurn(rawLanes[k]);
       boolean active=false;
       if (turn == TurnType.C) {
-        active=true;
         if ((TurnType.isRightTurn(sturn) && rs.roadsOnRight == 0) || (TurnType.isLeftTurn(sturn) && rs.roadsOnLeft == 0)) {
           TurnType.setPrimaryTurn(rawLanes,k,sturn);
           TurnType.setSecondaryTurn(rawLanes,k,turn);
         }
+        active=true;
       }
  else       if (TurnType.isRightTurn(turn) && rs.roadsOnRight == 0) {
         active=true;

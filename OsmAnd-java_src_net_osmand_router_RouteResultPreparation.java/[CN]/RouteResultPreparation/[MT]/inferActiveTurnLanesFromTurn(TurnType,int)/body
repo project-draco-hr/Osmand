@@ -1,0 +1,32 @@
+{
+  boolean found=false;
+  if (tt.getValue() == type && tt.getLanes() != null) {
+    for (int it=0; it < tt.getLanes().length; it++) {
+      int turn=tt.getLanes()[it];
+      if (TurnType.getPrimaryTurn(turn) == type || TurnType.getSecondaryTurn(turn) == type || TurnType.getTertiaryTurn(turn) == type) {
+        found=true;
+        break;
+      }
+    }
+  }
+  if (found) {
+    for (int it=0; it < tt.getLanes().length; it++) {
+      int turn=tt.getLanes()[it];
+      if (TurnType.getPrimaryTurn(turn) != type) {
+        if (TurnType.getSecondaryTurn(turn) == type) {
+          int st=TurnType.getSecondaryTurn(turn);
+          TurnType.setSecondaryTurn(tt.getLanes(),it,TurnType.getPrimaryTurn(turn));
+          TurnType.setPrimaryTurn(tt.getLanes(),it,st);
+        }
+ else         if (TurnType.getTertiaryTurn(turn) == type) {
+          int st=TurnType.getTertiaryTurn(turn);
+          TurnType.setTertiaryTurn(tt.getLanes(),it,TurnType.getPrimaryTurn(turn));
+          TurnType.setPrimaryTurn(tt.getLanes(),it,st);
+        }
+ else {
+          tt.getLanes()[it]=turn & (~1);
+        }
+      }
+    }
+  }
+}
