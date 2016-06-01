@@ -6,6 +6,7 @@
     double mpi=Math.abs(MapUtils.degreesDiff(prevSegm.getBearingEnd(),attached.getBearingBegin()));
     int rsSpeakPriority=highwaySpeakPriority(attached.getObject().getHighway());
     int lanes=countLanesMinOne(attached);
+    int[] turnLanes=parseTurnLanes(attached.getObject(),attached.getBearingBegin());
     boolean smallStraightVariation=mpi < TURN_DEGREE_MIN;
     boolean smallTargetVariation=Math.abs(ex) < TURN_DEGREE_MIN;
     boolean attachedOnTheRight=ex >= 0;
@@ -20,10 +21,16 @@
         if (attachedOnTheRight) {
           rs.keepLeft=true;
           rs.rightLanes+=lanes;
+          if (turnLanes != null) {
+            rs.rightLanesInfo.add(turnLanes);
+          }
         }
  else {
           rs.keepRight=true;
           rs.leftLanes+=lanes;
+          if (turnLanes != null) {
+            rs.leftLanesInfo.add(turnLanes);
+          }
         }
         rs.speak=rs.speak || rsSpeakPriority <= speakPriority;
       }
