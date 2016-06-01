@@ -2,10 +2,10 @@
   MergeTurnLaneTurn active=new MergeTurnLaneTurn(currentSegment);
   MergeTurnLaneTurn target=new MergeTurnLaneTurn(nextSegment);
   if (active.activeLen < 2) {
-    return;
+    return false;
   }
   if (target.activeStartIndex == -1) {
-    return;
+    return false;
   }
   boolean changed=false;
   if (target.isActiveTurnMostLeft()) {
@@ -36,7 +36,7 @@
     }
   }
   if (!changed) {
-    return;
+    return false;
   }
   for (int i=0; i < active.disabledLanes.length; i++) {
     if (i >= active.activeStartIndex && i <= active.activeEndIndex && active.originalLanes[i] % 2 == 1) {
@@ -45,4 +45,5 @@
   }
   TurnType currentTurn=currentSegment.getTurnType();
   currentTurn.setLanes(active.disabledLanes);
+  return true;
 }
