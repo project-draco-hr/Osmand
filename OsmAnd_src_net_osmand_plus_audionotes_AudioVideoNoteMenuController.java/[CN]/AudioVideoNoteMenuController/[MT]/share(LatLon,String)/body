@@ -1,21 +1,26 @@
 {
-  String path=recording.getFile().getAbsolutePath();
-  MediaScannerConnection.scanFile(getMapActivity(),new String[]{path},null,new MediaScannerConnection.OnScanCompletedListener(){
-    public void onScanCompleted(    String path,    Uri uri){
-      Intent shareIntent=new Intent(android.content.Intent.ACTION_SEND);
-      if (recording.isPhoto()) {
-        shareIntent.setType("image/*");
+  if (mIsFileAvailable) {
+    String path=mRecording.getFile().getAbsolutePath();
+    MediaScannerConnection.scanFile(getMapActivity(),new String[]{path},null,new MediaScannerConnection.OnScanCompletedListener(){
+      public void onScanCompleted(      String path,      Uri uri){
+        Intent shareIntent=new Intent(android.content.Intent.ACTION_SEND);
+        if (mRecording.isPhoto()) {
+          shareIntent.setType("image/*");
+        }
+ else         if (mRecording.isAudio()) {
+          shareIntent.setType("audio/*");
+        }
+ else         if (mRecording.isVideo()) {
+          shareIntent.setType("video/*");
+        }
+        shareIntent.putExtra(Intent.EXTRA_STREAM,uri);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        getMapActivity().startActivity(Intent.createChooser(shareIntent,getMapActivity().getString(R.string.share_note)));
       }
- else       if (recording.isAudio()) {
-        shareIntent.setType("audio/*");
-      }
- else       if (recording.isVideo()) {
-        shareIntent.setType("video/*");
-      }
-      shareIntent.putExtra(Intent.EXTRA_STREAM,uri);
-      shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-      getMapActivity().startActivity(Intent.createChooser(shareIntent,getMapActivity().getString(R.string.share_note)));
     }
-  }
 );
+  }
+ else {
+    super.share(latLon,title);
+  }
 }
