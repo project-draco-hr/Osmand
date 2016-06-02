@@ -1,39 +1,42 @@
 {
   super(new AudioVideoNoteMenuBuilder(app,recording),pointDescription,mapActivity);
-  this.recording=recording;
-  plugin=OsmandPlugin.getPlugin(AudioVideoNotesPlugin.class);
-  leftTitleButtonController=new TitleButtonController(){
-    @Override public void buttonPressed(){
-      if (plugin != null) {
-        if (plugin.isPlaying(getRecording())) {
-          plugin.stopPlaying();
-        }
+  this.mRecording=recording;
+  mPlugin=OsmandPlugin.getPlugin(AudioVideoNotesPlugin.class);
+  mIsFileAvailable=mRecording.getFile().exists();
+  if (mIsFileAvailable) {
+    leftTitleButtonController=new TitleButtonController(){
+      @Override public void buttonPressed(){
+        if (mPlugin != null) {
+          if (mPlugin.isPlaying(getRecording())) {
+            mPlugin.stopPlaying();
+          }
  else {
-          plugin.playRecording(getMapActivity(),getRecording());
-        }
-      }
-    }
-  }
-;
-  rightTitleButtonController=new TitleButtonController(){
-    @Override public void buttonPressed(){
-      AlertDialog.Builder bld=new AlertDialog.Builder(getMapActivity());
-      bld.setMessage(R.string.recording_delete_confirm);
-      bld.setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          if (plugin != null) {
-            plugin.deleteRecording(getRecording(),true);
-            getMapActivity().getContextMenu().close();
+            mPlugin.playRecording(getMapActivity(),getRecording());
           }
         }
       }
-);
-      bld.setNegativeButton(R.string.shared_string_no,null);
-      bld.show();
     }
-  }
 ;
-  rightTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_delete);
-  rightTitleButtonController.leftIconId=R.drawable.ic_action_delete_dark;
+    rightTitleButtonController=new TitleButtonController(){
+      @Override public void buttonPressed(){
+        AlertDialog.Builder bld=new AlertDialog.Builder(getMapActivity());
+        bld.setMessage(R.string.recording_delete_confirm);
+        bld.setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            if (mPlugin != null) {
+              mPlugin.deleteRecording(getRecording(),true);
+              getMapActivity().getContextMenu().close();
+            }
+          }
+        }
+);
+        bld.setNegativeButton(R.string.shared_string_no,null);
+        bld.show();
+      }
+    }
+;
+    rightTitleButtonController.caption=getMapActivity().getString(R.string.shared_string_delete);
+    rightTitleButtonController.leftIconId=R.drawable.ic_action_delete_dark;
+  }
   updateData();
 }
