@@ -16,7 +16,7 @@
         resultMatcher.publish(c);
       }
       try {
-        citiesToFill.addAll(fillWithVillages(name,lang,resultMatcher));
+        citiesToFill.addAll(fillWithCities(name,resultMatcher,BinaryMapAddressReaderAdapter.VILLAGES_TYPE));
       }
  catch (      IOException e) {
         log.error("Disk operation failed",e);
@@ -29,7 +29,7 @@
   try {
     if (searchVillages) {
       String uName=name.toUpperCase();
-      List<City> foundCities=file.getCities(BinaryMapIndexReader.buildAddressRequest(resultMatcher),new CollatorStringMatcher(uName,StringMatcherMode.CHECK_CONTAINS),lang,BinaryMapAddressReaderAdapter.POSTCODES_TYPE);
+      List<City> foundCities=fillWithCities(uName,resultMatcher,BinaryMapAddressReaderAdapter.POSTCODES_TYPE);
       for (      City code : foundCities) {
         citiesToFill.add(code);
         if (resultMatcher.isCancelled()) {
@@ -51,7 +51,7 @@
     }
     int initialSize=citiesToFill.size();
     if (searchVillages) {
-      citiesToFill.addAll(fillWithVillages(name,lang,resultMatcher));
+      citiesToFill.addAll(fillWithCities(name,resultMatcher,BinaryMapAddressReaderAdapter.VILLAGES_TYPE));
     }
     log.debug("Loaded citites " + (citiesToFill.size() - initialSize));
   }
