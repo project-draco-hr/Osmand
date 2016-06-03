@@ -5,7 +5,9 @@
   app.getLocationProvider().getRouteSegment(ll,new ResultMatcher<RouteDataObject>(){
     @Override public boolean publish(    RouteDataObject object){
       if (object == null) {
-        Toast.makeText(activity,R.string.error_avoid_specific_road,Toast.LENGTH_LONG).show();
+        if (activity != null) {
+          Toast.makeText(activity,R.string.error_avoid_specific_road,Toast.LENGTH_LONG).show();
+        }
         if (callback != null) {
           callback.onAddImpassableRoad(false,null);
         }
@@ -19,11 +21,11 @@
       return true;
     }
     @Override public boolean isCancelled(){
-      if (callback != null) {
-        return callback.isCancelled();
-      }
-      return false;
+      return callback != null && callback.isCancelled();
     }
   }
 );
+  if (!skipWritingSettings) {
+    app.getSettings().addImpassableRoad(loc.getLatitude(),loc.getLongitude());
+  }
 }
