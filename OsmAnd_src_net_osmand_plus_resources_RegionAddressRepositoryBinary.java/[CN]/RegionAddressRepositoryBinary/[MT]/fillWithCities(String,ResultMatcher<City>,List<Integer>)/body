@@ -4,7 +4,8 @@
     List<City> cache=new ArrayList<City>();
     @Override public boolean publish(    MapObject o){
       City c=(City)o;
-      if (type == BinaryMapAddressReaderAdapter.VILLAGES_TYPE) {
+      City.CityType type=c.getType();
+      if (type != null && type.ordinal() >= City.CityType.VILLAGE.ordinal()) {
         if (c.getLocation() != null) {
           City ct=getClosestCity(c.getLocation(),cache);
           c.setClosestCity(ct);
@@ -17,7 +18,7 @@
     }
   }
 ;
-  List<MapObject> foundCities=searchMapObjectsByName(name,matcher,new int[]{type});
+  List<MapObject> foundCities=searchMapObjectsByName(name,matcher,typeFilter);
   for (  MapObject o : foundCities) {
     result.add((City)o);
     if (resultMatcher.isCancelled()) {

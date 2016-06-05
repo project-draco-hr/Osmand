@@ -52,13 +52,13 @@ return;
 }
 }
 if (typeFilter == null) {
-typeFilter=new int[]{CITY_TOWN_TYPE,POSTCODES_TYPE,VILLAGES_TYPE,STREET_TYPE};
+typeFilter=TYPES;
 }
-for (int i=0; i < typeFilter.length && !req.isCancelled(); i++) {
-TIntArrayList list=refs[typeFilter[i]];
-if (typeFilter[i] == STREET_TYPE) {
+for (int i=0; i < typeFilter.size() && !req.isCancelled(); i++) {
+TIntArrayList list=refs[typeFilter.get(i)];
+if (typeFilter.get(i) == STREET_TYPE) {
 for (int j=0; j < list.size() && !req.isCancelled(); j+=2) {
-City obj=null;
+City obj;
 {
 codedIS.seek(list.get(j + 1));
 int len=codedIS.readRawVarint32();
@@ -92,13 +92,16 @@ codedIS.popLimit(old);
 }
  else {
 list.sort();
+TIntSet published=new TIntHashSet();
 for (int j=0; j < list.size() && !req.isCancelled(); j++) {
-codedIS.seek(list.get(j));
+int offset=list.get(j);
+codedIS.seek(offset);
 int len=codedIS.readRawVarint32();
 int old=codedIS.pushLimit(len);
 City obj=readCityHeader(matcher,list.get(j),reg.attributeTagsTable);
-if (obj != null) {
+if (obj != null && !published.contains(offset)) {
 req.publish(obj);
+published.add(offset);
 }
 codedIS.popLimit(old);
 }
