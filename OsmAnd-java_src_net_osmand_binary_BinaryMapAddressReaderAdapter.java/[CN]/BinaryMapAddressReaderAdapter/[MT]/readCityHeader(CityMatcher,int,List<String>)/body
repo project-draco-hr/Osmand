@@ -8,24 +8,10 @@
     int tag=WireFormat.getTagFieldNumber(t);
 switch (tag) {
 case 0:
-      if (matcher != null) {
-        boolean matches=matcher.matches(c.getName());
-        if (!matches) {
-          for (          String n : c.getAllNames()) {
-            matches=matcher.matches(n);
-            if (matches) {
-              break;
-            }
-          }
-        }
-        if (!matches) {
-          return null;
-        }
-      }
-    return c;
+      return (matcher == null || matcher.matches(c)) ? c : null;
 case OsmandOdb.CityIndex.CITY_TYPE_FIELD_NUMBER:
-  int type=codedIS.readUInt32();
-c=new City(CityType.values()[type]);
+    int type=codedIS.readUInt32();
+  c=new City(CityType.values()[type]);
 break;
 case OsmandOdb.CityIndex.ID_FIELD_NUMBER:
 c.setId(codedIS.readUInt64());

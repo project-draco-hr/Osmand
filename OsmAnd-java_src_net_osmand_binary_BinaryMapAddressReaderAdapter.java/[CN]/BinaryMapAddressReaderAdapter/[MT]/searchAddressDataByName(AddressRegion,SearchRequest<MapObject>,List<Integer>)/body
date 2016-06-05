@@ -1,6 +1,15 @@
 {
   TIntArrayList loffsets=new TIntArrayList();
-  CollatorStringMatcher matcher=new CollatorStringMatcher(req.nameQuery,StringMatcherMode.CHECK_STARTS_FROM_SPACE);
+  CollatorStringMatcher stringMatcher=new CollatorStringMatcher(req.nameQuery,StringMatcherMode.CHECK_STARTS_FROM_SPACE);
+  String postcode=Postcode.normalize(req.nameQuery,map.getCountryName());
+  final CityMatcher postcodeMatcher=new DefaultCityMatcher(new CollatorStringMatcher(postcode,StringMatcherMode.CHECK_STARTS_FROM_SPACE));
+  final CityMatcher cityMatcher=new DefaultCityMatcher(stringMatcher);
+  final CityMatcher cityPostcodeMatcher=new CityMatcher(){
+    @Override public boolean matches(    City city){
+      return city.isPostcode() ? postcodeMatcher.matches(city) : cityMatcher.matches(city);
+    }
+  }
+;
   long time=System.currentTimeMillis();
   int indexOffset=0;
   while (true) {
@@ -16,7 +25,7 @@ case OsmAndAddressNameIndexData.TABLE_FIELD_NUMBER:
     int length=readInt();
   indexOffset=codedIS.getTotalBytesRead();
 int oldLimit=codedIS.pushLimit(length);
-map.readIndexedStringTable(matcher.getCollator(),req.nameQuery,"",loffsets,0);
+map.readIndexedStringTable(stringMatcher.getCollator(),req.nameQuery,"",loffsets,0);
 codedIS.popLimit(oldLimit);
 break;
 case OsmAndAddressNameIndexData.ATOM_FIELD_NUMBER:
@@ -74,10 +83,10 @@ LatLon l=obj.getLocation();
 Street s=new Street(obj);
 s.setFileOffset(list.get(j));
 readStreet(s,null,false,MapUtils.get31TileNumberX(l.getLongitude()) >> 7,MapUtils.get31TileNumberY(l.getLatitude()) >> 7,obj.isPostcode() ? obj.getName() : null,reg.attributeTagsTable);
-boolean matches=matcher.matches(s.getName());
+boolean matches=stringMatcher.matches(s.getName());
 if (!matches) {
 for (String n : s.getAllNames()) {
-matches=matcher.matches(n);
+matches=stringMatcher.matches(n);
 if (matches) {
 break;
 }
@@ -98,7 +107,7 @@ int offset=list.get(j);
 codedIS.seek(offset);
 int len=codedIS.readRawVarint32();
 int old=codedIS.pushLimit(len);
-City obj=readCityHeader(matcher,list.get(j),reg.attributeTagsTable);
+City obj=readCityHeader(cityPostcodeMatcher,list.get(j),reg.attributeTagsTable);
 if (obj != null && !published.contains(offset)) {
 req.publish(obj);
 published.add(offset);
