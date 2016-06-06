@@ -1,59 +1,7 @@
 {
-  List<City> citiesToFill=new ArrayList<City>();
-  if (cities.isEmpty()) {
-    preloadCities(resultMatcher);
-    citiesToFill.addAll(cities.values());
-    if (!citiesToFill.isEmpty()) {
-      return citiesToFill;
-    }
-  }
-  String lang=getLang();
-  preloadCities(null);
-  if (name.length() == 0) {
-    citiesToFill.addAll(cities.values());
-    if (searchVillages) {
-      for (      City c : citiesToFill) {
-        resultMatcher.publish(c);
-      }
-      try {
-        citiesToFill.addAll(fillWithCities(name,resultMatcher,BinaryMapAddressReaderAdapter.VILLAGES_TYPE));
-      }
- catch (      IOException e) {
-        log.error("Disk operation failed",e);
-      }
-    }
-    if (!citiesToFill.isEmpty()) {
-      return citiesToFill;
-    }
-  }
+  List<City> citiesToFill=new ArrayList<>(cities.values());
   try {
-    if (searchVillages) {
-      String uName=name.toUpperCase();
-      List<City> foundCities=fillWithCities(uName,resultMatcher,BinaryMapAddressReaderAdapter.POSTCODES_TYPE);
-      for (      City code : foundCities) {
-        citiesToFill.add(code);
-        if (resultMatcher.isCancelled()) {
-          return citiesToFill;
-        }
-      }
-    }
-    name=name.toLowerCase();
-    for (    City c : cities.values()) {
-      String cName=c.getName(lang);
-      if (CollatorStringMatcher.cmatches(collator,cName,name,StringMatcherMode.CHECK_STARTS_FROM_SPACE)) {
-        if (resultMatcher.publish(c)) {
-          citiesToFill.add(c);
-        }
-      }
-      if (resultMatcher.isCancelled()) {
-        return citiesToFill;
-      }
-    }
-    int initialSize=citiesToFill.size();
-    if (searchVillages) {
-      citiesToFill.addAll(fillWithCities(name,resultMatcher,BinaryMapAddressReaderAdapter.VILLAGES_TYPE));
-    }
-    log.debug("Loaded citites " + (citiesToFill.size() - initialSize));
+    citiesToFill.addAll(fillWithCities(name,resultMatcher,getCityTypeFilter(name,searchVillages)));
   }
  catch (  IOException e) {
     log.error("Disk operation failed",e);
