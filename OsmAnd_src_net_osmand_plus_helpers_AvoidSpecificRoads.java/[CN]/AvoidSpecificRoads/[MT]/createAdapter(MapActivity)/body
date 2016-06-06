@@ -1,12 +1,12 @@
 {
-  final ArrayList<RouteDataObject> points=new ArrayList<RouteDataObject>();
+  final ArrayList<RouteDataObject> points=new ArrayList<>();
   points.addAll(getMissingRoads());
   final LatLon mapLocation=ctx.getMapLocation();
   return new ArrayAdapter<RouteDataObject>(ctx,R.layout.waypoint_reached,R.id.title,points){
     @Override public View getView(    final int position,    View convertView,    ViewGroup parent){
       View v=convertView;
       if (v == null || v.findViewById(R.id.info_close) == null) {
-        v=ctx.getLayoutInflater().inflate(R.layout.waypoint_reached,null);
+        v=ctx.getLayoutInflater().inflate(R.layout.waypoint_reached,parent,false);
       }
       final RouteDataObject obj=getItem(position);
       v.findViewById(R.id.all_points).setVisibility(View.GONE);
@@ -19,9 +19,8 @@
       remove.setImageDrawable(app.getIconsCache().getThemedIcon(R.drawable.ic_action_remove_dark));
       remove.setOnClickListener(new View.OnClickListener(){
         @Override public void onClick(        View v){
-          app.getSettings().deleteImpassableRoad(getLocation(obj));
           remove(obj);
-          getBuilder().removeImpassableRoad(obj);
+          removeImpassableRoad(obj);
           notifyDataSetChanged();
           RoutingHelper rh=app.getRoutingHelper();
           if (rh.isRouteCalculated() || rh.isRouteBeingCalculated()) {
