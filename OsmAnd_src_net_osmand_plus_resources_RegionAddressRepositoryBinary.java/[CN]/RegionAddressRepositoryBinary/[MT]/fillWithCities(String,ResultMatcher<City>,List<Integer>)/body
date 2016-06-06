@@ -1,0 +1,29 @@
+{
+  List<City> result=new ArrayList<City>();
+  ResultMatcher<MapObject> matcher=new ResultMatcher<MapObject>(){
+    List<City> cache=new ArrayList<City>();
+    @Override public boolean publish(    MapObject o){
+      City c=(City)o;
+      City.CityType type=c.getType();
+      if (type != null && type.ordinal() >= City.CityType.VILLAGE.ordinal()) {
+        if (c.getLocation() != null) {
+          City ct=getClosestCity(c.getLocation(),cache);
+          c.setClosestCity(ct);
+        }
+      }
+      return resultMatcher.publish(c);
+    }
+    @Override public boolean isCancelled(){
+      return resultMatcher.isCancelled();
+    }
+  }
+;
+  List<MapObject> foundCities=searchMapObjectsByName(name,matcher,typeFilter);
+  for (  MapObject o : foundCities) {
+    result.add((City)o);
+    if (resultMatcher.isCancelled()) {
+      return result;
+    }
+  }
+  return result;
+}

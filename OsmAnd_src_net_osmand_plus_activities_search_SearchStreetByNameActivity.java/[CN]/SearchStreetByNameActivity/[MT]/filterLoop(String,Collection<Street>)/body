@@ -1,4 +1,5 @@
 {
+  final boolean[] result={false};
   if (searchWithCity == -1) {
     filter(query,list);
   }
@@ -8,6 +9,7 @@
         break;
       }
       if (filterObject(obj,query)) {
+        result[0]=true;
         Message msg=uiHandler.obtainMessage(MESSAGE_ADD_ENTITY,obj);
         msg.sendToTarget();
       }
@@ -19,6 +21,7 @@
       @Override public boolean publish(      MapObject object){
         if (object instanceof Street) {
           if (city == null || MapUtils.getDistance(city.getLocation(),object.getLocation()) < 100 * 1000) {
+            result[0]=true;
             Message msg=uiHandler.obtainMessage(MESSAGE_ADD_ENTITY,object);
             msg.sendToTarget();
             return true;
@@ -38,4 +41,5 @@
     }
 );
   }
+  return result[0];
 }
