@@ -18,15 +18,12 @@
     animatedDraggingThread.stopAnimating();
   }
   for (int i=layers.size() - 1; i >= 0; i--) {
-    if (layers.get(i).onTouchEvent(event,getCurrentRotatedTileBox())) {
-      return true;
-    }
+    layers.get(i).onTouchEvent(event,getCurrentRotatedTileBox());
   }
-  if (!multiTouchSupport.onTouchEvent(event)) {
-    doubleTapScaleDetector.onTouchEvent(event);
-    if (!doubleTapScaleDetector.isInZoomMode()) {
-      gestureDetector.onTouchEvent(event);
-    }
+  final boolean isMultiTouch=multiTouchSupport.onTouchEvent(event);
+  doubleTapScaleDetector.onTouchEvent(event);
+  if (!isMultiTouch && !doubleTapScaleDetector.isInZoomMode()) {
+    gestureDetector.onTouchEvent(event);
   }
   return true;
 }
