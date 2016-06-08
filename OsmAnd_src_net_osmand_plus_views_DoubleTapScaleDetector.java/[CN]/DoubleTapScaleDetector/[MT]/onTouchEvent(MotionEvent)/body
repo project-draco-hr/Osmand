@@ -4,14 +4,18 @@
   }
   long currentTime=System.currentTimeMillis();
   if (event.getAction() == MotionEvent.ACTION_UP) {
-    secondDown=null;
     if (isDoubleTapping) {
+      secondDown=null;
       isDoubleTapping=false;
       listener.onZoomEnded(scale);
       return true;
     }
  else {
+      if (secondDown != null && calculateSqaredDistance(secondDown,event) < mDoubleTapSlopSquare) {
+        listener.onDoubleTap(event);
+      }
       firstUp=MotionEvent.obtain(event);
+      secondDown=null;
     }
   }
  else {
