@@ -1,0 +1,28 @@
+{
+  System.out.println("=== Start search");
+  resCount=0;
+  final List<SearchItem> searchItems=new ArrayList<>();
+  AmenitiesByNameSearch byNameSearch=new AmenitiesByNameSearch(obfsCollection);
+  AmenitiesByNameSearch.Criteria criteria=new AmenitiesByNameSearch.Criteria();
+  criteria.setName(keyword);
+  if (obfAreaFilter != null) {
+    criteria.setObfInfoAreaFilter(new NullableAreaI(new AreaI(obfAreaFilter)));
+  }
+  ISearch.INewResultEntryCallback newResultEntryCallback=new ISearch.INewResultEntryCallback(){
+    @Override public void method(    ISearch.Criteria criteria,    ISearch.IResultEntry resultEntry){
+      Amenity amenity=new ResultEntry(resultEntry).getAmenity();
+      searchItems.add(new AmenitySearchItem(amenity));
+      System.out.println("Poi found === " + amenity.getNativeName());
+      resCount++;
+    }
+  }
+;
+  byNameSearch.performSearch(criteria,newResultEntryCallback.getBinding(),new IQueryController(){
+    @Override public boolean isAborted(){
+      return resCount >= maxSearchResults || cancelled;
+    }
+  }
+);
+  System.out.println("=== Finish search");
+  return searchItems;
+}
