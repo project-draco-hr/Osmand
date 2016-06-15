@@ -1,0 +1,36 @@
+{
+  searchAPI.setObfAreaFilter(bounds31);
+  searchAPI.startSearch(keyword,MAX_SEARCH_RESULTS,new SearchAPICallback(){
+    @Override public void onSearchFinished(    List<SearchItem> searchItems,    boolean cancelled){
+      if (searchItems != null && !cancelled) {
+        LatLon latLon=Utilities.convert31ToLatLon(target31);
+        List<SearchRow> rows=new ArrayList<>();
+        for (        SearchItem item : searchItems) {
+          SearchRow row=new SearchRow(item);
+          rows.add(row);
+        }
+        adapter.clear();
+        adapter.addAll(rows);
+        adapter.updateDistance(latLon.getLatitude(),latLon.getLongitude());
+        adapter.sort(new Comparator<SearchRow>(){
+          @Override public int compare(          SearchRow lhs,          SearchRow rhs){
+            int res=Double.compare(lhs.getDistance(),rhs.getDistance());
+            if (res == 0) {
+              return lhs.getSearchItem().getLocalizedName().compareToIgnoreCase(rhs.getSearchItem().getLocalizedName());
+            }
+ else {
+              return res;
+            }
+          }
+        }
+);
+        adapter.notifyDataSetChanged();
+        if (adapter.getCount() > 0) {
+          searchListView.setSelection(0);
+        }
+        showSearchList();
+      }
+    }
+  }
+);
+}

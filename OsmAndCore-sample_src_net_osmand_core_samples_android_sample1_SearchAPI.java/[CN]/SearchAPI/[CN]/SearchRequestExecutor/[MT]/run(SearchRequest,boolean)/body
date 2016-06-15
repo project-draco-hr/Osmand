@@ -1,0 +1,19 @@
+{
+  if (ongoingSearchRequest != null) {
+    nextSearchRequest=searchRequest;
+    if (cancelCurrentRequest) {
+      ongoingSearchRequest.cancel();
+    }
+  }
+ else {
+    ongoingSearchRequest=searchRequest;
+    nextSearchRequest=null;
+    searchRequest.setOnFinishedCallback(new Runnable(){
+      @Override public void run(){
+        operationFinished();
+      }
+    }
+);
+    searchRequest.run();
+  }
+}
