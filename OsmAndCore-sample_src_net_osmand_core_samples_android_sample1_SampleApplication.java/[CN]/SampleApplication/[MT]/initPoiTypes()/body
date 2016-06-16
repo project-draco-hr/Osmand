@@ -1,0 +1,23 @@
+{
+  poiTypes=MapPoiTypes.getDefaultNoInit();
+  poiTypes.init(new File(Environment.getExternalStorageDirectory(),"poi_types.xml").getAbsolutePath());
+  poiTypes.setPoiTranslator(new MapPoiTypes.PoiTranslator(){
+    @Override public String getTranslation(    AbstractPoiType type){
+      if (type.getBaseLangType() != null) {
+        return getTranslation(type.getBaseLangType()) + " (" + getLangTranslation(type.getLang()).toLowerCase()+ ")";
+      }
+      try {
+        Field f=R.string.class.getField("poi_" + type.getIconKeyName());
+        if (f != null) {
+          Integer in=(Integer)f.get(null);
+          return getString(in);
+        }
+      }
+ catch (      Exception e) {
+        System.err.println("No translation for " + type.getIconKeyName() + " "+ e.getMessage());
+      }
+      return null;
+    }
+  }
+);
+}
