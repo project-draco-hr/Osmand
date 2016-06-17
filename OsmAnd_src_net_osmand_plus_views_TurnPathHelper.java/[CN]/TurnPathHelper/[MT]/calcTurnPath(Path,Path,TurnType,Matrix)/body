@@ -3,6 +3,9 @@
     return;
   }
   pathForTurn.reset();
+  if (outlay != null) {
+    outlay.reset();
+  }
   int ha=72;
   int wa=72;
   int th=12;
@@ -142,11 +145,11 @@
     boolean leftSide=turnType.isLeftSide();
     float radArrow=35;
     float radIn=11;
-    float radOut=radIn + 8;
+    float radOut=radIn + 7;
     float radBottom=radOut + 8;
-    float radStepInter=radOut + 7;
-    float radAr=radOut + 3;
-    float radAr2=radOut + 2;
+    float radStepInter=radOut + 6;
+    float radAr=radOut + 2;
+    float radAr2=radOut + 3;
     float widthStepIn=8;
     float widthStepInter=6;
     float widthArrow=20;
@@ -165,14 +168,14 @@
     RectF qrOut=new RectF(cx - radOut,cy - radOut,cx + radOut,cy + radOut);
     RectF qrIn=new RectF(cx - radIn,cy - radIn,cx + radIn,cy + radIn);
     if (outlay != null) {
-      outlay.addOval(qrOut,Direction.CW);
-      outlay.addOval(qrIn,Direction.CW);
+      outlay.addArc(qrOut,0,360);
+      outlay.addArc(qrIn,0,-360);
     }
     pathForTurn.moveTo(getProjX(dfOut,cx,cy,radOut),getProjY(dfOut,cx,cy,radOut));
     if (out <= 1) {
       showSteps=false;
     }
-    if (showSteps) {
+    if (showSteps && outlay != null) {
       double totalStepInter=(out - 1) * dfStepOut;
       double st=(rot - 2 * dfOut - totalStepInter) / out;
       if ((rot > 0) != (st > 0)) {
@@ -182,22 +185,23 @@
         showSteps=false;
       }
       if (showSteps) {
+        outlay.moveTo(getProjX(dfOut,cx,cy,radOut),getProjY(dfOut,cx,cy,radOut));
         for (int i=0; i < out - 1; i++) {
-          pathForTurn.arcTo(qrOut,startArcAngle(dfOut + i * (st + dfStepOut)),sweepArcAngle(st));
-          arcLineTo(pathForTurn,dfOut + (i + 1) * (st + dfStepOut) - dfStepOut / 2 - dfStepInter / 2,cx,cy,radStepInter);
-          arcLineTo(pathForTurn,dfOut + (i + 1) * (st + dfStepOut) - dfStepOut / 2 + dfStepInter / 2,cx,cy,radStepInter);
-          arcLineTo(pathForTurn,dfOut + (i + 1) * (st + dfStepOut),cx,cy,radOut);
+          outlay.arcTo(qrOut,startArcAngle(dfOut + i * (st + dfStepOut)),sweepArcAngle(st));
+          arcLineTo(outlay,dfOut + (i + 1) * (st + dfStepOut) - dfStepOut / 2 - dfStepInter / 2,cx,cy,radStepInter);
+          arcLineTo(outlay,dfOut + (i + 1) * (st + dfStepOut) - dfStepOut / 2 + dfStepInter / 2,cx,cy,radStepInter);
+          arcLineTo(outlay,dfOut + (i + 1) * (st + dfStepOut),cx,cy,radOut);
         }
-        pathForTurn.arcTo(qrOut,startArcAngle(rot - dfOut - st),sweepArcAngle(st));
+        outlay.arcTo(qrOut,startArcAngle(rot - dfOut - st),sweepArcAngle(st));
+        arcLineTo(outlay,rot - dfIn,cx,cy,radIn);
+        outlay.arcTo(qrIn,startArcAngle(rot - dfIn),-sweepArcAngle(rot - dfIn - dfIn));
       }
     }
-    if (!showSteps) {
-      pathForTurn.arcTo(qrOut,startArcAngle(dfOut),sweepArcAngle(rot - dfOut - dfOut));
-    }
+    pathForTurn.arcTo(qrOut,startArcAngle(dfOut),sweepArcAngle(rot - dfOut - dfOut));
     arcLineTo(pathForTurn,rot - dfAr,cx,cy,radAr);
-    arcQuadTo(pathForTurn,rot - dfAr,radAr,rot - dfAr2,radAr2,rot,radArrow,0.7f,0.3f,cx,cy);
-    arcQuadTo(pathForTurn,rot - dfAr2,radAr2,rot,radArrow,rot + dfAr2,radAr2,0.1f,0.1f,cx,cy);
-    arcQuadTo(pathForTurn,rot,radArrow,rot + dfAr2,radAr2,rot + dfAr,radAr,0.3f,0.7f,cx,cy);
+    arcQuadTo(pathForTurn,rot - dfAr,radAr,rot - dfAr2,radAr2,rot,radArrow,4.5f,cx,cy);
+    arcQuadTo(pathForTurn,rot - dfAr2,radAr2,rot,radArrow,rot + dfAr2,radAr2,4.5f,cx,cy);
+    arcQuadTo(pathForTurn,rot,radArrow,rot + dfAr2,radAr2,rot + dfAr,radAr,4.5f,cx,cy);
     arcLineTo(pathForTurn,rot + dfAr,cx,cy,radAr);
     arcLineTo(pathForTurn,rot + dfIn,cx,cy,radIn);
     pathForTurn.arcTo(qrIn,startArcAngle(rot + dfIn),sweepArcAngle(-rot - dfIn - dfIn));
