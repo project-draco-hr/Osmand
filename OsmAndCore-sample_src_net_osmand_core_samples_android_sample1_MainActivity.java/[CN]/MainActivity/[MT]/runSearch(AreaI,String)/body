@@ -1,22 +1,22 @@
 {
   searchAPI.setObfAreaFilter(bounds31);
   searchAPI.startSearch(keyword,MAX_SEARCH_RESULTS,new SearchAPICallback(){
-    @Override public void onSearchFinished(    List<SearchItem> searchItems,    boolean cancelled){
+    @Override public void onSearchFinished(    List<SearchAPI.SearchItem> searchItems,    boolean cancelled){
       if (searchItems != null && !cancelled) {
         LatLon latLon=Utilities.convert31ToLatLon(target31);
-        List<SearchRow> rows=new ArrayList<>();
-        for (        SearchItem item : searchItems) {
-          SearchRow row=new SearchRow(item);
+        List<SearchListItem> rows=new ArrayList<>();
+        for (        SearchAPI.SearchItem item : searchItems) {
+          SearchListItem row=SearchListItem.buildListItem((SampleApplication)getApplication(),item);
           rows.add(row);
         }
         adapter.clear();
         adapter.addAll(rows);
         adapter.updateDistance(latLon.getLatitude(),latLon.getLongitude());
-        adapter.sort(new Comparator<SearchRow>(){
-          @Override public int compare(          SearchRow lhs,          SearchRow rhs){
+        adapter.sort(new Comparator<SearchListItem>(){
+          @Override public int compare(          SearchListItem lhs,          SearchListItem rhs){
             int res=Double.compare(lhs.getDistance(),rhs.getDistance());
             if (res == 0) {
-              return lhs.getSearchItem().getLocalizedName().compareToIgnoreCase(rhs.getSearchItem().getLocalizedName());
+              return lhs.getName().compareToIgnoreCase(rhs.getName());
             }
  else {
               return res;
