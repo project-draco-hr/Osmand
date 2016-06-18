@@ -1,25 +1,49 @@
 {
   System.out.println("=== Start search");
-  resCount=0;
+  amenityResultsCounter=0;
+  addressResultsCounter=0;
   final List<SearchItem> searchItems=new ArrayList<>();
-  AmenitiesByNameSearch byNameSearch=new AmenitiesByNameSearch(obfsCollection);
-  AmenitiesByNameSearch.Criteria criteria=new AmenitiesByNameSearch.Criteria();
-  criteria.setName(keyword);
+  AmenitiesByNameSearch amByNameSearch=new AmenitiesByNameSearch(obfsCollection);
+  AmenitiesByNameSearch.Criteria amByNameCriteria=new AmenitiesByNameSearch.Criteria();
+  amByNameCriteria.setName(keyword);
   if (obfAreaFilter != null) {
-    criteria.setObfInfoAreaFilter(new NullableAreaI(obfAreaFilter));
+    amByNameCriteria.setObfInfoAreaFilter(new NullableAreaI(obfAreaFilter));
   }
-  ISearch.INewResultEntryCallback newResultEntryCallback=new ISearch.INewResultEntryCallback(){
+  INewResultEntryCallback amByNameResultCallback=new ISearch.INewResultEntryCallback(){
     @Override public void method(    ISearch.Criteria criteria,    ISearch.IResultEntry resultEntry){
-      Amenity amenity=new ResultEntry(resultEntry).getAmenity();
-      searchItems.add(new AmenitySearchItem(amenity));
-      System.out.println("Poi found === " + amenity.getNativeName());
-      resCount++;
+      Amenity amenity=new AmenityResultEntry(resultEntry).getAmenity();
+      AmenitySearchItem amenitySearchItem=new AmenitySearchItem(amenity);
+      searchItems.add(amenitySearchItem);
+      System.out.println("Poi found === " + amenitySearchItem.toString());
+      amenityResultsCounter++;
     }
   }
 ;
-  byNameSearch.performSearch(criteria,newResultEntryCallback.getBinding(),new IQueryController(){
+  AddressesByNameSearch addrByNameSearch=new AddressesByNameSearch(obfsCollection);
+  AddressesByNameSearch.Criteria addrByNameCriteria=new AddressesByNameSearch.Criteria();
+  addrByNameCriteria.setName(keyword);
+  if (obfAreaFilter != null) {
+    addrByNameCriteria.setObfInfoAreaFilter(new NullableAreaI(obfAreaFilter));
+  }
+  INewResultEntryCallback addrByNameResultCallback=new ISearch.INewResultEntryCallback(){
+    @Override public void method(    ISearch.Criteria criteria,    ISearch.IResultEntry resultEntry){
+      Address address=new AddressResultEntry(resultEntry).getAddress();
+      AddressSearchItem addrSearchItem=new AddressSearchItem(address);
+      searchItems.add(addrSearchItem);
+      System.out.println("Address found === " + addrSearchItem.toString());
+      addressResultsCounter++;
+    }
+  }
+;
+  amByNameSearch.performSearch(amByNameCriteria,amByNameResultCallback.getBinding(),new IQueryController(){
     @Override public boolean isAborted(){
-      return resCount >= maxSearchResults || cancelled;
+      return amenityResultsCounter >= maxSearchResults || cancelled;
+    }
+  }
+);
+  addrByNameSearch.performSearch(addrByNameCriteria,addrByNameResultCallback.getBinding(),new IQueryController(){
+    @Override public boolean isAborted(){
+      return addressResultsCounter >= maxSearchResults || cancelled;
     }
   }
 );
