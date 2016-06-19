@@ -1,10 +1,8 @@
 {
   super.onCreate(savedInstanceState);
+  SampleApplication app=getSampleApplication();
   gestureDetector=new GestureDetector(this,new MapViewOnGestureListener());
   multiTouchSupport=new MultiTouchSupport(this,new MapViewMultiTouchZoomListener());
-  long startTime=System.currentTimeMillis();
-  if (NativeCore.isAvailable() && !NativeCore.isLoaded())   NativeCore.load(CoreResourcesFromAndroidAssets.loadFromCurrentApplication(this));
-  Logger.get().setSeverityLevelThreshold(LogSeverityLevel.Debug);
   setContentView(R.layout.activity_main);
   mapView=(AtlasMapRendererView)findViewById(R.id.mapRendererView);
   textZoom=(TextView)findViewById(R.id.text_zoom);
@@ -27,7 +25,7 @@
     }
   }
 );
-  fileLogSink=QIODeviceLogSink.createFileLogSink(Environment.getExternalStorageDirectory() + "/osmand/osmandcore.log");
+  fileLogSink=QIODeviceLogSink.createFileLogSink(app.getAbsoluteAppPath() + "/osmandcore.log");
   Logger.get().addLogSink(fileLogSink);
   DisplayMetrics displayMetrics=new DisplayMetrics();
   getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -46,8 +44,8 @@
   }
   Log.i(TAG,"Going to prepare OBFs collection");
   obfsCollection=new ObfsCollection();
-  Log.i(TAG,"Will load OBFs from " + Environment.getExternalStorageDirectory() + "/osmand");
-  obfsCollection.addDirectory(Environment.getExternalStorageDirectory() + "/osmand",false);
+  Log.i(TAG,"Will load OBFs from " + app.getAbsoluteAppPath());
+  obfsCollection.addDirectory(app.getAbsoluteAppPath(),false);
   Log.i(TAG,"Going to prepare all resources for renderer");
   mapPresentationEnvironment=new MapPresentationEnvironment(mapStyle,displayDensityFactor,1.0f,1.0f,MapUtils.LANGUAGE);
   mapPrimitiviser=new MapPrimitiviser(mapPresentationEnvironment);
@@ -59,8 +57,7 @@
   restoreMapState();
   mapLayerProvider0=new MapRasterLayerProvider_Software(mapPrimitivesProvider);
   mapView.setMapLayerProvider(0,mapLayerProvider0);
-  System.out.println("NATIVE_INITIALIZED = " + (System.currentTimeMillis() - startTime) / 1000f);
-  getSampleApplication().getIconsCache().setDisplayDensityFactor(displayDensityFactor);
+  app.getIconsCache().setDisplayDensityFactor(displayDensityFactor);
   searchAPI=new SearchAPI(obfsCollection);
   final EditText searchEditText=(EditText)findViewById(R.id.searchEditText);
   searchEditText.addTextChangedListener(new TextWatcher(){

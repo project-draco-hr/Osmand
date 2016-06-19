@@ -1,0 +1,35 @@
+{
+  final BoolPtr ok=BoolPtr.frompointer(ok_);
+  final ResourceEntry resourceEntry=_resources.get(name);
+  if (resourceEntry == null) {
+    Log.w(TAG,"Requested resource '" + name + "' was not found");
+    if (ok != null)     ok.assign(false);
+    return SwigUtilities.emptyQByteArray();
+  }
+  if (resourceEntry.defaultVariant == null) {
+    Log.w(TAG,"Requested resource '" + name + "' was not found");
+    if (ok != null)     ok.assign(false);
+    return SwigUtilities.emptyQByteArray();
+  }
+  System.out.println(resourceEntry.defaultVariant.path.getAbsolutePath());
+  final SWIGTYPE_p_QByteArray data;
+  final String dataPath=resourceEntry.defaultVariant.path.getAbsolutePath();
+  if (resourceEntry.defaultVariant.offset == 0 && resourceEntry.defaultVariant.size == resourceEntry.defaultVariant.path.length()) {
+    if (!name.endsWith(".png")) {
+      data=SwigUtilities.qDecompress(SwigUtilities.readEntireFile(dataPath));
+    }
+ else {
+      data=SwigUtilities.readEntireFile(dataPath);
+    }
+  }
+ else {
+    if (!name.endsWith(".png")) {
+      data=SwigUtilities.qDecompress(SwigUtilities.readPartOfFile(dataPath,resourceEntry.defaultVariant.offset,resourceEntry.defaultVariant.size));
+    }
+ else {
+      data=SwigUtilities.readPartOfFile(dataPath,resourceEntry.defaultVariant.offset,resourceEntry.defaultVariant.size);
+    }
+  }
+  if (ok != null)   ok.assign(true);
+  return data;
+}
