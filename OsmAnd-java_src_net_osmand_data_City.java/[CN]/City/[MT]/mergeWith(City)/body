@@ -1,11 +1,19 @@
 {
+  Map<Street,Street> m=new LinkedHashMap<>();
   for (  Street street : city.listOfStreets) {
     if (listOfStreets.contains(street)) {
       listOfStreets.get(listOfStreets.indexOf(street)).mergeWith(street);
     }
  else {
-      listOfStreets.add(street);
+      Street s=new Street(this);
+      s.copyNames(street);
+      s.setLocation(street.getLocation().getLatitude(),street.getLocation().getLongitude());
+      s.setId(street.getId());
+      s.buildings.addAll(street.getBuildings());
+      m.put(street,s);
+      listOfStreets.add(s);
     }
   }
   copyNames(city);
+  return m;
 }
