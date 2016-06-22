@@ -1,0 +1,52 @@
+{
+  int newTextLength=queryText.length();
+  int currTextLength=this.queryText.length();
+  boolean isNewText=currTextLength == 0 || newTextLength == 0 || !this.queryText.regionMatches(0,queryText,0,newTextLength > currTextLength ? currTextLength : newTextLength);
+  int lastKnownTokenIndex=-1;
+  if (isNewText) {
+    tokens.clear();
+  }
+ else {
+    int brokenTokenIndex=-1;
+    for (int i=0; i < tokens.size(); i++) {
+      SearchToken token=tokens.get(i);
+      int lastTokenIndex=token.getLastIndex();
+      if (lastTokenIndex > newTextLength - 1 || (lastTokenIndex < newTextLength - 1 && !startWithDelimiter(queryText.substring(lastTokenIndex + 1)))) {
+        brokenTokenIndex=i;
+        break;
+      }
+      lastKnownTokenIndex=token.getLastIndex();
+    }
+    if (brokenTokenIndex != -1) {
+      if (brokenTokenIndex == 0) {
+        tokens.clear();
+      }
+ else {
+        for (int i=tokens.size() - 1; i >= brokenTokenIndex; i--) {
+          tokens.remove(i);
+        }
+      }
+    }
+  }
+  if (newTextLength - 1 > lastKnownTokenIndex) {
+    int firstWordIndex=lastKnownTokenIndex + 1;
+    for (int i=lastKnownTokenIndex + 1; i < newTextLength; i++) {
+      char c=queryText.charAt(i);
+      if (isDelimiterChar(c)) {
+        if (i == firstWordIndex) {
+          firstWordIndex++;
+        }
+ else {
+          SearchToken token=new NameFilterSearchToken(firstWordIndex,queryText.substring(firstWordIndex,i));
+          tokens.add(token);
+          firstWordIndex=i + 1;
+        }
+      }
+    }
+    if (firstWordIndex <= newTextLength - 1) {
+      SearchToken token=new NameFilterSearchToken(firstWordIndex,queryText.substring(firstWordIndex));
+      tokens.add(token);
+    }
+  }
+  this.queryText=queryText;
+}
