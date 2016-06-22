@@ -1,35 +1,13 @@
 {
   searchAPI.setObfAreaFilter(bounds31);
-  searchAPI.startSearch(keyword,MAX_SEARCH_RESULTS,new SearchAPICallback(){
-    @Override public void onSearchFinished(    List<SearchItem> searchItems,    boolean cancelled){
-      if (searchItems != null && !cancelled) {
-        LatLon latLon=Utilities.convert31ToLatLon(target31);
-        List<SearchListItem> rows=new ArrayList<>();
-        for (        SearchItem item : searchItems) {
-          SearchListItem row=SearchListItem.buildListItem((SampleApplication)getApplication(),item);
-          rows.add(row);
-        }
-        adapter.clear();
-        adapter.addAll(rows);
-        adapter.updateDistance(latLon.getLatitude(),latLon.getLongitude());
-        adapter.sort(new Comparator<SearchListItem>(){
-          @Override public int compare(          SearchListItem lhs,          SearchListItem rhs){
-            int res=Double.compare(lhs.getDistance(),rhs.getDistance());
-            if (res == 0) {
-              return lhs.getName().compareToIgnoreCase(rhs.getName());
-            }
- else {
-              return res;
-            }
-          }
-        }
-);
-        adapter.notifyDataSetChanged();
-        if (adapter.getCount() > 0) {
-          searchListView.setSelection(0);
-        }
-        showSearchList();
-      }
+  searchAPI.startSearch(keyword,MAX_SEARCH_RESULTS_CORE,new SearchCallback(){
+    @Override public void onSearchFinished(    List<SearchItem> searchItems){
+      processSearchResult(searchItems);
+    }
+  }
+,new SearchCallback(){
+    @Override public void onSearchFinished(    List<SearchItem> searchItems){
+      processSearchResult(searchItems);
     }
   }
 );

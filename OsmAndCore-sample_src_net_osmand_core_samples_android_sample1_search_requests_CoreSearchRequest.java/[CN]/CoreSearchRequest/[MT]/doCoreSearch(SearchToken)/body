@@ -1,0 +1,64 @@
+{
+  System.out.println("=== Start search");
+  amenityResultsCounter=0;
+  addressResultsCounter=0;
+  String keyword=token.getQueryText();
+  final List<SearchItem> searchItems=new ArrayList<>();
+  AmenitiesByNameSearch amByNameSearch=new AmenitiesByNameSearch(searchAPI.getObfsCollection());
+  AmenitiesByNameSearch.Criteria amenityByNameCriteria=new AmenitiesByNameSearch.Criteria();
+  amenityByNameCriteria.setName(keyword);
+  if (searchAPI.getObfAreaFilter() != null) {
+    amenityByNameCriteria.setObfInfoAreaFilter(new NullableAreaI(searchAPI.getObfAreaFilter()));
+  }
+  searchScope.setupAmenitySearchCriteria(amenityByNameCriteria);
+  ISearch.INewResultEntryCallback amenityByNameResultCallback=new ISearch.INewResultEntryCallback(){
+    @Override public void method(    ISearch.Criteria criteria,    ISearch.IResultEntry resultEntry){
+      Amenity amenity=new AmenityResultEntry(resultEntry).getAmenity();
+      AmenitySearchItem amenitySearchItem=new AmenitySearchItem(amenity);
+      if (searchScope.processAmenitySearchItem(amenitySearchItem)) {
+        searchItems.add(amenitySearchItem);
+      }
+      System.out.println("Poi found === " + amenitySearchItem.toString());
+      amenityResultsCounter++;
+    }
+  }
+;
+  AddressesByNameSearch addrByNameSearch=new AddressesByNameSearch(searchAPI.getObfsCollection());
+  AddressesByNameSearch.Criteria addrByNameCriteria=new AddressesByNameSearch.Criteria();
+  addrByNameCriteria.setName(keyword);
+  if (searchAPI.getObfAreaFilter() != null) {
+    addrByNameCriteria.setObfInfoAreaFilter(new NullableAreaI(searchAPI.getObfAreaFilter()));
+  }
+  searchScope.setupAddressSearchCriteria(addrByNameCriteria);
+  ISearch.INewResultEntryCallback addrByNameResultCallback=new ISearch.INewResultEntryCallback(){
+    @Override public void method(    ISearch.Criteria criteria,    ISearch.IResultEntry resultEntry){
+      Address address=new AddressResultEntry(resultEntry).getAddress();
+      AddressSearchItem addrSearchItem=new AddressSearchItem(address);
+      if (searchScope.processAddressSearchItem(addrSearchItem)) {
+        searchItems.add(addrSearchItem);
+      }
+      System.out.println("Address found === " + addrSearchItem.toString());
+      addressResultsCounter++;
+    }
+  }
+;
+  amByNameSearch.performSearch(amenityByNameCriteria,amenityByNameResultCallback.getBinding(),new IQueryController(){
+    @Override public boolean isAborted(){
+      return amenityResultsCounter >= maxSearchResults || cancelled;
+    }
+  }
+);
+  if (!cancelled) {
+    addrByNameSearch.performSearch(addrByNameCriteria,addrByNameResultCallback.getBinding(),new IQueryController(){
+      @Override public boolean isAborted(){
+        return addressResultsCounter >= maxSearchResults || cancelled;
+      }
+    }
+);
+  }
+  if (!cancelled) {
+    searchScope.processSearchResult(searchItems);
+  }
+  System.out.println("=== Finish search");
+  return searchItems;
+}
