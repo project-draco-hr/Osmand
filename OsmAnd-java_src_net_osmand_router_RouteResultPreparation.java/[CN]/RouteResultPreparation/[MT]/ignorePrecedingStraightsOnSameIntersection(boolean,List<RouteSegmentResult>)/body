@@ -1,0 +1,22 @@
+{
+  RouteSegmentResult nextSegment=null;
+  double distanceToNextTurn=999999;
+  for (int i=result.size() - 1; i >= 0; i--) {
+    if (nextSegment != null && nextSegment.getTurnType() != null && nextSegment.getTurnType().getValue() != TurnType.C && !isMotorway(nextSegment)) {
+      if (distanceToNextTurn == 999999) {
+        distanceToNextTurn=0;
+      }
+    }
+    RouteSegmentResult currentSegment=result.get(i);
+    if (currentSegment != null) {
+      distanceToNextTurn+=currentSegment.getDistance();
+      if (currentSegment.getTurnType() != null && currentSegment.getTurnType().getValue() == TurnType.C && distanceToNextTurn <= 100) {
+        result.get(i).getTurnType().setSkipToSpeak(true);
+      }
+ else {
+        nextSegment=currentSegment;
+        distanceToNextTurn=999999;
+      }
+    }
+  }
+}
