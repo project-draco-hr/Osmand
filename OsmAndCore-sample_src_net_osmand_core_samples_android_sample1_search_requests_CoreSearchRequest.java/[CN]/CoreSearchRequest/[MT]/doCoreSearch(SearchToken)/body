@@ -3,42 +3,44 @@
   amenityResultsCounter=0;
   addressResultsCounter=0;
   String keyword=token.getQueryText();
-  final List<SearchItem> searchItems=new ArrayList<>();
-  AmenitiesByNameSearch amByNameSearch=new AmenitiesByNameSearch(searchAPI.getObfsCollection());
+  final List<SearchObject> searchObjects=new ArrayList<>();
+  AmenitiesByNameSearch amByNameSearch=new AmenitiesByNameSearch(searchScope.getObfsCollection());
   AmenitiesByNameSearch.Criteria amenityByNameCriteria=new AmenitiesByNameSearch.Criteria();
   amenityByNameCriteria.setName(keyword);
-  if (searchAPI.getObfAreaFilter() != null) {
-    amenityByNameCriteria.setObfInfoAreaFilter(new NullableAreaI(searchAPI.getObfAreaFilter()));
+  if (searchScope.getObfAreaFilter() != null) {
+    amenityByNameCriteria.setObfInfoAreaFilter(new NullableAreaI(searchScope.getObfAreaFilter()));
   }
   searchScope.setupAmenitySearchCriteria(amenityByNameCriteria);
   ISearch.INewResultEntryCallback amenityByNameResultCallback=new ISearch.INewResultEntryCallback(){
     @Override public void method(    ISearch.Criteria criteria,    ISearch.IResultEntry resultEntry){
       Amenity amenity=new AmenityResultEntry(resultEntry).getAmenity();
-      AmenitySearchItem amenitySearchItem=new AmenitySearchItem(amenity);
-      if (searchScope.processAmenitySearchItem(amenitySearchItem)) {
-        searchItems.add(amenitySearchItem);
+      PoiSearchObject amenitySearchItem=new PoiSearchObject(amenity);
+      if (searchScope.processPoiSearchObject(amenitySearchItem)) {
+        searchObjects.add(amenitySearchItem);
       }
       System.out.println("Poi found === " + amenitySearchItem.toString());
       amenityResultsCounter++;
     }
   }
 ;
-  AddressesByNameSearch addrByNameSearch=new AddressesByNameSearch(searchAPI.getObfsCollection());
-  AddressesByNameSearch.Criteria addrByNameCriteria=new AddressesByNameSearch.Criteria();
+  AddressesByNameSearch addrByNameSearch=new AddressesByNameSearch(searchScope.getObfsCollection());
+  final AddressesByNameSearch.Criteria addrByNameCriteria=new AddressesByNameSearch.Criteria();
   addrByNameCriteria.setName(keyword);
-  if (searchAPI.getObfAreaFilter() != null) {
-    addrByNameCriteria.setObfInfoAreaFilter(new NullableAreaI(searchAPI.getObfAreaFilter()));
+  if (searchScope.getObfAreaFilter() != null) {
+    addrByNameCriteria.setObfInfoAreaFilter(new NullableAreaI(searchScope.getObfAreaFilter()));
   }
   searchScope.setupAddressSearchCriteria(addrByNameCriteria);
   ISearch.INewResultEntryCallback addrByNameResultCallback=new ISearch.INewResultEntryCallback(){
     @Override public void method(    ISearch.Criteria criteria,    ISearch.IResultEntry resultEntry){
       Address address=new AddressResultEntry(resultEntry).getAddress();
-      AddressSearchItem addrSearchItem=new AddressSearchItem(address);
-      if (searchScope.processAddressSearchItem(addrSearchItem)) {
-        searchItems.add(addrSearchItem);
+      SearchPositionObject addressSearchObject=SearchObjectsHelper.getAddressObject(address);
+      if (addressSearchObject != null) {
+        if (searchScope.processAddressSearchObject(addressSearchObject)) {
+          searchObjects.add(addressSearchObject);
+        }
+        System.out.println("Address found === " + addressSearchObject.toString());
+        addressResultsCounter++;
       }
-      System.out.println("Address found === " + addrSearchItem.toString());
-      addressResultsCounter++;
     }
   }
 ;
@@ -57,8 +59,11 @@
 );
   }
   if (!cancelled) {
-    searchScope.processSearchResult(searchItems);
+    SearchToken newToken=searchScope.processSearchResult(token,searchObjects);
+    if (newToken != null && internalCallback != null) {
+      internalCallback.onNewTokenFound(token,newToken);
+    }
   }
   System.out.println("=== Finish search");
-  return searchItems;
+  return searchObjects;
 }
