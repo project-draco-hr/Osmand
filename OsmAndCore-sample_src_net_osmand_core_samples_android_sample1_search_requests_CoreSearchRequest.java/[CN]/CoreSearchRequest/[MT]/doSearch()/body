@@ -1,13 +1,18 @@
 {
-  List<SearchItem> res=new ArrayList<>();
+  List<SearchObject> res=new ArrayList<>();
+  SearchString searchString=searchScope.getSearchString();
+  SearchToken lastToken=searchString.getLastToken();
   SearchToken token=searchString.getNextNameFilterToken();
   while (token != null && !cancelled) {
-    if (token.getType() == SearchToken.TokenType.NAME_FILTER) {
-      List<SearchItem> searchItems=doCoreSearch(token);
-      res.clear();
-      res.addAll(searchItems);
+    if (token.getType() == SearchToken.TokenType.NAME_FILTER && !Algorithms.isEmpty(token.getQueryText())) {
+      res=doCoreSearch(token);
     }
-    token=searchString.getNextNameFilterToken();
+    if (token != lastToken) {
+      token=searchString.getNextNameFilterToken();
+    }
+ else {
+      break;
+    }
   }
   return res;
 }

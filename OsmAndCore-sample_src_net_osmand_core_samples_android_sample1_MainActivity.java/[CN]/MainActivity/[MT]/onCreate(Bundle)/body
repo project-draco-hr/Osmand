@@ -58,7 +58,7 @@
   mapLayerProvider0=new MapRasterLayerProvider_Software(mapPrimitivesProvider);
   mapView.setMapLayerProvider(0,mapLayerProvider0);
   app.getIconsCache().setDisplayDensityFactor(displayDensityFactor);
-  searchAPI=new SearchAPI(obfsCollection);
+  searchAPI=new SearchAPI(obfsCollection,MapUtils.LANGUAGE);
   final EditText searchEditText=(EditText)findViewById(R.id.searchEditText);
   searchEditText.addTextChangedListener(new TextWatcher(){
     @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
@@ -66,9 +66,7 @@
     @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
     }
     @Override public void afterTextChanged(    Editable s){
-      if (s.length() > 2) {
-        runSearch(getScreenBounds31(),s.toString());
-      }
+      runSearch(getScreenCenter31(),getScreenBounds31(),s.toString());
     }
   }
 );
@@ -101,9 +99,12 @@
       hideSearchList();
       mapView.requestFocus();
       SearchListItem item=adapter.getItem(position);
-      PointI target=Utilities.convertLatLonTo31(new LatLon(item.getLatitude(),item.getLongitude()));
-      setTarget(target);
-      setZoom(17f);
+      if (item instanceof SearchListPositionItem) {
+        SearchListPositionItem positionItem=(SearchListPositionItem)item;
+        PointI target=Utilities.convertLatLonTo31(new LatLon(positionItem.getLatitude(),positionItem.getLongitude()));
+        setTarget(target);
+        setZoom(17f);
+      }
     }
   }
 );
