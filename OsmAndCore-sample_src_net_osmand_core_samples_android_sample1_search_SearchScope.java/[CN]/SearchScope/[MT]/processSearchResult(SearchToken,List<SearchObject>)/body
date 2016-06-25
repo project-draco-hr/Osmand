@@ -1,65 +1,21 @@
 {
   SearchToken newToken=null;
-  boolean cityVillagePostcodeSelected=objectTokens.containsKey(SearchObjectType.CITY) || objectTokens.containsKey(SearchObjectType.VILLAGE) || objectTokens.containsKey(SearchObjectType.POSTCODE);
-  for (  SearchObject searchObject : searchObjects) {
-    float priority=0f;
-    boolean sortByName=false;
-switch (searchObject.getType()) {
-case POI:
-      priority=getPriorityByDistance(10,((PoiSearchObject)searchObject).getDistance());
-    break;
-case CITY:
-case VILLAGE:
-case POSTCODE:
-  float cityType=getCityType((StreetGroupSearchObject)searchObject);
-priority=(getPriorityByDistance(cityVillagePostcodeSelected ? 20f : 7f + cityType,((StreetGroupSearchObject)searchObject).getDistance()));
-break;
-case STREET:
-StreetSearchObject streetSearchObject=(StreetSearchObject)searchObject;
-Street street=streetSearchObject.getStreet();
-if (!cityVillagePostcodeSelected) {
-priority=getPriorityByDistance(9f,streetSearchObject.getDistance());
-}
+  if (searchObjects.size() > 0) {
+    Collections.sort(searchObjects,new Comparator<SearchObject>(){
+      @Override public int compare(      SearchObject lhs,      SearchObject rhs){
+        int res=Double.compare(lhs.getPriority(),rhs.getPriority());
+        if (res == 0 && lhs.isSortByName() && rhs.isSortByName()) {
+          return lhs.getName(lang).compareToIgnoreCase(rhs.getName(lang));
+        }
  else {
-boolean streetFromSelectedCity=false;
-for (SearchToken st : objectTokens.values()) {
-if (st.getSearchObject() instanceof StreetGroupSearchObject) {
-StreetGroupSearchObject streetGroupSearchObject=(StreetGroupSearchObject)st.getSearchObject();
-if (streetGroupSearchObject.getStreetGroup().getId().getId().equals(street.getStreetGroup().getId().getId())) {
-streetFromSelectedCity=true;
-break;
-}
-}
-}
-if (streetFromSelectedCity) {
-priority=3f;
-sortByName=true;
-}
- else {
-priority=getPriorityByDistance(9f,streetSearchObject.getDistance());
-}
-}
-break;
-}
-searchObject.setPriority(priority);
-searchObject.setSortByName(sortByName);
-}
-if (searchObjects.size() > 0) {
-Collections.sort(searchObjects,new Comparator<SearchObject>(){
-@Override public int compare(SearchObject lhs,SearchObject rhs){
-int res=Double.compare(lhs.getPriority(),rhs.getPriority());
-if (res == 0 && lhs.isSortByName() && rhs.isSortByName()) {
-return lhs.getName(lang).compareToIgnoreCase(rhs.getName(lang));
-}
- else {
-return res;
-}
-}
-}
+          return res;
+        }
+      }
+    }
 );
-if (token.getType() == SearchToken.TokenType.NAME_FILTER && !Algorithms.isEmpty(token.getQueryText())) {
-newToken=new ObjectSearchToken(token,searchObjects.get(0));
-}
-}
-return newToken;
+    if (token.getType() == SearchToken.TokenType.NAME_FILTER && !Algorithms.isEmpty(token.getQueryText())) {
+      newToken=new ObjectSearchToken(token,searchObjects.get(0));
+    }
+  }
+  return newToken;
 }
