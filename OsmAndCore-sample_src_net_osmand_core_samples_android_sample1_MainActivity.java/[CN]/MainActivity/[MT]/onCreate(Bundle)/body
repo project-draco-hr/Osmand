@@ -59,14 +59,18 @@
   mapView.setMapLayerProvider(0,mapLayerProvider0);
   app.getIconsCache().setDisplayDensityFactor(displayDensityFactor);
   searchAPI=new SearchAPI(obfsCollection,MapUtils.LANGUAGE);
-  final EditText searchEditText=(EditText)findViewById(R.id.searchEditText);
+  searchEditText=(EditText)findViewById(R.id.searchEditText);
   searchEditText.addTextChangedListener(new TextWatcher(){
     @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
     }
     @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
     }
     @Override public void afterTextChanged(    Editable s){
-      runSearch(getScreenCenter31(),getScreenBounds31(),s.toString());
+      String newQueryText=s.toString();
+      if (!queryText.equalsIgnoreCase(newQueryText)) {
+        queryText=newQueryText;
+        runSearch(getScreenCenter31(),getScreenBounds31(),queryText);
+      }
     }
   }
 );
@@ -81,6 +85,7 @@
     }
   }
 );
+  searchDetailsText=(TextView)findViewById(R.id.searchDetailsText);
   ImageButton clearButton=(ImageButton)findViewById(R.id.clearButton);
   clearButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
@@ -96,14 +101,15 @@
   searchListView.setAdapter(adapter);
   searchListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
     @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
-      hideSearchList();
-      mapView.requestFocus();
       SearchListItem item=adapter.getItem(position);
-      if (item instanceof SearchListPositionItem) {
-        SearchListPositionItem positionItem=(SearchListPositionItem)item;
-        PointI target=Utilities.convertLatLonTo31(new LatLon(positionItem.getLatitude(),positionItem.getLongitude()));
-        setTarget(target);
-        setZoom(17f);
+      SearchObject searchObject=item.getSearchObject();
+      if (searchObject.getType() == SearchObjectType.POI || searchObject.getType() == SearchObjectType.BUILDING || searchObject.getType() == SearchObjectType.COORDINATES) {
+        hideSearchList();
+        mapView.requestFocus();
+        showOnMap((SearchListPositionItem)item);
+      }
+ else {
+        completeQueryWithObject(item.getSearchObject());
       }
     }
   }

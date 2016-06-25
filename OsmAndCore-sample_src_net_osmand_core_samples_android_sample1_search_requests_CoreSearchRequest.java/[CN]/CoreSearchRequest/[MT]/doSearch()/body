@@ -2,9 +2,9 @@
   List<SearchObject> res=new ArrayList<>();
   SearchString searchString=searchScope.getSearchString();
   SearchToken lastToken=searchString.getLastToken();
-  SearchToken token=searchString.getNextNameFilterToken();
+  NameFilterSearchToken token=searchString.getNextNameFilterToken();
   while (token != null && !cancelled) {
-    if (token.getType() == SearchToken.TokenType.NAME_FILTER && !Algorithms.isEmpty(token.getQueryText())) {
+    if (!token.hasEmptyQuery()) {
       res=doCoreSearch(token);
     }
     if (token != lastToken) {
@@ -12,6 +12,13 @@
     }
  else {
       break;
+    }
+  }
+  if (lastToken == null || lastToken.hasEmptyQuery()) {
+    ObjectSearchToken lastObjectToken=searchString.getLastObjectToken();
+    if (lastObjectToken == null) {
+    }
+ else {
     }
   }
   return res;
