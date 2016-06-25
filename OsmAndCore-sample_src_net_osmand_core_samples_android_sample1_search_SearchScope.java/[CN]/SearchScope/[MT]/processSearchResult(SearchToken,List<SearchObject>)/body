@@ -13,9 +13,41 @@
       }
     }
 );
-    if (token.getType() == SearchToken.TokenType.NAME_FILTER && !token.hasEmptyQuery()) {
-      newToken=new ObjectSearchToken(token,searchObjects.get(0));
-    }
-  }
-  return newToken;
+    Iterator<SearchObject> it=searchObjects.iterator();
+    while (it.hasNext()) {
+      SearchObject searchObject=it.next();
+      boolean accept;
+switch (searchObject.getType()) {
+case POI:
+        accept=poiByNameCounter < resultLimitPoiByName;
+      if (accept) {
+        poiByNameCounter++;
+      }
+    break;
+case CITY:
+case VILLAGE:
+case POSTCODE:
+  accept=cityByNameCounter < resultLimitCityByName;
+if (accept) {
+  cityByNameCounter++;
+}
+break;
+case STREET:
+accept=streetByNameCounter < resultLimitStreetByName;
+if (accept) {
+streetByNameCounter++;
+}
+default :
+accept=true;
+break;
+}
+if (!accept) {
+it.remove();
+}
+}
+if (token.getType() == SearchToken.TokenType.NAME_FILTER && !token.hasEmptyQuery()) {
+newToken=new ObjectSearchToken(token,searchObjects.get(0),true);
+}
+}
+return newToken;
 }
