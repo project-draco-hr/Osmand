@@ -70,18 +70,23 @@
       if (!queryText.equalsIgnoreCase(newQueryText)) {
         queryText=newQueryText;
         showProgressBar();
-        runSearch(getScreenCenter31(),getScreenBounds31(),queryText);
+        runSearch();
       }
     }
   }
 );
   searchEditText.setOnFocusChangeListener(new View.OnFocusChangeListener(){
     @Override public void onFocusChange(    View v,    boolean hasFocus){
-      if (hasFocus && adapter.getCount() > 0 && isSearchListHidden()) {
+      if (hasFocus && isSearchListHidden()) {
         showSearchList();
-        LatLon latLon=Utilities.convert31ToLatLon(target31);
-        adapter.updateDistance(latLon.getLatitude(),latLon.getLongitude());
-        adapter.notifyDataSetChanged();
+        if (adapter.getCount() > 0) {
+          LatLon latLon=Utilities.convert31ToLatLon(target31);
+          adapter.updateDistance(latLon.getLatitude(),latLon.getLongitude());
+          adapter.notifyDataSetChanged();
+        }
+ else {
+          runSearch();
+        }
       }
     }
   }
