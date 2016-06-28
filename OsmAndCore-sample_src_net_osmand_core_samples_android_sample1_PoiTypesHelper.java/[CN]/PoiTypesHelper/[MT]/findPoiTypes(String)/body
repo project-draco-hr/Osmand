@@ -1,0 +1,20 @@
+{
+  List<AbstractPoiType> poiTypes=new ArrayList<>();
+  if (Algorithms.isEmpty(s)) {
+    poiTypes.addAll(app.getPoiTypes().getTopVisibleFilters());
+  }
+ else {
+    List<AbstractPoiType> res=app.getPoiTypes().getAllTypesTranslatedNames(new CollatorStringMatcher(s,CollatorStringMatcher.StringMatcherMode.CHECK_STARTS_FROM_SPACE));
+    final Collator inst=Collator.getInstance();
+    Collections.sort(res,new Comparator<AbstractPoiType>(){
+      @Override public int compare(      AbstractPoiType lhs,      AbstractPoiType rhs){
+        return inst.compare(lhs.getTranslation(),rhs.getTranslation());
+      }
+    }
+);
+    for (    AbstractPoiType p : res) {
+      poiTypes.add(p);
+    }
+  }
+  return poiTypes;
+}

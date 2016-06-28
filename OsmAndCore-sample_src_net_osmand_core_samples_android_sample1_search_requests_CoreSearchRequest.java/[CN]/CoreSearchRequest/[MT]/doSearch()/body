@@ -6,6 +6,10 @@
   while (token != null && !cancelled) {
     if (!token.hasEmptyQuery()) {
       res=doCoreSearch(token);
+      List<SearchObject> externalObjects=searchCallback.fetchExternalObjects(token.getQueryText(),searchString.getCompleteObjects());
+      if (externalObjects != null) {
+        res.addAll(externalObjects);
+      }
     }
     if (token != lastToken) {
       searchScope.updateScope();
@@ -18,9 +22,32 @@
   if (lastToken == null || lastToken.hasEmptyQuery()) {
     ObjectSearchToken lastObjectToken=searchString.getLastObjectToken();
     if (lastObjectToken == null) {
+      List<SearchObject> externalObjects=searchCallback.fetchExternalObjects("",null);
+      if (externalObjects != null) {
+        res=externalObjects;
+      }
     }
  else {
-    }
-  }
-  return res;
+      SearchObject searchObject=lastObjectToken.getSearchObject();
+switch (searchObject.getType()) {
+case POI_TYPE:
+        List<SearchObject> externalObjects=searchCallback.fetchExternalObjects("",searchString.getCompleteObjects());
+      if (externalObjects != null) {
+        res=externalObjects;
+      }
+    break;
+case CITY:
+  break;
+case STREET:
+break;
+case POSTCODE:
+break;
+case BUILDING:
+break;
+case POI:
+break;
+}
+}
+}
+return res;
 }

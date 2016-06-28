@@ -3,7 +3,7 @@
   String objectName=searchObject.getName(lang);
   int startIndex;
   SearchToken lastToken=getLastToken();
-  if (lastToken.hasEmptyQuery()) {
+  if (lastToken == null || lastToken.hasEmptyQuery()) {
     startIndex=queryText.length();
     newQueryText=queryText + objectName + " ";
   }
@@ -12,6 +12,12 @@
     newQueryText=queryText.substring(0,startIndex) + objectName + " ";
   }
   ObjectSearchToken token=new ObjectSearchToken(startIndex,objectName,searchObject,false);
-  tokens.set(tokens.size() - 1,token);
+  if (lastToken == null) {
+    tokens.add(token);
+  }
+ else {
+    tokens.set(tokens.size() - 1,token);
+  }
+  tokens.add(new NameFilterSearchToken(newQueryText.length(),""));
   queryText=newQueryText;
 }
