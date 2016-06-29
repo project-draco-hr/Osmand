@@ -3,24 +3,29 @@
   addressResultsCounter=0;
   String keyword=token.getQueryText();
   final List<SearchObject> searchObjects=new ArrayList<>();
-  AmenitiesByNameSearch amByNameSearch=new AmenitiesByNameSearch(searchScope.getObfsCollection());
-  AmenitiesByNameSearch.Criteria amenityByNameCriteria=new AmenitiesByNameSearch.Criteria();
-  amenityByNameCriteria.setName(keyword);
-  if (searchScope.getObfAreaFilter() != null) {
-    amenityByNameCriteria.setObfInfoAreaFilter(new NullableAreaI(searchScope.getObfAreaFilter()));
-  }
-  searchScope.setupAmenitySearchCriteria(amenityByNameCriteria);
-  ISearch.INewResultEntryCallback amenityByNameResultCallback=new ISearch.INewResultEntryCallback(){
-    @Override public void method(    ISearch.Criteria criteria,    ISearch.IResultEntry resultEntry){
-      Amenity amenity=new AmenityResultEntry(resultEntry).getAmenity();
-      PoiSearchObject amenitySearchItem=new PoiSearchObject(amenity);
-      if (searchScope.processPoiSearchObject(amenitySearchItem)) {
-        searchObjects.add(amenitySearchItem);
-      }
-      amenityResultsCounter++;
+  AmenitiesByNameSearch amByNameSearch=null;
+  AmenitiesByNameSearch.Criteria amenityByNameCriteria=null;
+  ISearch.INewResultEntryCallback amenityByNameResultCallback=null;
+  if (!keyword.isEmpty()) {
+    amByNameSearch=new AmenitiesByNameSearch(searchScope.getObfsCollection());
+    amenityByNameCriteria=new AmenitiesByNameSearch.Criteria();
+    amenityByNameCriteria.setName(keyword);
+    if (searchScope.getObfAreaFilter() != null) {
+      amenityByNameCriteria.setObfInfoAreaFilter(new NullableAreaI(searchScope.getObfAreaFilter()));
     }
-  }
+    searchScope.setupAmenitySearchCriteria(amenityByNameCriteria);
+    amenityByNameResultCallback=new ISearch.INewResultEntryCallback(){
+      @Override public void method(      ISearch.Criteria criteria,      ISearch.IResultEntry resultEntry){
+        Amenity amenity=new AmenityResultEntry(resultEntry).getAmenity();
+        PoiSearchObject amenitySearchItem=new PoiSearchObject(amenity);
+        if (searchScope.processPoiSearchObject(amenitySearchItem)) {
+          searchObjects.add(amenitySearchItem);
+        }
+        amenityResultsCounter++;
+      }
+    }
 ;
+  }
   AddressesByNameSearch addrByNameSearch=new AddressesByNameSearch(searchScope.getObfsCollection());
   final AddressesByNameSearch.Criteria addrByNameCriteria=new AddressesByNameSearch.Criteria();
   addrByNameCriteria.setName(keyword);
@@ -41,12 +46,14 @@
     }
   }
 ;
-  amByNameSearch.performSearch(amenityByNameCriteria,amenityByNameResultCallback.getBinding(),new IQueryController(){
-    @Override public boolean isAborted(){
-      return (maxSearchResults > 0 && amenityResultsCounter >= maxSearchResults) || cancelled;
+  if (amByNameSearch != null) {
+    amByNameSearch.performSearch(amenityByNameCriteria,amenityByNameResultCallback.getBinding(),new IQueryController(){
+      @Override public boolean isAborted(){
+        return (maxSearchResults > 0 && amenityResultsCounter >= maxSearchResults) || cancelled;
+      }
     }
-  }
 );
+  }
   if (!cancelled) {
     addrByNameSearch.performSearch(addrByNameCriteria,addrByNameResultCallback.getBinding(),new IQueryController(){
       @Override public boolean isAborted(){
