@@ -2,11 +2,11 @@
   List<SearchObject> res=new ArrayList<>();
   SearchString searchString=searchScope.getSearchString();
   SearchToken lastToken=searchString.getLastToken();
-  NameFilterSearchToken token=searchString.getNextNameFilterToken();
+  NameFilterToken token=searchString.getNextNameFilterToken();
   while (token != null && !cancelled) {
     if (!token.hasEmptyQuery()) {
       res=doCoreSearch(token);
-      List<SearchObject> externalObjects=searchCallback.fetchExternalObjects(token.getQueryText(),searchString.getCompleteObjects());
+      List<SearchObject> externalObjects=searchCallback.fetchExternalObjects(token.getPlainText(),searchString.getCompleteObjects());
       if (externalObjects != null) {
         res.addAll(externalObjects);
       }
@@ -20,7 +20,7 @@
     }
   }
   if (lastToken == null || lastToken.hasEmptyQuery()) {
-    ObjectSearchToken lastObjectToken=searchString.getLastObjectToken();
+    ObjectToken lastObjectToken=searchString.getLastObjectToken();
     if (lastObjectToken == null) {
       List<SearchObject> externalObjects=searchCallback.fetchExternalObjects("",null);
       if (externalObjects != null) {
@@ -37,13 +37,13 @@ case POI_TYPE:
       }
     break;
 case CITY:
-  res=doCoreSearch(new NameFilterSearchToken(0,""));
+  res=doCoreSearch(new NameFilterToken(0,""));
 break;
 case STREET:
-res=doCoreSearch(new NameFilterSearchToken(0,""));
+res=doCoreSearch(new NameFilterToken(0,""));
 break;
 case POSTCODE:
-res=doCoreSearch(new NameFilterSearchToken(0,""));
+res=doCoreSearch(new NameFilterToken(0,""));
 break;
 case BUILDING:
 break;
