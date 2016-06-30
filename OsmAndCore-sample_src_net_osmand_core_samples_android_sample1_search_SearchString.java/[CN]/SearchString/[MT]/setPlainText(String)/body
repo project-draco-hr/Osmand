@@ -1,7 +1,7 @@
 {
-  int newTextLength=queryText.length();
-  int currTextLength=this.queryText.length();
-  boolean isNewText=currTextLength == 0 || newTextLength == 0 || !this.queryText.regionMatches(0,queryText,0,newTextLength > currTextLength ? currTextLength : newTextLength);
+  int newTextLength=plainText.length();
+  int currTextLength=this.plainText.length();
+  boolean isNewText=currTextLength == 0 || newTextLength == 0 || !this.plainText.regionMatches(0,plainText,0,newTextLength > currTextLength ? currTextLength : newTextLength);
   int lastKnownTokenIndex=-1;
   if (isNewText) {
     tokens.clear();
@@ -11,7 +11,7 @@
     for (int i=0; i < tokens.size(); i++) {
       SearchToken token=tokens.get(i);
       int lastTokenIndex=token.getLastIndex();
-      if (lastTokenIndex > newTextLength - 1 || token.hasEmptyQuery() || (lastTokenIndex < newTextLength - 1 && !startWithDelimiter(queryText.substring(lastTokenIndex + 1)))) {
+      if (lastTokenIndex > newTextLength - 1 || token.hasEmptyQuery() || (lastTokenIndex < newTextLength - 1 && !startWithDelimiter(plainText.substring(lastTokenIndex + 1)))) {
         brokenTokenIndex=i;
         break;
       }
@@ -31,30 +31,30 @@
   if (newTextLength - 1 > lastKnownTokenIndex) {
     int firstWordIndex=lastKnownTokenIndex + 1;
     for (int i=lastKnownTokenIndex + 1; i < newTextLength; i++) {
-      char c=queryText.charAt(i);
+      char c=plainText.charAt(i);
       if (isDelimiterChar(c)) {
         if (i == firstWordIndex) {
           firstWordIndex++;
         }
  else {
-          SearchToken token=new NameFilterSearchToken(firstWordIndex,queryText.substring(firstWordIndex,i));
+          SearchToken token=new NameFilterToken(firstWordIndex,plainText.substring(firstWordIndex,i));
           tokens.add(token);
           firstWordIndex=i + 1;
         }
       }
     }
     if (firstWordIndex <= newTextLength - 1) {
-      SearchToken token=new NameFilterSearchToken(firstWordIndex,queryText.substring(firstWordIndex));
+      SearchToken token=new NameFilterToken(firstWordIndex,plainText.substring(firstWordIndex));
       tokens.add(token);
     }
- else     if (endWithDelimeter(queryText)) {
+ else     if (endWithDelimeter(plainText)) {
       SearchToken lastToken=getLastToken();
-      if (lastToken.getType() == TokenType.SEARCH_OBJECT) {
-        ((ObjectSearchToken)lastToken).applySuggestion();
+      if (lastToken.getType() == TokenType.OBJECT) {
+        ((ObjectToken)lastToken).applySuggestion();
       }
-      SearchToken token=new NameFilterSearchToken(firstWordIndex,"");
+      SearchToken token=new NameFilterToken(firstWordIndex,"");
       tokens.add(token);
     }
   }
-  this.queryText=queryText;
+  this.plainText=plainText;
 }
