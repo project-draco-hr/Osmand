@@ -1,8 +1,9 @@
 {
   if (event.getPointerCount() != 1) {
+    resetEvents();
+    mIsDoubleTapping=false;
     return false;
   }
-  long currentTime=System.currentTimeMillis();
   if (event.getAction() == MotionEvent.ACTION_UP) {
     boolean handled=false;
     if (mIsInZoomMode) {
@@ -10,13 +11,18 @@
       listener.onZoomEnded(scale);
       handled=true;
     }
+ else     if (secondDown != null) {
+      if (calculateSqaredDistance(secondDown,event) < mDoubleTapSlopSquare && event.getEventTime() - secondDown.getEventTime() < LONG_PRESS_TIMEOUT) {
+        listener.onDoubleTap(event);
+      }
+      handled=true;
+    }
  else {
       firstUp=MotionEvent.obtain(event);
     }
-    if (secondDown != null && calculateSqaredDistance(secondDown,event) < mDoubleTapSlopSquare) {
-      listener.onDoubleTap(event);
+    if (handled) {
+      resetEvents();
     }
-    secondDown=null;
     mIsDoubleTapping=false;
     return handled;
   }
@@ -28,7 +34,7 @@
         float x=event.getX();
         float y=event.getY();
         listener.onGestureInit(x,y,x,y);
-        listener.onZoomStarted(new PointF(x,y));
+        listener.onZoomStarted(centerScreen);
         return true;
       }
  else {

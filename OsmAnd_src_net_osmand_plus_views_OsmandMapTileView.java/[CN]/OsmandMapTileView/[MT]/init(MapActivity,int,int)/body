@@ -26,6 +26,15 @@
   gestureDetector=new GestureDetector(ctx,new MapTileViewOnGestureListener());
   multiTouchSupport=new MultiTouchSupport(ctx,new MapTileViewMultiTouchZoomListener());
   doubleTapScaleDetector=new DoubleTapScaleDetector(activity,new MapTileViewMultiTouchZoomListener());
+  twoFingersTapDetector=new TwoFingerTapDetector(){
+    @Override public void onTwoFingerTap(){
+      afterTwoFingersTap=true;
+      if (isZoomingAllowed(getZoom(),-1)) {
+        getAnimatedDraggingThread().startZooming(getZoom() - 1,currentViewport.getZoomFloatPart(),true);
+      }
+    }
+  }
+;
   WindowManager mgr=(WindowManager)ctx.getSystemService(Context.WINDOW_SERVICE);
   dm=new DisplayMetrics();
   mgr.getDefaultDisplay().getMetrics(dm);
@@ -33,13 +42,4 @@
   currentViewport=new RotatedTileBox.RotatedTileBoxBuilder().setLocation(ll.getLatitude(),ll.getLongitude()).setZoom(settings.getLastKnownMapZoom()).setPixelDimensions(w,h).build();
   currentViewport.setDensity(dm.density);
   currentViewport.setMapDensity(getSettingsMapDensity());
-  Display defaultDisplay=ctx.getWindowManager().getDefaultDisplay();
-  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-    Point size=new Point();
-    defaultDisplay.getSize(size);
-    displayHeightPx=size.y;
-  }
- else {
-    displayHeightPx=defaultDisplay.getHeight();
-  }
 }
