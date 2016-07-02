@@ -20,8 +20,6 @@ case STRING:
 return CodedOutputStream.computeStringSizeNoTag((String)value);
 case GROUP:
 return CodedOutputStream.computeGroupSizeNoTag((MessageLite)value);
-case MESSAGE:
-return CodedOutputStream.computeMessageSizeNoTag((MessageLite)value);
 case BYTES:
 return CodedOutputStream.computeBytesSizeNoTag((ByteString)value);
 case UINT32:
@@ -34,6 +32,13 @@ case SINT32:
 return CodedOutputStream.computeSInt32SizeNoTag((Integer)value);
 case SINT64:
 return CodedOutputStream.computeSInt64SizeNoTag((Long)value);
+case MESSAGE:
+if (value instanceof LazyField) {
+return CodedOutputStream.computeLazyFieldSizeNoTag((LazyField)value);
+}
+ else {
+return CodedOutputStream.computeMessageSizeNoTag((MessageLite)value);
+}
 case ENUM:
 return CodedOutputStream.computeEnumSizeNoTag(((Internal.EnumLite)value).getNumber());
 }

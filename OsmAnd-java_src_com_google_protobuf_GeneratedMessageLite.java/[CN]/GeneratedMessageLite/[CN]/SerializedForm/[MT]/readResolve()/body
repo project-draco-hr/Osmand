@@ -1,0 +1,24 @@
+{
+  try {
+    Class messageClass=Class.forName(messageClassName);
+    Method newBuilder=messageClass.getMethod("newBuilder");
+    MessageLite.Builder builder=(MessageLite.Builder)newBuilder.invoke(null);
+    builder.mergeFrom(asBytes);
+    return builder.buildPartial();
+  }
+ catch (  ClassNotFoundException e) {
+    throw new RuntimeException("Unable to find proto buffer class",e);
+  }
+catch (  NoSuchMethodException e) {
+    throw new RuntimeException("Unable to find newBuilder method",e);
+  }
+catch (  IllegalAccessException e) {
+    throw new RuntimeException("Unable to call newBuilder method",e);
+  }
+catch (  InvocationTargetException e) {
+    throw new RuntimeException("Error calling newBuilder",e.getCause());
+  }
+catch (  InvalidProtocolBufferException e) {
+    throw new RuntimeException("Unable to understand proto buffer",e);
+  }
+}

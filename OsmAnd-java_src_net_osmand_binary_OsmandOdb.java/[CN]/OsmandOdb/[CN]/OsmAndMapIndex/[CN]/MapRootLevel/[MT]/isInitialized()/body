@@ -1,15 +1,42 @@
 {
-  if (!hasMaxZoom)   return false;
-  if (!hasMinZoom)   return false;
-  if (!hasLeft)   return false;
-  if (!hasRight)   return false;
-  if (!hasTop)   return false;
-  if (!hasBottom)   return false;
-  for (  net.osmand.binary.OsmandOdb.OsmAndMapIndex.MapDataBox element : getBoxesList()) {
-    if (!element.isInitialized())     return false;
+  byte isInitialized=memoizedIsInitialized;
+  if (isInitialized != -1)   return isInitialized == 1;
+  if (!hasMaxZoom()) {
+    memoizedIsInitialized=0;
+    return false;
   }
-  for (  net.osmand.binary.OsmandOdb.MapDataBlock element : getBlocksList()) {
-    if (!element.isInitialized())     return false;
+  if (!hasMinZoom()) {
+    memoizedIsInitialized=0;
+    return false;
   }
+  if (!hasLeft()) {
+    memoizedIsInitialized=0;
+    return false;
+  }
+  if (!hasRight()) {
+    memoizedIsInitialized=0;
+    return false;
+  }
+  if (!hasTop()) {
+    memoizedIsInitialized=0;
+    return false;
+  }
+  if (!hasBottom()) {
+    memoizedIsInitialized=0;
+    return false;
+  }
+  for (int i=0; i < getBoxesCount(); i++) {
+    if (!getBoxes(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  for (int i=0; i < getBlocksCount(); i++) {
+    if (!getBlocks(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  memoizedIsInitialized=1;
   return true;
 }

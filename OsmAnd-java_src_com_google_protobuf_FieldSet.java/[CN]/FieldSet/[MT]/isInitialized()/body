@@ -1,19 +1,12 @@
 {
-  for (  final Map.Entry<FieldDescriptorType,Object> entry : fields.entrySet()) {
-    final FieldDescriptorType descriptor=entry.getKey();
-    if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
-      if (descriptor.isRepeated()) {
-        for (        final MessageLite element : (List<MessageLite>)entry.getValue()) {
-          if (!element.isInitialized()) {
-            return false;
-          }
-        }
-      }
- else {
-        if (!((MessageLite)entry.getValue()).isInitialized()) {
-          return false;
-        }
-      }
+  for (int i=0; i < fields.getNumArrayEntries(); i++) {
+    if (!isInitialized(fields.getArrayEntryAt(i))) {
+      return false;
+    }
+  }
+  for (  final Map.Entry<FieldDescriptorType,Object> entry : fields.getOverflowEntries()) {
+    if (!isInitialized(entry)) {
+      return false;
     }
   }
   return true;

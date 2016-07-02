@@ -1,0 +1,34 @@
+{
+  ByteString result;
+  RopeByteString leftRope=(left instanceof RopeByteString) ? (RopeByteString)left : null;
+  if (right.size() == 0) {
+    result=left;
+  }
+ else   if (left.size() == 0) {
+    result=right;
+  }
+ else {
+    int newLength=left.size() + right.size();
+    if (newLength < ByteString.CONCATENATE_BY_COPY_SIZE) {
+      result=concatenateBytes(left,right);
+    }
+ else     if (leftRope != null && leftRope.right.size() + right.size() < CONCATENATE_BY_COPY_SIZE) {
+      ByteString newRight=concatenateBytes(leftRope.right,right);
+      result=new RopeByteString(leftRope.left,newRight);
+    }
+ else     if (leftRope != null && leftRope.left.getTreeDepth() > leftRope.right.getTreeDepth() && leftRope.getTreeDepth() > right.getTreeDepth()) {
+      ByteString newRight=new RopeByteString(leftRope.right,right);
+      result=new RopeByteString(leftRope.left,newRight);
+    }
+ else {
+      int newDepth=Math.max(left.getTreeDepth(),right.getTreeDepth()) + 1;
+      if (newLength >= minLengthByDepth[newDepth]) {
+        result=new RopeByteString(left,right);
+      }
+ else {
+        result=new Balancer().balance(left,right);
+      }
+    }
+  }
+  return result;
+}

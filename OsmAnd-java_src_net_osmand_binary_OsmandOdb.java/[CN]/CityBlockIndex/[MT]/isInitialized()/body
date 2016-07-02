@@ -1,9 +1,18 @@
 {
-  for (  net.osmand.binary.OsmandOdb.BuildingIndex element : getBuildingsList()) {
-    if (!element.isInitialized())     return false;
+  byte isInitialized=memoizedIsInitialized;
+  if (isInitialized != -1)   return isInitialized == 1;
+  for (int i=0; i < getBuildingsCount(); i++) {
+    if (!getBuildings(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
-  for (  net.osmand.binary.OsmandOdb.StreetIndex element : getStreetsList()) {
-    if (!element.isInitialized())     return false;
+  for (int i=0; i < getStreetsCount(); i++) {
+    if (!getStreets(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
+  memoizedIsInitialized=1;
   return true;
 }

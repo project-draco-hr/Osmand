@@ -1,16 +1,34 @@
 {
-  if (!hasName)   return false;
-  for (  net.osmand.binary.OsmandOdb.OsmAndRoutingIndex.RouteEncodingRule element : getRulesList()) {
-    if (!element.isInitialized())     return false;
+  byte isInitialized=memoizedIsInitialized;
+  if (isInitialized != -1)   return isInitialized == 1;
+  if (!hasName()) {
+    memoizedIsInitialized=0;
+    return false;
   }
-  for (  net.osmand.binary.OsmandOdb.OsmAndRoutingIndex.RouteDataBox element : getRootBoxesList()) {
-    if (!element.isInitialized())     return false;
+  for (int i=0; i < getRulesCount(); i++) {
+    if (!getRules(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
-  for (  net.osmand.binary.OsmandOdb.OsmAndRoutingIndex.RouteDataBox element : getBasemapBoxesList()) {
-    if (!element.isInitialized())     return false;
+  for (int i=0; i < getRootBoxesCount(); i++) {
+    if (!getRootBoxes(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
-  for (  net.osmand.binary.OsmandOdb.OsmAndRoutingIndex.RouteDataBlock element : getBlocksList()) {
-    if (!element.isInitialized())     return false;
+  for (int i=0; i < getBasemapBoxesCount(); i++) {
+    if (!getBasemapBoxes(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
   }
+  for (int i=0; i < getBlocksCount(); i++) {
+    if (!getBlocks(i).isInitialized()) {
+      memoizedIsInitialized=0;
+      return false;
+    }
+  }
+  memoizedIsInitialized=1;
   return true;
 }

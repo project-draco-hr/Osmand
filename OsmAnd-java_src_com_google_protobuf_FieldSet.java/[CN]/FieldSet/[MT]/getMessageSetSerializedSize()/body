@@ -1,13 +1,10 @@
 {
   int size=0;
-  for (  final Map.Entry<FieldDescriptorType,Object> entry : fields.entrySet()) {
-    final FieldDescriptorType descriptor=entry.getKey();
-    if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE && !descriptor.isRepeated() && !descriptor.isPacked()) {
-      size+=CodedOutputStream.computeMessageSetExtensionSize(entry.getKey().getNumber(),(MessageLite)entry.getValue());
-    }
- else {
-      size+=computeFieldSize(descriptor,entry.getValue());
-    }
+  for (int i=0; i < fields.getNumArrayEntries(); i++) {
+    size+=getMessageSetSerializedSize(fields.getArrayEntryAt(i));
+  }
+  for (  final Map.Entry<FieldDescriptorType,Object> entry : fields.getOverflowEntries()) {
+    size+=getMessageSetSerializedSize(entry);
   }
   return size;
 }

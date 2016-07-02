@@ -1,0 +1,34 @@
+{
+  if (limit - position >= length) {
+    value.copyTo(buffer,offset,position,length);
+    position+=length;
+  }
+ else {
+    final int bytesWritten=limit - position;
+    value.copyTo(buffer,offset,position,bytesWritten);
+    offset+=bytesWritten;
+    length-=bytesWritten;
+    position=limit;
+    refreshBuffer();
+    if (length <= limit) {
+      value.copyTo(buffer,offset,0,length);
+      position=length;
+    }
+ else {
+      InputStream inputStreamFrom=value.newInput();
+      if (offset != inputStreamFrom.skip(offset)) {
+        throw new IllegalStateException("Skip failed? Should never happen.");
+      }
+      while (length > 0) {
+        int bytesToRead=Math.min(length,limit);
+        int bytesRead=inputStreamFrom.read(buffer,0,bytesToRead);
+        if (bytesRead != bytesToRead) {
+          throw new IllegalStateException("Read failed? Should never happen");
+        }
+        output.write(buffer,0,bytesRead);
+        writtenBytes+=bytesRead;
+        length-=bytesRead;
+      }
+    }
+  }
+}

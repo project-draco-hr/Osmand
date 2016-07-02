@@ -11,22 +11,24 @@
   }
  else {
     int pos=bufferSize - bufferPos;
-    totalBytesRetired+=bufferSize;
-    bufferPos=0;
-    bufferSize=0;
-    while (pos < size) {
-      final int n;
-      if (raf != null) {
-        n=raf.skipBytes(size - pos);
-      }
- else {
-        n=(input == null) ? -1 : (int)input.skip(size - pos);
-      }
+    bufferPos=bufferSize;
+    if (raf != null) {
+      bufferPos=0;
+      bufferSize=0;
+      int n=raf.skipBytes(size - pos);
+      totalBytesRetired=(int)raf.getFilePointer();
       if (n <= 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
-      pos+=n;
-      totalBytesRetired+=n;
+    }
+ else {
+      refillBuffer(true);
+      while (size - pos > bufferSize) {
+        pos+=bufferSize;
+        bufferPos=bufferSize;
+        refillBuffer(true);
+      }
+      bufferPos=size - pos;
     }
   }
 }

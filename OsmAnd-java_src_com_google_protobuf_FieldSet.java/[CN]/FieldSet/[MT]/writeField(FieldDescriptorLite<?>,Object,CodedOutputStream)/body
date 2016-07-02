@@ -2,7 +2,7 @@
   WireFormat.FieldType type=descriptor.getLiteType();
   int number=descriptor.getNumber();
   if (descriptor.isRepeated()) {
-    final List valueList=(List)value;
+    final List<?> valueList=(List<?>)value;
     if (descriptor.isPacked()) {
       output.writeTag(number,WireFormat.WIRETYPE_LENGTH_DELIMITED);
       int dataSize=0;
@@ -21,6 +21,11 @@
     }
   }
  else {
-    writeElement(output,type,number,value);
+    if (value instanceof LazyField) {
+      writeElement(output,type,number,((LazyField)value).getValue());
+    }
+ else {
+      writeElement(output,type,number,value);
+    }
   }
 }

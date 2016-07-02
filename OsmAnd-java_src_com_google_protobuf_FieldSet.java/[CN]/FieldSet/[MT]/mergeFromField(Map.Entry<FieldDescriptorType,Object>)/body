@@ -1,0 +1,28 @@
+{
+  final FieldDescriptorType descriptor=entry.getKey();
+  Object otherValue=entry.getValue();
+  if (otherValue instanceof LazyField) {
+    otherValue=((LazyField)otherValue).getValue();
+  }
+  if (descriptor.isRepeated()) {
+    Object value=getField(descriptor);
+    if (value == null) {
+      fields.put(descriptor,new ArrayList((List)otherValue));
+    }
+ else {
+      ((List)value).addAll((List)otherValue);
+    }
+  }
+ else   if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
+    Object value=getField(descriptor);
+    if (value == null) {
+      fields.put(descriptor,otherValue);
+    }
+ else {
+      fields.put(descriptor,descriptor.internalMergeFrom(((MessageLite)value).toBuilder(),(MessageLite)otherValue).build());
+    }
+  }
+ else {
+    fields.put(descriptor,otherValue);
+  }
+}

@@ -1,0 +1,33 @@
+{
+  if (beginIndex < 0) {
+    throw new IndexOutOfBoundsException("Beginning index: " + beginIndex + " < 0");
+  }
+  if (endIndex > totalLength) {
+    throw new IndexOutOfBoundsException("End index: " + endIndex + " > "+ totalLength);
+  }
+  int substringLength=endIndex - beginIndex;
+  if (substringLength < 0) {
+    throw new IndexOutOfBoundsException("Beginning index larger than ending index: " + beginIndex + ", "+ endIndex);
+  }
+  ByteString result;
+  if (substringLength == 0) {
+    result=ByteString.EMPTY;
+  }
+ else   if (substringLength == totalLength) {
+    result=this;
+  }
+ else {
+    if (endIndex <= leftLength) {
+      result=left.substring(beginIndex,endIndex);
+    }
+ else     if (beginIndex >= leftLength) {
+      result=right.substring(beginIndex - leftLength,endIndex - leftLength);
+    }
+ else {
+      ByteString leftSub=left.substring(beginIndex);
+      ByteString rightSub=right.substring(0,endIndex - leftLength);
+      result=new RopeByteString(leftSub,rightSub);
+    }
+  }
+  return result;
+}

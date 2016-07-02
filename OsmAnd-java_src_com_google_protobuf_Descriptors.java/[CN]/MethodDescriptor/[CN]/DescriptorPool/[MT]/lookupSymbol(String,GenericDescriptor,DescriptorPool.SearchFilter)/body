@@ -1,0 +1,44 @@
+{
+  GenericDescriptor result;
+  if (name.startsWith(".")) {
+    result=findSymbol(name.substring(1),filter);
+  }
+ else {
+    final int firstPartLength=name.indexOf('.');
+    final String firstPart;
+    if (firstPartLength == -1) {
+      firstPart=name;
+    }
+ else {
+      firstPart=name.substring(0,firstPartLength);
+    }
+    final StringBuilder scopeToTry=new StringBuilder(relativeTo.getFullName());
+    while (true) {
+      final int dotpos=scopeToTry.lastIndexOf(".");
+      if (dotpos == -1) {
+        result=findSymbol(name,filter);
+        break;
+      }
+ else {
+        scopeToTry.setLength(dotpos + 1);
+        scopeToTry.append(firstPart);
+        result=findSymbol(scopeToTry.toString(),DescriptorPool.SearchFilter.AGGREGATES_ONLY);
+        if (result != null) {
+          if (firstPartLength != -1) {
+            scopeToTry.setLength(dotpos + 1);
+            scopeToTry.append(name);
+            result=findSymbol(scopeToTry.toString(),filter);
+          }
+          break;
+        }
+        scopeToTry.setLength(dotpos);
+      }
+    }
+  }
+  if (result == null) {
+    throw new DescriptorValidationException(relativeTo,'\"' + name + "\" is not defined.");
+  }
+ else {
+    return result;
+  }
+}

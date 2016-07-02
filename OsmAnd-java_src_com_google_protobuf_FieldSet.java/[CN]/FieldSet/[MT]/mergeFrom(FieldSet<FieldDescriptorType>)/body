@@ -1,27 +1,8 @@
 {
-  for (  final Map.Entry<FieldDescriptorType,Object> entry : other.fields.entrySet()) {
-    final FieldDescriptorType descriptor=entry.getKey();
-    final Object otherValue=entry.getValue();
-    if (descriptor.isRepeated()) {
-      Object value=fields.get(descriptor);
-      if (value == null) {
-        fields.put(descriptor,new ArrayList((List)otherValue));
-      }
- else {
-        ((List)value).addAll((List)otherValue);
-      }
-    }
- else     if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
-      Object value=fields.get(descriptor);
-      if (value == null) {
-        fields.put(descriptor,otherValue);
-      }
- else {
-        fields.put(descriptor,descriptor.internalMergeFrom(((MessageLite)value).toBuilder(),(MessageLite)otherValue).build());
-      }
-    }
- else {
-      fields.put(descriptor,otherValue);
-    }
+  for (int i=0; i < other.fields.getNumArrayEntries(); i++) {
+    mergeFromField(other.fields.getArrayEntryAt(i));
+  }
+  for (  final Map.Entry<FieldDescriptorType,Object> entry : other.fields.getOverflowEntries()) {
+    mergeFromField(entry);
   }
 }

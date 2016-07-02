@@ -2,6 +2,14 @@
   this.pool=pool;
   this.proto=proto;
   this.dependencies=dependencies.clone();
+  this.publicDependencies=new FileDescriptor[proto.getPublicDependencyCount()];
+  for (int i=0; i < proto.getPublicDependencyCount(); i++) {
+    int index=proto.getPublicDependency(i);
+    if (index < 0 || index >= this.dependencies.length) {
+      throw new DescriptorValidationException(this,"Invalid public dependency index.");
+    }
+    this.publicDependencies[i]=this.dependencies[proto.getPublicDependency(i)];
+  }
   pool.addPackage(getPackage(),this);
   messageTypes=new Descriptor[proto.getMessageTypeCount()];
   for (int i=0; i < proto.getMessageTypeCount(); i++) {

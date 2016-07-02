@@ -1,21 +1,22 @@
 {
-  final byte[] result=new byte[input.length()];
+  ByteString input=ByteString.copyFromUtf8(charString.toString());
+  final byte[] result=new byte[input.size()];
   int pos=0;
-  for (int i=0; i < input.length(); i++) {
-    char c=input.charAt(i);
+  for (int i=0; i < input.size(); i++) {
+    byte c=input.byteAt(i);
     if (c == '\\') {
-      if (i + 1 < input.length()) {
+      if (i + 1 < input.size()) {
         ++i;
-        c=input.charAt(i);
+        c=input.byteAt(i);
         if (isOctal(c)) {
           int code=digitValue(c);
-          if (i + 1 < input.length() && isOctal(input.charAt(i + 1))) {
+          if (i + 1 < input.size() && isOctal(input.byteAt(i + 1))) {
             ++i;
-            code=code * 8 + digitValue(input.charAt(i));
+            code=code * 8 + digitValue(input.byteAt(i));
           }
-          if (i + 1 < input.length() && isOctal(input.charAt(i + 1))) {
+          if (i + 1 < input.size() && isOctal(input.byteAt(i + 1))) {
             ++i;
-            code=code * 8 + digitValue(input.charAt(i));
+            code=code * 8 + digitValue(input.byteAt(i));
           }
           result[pos++]=(byte)code;
         }
@@ -53,21 +54,21 @@ result[pos++]='\"';
 break;
 case 'x':
 int code=0;
-if (i + 1 < input.length() && isHex(input.charAt(i + 1))) {
+if (i + 1 < input.size() && isHex(input.byteAt(i + 1))) {
 ++i;
-code=digitValue(input.charAt(i));
+code=digitValue(input.byteAt(i));
 }
  else {
 throw new InvalidEscapeSequenceException("Invalid escape sequence: '\\x' with no digits");
 }
-if (i + 1 < input.length() && isHex(input.charAt(i + 1))) {
+if (i + 1 < input.size() && isHex(input.byteAt(i + 1))) {
 ++i;
-code=code * 16 + digitValue(input.charAt(i));
+code=code * 16 + digitValue(input.byteAt(i));
 }
 result[pos++]=(byte)code;
 break;
 default :
-throw new InvalidEscapeSequenceException("Invalid escape sequence: '\\" + c + '\'');
+throw new InvalidEscapeSequenceException("Invalid escape sequence: '\\" + (char)c + '\'');
 }
 }
 }
@@ -76,7 +77,7 @@ throw new InvalidEscapeSequenceException("Invalid escape sequence: '\\' at end o
 }
 }
  else {
-result[pos++]=(byte)c;
+result[pos++]=c;
 }
 }
 return ByteString.copyFrom(result,0,pos);

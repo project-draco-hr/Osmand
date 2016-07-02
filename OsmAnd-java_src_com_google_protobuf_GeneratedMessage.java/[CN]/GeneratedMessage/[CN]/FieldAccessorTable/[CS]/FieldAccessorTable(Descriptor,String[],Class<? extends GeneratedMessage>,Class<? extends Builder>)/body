@@ -1,29 +1,4 @@
 {
-  this.descriptor=descriptor;
-  fields=new FieldAccessor[descriptor.getFields().size()];
-  for (int i=0; i < fields.length; i++) {
-    final FieldDescriptor field=descriptor.getFields().get(i);
-    if (field.isRepeated()) {
-      if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        fields[i]=new RepeatedMessageFieldAccessor(field,camelCaseNames[i],messageClass,builderClass);
-      }
- else       if (field.getJavaType() == FieldDescriptor.JavaType.ENUM) {
-        fields[i]=new RepeatedEnumFieldAccessor(field,camelCaseNames[i],messageClass,builderClass);
-      }
- else {
-        fields[i]=new RepeatedFieldAccessor(field,camelCaseNames[i],messageClass,builderClass);
-      }
-    }
- else {
-      if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        fields[i]=new SingularMessageFieldAccessor(field,camelCaseNames[i],messageClass,builderClass);
-      }
- else       if (field.getJavaType() == FieldDescriptor.JavaType.ENUM) {
-        fields[i]=new SingularEnumFieldAccessor(field,camelCaseNames[i],messageClass,builderClass);
-      }
- else {
-        fields[i]=new SingularFieldAccessor(field,camelCaseNames[i],messageClass,builderClass);
-      }
-    }
-  }
+  this(descriptor,camelCaseNames);
+  ensureFieldAccessorsInitialized(messageClass,builderClass);
 }

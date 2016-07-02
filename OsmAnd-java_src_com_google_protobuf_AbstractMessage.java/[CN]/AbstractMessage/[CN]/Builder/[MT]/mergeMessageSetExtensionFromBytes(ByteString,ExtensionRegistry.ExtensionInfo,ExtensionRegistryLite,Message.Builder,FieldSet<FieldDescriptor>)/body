@@ -1,0 +1,31 @@
+{
+  FieldDescriptor field=extension.descriptor;
+  boolean hasOriginalValue=hasOriginalMessage(builder,extensions,field);
+  if (hasOriginalValue || ExtensionRegistryLite.isEagerlyParseMessageSets()) {
+    Message value=null;
+    if (hasOriginalValue) {
+      Message originalMessage=getOriginalMessage(builder,extensions,field);
+      Message.Builder subBuilder=originalMessage.toBuilder();
+      subBuilder.mergeFrom(rawBytes,extensionRegistry);
+      value=subBuilder.buildPartial();
+    }
+ else {
+      value=extension.defaultInstance.getParserForType().parsePartialFrom(rawBytes,extensionRegistry);
+    }
+    setField(builder,extensions,field,value);
+  }
+ else {
+    LazyField lazyField=new LazyField(extension.defaultInstance,extensionRegistry,rawBytes);
+    if (builder != null) {
+      if (builder instanceof ExtendableBuilder) {
+        builder.setField(field,lazyField);
+      }
+ else {
+        builder.setField(field,lazyField.getValue());
+      }
+    }
+ else {
+      extensions.setField(field,lazyField);
+    }
+  }
+}
