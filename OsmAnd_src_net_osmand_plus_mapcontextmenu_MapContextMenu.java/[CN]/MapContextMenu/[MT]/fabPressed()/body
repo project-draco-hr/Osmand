@@ -6,8 +6,15 @@
     DirectionsDialogs.addWaypointDialogAndLaunchMap(mapActivity,latLon.getLatitude(),latLon.getLongitude(),getPointDescriptionForTarget());
   }
  else   if (targets.getIntermediatePoints().isEmpty()) {
+    boolean hasPointToStart=settings.restorePointToStart();
     targets.navigateToPoint(latLon,true,-1,getPointDescriptionForTarget());
-    mapActivity.getMapActions().enterRoutePlanningModeGivenGpx(null,null,null,true,true);
+    if (!hasPointToStart) {
+      mapActivity.getMapActions().enterRoutePlanningModeGivenGpx(null,null,null,true,true);
+    }
+ else {
+      TargetPoint start=targets.getPointToStart();
+      mapActivity.getMapActions().enterRoutePlanningModeGivenGpx(null,start.point,start.getOriginalPointDescription(),true,true);
+    }
     close();
   }
  else {
