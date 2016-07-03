@@ -2,6 +2,7 @@
   if (event.getPointerCount() != 1) {
     resetEvents();
     mIsDoubleTapping=false;
+    mScrolling=false;
     return false;
   }
   if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -17,13 +18,17 @@
       }
       handled=true;
     }
- else {
+ else     if (!mScrolling) {
       firstUp=MotionEvent.obtain(event);
+    }
+ else {
+      resetEvents();
     }
     if (handled) {
       resetEvents();
     }
     mIsDoubleTapping=false;
+    mScrolling=false;
     return handled;
   }
  else {
@@ -42,6 +47,9 @@
       }
     }
  else     if (event.getAction() == MotionEvent.ACTION_MOVE) {
+      if (!mScrolling && secondDown == null && firstDown != null) {
+        mScrolling=calculateSqaredDistance(firstDown,event) > mTouchSlopSquare;
+      }
       if (isConfirmedScale(secondDown,event)) {
         mIsInZoomMode=true;
       }
