@@ -25,6 +25,9 @@
           }
           final PopupMenu optionsMenu=new PopupMenu(ctx,more);
           DirectionsDialogs.setupPopUpMenuIcon(optionsMenu);
+          final TargetPointsHelper targetPointsHelper=app.getTargetPointsHelper();
+          final TargetPoint start=targetPointsHelper.getPointToStart();
+          final TargetPoint finish=targetPointsHelper.getPointToNavigate();
           MenuItem item;
           if (hasActivePoints) {
             item=optionsMenu.getMenu().add(R.string.intermediate_items_sort_by_distance).setIcon(app.getIconsCache().getThemedIcon(R.drawable.ic_sort_waypoint_dark));
@@ -38,26 +41,32 @@
             item=optionsMenu.getMenu().add(R.string.switch_start_finish).setIcon(app.getIconsCache().getThemedIcon(R.drawable.ic_action_undo_dark));
             item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
               @Override public boolean onMenuItemClick(              MenuItem item){
-                TargetPointsHelper targetPointsHelper=app.getTargetPointsHelper();
-                TargetPoint start=targetPointsHelper.getPointToStart();
-                TargetPoint finish=targetPointsHelper.getPointToNavigate();
-                targetPointsHelper.setStartPoint(new LatLon(finish.getLatitude(),finish.getLongitude()),false,finish.getPointDescription(ctx));
-                if (start == null) {
-                  Location loc=app.getLocationProvider().getLastKnownLocation();
-                  if (loc != null) {
-                    targetPointsHelper.navigateToPoint(new LatLon(loc.getLatitude(),loc.getLongitude()),true,-1);
-                  }
-                }
- else {
-                  targetPointsHelper.navigateToPoint(new LatLon(start.getLatitude(),start.getLongitude()),true,-1,start.getPointDescription(ctx));
-                }
-                if (helper.helperCallbacks != null) {
-                  helper.helperCallbacks.reloadAdapter();
-                }
+                switchStartAndFinish(targetPointsHelper,finish,ctx,start,app,helper);
                 return true;
               }
             }
 );
+            if (start != null) {
+              if (targetPointsHelper.getIntermediatePoints().size() > 0) {
+                item=optionsMenu.getMenu().add(R.string.shared_string_move_down).setIcon(app.getIconsCache().getThemedIcon(R.drawable.ic_action_arrow_drop_down));
+                item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+                  @Override public boolean onMenuItemClick(                  MenuItem item){
+                    switchStartAndFirstIntermediate(targetPointsHelper,ctx,start,helper);
+                    return true;
+                  }
+                }
+);
+              }
+              item=optionsMenu.getMenu().add(R.string.shared_string_remove).setIcon(app.getIconsCache().getThemedIcon(R.drawable.ic_action_remove_dark));
+              item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+                @Override public boolean onMenuItemClick(                MenuItem item){
+                  targetPointsHelper.setStartPoint(null,true,null);
+                  updateControls(ctx,helper);
+                  return true;
+                }
+              }
+);
+            }
           }
           if (optionsMenu.getMenu().size() > 0) {
             optionsMenu.show();
@@ -95,13 +104,19 @@
           }
           final int index=t;
           MenuItem item;
-          if (index > 0 && count > 1) {
+          final TargetPointsHelper targetPointsHelper=app.getTargetPointsHelper();
+          final TargetPoint start=targetPointsHelper.getPointToStart();
+          if (count > 1 && (index > 0 || start != null)) {
             item=optionsMenu.getMenu().add(R.string.shared_string_move_up).setIcon(app.getIconsCache().getThemedIcon(R.drawable.ic_action_arrow_drop_up));
             item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
               @Override public boolean onMenuItemClick(              MenuItem item){
-                if (helper != null && helper.helperCallbacks != null) {
+                if (index == 0) {
+                  switchStartAndFirstIntermediate(targetPointsHelper,ctx,start,helper);
+                }
+ else                 if (helper != null && helper.helperCallbacks != null) {
                   helper.helperCallbacks.exchangeWaypoints(index,index - 1);
                 }
+                updateRouteInfoMenu(ctx);
                 return true;
               }
             }
@@ -114,6 +129,7 @@
                 if (helper != null && helper.helperCallbacks != null) {
                   helper.helperCallbacks.exchangeWaypoints(index,index + 1);
                 }
+                updateRouteInfoMenu(ctx);
                 return true;
               }
             }
@@ -122,7 +138,7 @@
           item=optionsMenu.getMenu().add(R.string.shared_string_remove).setIcon(app.getIconsCache().getThemedIcon(R.drawable.ic_action_remove_dark));
           item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
             @Override public boolean onMenuItemClick(            MenuItem item){
-              deletePoint(app,adapter,helper,point,deletedPoints,true);
+              deletePoint(app,ctx,adapter,helper,point,deletedPoints,true);
               return true;
             }
           }
@@ -140,7 +156,7 @@
     ((ImageButton)remove).setImageDrawable(app.getIconsCache().getIcon(R.drawable.ic_action_remove_dark,!nightMode));
     remove.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View view){
-        deletePoint(app,adapter,helper,point,deletedPoints,true);
+        deletePoint(app,ctx,adapter,helper,point,deletedPoints,true);
       }
     }
 );
