@@ -1,0 +1,28 @@
+{
+  new AsyncTask<PointI,Void,String>(){
+    @Override protected String doInBackground(    PointI... params){
+      final String[] resultString={null};
+      ReverseGeocoder geocoder=new ReverseGeocoder(obfsCollection,roadLocator);
+      final ReverseGeocoder.Criteria criteria=new ReverseGeocoder.Criteria();
+      criteria.setPosition31(new NullablePointI(params[0]));
+      ISearch.INewResultEntryCallback geocoderResultCallback=new ISearch.INewResultEntryCallback(){
+        @Override public void method(        ISearch.Criteria criteria,        ISearch.IResultEntry resultEntry){
+          ReverseGeocoderResultEntry result=new ReverseGeocoderResultEntry(resultEntry);
+          resultString[0]=result.toString();
+        }
+      }
+;
+      geocoder.performSearch(criteria,geocoderResultCallback.getBinding(),new IQueryController(){
+        @Override public boolean isAborted(){
+          return false;
+        }
+      }
+);
+      return resultString[0];
+    }
+    @Override protected void onPostExecute(    String s){
+      Toast.makeText(MainActivity.this,s,Toast.LENGTH_SHORT).show();
+    }
+  }
+.execute(point31);
+}
