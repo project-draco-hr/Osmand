@@ -1,9 +1,21 @@
 {
-  hasExternalStoragePermission=DownloadActivity.hasPermissionToWriteExternalStorage(getActivity());
-  internalStorage=getInternalStorageDirectory(getActivity());
+  Activity activity=getActivity();
+  hasExternalStoragePermission=DownloadActivity.hasPermissionToWriteExternalStorage(activity);
+  File internalStorage=getInternalStorageDirectory(activity);
+  File external1Storage=getExternal1StorageDirectory(activity);
+  if (external1Storage != null && external1Storage.exists() && OsmandSettings.isWritable(external1Storage)) {
+    deviceStorage=external1Storage;
+    deviceStorageType=OsmandSettings.EXTERNAL_STORAGE_TYPE_EXTERNAL_FILE;
+    deviceStorageName=getString(R.string.storage_directory_external);
+  }
+ else {
+    deviceStorage=internalStorage;
+    deviceStorageType=OsmandSettings.EXTERNAL_STORAGE_TYPE_INTERNAL_FILE;
+    deviceStorageName=getString(R.string.storage_directory_default);
+  }
   if (hasExternalStoragePermission) {
-    sharedStorage=getSharedStorageDirectory(getActivity());
-    externalStorage=getMyApplication().getSettings().getSecondaryStorage();
+    sharedStorage=getSharedStorageDirectory(activity);
+    cardStorage=getMyApplication().getSettings().getSecondaryStorage();
   }
   Bundle args=null;
   if (savedInstanceState != null) {
@@ -20,12 +32,13 @@
   if (storageReadOnly) {
     ((TextView)view.findViewById(R.id.description)).setText(getString(R.string.storage_directory_readonly_desc));
   }
-  View internalStorageRow=view.findViewById(R.id.deviceMemoryRow);
-  internalStorageRow.setOnClickListener(internalMemoryOnClickListener);
-  ImageView internalStorageImageView=(ImageView)view.findViewById(R.id.deviceMemoryImageView);
-  internalStorageImageView.setImageDrawable(getContentIcon(R.drawable.ic_sdcard));
-  TextView internalStorageDescription=(TextView)view.findViewById(R.id.deviceMemoryDescription);
-  internalStorageDescription.setText(getFreeSpace(internalStorage));
+  View deviceStorageRow=view.findViewById(R.id.deviceMemoryRow);
+  deviceStorageRow.setOnClickListener(deviceMemoryOnClickListener);
+  ImageView deviceStorageImageView=(ImageView)view.findViewById(R.id.deviceMemoryImageView);
+  deviceStorageImageView.setImageDrawable(getContentIcon(R.drawable.ic_sdcard));
+  TextView deviceStorageDescription=(TextView)view.findViewById(R.id.deviceMemoryDescription);
+  deviceStorageDescription.setText(deviceStorageName);
+  deviceStorageDescription.setText(getFreeSpace(internalStorage));
   View sharedMemoryRow=view.findViewById(R.id.sharedMemoryRow);
   if (hasExternalStoragePermission && sharedStorage != null) {
     sharedMemoryRow.setOnClickListener(sharedMemoryOnClickListener);
@@ -39,12 +52,12 @@
     sharedMemoryRow.setVisibility(View.GONE);
   }
   View memoryStickRow=view.findViewById(R.id.memoryStickRow);
-  if (hasExternalStoragePermission && externalStorage != null) {
-    memoryStickRow.setOnClickListener(externalMemoryOnClickListener);
+  if (hasExternalStoragePermission && cardStorage != null) {
+    memoryStickRow.setOnClickListener(memoryStickOnClickListenesr);
     ImageView memoryStickImageView=(ImageView)view.findViewById(R.id.memoryStickImageView);
     memoryStickImageView.setImageDrawable(getContentIcon(R.drawable.ic_sdcard));
     TextView memoryStickDescription=(TextView)view.findViewById(R.id.memoryStickDescription);
-    memoryStickDescription.setText(getFreeSpace(externalStorage));
+    memoryStickDescription.setText(getFreeSpace(cardStorage));
   }
  else {
     view.findViewById(R.id.divExtStorage).setVisibility(View.GONE);
