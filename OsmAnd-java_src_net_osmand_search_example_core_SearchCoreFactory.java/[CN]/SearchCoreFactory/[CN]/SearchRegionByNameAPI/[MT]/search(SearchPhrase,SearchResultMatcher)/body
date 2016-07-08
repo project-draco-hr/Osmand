@@ -1,0 +1,22 @@
+{
+  if (phrase.hasObjectType(ObjectType.REGION)) {
+    return false;
+  }
+  for (  BinaryMapIndexReader bmir : phrase.getOfflineIndexes()) {
+    if (bmir.getRegionCenter() != null) {
+      SearchResult sr=new SearchResult(phrase);
+      sr.mainName=bmir.getRegionName();
+      sr.object=bmir;
+      sr.objectType=ObjectType.REGION;
+      sr.location=bmir.getRegionCenter();
+      sr.preferredZoom=6;
+      if (phrase.getLastWord().length() <= 2 && phrase.isNoSelectedType()) {
+        resultMatcher.publish(sr);
+      }
+ else       if (phrase.getNameStringMatcher().matches(sr.mainName)) {
+        resultMatcher.publish(sr);
+      }
+    }
+  }
+  return true;
+}

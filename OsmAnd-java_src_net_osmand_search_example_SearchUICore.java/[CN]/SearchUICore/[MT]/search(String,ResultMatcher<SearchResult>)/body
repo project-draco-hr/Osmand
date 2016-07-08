@@ -1,0 +1,33 @@
+{
+  List<SearchResult> list=new ArrayList<>();
+  final int request=requestNumber.incrementAndGet();
+  final SearchPhrase phrase=this.phrase.generateNewPhrase(text,searchSettings);
+  this.phrase=phrase;
+  list.addAll(filterCurrentResults(phrase));
+  System.out.println("> Search phrase " + phrase + " "+ list.size());
+  singleThreadedExecutor.submit(new Runnable(){
+    @Override public void run(){
+      try {
+        SearchResultMatcher rm=new SearchResultMatcher(matcher,request);
+        if (rm.isCancelled()) {
+          return;
+        }
+        Thread.sleep(200);
+        searchInBackground(phrase,rm);
+        if (!rm.isCancelled()) {
+          sortSearchResults(phrase,rm.getRequestResults());
+          System.out.println(">> Search phrase " + phrase + " "+ rm.getRequestResults().size());
+          currentSearchResults=rm.getRequestResults();
+          if (onResultsComplete != null) {
+            onResultsComplete.run();
+          }
+        }
+      }
+ catch (      InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+);
+  return list;
+}

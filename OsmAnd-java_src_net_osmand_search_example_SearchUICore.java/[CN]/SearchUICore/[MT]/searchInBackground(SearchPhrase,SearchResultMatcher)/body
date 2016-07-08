@@ -1,0 +1,26 @@
+{
+  for (  SearchWord sw : phrase.getWords()) {
+    if (sw.getType() == ObjectType.REGION) {
+      phrase.selectFile((BinaryMapIndexReader)sw.getResult().object);
+    }
+  }
+  ArrayList<SearchCoreAPI> lst=new ArrayList<>(apis);
+  Collections.sort(lst,new Comparator<SearchCoreAPI>(){
+    @Override public int compare(    SearchCoreAPI o1,    SearchCoreAPI o2){
+      return Algorithms.compare(o1.getSearchPriority(phrase),o2.getSearchPriority(phrase));
+    }
+  }
+);
+  for (  SearchCoreAPI api : lst) {
+    if (matcher.isCancelled()) {
+      break;
+    }
+    try {
+      api.search(phrase,matcher);
+    }
+ catch (    IOException e) {
+      LOG.error(e.getMessage(),e);
+      e.printStackTrace();
+    }
+  }
+}
