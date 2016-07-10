@@ -4,6 +4,7 @@
       phrase.selectFile((BinaryMapIndexReader)sw.getResult().object);
     }
   }
+  phrase.sortFiles();
   ArrayList<SearchCoreAPI> lst=new ArrayList<>(apis);
   Collections.sort(lst,new Comparator<SearchCoreAPI>(){
     @Override public int compare(    SearchCoreAPI o1,    SearchCoreAPI o2){
@@ -14,6 +15,9 @@
   for (  SearchCoreAPI api : lst) {
     if (matcher.isCancelled()) {
       break;
+    }
+    if (api.getSearchPriority(phrase) == -1) {
+      continue;
     }
     try {
       api.search(phrase,matcher);

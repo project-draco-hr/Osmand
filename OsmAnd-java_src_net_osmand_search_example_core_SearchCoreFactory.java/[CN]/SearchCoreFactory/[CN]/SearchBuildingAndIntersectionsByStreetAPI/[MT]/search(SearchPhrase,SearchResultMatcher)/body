@@ -1,5 +1,63 @@
 {
-  if (isLastWordStreet(phrase)) {
+  if (phrase.isLastWord(ObjectType.STREET)) {
+    Street s=(Street)phrase.getLastSelectedWord().getResult().object;
+    BinaryMapIndexReader file=phrase.getLastSelectedWord().getResult().file;
+    String lw=phrase.getLastWord();
+    NameStringMatcher sm=phrase.getNameStringMatcher();
+    if (cacheBuilding != s) {
+      cacheBuilding=s;
+      SearchRequest<Building> sr=BinaryMapIndexReader.buildAddressRequest(new ResultMatcher<Building>(){
+        @Override public boolean publish(        Building object){
+          return true;
+        }
+        @Override public boolean isCancelled(){
+          return resultMatcher.isCancelled();
+        }
+      }
+);
+      file.preloadBuildings(s,sr);
+      Collections.sort(s.getBuildings(),new Comparator<Building>(){
+        @Override public int compare(        Building o1,        Building o2){
+          int i1=Algorithms.extractFirstIntegerNumber(o1.getName());
+          int i2=Algorithms.extractFirstIntegerNumber(o2.getName());
+          if (i1 == i2) {
+            return 0;
+          }
+          return Algorithms.compare(i1,i2);
+        }
+      }
+);
+    }
+    for (    Building b : s.getBuildings()) {
+      SearchResult res=new SearchResult(phrase);
+      if (!sm.matches(b.getName())) {
+        continue;
+      }
+      res.localeName=b.getName(phrase.getSettings().getLang());
+      res.otherNames=b.getAllNames(true);
+      res.object=b;
+      res.file=file;
+      res.objectType=ObjectType.HOUSE;
+      res.location=b.getLocation();
+      res.preferredZoom=16;
+      resultMatcher.publish(res);
+    }
+    if (!Algorithms.isEmpty(lw) && !Character.isDigit(lw.charAt(0))) {
+      for (      Street street : s.getIntersectedStreets()) {
+        SearchResult res=new SearchResult(phrase);
+        if (!sm.matches(street.getName()) && !sm.matches(street.getAllNames(true))) {
+          continue;
+        }
+        res.otherNames=street.getAllNames(true);
+        res.localeName=street.getName(phrase.getSettings().getLang());
+        res.object=street;
+        res.file=file;
+        res.objectType=ObjectType.STREET_INTERSECTION;
+        res.location=street.getLocation();
+        res.preferredZoom=16;
+        resultMatcher.publish(res);
+      }
+    }
   }
   return true;
 }
