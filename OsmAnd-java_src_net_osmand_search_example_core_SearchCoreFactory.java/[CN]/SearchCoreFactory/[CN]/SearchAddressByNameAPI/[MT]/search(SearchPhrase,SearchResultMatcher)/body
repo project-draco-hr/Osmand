@@ -1,19 +1,17 @@
 {
-  if (!phrase.hasObjectType(ObjectType.REGION)) {
-    return false;
-  }
   if (phrase.getLastWord().isEmpty()) {
     return false;
   }
-  if (isLastWordPoi(phrase) || isNoSelectedType(phrase) || phrase.isLastWord(ObjectType.CITY,ObjectType.VILLAGE,ObjectType.POSTCODE)|| phrase.isLastWord(ObjectType.REGION)|| phrase.getRadiusLevel() >= 2) {
+  if (phrase.isNoSelectedType() || phrase.isLastWord(ObjectType.CITY,ObjectType.VILLAGE,ObjectType.POSTCODE) || phrase.isLastWord(ObjectType.REGION)|| phrase.getRadiusLevel() >= 2) {
     int letters=phrase.getLastWord().length() / 3 + 1;
     final boolean locSpecified=false;
     LatLon loc=phrase.getLastTokenLocation();
-    final QuadRect streetBbox=getBBoxToSearch(DEFAULT_BBOX_RADIUS * letters,phrase.getRadiusLevel(),phrase.getLastTokenLocation());
-    final QuadRect postcodeBbox=getBBoxToSearch(DEFAULT_BBOX_RADIUS * 2 * letters,phrase.getRadiusLevel(),phrase.getLastTokenLocation());
-    final QuadRect villagesBbox=getBBoxToSearch(DEFAULT_BBOX_RADIUS * letters,phrase.getRadiusLevel(),phrase.getLastTokenLocation());
-    final QuadRect cityBbox=getBBoxToSearch(DEFAULT_BBOX_RADIUS * 4 * letters,phrase.getRadiusLevel(),phrase.getLastTokenLocation());
+    final QuadRect streetBbox=getBBoxToSearch(DEFAULT_BBOX_RADIUS,phrase.getRadiusLevel(),phrase.getLastTokenLocation());
+    final QuadRect postcodeBbox=getBBoxToSearch(DEFAULT_BBOX_RADIUS * 5,phrase.getRadiusLevel(),phrase.getLastTokenLocation());
+    final QuadRect villagesBbox=getBBoxToSearch(DEFAULT_BBOX_RADIUS * 5,phrase.getRadiusLevel(),phrase.getLastTokenLocation());
+    final QuadRect cityBbox=getBBoxToSearch(DEFAULT_BBOX_RADIUS * 10,phrase.getRadiusLevel(),phrase.getLastTokenLocation());
     final int priority=isNoSelectedType(phrase) ? 1 : 3;
+    final BinaryMapIndexReader[] currentFile=new BinaryMapIndexReader[1];
     ResultMatcher<MapObject> rm=new ResultMatcher<MapObject>(){
       int limit=0;
       @Override public boolean publish(      MapObject object){
@@ -22,7 +20,9 @@
         }
         SearchResult sr=new SearchResult(phrase);
         sr.object=object;
-        sr.mainName=object.getName();
+        sr.file=currentFile[0];
+        sr.localeName=object.getName(phrase.getSettings().getLang());
+        sr.otherNames=object.getAllNames(true);
         sr.location=object.getLocation();
         sr.priorityDistance=1;
         sr.priority=priority;
@@ -69,9 +69,10 @@
     }
 ;
     for (    BinaryMapIndexReader r : phrase.getOfflineIndexes()) {
-      SearchRequest<MapObject> req=BinaryMapIndexReader.buildAddressByNameRequest(rm,phrase.getLastWord().toLowerCase(),StringMatcherMode.CHECK_ONLY_STARTS_WITH);
+      currentFile[0]=r;
+      SearchRequest<MapObject> req=BinaryMapIndexReader.buildAddressByNameRequest(rm,phrase.getLastWord().toLowerCase(),StringMatcherMode.CHECK_STARTS_FROM_SPACE);
       if (locSpecified) {
-        req.setBBoxRadius(loc.getLatitude(),loc.getLongitude(),DEFAULT_BBOX_RADIUS * 4 * letters);
+        req.setBBoxRadius(loc.getLatitude(),loc.getLongitude(),DEFAULT_BBOX_RADIUS * 20);
       }
       r.searchAddressDataByName(req);
     }
