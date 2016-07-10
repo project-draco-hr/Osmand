@@ -1,6 +1,58 @@
 {
-  if (isLastWordPoi(phrase)) {
+  if (phrase.isLastWord(ObjectType.POI_TYPE)) {
+    final AbstractPoiType pt=(AbstractPoiType)phrase.getLastSelectedWord().getResult().object;
     QuadRect bbox=getBBoxToSearch(10000,phrase.getRadiusLevel(),phrase.getLastTokenLocation());
+    List<BinaryMapIndexReader> oo=phrase.getOfflineIndexes();
+    final BinaryMapIndexReader[] selected=new BinaryMapIndexReader[1];
+    final NameStringMatcher ns=phrase.getNameStringMatcher();
+    SearchRequest<Amenity> req=BinaryMapIndexReader.buildSearchPoiRequest((int)bbox.left,(int)bbox.right,(int)bbox.top,(int)bbox.bottom,-1,new SearchPoiTypeFilter(){
+      @Override public boolean isEmpty(){
+        return false;
+      }
+      @Override public boolean accept(      PoiCategory type,      String subcategory){
+        PoiType st=types.getPoiTypeByKey(subcategory);
+        if (st != null && pt.getKeyName().equals(st.getKeyName())) {
+          return true;
+        }
+        return false;
+      }
+    }
+,new ResultMatcher<Amenity>(){
+      @Override public boolean publish(      Amenity object){
+        SearchResult res=new SearchResult(phrase);
+        res.localeName=object.getName(phrase.getSettings().getLang(),true);
+        res.otherNames=object.getAllNames(true);
+        if (!Algorithms.isEmpty(phrase.getLastWord()) && !(ns.matches(res.localeName) || ns.matches(res.otherNames))) {
+          return false;
+        }
+        if (Algorithms.isEmpty(res.localeName)) {
+          AbstractPoiType st=types.getAnyPoiTypeByKey(object.getSubType());
+          if (st != null) {
+            res.localeName=st.getTranslation();
+          }
+ else {
+            res.localeName="sub:" + object.getSubType();
+          }
+        }
+        res.object=object;
+        res.preferredZoom=17;
+        res.file=selected[0];
+        res.location=object.getLocation();
+        res.priority=5;
+        res.priorityDistance=1;
+        res.objectType=ObjectType.POI;
+        resultMatcher.publish(res);
+        return false;
+      }
+      @Override public boolean isCancelled(){
+        return resultMatcher.isCancelled();
+      }
+    }
+);
+    for (    BinaryMapIndexReader o : oo) {
+      selected[0]=o;
+      o.searchPoi(req);
+    }
   }
   return true;
 }

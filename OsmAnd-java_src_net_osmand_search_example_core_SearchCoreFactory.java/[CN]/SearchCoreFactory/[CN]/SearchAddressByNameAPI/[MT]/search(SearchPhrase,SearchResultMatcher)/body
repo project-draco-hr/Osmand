@@ -3,8 +3,7 @@
     return false;
   }
   if (phrase.isNoSelectedType() || phrase.isLastWord(ObjectType.CITY,ObjectType.VILLAGE,ObjectType.POSTCODE) || phrase.isLastWord(ObjectType.REGION)|| phrase.getRadiusLevel() >= 2) {
-    int letters=phrase.getLastWord().length() / 3 + 1;
-    final boolean locSpecified=false;
+    final boolean locSpecified=phrase.getLastTokenLocation() != null;
     LatLon loc=phrase.getLastTokenLocation();
     final QuadRect streetBbox=getBBoxToSearch(DEFAULT_BBOX_RADIUS,phrase.getRadiusLevel(),phrase.getLastTokenLocation());
     final QuadRect postcodeBbox=getBBoxToSearch(DEFAULT_BBOX_RADIUS * 5,phrase.getRadiusLevel(),phrase.getLastTokenLocation());
@@ -21,7 +20,7 @@
         SearchResult sr=new SearchResult(phrase);
         sr.object=object;
         sr.file=currentFile[0];
-        sr.localeName=object.getName(phrase.getSettings().getLang());
+        sr.localeName=object.getName(phrase.getSettings().getLang(),true);
         sr.otherNames=object.getAllNames(true);
         sr.location=object.getLocation();
         sr.priorityDistance=1;
