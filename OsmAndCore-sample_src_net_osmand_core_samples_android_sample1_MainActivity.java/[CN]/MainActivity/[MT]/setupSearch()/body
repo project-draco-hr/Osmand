@@ -1,0 +1,31 @@
+{
+  final SampleApplication app=getSampleApplication();
+  List<BinaryMapIndexReader> files=new ArrayList<>();
+  File file=new File(app.getAbsoluteAppPath());
+  if (file.exists() && file.listFiles() != null) {
+    for (    File obf : file.listFiles()) {
+      if (!obf.isDirectory() && obf.getName().endsWith(".obf")) {
+        try {
+          BinaryMapIndexReader bmir=new BinaryMapIndexReader(new RandomAccessFile(obf,"r"),obf);
+          files.add(bmir);
+        }
+ catch (        Exception e1) {
+          e1.printStackTrace();
+        }
+      }
+    }
+  }
+  searchUICore=new SearchUICore(app.getPoiTypes(),LANGUAGE,files.toArray(new BinaryMapIndexReader[files.size()]));
+  searchUICore.setOnResultsComplete(new Runnable(){
+    @Override public void run(){
+      app.runInUIThread(new Runnable(){
+        @Override public void run(){
+          hideProgressBar();
+          updateSearchResult(searchUICore.getCurrentSearchResult(),true);
+        }
+      }
+);
+    }
+  }
+);
+}
