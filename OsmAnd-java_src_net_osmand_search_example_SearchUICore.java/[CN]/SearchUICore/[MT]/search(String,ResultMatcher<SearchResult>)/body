@@ -1,10 +1,11 @@
 {
-  List<SearchResult> list=new ArrayList<>();
+  SearchResultCollection quickRes=new SearchResultCollection();
   final int request=requestNumber.incrementAndGet();
   final SearchPhrase phrase=this.phrase.generateNewPhrase(text,searchSettings);
   this.phrase=phrase;
-  list.addAll(filterCurrentResults(phrase));
-  System.out.println("> Search phrase " + phrase + " "+ list.size());
+  quickRes.phrase=phrase;
+  filterCurrentResults(quickRes.searchResults,phrase);
+  System.out.println("> Search phrase " + phrase + " "+ quickRes.searchResults.size());
   singleThreadedExecutor.submit(new Runnable(){
     @Override public void run(){
       try {
@@ -17,7 +18,8 @@
         if (!rm.isCancelled()) {
           sortSearchResults(phrase,rm.getRequestResults());
           System.out.println(">> Search phrase " + phrase + " "+ rm.getRequestResults().size());
-          currentSearchResults=rm.getRequestResults();
+          SearchResultCollection collection=new SearchResultCollection(rm.getRequestResults(),phrase);
+          currentSearchResult=collection;
           if (onResultsComplete != null) {
             onResultsComplete.run();
           }
@@ -29,5 +31,5 @@
     }
   }
 );
-  return list;
+  return quickRes;
 }
