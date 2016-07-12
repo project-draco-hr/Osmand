@@ -1,3 +1,62 @@
 {
-  return searchResult.objectType.name();
+switch (searchResult.objectType) {
+case CITY:
+case VILLAGE:
+case POSTCODE:
+    City city=(City)searchResult.object;
+  return Algorithms.capitalizeFirstLetterAndLowercase(city.getType().toString());
+case STREET:
+Street street=(Street)searchResult.object;
+City streetCity=street.getCity();
+if (streetCity.getType() != CityType.CITY && streetCity.getType() != CityType.TOWN && streetCity.getType() != CityType.VILLAGE && streetCity.getClosestCity() != null) {
+return streetCity.getName() + " - " + streetCity.getClosestCity().getName();
+}
+ else {
+return streetCity.getName() + " - " + Algorithms.capitalizeFirstLetterAndLowercase(streetCity.getType().name());
+}
+case HOUSE:
+return "House";
+case STREET_INTERSECTION:
+return "Street intersection";
+case POI_TYPE:
+AbstractPoiType abstractPoiType=(AbstractPoiType)searchResult.object;
+String res;
+if (abstractPoiType instanceof PoiCategory) {
+res="POI category";
+}
+ else if (abstractPoiType instanceof PoiFilter) {
+PoiFilter poiFilter=(PoiFilter)abstractPoiType;
+res=poiFilter.getPoiCategory() != null ? poiFilter.getPoiCategory().getTranslation() : "POI filter";
+}
+ else if (abstractPoiType instanceof PoiType) {
+PoiType poiType=(PoiType)abstractPoiType;
+res=poiType.getParentType() != null ? poiType.getParentType().getTranslation() : null;
+if (res == null) {
+res=poiType.getCategory() != null ? poiType.getCategory().getTranslation() : null;
+}
+if (res == null) {
+res="POI type";
+}
+}
+ else {
+res="POI type";
+}
+return res;
+case POI:
+Amenity amenity=(Amenity)searchResult.object;
+return amenity.getType().toString();
+case LOCATION:
+break;
+case FAVORITE:
+break;
+case REGION:
+break;
+case RECENT_OBJ:
+break;
+case WPT:
+break;
+case UNKNOWN_NAME_FILTER:
+break;
+}
+return searchResult.objectType.name();
 }
