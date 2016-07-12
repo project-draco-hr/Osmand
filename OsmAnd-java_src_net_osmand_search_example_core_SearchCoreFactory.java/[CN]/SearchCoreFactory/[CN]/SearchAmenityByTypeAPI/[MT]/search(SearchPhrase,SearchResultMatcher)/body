@@ -1,6 +1,9 @@
 {
   if (phrase.isLastWord(ObjectType.POI_TYPE)) {
     final AbstractPoiType pt=(AbstractPoiType)phrase.getLastSelectedWord().getResult().object;
+    acceptedTypes.clear();
+    poiAdditionals.clear();
+    updateTypesToAccept(pt);
     QuadRect bbox=getBBoxToSearch(phrase,10000);
     List<BinaryMapIndexReader> oo=phrase.getOfflineIndexes();
     final BinaryMapIndexReader[] selected=new BinaryMapIndexReader[1];
@@ -9,12 +12,21 @@
       @Override public boolean isEmpty(){
         return false;
       }
-      @Override public boolean accept(      PoiCategory type,      String subcategory){
-        PoiType st=types.getPoiTypeByKey(subcategory);
-        if (st != null && pt.getKeyName().equals(st.getKeyName())) {
+      @Override public boolean accept(      PoiCategory type,      String subtype){
+        if (type == null) {
           return true;
         }
-        return false;
+        if (!types.isRegisteredType(type)) {
+          type=types.getOtherPoiCategory();
+        }
+        if (!acceptedTypes.containsKey(type)) {
+          return false;
+        }
+        LinkedHashSet<String> set=acceptedTypes.get(type);
+        if (set == null) {
+          return true;
+        }
+        return set.contains(subtype);
       }
     }
 ,new ResultMatcher<Amenity>(){
