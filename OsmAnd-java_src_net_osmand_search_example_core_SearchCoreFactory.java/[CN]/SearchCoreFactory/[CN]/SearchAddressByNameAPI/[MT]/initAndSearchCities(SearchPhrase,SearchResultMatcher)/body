@@ -1,0 +1,44 @@
+{
+  QuadRect bbox=phrase.getBBoxToSearch(phrase.getRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 10));
+  Iterator<BinaryMapIndexReader> offlineIndexes=phrase.getOfflineIndexes(bbox,SearchPhraseDataType.ADDRESS);
+  while (offlineIndexes.hasNext()) {
+    BinaryMapIndexReader r=offlineIndexes.next();
+    if (!townCities.containsKey(r)) {
+      BinaryMapIndexReader.buildAddressRequest(null);
+      List<City> l=r.getCities(null,BinaryMapAddressReaderAdapter.CITY_TOWN_TYPE);
+      townCities.put(r,l);
+      for (      City c : l) {
+        LatLon cl=c.getLocation();
+        c.setReferenceFile(r);
+        int y=MapUtils.get31TileNumberY(cl.getLatitude());
+        int x=MapUtils.get31TileNumberX(cl.getLongitude());
+        QuadRect qr=new QuadRect(x,y,x,y);
+        townCitiesQR.insert(c,qr);
+      }
+    }
+  }
+  if (phrase.isNoSelectedType() && bbox != null && phrase.getLastWord().length() > 0) {
+    NameStringMatcher nm=phrase.getNameStringMatcher();
+    resArray.clear();
+    resArray=townCitiesQR.queryInBox(bbox,resArray);
+    int limit=0;
+    for (    City c : resArray) {
+      SearchResult sr=new SearchResult(phrase);
+      sr.object=c;
+      sr.file=(BinaryMapIndexReader)c.getReferenceFile();
+      sr.localeName=c.getName(phrase.getSettings().getLang(),true);
+      sr.otherNames=c.getAllNames(true);
+      sr.localeRelatedObjectName=sr.file.getRegionName();
+      sr.location=c.getLocation();
+      sr.priority=1;
+      sr.priorityDistance=0.1;
+      sr.objectType=ObjectType.CITY;
+      if (nm.matches(sr.localeName) || nm.matches(sr.otherNames)) {
+        resultMatcher.publish(sr);
+      }
+      if (limit++ > LIMIT * phrase.getRadiusLevel()) {
+        break;
+      }
+    }
+  }
+}

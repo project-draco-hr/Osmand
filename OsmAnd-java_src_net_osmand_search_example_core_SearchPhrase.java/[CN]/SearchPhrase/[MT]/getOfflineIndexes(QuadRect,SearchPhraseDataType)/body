@@ -1,0 +1,44 @@
+{
+  List<BinaryMapIndexReader> list=indexes != null ? indexes : settings.getOfflineIndexes();
+  final Iterator<BinaryMapIndexReader> lit=list.iterator();
+  return new Iterator<BinaryMapIndexReader>(){
+    BinaryMapIndexReader next=null;
+    @Override public boolean hasNext(){
+      while (lit.hasNext()) {
+        next=lit.next();
+        if (rect != null) {
+          if (dt == SearchPhraseDataType.POI) {
+            if (next.containsPoiData((int)rect.left,(int)rect.top,(int)rect.right,(int)rect.bottom)) {
+              return true;
+            }
+          }
+ else           if (dt == SearchPhraseDataType.ADDRESS) {
+            if (next.containsPoiData((int)rect.left,(int)rect.top,(int)rect.right,(int)rect.bottom) && next.containsAddressData()) {
+              return true;
+            }
+          }
+ else           if (dt == SearchPhraseDataType.ROUTING) {
+            if (next.containsRouteData((int)rect.left,(int)rect.top,(int)rect.right,(int)rect.bottom,15)) {
+              return true;
+            }
+          }
+ else {
+            if (next.containsMapData((int)rect.left,(int)rect.top,(int)rect.right,(int)rect.bottom,15)) {
+              return true;
+            }
+          }
+        }
+ else {
+          return true;
+        }
+      }
+      return false;
+    }
+    @Override public BinaryMapIndexReader next(){
+      return next;
+    }
+    @Override public void remove(){
+    }
+  }
+;
+}
