@@ -1,0 +1,30 @@
+{
+  String lw=phrase.getLastWord();
+  SearchWord sw=phrase.getLastSelectedWord();
+  double dd=LocationConvert.convert(lw,false);
+  if (!Double.isNaN(dd)) {
+    double pd=Double.NaN;
+    if (sw != null && sw.getType() == ObjectType.UNKNOWN_NAME_FILTER) {
+      if (isKindOfNumber(sw.getWord())) {
+        pd=LocationConvert.convert(sw.getWord(),false);
+      }
+    }
+    if (!Double.isNaN(pd)) {
+      SearchResult sp=new SearchResult(phrase);
+      sp.priority=0;
+      sp.object=sp.location=new LatLon(pd,dd);
+      sp.localeName=((float)sp.location.getLatitude()) + ", " + ((float)sp.location.getLongitude());
+      sp.objectType=ObjectType.LOCATION;
+      sp.wordsSpan=2;
+      resultMatcher.publish(sp);
+    }
+ else {
+      SearchResult sp=new SearchResult(phrase);
+      sp.priority=0;
+      sp.object=sp.location=new LatLon(dd,0);
+      sp.localeName=((float)sp.location.getLatitude()) + ", <input> ";
+      sp.objectType=ObjectType.PARTIAL_LOCATION;
+      resultMatcher.publish(sp);
+    }
+  }
+}

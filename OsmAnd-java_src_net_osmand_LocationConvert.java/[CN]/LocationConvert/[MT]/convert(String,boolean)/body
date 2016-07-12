@@ -1,7 +1,12 @@
 {
-  coordinate=coordinate.replace(' ',':').replace('#',':').replace(',','.');
+  coordinate=coordinate.replace(' ',':').replace('#',':').replace(',','.').replace('\'',':').replace('\"',':');
   if (coordinate == null) {
-    throw new NullPointerException("coordinate");
+    if (!throwException) {
+      return Double.NaN;
+    }
+ else {
+      throw new NullPointerException("coordinate");
+    }
   }
   boolean negative=false;
   if (coordinate.charAt(0) == '-') {
@@ -11,7 +16,12 @@
   StringTokenizer st=new StringTokenizer(coordinate,":");
   int tokens=st.countTokens();
   if (tokens < 1) {
-    throw new IllegalArgumentException("coordinate=" + coordinate);
+    if (!throwException) {
+      return Double.NaN;
+    }
+ else {
+      throw new IllegalArgumentException("coordinate=" + coordinate);
+    }
   }
   try {
     String degrees=st.nextToken();
@@ -34,19 +44,39 @@
     }
     boolean isNegative180=negative && (deg == 180) && (min == 0)&& (sec == 0);
     if ((deg < 0.0) || (deg > 180 && !isNegative180)) {
-      throw new IllegalArgumentException("coordinate=" + coordinate);
+      if (!throwException) {
+        return Double.NaN;
+      }
+ else {
+        throw new IllegalArgumentException("coordinate=" + coordinate);
+      }
     }
     if (min < 0 || min > 60d) {
-      throw new IllegalArgumentException("coordinate=" + coordinate);
+      if (!throwException) {
+        return Double.NaN;
+      }
+ else {
+        throw new IllegalArgumentException("coordinate=" + coordinate);
+      }
     }
     if (sec < 0 || sec > 60d) {
-      throw new IllegalArgumentException("coordinate=" + coordinate);
+      if (!throwException) {
+        return Double.NaN;
+      }
+ else {
+        throw new IllegalArgumentException("coordinate=" + coordinate);
+      }
     }
     val=deg * 3600.0 + min * 60.0 + sec;
     val/=3600.0;
     return negative ? -val : val;
   }
  catch (  NumberFormatException nfe) {
-    throw new IllegalArgumentException("coordinate=" + coordinate);
+    if (!throwException) {
+      return Double.NaN;
+    }
+ else {
+      throw new IllegalArgumentException("coordinate=" + coordinate);
+    }
   }
 }
