@@ -1,9 +1,9 @@
 {
-  btScoAvailable=false;
-  btScoInitializes=false;
   try {
     AudioManager mAudioManager=(AudioManager)ctx.getSystemService(Context.AUDIO_SERVICE);
     if (mAudioManager == null || !mAudioManager.isBluetoothScoAvailableOffCall()) {
+      btScoAvailable=false;
+      btScoException="N/A";
       return false;
     }
     btScoAvailable=true;
@@ -12,12 +12,13 @@
     mAudioManager.setBluetoothScoOn(true);
     mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
     btScoStatus=true;
-    btScoInitializes=true;
   }
  catch (  Exception e) {
     System.out.println("Exception starting BT SCO " + e.getMessage());
     btScoStatus=false;
+    btScoException=e.getMessage();
     return false;
   }
-  return btScoStatus;
+  btScoException="";
+  return true;
 }
