@@ -2,6 +2,8 @@
   while (true) {
     int t=codedIS.readTag();
     int tag=WireFormat.getTagFieldNumber(t);
+    int length;
+    int oldLimit;
 switch (tag) {
 case 0:
       if (region.enName == null || region.enName.length() == 0) {
@@ -14,9 +16,16 @@ break;
 case OsmandOdb.OsmAndAddressIndex.NAME_EN_FIELD_NUMBER:
 region.enName=codedIS.readString();
 break;
+case OsmandOdb.OsmAndAddressIndex.BOUNDARIES_FIELD_NUMBER:
+length=codedIS.readRawVarint32();
+oldLimit=codedIS.pushLimit(length);
+readBoundariesIndex(region);
+codedIS.popLimit(oldLimit);
+region.enName=codedIS.readString();
+break;
 case OsmandOdb.OsmAndAddressIndex.ATTRIBUTETAGSTABLE_FIELD_NUMBER:
-int length2=codedIS.readRawVarint32();
-int oldLimit=codedIS.pushLimit(length2);
+length=codedIS.readRawVarint32();
+oldLimit=codedIS.pushLimit(length);
 region.attributeTagsTable=map.readStringTable();
 codedIS.popLimit(oldLimit);
 break;
@@ -44,7 +53,7 @@ codedIS.seek(block.filePointer + block.length);
 break;
 case OsmandOdb.OsmAndAddressIndex.NAMEINDEX_FIELD_NUMBER:
 region.indexNameOffset=codedIS.getTotalBytesRead();
-int length=readInt();
+length=readInt();
 codedIS.seek(region.indexNameOffset + length + 4);
 break;
 default :
