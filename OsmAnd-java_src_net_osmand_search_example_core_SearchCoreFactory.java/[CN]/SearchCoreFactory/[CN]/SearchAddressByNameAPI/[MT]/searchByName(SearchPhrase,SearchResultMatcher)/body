@@ -2,11 +2,11 @@
   if (phrase.getRadiusLevel() > 1 || phrase.getLastWord().length() > 3) {
     final boolean locSpecified=phrase.getLastTokenLocation() != null;
     LatLon loc=phrase.getLastTokenLocation();
-    final QuadRect streetBbox=phrase.getBBoxToSearch(phrase.getRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS));
-    final QuadRect postcodeBbox=phrase.getBBoxToSearch(phrase.getRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 5));
-    final QuadRect villagesBbox=phrase.getBBoxToSearch(phrase.getRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 3));
-    final QuadRect cityBbox=phrase.getBBoxToSearch(phrase.getRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 10));
-    final int priority=phrase.isNoSelectedType() ? 1 : 3;
+    final QuadRect streetBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS);
+    final QuadRect postcodeBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 5);
+    final QuadRect villagesBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 3);
+    final QuadRect cityBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 10);
+    final int priority=phrase.isNoSelectedType() ? 3 : 5;
     final BinaryMapIndexReader[] currentFile=new BinaryMapIndexReader[1];
     ResultMatcher<MapObject> rm=new ResultMatcher<MapObject>(){
       int limit=0;
@@ -28,6 +28,9 @@
         List<City> closestCities=null;
         if (object instanceof Street) {
           if (locSpecified && !streetBbox.contains(x,y,x,y)) {
+            return false;
+          }
+          if (object.getName().startsWith("<")) {
             return false;
           }
           sr.objectType=ObjectType.STREET;
@@ -60,11 +63,14 @@
               closestCities=townCitiesQR.queryInBox(villagesBbox,new ArrayList<City>());
             }
             double minDist=-1;
+            double pDist=-1;
             for (            City s : closestCities) {
               double ll=MapUtils.getDistance(s.getLocation(),object.getLocation());
-              if (minDist == -1 || ll < minDist) {
+              double pd=s.getType() == CityType.CITY ? ll : ll * 10;
+              if (minDist == -1 || pd < pDist) {
                 c=s;
                 minDist=ll;
+                pDist=pd;
               }
             }
             if (c != null) {
@@ -86,7 +92,7 @@
       }
     }
 ;
-    Iterator<BinaryMapIndexReader> offlineIterator=phrase.getOfflineIndexes(phrase.getRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 10),SearchPhraseDataType.ADDRESS);
+    Iterator<BinaryMapIndexReader> offlineIterator=phrase.getRadiusOfflineIndexes(DEFAULT_ADDRESS_BBOX_RADIUS * 10,SearchPhraseDataType.ADDRESS);
     while (offlineIterator.hasNext()) {
       BinaryMapIndexReader r=offlineIterator.next();
       currentFile[0]=r;

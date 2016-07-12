@@ -1,5 +1,35 @@
 {
-  if (isLastWordCityGroup(phrase)) {
+  SearchWord sw=phrase.getLastSelectedWord();
+  if (isLastWordCityGroup(phrase) && sw.getResult() != null && sw.getResult().file != null) {
+    City c=(City)sw.getResult().object;
+    if (c.getStreets().isEmpty()) {
+      sw.getResult().file.preloadStreets(c,null);
+    }
+    int limit=0;
+    NameStringMatcher nm=phrase.getNameStringMatcher();
+    for (    Street object : c.getStreets()) {
+      SearchResult res=new SearchResult(phrase);
+      res.localeName=object.getName(phrase.getSettings().getLang(),true);
+      res.otherNames=object.getAllNames(true);
+      if (object.getName().startsWith("<")) {
+        continue;
+      }
+      if (!Algorithms.isEmpty(phrase.getLastWord()) && !(nm.matches(res.localeName) || nm.matches(res.otherNames))) {
+        continue;
+      }
+      res.localeRelatedObjectName=c.getName(phrase.getSettings().getLang(),true);
+      res.object=object;
+      res.preferredZoom=17;
+      res.file=sw.getResult().file;
+      res.location=object.getLocation();
+      res.priority=1;
+      res.objectType=ObjectType.STREET;
+      if (limit++ > LIMIT) {
+        break;
+      }
+      resultMatcher.publish(res);
+    }
+    return true;
   }
   return true;
 }

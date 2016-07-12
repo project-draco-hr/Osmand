@@ -1,5 +1,10 @@
 {
-  results.clear();
+  TreeSet<AbstractPoiType> results=new TreeSet<>(new Comparator<AbstractPoiType>(){
+    @Override public int compare(    AbstractPoiType o1,    AbstractPoiType o2){
+      return o1.getKeyName().compareTo(o2.getKeyName());
+    }
+  }
+);
   NameStringMatcher nm=phrase.getNameStringMatcher();
   for (  PoiFilter pf : topVisibleFilters) {
     if (Algorithms.isEmpty(phrase.getLastWord()) || nm.matches(pf.getTranslation())) {
@@ -19,7 +24,8 @@
     SearchResult res=new SearchResult(phrase);
     res.localeName=p.getTranslation();
     res.object=p;
-    res.priority=2;
+    res.priority=5;
+    res.priorityDistance=0;
     res.objectType=ObjectType.POI_TYPE;
     resultMatcher.publish(res);
   }

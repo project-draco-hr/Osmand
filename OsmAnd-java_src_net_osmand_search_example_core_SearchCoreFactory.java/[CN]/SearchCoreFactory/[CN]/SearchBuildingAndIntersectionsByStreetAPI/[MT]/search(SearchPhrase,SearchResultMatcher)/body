@@ -1,6 +1,28 @@
 {
+  Street s=null;
+  int priority=1;
   if (phrase.isLastWord(ObjectType.STREET)) {
-    Street s=(Street)phrase.getLastSelectedWord().getResult().object;
+    s=(Street)phrase.getLastSelectedWord().getResult().object;
+  }
+  if (isLastWordCityGroup(phrase)) {
+    priority=3;
+    Object o=phrase.getLastSelectedWord().getResult().object;
+    if (o instanceof City) {
+      List<Street> streets=((City)o).getStreets();
+      if (streets.size() == 1) {
+        s=streets.get(0);
+      }
+ else {
+        for (        Street st : streets) {
+          if (st.getName().equals(((City)o).getName()) || st.getName().equals("<" + ((City)o).getName() + ">")) {
+            s=st;
+            break;
+          }
+        }
+      }
+    }
+  }
+  if (s != null) {
     BinaryMapIndexReader file=phrase.getLastSelectedWord().getResult().file;
     String lw=phrase.getLastWord();
     NameStringMatcher sm=phrase.getNameStringMatcher();
@@ -38,6 +60,7 @@
       res.otherNames=b.getAllNames(true);
       res.object=b;
       res.file=file;
+      res.priority=priority;
       res.priorityDistance=0;
       res.objectType=ObjectType.HOUSE;
       if (interpolation) {

@@ -1,0 +1,38 @@
+{
+  if (phrase.getLastWord().length() == 0) {
+    return false;
+  }
+  final BinaryMapIndexReader[] currentFile=new BinaryMapIndexReader[1];
+  Iterator<BinaryMapIndexReader> offlineIterator=phrase.getRadiusOfflineIndexes(BBOX_RADIUS,SearchPhraseDataType.POI);
+  QuadRect bbox=phrase.getRadiusBBoxToSearch(BBOX_RADIUS);
+  SearchRequest<Amenity> req=BinaryMapIndexReader.buildSearchPoiRequest((int)bbox.centerX(),(int)bbox.centerY(),phrase.getLastWord(),(int)bbox.left,(int)bbox.right,(int)bbox.top,(int)bbox.bottom,new ResultMatcher<Amenity>(){
+    int limit=0;
+    @Override public boolean publish(    Amenity object){
+      if (limit++ > LIMIT) {
+        return false;
+      }
+      SearchResult sr=new SearchResult(phrase);
+      sr.otherNames=object.getAllNames(true);
+      sr.localeName=object.getName(phrase.getSettings().getLang(),true);
+      sr.object=object;
+      sr.preferredZoom=17;
+      sr.file=currentFile[0];
+      sr.location=object.getLocation();
+      sr.priority=3;
+      sr.priorityDistance=1;
+      sr.objectType=ObjectType.POI;
+      resultMatcher.publish(sr);
+      return false;
+    }
+    @Override public boolean isCancelled(){
+      return resultMatcher.isCancelled() && (limit < LIMIT);
+    }
+  }
+);
+  while (offlineIterator.hasNext()) {
+    BinaryMapIndexReader r=offlineIterator.next();
+    currentFile[0]=r;
+    r.searchPoiByName(req);
+  }
+  return true;
+}

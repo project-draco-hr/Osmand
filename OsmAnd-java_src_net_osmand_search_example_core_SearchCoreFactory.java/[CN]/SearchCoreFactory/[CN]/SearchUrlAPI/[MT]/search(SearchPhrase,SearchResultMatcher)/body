@@ -1,0 +1,16 @@
+{
+  if (phrase.getLastWord().length() == 0) {
+    return false;
+  }
+  GeoParsedPoint pnt=GeoPointParserUtil.parse(phrase.getLastWord());
+  if (pnt != null && pnt.isGeoPoint()) {
+    SearchResult sp=new SearchResult(phrase);
+    sp.priority=0;
+    sp.object=pnt;
+    sp.location=new LatLon(pnt.getLatitude(),pnt.getLongitude());
+    sp.localeName="geo:" + ((float)pnt.getLatitude()) + ", "+ ((float)pnt.getLongitude());
+    sp.objectType=ObjectType.LOCATION;
+    resultMatcher.publish(sp);
+  }
+  return super.search(phrase,resultMatcher);
+}
