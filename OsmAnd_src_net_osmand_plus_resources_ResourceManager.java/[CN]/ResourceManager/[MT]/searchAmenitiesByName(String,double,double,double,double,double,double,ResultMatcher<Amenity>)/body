@@ -1,12 +1,16 @@
 {
   List<Amenity> amenities=new ArrayList<Amenity>();
   List<AmenityIndexRepositoryBinary> list=new ArrayList<AmenityIndexRepositoryBinary>();
+  int left=MapUtils.get31TileNumberX(leftLongitude);
+  int top=MapUtils.get31TileNumberY(topLatitude);
+  int right=MapUtils.get31TileNumberX(rightLongitude);
+  int bottom=MapUtils.get31TileNumberY(bottomLatitude);
   for (  AmenityIndexRepository index : amenityRepositories.values()) {
     if (matcher != null && matcher.isCancelled()) {
       break;
     }
     if (index instanceof AmenityIndexRepositoryBinary) {
-      if (index.checkContains(topLatitude,leftLongitude,bottomLatitude,rightLongitude)) {
+      if (index.checkContainsInt(top,left,bottom,right)) {
         if (index.checkContains(lat,lon)) {
           list.add(0,(AmenityIndexRepositoryBinary)index);
         }
@@ -16,10 +20,6 @@
       }
     }
   }
-  int left=MapUtils.get31TileNumberX(leftLongitude);
-  int top=MapUtils.get31TileNumberY(topLatitude);
-  int right=MapUtils.get31TileNumberX(rightLongitude);
-  int bottom=MapUtils.get31TileNumberY(bottomLatitude);
   for (  AmenityIndexRepositoryBinary index : list) {
     if (matcher != null && matcher.isCancelled()) {
       break;
