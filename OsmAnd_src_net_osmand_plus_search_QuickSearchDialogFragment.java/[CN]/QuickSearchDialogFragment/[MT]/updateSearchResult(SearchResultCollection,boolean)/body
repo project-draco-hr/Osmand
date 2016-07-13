@@ -1,0 +1,27 @@
+{
+  OsmandApplication app=getMyApplication();
+  List<SearchListItem> rows=new ArrayList<>();
+  if (res.getCurrentSearchResults().size() > 0) {
+    if (addMore) {
+      SearchMoreListItem moreListItem=new SearchMoreListItem(app,"Results " + res.getCurrentSearchResults().size() + ", radius "+ res.getPhrase().getRadiusLevel()+ " (show more...)",new OnClickListener(){
+        @Override public void onClick(        View v){
+          SearchSettings settings=searchUICore.getPhrase().getSettings();
+          searchUICore.updateSettings(settings.setRadiusLevel(settings.getRadiusLevel() + 1));
+          runCoreSearch(searchQuery);
+          updateSearchResult(new SearchResultCollection(),false);
+        }
+      }
+);
+      rows.add(moreListItem);
+    }
+    for (    final SearchResult sr : res.getCurrentSearchResults()) {
+      SearchListItem listItem=new SearchListItem(app,sr);
+      if (sr.location != null) {
+        LatLon location=res.getPhrase().getLastTokenLocation();
+        listItem.setDistance(MapUtils.getDistance(location,sr.location));
+      }
+      rows.add(listItem);
+    }
+  }
+  updateListAdapter(rows);
+}

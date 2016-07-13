@@ -1,28 +1,41 @@
 {
   SearchListItem listItem=getItem(position);
+  int viewType=this.getItemViewType(position);
   LinearLayout view;
-  if (convertView == null) {
-    LayoutInflater inflater=(LayoutInflater)ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    view=(LinearLayout)inflater.inflate(R.layout.search_list_item,null);
+  if (viewType == 0) {
+    if (convertView == null) {
+      LayoutInflater inflater=(LayoutInflater)ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      view=(LinearLayout)inflater.inflate(R.layout.search_more_list_item,null);
+    }
+ else {
+      view=(LinearLayout)convertView;
+    }
+    ((TextView)view.findViewById(R.id.title)).setText(listItem.getName());
   }
  else {
-    view=(LinearLayout)convertView;
-  }
-  ImageView imageView=(ImageView)view.findViewById(R.id.imageView);
-  TextView title=(TextView)view.findViewById(R.id.title);
-  TextView subtitle=(TextView)view.findViewById(R.id.subtitle);
-  TextView distance=(TextView)view.findViewById(R.id.distance);
-  imageView.setImageDrawable(listItem.getIcon());
-  title.setText(listItem.getName());
-  subtitle.setText(listItem.getTypeName());
-  float dist=(float)listItem.getDistance();
-  if (dist == 0) {
-    distance.setText("");
-    distance.setVisibility(View.INVISIBLE);
-  }
+    if (convertView == null) {
+      LayoutInflater inflater=(LayoutInflater)ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      view=(LinearLayout)inflater.inflate(R.layout.search_list_item,null);
+    }
  else {
-    distance.setText(OsmAndFormatter.getFormattedDistance(dist,ctx));
-    distance.setVisibility(View.VISIBLE);
+      view=(LinearLayout)convertView;
+    }
+    ImageView imageView=(ImageView)view.findViewById(R.id.imageView);
+    TextView title=(TextView)view.findViewById(R.id.title);
+    TextView subtitle=(TextView)view.findViewById(R.id.subtitle);
+    TextView distance=(TextView)view.findViewById(R.id.distance);
+    imageView.setImageDrawable(listItem.getIcon());
+    title.setText(listItem.getName());
+    subtitle.setText(listItem.getTypeName());
+    float dist=(float)listItem.getDistance();
+    if (dist == 0) {
+      distance.setText("");
+      distance.setVisibility(View.INVISIBLE);
+    }
+ else {
+      distance.setText(OsmAndFormatter.getFormattedDistance(dist,ctx));
+      distance.setVisibility(View.VISIBLE);
+    }
   }
   return view;
 }
