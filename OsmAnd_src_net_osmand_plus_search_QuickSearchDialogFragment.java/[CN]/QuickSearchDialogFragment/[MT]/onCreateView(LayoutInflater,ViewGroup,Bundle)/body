@@ -1,0 +1,97 @@
+{
+  final OsmandApplication app=getMyApplication();
+  final MapActivity mapActivity=getMapActivity();
+  final View view=inflater.inflate(R.layout.search_dialog_fragment,container,false);
+  if (savedInstanceState != null) {
+    searchQuery=savedInstanceState.getString(QUICK_SEARCH_QUERY_KEY);
+  }
+  if (searchQuery == null) {
+    searchQuery=getArguments().getString(QUICK_SEARCH_QUERY_KEY);
+  }
+  if (searchQuery == null)   searchQuery="";
+  Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
+  toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+  toolbar.setNavigationContentDescription(R.string.access_shared_string_navigate_up);
+  toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismiss();
+    }
+  }
+);
+  String locale=app.getSettings().MAP_PREFERRED_LOCALE.get();
+  Collection<RegionAddressRepository> regionAddressRepositories=app.getResourceManager().getAddressRepositories();
+  BinaryMapIndexReader[] binaryMapIndexReaderArray=new BinaryMapIndexReader[regionAddressRepositories.size()];
+  int i=0;
+  for (  RegionAddressRepository rep : regionAddressRepositories) {
+    binaryMapIndexReaderArray[i++]=rep.getFile();
+  }
+  searchUICore=new SearchUICore(app.getPoiTypes(),locale,binaryMapIndexReaderArray);
+  LatLon centerLatLon=mapActivity.getMapView().getCurrentRotatedTileBox().getCenterLatLon();
+  SearchSettings settings=searchUICore.getPhrase().getSettings().setOriginalLocation(new LatLon(centerLatLon.getLatitude(),centerLatLon.getLongitude()));
+  settings=settings.setLang(locale);
+  searchUICore.updateSettings(settings);
+  searchUICore.setOnResultsComplete(new Runnable(){
+    @Override public void run(){
+      app.runInUIThread(new Runnable(){
+        @Override public void run(){
+          hideProgressBar();
+          updateSearchResult(searchUICore.getCurrentSearchResult(),true);
+        }
+      }
+);
+    }
+  }
+);
+  listView=(ListView)view.findViewById(android.R.id.list);
+  listAdapter=new SearchListAdapter(getMyApplication());
+  listView.setAdapter(listAdapter);
+  listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+    @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
+      SearchListItem item=listAdapter.getItem(position);
+      SearchResult sr=item.getSearchResult();
+      boolean updateEditText=true;
+      if (sr.objectType == ObjectType.POI || sr.objectType == ObjectType.LOCATION || sr.objectType == ObjectType.HOUSE || sr.objectType == ObjectType.FAVORITE || sr.objectType == ObjectType.RECENT_OBJ || sr.objectType == ObjectType.WPT || sr.objectType == ObjectType.STREET_INTERSECTION) {
+        updateEditText=false;
+        dismiss();
+        if (sr.location != null) {
+          showOnMap(sr);
+        }
+      }
+      completeQueryWithObject(item.getSearchResult(),updateEditText);
+    }
+  }
+);
+  searchEditText=(EditText)view.findViewById(R.id.searchEditText);
+  searchEditText.addTextChangedListener(new TextWatcher(){
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+    @Override public void afterTextChanged(    Editable s){
+      String newQueryText=s.toString();
+      if (!searchQuery.equalsIgnoreCase(newQueryText)) {
+        searchQuery=newQueryText;
+        showProgressBar();
+        runSearch();
+      }
+    }
+  }
+);
+  progressBar=(ProgressBar)view.findViewById(R.id.searchProgressBar);
+  clearButton=(ImageButton)view.findViewById(R.id.clearButton);
+  clearButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      if (searchEditText.getText().length() == 0) {
+        dismiss();
+      }
+ else {
+        searchEditText.setText("");
+      }
+    }
+  }
+);
+  searchEditText.requestFocus();
+  AndroidUtils.softKeyboardDelayed(searchEditText);
+  runSearch();
+  return view;
+}

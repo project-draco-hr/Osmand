@@ -1,0 +1,43 @@
+{
+  try {
+    if (mapActivity.isActivityDestroyed()) {
+      return false;
+    }
+    final OsmandApplication app=mapActivity.getMyApplication();
+    if (app.isApplicationInitializing()) {
+      new AsyncTask<Void,Void,Void>(){
+        private ProgressDialog dlg;
+        @Override protected void onPreExecute(){
+          dlg=new ProgressDialog(mapActivity);
+          dlg.setTitle("");
+          dlg.setMessage(mapActivity.getString(R.string.wait_current_task_finished));
+          dlg.setCanceledOnTouchOutside(false);
+          dlg.show();
+        }
+        @Override protected Void doInBackground(        Void... params){
+          while (app.isApplicationInitializing()) {
+            try {
+              Thread.sleep(50);
+            }
+ catch (            InterruptedException e) {
+              e.printStackTrace();
+            }
+          }
+          return null;
+        }
+        @Override protected void onPostExecute(        Void aVoid){
+          dlg.hide();
+          showInternal(mapActivity,searchQuery);
+        }
+      }
+.execute();
+    }
+ else {
+      showInternal(mapActivity,searchQuery);
+    }
+    return true;
+  }
+ catch (  RuntimeException e) {
+    return false;
+  }
+}
