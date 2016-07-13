@@ -13,14 +13,33 @@ break;
 case STREET_INTERSECTION:
 break;
 case POI_TYPE:
-break;
+AbstractPoiType abstractPoiType=(AbstractPoiType)searchResult.object;
+if (RenderingIcons.containsBigIcon(abstractPoiType.getIconKeyName())) {
+int iconId=RenderingIcons.getBigIconResourceId(abstractPoiType.getIconKeyName());
+return app.getIconsCache().getIcon(iconId,app.getSettings().isLightContent() ? R.color.osmand_orange : R.color.osmand_orange_dark);
+}
+ else {
+return null;
+}
 case POI:
 Amenity amenity=(Amenity)searchResult.object;
-Drawable drawable=null;
+String id=null;
 PoiType st=amenity.getType().getPoiTypeByKeyName(amenity.getSubType());
 if (st != null) {
+if (RenderingIcons.containsBigIcon(st.getIconKeyName())) {
+id=st.getIconKeyName();
 }
-return drawable;
+ else if (RenderingIcons.containsBigIcon(st.getOsmTag() + "_" + st.getOsmValue())) {
+id=st.getOsmTag() + "_" + st.getOsmValue();
+}
+}
+if (id != null) {
+int iconId=RenderingIcons.getBigIconResourceId(id);
+return app.getIconsCache().getIcon(iconId,app.getSettings().isLightContent() ? R.color.osmand_orange : R.color.osmand_orange_dark);
+}
+ else {
+return null;
+}
 case LOCATION:
 break;
 case FAVORITE:
