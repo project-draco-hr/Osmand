@@ -1,0 +1,48 @@
+{
+  boolean neg=false;
+  double d=0;
+  int type=0;
+  Double prevDouble=null;
+  for (int i=begin; i <= end; i++) {
+    Object o=i == end ? "" : all.get(i);
+    if (o.equals("S") || o.equals("W")) {
+      neg=!neg;
+    }
+    if (prevDouble != null) {
+      if (o.equals("??")) {
+        type=0;
+      }
+ else       if (o.equals("???")) {
+        type=1;
+      }
+ else       if (o.equals("\"") || o.equals("???")) {
+        type=2;
+      }
+      if (type == 0) {
+        double ld=prevDouble.doubleValue();
+        if (ld < 0) {
+          ld=-ld;
+          neg=true;
+        }
+        d+=ld;
+      }
+ else       if (type == 1) {
+        d+=prevDouble.doubleValue() / 60.f;
+      }
+ else {
+        d+=prevDouble.doubleValue() / 3600.f;
+      }
+      type++;
+    }
+    if (o instanceof Double) {
+      prevDouble=(Double)o;
+    }
+ else {
+      prevDouble=null;
+    }
+  }
+  if (neg) {
+    d=-d;
+  }
+  return d;
+}
