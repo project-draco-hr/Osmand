@@ -16,7 +16,7 @@ case STREET:
 Street street=(Street)searchResult.object;
 City streetCity=street.getCity();
 if (!Algorithms.isEmpty(searchResult.localeRelatedObjectName)) {
-return searchResult.localeRelatedObjectName + (searchResult.distRelatedObjectName > 0 ? "(" + OsmAndFormatter.getFormattedDistance((float)searchResult.distRelatedObjectName,app) + ")" : "");
+return searchResult.localeRelatedObjectName + (searchResult.distRelatedObjectName > 0 ? " (" + OsmAndFormatter.getFormattedDistance((float)searchResult.distRelatedObjectName,app) + ")" : "");
 }
  else {
 return streetCity.getName() + " - " + Algorithms.capitalizeFirstLetterAndLowercase(streetCity.getType().name());
@@ -64,11 +64,19 @@ return typeStr;
 case LOCATION:
 break;
 case FAVORITE:
-break;
+FavouritePoint fav=(FavouritePoint)searchResult.object;
+return fav.getCategory().length() == 0 ? app.getString(R.string.shared_string_favorites) : fav.getCategory();
 case REGION:
 break;
 case RECENT_OBJ:
-break;
+HistoryEntry entry=(HistoryEntry)searchResult.object;
+boolean hasTypeInDescription=!Algorithms.isEmpty(entry.getName().getTypeName());
+if (hasTypeInDescription) {
+return entry.getName().getTypeName();
+}
+ else {
+return app.getString(R.string.shared_string_history);
+}
 case WPT:
 break;
 case UNKNOWN_NAME_FILTER:
