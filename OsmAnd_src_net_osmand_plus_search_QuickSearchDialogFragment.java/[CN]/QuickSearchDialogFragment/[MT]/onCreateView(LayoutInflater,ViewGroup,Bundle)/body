@@ -1,5 +1,4 @@
 {
-  final OsmandApplication app=getMyApplication();
   final MapActivity mapActivity=getMapActivity();
   final View view=inflater.inflate(R.layout.search_dialog_fragment,container,false);
   if (savedInstanceState != null) {
@@ -18,30 +17,7 @@
     }
   }
 );
-  String locale=app.getSettings().MAP_PREFERRED_LOCALE.get();
-  Collection<RegionAddressRepository> regionAddressRepositories=app.getResourceManager().getAddressRepositories();
-  BinaryMapIndexReader[] binaryMapIndexReaderArray=new BinaryMapIndexReader[regionAddressRepositories.size()];
-  int i=0;
-  for (  RegionAddressRepository rep : regionAddressRepositories) {
-    binaryMapIndexReaderArray[i++]=rep.getFile();
-  }
-  searchUICore=new SearchUICore(app.getPoiTypes(),locale,binaryMapIndexReaderArray);
-  LatLon centerLatLon=mapActivity.getMapView().getCurrentRotatedTileBox().getCenterLatLon();
-  SearchSettings settings=searchUICore.getPhrase().getSettings().setOriginalLocation(new LatLon(centerLatLon.getLatitude(),centerLatLon.getLongitude()));
-  settings=settings.setLang(locale);
-  searchUICore.updateSettings(settings);
-  searchUICore.setOnResultsComplete(new Runnable(){
-    @Override public void run(){
-      app.runInUIThread(new Runnable(){
-        @Override public void run(){
-          hideProgressBar();
-          updateSearchResult(searchUICore.getCurrentSearchResult(),true);
-        }
-      }
-);
-    }
-  }
-);
+  setupSearch(mapActivity);
   listView=(ListView)view.findViewById(android.R.id.list);
   listAdapter=new SearchListAdapter(getMyApplication());
   listView.setAdapter(listAdapter);

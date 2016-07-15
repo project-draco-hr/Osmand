@@ -1,4 +1,37 @@
 {
   showProgressBar();
-  return searchUICore.search(text,null);
+  return searchUICore.search(text,new ResultMatcher<SearchResult>(){
+    List<SearchResult> results=new ArrayList<>();
+    @Override public boolean publish(    SearchResult object){
+switch (object.objectType) {
+case SEARCH_API_FINISHED:
+        final List<SearchResult> apiResults=results;
+      final SearchPhrase phrase=object.requiredSearchPhrase;
+    results=new ArrayList<>();
+  searchUICore.sortSearchResults(phrase,apiResults);
+getMyApplication().runInUIThread(new Runnable(){
+  @Override public void run(){
+    if (resultCollection == null || resultCollection.getPhrase() != phrase) {
+      resultCollection=new SearchResultCollection(apiResults,phrase);
+    }
+ else {
+      resultCollection.getCurrentSearchResults().addAll(apiResults);
+    }
+    updateSearchResult(resultCollection,true);
+  }
+}
+);
+break;
+case SEARCH_API_REGION_FINISHED:
+break;
+default :
+results.add(object);
+}
+return false;
+}
+@Override public boolean isCancelled(){
+return false;
+}
+}
+);
 }
