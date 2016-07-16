@@ -1,28 +1,66 @@
 {
   showProgressBar();
   return searchUICore.search(text,new ResultMatcher<SearchResult>(){
+    SearchResultCollection regionResultCollection=null;
+    SearchCoreAPI regionResultApi=null;
     List<SearchResult> results=new ArrayList<>();
     @Override public boolean publish(    SearchResult object){
 switch (object.objectType) {
 case SEARCH_API_FINISHED:
-        final List<SearchResult> apiResults=results;
-      final SearchPhrase phrase=object.requiredSearchPhrase;
-    results=new ArrayList<>();
-  searchUICore.sortSearchResults(phrase,apiResults);
-getMyApplication().runInUIThread(new Runnable(){
-  @Override public void run(){
-    if (resultCollection == null || resultCollection.getPhrase() != phrase) {
-      resultCollection=new SearchResultCollection(apiResults,phrase);
-    }
+        final SearchCoreAPI searchApi=(SearchCoreAPI)object.object;
+      final List<SearchResult> apiResults;
+    final SearchPhrase phrase=object.requiredSearchPhrase;
+  final SearchCoreAPI regionApi=regionResultApi;
+final SearchResultCollection regionCollection=regionResultCollection;
+final boolean hasRegionCollection=(searchApi == regionApi && regionCollection != null);
+if (hasRegionCollection) {
+apiResults=regionCollection.getCurrentSearchResults();
+}
  else {
-      resultCollection.getCurrentSearchResults().addAll(apiResults);
-    }
-    updateSearchResult(resultCollection,true);
-  }
+apiResults=results;
+searchUICore.sortSearchResults(phrase,apiResults);
+}
+regionResultApi=null;
+regionResultCollection=null;
+results=new ArrayList<>();
+getMyApplication().runInUIThread(new Runnable(){
+@Override public void run(){
+boolean appended=false;
+if (resultCollection == null || resultCollection.getPhrase() != phrase) {
+resultCollection=new SearchResultCollection(apiResults,phrase);
+}
+ else {
+resultCollection.getCurrentSearchResults().addAll(apiResults);
+appended=true;
+}
+if (!hasRegionCollection) {
+updateSearchResult(resultCollection,true,appended);
+}
+}
 }
 );
 break;
 case SEARCH_API_REGION_FINISHED:
+regionResultApi=(SearchCoreAPI)object.object;
+final List<SearchResult> regionResults=new ArrayList<>(results);
+final SearchPhrase regionPhrase=object.requiredSearchPhrase;
+searchUICore.sortSearchResults(regionPhrase,regionResults);
+getMyApplication().runInUIThread(new Runnable(){
+@Override public void run(){
+boolean appended=resultCollection != null && resultCollection.getPhrase() == regionPhrase;
+regionResultCollection=new SearchResultCollection(regionResults,regionPhrase);
+if (appended) {
+List<SearchResult> res=new ArrayList<>(resultCollection.getCurrentSearchResults());
+res.addAll(regionResults);
+SearchResultCollection resCollection=new SearchResultCollection(res,regionPhrase);
+updateSearchResult(resCollection,true,true);
+}
+ else {
+updateSearchResult(regionResultCollection,true,false);
+}
+}
+}
+);
 break;
 default :
 results.add(object);
