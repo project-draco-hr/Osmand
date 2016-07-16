@@ -3,23 +3,33 @@ switch (searchResult.objectType) {
 case CITY:
 case POSTCODE:
     City city=(City)searchResult.object;
-  return Algorithms.capitalizeFirstLetterAndLowercase(city.getType().toString());
+  return getCityTypeStr(city.getType());
 case VILLAGE:
 city=(City)searchResult.object;
 if (!Algorithms.isEmpty(searchResult.localeRelatedObjectName)) {
-return Algorithms.capitalizeFirstLetterAndLowercase(city.getType().toString()) + " near " + searchResult.localeRelatedObjectName+ (searchResult.distRelatedObjectName > 0 ? " (" + OsmAndFormatter.getFormattedDistance((float)searchResult.distRelatedObjectName,app) + ")" : "");
+if (searchResult.distRelatedObjectName > 0) {
+  return getCityTypeStr(city.getType()) + ", " + OsmAndFormatter.getFormattedDistance((float)searchResult.distRelatedObjectName,app)+ " "+ app.getString(R.string.shared_string_from)+ " "+ searchResult.localeRelatedObjectName;
 }
  else {
-return Algorithms.capitalizeFirstLetterAndLowercase(city.getType().toString());
+  return getCityTypeStr(city.getType()) + ", " + searchResult.localeRelatedObjectName;
+}
+}
+ else {
+return getCityTypeStr(city.getType());
 }
 case STREET:
 Street street=(Street)searchResult.object;
 City streetCity=street.getCity();
 if (!Algorithms.isEmpty(searchResult.localeRelatedObjectName)) {
-return searchResult.localeRelatedObjectName + (searchResult.distRelatedObjectName > 0 ? " (" + OsmAndFormatter.getFormattedDistance((float)searchResult.distRelatedObjectName,app) + ")" : "");
+if (searchResult.distRelatedObjectName > 0) {
+return OsmAndFormatter.getFormattedDistance((float)searchResult.distRelatedObjectName,app) + " " + app.getString(R.string.shared_string_from)+ " "+ searchResult.localeRelatedObjectName;
 }
  else {
-return streetCity.getName() + " - " + Algorithms.capitalizeFirstLetterAndLowercase(streetCity.getType().name());
+return searchResult.localeRelatedObjectName;
+}
+}
+ else {
+return getCityTypeStr(streetCity.getType()) + ", " + streetCity.getName();
 }
 case HOUSE:
 return "";
@@ -67,6 +77,8 @@ case FAVORITE:
 FavouritePoint fav=(FavouritePoint)searchResult.object;
 return fav.getCategory().length() == 0 ? app.getString(R.string.shared_string_favorites) : fav.getCategory();
 case REGION:
+BinaryMapIndexReader binaryMapIndexReader=(BinaryMapIndexReader)searchResult.object;
+System.out.println(binaryMapIndexReader.getFile().getAbsolutePath() + " " + binaryMapIndexReader.getCountryName());
 break;
 case RECENT_OBJ:
 HistoryEntry entry=(HistoryEntry)searchResult.object;
