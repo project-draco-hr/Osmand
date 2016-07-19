@@ -4,7 +4,7 @@
   }
   final BinaryMapIndexReader[] currentFile=new BinaryMapIndexReader[1];
   Iterator<BinaryMapIndexReader> offlineIterator=phrase.getRadiusOfflineIndexes(BBOX_RADIUS,SearchPhraseDataType.POI);
-  QuadRect bbox=phrase.getRadiusBBoxToSearch(BBOX_RADIUS);
+  QuadRect bbox=phrase.getRadiusBBoxToSearch(BBOX_RADIUS_INSIDE);
   SearchRequest<Amenity> req=BinaryMapIndexReader.buildSearchPoiRequest((int)bbox.centerX(),(int)bbox.centerY(),phrase.getLastWord(),(int)bbox.left,(int)bbox.right,(int)bbox.top,(int)bbox.bottom,new ResultMatcher<Amenity>(){
     int limit=0;
     @Override public boolean publish(    Amenity object){
@@ -18,8 +18,16 @@
       sr.preferredZoom=17;
       sr.file=currentFile[0];
       sr.location=object.getLocation();
+      if (object.getSubType().equals("city") || object.getSubType().equals("country")) {
+        sr.priorityDistance=SEARCH_AMENITY_BY_NAME_CITY_PRIORITY_DISTANCE;
+      }
+ else       if (object.getSubType().equals("town")) {
+        sr.priorityDistance=SEARCH_AMENITY_BY_NAME_TOWN_PRIORITY_DISTANCE;
+      }
+ else {
+        sr.priorityDistance=1;
+      }
       sr.priority=SEARCH_AMENITY_BY_NAME_PRIORITY;
-      sr.priorityDistance=1;
       sr.objectType=ObjectType.POI;
       resultMatcher.publish(sr);
       return false;
