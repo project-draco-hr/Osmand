@@ -1,0 +1,35 @@
+{
+  if (searchResult.location != null) {
+    PointDescription pointDescription=null;
+    Object object=searchResult.object;
+switch (searchResult.objectType) {
+case POI:
+      pointDescription=getMapActivity().getMapLayers().getPoiMapLayer().getObjectName(object);
+    break;
+case RECENT_OBJ:
+  HistoryEntry entry=(HistoryEntry)object;
+pointDescription=entry.getName();
+break;
+case FAVORITE:
+FavouritePoint fav=(FavouritePoint)object;
+pointDescription=fav.getPointDescription();
+break;
+case HOUSE:
+pointDescription=new PointDescription(PointDescription.POINT_TYPE_LOCATION,"");
+break;
+case LOCATION:
+LatLon latLon=(LatLon)object;
+pointDescription=new PointDescription(latLon.getLatitude(),latLon.getLongitude());
+break;
+case STREET_INTERSECTION:
+pointDescription=new PointDescription(PointDescription.POINT_TYPE_LOCATION,"");
+break;
+case WPT:
+WptPt wpt=(WptPt)object;
+pointDescription=wpt.getPointDescription(getMyApplication());
+break;
+}
+getMyApplication().getSettings().setMapLocationToShow(searchResult.location.getLatitude(),searchResult.location.getLongitude(),searchResult.preferredZoom,pointDescription,true,object);
+MapActivity.launchMapActivityMoveToTop(getActivity());
+}
+}
