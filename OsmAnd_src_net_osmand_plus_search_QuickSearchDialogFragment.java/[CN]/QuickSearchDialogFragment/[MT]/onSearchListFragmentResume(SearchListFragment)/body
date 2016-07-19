@@ -1,0 +1,68 @@
+{
+  SearchPhrase sp;
+switch (searchListFragment.getType()) {
+case HISTORY:
+    historySearchFragment=(SearchHistoryListFragment)searchListFragment;
+  SearchHistoryAPI historyAPI=new SearchHistoryAPI(getMyApplication());
+final List<SearchResult> history=new ArrayList<>();
+sp=new SearchPhrase(null).generateNewPhrase("",searchUICore.getSearchSettings());
+historyAPI.search(sp,new SearchResultMatcher(new ResultMatcher<SearchResult>(){
+@Override public boolean publish(SearchResult object){
+history.add(object);
+return true;
+}
+@Override public boolean isCancelled(){
+return false;
+}
+}
+,0,new AtomicInteger(0),-1));
+if (history.size() > 0) {
+searchUICore.sortSearchResults(sp,history);
+List<QuickSearchListItem> rows=new ArrayList<>();
+OsmandApplication app=getMyApplication();
+for (SearchResult sr : history) {
+rows.add(new QuickSearchListItem(app,sr,sp.getSettings().getLang()));
+}
+searchListFragment.updateListAdapter(rows,false);
+}
+break;
+case CATEGORIES:
+categoriesSearchFragment=(SearchCategoriesListFragment)searchListFragment;
+SearchAmenityTypesAPI amenityTypesAPI=new SearchAmenityTypesAPI(getMyApplication().getPoiTypes());
+final List<SearchResult> amenityTypes=new ArrayList<>();
+sp=new SearchPhrase(null).generateNewPhrase("",searchUICore.getSearchSettings());
+try {
+amenityTypesAPI.search(sp,new SearchResultMatcher(new ResultMatcher<SearchResult>(){
+@Override public boolean publish(SearchResult object){
+amenityTypes.add(object);
+return true;
+}
+@Override public boolean isCancelled(){
+return false;
+}
+}
+,0,new AtomicInteger(0),-1));
+}
+ catch (IOException e) {
+e.printStackTrace();
+}
+if (amenityTypes.size() > 0) {
+searchUICore.sortSearchResults(sp,amenityTypes);
+List<QuickSearchListItem> rows=new ArrayList<>();
+OsmandApplication app=getMyApplication();
+for (SearchResult sr : amenityTypes) {
+rows.add(new QuickSearchListItem(app,sr,sp.getSettings().getLang()));
+}
+searchListFragment.updateListAdapter(rows,false);
+}
+break;
+case MAIN:
+if (!Algorithms.isEmpty(searchQuery)) {
+String txt=searchQuery;
+searchQuery="";
+searchEditText.setText(txt);
+searchEditText.setSelection(txt.length());
+}
+break;
+}
+}

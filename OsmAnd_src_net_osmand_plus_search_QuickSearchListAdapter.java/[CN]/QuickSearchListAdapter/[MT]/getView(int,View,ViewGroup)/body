@@ -1,0 +1,77 @@
+{
+  QuickSearchListItem listItem=getItem(position);
+  int viewType=this.getItemViewType(position);
+  LinearLayout view;
+  if (viewType == 0) {
+    if (convertView == null) {
+      LayoutInflater inflater=(LayoutInflater)app.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      view=(LinearLayout)inflater.inflate(R.layout.search_more_list_item,null);
+    }
+ else {
+      view=(LinearLayout)convertView;
+    }
+    ((TextView)view.findViewById(R.id.title)).setText(listItem.getName());
+  }
+ else {
+    if (convertView == null) {
+      LayoutInflater inflater=(LayoutInflater)app.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      view=(LinearLayout)inflater.inflate(R.layout.search_list_item,null);
+    }
+ else {
+      view=(LinearLayout)convertView;
+    }
+    ImageView imageView=(ImageView)view.findViewById(R.id.imageView);
+    TextView title=(TextView)view.findViewById(R.id.title);
+    TextView subtitle=(TextView)view.findViewById(R.id.subtitle);
+    imageView.setImageDrawable(listItem.getIcon());
+    String name=listItem.getName();
+    title.setText(name);
+    Drawable typeIcon=listItem.getTypeIcon();
+    ImageView group=(ImageView)view.findViewById(R.id.type_name_icon);
+    if (typeIcon != null) {
+      group.setImageDrawable(typeIcon);
+      group.setVisibility(View.VISIBLE);
+    }
+ else {
+      group.setVisibility(View.GONE);
+    }
+    String desc=listItem.getTypeName();
+    if (!Algorithms.isEmpty(desc) && !desc.equals(name)) {
+      subtitle.setText(desc);
+      subtitle.setVisibility(View.VISIBLE);
+    }
+ else {
+      subtitle.setVisibility(View.GONE);
+    }
+    TextView timeText=(TextView)view.findViewById(R.id.time);
+    ImageView timeIcon=(ImageView)view.findViewById(R.id.time_icon);
+    if (listItem.getSearchResult().object instanceof Amenity && ((Amenity)listItem.getSearchResult().object).getOpeningHours() != null) {
+      Amenity amenity=(Amenity)listItem.getSearchResult().object;
+      OpeningHoursParser.OpeningHours rs=OpeningHoursParser.parseOpenedHours(amenity.getOpeningHours());
+      if (rs != null) {
+        Calendar inst=Calendar.getInstance();
+        inst.setTimeInMillis(System.currentTimeMillis());
+        boolean worksNow=rs.isOpenedForTime(inst);
+        inst.setTimeInMillis(System.currentTimeMillis() + 30 * 60 * 1000);
+        boolean worksLater=rs.isOpenedForTime(inst);
+        int colorId=worksNow ? worksLater ? R.color.color_ok : R.color.color_intermediate : R.color.color_warning;
+        timeIcon.setVisibility(View.VISIBLE);
+        timeText.setVisibility(View.VISIBLE);
+        timeIcon.setImageDrawable(app.getIconsCache().getIcon(R.drawable.ic_small_time,colorId));
+        timeText.setTextColor(app.getResources().getColor(colorId));
+        String rt=rs.getCurrentRuleTime(inst);
+        timeText.setText(rt == null ? "" : rt);
+      }
+ else {
+        timeIcon.setVisibility(View.GONE);
+        timeText.setVisibility(View.GONE);
+      }
+    }
+ else {
+      timeIcon.setVisibility(View.GONE);
+      timeText.setVisibility(View.GONE);
+    }
+    updateCompassVisibility(view,listItem);
+  }
+  return view;
+}
