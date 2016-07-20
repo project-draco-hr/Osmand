@@ -44,9 +44,11 @@ synchronized (this) {
         boolean inRecalc=calculateRoute || isRouteBeingCalculated();
         if (!inRecalc && !wrongMovementDirection) {
           voiceRouter.updateStatus(currentLocation,false);
+          voiceRouterStopped=false;
         }
- else         if (isDeviatedFromRoute) {
+ else         if (isDeviatedFromRoute && !voiceRouterStopped) {
           voiceRouter.interruptRouteCommands();
+          voiceRouterStopped=true;
         }
         if (distOrth > 350) {
           voiceRouter.announceOffRoute(distOrth);
