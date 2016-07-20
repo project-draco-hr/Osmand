@@ -10,6 +10,8 @@
   }
   boolean calculateRoute=false;
 synchronized (this) {
+    isDeviatedFromRoute=false;
+    double distOrth=0;
     if (route.isEmpty()) {
       calculateRoute=true;
     }
@@ -21,21 +23,18 @@ synchronized (this) {
       List<Location> routeNodes=route.getImmutableAllLocations();
       int currentRoute=route.currentRoute;
       if (currentRoute > 0) {
-        double dist=getOrthogonalDistance(currentLocation,routeNodes.get(currentRoute - 1),routeNodes.get(currentRoute));
-        if ((!settings.DISABLE_OFFROUTE_RECALC.get()) && (dist > (1.7 * posTolerance))) {
-          log.info("Recalculate route, because correlation  : " + dist);
+        distOrth=getOrthogonalDistance(currentLocation,routeNodes.get(currentRoute - 1),routeNodes.get(currentRoute));
+        if ((!settings.DISABLE_OFFROUTE_RECALC.get()) && (distOrth > (1.7 * posTolerance))) {
+          log.info("Recalculate route, because correlation  : " + distOrth);
+          isDeviatedFromRoute=true;
           calculateRoute=true;
-        }
-        if (dist > 350) {
-          if (isFollowingMode) {
-            voiceRouter.announceOffRoute(dist);
-          }
         }
       }
       Location next=route.getNextRouteLocation();
       boolean wrongMovementDirection=checkWrongMovementDirection(currentLocation,next);
       if ((!settings.DISABLE_WRONG_DIRECTION_RECALC.get()) && wrongMovementDirection && (currentLocation.distanceTo(routeNodes.get(currentRoute)) > (2 * posTolerance))) {
         log.info("Recalculate route, because wrong movement direction: " + currentLocation.distanceTo(routeNodes.get(currentRoute)));
+        isDeviatedFromRoute=true;
         calculateRoute=true;
       }
       boolean uTurnIsNeeded=identifyUTurnIsNeeded(currentLocation,posTolerance);
@@ -46,6 +45,9 @@ synchronized (this) {
         }
  else         if (isDeviatedFromRoute) {
           voiceRouter.interruptRouteCommands();
+        }
+        if (distOrth > 350) {
+          voiceRouter.announceOffRoute(distOrth);
         }
       }
       if (currentRoute > 0) {
