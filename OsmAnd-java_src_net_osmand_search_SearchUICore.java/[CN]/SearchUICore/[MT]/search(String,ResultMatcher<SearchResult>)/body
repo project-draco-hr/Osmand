@@ -13,10 +13,13 @@
         if (rm.isCancelled()) {
           return;
         }
-        Thread.sleep(200);
+        if (TIMEOUT_BETWEEN_CHARS > 0) {
+          Thread.sleep(TIMEOUT_BETWEEN_CHARS);
+        }
         searchInBackground(phrase,rm);
         if (!rm.isCancelled()) {
           sortSearchResults(phrase,rm.getRequestResults());
+          filterSearchDuplicateResults(phrase,rm.getRequestResults());
           LOG.info(">> Search phrase " + phrase + " "+ rm.getRequestResults().size());
           SearchResultCollection collection=new SearchResultCollection(rm.getRequestResults(),phrase);
           currentSearchResult=collection;
