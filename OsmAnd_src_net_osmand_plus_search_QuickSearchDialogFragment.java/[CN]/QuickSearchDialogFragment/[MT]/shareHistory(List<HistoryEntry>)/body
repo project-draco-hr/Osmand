@@ -1,0 +1,42 @@
+{
+  if (!historyEntries.isEmpty()) {
+    final AsyncTask<Void,Void,GPXFile> exportTask=new AsyncTask<Void,Void,GPXFile>(){
+      @Override protected GPXFile doInBackground(      Void... params){
+        GPXFile gpx=new GPXFile();
+        for (        HistoryEntry h : historyEntries) {
+          GPXUtilities.WptPt pt=new GPXUtilities.WptPt();
+          pt.lat=h.getLat();
+          pt.lon=h.getLon();
+          pt.name=h.getName().getName();
+          boolean hasTypeInDescription=!Algorithms.isEmpty(h.getName().getTypeName());
+          if (hasTypeInDescription) {
+            pt.desc=h.getName().getTypeName();
+          }
+          gpx.points.add(pt);
+        }
+        return gpx;
+      }
+      @Override protected void onPreExecute(){
+        showProgressBar();
+      }
+      @Override protected void onPostExecute(      GPXFile gpxFile){
+        hideProgressBar();
+        File dir=new File(getActivity().getCacheDir(),"share");
+        if (!dir.exists()) {
+          dir.mkdir();
+        }
+        File dst=new File(dir,"History.gpx");
+        GPXUtilities.writeGpxFile(dst,gpxFile,getMyApplication());
+        final Intent sendIntent=new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT,"History.gpx:\n\n\n" + GPXUtilities.asString(gpxFile,getMyApplication()));
+        sendIntent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.share_history_subject));
+        sendIntent.putExtra(Intent.EXTRA_STREAM,FileProvider.getUriForFile(getActivity(),getActivity().getPackageName() + ".fileprovider",dst));
+        sendIntent.setType("text/plain");
+        startActivity(sendIntent);
+      }
+    }
+;
+    exportTask.execute();
+  }
+}

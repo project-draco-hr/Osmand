@@ -12,7 +12,7 @@
   tabToolbarView=view.findViewById(R.id.tab_toolbar_layout);
   tabsView=view.findViewById(R.id.tabs_view);
   searchView=view.findViewById(R.id.search_view);
-  Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
+  toolbar=(Toolbar)view.findViewById(R.id.toolbar);
   toolbar.setNavigationIcon(app.getIconsCache().getThemedIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha));
   toolbar.setNavigationContentDescription(R.string.access_shared_string_navigate_up);
   toolbar.setNavigationOnClickListener(new OnClickListener(){
@@ -21,8 +21,46 @@
     }
   }
 );
+  toolbarEdit=(Toolbar)view.findViewById(R.id.toolbar_edit);
+  toolbarEdit.setNavigationIcon(app.getIconsCache().getIcon(R.drawable.ic_action_remove_dark));
+  toolbarEdit.setNavigationContentDescription(R.string.shared_string_cancel);
+  toolbarEdit.setNavigationOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      enableSelectionMode(false,-1);
+    }
+  }
+);
+  titleEdit=(TextView)view.findViewById(R.id.titleEdit);
+  view.findViewById(R.id.shareButton).setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      List<HistoryEntry> historyEntries=new ArrayList<HistoryEntry>();
+      List<QuickSearchListItem> selectedItems=historySearchFragment.getListAdapter().getSelectedItems();
+      for (      QuickSearchListItem searchListItem : selectedItems) {
+        HistoryEntry historyEntry=(HistoryEntry)searchListItem.getSearchResult().object;
+        historyEntries.add(historyEntry);
+      }
+      if (historyEntries.size() > 0) {
+        shareHistory(historyEntries);
+        enableSelectionMode(false,-1);
+      }
+    }
+  }
+);
+  view.findViewById(R.id.deleteButton).setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      SearchHistoryHelper helper=SearchHistoryHelper.getInstance(app);
+      List<QuickSearchListItem> selectedItems=historySearchFragment.getListAdapter().getSelectedItems();
+      for (      QuickSearchListItem searchListItem : selectedItems) {
+        HistoryEntry historyEntry=(HistoryEntry)searchListItem.getSearchResult().object;
+        helper.remove(historyEntry);
+      }
+      reloadHistory();
+      enableSelectionMode(false,-1);
+    }
+  }
+);
   setupSearch(mapActivity);
-  viewPager=(ViewPager)view.findViewById(R.id.pager);
+  viewPager=(LockableViewPager)view.findViewById(R.id.pager);
   pagerAdapter=new SearchFragmentPagerAdapter(getChildFragmentManager(),getResources());
   viewPager.setAdapter(pagerAdapter);
   tabLayout=(TabLayout)view.findViewById(R.id.tab_layout);

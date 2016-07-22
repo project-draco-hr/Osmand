@@ -1,0 +1,33 @@
+{
+  int viewType=getItemViewType(position);
+  if (viewType == ITEM_TYPE_SELECT_ALL) {
+    selectAll=ch.isChecked();
+    if (ch.isChecked()) {
+      selectedItems.clear();
+      for (int i=0; i < getCount(); i++) {
+        if (getItemViewType(i) == ITEM_TYPE_REGULAR) {
+          selectedItems.add(getItem(i));
+        }
+      }
+    }
+ else {
+      selectedItems.clear();
+    }
+    notifyDataSetChanged();
+    if (selectionListener != null) {
+      selectionListener.onUpdateSelectionMode(selectedItems);
+    }
+  }
+ else {
+    QuickSearchListItem listItem=getItem(position);
+    if (ch.isChecked()) {
+      selectedItems.add(listItem);
+    }
+ else {
+      selectedItems.remove(listItem);
+    }
+    if (selectionListener != null) {
+      selectionListener.onUpdateSelectionMode(selectedItems);
+    }
+  }
+}
