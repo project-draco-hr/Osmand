@@ -1,8 +1,8 @@
 {
-  QuickSearchListItem listItem=getItem(position);
-  int viewType=this.getItemViewType(position);
+  final QuickSearchListItem listItem=getItem(position);
+  int viewType=getItemViewType(position);
   LinearLayout view;
-  if (viewType == 0) {
+  if (viewType == ITEM_TYPE_SEARCH_MORE) {
     if (convertView == null) {
       LayoutInflater inflater=(LayoutInflater)app.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       view=(LinearLayout)inflater.inflate(R.layout.search_more_list_item,null);
@@ -12,6 +12,24 @@
     }
     ((TextView)view.findViewById(R.id.title)).setText(listItem.getName());
   }
+ else   if (viewType == ITEM_TYPE_SELECT_ALL) {
+    if (convertView == null) {
+      LayoutInflater inflater=(LayoutInflater)app.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      view=(LinearLayout)inflater.inflate(R.layout.select_all_list_item,null);
+    }
+ else {
+      view=(LinearLayout)convertView;
+    }
+    final CheckBox ch=(CheckBox)view.findViewById(R.id.toggle_item);
+    ch.setVisibility(View.VISIBLE);
+    ch.setChecked(selectAll);
+    ch.setOnClickListener(new View.OnClickListener(){
+      @Override public void onClick(      View v){
+        toggleCheckbox(position,ch);
+      }
+    }
+);
+  }
  else {
     if (convertView == null) {
       LayoutInflater inflater=(LayoutInflater)app.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -19,6 +37,20 @@
     }
  else {
       view=(LinearLayout)convertView;
+    }
+    final CheckBox ch=(CheckBox)view.findViewById(R.id.toggle_item);
+    if (selectionMode) {
+      ch.setVisibility(View.VISIBLE);
+      ch.setChecked(selectedItems.contains(listItem));
+      ch.setOnClickListener(new View.OnClickListener(){
+        @Override public void onClick(        View v){
+          toggleCheckbox(position,ch);
+        }
+      }
+);
+    }
+ else {
+      ch.setVisibility(View.GONE);
     }
     ImageView imageView=(ImageView)view.findViewById(R.id.imageView);
     TextView title=(TextView)view.findViewById(R.id.title);
@@ -81,7 +113,7 @@
     }
  else {
       divider.setVisibility(View.VISIBLE);
-      if (position + 1 == searchMoreItemPosition) {
+      if (position + 1 == searchMoreItemPosition || position == selectAllItemPosition) {
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,dp1);
         p.setMargins(0,0,0,0);
         divider.setLayoutParams(p);
