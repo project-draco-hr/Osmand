@@ -1,0 +1,25 @@
+{
+  if (asyncLoader.getResult() == null) {
+    return false;
+  }
+  List<GpxInfo> infos=asyncLoader.getResult();
+  for (  GpxInfo info : infos) {
+    for (    WptPt point : info.gpx.points) {
+      SearchResult sr=new SearchResult(phrase);
+      sr.localeName=point.getPointDescription(app).getName();
+      sr.object=point;
+      sr.priority=SEARCH_WPT_OBJECT_PRIORITY;
+      sr.objectType=ObjectType.WPT;
+      sr.location=new LatLon(point.getLatitude(),point.getLongitude());
+      sr.localeRelatedObjectName=info.getFileName();
+      sr.preferredZoom=17;
+      if (phrase.getLastWord().length() <= 1 && phrase.isNoSelectedType()) {
+        resultMatcher.publish(sr);
+      }
+ else       if (phrase.getNameStringMatcher().matches(sr.localeName)) {
+        resultMatcher.publish(sr);
+      }
+    }
+  }
+  return true;
+}

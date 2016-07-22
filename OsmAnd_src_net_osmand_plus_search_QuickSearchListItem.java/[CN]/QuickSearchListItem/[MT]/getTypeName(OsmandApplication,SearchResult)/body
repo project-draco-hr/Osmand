@@ -88,9 +88,9 @@ typeStr=Algorithms.capitalizeFirstLetterAndLowercase(typeStr.replace('_',' '));
 return typeStr;
 case LOCATION:
 LatLon latLon=(LatLon)searchResult.object;
-String country=app.getRegions().getCountryName(latLon);
-if (!Algorithms.isEmpty(country)) {
-return country;
+String locationCountry=app.getRegions().getCountryName(latLon);
+if (!Algorithms.isEmpty(locationCountry)) {
+return locationCountry;
 }
  else {
 return "";
@@ -112,7 +112,19 @@ return entry.getName().getTypeName();
 return app.getString(R.string.shared_string_history);
 }
 case WPT:
-break;
+StringBuilder sb=new StringBuilder();
+WptPt wpt=(WptPt)searchResult.object;
+String wptCountry=app.getRegions().getCountryName(new LatLon(wpt.getLatitude(),wpt.getLongitude()));
+if (!Algorithms.isEmpty(wptCountry)) {
+sb.append(wptCountry);
+}
+if (!Algorithms.isEmpty(searchResult.localeRelatedObjectName)) {
+if (sb.length() > 0) {
+sb.append(", ");
+}
+sb.append(searchResult.localeRelatedObjectName);
+}
+return sb.toString();
 case UNKNOWN_NAME_FILTER:
 break;
 }
