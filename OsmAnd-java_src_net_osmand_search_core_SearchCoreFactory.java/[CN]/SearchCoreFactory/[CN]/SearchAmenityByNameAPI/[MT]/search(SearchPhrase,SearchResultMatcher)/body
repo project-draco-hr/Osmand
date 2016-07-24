@@ -1,11 +1,12 @@
 {
-  if (phrase.getLastWord().length() == 0) {
+  if (!phrase.isUnknownSearchWordPresent()) {
     return false;
   }
   final BinaryMapIndexReader[] currentFile=new BinaryMapIndexReader[1];
   Iterator<BinaryMapIndexReader> offlineIterator=phrase.getRadiusOfflineIndexes(BBOX_RADIUS,SearchPhraseDataType.POI);
+  final NameStringMatcher nm=phrase.getNameStringMatcher();
   QuadRect bbox=phrase.getRadiusBBoxToSearch(BBOX_RADIUS_INSIDE);
-  SearchRequest<Amenity> req=BinaryMapIndexReader.buildSearchPoiRequest((int)bbox.centerX(),(int)bbox.centerY(),phrase.getLastWord(),(int)bbox.left,(int)bbox.right,(int)bbox.top,(int)bbox.bottom,new ResultMatcher<Amenity>(){
+  SearchRequest<Amenity> req=BinaryMapIndexReader.buildSearchPoiRequest((int)bbox.centerX(),(int)bbox.centerY(),phrase.getUnknownSearchWord(),(int)bbox.left,(int)bbox.right,(int)bbox.top,(int)bbox.bottom,new ResultMatcher<Amenity>(){
     int limit=0;
     @Override public boolean publish(    Amenity object){
       if (limit++ > LIMIT) {
@@ -14,13 +15,18 @@
       SearchResult sr=new SearchResult(phrase);
       sr.otherNames=object.getAllNames(true);
       sr.localeName=object.getName(phrase.getSettings().getLang(),true);
+      if (phrase.isUnknownSearchWordComplete()) {
+        if (!nm.matches(sr.localeName) || !nm.matches(sr.otherNames)) {
+          return false;
+        }
+      }
       sr.object=object;
       sr.preferredZoom=17;
       sr.file=currentFile[0];
       sr.location=object.getLocation();
       if (object.getSubType().equals("city") || object.getSubType().equals("country")) {
         sr.priorityDistance=SEARCH_AMENITY_BY_NAME_CITY_PRIORITY_DISTANCE;
-        sr.preferredZoom=object.getSubType().equals("country") ? 8 : 13;
+        sr.preferredZoom=object.getSubType().equals("country") ? 7 : 13;
       }
  else       if (object.getSubType().equals("town")) {
         sr.priorityDistance=SEARCH_AMENITY_BY_NAME_TOWN_PRIORITY_DISTANCE;
