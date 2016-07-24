@@ -1,0 +1,14 @@
+{
+  phrase.countUnknownWordsMatch(res);
+  int cnt=resultMatcher.getCount();
+  if (!phrase.getUnknownSearchWords().isEmpty() && api != null) {
+    SearchPhrase nphrase=phrase.selectWord(res,phrase.getUnknownSearchWords(res.otherWordsMatch),phrase.isLastUnknownSearchWordComplete());
+    SearchResult prev=resultMatcher.setParentSearchResult(res);
+    res.parentSearchResult=prev;
+    api.search(nphrase,resultMatcher);
+    resultMatcher.setParentSearchResult(prev);
+  }
+  if (resultMatcher.getCount() == cnt) {
+    resultMatcher.publish(res);
+  }
+}

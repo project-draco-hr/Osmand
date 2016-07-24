@@ -23,20 +23,19 @@
     resArray=townCitiesQR.queryInBox(bbox,resArray);
     int limit=0;
     for (    City c : resArray) {
-      SearchResult sr=new SearchResult(phrase);
-      sr.object=c;
-      sr.file=(BinaryMapIndexReader)c.getReferenceFile();
-      sr.localeName=c.getName(phrase.getSettings().getLang(),true);
-      sr.otherNames=c.getAllNames(true);
-      sr.localeRelatedObjectName=sr.file.getRegionName();
-      sr.relatedObject=sr.file;
-      sr.location=c.getLocation();
-      sr.priority=1;
-      sr.priorityDistance=0.1;
-      sr.objectType=ObjectType.CITY;
-      if (nm.matches(sr.localeName) || nm.matches(sr.otherNames)) {
-        sr.foundWordCount+=phrase.countUnknownWordsMatch(sr);
-        resultMatcher.publish(sr);
+      SearchResult res=new SearchResult(phrase);
+      res.object=c;
+      res.file=(BinaryMapIndexReader)c.getReferenceFile();
+      res.localeName=c.getName(phrase.getSettings().getLang(),true);
+      res.otherNames=c.getAllNames(true);
+      res.localeRelatedObjectName=res.file.getRegionName();
+      res.relatedObject=res.file;
+      res.location=c.getLocation();
+      res.priority=1;
+      res.priorityDistance=0.1;
+      res.objectType=ObjectType.CITY;
+      if (nm.matches(res.localeName) || nm.matches(res.otherNames)) {
+        subSearchApiOrPublish(phrase,resultMatcher,res,cityApi);
       }
       if (limit++ > LIMIT * phrase.getRadiusLevel()) {
         break;

@@ -2,6 +2,7 @@
   if (phrase.getRadiusLevel() > 1 || phrase.getUnknownSearchWordLength() > 3) {
     final boolean locSpecified=phrase.getLastTokenLocation() != null;
     LatLon loc=phrase.getLastTokenLocation();
+    final List<SearchResult> immediateResults=new ArrayList<>();
     final QuadRect streetBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS);
     final QuadRect postcodeBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 5);
     final QuadRect villagesBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 3);
@@ -21,7 +22,6 @@
         sr.otherNames=object.getAllNames(true);
         sr.localeRelatedObjectName=sr.file.getRegionName();
         sr.relatedObject=sr.file;
-        sr.foundWordCount+=phrase.countUnknownWordsMatch(sr);
         sr.location=object.getLocation();
         sr.priorityDistance=1;
         sr.priority=priority;
@@ -88,7 +88,7 @@
           return false;
         }
         limit++;
-        resultMatcher.publish(sr);
+        immediateResults.add(sr);
         return false;
       }
       @Override public boolean isCancelled(){
@@ -100,11 +100,22 @@
     while (offlineIterator.hasNext()) {
       BinaryMapIndexReader r=offlineIterator.next();
       currentFile[0]=r;
+      immediateResults.clear();
       SearchRequest<MapObject> req=BinaryMapIndexReader.buildAddressByNameRequest(rm,phrase.getUnknownSearchWord().toLowerCase(),phrase.isUnknownSearchWordComplete() ? StringMatcherMode.CHECK_EQUALS_FROM_SPACE : StringMatcherMode.CHECK_STARTS_FROM_SPACE);
       if (locSpecified) {
         req.setBBoxRadius(loc.getLatitude(),loc.getLongitude(),phrase.getRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 10));
       }
       r.searchAddressDataByName(req);
+      for (      SearchResult res : immediateResults) {
+        if (res.objectType == ObjectType.STREET) {
+          City ct=((Street)res.object).getCity();
+          phrase.countUnknownWordsMatch(res,ct.getName(phrase.getSettings().getLang(),true),ct.getAllNames(true));
+          subSearchApiOrPublish(phrase,resultMatcher,res,streetsApi);
+        }
+ else {
+          subSearchApiOrPublish(phrase,resultMatcher,res,cityApi);
+        }
+      }
       resultMatcher.apiSearchRegionFinished(this,r,phrase);
     }
   }
