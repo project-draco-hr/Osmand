@@ -1,5 +1,5 @@
 {
-  if (phrase.getRadiusLevel() > 1 || phrase.getLastWord().length() > 3) {
+  if (phrase.getRadiusLevel() > 1 || phrase.getUnknownSearchWordLength() > 3) {
     final boolean locSpecified=phrase.getLastTokenLocation() != null;
     LatLon loc=phrase.getLastTokenLocation();
     final QuadRect streetBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS);
@@ -99,7 +99,7 @@
     while (offlineIterator.hasNext()) {
       BinaryMapIndexReader r=offlineIterator.next();
       currentFile[0]=r;
-      SearchRequest<MapObject> req=BinaryMapIndexReader.buildAddressByNameRequest(rm,phrase.getLastWord().toLowerCase(),StringMatcherMode.CHECK_STARTS_FROM_SPACE);
+      SearchRequest<MapObject> req=BinaryMapIndexReader.buildAddressByNameRequest(rm,phrase.getUnknownSearchWord().toLowerCase(),phrase.isUnknownSearchWordComplete() ? StringMatcherMode.CHECK_EQUALS_FROM_SPACE : StringMatcherMode.CHECK_STARTS_FROM_SPACE);
       if (locSpecified) {
         req.setBBoxRadius(loc.getLatitude(),loc.getLongitude(),phrase.getRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 10));
       }
