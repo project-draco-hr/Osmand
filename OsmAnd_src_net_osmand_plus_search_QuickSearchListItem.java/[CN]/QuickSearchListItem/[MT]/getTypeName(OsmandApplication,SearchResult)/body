@@ -88,13 +88,11 @@ typeStr=Algorithms.capitalizeFirstLetterAndLowercase(typeStr.replace('_',' '));
 return typeStr;
 case LOCATION:
 LatLon latLon=(LatLon)searchResult.object;
+if (searchResult.localeRelatedObjectName == null) {
 String locationCountry=app.getRegions().getCountryName(latLon);
-if (!Algorithms.isEmpty(locationCountry)) {
-return locationCountry;
+searchResult.localeRelatedObjectName=locationCountry == null ? "" : locationCountry;
 }
- else {
-return "";
-}
+return searchResult.localeRelatedObjectName;
 case FAVORITE:
 FavouritePoint fav=(FavouritePoint)searchResult.object;
 return fav.getCategory().length() == 0 ? app.getString(R.string.shared_string_favorites) : fav.getCategory();
@@ -114,15 +112,15 @@ return app.getString(R.string.shared_string_history);
 case WPT:
 StringBuilder sb=new StringBuilder();
 WptPt wpt=(WptPt)searchResult.object;
-String wptCountry=app.getRegions().getCountryName(new LatLon(wpt.getLatitude(),wpt.getLongitude()));
-if (!Algorithms.isEmpty(wptCountry)) {
-sb.append(wptCountry);
-}
+GpxInfo gpxInfo=(GpxInfo)searchResult.relatedObject;
 if (!Algorithms.isEmpty(searchResult.localeRelatedObjectName)) {
+sb.append(searchResult.localeRelatedObjectName);
+}
+if (gpxInfo != null && !Algorithms.isEmpty(gpxInfo.getFileName())) {
 if (sb.length() > 0) {
 sb.append(", ");
 }
-sb.append(searchResult.localeRelatedObjectName);
+sb.append(gpxInfo.getFileName());
 }
 return sb.toString();
 case UNKNOWN_NAME_FILTER:
