@@ -17,7 +17,19 @@ FavouritePoint fav=(FavouritePoint)object;
 pointDescription=fav.getPointDescription();
 break;
 case HOUSE:
-pointDescription=new PointDescription(PointDescription.POINT_TYPE_ADDRESS,QuickSearchListItem.getName(app,searchResult) + ", " + QuickSearchListItem.getTypeName(app,searchResult));
+String nm=searchResult.localeName;
+if (searchResult.relatedObject instanceof City) {
+nm=((City)searchResult.relatedObject).getName(searchResult.requiredSearchPhrase.getSettings().getLang(),true) + " " + nm;
+}
+ else if (searchResult.relatedObject instanceof Street) {
+String s=((Street)searchResult.relatedObject).getName(searchResult.requiredSearchPhrase.getSettings().getLang(),true);
+String c=((Street)searchResult.relatedObject).getCity().getName(searchResult.requiredSearchPhrase.getSettings().getLang(),true);
+nm=s + " " + nm+ ", "+ c;
+}
+ else if (searchResult.localeRelatedObjectName != null) {
+nm=searchResult.localeRelatedObjectName + " " + nm;
+}
+pointDescription=new PointDescription(PointDescription.POINT_TYPE_ADDRESS,nm);
 break;
 case LOCATION:
 LatLon latLon=(LatLon)object;
