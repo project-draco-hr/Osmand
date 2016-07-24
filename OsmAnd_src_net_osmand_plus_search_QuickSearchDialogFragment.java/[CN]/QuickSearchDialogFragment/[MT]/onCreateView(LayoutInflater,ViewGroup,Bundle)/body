@@ -12,6 +12,32 @@
   tabToolbarView=view.findViewById(R.id.tab_toolbar_layout);
   tabsView=view.findViewById(R.id.tabs_view);
   searchView=view.findViewById(R.id.search_view);
+  buttonToolbarView=view.findViewById(R.id.button_toolbar_layout);
+  buttonToolbarImage=(ImageView)view.findViewById(R.id.buttonToolbarImage);
+  buttonToolbarImage.setImageDrawable(app.getIconsCache().getThemedIcon(R.drawable.ic_action_marker_dark));
+  buttonToolbarText=(TextView)view.findViewById(R.id.buttonToolbarTitle);
+  buttonToolbarText.setText(app.getString(R.string.show_on_map).toUpperCase());
+  view.findViewById(R.id.buttonToolbar).setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      SearchPhrase searchPhrase=searchUICore.getPhrase();
+      if (searchPhrase.isLastWord(ObjectType.POI_TYPE)) {
+        OsmandSettings settings=app.getSettings();
+        AbstractPoiType abstractPoiType=(AbstractPoiType)searchPhrase.getLastSelectedWord().getResult().object;
+        PoiUIFilter filter=new PoiUIFilter(abstractPoiType,app,"");
+        if (!Algorithms.isEmpty(searchPhrase.getLastWord())) {
+          filter.setFilterByName(searchPhrase.getLastWord());
+        }
+        app.getPoiFilters().clearSelectedPoiFilters();
+        app.getPoiFilters().addSelectedPoiFilter(filter);
+        if (location != null) {
+          settings.setMapLocationToShow(location.getLatitude(),location.getLongitude(),15);
+        }
+        MapActivity.launchMapActivityMoveToTop(getActivity());
+        dismiss();
+      }
+    }
+  }
+);
   toolbar=(Toolbar)view.findViewById(R.id.toolbar);
   toolbar.setNavigationIcon(app.getIconsCache().getThemedIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha));
   toolbar.setNavigationContentDescription(R.string.access_shared_string_navigate_up);
