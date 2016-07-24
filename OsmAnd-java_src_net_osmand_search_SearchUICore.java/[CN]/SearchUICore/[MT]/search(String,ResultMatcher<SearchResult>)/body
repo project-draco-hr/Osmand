@@ -10,16 +10,17 @@
     @Override public void run(){
       try {
         SearchResultMatcher rm=new SearchResultMatcher(matcher,request,requestNumber,totalLimit);
-        if (rm.isCancelled()) {
-          return;
-        }
         if (TIMEOUT_BETWEEN_CHARS > 0) {
           Thread.sleep(TIMEOUT_BETWEEN_CHARS);
+        }
+        if (rm.isCancelled()) {
+          return;
         }
         searchInBackground(phrase,rm);
         if (!rm.isCancelled()) {
           sortSearchResults(phrase,rm.getRequestResults());
           filterSearchDuplicateResults(phrase,rm.getRequestResults());
+          justifySearchResults(phrase,rm);
           LOG.info(">> Search phrase " + phrase + " "+ rm.getRequestResults().size());
           SearchResultCollection collection=new SearchResultCollection(rm.getRequestResults(),phrase);
           currentSearchResult=collection;
