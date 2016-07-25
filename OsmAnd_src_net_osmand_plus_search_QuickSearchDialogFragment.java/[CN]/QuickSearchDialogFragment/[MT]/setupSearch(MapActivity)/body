@@ -8,12 +8,18 @@
     binaryMapIndexReaderArray[i++]=rep.getFile();
   }
   searchUICore=new SearchUICore(app.getPoiTypes(),locale,binaryMapIndexReaderArray);
-  LatLon centerLatLon;
+  LatLon clt=mapActivity.getMapView().getCurrentRotatedTileBox().getCenterLatLon();
+  LatLon centerLatLon=clt;
+  searchEditText.setHint(R.string.search_poi_category_hint);
   if (location != null) {
-    centerLatLon=new LatLon(location.getLatitude(),location.getLongitude());
-  }
- else {
-    centerLatLon=mapActivity.getMapView().getCurrentRotatedTileBox().getCenterLatLon();
+    double d=MapUtils.getDistance(clt,location.getLatitude(),location.getLongitude());
+    if (MapUtils.getDistance(clt,location.getLatitude(),location.getLongitude()) < DISTANCE_THRESHOLD) {
+      centerLatLon=new LatLon(location.getLatitude(),location.getLongitude());
+      String n=getString(R.string.search_poi_category_hint);
+      String dist=OsmAndFormatter.getFormattedDistance((float)d,mapActivity.getMyApplication());
+      searchEditText.setHint(n + ", " + getString(R.string.dist_away_from_my_location,dist));
+      clearButton.setImageDrawable(app.getIconsCache().getIcon(R.drawable.ic_action_get_my_location,R.color.color_myloc_distance));
+    }
   }
   SearchSettings settings=searchUICore.getPhrase().getSettings().setOriginalLocation(new LatLon(centerLatLon.getLatitude(),centerLatLon.getLongitude()));
   settings=settings.setLang(locale);
