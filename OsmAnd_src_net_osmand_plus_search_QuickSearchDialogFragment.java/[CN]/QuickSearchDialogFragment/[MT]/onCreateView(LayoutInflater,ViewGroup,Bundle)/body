@@ -85,7 +85,6 @@
     }
   }
 );
-  setupSearch(mapActivity);
   viewPager=(LockableViewPager)view.findViewById(R.id.pager);
   pagerAdapter=new SearchFragmentPagerAdapter(getChildFragmentManager(),getResources());
   viewPager.setAdapter(pagerAdapter);
@@ -125,9 +124,19 @@
           buttonToolbarText.setText(app.getString(R.string.show_on_map).toUpperCase());
         }
       }
+ else {
+        searchEditText.setHint(R.string.search_poi_category_hint);
+        clearButton.setImageDrawable(app.getIconsCache().getThemedIcon(R.drawable.ic_action_remove_dark));
+        if (location != null && searchUICore != null) {
+          LatLon centerLatLon=new LatLon(location.getLatitude(),location.getLongitude());
+          SearchSettings ss=searchUICore.getSearchSettings().setOriginalLocation(new LatLon(centerLatLon.getLatitude(),centerLatLon.getLongitude()));
+          searchUICore.updateSettings(ss);
+        }
+      }
     }
   }
 );
+  setupSearch(mapActivity);
   addMainSearchFragment();
   searchEditText.requestFocus();
   AndroidUtils.softKeyboardDelayed(searchEditText);
