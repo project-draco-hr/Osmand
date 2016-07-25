@@ -19,11 +19,17 @@
   buttonToolbarText.setText(app.getString(R.string.show_on_map).toUpperCase());
   view.findViewById(R.id.buttonToolbar).setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
+      OsmandSettings settings=app.getSettings();
       SearchPhrase searchPhrase=searchUICore.getPhrase();
-      if (searchPhrase.isLastWord(ObjectType.POI_TYPE)) {
-        OsmandSettings settings=app.getSettings();
-        AbstractPoiType abstractPoiType=(AbstractPoiType)searchPhrase.getLastSelectedWord().getResult().object;
-        PoiUIFilter filter=new PoiUIFilter(abstractPoiType,app,"");
+      if (searchPhrase.isNoSelectedType() || searchPhrase.isLastWord(ObjectType.POI_TYPE)) {
+        PoiUIFilter filter;
+        if (searchPhrase.isNoSelectedType()) {
+          filter=new PoiUIFilter(null,app,"");
+        }
+ else {
+          AbstractPoiType abstractPoiType=(AbstractPoiType)searchPhrase.getLastSelectedWord().getResult().object;
+          filter=new PoiUIFilter(abstractPoiType,app,"");
+        }
         if (!Algorithms.isEmpty(searchPhrase.getUnknownSearchWord())) {
           filter.setFilterByName(searchPhrase.getUnknownSearchWord());
         }
@@ -32,8 +38,27 @@
         if (location != null) {
           settings.setMapLocationToShow(location.getLatitude(),location.getLongitude(),15);
         }
+        getMapActivity().setQuickSearchTopbarActive(searchPhrase.isNoSelectedType());
         MapActivity.launchMapActivityMoveToTop(getActivity());
-        hide();
+        if (searchPhrase.isNoSelectedType()) {
+          hide();
+        }
+ else {
+          dismiss();
+        }
+      }
+ else {
+        SearchWord word=searchPhrase.getLastSelectedWord();
+        if (word != null && word.getLocation() != null) {
+          SearchResult searchResult=word.getResult();
+          String name=QuickSearchListItem.getName(app,searchResult);
+          String typeName=QuickSearchListItem.getTypeName(app,searchResult);
+          PointDescription pointDescription=new PointDescription(PointDescription.POINT_TYPE_ADDRESS,typeName,name);
+          getMyApplication().getSettings().setMapLocationToShow(searchResult.location.getLatitude(),searchResult.location.getLongitude(),searchResult.preferredZoom,pointDescription,true,searchResult.object);
+          getMapActivity().setQuickSearchTopbarActive(true);
+          MapActivity.launchMapActivityMoveToTop(getActivity());
+          hide();
+        }
       }
     }
   }
@@ -74,14 +99,26 @@
 );
   view.findViewById(R.id.deleteButton).setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      SearchHistoryHelper helper=SearchHistoryHelper.getInstance(app);
-      List<QuickSearchListItem> selectedItems=historySearchFragment.getListAdapter().getSelectedItems();
-      for (      QuickSearchListItem searchListItem : selectedItems) {
-        HistoryEntry historyEntry=(HistoryEntry)searchListItem.getSearchResult().object;
-        helper.remove(historyEntry);
+      new DialogFragment(){
+        @NonNull @Override public Dialog onCreateDialog(        Bundle savedInstanceState){
+          AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
+          builder.setTitle(R.string.confirmation_to_delete_history_items).setPositiveButton(R.string.shared_string_yes,new DialogInterface.OnClickListener(){
+            @Override public void onClick(            DialogInterface dialog,            int which){
+              SearchHistoryHelper helper=SearchHistoryHelper.getInstance(app);
+              List<QuickSearchListItem> selectedItems=historySearchFragment.getListAdapter().getSelectedItems();
+              for (              QuickSearchListItem searchListItem : selectedItems) {
+                HistoryEntry historyEntry=(HistoryEntry)searchListItem.getSearchResult().object;
+                helper.remove(historyEntry);
+              }
+              reloadHistory();
+              enableSelectionMode(false,-1);
+            }
+          }
+).setNegativeButton(R.string.shared_string_no,null);
+          return builder.create();
+        }
       }
-      reloadHistory();
-      enableSelectionMode(false,-1);
+.show(getChildFragmentManager(),"DeleteHistoryConfirmationFragment");
     }
   }
 );
@@ -98,6 +135,7 @@
     }
     @Override public void afterTextChanged(    Editable s){
       String newQueryText=s.toString();
+      updateClearButtonAndHint();
       updateClearButtonVisibility(newQueryText.length() > 0);
       updateTabbarVisibility(newQueryText.length() == 0);
       if (!searchQuery.equalsIgnoreCase(newQueryText)) {
@@ -124,19 +162,20 @@
           buttonToolbarText.setText(app.getString(R.string.show_on_map).toUpperCase());
         }
       }
- else {
-        searchEditText.setHint(R.string.search_poi_category_hint);
-        clearButton.setImageDrawable(app.getIconsCache().getThemedIcon(R.drawable.ic_action_remove_dark));
-        if (location != null && searchUICore != null) {
-          LatLon centerLatLon=new LatLon(location.getLatitude(),location.getLongitude());
-          SearchSettings ss=searchUICore.getSearchSettings().setOriginalLocation(new LatLon(centerLatLon.getLatitude(),centerLatLon.getLongitude()));
-          searchUICore.updateSettings(ss);
-        }
+ else       if (useMapCenter && location != null) {
+        useMapCenter=false;
+        updateUseMapCenterUI();
+        startLocationUpdate();
+        LatLon centerLatLon=new LatLon(location.getLatitude(),location.getLongitude());
+        SearchSettings ss=searchUICore.getSearchSettings().setOriginalLocation(new LatLon(centerLatLon.getLatitude(),centerLatLon.getLongitude()));
+        searchUICore.updateSettings(ss);
+        updateClearButtonAndHint();
       }
     }
   }
 );
   setupSearch(mapActivity);
+  updateClearButtonAndHint();
   addMainSearchFragment();
   searchEditText.requestFocus();
   AndroidUtils.softKeyboardDelayed(searchEditText);

@@ -1,24 +1,26 @@
 {
-  if (asyncLoader.getResult() == null) {
+  if (phrase.isEmpty()) {
     return false;
   }
-  List<GpxInfo> infos=asyncLoader.getResult();
-  for (  GpxInfo info : infos) {
-    for (    WptPt point : info.gpx.points) {
-      SearchResult sr=new SearchResult(phrase);
-      sr.localeName=point.getPointDescription(app).getName();
-      sr.object=point;
-      sr.priority=SEARCH_WPT_OBJECT_PRIORITY;
-      sr.objectType=ObjectType.WPT;
-      sr.location=new LatLon(point.getLatitude(),point.getLongitude());
-      sr.localeRelatedObjectName=app.getRegions().getCountryName(sr.location);
-      sr.relatedObject=info;
-      sr.preferredZoom=17;
-      if (phrase.getUnknownSearchWordLength() <= 1 && phrase.isNoSelectedType()) {
-        resultMatcher.publish(sr);
-      }
- else       if (phrase.getNameStringMatcher().matches(sr.localeName)) {
-        resultMatcher.publish(sr);
+  List<SelectedGpxFile> list=app.getSelectedGpxHelper().getSelectedGPXFiles();
+  for (  SelectedGpxFile selectedGpx : list) {
+    if (selectedGpx != null) {
+      for (      WptPt point : selectedGpx.getGpxFile().points) {
+        SearchResult sr=new SearchResult(phrase);
+        sr.localeName=point.getPointDescription(app).getName();
+        sr.object=point;
+        sr.priority=SEARCH_WPT_OBJECT_PRIORITY;
+        sr.objectType=ObjectType.WPT;
+        sr.location=new LatLon(point.getLatitude(),point.getLongitude());
+        sr.localeRelatedObjectName=app.getRegions().getCountryName(sr.location);
+        sr.relatedObject=selectedGpx.getGpxFile();
+        sr.preferredZoom=17;
+        if (phrase.getUnknownSearchWordLength() <= 1 && phrase.isNoSelectedType()) {
+          resultMatcher.publish(sr);
+        }
+ else         if (phrase.getNameStringMatcher().matches(sr.localeName)) {
+          resultMatcher.publish(sr);
+        }
       }
     }
   }

@@ -8,6 +8,7 @@
     binaryMapIndexReaderArray[i++]=rep.getFile();
   }
   searchUICore=new SearchUICore(app.getPoiTypes(),locale,binaryMapIndexReaderArray);
+  location=app.getLocationProvider().getLastKnownLocation();
   LatLon clt=mapActivity.getMapView().getCurrentRotatedTileBox().getCenterLatLon();
   LatLon centerLatLon=clt;
   searchEditText.setHint(R.string.search_poi_category_hint);
@@ -17,10 +18,7 @@
       centerLatLon=new LatLon(location.getLatitude(),location.getLongitude());
     }
  else {
-      String n=getString(R.string.search_poi_category_hint);
-      String dist=OsmAndFormatter.getFormattedDistance((float)d,mapActivity.getMyApplication());
-      searchEditText.setHint(n + ", " + getString(R.string.dist_away_from_my_location,dist));
-      clearButton.setImageDrawable(app.getIconsCache().getIcon(R.drawable.ic_action_get_my_location,R.color.color_myloc_distance));
+      useMapCenter=true;
     }
   }
   SearchSettings settings=searchUICore.getPhrase().getSettings().setOriginalLocation(new LatLon(centerLatLon.getLatitude(),centerLatLon.getLongitude()));
@@ -53,6 +51,9 @@
           resultMatcher.publish(sr);
         }
  else         if (phrase.getNameStringMatcher().matches(sr.localeName)) {
+          resultMatcher.publish(sr);
+        }
+ else         if (point.getCategory() != null && phrase.getNameStringMatcher().matches(point.getCategory())) {
           resultMatcher.publish(sr);
         }
       }
