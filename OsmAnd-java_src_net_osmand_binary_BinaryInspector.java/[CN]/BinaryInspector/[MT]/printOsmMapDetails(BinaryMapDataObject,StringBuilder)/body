@@ -4,7 +4,7 @@
   StringBuilder tags=new StringBuilder();
   int[] types=obj.getTypes();
   for (int j=0; j < types.length; j++) {
-    TagValuePair pair=reg != null ? convert(reg.quickGetEncodingRule(types[j])) : obj.getMapIndex().decodeType(types[j]);
+    TagValuePair pair=obj.getMapIndex().decodeType(types[j]);
     if (pair == null) {
       throw new NullPointerException("Type " + types[j] + "was not found");
     }
@@ -13,7 +13,7 @@
   if (obj.getAdditionalTypes() != null && obj.getAdditionalTypes().length > 0) {
     for (int j=0; j < obj.getAdditionalTypes().length; j++) {
       int addtype=obj.getAdditionalTypes()[j];
-      TagValuePair pair=reg != null ? convert(reg.quickGetEncodingRule(addtype)) : obj.getMapIndex().decodeType(addtype);
+      TagValuePair pair=obj.getMapIndex().decodeType(addtype);
       if (pair == null) {
         throw new NullPointerException("Type " + obj.getAdditionalTypes()[j] + "was not found");
       }
@@ -24,13 +24,12 @@
   if (names != null && !names.isEmpty()) {
     int[] keys=names.keys();
     for (int j=0; j < keys.length; j++) {
-      TagValuePair pair=reg != null ? convert(reg.quickGetEncodingRule(keys[j])) : obj.getMapIndex().decodeType(keys[j]);
+      TagValuePair pair=obj.getMapIndex().decodeType(keys[j]);
       if (pair == null) {
         throw new NullPointerException("Type " + keys[j] + "was not found");
       }
       String name=names.get(keys[j]);
-      name=name.replace("'","&apos;");
-      name=name.replace("&","&amp;");
+      name=quoteName(name);
       tags.append("\t<tag k='").append(pair.tag).append("' v='").append(name).append("' />\n");
     }
   }

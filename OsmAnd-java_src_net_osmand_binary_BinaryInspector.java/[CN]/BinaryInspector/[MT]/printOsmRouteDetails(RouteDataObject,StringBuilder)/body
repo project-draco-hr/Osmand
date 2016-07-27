@@ -1,0 +1,67 @@
+{
+  StringBuilder tags=new StringBuilder();
+  int[] types=obj.getTypes();
+  for (int j=0; j < types.length; j++) {
+    RouteTypeRule rt=obj.region.quickGetEncodingRule(types[j]);
+    if (rt == null) {
+      throw new NullPointerException("Type " + types[j] + "was not found");
+    }
+    tags.append("\t<tag k='").append(rt.getTag()).append("' v='").append(rt.getValue()).append("' />\n");
+  }
+  TIntObjectHashMap<String> names=obj.getNames();
+  if (names != null && !names.isEmpty()) {
+    int[] keys=names.keys();
+    for (int j=0; j < keys.length; j++) {
+      RouteTypeRule rt=obj.region.quickGetEncodingRule(keys[j]);
+      if (rt == null) {
+        throw new NullPointerException("Type " + keys[j] + "was not found");
+      }
+      String name=quoteName(names.get(keys[j]));
+      tags.append("\t<tag k='").append(rt.getTag()).append("' v='").append(name).append("' />\n");
+    }
+  }
+  tags.append("\t<tag k=\'").append("original_id").append("' v='").append(obj.getId() >> (SHIFT_ID)).append("'/>\n");
+  tags.append("\t<tag k=\'").append("osmand_id").append("' v='").append(obj.getId()).append("'/>\n");
+  TLongArrayList ids=new TLongArrayList();
+  for (int i=0; i < obj.getPointsLength(); i++) {
+    float lon=(float)MapUtils.get31LongitudeX(obj.getPoint31XTile(i));
+    float lat=(float)MapUtils.get31LatitudeY(obj.getPoint31YTile(i));
+    int id=OSM_ID++;
+    b.append("\t<node id = '" + id + "' version='1' lat='"+ lat+ "' lon='"+ lon+ "' >\n");
+    if (obj.getPointNames(i) != null) {
+      String[] vs=obj.getPointNames(i);
+      int[] keys=obj.getPointNameTypes(i);
+      for (int j=0; j < keys.length; j++) {
+        RouteTypeRule rt=obj.region.quickGetEncodingRule(keys[j]);
+        String name=quoteName(vs[j]);
+        tags.append("\t\t<tag k='").append(rt.getTag()).append("' v='").append(name).append("' />\n");
+      }
+    }
+    if (obj.getPointTypes(i) != null) {
+      int[] keys=obj.getPointTypes(i);
+      for (int j=0; j < keys.length; j++) {
+        RouteTypeRule rt=obj.region.quickGetEncodingRule(keys[j]);
+        tags.append("\t\t<tag k='").append(rt.getTag()).append("' v='").append(rt.getValue()).append("' />\n");
+      }
+    }
+    b.append("\t</node >\n");
+    ids.add(id);
+  }
+  long idway=printWay(ids,b,tags);
+  if (obj.getRestrictionLength() > 0) {
+    for (int i=0; i < obj.getRestrictionLength(); i++) {
+      long ld=obj.getRestrictionId(i);
+      String tp=MapRenderingTypes.getRestrictionValue(obj.getRestrictionType(i));
+      int id=OSM_ID++;
+      b.append("\t<relation id = '" + id + "' version='1>\n");
+      b.append("\t<member ref='").append(idway).append("' role='from' type='way' />\n");
+      b.append("\t<tag k='").append("from_osmand_id").append("' v='").append(obj.getId()).append("' />\n");
+      b.append("\t<tag k='").append("from_id").append("' v='").append(obj.getId() >> SHIFT_ID).append("' />\n");
+      b.append("\t<tag k='").append("to_osmand_id").append("' v='").append(ld).append("' />\n");
+      b.append("\t<tag k='").append("to_id").append("' v='").append(ld >> SHIFT_ID).append("' />\n");
+      b.append("\t<tag k='").append("type").append("' v='").append("restriction").append("' />\n");
+      b.append("\t<tag k='").append("restriction").append("' v='").append(tp).append("' />\n");
+      b.append("\t</relation>\n");
+    }
+  }
+}
