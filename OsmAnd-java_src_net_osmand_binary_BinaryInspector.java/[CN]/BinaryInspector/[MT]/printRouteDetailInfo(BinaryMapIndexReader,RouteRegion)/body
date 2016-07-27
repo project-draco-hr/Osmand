@@ -2,9 +2,22 @@
   final DamnCounter mapObjectsCounter=new DamnCounter();
   final StringBuilder b=new StringBuilder();
   List<RouteSubregion> regions=index.searchRouteIndexTree(BinaryMapIndexReader.buildSearchRequest(MapUtils.get31TileNumberX(vInfo.lonleft),MapUtils.get31TileNumberX(vInfo.lonright),MapUtils.get31TileNumberY(vInfo.lattop),MapUtils.get31TileNumberY(vInfo.latbottom),vInfo.getZoom(),null),p.getSubregions());
+  if (vInfo.osm) {
+    printToFile("<?xml version='1.0' encoding='UTF-8'?>\n" + "<osm version='0.6'>\n");
+  }
   index.loadRouteIndexData(regions,new ResultMatcher<RouteDataObject>(){
     @Override public boolean publish(    RouteDataObject obj){
       mapObjectsCounter.value++;
+      if (vInfo.osm) {
+        b.setLength(0);
+        printOsmRouteDetails(obj,b);
+        try {
+          printToFile(b.toString());
+        }
+ catch (        IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
       b.setLength(0);
       b.append("Road ");
       b.append(obj.id);
@@ -28,7 +41,7 @@
           int[] nametypes=obj.getPointNameTypes(i);
           int[] types=obj.getPointTypes(i);
           if (types != null || names != null) {
-            b.append(" [ " + (i + 1) + ". ");
+            b.append("[" + (i + 1) + ". ");
             if (names != null) {
               for (int k=0; k < names.length; k++) {
                 RouteTypeRule rr=obj.region.quickGetEncodingRule(nametypes[k]);
@@ -46,9 +59,10 @@
               float y=(float)MapUtils.get31LatitudeY(obj.getPoint31YTile(i));
               b.append(y).append(" / ").append(x).append(" ");
             }
+            b.append("]");
           }
-          b.append("]");
         }
+        b.append("]");
       }
       if (obj.restrictions != null) {
         b.append(" restrictions [");
@@ -56,7 +70,7 @@
           if (i > 0) {
             b.append(", ");
           }
-          b.append(obj.getRestrictionId(i)).append(" (").append(obj.getRestrictionType(i)).append(") ");
+          b.append(obj.getRestrictionId(i)).append(" (").append(MapRenderingTypes.getRestrictionValue(obj.getRestrictionType(i))).append(") ");
         }
         b.append("] ");
       }
@@ -77,4 +91,7 @@
   }
 );
   println("\tTotal map objects: " + mapObjectsCounter.value);
+  if (vInfo.osm) {
+    printToFile("</osm >\n");
+  }
 }

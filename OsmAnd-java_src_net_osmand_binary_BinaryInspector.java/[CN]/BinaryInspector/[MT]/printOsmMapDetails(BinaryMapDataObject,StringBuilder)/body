@@ -12,7 +12,8 @@
   }
   if (obj.getAdditionalTypes() != null && obj.getAdditionalTypes().length > 0) {
     for (int j=0; j < obj.getAdditionalTypes().length; j++) {
-      TagValuePair pair=obj.getMapIndex().decodeType(obj.getAdditionalTypes()[j]);
+      int addtype=obj.getAdditionalTypes()[j];
+      TagValuePair pair=obj.getMapIndex().decodeType(addtype);
       if (pair == null) {
         throw new NullPointerException("Type " + obj.getAdditionalTypes()[j] + "was not found");
       }
@@ -28,8 +29,7 @@
         throw new NullPointerException("Type " + keys[j] + "was not found");
       }
       String name=names.get(keys[j]);
-      name=name.replace("'","&apos;");
-      name=name.replace("&","&amp;");
+      name=quoteName(name);
       tags.append("\t<tag k='").append(pair.tag).append("' v='").append(name).append("' />\n");
     }
   }
