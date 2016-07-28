@@ -45,8 +45,17 @@
  else {
       playMakeTurn(currentSegment,next,null);
     }
-    if (nextNextInfo.distanceTo < TURN_IN_DISTANCE_END && isTargetPoint(nextNextInfo)) {
-      if (!next.getTurnType().goAhead()) {
+    if (!next.getTurnType().goAhead() && isTargetPoint(nextNextInfo)) {
+      if (nextNextInfo.distanceTo < TURN_IN_DISTANCE_END) {
+        if ((nextNextInfo != null) && (nextNextInfo.directionInfo != null) && nextNextInfo.directionInfo.getTurnType().goAhead()) {
+          playThen();
+          playGoAhead(nextNextInfo.distanceTo,empty);
+        }
+        playAndArriveAtDestination(nextNextInfo);
+      }
+ else       if (nextNextInfo.distanceTo < 1.2f * TURN_IN_DISTANCE_END) {
+        playThen();
+        playGoAhead(nextNextInfo.distanceTo,empty);
         playAndArriveAtDestination(nextNextInfo);
       }
     }
