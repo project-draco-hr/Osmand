@@ -2,34 +2,12 @@
   while (true) {
     try {
       boolean tileLoaded=false;
-      boolean amenityLoaded=false;
-      boolean transportLoaded=false;
       boolean mapLoaded=false;
-      int progress=calculateProgressStatus();
-synchronized (resourceManger) {
-        if (resourceManger.getBusyIndicator() != null) {
-          resourceManger.getBusyIndicator().updateStatus(progress);
-        }
-      }
       while (!requests.isEmpty()) {
         Object req=requests.pop();
         if (req instanceof TileLoadDownloadRequest) {
           TileLoadDownloadRequest r=(TileLoadDownloadRequest)req;
           tileLoaded|=resourceManger.getRequestedImageTile(r) != null;
-        }
- else         if (req instanceof TransportLoadRequest) {
-          if (!transportLoaded) {
-            if (transportLoadRequest == null || asyncLoadingTransport == null) {
-              startTransportLoadingThread();
-              transportLoadRequest=(TransportLoadRequest)req;
-              asyncLoadingTransport.post(transportLoadRequest.prepareToRun());
-            }
- else             if (transportLoadRequest.recalculateRequest((TransportLoadRequest)req)) {
-              transportLoadRequest=(TransportLoadRequest)req;
-              asyncLoadingTransport.post(transportLoadRequest.prepareToRun());
-            }
-            transportLoaded=true;
-          }
         }
  else         if (req instanceof MapLoadRequest) {
           if (!mapLoaded) {
@@ -39,16 +17,8 @@ synchronized (resourceManger) {
           }
         }
       }
-      if (tileLoaded || amenityLoaded || transportLoaded|| mapLoaded) {
+      if (tileLoaded || mapLoaded) {
         resourceManger.getMapTileDownloader().fireLoadCallback(null);
-      }
-      int newProgress=calculateProgressStatus();
-      if (progress != newProgress) {
-synchronized (resourceManger) {
-          if (resourceManger.getBusyIndicator() != null) {
-            resourceManger.getBusyIndicator().updateStatus(newProgress);
-          }
-        }
       }
       sleep(750);
     }
