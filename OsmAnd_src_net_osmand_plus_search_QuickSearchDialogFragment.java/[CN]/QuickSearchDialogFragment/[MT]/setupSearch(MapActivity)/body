@@ -1,13 +1,8 @@
 {
   final OsmandApplication app=mapActivity.getMyApplication();
   String locale=app.getSettings().MAP_PREFERRED_LOCALE.get();
-  Collection<RegionAddressRepository> regionAddressRepositories=app.getResourceManager().getAddressRepositories();
-  BinaryMapIndexReader[] binaryMapIndexReaderArray=new BinaryMapIndexReader[regionAddressRepositories.size()];
-  int i=0;
-  for (  RegionAddressRepository rep : regionAddressRepositories) {
-    binaryMapIndexReaderArray[i++]=rep.getFile();
-  }
-  searchUICore=new SearchUICore(app.getPoiTypes(),locale,binaryMapIndexReaderArray);
+  searchUICore=app.getSearchUICore();
+  searchUICore.resetPhrase();
   location=app.getLocationProvider().getLastKnownLocation();
   LatLon clt=mapActivity.getMapView().getCurrentRotatedTileBox().getCenterLatLon();
   LatLon centerLatLon=clt;
@@ -21,7 +16,7 @@
       useMapCenter=true;
     }
   }
-  SearchSettings settings=searchUICore.getPhrase().getSettings().setOriginalLocation(new LatLon(centerLatLon.getLatitude(),centerLatLon.getLongitude()));
+  SearchSettings settings=searchUICore.getSearchSettings().setOriginalLocation(new LatLon(centerLatLon.getLatitude(),centerLatLon.getLongitude()));
   settings=settings.setLang(locale);
   searchUICore.updateSettings(settings);
   searchUICore.setOnResultsComplete(new Runnable(){
@@ -36,36 +31,4 @@
     }
   }
 );
-  searchUICore.registerAPI(new SearchBaseAPI(){
-    @Override public boolean search(    SearchPhrase phrase,    SearchResultMatcher resultMatcher){
-      List<FavouritePoint> favList=getMyApplication().getFavorites().getFavouritePoints();
-      for (      FavouritePoint point : favList) {
-        SearchResult sr=new SearchResult(phrase);
-        sr.localeName=point.getName();
-        sr.object=point;
-        sr.priority=SEARCH_FAVORITE_OBJECT_PRIORITY;
-        sr.objectType=ObjectType.FAVORITE;
-        sr.location=new LatLon(point.getLatitude(),point.getLongitude());
-        sr.preferredZoom=17;
-        if (phrase.getUnknownSearchWordLength() <= 1 && phrase.isNoSelectedType()) {
-          resultMatcher.publish(sr);
-        }
- else         if (phrase.getNameStringMatcher().matches(sr.localeName)) {
-          resultMatcher.publish(sr);
-        }
- else         if (point.getCategory() != null && phrase.getNameStringMatcher().matches(point.getCategory())) {
-          resultMatcher.publish(sr);
-        }
-      }
-      return true;
-    }
-    @Override public int getSearchPriority(    SearchPhrase p){
-      if (!p.isNoSelectedType() || !p.isUnknownSearchWordPresent()) {
-        return -1;
-      }
-      return SEARCH_FAVORITE_API_PRIORITY;
-    }
-  }
-);
-  searchUICore.registerAPI(new SearchWptAPI(app));
 }
