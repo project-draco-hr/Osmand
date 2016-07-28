@@ -1,0 +1,26 @@
+{
+  final OsmandApplication app=getMyApplication();
+  if (latLon == null) {
+    coordsView.setVisibility(View.GONE);
+    errorView.setVisibility(View.VISIBLE);
+  }
+ else {
+    final TextView titleView=(TextView)coordsView.findViewById(R.id.title);
+    final TextView subtitleView=(TextView)coordsView.findViewById(R.id.subtitle);
+    titleView.setText(PointDescription.getLocationNamePlain(app,latLon.getLatitude(),latLon.getLongitude()));
+    new AsyncTask<LatLon,Void,String>(){
+      @Override protected String doInBackground(      LatLon... params){
+        return app.getRegions().getCountryName(latLon);
+      }
+      @Override protected void onPostExecute(      String country){
+        if (!paused) {
+          subtitleView.setText(country == null ? "" : country);
+        }
+      }
+    }
+.execute(latLon);
+    updateLocationUI(latLon,heading);
+    errorView.setVisibility(View.GONE);
+    coordsView.setVisibility(View.VISIBLE);
+  }
+}

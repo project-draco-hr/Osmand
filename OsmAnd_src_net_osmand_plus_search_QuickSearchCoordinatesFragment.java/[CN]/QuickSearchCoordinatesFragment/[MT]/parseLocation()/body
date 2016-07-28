@@ -1,0 +1,25 @@
+{
+  LatLon loc;
+  try {
+    if (currentFormat == LocationConvert.UTM_FORMAT) {
+      double northing=Double.parseDouble(northingEdit.getText().toString());
+      double easting=Double.parseDouble(eastingEdit.getText().toString());
+      String zone=zoneEdit.getText().toString();
+      char c=zone.charAt(zone.length() - 1);
+      int z=Integer.parseInt(zone.substring(0,zone.length() - 1));
+      UTMPoint upoint=new UTMPoint(northing,easting,z,c);
+      LatLonPoint ll=upoint.toLatLonPoint();
+      loc=new LatLon(ll.getLatitude(),ll.getLongitude());
+    }
+ else {
+      double lat=LocationConvert.convert(latEdit.getText().toString(),true);
+      double lon=LocationConvert.convert(lonEdit.getText().toString(),true);
+      loc=new LatLon(lat,lon);
+    }
+    currentLatLon=loc;
+  }
+ catch (  Exception e) {
+    currentLatLon=null;
+  }
+  updateLocationCell(currentLatLon);
+}
