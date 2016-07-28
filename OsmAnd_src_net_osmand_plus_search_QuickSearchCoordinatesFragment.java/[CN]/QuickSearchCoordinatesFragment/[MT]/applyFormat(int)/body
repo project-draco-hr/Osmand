@@ -1,0 +1,40 @@
+{
+  if (currentFormat != format) {
+    int prevFormat=currentFormat;
+    currentFormat=format;
+    formatEdit.setText(PointDescription.formatToHumanString(getMyApplication(),currentFormat));
+    final EditText latEdit=((EditText)view.findViewById(R.id.latitudeEditText));
+    final EditText lonEdit=((EditText)view.findViewById(R.id.longitudeEditText));
+    updateControlsVisibility();
+    if (currentFormat == PointDescription.UTM_FORMAT) {
+      final EditText northingEdit=((EditText)view.findViewById(R.id.northingEditText));
+      final EditText eastingEdit=((EditText)view.findViewById(R.id.eastingEditText));
+      final EditText zoneEdit=((EditText)view.findViewById(R.id.zoneEditText));
+      if (currentLatLon != null) {
+        UTMPoint pnt=new UTMPoint(new LatLonPoint(currentLatLon.getLatitude(),currentLatLon.getLongitude()));
+        zoneEdit.setText(pnt.zone_number + "" + pnt.zone_letter);
+        northingEdit.setText(((long)pnt.northing) + "");
+        eastingEdit.setText(((long)pnt.easting) + "");
+      }
+ else {
+        zoneEdit.setText(latEdit.getText());
+        northingEdit.setText("");
+        eastingEdit.setText("");
+      }
+    }
+ else {
+      if (currentLatLon != null) {
+        latEdit.setText(LocationConvert.convert(MapUtils.checkLatitude(currentLatLon.getLatitude()),currentFormat));
+        lonEdit.setText(LocationConvert.convert(MapUtils.checkLongitude(currentLatLon.getLongitude()),currentFormat));
+      }
+ else       if (prevFormat == PointDescription.UTM_FORMAT) {
+        latEdit.setText(zoneEdit.getText());
+        lonEdit.setText("");
+      }
+    }
+    return currentLatLon != null;
+  }
+ else {
+    return false;
+  }
+}

@@ -1,0 +1,165 @@
+{
+  final OsmandApplication app=getMyApplication();
+  view=inflater.inflate(R.layout.search_advanced_coords,container,false);
+  Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
+  toolbar.setNavigationIcon(app.getIconsCache().getIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha));
+  toolbar.setNavigationContentDescription(R.string.access_shared_string_navigate_up);
+  toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismiss();
+    }
+  }
+);
+  screenOrientation=DashLocationFragment.getScreenOrientation(getActivity());
+  myLocation=app.getLocationProvider().getLastKnownLocation();
+  currentFormat=app.getSettings().COORDINATES_FORMAT.get();
+  String defaultLat="";
+  String defaultZone="";
+  if (getArguments() != null) {
+    String text=getArguments().getString(QUICK_SEARCH_COORDS_TEXT_KEY);
+    if (!Algorithms.isEmpty(text)) {
+      if (currentFormat == PointDescription.UTM_FORMAT) {
+        defaultZone=text.trim();
+      }
+ else {
+        defaultLat=text.trim();
+      }
+    }
+  }
+  String latStr=getStringValue(savedInstanceState,QUICK_SEARCH_COORDS_LAT_KEY,defaultLat);
+  String lonStr=getStringValue(savedInstanceState,QUICK_SEARCH_COORDS_LON_KEY,"");
+  String northingStr=getStringValue(savedInstanceState,QUICK_SEARCH_COORDS_NORTH_KEY,"");
+  String eastingStr=getStringValue(savedInstanceState,QUICK_SEARCH_COORDS_EAST_KEY,"");
+  String zoneStr=getStringValue(savedInstanceState,QUICK_SEARCH_COORDS_ZONE_KEY,defaultZone);
+  if (savedInstanceState != null)   currentFormat=savedInstanceState.getInt(QUICK_SEARCH_COORDS_FORMAT_KEY,-1);
+  if (currentFormat == -1)   currentFormat=getArguments().getInt(QUICK_SEARCH_COORDS_FORMAT_KEY,-1);
+  if (currentFormat == -1)   currentFormat=app.getSettings().COORDINATES_FORMAT.get();
+  if (savedInstanceState != null && savedInstanceState.containsKey(QUICK_SEARCH_COORDS_USE_MAP_CENTER_KEY))   useMapCenter=savedInstanceState.getBoolean(QUICK_SEARCH_COORDS_USE_MAP_CENTER_KEY);
+ else   if (getArguments().containsKey(QUICK_SEARCH_COORDS_USE_MAP_CENTER_KEY))   useMapCenter=getArguments().getBoolean(QUICK_SEARCH_COORDS_USE_MAP_CENTER_KEY);
+  latEdit=((EditText)view.findViewById(R.id.latitudeEditText));
+  lonEdit=((EditText)view.findViewById(R.id.longitudeEditText));
+  northingEdit=((EditText)view.findViewById(R.id.northingEditText));
+  eastingEdit=((EditText)view.findViewById(R.id.eastingEditText));
+  zoneEdit=((EditText)view.findViewById(R.id.zoneEditText));
+  formatEdit=((EditText)view.findViewById(R.id.formatEditText));
+  latEdit.setText(latStr);
+  latEdit.setSelection(latStr.length());
+  lonEdit.setText(lonStr);
+  lonEdit.setSelection(lonStr.length());
+  northingEdit.setText(northingStr);
+  northingEdit.setSelection(northingStr.length());
+  eastingEdit.setText(eastingStr);
+  eastingEdit.setSelection(eastingStr.length());
+  zoneEdit.setText(zoneStr);
+  zoneEdit.setSelection(zoneStr.length());
+  formatEdit.setText(PointDescription.formatToHumanString(app,currentFormat));
+  formatEdit.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      new ChooseCoordsFormatDialogFragment().show(getChildFragmentManager(),"ChooseCoordinatesFormatFragment");
+    }
+  }
+);
+  TextWatcher textWatcher=new TextWatcher(){
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void afterTextChanged(    Editable s){
+      parseLocation();
+    }
+  }
+;
+  latEdit.addTextChangedListener(textWatcher);
+  lonEdit.addTextChangedListener(textWatcher);
+  northingEdit.addTextChangedListener(textWatcher);
+  eastingEdit.addTextChangedListener(textWatcher);
+  zoneEdit.addTextChangedListener(textWatcher);
+  OnEditorActionListener doneListener=new OnEditorActionListener(){
+    @Override public boolean onEditorAction(    TextView v,    int actionId,    KeyEvent event){
+      if (actionId == EditorInfo.IME_ACTION_DONE) {
+        showOnMap();
+        return true;
+      }
+ else {
+        return false;
+      }
+    }
+  }
+;
+  lonEdit.setOnEditorActionListener(doneListener);
+  zoneEdit.setOnEditorActionListener(doneListener);
+  IconsCache ic=app.getIconsCache();
+  ((ImageView)view.findViewById(R.id.latitudeImage)).setImageDrawable(ic.getThemedIcon(R.drawable.ic_action_coordinates_latitude));
+  ((ImageView)view.findViewById(R.id.longitudeImage)).setImageDrawable(ic.getThemedIcon(R.drawable.ic_action_coordinates_longitude));
+  ((ImageView)view.findViewById(R.id.northingImage)).setImageDrawable(ic.getThemedIcon(R.drawable.ic_action_coordinates_latitude));
+  ((ImageView)view.findViewById(R.id.eastingImage)).setImageDrawable(ic.getThemedIcon(R.drawable.ic_action_coordinates_longitude));
+  ImageButton latitudeClearButton=(ImageButton)view.findViewById(R.id.latitudeClearButton);
+  latitudeClearButton.setImageDrawable(ic.getThemedIcon(R.drawable.ic_action_remove_dark));
+  latitudeClearButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      latEdit.setText("");
+    }
+  }
+);
+  ImageButton longitudeClearButton=(ImageButton)view.findViewById(R.id.longitudeClearButton);
+  longitudeClearButton.setImageDrawable(ic.getThemedIcon(R.drawable.ic_action_remove_dark));
+  longitudeClearButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      lonEdit.setText("");
+    }
+  }
+);
+  ImageButton northingClearButton=(ImageButton)view.findViewById(R.id.northingClearButton);
+  northingClearButton.setImageDrawable(ic.getThemedIcon(R.drawable.ic_action_remove_dark));
+  northingClearButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      northingEdit.setText("");
+    }
+  }
+);
+  ImageButton eastingClearButton=(ImageButton)view.findViewById(R.id.eastingClearButton);
+  eastingClearButton.setImageDrawable(ic.getThemedIcon(R.drawable.ic_action_remove_dark));
+  eastingClearButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      eastingEdit.setText("");
+    }
+  }
+);
+  ImageButton zoneClearButton=(ImageButton)view.findViewById(R.id.zoneClearButton);
+  zoneClearButton.setImageDrawable(ic.getThemedIcon(R.drawable.ic_action_remove_dark));
+  zoneClearButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      zoneEdit.setText("");
+    }
+  }
+);
+  ImageButton formatSelectButton=(ImageButton)view.findViewById(R.id.formatSelectButton);
+  formatSelectButton.setImageDrawable(ic.getThemedIcon(R.drawable.ic_action_arrow_drop_down));
+  formatSelectButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      new ChooseCoordsFormatDialogFragment().show(getChildFragmentManager(),"ChooseCoordinatesFormatFragment");
+    }
+  }
+);
+  coordsView=view.findViewById(R.id.searchListItemLayout);
+  view.findViewById(R.id.divider).setVisibility(View.GONE);
+  TypedValue outValue=new TypedValue();
+  app.getTheme().resolveAttribute(android.R.attr.selectableItemBackground,outValue,true);
+  coordsView.setBackgroundResource(outValue.resourceId);
+  coordsView.setClickable(true);
+  coordsView.findViewById(R.id.toggle_item).setVisibility(View.GONE);
+  coordsView.findViewById(R.id.time_icon).setVisibility(View.GONE);
+  coordsView.findViewById(R.id.time).setVisibility(View.GONE);
+  coordsView.findViewById(R.id.type_name_icon).setVisibility(View.GONE);
+  ((ImageView)coordsView.findViewById(R.id.imageView)).setImageDrawable(ic.getIcon(R.drawable.ic_action_world_globe,app.getSettings().isLightContent() ? R.color.osmand_orange : R.color.osmand_orange_dark));
+  coordsView.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      showOnMap();
+    }
+  }
+);
+  errorView=view.findViewById(R.id.error_item);
+  parseLocation();
+  updateControlsVisibility();
+  return view;
+}

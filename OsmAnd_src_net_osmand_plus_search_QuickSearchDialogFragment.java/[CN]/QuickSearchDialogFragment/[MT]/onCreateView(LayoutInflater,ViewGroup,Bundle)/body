@@ -16,12 +16,14 @@
   buttonToolbarImage=(ImageView)view.findViewById(R.id.buttonToolbarImage);
   buttonToolbarImage.setImageDrawable(app.getIconsCache().getThemedIcon(R.drawable.ic_action_marker_dark));
   buttonToolbarText=(TextView)view.findViewById(R.id.buttonToolbarTitle);
-  buttonToolbarText.setText(app.getString(R.string.show_on_map).toUpperCase());
   view.findViewById(R.id.buttonToolbar).setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
       OsmandSettings settings=app.getSettings();
       SearchPhrase searchPhrase=searchUICore.getPhrase();
-      if (searchPhrase.isNoSelectedType() || searchPhrase.isLastWord(ObjectType.POI_TYPE)) {
+      if (foundPartialLocation) {
+        QuickSearchCoordinatesFragment.showDialog(QuickSearchDialogFragment.this,searchPhrase.getUnknownSearchWord());
+      }
+ else       if (searchPhrase.isNoSelectedType() || searchPhrase.isLastWord(ObjectType.POI_TYPE)) {
         PoiUIFilter filter;
         if (searchPhrase.isNoSelectedType()) {
           filter=new PoiUIFilter(null,app,"");
@@ -154,13 +156,6 @@
         String newText=searchUICore.getPhrase().getTextWithoutLastWord();
         searchEditText.setText(newText);
         searchEditText.setSelection(newText.length());
-        SearchWord word=searchUICore.getPhrase().getLastSelectedWord();
-        if (word != null && word.getResult() != null) {
-          buttonToolbarText.setText(app.getString(R.string.show_something_on_map,word.getResult().localeName).toUpperCase());
-        }
- else {
-          buttonToolbarText.setText(app.getString(R.string.show_on_map).toUpperCase());
-        }
       }
  else       if (useMapCenter && location != null) {
         useMapCenter=false;
@@ -171,10 +166,12 @@
         searchUICore.updateSettings(ss);
         updateClearButtonAndHint();
       }
+      updateToolbarButton();
     }
   }
 );
   setupSearch(mapActivity);
+  updateToolbarButton();
   updateClearButtonAndHint();
   addMainSearchFragment();
   searchEditText.requestFocus();
