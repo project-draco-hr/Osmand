@@ -1,0 +1,49 @@
+{
+  OsmandApplication app=view.getApplication();
+  OsmandRenderer renderer=app.getResourceManager().getRenderer().getRenderer();
+  RenderingRulesStorage rrs=app.getRendererRegistry().getCurrentSelectedRenderer();
+  final boolean isNight=settigns != null && settigns.isNightMode();
+  int hsh=calculateHash(rrs,isNight,tileBox.getMapDensity());
+  if (hsh != cachedHash) {
+    cachedHash=hsh;
+    if (rrs != null) {
+      RenderingRuleSearchRequest req=new RenderingRuleSearchRequest(rrs);
+      req.setBooleanFilter(rrs.PROPS.R_NIGHT_MODE,isNight);
+      if (req.searchRenderingAttribute(renderingAttribute)) {
+        RenderingContext rc=new OsmandRenderer.RenderingContext(app);
+        rc.setDensityValue((float)tileBox.getMapDensity());
+        renderer.updatePaint(req,paint,0,false,rc);
+        if (paint.getColor() == 0 && defaultColor != 0) {
+          paint.setColor(defaultColor);
+        }
+        if (paint.getStrokeWidth() == 0 && defaultWidth != 0) {
+          paint.setStrokeWidth(defaultWidth);
+        }
+        isPaint2=renderer.updatePaint(req,paint2,1,false,rc);
+        if (paint2.getStrokeWidth() == 0 && defaultWidth2 != 0) {
+          paint2.setStrokeWidth(defaultWidth2);
+        }
+        isPaint3=renderer.updatePaint(req,paint3,2,false,rc);
+        if (paint3.getStrokeWidth() == 0 && defaultWidth3 != 0) {
+          paint3.setStrokeWidth(defaultWidth3);
+        }
+        isPaint_1=renderer.updatePaint(req,paint_1,-1,false,rc);
+        if (paint_1.getStrokeWidth() == 0 && defaultWidth_1 != 0) {
+          paint_1.setStrokeWidth(defaultWidth_1);
+        }
+        isShadowPaint=req.isSpecified(rrs.PROPS.R_SHADOW_RADIUS);
+        if (isShadowPaint) {
+          ColorFilter cf=new PorterDuffColorFilter(req.getIntPropertyValue(rrs.PROPS.R_SHADOW_COLOR),Mode.SRC_IN);
+          shadowPaint.setColorFilter(cf);
+          shadowPaint.setStrokeWidth(paint.getStrokeWidth() + defaultShadowWidthExtent * rc.getComplexValue(req,rrs.PROPS.R_SHADOW_RADIUS));
+        }
+      }
+ else {
+        System.err.println("Rendering attribute route is not found !");
+        paint.setStrokeWidth(defaultWidth);
+      }
+    }
+    return true;
+  }
+  return false;
+}
