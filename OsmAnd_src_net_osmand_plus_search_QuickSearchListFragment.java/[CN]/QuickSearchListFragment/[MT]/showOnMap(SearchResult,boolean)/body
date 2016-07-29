@@ -1,16 +1,24 @@
 {
   if (searchResult.location != null) {
     OsmandApplication app=getMyApplication();
+    String lang=searchResult.requiredSearchPhrase.getSettings().getLang();
     PointDescription pointDescription=null;
     Object object=searchResult.object;
 switch (searchResult.objectType) {
 case POI:
-      String poiSimpleFormat=OsmAndFormatter.getPoiStringWithoutType((Amenity)object,searchResult.requiredSearchPhrase.getSettings().getLang());
+      String poiSimpleFormat=OsmAndFormatter.getPoiStringWithoutType((Amenity)object,lang);
     pointDescription=new PointDescription(PointDescription.POINT_TYPE_POI,poiSimpleFormat);
   break;
 case RECENT_OBJ:
-SearchHistoryHelper.HistoryEntry entry=(SearchHistoryHelper.HistoryEntry)object;
+HistoryEntry entry=(HistoryEntry)object;
+Amenity amenity=findAmenity(entry.getName().getName(),entry.getLat(),entry.getLon(),lang);
+if (amenity != null) {
+object=amenity;
+pointDescription=new PointDescription(PointDescription.POINT_TYPE_POI,OsmAndFormatter.getPoiStringWithoutType(amenity,lang));
+}
+ else {
 pointDescription=entry.getName();
+}
 break;
 case FAVORITE:
 FavouritePoint fav=(FavouritePoint)object;
@@ -43,9 +51,14 @@ GPXUtilities.WptPt wpt=(GPXUtilities.WptPt)object;
 pointDescription=wpt.getPointDescription(getMyApplication());
 break;
 }
-getMapActivity().setQuickSearchTopbarActive(true);
+getMapActivity().setQuickSearchTopbarActive(showTopbar);
+if (!showTopbar) {
+dialogFragment.dismiss();
+}
 getMyApplication().getSettings().setMapLocationToShow(searchResult.location.getLatitude(),searchResult.location.getLongitude(),searchResult.preferredZoom,pointDescription,true,object);
 MapActivity.launchMapActivityMoveToTop(getActivity());
+if (showTopbar) {
 dialogFragment.hide();
+}
 }
 }
