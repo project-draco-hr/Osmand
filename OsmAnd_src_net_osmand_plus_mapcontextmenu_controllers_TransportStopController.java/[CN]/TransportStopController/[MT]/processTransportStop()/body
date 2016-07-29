@@ -4,35 +4,18 @@
   boolean useEnglishNames=getMapActivity().getMyApplication().getSettings().usingEnglishNames();
   for (  TransportIndexRepository t : reps) {
     if (t.acceptTransportStop(transportStop)) {
-      List<String> l;
-      if (useEnglishNames) {
-        l=t.getRouteDescriptionsForStop(transportStop,"{1} {0} - {3}");
-      }
- else {
-        l=t.getRouteDescriptionsForStop(transportStop,"{1} {0} - {2}");
-      }
-      if (l != null) {
-        List<TransportStopRoute> routeList=new ArrayList<>();
-        for (        String s : l) {
-          int firstSpaceIndex=s.indexOf(' ');
-          if (firstSpaceIndex != -1) {
-            String typeName=s.substring(0,firstSpaceIndex);
-            TransportStopType type=TransportStopType.findType(typeName);
-            TransportStopRoute r=new TransportStopRoute();
-            r.type=type;
-            if (type == null) {
-              r.desc=s;
-            }
- else {
-              r.desc=s.substring(firstSpaceIndex + 1);
-            }
-            routeList.add(r);
-            if (topType == null && type != null && type.isTopType()) {
-              topType=type;
-            }
+      List<TransportRoute> rts=t.getRouteForStop(transportStop);
+      if (rts != null) {
+        for (        TransportRoute rs : rts) {
+          TransportStopType type=TransportStopType.findType(rs.getType());
+          TransportStopRoute r=new TransportStopRoute();
+          if (topType == null && type != null && type.isTopType()) {
+            topType=type;
           }
+          r.desc=rs.getRef() + " " + (useEnglishNames ? rs.getName() : rs.getEnName(true));
+          r.route=rs;
+          this.routes.add(r);
         }
-        routes.add(routeList);
       }
     }
   }
