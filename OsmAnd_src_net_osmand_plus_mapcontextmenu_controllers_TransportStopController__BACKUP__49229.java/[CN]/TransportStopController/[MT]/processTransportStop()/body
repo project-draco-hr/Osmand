@@ -1,0 +1,22 @@
+{
+  routes.clear();
+  List<TransportIndexRepository> reps=getMapActivity().getMyApplication().getResourceManager().searchTransportRepositories(transportStop.getLocation().getLatitude(),transportStop.getLocation().getLongitude());
+  boolean useEnglishNames=getMapActivity().getMyApplication().getSettings().usingEnglishNames();
+  for (  TransportIndexRepository t : reps) {
+    if (t.acceptTransportStop(transportStop)) {
+      List<TransportRoute> rts=t.getRouteForStop(transportStop);
+      if (rts != null) {
+        for (        TransportRoute rs : rts) {
+          TransportStopType type=TransportStopType.findType(rs.getType());
+          TransportStopRoute r=new TransportStopRoute();
+          if (topType == null && type != null && type.isTopType()) {
+            topType=type;
+          }
+          r.desc=rs.getRef() + " " + (useEnglishNames ? rs.getName() : rs.getEnName(true));
+          r.route=rs;
+          this.routes.add(r);
+        }
+      }
+    }
+  }
+}
