@@ -2,7 +2,17 @@
   super.addPlainMenuItems(typeStr,pointDescription,latLon);
   List<TransportStop> stops=transportStop.route.getForwardStops();
   boolean useEnglishNames=getMapActivity().getMyApplication().getSettings().usingEnglishNames();
-  for (  TransportStop stop : stops) {
-    addPlainMenuItem(stop == transportStop.stop ? R.drawable.ic_action_marker_dark : (transportStop.type == null ? R.drawable.mx_route_bus_ref : transportStop.type.getResourceId()),useEnglishNames ? stop.getEnName(true) : stop.getName(),false,false,null);
+  for (  final TransportStop stop : stops) {
+    final String name=useEnglishNames ? stop.getEnName(true) : stop.getName();
+    addPlainMenuItem(stop == transportStop.stop ? R.drawable.ic_action_marker_dark : (transportStop.type == null ? R.drawable.mx_route_bus_ref : transportStop.type.getResourceId()),name,false,false,new OnClickListener(){
+      @Override public void onClick(      View arg0){
+        MapContextMenu mm=getMapActivity().getContextMenu();
+        PointDescription pd=new PointDescription(PointDescription.POINT_TYPE_TRANSPORT_STOP,getMapActivity().getString(R.string.transport_Stop),name);
+        TransportStopsLayer stopsLayer=getMapActivity().getMapLayers().getTransportStopsLayer();
+        stopsLayer.setRoute(null);
+        mm.show(latLon,pd,stop);
+      }
+    }
+);
   }
 }
