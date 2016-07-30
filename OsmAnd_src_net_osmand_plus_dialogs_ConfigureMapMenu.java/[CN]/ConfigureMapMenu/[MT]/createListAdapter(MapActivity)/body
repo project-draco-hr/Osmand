@@ -8,7 +8,16 @@
     }
   }
 );
-  createLayersItems(adapter,ma);
-  createRenderingAttributeItems(adapter,ma);
+  RenderingRulesStorage renderer=ma.getMyApplication().getRendererRegistry().getCurrentSelectedRenderer();
+  List<RenderingRuleProperty> customRules=new ArrayList<>();
+  if (renderer != null) {
+    for (    RenderingRuleProperty p : renderer.PROPS.getCustomRules()) {
+      if (!RenderingRuleStorageProperties.UI_CATEGORY_HIDDEN.equals(p.getCategory())) {
+        customRules.add(p);
+      }
+    }
+  }
+  createLayersItems(customRules,adapter,ma);
+  createRenderingAttributeItems(customRules,adapter,ma);
   return adapter;
 }
