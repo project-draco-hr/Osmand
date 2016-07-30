@@ -24,10 +24,19 @@
   bld.setNegativeButton(R.string.shared_string_cancel,null);
   bld.setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
     public void onClick(    DialogInterface dialog,    int whichButton){
+      boolean selected=false;
       for (int i=0; i < prefs.size(); i++) {
         prefs.get(i).set(tempPrefs[i]);
+        selected|=tempPrefs[i];
       }
-      adapter.getItem(pos).setDescription(getDescription(prefs));
+      if (adapter != null) {
+        if (useDescription) {
+          adapter.getItem(pos).setDescription(getDescription(prefs));
+        }
+ else {
+          adapter.getItem(pos).setSelected(selected);
+        }
+      }
       a.notifyDataSetInvalidated();
       refreshMapComplete(activity);
       activity.getMapLayers().updateLayers(activity.getMapView());

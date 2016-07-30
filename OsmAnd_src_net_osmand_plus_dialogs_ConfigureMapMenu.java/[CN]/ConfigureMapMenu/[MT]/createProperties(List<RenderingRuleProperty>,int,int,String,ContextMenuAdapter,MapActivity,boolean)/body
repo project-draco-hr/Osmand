@@ -1,0 +1,47 @@
+{
+  final List<RenderingRuleProperty> ps=new ArrayList<>();
+  final List<OsmandSettings.CommonPreference<Boolean>> prefs=new ArrayList<>();
+  Iterator<RenderingRuleProperty> it=customRules.iterator();
+  while (it.hasNext()) {
+    RenderingRuleProperty p=it.next();
+    if (category.equals(p.getCategory()) && p.isBoolean()) {
+      ps.add(p);
+      final OsmandSettings.CommonPreference<Boolean> pref=activity.getMyApplication().getSettings().getCustomRenderBooleanProperty(p.getAttrName());
+      prefs.add(pref);
+      it.remove();
+    }
+  }
+  if (prefs.size() > 0) {
+    ContextMenuItem.ItemBuilder builder=new ContextMenuItem.ItemBuilder().setTitleId(strId,activity).setIcon(icon).setListener(new ContextMenuAdapter.ItemClickListener(){
+      @Override public boolean onContextMenuClick(      ArrayAdapter<ContextMenuItem> a,      int itemId,      int pos,      boolean isChecked){
+        if (!isChecked) {
+          for (int i=0; i < prefs.size(); i++) {
+            prefs.get(i).set(false);
+          }
+        }
+ else {
+          showPreferencesDialog(adapter,a,pos,activity,activity.getString(strId),ps,prefs,useDescription);
+        }
+        return false;
+      }
+    }
+);
+    if (useDescription) {
+      final String descr=getDescription(prefs);
+      builder.setDescription(descr);
+      builder.setLayout(R.layout.list_item_single_line_descrition_narrow);
+    }
+ else {
+      boolean selected=false;
+      for (      OsmandSettings.CommonPreference<Boolean> p : prefs) {
+        if (p.get()) {
+          selected=true;
+          break;
+        }
+      }
+      builder.setSelected(selected);
+    }
+    return builder.createItem();
+  }
+  return null;
+}
