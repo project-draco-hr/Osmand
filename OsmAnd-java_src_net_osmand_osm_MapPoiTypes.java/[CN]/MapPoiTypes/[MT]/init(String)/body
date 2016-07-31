@@ -62,10 +62,17 @@
           if (lastCategory == null) {
             lastCategory=getOtherMapCategory();
           }
-          lastType=parsePoiType(allTypes,parser,lastCategory,lastFilter,null,null);
-          if ("true".equals(parser.getAttributeValue("","lang"))) {
-            for (            String lng : MapRenderingTypes.langs) {
-              parsePoiType(allTypes,parser,lastCategory,lastFilter,lng,lastType);
+          if (!Algorithms.isEmpty(parser.getAttributeValue("","deprecated_of"))) {
+            String vl=parser.getAttributeValue("","name");
+            String target=parser.getAttributeValue("","deprecated_of");
+            deprecatedTags.put(vl,target);
+          }
+ else {
+            lastType=parsePoiType(allTypes,parser,lastCategory,lastFilter,null,null);
+            if ("true".equals(parser.getAttributeValue("","lang"))) {
+              for (              String lng : MapRenderingTypes.langs) {
+                parsePoiType(allTypes,parser,lastCategory,lastFilter,lng,lastType);
+              }
             }
           }
         }
