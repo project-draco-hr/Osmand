@@ -1,0 +1,76 @@
+{
+  int point31x=MapUtils.get31TileNumberX(latLon.getLongitude());
+  int point31y=MapUtils.get31TileNumberY(latLon.getLatitude());
+  ResourceManager rm=getMapActivity().getMyApplication().getResourceManager();
+  OsmandRegions osmandRegions=rm.getOsmandRegions();
+  List<BinaryMapDataObject> mapDataObjects=null;
+  try {
+    mapDataObjects=osmandRegions.queryBbox(point31x,point31x,point31y,point31y);
+  }
+ catch (  IOException e) {
+    e.printStackTrace();
+  }
+  if (mapDataObjects != null) {
+    Iterator<BinaryMapDataObject> it=mapDataObjects.iterator();
+    while (it.hasNext()) {
+      BinaryMapDataObject o=it.next();
+      if (!osmandRegions.contain(o,point31x,point31y)) {
+        it.remove();
+      }
+    }
+    String selectedFullName="";
+    for (    BinaryMapDataObject o : mapDataObjects) {
+      boolean downloaded=checkIfObjectDownloaded(rm,osmandRegions.getDownloadName(o));
+      if (downloaded) {
+        downloadMapDataObject=null;
+        break;
+      }
+ else {
+        String fullName=osmandRegions.getFullName(o);
+        if (fullName.length() > selectedFullName.length()) {
+          selectedFullName=fullName;
+          downloadMapDataObject=o;
+        }
+      }
+    }
+    downloaded=downloadMapDataObject == null;
+    if (!downloaded) {
+      downloadThread=getMapActivity().getMyApplication().getDownloadThread();
+      downloadRegion=osmandRegions.getRegionData(selectedFullName);
+      if (downloadRegion != null && downloadRegion.isRegionMapDownload()) {
+        List<IndexItem> indexItems=downloadThread.getIndexes().getIndexItems(downloadRegion);
+        for (        IndexItem item : indexItems) {
+          if (item.getType() == DownloadActivityType.NORMAL_FILE && (item.isDownloaded() || downloadThread.isDownloading(item))) {
+            indexItem=item;
+          }
+        }
+      }
+      leftDownloadButtonController=new TitleButtonController(){
+        @Override public void buttonPressed(){
+          if (indexItem != null) {
+            if (indexItem.getType() == DownloadActivityType.NORMAL_FILE) {
+              new DownloadValidationManager(getMapActivity().getMyApplication()).startDownload(getMapActivity(),indexItem);
+            }
+          }
+        }
+      }
+;
+      leftDownloadButtonController.caption=downloadRegion != null ? downloadRegion.getLocaleName() : getMapActivity().getString(R.string.shared_string_download);
+      leftDownloadButtonController.leftIconId=R.drawable.ic_action_import;
+      titleProgressController=new TitleProgressController(){
+        @Override public void buttonPressed(){
+          if (indexItem != null) {
+            downloadThread.cancelDownload(indexItem);
+          }
+        }
+      }
+;
+      if (!downloadThread.getIndexes().isDownloadedFromInternet) {
+        if (getMapActivity().getMyApplication().getSettings().isInternetConnectionAvailable()) {
+          downloadThread.runReloadIndexFiles();
+        }
+      }
+      updateData();
+    }
+  }
+}
