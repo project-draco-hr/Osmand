@@ -4,19 +4,13 @@
   boolean useEnglishNames=getMapActivity().getMyApplication().getSettings().usingEnglishNames();
   for (  TransportIndexRepository t : reps) {
     if (t.acceptTransportStop(transportStop)) {
-      Collection<TransportRoute> rts=t.getRouteForStop(transportStop);
-      if (rts != null) {
-        for (        TransportRoute rs : rts) {
-          TransportStopType type=TransportStopType.findType(rs.getType());
-          TransportStopRoute r=new TransportStopRoute();
-          if (topType == null && type != null && type.isTopType()) {
-            topType=type;
-          }
-          r.type=type;
-          r.desc=rs.getRef() + " " + (useEnglishNames ? rs.getEnName(true) : rs.getName());
-          r.route=rs;
-          r.stop=transportStop;
-          this.routes.add(r);
+      addRoutes(useEnglishNames,t,transportStop,0);
+      ArrayList<TransportStop> ls=new ArrayList<>();
+      QuadRect ll=MapUtils.calculateLatLonBbox(transportStop.getLocation().getLatitude(),transportStop.getLocation().getLongitude(),150);
+      t.searchTransportStops(ll.top,ll.left,ll.bottom,ll.right,-1,ls,null);
+      for (      TransportStop tstop : ls) {
+        if (tstop.getId() != transportStop.getId() || !Arrays.equals(tstop.getReferencesToRoutes(),transportStop.getReferencesToRoutes())) {
+          addRoutes(useEnglishNames,t,tstop,(int)MapUtils.getDistance(tstop.getLocation(),transportStop.getLocation()));
         }
       }
     }
