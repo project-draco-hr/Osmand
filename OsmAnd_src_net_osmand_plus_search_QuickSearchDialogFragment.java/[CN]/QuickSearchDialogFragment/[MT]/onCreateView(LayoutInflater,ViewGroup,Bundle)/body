@@ -3,10 +3,20 @@
   final View view=inflater.inflate(R.layout.search_dialog_fragment,container,false);
   if (savedInstanceState != null) {
     searchQuery=savedInstanceState.getString(QUICK_SEARCH_QUERY_KEY);
+    double lat=savedInstanceState.getDouble(QUICK_SEARCH_LAT_KEY,Double.NaN);
+    double lon=savedInstanceState.getDouble(QUICK_SEARCH_LON_KEY,Double.NaN);
+    if (!Double.isNaN(lat) && !Double.isNaN(lon)) {
+      centerLatLon=new LatLon(lat,lon);
+    }
     interruptedSearch=savedInstanceState.getBoolean(QUICK_SEARCH_SEARCHING_KEY,false);
   }
   if (searchQuery == null) {
     searchQuery=getArguments().getString(QUICK_SEARCH_QUERY_KEY);
+    double lat=getArguments().getDouble(QUICK_SEARCH_LAT_KEY,Double.NaN);
+    double lon=getArguments().getDouble(QUICK_SEARCH_LON_KEY,Double.NaN);
+    if (!Double.isNaN(lat) && !Double.isNaN(lon)) {
+      centerLatLon=new LatLon(lat,lon);
+    }
     newSearch=true;
   }
   if (searchQuery == null)   searchQuery="";
@@ -119,6 +129,9 @@
   viewPager=(LockableViewPager)view.findViewById(R.id.pager);
   pagerAdapter=new SearchFragmentPagerAdapter(getChildFragmentManager(),getResources());
   viewPager.setAdapter(pagerAdapter);
+  if (centerLatLon != null) {
+    viewPager.setCurrentItem(1);
+  }
   tabLayout=(TabLayout)view.findViewById(R.id.tab_layout);
   tabLayout.setupWithViewPager(viewPager);
   viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener(){
@@ -166,6 +179,7 @@
       }
  else       if (useMapCenter && location != null) {
         useMapCenter=false;
+        centerLatLon=null;
         updateUseMapCenterUI();
         startLocationUpdate();
         LatLon centerLatLon=new LatLon(location.getLatitude(),location.getLongitude());
