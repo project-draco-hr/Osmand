@@ -1,8 +1,11 @@
 {
-  final OsmandApplication app=mapActivity.getMyApplication();
   String locale=app.getSettings().MAP_PREFERRED_LOCALE.get();
-  searchUICore=app.getSearchUICore().getCore();
-  searchUICore.resetPhrase();
+  searchHelper=app.getSearchUICore();
+  searchUICore=searchHelper.getCore();
+  if (newSearch) {
+    setResultCollection(null);
+    searchUICore.resetPhrase();
+  }
   location=app.getLocationProvider().getLastKnownLocation();
   LatLon clt=mapActivity.getMapView().getCurrentRotatedTileBox().getCenterLatLon();
   LatLon centerLatLon=clt;
@@ -23,8 +26,11 @@
     @Override public void run(){
       app.runInUIThread(new Runnable(){
         @Override public void run(){
-          hideProgressBar();
-          addMoreButton();
+          searching=false;
+          if (!paused) {
+            hideProgressBar();
+            addMoreButton();
+          }
         }
       }
 );

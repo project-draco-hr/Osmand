@@ -1,12 +1,13 @@
 {
   final MapActivity mapActivity=getMapActivity();
-  final OsmandApplication app=getMyApplication();
   final View view=inflater.inflate(R.layout.search_dialog_fragment,container,false);
   if (savedInstanceState != null) {
     searchQuery=savedInstanceState.getString(QUICK_SEARCH_QUERY_KEY);
+    interruptedSearch=savedInstanceState.getBoolean(QUICK_SEARCH_SEARCHING_KEY,false);
   }
   if (searchQuery == null) {
     searchQuery=getArguments().getString(QUICK_SEARCH_QUERY_KEY);
+    newSearch=true;
   }
   if (searchQuery == null)   searchQuery="";
   tabToolbarView=view.findViewById(R.id.tab_toolbar_layout);
@@ -18,7 +19,6 @@
   buttonToolbarText=(TextView)view.findViewById(R.id.buttonToolbarTitle);
   view.findViewById(R.id.buttonToolbar).setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
-      OsmandSettings settings=app.getSettings();
       SearchPhrase searchPhrase=searchUICore.getPhrase();
       if (foundPartialLocation) {
         QuickSearchCoordinatesFragment.showDialog(QuickSearchDialogFragment.this,searchPhrase.getUnknownSearchWord());
@@ -37,14 +37,9 @@
         }
         app.getPoiFilters().clearSelectedPoiFilters();
         app.getPoiFilters().addSelectedPoiFilter(filter);
-        getMapActivity().setQuickSearchTopbarActive(searchPhrase.isNoSelectedType());
+        getMapActivity().setQuickSearchTopbarActive(true);
         getMapActivity().refreshMap();
-        if (searchPhrase.isNoSelectedType()) {
-          hide();
-        }
- else {
-          dismiss();
-        }
+        hide();
       }
  else {
         SearchWord word=searchPhrase.getLastSelectedWord();
@@ -53,7 +48,7 @@
           String name=QuickSearchListItem.getName(app,searchResult);
           String typeName=QuickSearchListItem.getTypeName(app,searchResult);
           PointDescription pointDescription=new PointDescription(PointDescription.POINT_TYPE_ADDRESS,typeName,name);
-          getMyApplication().getSettings().setMapLocationToShow(searchResult.location.getLatitude(),searchResult.location.getLongitude(),searchResult.preferredZoom,pointDescription,true,searchResult.object);
+          app.getSettings().setMapLocationToShow(searchResult.location.getLatitude(),searchResult.location.getLongitude(),searchResult.preferredZoom,pointDescription,true,searchResult.object);
           getMapActivity().setQuickSearchTopbarActive(true);
           MapActivity.launchMapActivityMoveToTop(getActivity());
           hide();
@@ -184,11 +179,5 @@
   }
 );
   setupSearch(mapActivity);
-  updateToolbarButton();
-  updateClearButtonAndHint();
-  updateClearButtonVisibility(true);
-  addMainSearchFragment();
-  searchEditText.requestFocus();
-  AndroidUtils.softKeyboardDelayed(searchEditText);
   return view;
 }
