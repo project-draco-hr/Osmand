@@ -4,15 +4,32 @@
   boolean useEnglishNames=getMapActivity().getMyApplication().getSettings().usingEnglishNames();
   for (  TransportIndexRepository t : reps) {
     if (t.acceptTransportStop(transportStop)) {
-      addRoutes(useEnglishNames,t,transportStop,0);
+      boolean empty=transportStop.getReferencesToRoutes() != null && transportStop.getReferencesToRoutes().length > 0;
+      if (!empty) {
+        addRoutes(useEnglishNames,t,transportStop,transportStop,0);
+      }
       ArrayList<TransportStop> ls=new ArrayList<>();
       QuadRect ll=MapUtils.calculateLatLonBbox(transportStop.getLocation().getLatitude(),transportStop.getLocation().getLongitude(),150);
       t.searchTransportStops(ll.top,ll.left,ll.bottom,ll.right,-1,ls,null);
       for (      TransportStop tstop : ls) {
-        if (tstop.getId() != transportStop.getId() || !Arrays.equals(tstop.getReferencesToRoutes(),transportStop.getReferencesToRoutes())) {
-          addRoutes(useEnglishNames,t,tstop,(int)MapUtils.getDistance(tstop.getLocation(),transportStop.getLocation()));
+        if (tstop.getId() != transportStop.getId() || empty) {
+          addRoutes(useEnglishNames,t,tstop,transportStop,(int)MapUtils.getDistance(tstop.getLocation(),transportStop.getLocation()));
         }
       }
     }
   }
+  Collections.sort(routes,new Comparator<TransportStopRoute>(){
+    @Override public int compare(    TransportStopRoute o1,    TransportStopRoute o2){
+      if (o1.distance != o2.distance) {
+        return Algorithms.compare(o1.distance,o2.distance);
+      }
+      int i1=Algorithms.extractFirstIntegerNumber(o1.desc);
+      int i2=Algorithms.extractFirstIntegerNumber(o2.desc);
+      if (i1 != i2) {
+        return Algorithms.compare(i1,i2);
+      }
+      return o1.desc.compareTo(o2.desc);
+    }
+  }
+);
 }
