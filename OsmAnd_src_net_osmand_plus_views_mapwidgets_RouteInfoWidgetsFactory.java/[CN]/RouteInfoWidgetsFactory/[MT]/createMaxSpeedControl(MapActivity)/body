@@ -1,2 +1,54 @@
 {
+  final RoutingHelper rh=map.getMyApplication().getRoutingHelper();
+  final OsmAndLocationProvider locationProvider=map.getMyApplication().getLocationProvider();
+  final MapViewTrackingUtilities trackingUtilities=map.getMapViewTrackingUtilities();
+  final TextInfoWidget speedControl=new TextInfoWidget(map){
+    private float cachedSpeed=0;
+    @Override public boolean updateInfo(    DrawSettings drawSettings){
+      float mx=0;
+      if ((rh == null || !rh.isFollowingMode() || rh.isDeviatedFromRoute() || rh.getCurrentGPXRoute() != null) && trackingUtilities.isMapLinkedToLocation()) {
+        RouteDataObject ro=locationProvider.getLastKnownRouteSegment();
+        if (ro != null) {
+          boolean direction=true;
+          Location loc=locationProvider.getLastKnownLocation();
+          if (loc != null && loc.hasBearing()) {
+            double diff=MapUtils.alignAngleDifference(ro.directionRoute(0,true) - loc.getBearing() / 180f * Math.PI);
+            direction=Math.abs(diff) < Math.PI / 2f;
+          }
+          mx=ro.getMaximumSpeed(direction);
+        }
+      }
+ else       if (rh != null) {
+        mx=rh.getCurrentMaxSpeed();
+      }
+ else {
+        mx=0f;
+      }
+      if (cachedSpeed != mx) {
+        cachedSpeed=mx;
+        if (cachedSpeed == 0) {
+          setText(null,null);
+        }
+ else         if (cachedSpeed == RouteDataObject.NONE_MAX_SPEED) {
+          setText(map.getString(R.string.max_speed_none),"");
+        }
+ else {
+          String ds=OsmAndFormatter.getFormattedSpeed(cachedSpeed,map.getMyApplication());
+          int ls=ds.lastIndexOf(' ');
+          if (ls == -1) {
+            setText(ds,null);
+          }
+ else {
+            setText(ds.substring(0,ls),ds.substring(ls + 1));
+          }
+        }
+        return true;
+      }
+      return false;
+    }
+  }
+;
+  speedControl.setIcons(R.drawable.widget_max_speed_day,R.drawable.widget_max_speed_night);
+  speedControl.setText(null,null);
+  return speedControl;
 }
