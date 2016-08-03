@@ -1,6 +1,7 @@
 {
   final MapActivity mapActivity=getMapActivity();
   final View view=inflater.inflate(R.layout.search_dialog_fragment,container,false);
+  Bundle arguments=getArguments();
   if (savedInstanceState != null) {
     searchQuery=savedInstanceState.getString(QUICK_SEARCH_QUERY_KEY);
     double lat=savedInstanceState.getDouble(QUICK_SEARCH_LAT_KEY,Double.NaN);
@@ -10,16 +11,20 @@
     }
     interruptedSearch=savedInstanceState.getBoolean(QUICK_SEARCH_SEARCHING_KEY,false);
   }
-  if (searchQuery == null) {
-    searchQuery=getArguments().getString(QUICK_SEARCH_QUERY_KEY);
-    double lat=getArguments().getDouble(QUICK_SEARCH_LAT_KEY,Double.NaN);
-    double lon=getArguments().getDouble(QUICK_SEARCH_LON_KEY,Double.NaN);
+  if (searchQuery == null && arguments != null) {
+    searchQuery=arguments.getString(QUICK_SEARCH_QUERY_KEY);
+    double lat=arguments.getDouble(QUICK_SEARCH_LAT_KEY,Double.NaN);
+    double lon=arguments.getDouble(QUICK_SEARCH_LON_KEY,Double.NaN);
     if (!Double.isNaN(lat) && !Double.isNaN(lon)) {
       centerLatLon=new LatLon(lat,lon);
     }
     newSearch=true;
   }
   if (searchQuery == null)   searchQuery="";
+  boolean showCategories=false;
+  if (arguments != null) {
+    showCategories=arguments.getBoolean(QUICK_SEARCH_SHOW_CATEGORIES_KEY,false);
+  }
   tabToolbarView=view.findViewById(R.id.tab_toolbar_layout);
   tabsView=view.findViewById(R.id.tabs_view);
   searchView=view.findViewById(R.id.search_view);
@@ -129,7 +134,7 @@
   viewPager=(LockableViewPager)view.findViewById(R.id.pager);
   pagerAdapter=new SearchFragmentPagerAdapter(getChildFragmentManager(),getResources());
   viewPager.setAdapter(pagerAdapter);
-  if (centerLatLon != null) {
+  if (centerLatLon != null || showCategories) {
     viewPager.setCurrentItem(1);
   }
   tabLayout=(TabLayout)view.findViewById(R.id.tab_layout);
