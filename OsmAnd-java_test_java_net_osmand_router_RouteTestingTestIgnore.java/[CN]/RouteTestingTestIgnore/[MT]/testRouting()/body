@@ -4,10 +4,11 @@
   RoutePlannerFrontEnd fe=new RoutePlannerFrontEnd(false);
   BinaryMapIndexReader[] binaryMapIndexReaders={new BinaryMapIndexReader(raf,new File(fl))};
   RoutingConfiguration.Builder builder=RoutingConfiguration.getDefault();
+  Map<String,String> params=te.getParams();
   RoutingConfiguration config=builder.build(params.containsKey("vehicle") ? params.get("vehicle") : "car",RoutingConfiguration.DEFAULT_MEMORY_LIMIT * 3,params);
   RoutingContext ctx=fe.buildRoutingContext(config,null,binaryMapIndexReaders,RoutePlannerFrontEnd.RouteCalculationMode.NORMAL);
   ctx.leftSideNavigation=false;
-  List<RouteSegmentResult> routeSegments=fe.searchRoute(ctx,startPoint,endPoint,null);
+  List<RouteSegmentResult> routeSegments=fe.searchRoute(ctx,te.getStartPoint(),te.getEndPoint(),null);
   Set<Long> reachedSegments=new TreeSet<Long>();
   Assert.assertNotNull(routeSegments);
   int prevSegment=-1;
@@ -24,8 +25,15 @@
       reachedSegments.add(routeSegments.get(i).getObject().getId() >> (BinaryInspector.SHIFT_ID));
     }
   }
-  Set<Long> expectedSegments=expectedResults.keySet();
-  for (  Long expSegId : expectedSegments) {
-    Assert.assertTrue("Expected segment " + (expSegId) + " weren't reached in route segments "+ reachedSegments.toString(),reachedSegments.contains(expSegId));
+  Map<Long,String> expectedResults=te.getExpectedResults();
+  Iterator<Entry<Long,String>> it=expectedResults.entrySet().iterator();
+  while (it.hasNext()) {
+    Entry<Long,String> es=it.next();
+    if (es.getValue().equals("false")) {
+      Assert.assertTrue("Expected segment " + (es.getKey()) + " was wrongly reached in route segments "+ reachedSegments.toString(),!reachedSegments.contains(es.getKey()));
+    }
+ else {
+      Assert.assertTrue("Expected segment " + (es.getKey()) + " weren't reached in route segments "+ reachedSegments.toString(),reachedSegments.contains(es.getKey()));
+    }
   }
 }
