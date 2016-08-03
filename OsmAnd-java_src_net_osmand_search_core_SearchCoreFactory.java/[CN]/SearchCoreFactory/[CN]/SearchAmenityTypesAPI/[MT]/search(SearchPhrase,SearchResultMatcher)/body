@@ -3,16 +3,11 @@
     translatedNames=types.getAllTranslatedNames(false);
     topVisibleFilters=types.getTopVisibleFilters();
   }
-  TreeSet<AbstractPoiType> results=new TreeSet<>(new Comparator<AbstractPoiType>(){
-    @Override public int compare(    AbstractPoiType o1,    AbstractPoiType o2){
-      return o1.getKeyName().compareTo(o2.getKeyName());
-    }
-  }
-);
+  TreeMap<String,AbstractPoiType> results=new TreeMap<String,AbstractPoiType>();
   NameStringMatcher nm=phrase.getNameStringMatcher();
   for (  PoiFilter pf : topVisibleFilters) {
     if (!phrase.isUnknownSearchWordPresent() || nm.matches(pf.getTranslation())) {
-      results.add(pf);
+      results.put(pf.getTranslation(),pf);
     }
   }
   if (phrase.isUnknownSearchWordPresent()) {
@@ -20,18 +15,32 @@
     while (it.hasNext()) {
       Entry<String,PoiType> e=it.next();
       if (nm.matches(e.getKey()) || nm.matches(e.getValue().getTranslation())) {
-        results.add(e.getValue());
+        results.put(e.getValue().getTranslation(),e.getValue());
       }
     }
   }
-  for (  AbstractPoiType p : results) {
+  Iterator<Entry<String,AbstractPoiType>> it=results.entrySet().iterator();
+  while (it.hasNext()) {
+    Entry<String,AbstractPoiType> p=it.next();
     SearchResult res=new SearchResult(phrase);
-    res.localeName=p.getTranslation();
-    res.object=p;
+    res.localeName=p.getKey();
+    res.object=p.getValue();
     res.priority=SEARCH_AMENITY_TYPE_PRIORITY;
     res.priorityDistance=0;
     res.objectType=ObjectType.POI_TYPE;
     resultMatcher.publish(res);
+  }
+  for (int i=0; i < customPoiFilters.size(); i++) {
+    CustomSearchPoiFilter csf=customPoiFilters.get(i);
+    int p=customPoiFiltersPriorites.get(i);
+    if (!phrase.isUnknownSearchWordPresent() || nm.matches(csf.getName())) {
+      SearchResult res=new SearchResult(phrase);
+      res.localeName=csf.getName();
+      res.object=csf;
+      res.priority=SEARCH_AMENITY_TYPE_PRIORITY + p;
+      res.objectType=ObjectType.POI_TYPE;
+      resultMatcher.publish(res);
+    }
   }
   return true;
 }

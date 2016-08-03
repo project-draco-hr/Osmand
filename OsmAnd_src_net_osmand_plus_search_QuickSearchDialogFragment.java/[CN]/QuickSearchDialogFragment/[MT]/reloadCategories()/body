@@ -1,28 +1,16 @@
 {
-  SearchAmenityTypesAPI amenityTypesAPI=new SearchAmenityTypesAPI(app.getPoiTypes());
-  final List<SearchResult> amenityTypes=new ArrayList<>();
-  SearchPhrase sp=new SearchPhrase(null).generateNewPhrase("",searchUICore.getSearchSettings());
   try {
-    amenityTypesAPI.search(sp,new SearchResultMatcher(new ResultMatcher<SearchResult>(){
-      @Override public boolean publish(      SearchResult object){
-        amenityTypes.add(object);
-        return true;
+    SearchResultCollection res=searchUICore.shallowSearch(SearchAmenityTypesAPI.class,"",null);
+    if (res != null) {
+      List<QuickSearchListItem> rows=new ArrayList<>();
+      for (      SearchResult sr : res.getCurrentSearchResults()) {
+        rows.add(new QuickSearchListItem(app,sr));
       }
-      @Override public boolean isCancelled(){
-        return false;
-      }
+      categoriesSearchFragment.updateListAdapter(rows,false);
     }
-,0,new AtomicInteger(0),-1));
   }
  catch (  IOException e) {
     e.printStackTrace();
-  }
-  if (amenityTypes.size() > 0) {
-    searchUICore.sortSearchResults(sp,amenityTypes);
-    List<QuickSearchListItem> rows=new ArrayList<>();
-    for (    SearchResult sr : amenityTypes) {
-      rows.add(new QuickSearchListItem(app,sr));
-    }
-    categoriesSearchFragment.updateListAdapter(rows,false);
+    app.showToastMessage(e.getMessage());
   }
 }

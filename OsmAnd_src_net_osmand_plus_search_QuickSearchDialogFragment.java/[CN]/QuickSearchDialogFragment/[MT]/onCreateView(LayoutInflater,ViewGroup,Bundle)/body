@@ -40,15 +40,20 @@
       }
  else       if (searchPhrase.isNoSelectedType() || searchPhrase.isLastWord(ObjectType.POI_TYPE)) {
         PoiUIFilter filter;
-        if (searchPhrase.isNoSelectedType()) {
-          filter=new PoiUIFilter(null,app,"");
+        if (searchPhrase.getLastSelectedWord().getResult().object instanceof AbstractPoiType) {
+          if (searchPhrase.isNoSelectedType()) {
+            filter=new PoiUIFilter(null,app,"");
+          }
+ else {
+            AbstractPoiType abstractPoiType=(AbstractPoiType)searchPhrase.getLastSelectedWord().getResult().object;
+            filter=new PoiUIFilter(abstractPoiType,app,"");
+          }
+          if (!Algorithms.isEmpty(searchPhrase.getUnknownSearchWord())) {
+            filter.setFilterByName(searchPhrase.getUnknownSearchWord());
+          }
         }
  else {
-          AbstractPoiType abstractPoiType=(AbstractPoiType)searchPhrase.getLastSelectedWord().getResult().object;
-          filter=new PoiUIFilter(abstractPoiType,app,"");
-        }
-        if (!Algorithms.isEmpty(searchPhrase.getUnknownSearchWord())) {
-          filter.setFilterByName(searchPhrase.getUnknownSearchWord());
+          filter=(PoiUIFilter)searchPhrase.getLastSelectedWord().getResult().object;
         }
         app.getPoiFilters().clearSelectedPoiFilters();
         app.getPoiFilters().addSelectedPoiFilter(filter);

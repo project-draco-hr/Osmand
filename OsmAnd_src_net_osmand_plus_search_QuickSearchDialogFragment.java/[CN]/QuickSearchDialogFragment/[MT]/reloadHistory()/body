@@ -1,22 +1,16 @@
 {
-  SearchHistoryAPI historyAPI=new SearchHistoryAPI(app);
-  final List<SearchResult> history=new ArrayList<>();
-  SearchPhrase sp=new SearchPhrase(null).generateNewPhrase("",searchUICore.getSearchSettings());
-  historyAPI.search(sp,new SearchResultMatcher(new ResultMatcher<SearchResult>(){
-    @Override public boolean publish(    SearchResult object){
-      history.add(object);
-      return true;
-    }
-    @Override public boolean isCancelled(){
-      return false;
+  try {
+    SearchResultCollection res=searchUICore.shallowSearch(SearchHistoryAPI.class,"",null);
+    if (res != null) {
+      List<QuickSearchListItem> rows=new ArrayList<>();
+      for (      SearchResult sr : res.getCurrentSearchResults()) {
+        rows.add(new QuickSearchListItem(app,sr));
+      }
+      historySearchFragment.updateListAdapter(rows,false);
     }
   }
-,0,new AtomicInteger(0),-1));
-  List<QuickSearchListItem> rows=new ArrayList<>();
-  if (history.size() > 0) {
-    for (    SearchResult sr : history) {
-      rows.add(new QuickSearchListItem(app,sr));
-    }
+ catch (  IOException e) {
+    e.printStackTrace();
+    app.showToastMessage(e.getMessage());
   }
-  historySearchFragment.updateListAdapter(rows,false);
 }

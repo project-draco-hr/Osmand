@@ -1,0 +1,17 @@
+{
+  SearchResultCollection quickRes=new SearchResultCollection();
+  T api=getApiByClass(cl);
+  if (api != null) {
+    SearchPhrase sphrase=this.phrase.generateNewPhrase(text,searchSettings);
+    preparePhrase(sphrase);
+    AtomicInteger ai=new AtomicInteger();
+    SearchResultMatcher rm=new SearchResultMatcher(matcher,ai.get(),ai,totalLimit);
+    api.search(sphrase,rm);
+    sortSearchResults(sphrase,rm.getRequestResults());
+    filterSearchDuplicateResults(sphrase,rm.getRequestResults());
+    LOG.info(">> Shallow Search phrase " + phrase + " "+ rm.getRequestResults().size());
+    SearchResultCollection collection=new SearchResultCollection(rm.getRequestResults(),sphrase);
+    return collection;
+  }
+  return quickRes;
+}
