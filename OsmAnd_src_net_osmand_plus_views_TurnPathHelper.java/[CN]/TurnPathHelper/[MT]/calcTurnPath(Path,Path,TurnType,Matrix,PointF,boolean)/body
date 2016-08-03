@@ -143,35 +143,52 @@
  else   if (turnType != null && turnType.isRoundAbout() && USE_NEW_RNDB) {
     int out=turnType.getExitOut();
     boolean leftSide=turnType.isLeftSide();
-    float radArrow=37;
-    float radIn=11;
-    float radOut=radIn + 6;
-    float radBottom=radOut + 8;
-    float radStepInter=radOut + 6;
-    float radAr=radOut + 4;
-    float radAr2=radOut + 5;
+    float radEndOfArrow=44;
+    float radInnerCircle=10;
+    float radOuterCircle=radInnerCircle + 8;
+    float radBottom=radOuterCircle + 10;
+    float radStepInter=radOuterCircle + 6;
+    float radArrowTriangle1=radOuterCircle + 7;
+    float radArrowTriangle2=radOuterCircle + 8;
     float widthStepIn=8;
     float widthStepInter=6;
     float widthArrow=22;
+    double dfL=(leftSide ? 1 : -1) * Math.asin(widthStepIn / (2.0 * radBottom));
+    double dfAr2=(leftSide ? 1 : -1) * Math.asin(widthArrow / (2.0 * radArrowTriangle2));
+    double dfStepInter=(leftSide ? 1 : -1) * Math.asin(widthStepInter / radStepInter);
+    double dfAr=Math.asin(radBottom * Math.sin(dfL) / radArrowTriangle1);
+    double dfOut=Math.asin(radBottom * Math.sin(dfL) / radOuterCircle);
+    double dfStepOut=Math.asin(radStepInter * Math.sin(dfStepInter) / radOuterCircle);
+    double dfIn=Math.asin(radBottom * Math.sin(dfL) / radInnerCircle);
+    double minDelta=Math.abs(dfIn * 2 / Math.PI * 180) + 2;
+    boolean showSteps=SHOW_STEPS && !mini;
+    double rot=alignRotation(turnType.getTurnAngle(),leftSide,minDelta,out) / 180 * Math.PI;
     float cx=wa / 2;
     float cy=ha / 2;
-    double dfL=(leftSide ? 1 : -1) * Math.asin(widthStepIn / (2.0 * radBottom));
-    double dfAr2=(leftSide ? 1 : -1) * Math.asin(widthArrow / (2.0 * radAr2));
-    double dfStepInter=(leftSide ? 1 : -1) * Math.asin(widthStepInter / radStepInter);
-    double dfAr=Math.asin(radBottom * Math.sin(dfL) / radAr);
-    double dfOut=Math.asin(radBottom * Math.sin(dfL) / radOut);
-    double dfStepOut=Math.asin(radStepInter * Math.sin(dfStepInter) / radOut);
-    double dfIn=Math.asin(radBottom * Math.sin(dfL) / radIn);
-    double minDelta=Math.abs(dfIn * 2 / Math.PI * 180) + 2;
-    boolean showSteps=SHOW_STEPS;
-    double rot=alignRotation(turnType.getTurnAngle(),leftSide,minDelta) / 180 * Math.PI;
-    RectF qrOut=new RectF(cx - radOut,cy - radOut,cx + radOut,cy + radOut);
-    RectF qrIn=new RectF(cx - radIn,cy - radIn,cx + radIn,cy + radIn);
-    if (outlay != null) {
+    float potentialArrowEndX=(float)(Math.sin(rot) * radEndOfArrow);
+    float potentialArrowEndY=(float)(Math.cos(rot) * radEndOfArrow);
+    if (potentialArrowEndX > cx) {
+      cx=potentialArrowEndX;
+    }
+ else     if (potentialArrowEndX < -cx) {
+      cx=2 * cx + potentialArrowEndX;
+    }
+    if (potentialArrowEndY > cy) {
+      cy=2 * cy - potentialArrowEndY;
+    }
+ else     if (potentialArrowEndY < -cy) {
+      cy=-potentialArrowEndY;
+    }
+    if (center != null) {
+      center.set(cx,cy);
+    }
+    RectF qrOut=new RectF(cx - radOuterCircle,cy - radOuterCircle,cx + radOuterCircle,cy + radOuterCircle);
+    RectF qrIn=new RectF(cx - radInnerCircle,cy - radInnerCircle,cx + radInnerCircle,cy + radInnerCircle);
+    if (outlay != null && !mini) {
       outlay.addArc(qrOut,0,360);
       outlay.addArc(qrIn,0,-360);
     }
-    pathForTurn.moveTo(getProjX(dfOut,cx,cy,radOut),getProjY(dfOut,cx,cy,radOut));
+    pathForTurn.moveTo(getProjX(dfOut,cx,cy,radOuterCircle),getProjY(dfOut,cx,cy,radOuterCircle));
     if (out <= 1) {
       showSteps=false;
     }
@@ -185,25 +202,25 @@
         showSteps=false;
       }
       if (showSteps) {
-        outlay.moveTo(getProjX(dfOut,cx,cy,radOut),getProjY(dfOut,cx,cy,radOut));
+        outlay.moveTo(getProjX(dfOut,cx,cy,radOuterCircle),getProjY(dfOut,cx,cy,radOuterCircle));
         for (int i=0; i < out - 1; i++) {
           outlay.arcTo(qrOut,startArcAngle(dfOut + i * (st + dfStepOut)),sweepArcAngle(st));
           arcLineTo(outlay,dfOut + (i + 1) * (st + dfStepOut) - dfStepOut / 2 - dfStepInter / 2,cx,cy,radStepInter);
           arcLineTo(outlay,dfOut + (i + 1) * (st + dfStepOut) - dfStepOut / 2 + dfStepInter / 2,cx,cy,radStepInter);
-          arcLineTo(outlay,dfOut + (i + 1) * (st + dfStepOut),cx,cy,radOut);
+          arcLineTo(outlay,dfOut + (i + 1) * (st + dfStepOut),cx,cy,radOuterCircle);
         }
         outlay.arcTo(qrOut,startArcAngle(rot - dfOut - st),sweepArcAngle(st));
-        arcLineTo(outlay,rot - dfIn,cx,cy,radIn);
+        arcLineTo(outlay,rot - dfIn,cx,cy,radInnerCircle);
         outlay.arcTo(qrIn,startArcAngle(rot - dfIn),-sweepArcAngle(rot - dfIn - dfIn));
       }
     }
     pathForTurn.arcTo(qrOut,startArcAngle(dfOut),sweepArcAngle(rot - dfOut - dfOut));
-    arcLineTo(pathForTurn,rot - dfAr,cx,cy,radAr);
-    arcQuadTo(pathForTurn,rot - dfAr,radAr,rot - dfAr2,radAr2,rot,radArrow,4.5f,cx,cy);
-    arcQuadTo(pathForTurn,rot - dfAr2,radAr2,rot,radArrow,rot + dfAr2,radAr2,4.5f,cx,cy);
-    arcQuadTo(pathForTurn,rot,radArrow,rot + dfAr2,radAr2,rot + dfAr,radAr,4.5f,cx,cy);
-    arcLineTo(pathForTurn,rot + dfAr,cx,cy,radAr);
-    arcLineTo(pathForTurn,rot + dfIn,cx,cy,radIn);
+    arcLineTo(pathForTurn,rot - dfAr,cx,cy,radArrowTriangle1);
+    arcQuadTo(pathForTurn,rot - dfAr,radArrowTriangle1,rot - dfAr2,radArrowTriangle2,rot,radEndOfArrow,4.5f,cx,cy);
+    arcQuadTo(pathForTurn,rot - dfAr2,radArrowTriangle2,rot,radEndOfArrow,rot + dfAr2,radArrowTriangle2,4.5f,cx,cy);
+    arcQuadTo(pathForTurn,rot,radEndOfArrow,rot + dfAr2,radArrowTriangle2,rot + dfAr,radArrowTriangle1,4.5f,cx,cy);
+    arcLineTo(pathForTurn,rot + dfAr,cx,cy,radArrowTriangle1);
+    arcLineTo(pathForTurn,rot + dfIn,cx,cy,radInnerCircle);
     pathForTurn.arcTo(qrIn,startArcAngle(rot + dfIn),sweepArcAngle(-rot - dfIn - dfIn));
     arcLineTo(pathForTurn,-dfL,cx,cy,radBottom);
     arcLineTo(pathForTurn,dfL,cx,cy,radBottom);
