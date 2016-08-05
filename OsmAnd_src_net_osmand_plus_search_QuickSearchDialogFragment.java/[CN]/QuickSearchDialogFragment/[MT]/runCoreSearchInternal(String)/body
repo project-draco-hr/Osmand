@@ -6,7 +6,7 @@
     @Override public boolean publish(    SearchResult object){
       if (paused) {
         if (results.size() > 0) {
-          getResultCollection().getCurrentSearchResults().addAll(results);
+          getResultCollection().addSearchResults(results,true,true);
         }
         return false;
       }
@@ -23,7 +23,6 @@ apiResults=regionCollection.getCurrentSearchResults();
 }
  else {
 apiResults=results;
-searchUICore.sortSearchResults(phrase,apiResults);
 }
 regionResultApi=null;
 regionResultCollection=null;
@@ -33,10 +32,12 @@ app.runInUIThread(new Runnable(){
 if (!paused) {
 boolean appended=false;
 if (getResultCollection() == null || getResultCollection().getPhrase() != phrase) {
-setResultCollection(new SearchResultCollection(apiResults,phrase));
+SearchResultCollection resCollection=new SearchResultCollection(phrase);
+resCollection.addSearchResults(results,true,true);
+setResultCollection(resCollection);
 }
  else {
-getResultCollection().getCurrentSearchResults().addAll(apiResults);
+getResultCollection().addSearchResults(apiResults,false,true);
 appended=true;
 }
 if (!hasRegionCollection) {
@@ -49,19 +50,15 @@ updateSearchResult(getResultCollection(),appended);
 break;
 case SEARCH_API_REGION_FINISHED:
 regionResultApi=(SearchCoreAPI)object.object;
-final List<SearchResult> regionResults=new ArrayList<>(results);
 final SearchPhrase regionPhrase=object.requiredSearchPhrase;
-searchUICore.sortSearchResults(regionPhrase,regionResults);
+regionResultCollection=new SearchResultCollection(regionPhrase);
+regionResultCollection.addSearchResults(results,true,true);
 app.runInUIThread(new Runnable(){
 @Override public void run(){
 if (!paused) {
 boolean appended=getResultCollection() != null && getResultCollection().getPhrase() == regionPhrase;
-regionResultCollection=new SearchResultCollection(regionResults,regionPhrase);
 if (appended) {
-List<SearchResult> res=new ArrayList<>(getResultCollection().getCurrentSearchResults());
-res.addAll(regionResults);
-SearchResultCollection resCollection=new SearchResultCollection(res,regionPhrase);
-searchUICore.filterSearchDuplicateResults(regionPhrase,resCollection.getCurrentSearchResults());
+SearchResultCollection resCollection=getResultCollection().combineWithCollection(regionResultCollection,false,true);
 updateSearchResult(resCollection,true);
 }
  else {

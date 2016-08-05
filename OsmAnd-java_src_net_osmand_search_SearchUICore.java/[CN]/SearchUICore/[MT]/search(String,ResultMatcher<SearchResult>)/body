@@ -1,9 +1,8 @@
 {
-  SearchResultCollection quickRes=new SearchResultCollection();
   final int request=requestNumber.incrementAndGet();
   final SearchPhrase phrase=this.phrase.generateNewPhrase(text,searchSettings);
   this.phrase=phrase;
-  quickRes.phrase=phrase;
+  SearchResultCollection quickRes=new SearchResultCollection(phrase);
   filterCurrentResults(quickRes.searchResults,phrase);
   LOG.info("> Search phrase " + phrase + " "+ quickRes.searchResults.size());
   singleThreadedExecutor.submit(new Runnable(){
@@ -18,10 +17,9 @@
         }
         searchInBackground(phrase,rm);
         if (!rm.isCancelled()) {
-          sortSearchResults(phrase,rm.getRequestResults());
-          filterSearchDuplicateResults(phrase,rm.getRequestResults());
+          SearchResultCollection collection=new SearchResultCollection(phrase);
+          collection.addSearchResults(rm.getRequestResults(),true,true);
           LOG.info(">> Search phrase " + phrase + " "+ rm.getRequestResults().size());
-          SearchResultCollection collection=new SearchResultCollection(rm.getRequestResults(),phrase);
           currentSearchResult=collection;
           if (onResultsComplete != null) {
             onResultsComplete.run();
