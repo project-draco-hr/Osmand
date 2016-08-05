@@ -5,13 +5,8 @@
     List<SearchResult> results=new ArrayList<>();
     @Override public boolean publish(    SearchResult object){
       if (paused) {
-        if (regionResultCollection != null && regionResultCollection.getCurrentSearchResults().size() > 0) {
-          getResultCollection().addSearchResults(regionResultCollection.getCurrentSearchResults(),true,true);
-          regionResultCollection=null;
-        }
         if (results.size() > 0) {
           getResultCollection().addSearchResults(results,true,true);
-          results.clear();
         }
         return false;
       }
@@ -31,17 +26,13 @@ apiResults=results;
 }
 regionResultApi=null;
 regionResultCollection=null;
-results.clear();
+results=new ArrayList<>();
 showApiResults(apiResults,phrase,hasRegionCollection);
 break;
 case SEARCH_API_REGION_FINISHED:
 regionResultApi=(SearchCoreAPI)object.object;
 final SearchPhrase regionPhrase=object.requiredSearchPhrase;
-if (regionResultCollection == null) {
-regionResultCollection=new SearchResultCollection(regionPhrase);
-}
-regionResultCollection.addSearchResults(results,true,true);
-results.clear();
+regionResultCollection=new SearchResultCollection(regionPhrase).addSearchResults(results,true,true);
 showRegionResults(regionPhrase,regionResultCollection);
 break;
 case PARTIAL_LOCATION:
