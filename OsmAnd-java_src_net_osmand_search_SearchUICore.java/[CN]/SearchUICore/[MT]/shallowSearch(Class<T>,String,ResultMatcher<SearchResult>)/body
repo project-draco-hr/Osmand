@@ -1,5 +1,4 @@
 {
-  SearchResultCollection quickRes=new SearchResultCollection();
   T api=getApiByClass(cl);
   if (api != null) {
     SearchPhrase sphrase=this.phrase.generateNewPhrase(text,searchSettings);
@@ -7,10 +6,10 @@
     AtomicInteger ai=new AtomicInteger();
     SearchResultMatcher rm=new SearchResultMatcher(matcher,ai.get(),ai,totalLimit);
     api.search(sphrase,rm);
-    sortSearchResults(sphrase,rm.getRequestResults());
-    filterSearchDuplicateResults(sphrase,rm.getRequestResults());
+    SearchResultCollection collection=new SearchResultCollection(sphrase);
+    collection.addSearchResults(rm.getRequestResults(),true,true);
     LOG.info(">> Shallow Search phrase " + phrase + " "+ rm.getRequestResults().size());
-    return new SearchResultCollection(rm.getRequestResults(),sphrase);
+    return collection;
   }
-  return quickRes;
+  return null;
 }

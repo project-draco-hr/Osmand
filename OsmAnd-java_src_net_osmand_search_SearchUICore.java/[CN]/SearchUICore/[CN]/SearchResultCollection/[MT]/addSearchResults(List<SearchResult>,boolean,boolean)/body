@@ -1,0 +1,45 @@
+{
+  if (resortAll) {
+    this.searchResults.addAll(sr);
+    sortSearchResults();
+    if (removeDuplicates) {
+      filterSearchDuplicateResults();
+    }
+  }
+ else {
+    if (removeDuplicates) {
+      ArrayList<SearchResult> addedResults=new ArrayList<>(sr);
+      SearchResultComparator cmp=new SearchResultComparator(phrase);
+      Collections.sort(addedResults,cmp);
+      filterSearchDuplicateResults(addedResults);
+      int i=0;
+      int j=0;
+      while (j < addedResults.size()) {
+        SearchResult addedResult=addedResults.get(j);
+        if (i >= searchResults.size()) {
+          if (searchResults.size() == 0 || !sameSearchResult(addedResult,searchResults.get(searchResults.size() - 1))) {
+            searchResults.add(addedResult);
+          }
+          j++;
+          continue;
+        }
+        SearchResult existingResult=searchResults.get(i);
+        if (sameSearchResult(addedResult,existingResult)) {
+          j++;
+          continue;
+        }
+        int compare=cmp.compare(existingResult,addedResult);
+        if (compare == 0) {
+          j++;
+        }
+ else         if (compare > 0) {
+          this.searchResults.add(addedResults.get(j));
+          j++;
+        }
+ else {
+          i++;
+        }
+      }
+    }
+  }
+}
