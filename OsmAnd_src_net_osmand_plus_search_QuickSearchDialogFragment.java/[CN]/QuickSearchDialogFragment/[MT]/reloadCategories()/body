@@ -1,16 +1,19 @@
 {
-  try {
-    SearchResultCollection res=searchUICore.shallowSearch(SearchAmenityTypesAPI.class,"",null);
-    if (res != null) {
-      List<QuickSearchListItem> rows=new ArrayList<>();
-      for (      SearchResult sr : res.getCurrentSearchResults()) {
-        rows.add(new QuickSearchListItem(app,sr));
+  if (app.isApplicationInitializing()) {
+    showProgressBar();
+    app.getAppInitializer().addListener(new AppInitializeListener(){
+      @Override public void onProgress(      AppInitializer init,      AppInitializer.InitEvents event){
       }
-      categoriesSearchFragment.updateListAdapter(rows,false);
+      @Override public void onFinish(      AppInitializer init){
+        reloadCategoriesInternal();
+        if (!searching) {
+          hideProgressBar();
+        }
+      }
     }
+);
   }
- catch (  IOException e) {
-    e.printStackTrace();
-    app.showToastMessage(e.getMessage());
+ else {
+    reloadCategoriesInternal();
   }
 }
