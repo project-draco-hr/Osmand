@@ -1,0 +1,82 @@
+{
+  String text=null;
+  TurnType[] type=new TurnType[1];
+  boolean showNextTurn=false;
+  if (routingHelper != null && routingHelper.isRouteCalculated() && !routingHelper.isDeviatedFromRoute()) {
+    if (routingHelper.isFollowingMode()) {
+      if (settings.SHOW_STREET_NAME.get()) {
+        text=routingHelper.getCurrentName(type);
+        if (text == null) {
+          text="";
+        }
+      }
+    }
+ else {
+      int di=MapRouteInfoMenu.getDirectionInfo();
+      if (di >= 0 && MapRouteInfoMenu.isControlVisible() && di < routingHelper.getRouteDirections().size()) {
+        showNextTurn=true;
+        RouteDirectionInfo next=routingHelper.getRouteDirections().get(di);
+        type[0]=next.getTurnType();
+        text=RoutingHelper.formatStreetName(next.getStreetName(),next.getRef(),next.getDestinationName(),map.getMyApplication().getString(R.string.towards));
+        if (text == null) {
+          text="";
+        }
+      }
+    }
+  }
+ else   if (map.getMapViewTrackingUtilities().isMapLinkedToLocation() && settings.SHOW_STREET_NAME.get()) {
+    RouteDataObject rt=locationProvider.getLastKnownRouteSegment();
+    if (rt != null) {
+      text=RoutingHelper.formatStreetName(rt.getName(settings.MAP_PREFERRED_LOCALE.get()),rt.getRef(),rt.getDestinationName(settings.MAP_PREFERRED_LOCALE.get()),map.getMyApplication().getString(R.string.towards));
+    }
+    if (text == null) {
+      text="";
+    }
+  }
+  if (map.isTopToolbarActive()) {
+    updateVisibility(false);
+  }
+ else   if (!showNextTurn && updateWaypoint()) {
+    updateVisibility(true);
+    updateVisibility(addressText,false);
+    updateVisibility(addressTextShadow,false);
+  }
+ else   if (text == null) {
+    updateVisibility(false);
+  }
+ else {
+    updateVisibility(true);
+    updateVisibility(waypointInfoBar,false);
+    updateVisibility(addressText,true);
+    updateVisibility(addressTextShadow,shadowRad > 0);
+    boolean update=turnDrawable.setTurnType(type[0]);
+    int h=addressText.getHeight() / 4 * 3;
+    if (h != turnDrawable.getBounds().bottom) {
+      turnDrawable.setBounds(0,0,h,h);
+    }
+    if (update) {
+      if (type[0] != null) {
+        addressTextShadow.setCompoundDrawables(turnDrawable,null,null,null);
+        addressTextShadow.setCompoundDrawablePadding(4);
+        addressText.setCompoundDrawables(turnDrawable,null,null,null);
+        addressText.setCompoundDrawablePadding(4);
+      }
+ else {
+        addressTextShadow.setCompoundDrawables(null,null,null,null);
+        addressText.setCompoundDrawables(null,null,null,null);
+      }
+    }
+    if (!text.equals(addressText.getText().toString())) {
+      if (!text.equals("")) {
+        topBar.setContentDescription(text);
+      }
+ else {
+        topBar.setContentDescription(map.getResources().getString(R.string.map_widget_top_text));
+      }
+      addressTextShadow.setText(text);
+      addressText.setText(text);
+      return true;
+    }
+  }
+  return false;
+}
