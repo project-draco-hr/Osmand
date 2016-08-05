@@ -27,56 +27,17 @@ apiResults=results;
 regionResultApi=null;
 regionResultCollection=null;
 results=new ArrayList<>();
-app.runInUIThread(new Runnable(){
-@Override public void run(){
-if (!paused) {
-boolean appended=false;
-if (getResultCollection() == null || getResultCollection().getPhrase() != phrase) {
-SearchResultCollection resCollection=new SearchResultCollection(phrase);
-resCollection.addSearchResults(results,true,true);
-setResultCollection(resCollection);
-}
- else {
-getResultCollection().addSearchResults(apiResults,false,true);
-appended=true;
-}
-if (!hasRegionCollection) {
-updateSearchResult(getResultCollection(),appended);
-}
-}
-}
-}
-);
+showApiResults(apiResults,phrase,hasRegionCollection);
 break;
 case SEARCH_API_REGION_FINISHED:
 regionResultApi=(SearchCoreAPI)object.object;
 final SearchPhrase regionPhrase=object.requiredSearchPhrase;
 regionResultCollection=new SearchResultCollection(regionPhrase);
 regionResultCollection.addSearchResults(results,true,true);
-app.runInUIThread(new Runnable(){
-@Override public void run(){
-if (!paused) {
-boolean appended=getResultCollection() != null && getResultCollection().getPhrase() == regionPhrase;
-if (appended) {
-SearchResultCollection resCollection=getResultCollection().combineWithCollection(regionResultCollection,false,true);
-updateSearchResult(resCollection,true);
-}
- else {
-updateSearchResult(regionResultCollection,false);
-}
-}
-}
-}
-);
+showRegionResults(regionPhrase,regionResultCollection);
 break;
 case PARTIAL_LOCATION:
-app.runInUIThread(new Runnable(){
-@Override public void run(){
-foundPartialLocation=true;
-updateToolbarButton();
-}
-}
-);
+showLocationToolbar();
 break;
 default :
 results.add(object);
