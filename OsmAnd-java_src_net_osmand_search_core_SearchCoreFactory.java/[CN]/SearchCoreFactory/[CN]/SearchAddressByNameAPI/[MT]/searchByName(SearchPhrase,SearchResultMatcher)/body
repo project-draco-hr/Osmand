@@ -6,7 +6,7 @@
     final QuadRect streetBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS);
     final QuadRect postcodeBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 5);
     final QuadRect villagesBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 3);
-    final QuadRect cityBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 10);
+    final QuadRect cityBbox=phrase.getRadiusBBoxToSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 5);
     final int priority=phrase.isNoSelectedType() ? SEARCH_ADDRESS_BY_NAME_PRIORITY : SEARCH_ADDRESS_BY_NAME_PRIORITY_RADIUS2;
     final BinaryMapIndexReader[] currentFile=new BinaryMapIndexReader[1];
     ResultMatcher<MapObject> rm=new ResultMatcher<MapObject>(){
@@ -96,14 +96,14 @@
       }
     }
 ;
-    Iterator<BinaryMapIndexReader> offlineIterator=phrase.getRadiusOfflineIndexes(DEFAULT_ADDRESS_BBOX_RADIUS * 10,SearchPhraseDataType.ADDRESS);
+    Iterator<BinaryMapIndexReader> offlineIterator=phrase.getRadiusOfflineIndexes(DEFAULT_ADDRESS_BBOX_RADIUS * 5,SearchPhraseDataType.ADDRESS);
     while (offlineIterator.hasNext()) {
       BinaryMapIndexReader r=offlineIterator.next();
       currentFile[0]=r;
       immediateResults.clear();
       SearchRequest<MapObject> req=BinaryMapIndexReader.buildAddressByNameRequest(rm,phrase.getUnknownSearchWord().toLowerCase(),phrase.isUnknownSearchWordComplete() ? StringMatcherMode.CHECK_EQUALS_FROM_SPACE : StringMatcherMode.CHECK_STARTS_FROM_SPACE);
       if (locSpecified) {
-        req.setBBoxRadius(loc.getLatitude(),loc.getLongitude(),phrase.getRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 10));
+        req.setBBoxRadius(loc.getLatitude(),loc.getLongitude(),phrase.getRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS * 5));
       }
       r.searchAddressDataByName(req);
       for (      SearchResult res : immediateResults) {
