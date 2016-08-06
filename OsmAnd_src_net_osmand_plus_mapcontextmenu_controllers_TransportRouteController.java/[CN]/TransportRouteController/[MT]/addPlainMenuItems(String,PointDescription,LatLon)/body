@@ -1,29 +1,23 @@
 {
   super.addPlainMenuItems(typeStr,pointDescription,latLon);
-  List<TransportStop> stops=transportStop.route.getForwardStops();
+  List<TransportStop> stops=transportRoute.route.getForwardStops();
   boolean useEnglishNames=getMapActivity().getMyApplication().getSettings().usingEnglishNames();
   int currentStop=-1;
   for (int i=0; i < stops.size(); i++) {
     final TransportStop stop=stops.get(i);
-    if (stop.getName().equals(transportStop.stop.getName())) {
+    if (stop.getName().equals(transportRoute.stop.getName())) {
       currentStop=i;
       break;
     }
   }
-  int defaultIcon=transportStop.type == null ? R.drawable.mx_route_bus_ref : transportStop.type.getResourceId();
+  int defaultIcon=transportRoute.type == null ? R.drawable.mx_route_bus_ref : transportRoute.type.getResourceId();
   int startPosition=0;
-  if (!transportStop.showWholeRoute) {
+  if (!transportRoute.showWholeRoute) {
     startPosition=(currentStop == -1 ? 0 : currentStop);
     if (currentStop > 0) {
       addPlainMenuItem(defaultIcon,getMapActivity().getString(R.string.route_stops_before,currentStop),false,false,new OnClickListener(){
         @Override public void onClick(        View arg0){
-          MapContextMenu mm=getMapActivity().getContextMenu();
-          transportStop.showWholeRoute=true;
-          mm.showOrUpdate(latLon,getPointDescription(),transportStop);
-          TransportStopsLayer stopsLayer=getMapActivity().getMapLayers().getTransportStopsLayer();
-          int cz=transportStop.calculateZoom(0,getMapActivity().getMapView().getCurrentRotatedTileBox());
-          getMapActivity().changeZoom(cz - getMapActivity().getMapView().getZoom());
-          stopsLayer.setRoute(transportStop.route);
+          showMenuAndRoute(latLon,false);
         }
       }
 );
@@ -34,12 +28,11 @@
     final String name=useEnglishNames ? stop.getEnName(true) : stop.getName();
     addPlainMenuItem(currentStop == i ? R.drawable.ic_action_marker_dark : defaultIcon,name,false,false,new OnClickListener(){
       @Override public void onClick(      View arg0){
-        MapContextMenu mm=getMapActivity().getContextMenu();
+        MapContextMenu menu=getMapActivity().getContextMenu();
         PointDescription pd=new PointDescription(PointDescription.POINT_TYPE_TRANSPORT_STOP,getMapActivity().getString(R.string.transport_Stop),name);
-        TransportStopsLayer stopsLayer=getMapActivity().getMapLayers().getTransportStopsLayer();
-        stopsLayer.setRoute(null);
-        mm.show(stop.getLocation(),pd,stop);
-        WeakReference<MapContextMenuFragment> rr=mm.findMenuFragment();
+        resetRoute();
+        menu.show(stop.getLocation(),pd,stop);
+        WeakReference<MapContextMenuFragment> rr=menu.findMenuFragment();
         if (rr != null && rr.get() != null) {
           rr.get().centerMarkerLocation();
         }

@@ -1,0 +1,17 @@
+{
+  MapContextMenuData menuData=null;
+  if (menuController != null) {
+    if (menuController.isActive() && !restorePrevious) {
+      menuData=new MapContextMenuData(menuController.getLatLon(),menuController.getPointDescription(),menuController.getObject(),menuController.hasBackAction());
+    }
+    menuController.onAcquireNewController(pointDescription,object);
+  }
+  menuController=MenuController.getMenuController(mapActivity,latLon,pointDescription,object,MenuType.STANDARD);
+  menuController.setActive(true);
+  if (menuData != null && (object != menuData.getObject()) && (menuController.hasBackAction() || menuData.hasBackAction())) {
+    historyStack.add(menuData);
+  }
+  if (!(menuController instanceof MapDataMenuController)) {
+    menuController.buildMapDownloadButton(latLon);
+  }
+}
