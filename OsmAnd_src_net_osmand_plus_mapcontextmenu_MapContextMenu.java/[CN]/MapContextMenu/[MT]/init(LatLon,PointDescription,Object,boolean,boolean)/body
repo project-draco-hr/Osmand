@@ -1,0 +1,47 @@
+{
+  if (myLocation == null) {
+    myLocation=getMapActivity().getMyApplication().getSettings().getLastKnownMapLocation();
+  }
+  if (!update && isVisible()) {
+    if (this.object == null || !this.object.equals(object)) {
+      hide();
+    }
+ else {
+      return false;
+    }
+  }
+  setSelectedObject(object);
+  if (pointDescription == null) {
+    this.pointDescription=new PointDescription(latLon.getLatitude(),latLon.getLongitude());
+  }
+ else {
+    this.pointDescription=pointDescription;
+  }
+  boolean needAcquireMenuController=menuController == null || appModeChanged || !update || this.object == null && object != null || this.object != null && object == null || (this.object != null && object != null && !this.object.getClass().equals(object.getClass()));
+  this.latLon=latLon;
+  this.object=object;
+  active=true;
+  appModeChanged=false;
+  if (needAcquireMenuController) {
+    acquireMenuController(restorePrevious);
+  }
+ else {
+    menuController.update(pointDescription,object);
+  }
+  initTitle();
+  if (menuController != null) {
+    menuController.clearPlainMenuItems();
+    menuController.addPlainMenuItems(typeStr,this.pointDescription,this.latLon);
+  }
+  if (mapPosition != 0) {
+    mapActivity.getMapView().setMapPosition(0);
+  }
+  mapActivity.refreshMap();
+  if (object instanceof MapMarker) {
+    mapActivity.getMyApplication().getMapMarkersHelper().addListener(this);
+  }
+ else   if (object instanceof TargetPoint) {
+    mapActivity.getMyApplication().getTargetPointsHelper().addPointListener(this);
+  }
+  return true;
+}
