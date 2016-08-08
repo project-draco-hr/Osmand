@@ -2,18 +2,17 @@
   app.runInUIThread(new Runnable(){
     @Override public void run(){
       if (!paused) {
-        boolean appended=false;
-        if (getResultCollection() == null || getResultCollection().getPhrase() != phrase) {
+        boolean append=needAppend(phrase);
+        if (append) {
+          getResultCollection().addSearchResults(apiResults,false,true);
+        }
+ else {
           SearchResultCollection resCollection=new SearchResultCollection(phrase);
           resCollection.addSearchResults(apiResults,true,true);
           setResultCollection(resCollection);
         }
- else {
-          getResultCollection().addSearchResults(apiResults,false,true);
-          appended=true;
-        }
         if (!hasRegionCollection) {
-          updateSearchResult(getResultCollection(),appended);
+          updateSearchResult(getResultCollection(),append);
         }
       }
     }
