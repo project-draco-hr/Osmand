@@ -1,42 +1,44 @@
 {
   List<GeocodingResult> complete=new ArrayList<>();
   double minBuildingDistance=0;
-  for (  GeocodingResult r : res) {
-    Collection<RegionAddressRepository> rar=app.getResourceManager().getAddressRepositories();
-    RegionAddressRepository foundRepo=null;
-    for (    RegionAddressRepository repo : rar) {
-      BinaryMapIndexReader reader=repo.getFile();
-      for (      RouteRegion rb : reader.getRoutingIndexes()) {
-        if (r.regionFP == rb.getFilePointer() && r.regionLen == rb.getLength()) {
-          foundRepo=repo;
-          break;
+  if (res != null) {
+    for (    GeocodingResult r : res) {
+      Collection<RegionAddressRepository> rar=app.getResourceManager().getAddressRepositories();
+      RegionAddressRepository foundRepo=null;
+      for (      RegionAddressRepository repo : rar) {
+        BinaryMapIndexReader reader=repo.getFile();
+        for (        RouteRegion rb : reader.getRoutingIndexes()) {
+          if (r.regionFP == rb.getFilePointer() && r.regionLen == rb.getLength()) {
+            foundRepo=repo;
+            break;
+          }
+          if (result.isCancelled()) {
+            break;
+          }
         }
-        if (result.isCancelled()) {
+        if (foundRepo != null || result.isCancelled()) {
           break;
         }
       }
-      if (foundRepo != null || result.isCancelled()) {
+      if (result.isCancelled()) {
         break;
       }
-    }
-    if (result.isCancelled()) {
-      break;
-    }
- else     if (foundRepo != null) {
-      List<GeocodingResult> justified=foundRepo.justifyReverseGeocodingSearch(r,minBuildingDistance,result);
-      if (!justified.isEmpty()) {
-        double md=justified.get(0).getDistance();
-        if (minBuildingDistance == 0) {
-          minBuildingDistance=md;
-        }
+ else       if (foundRepo != null) {
+        List<GeocodingResult> justified=foundRepo.justifyReverseGeocodingSearch(r,minBuildingDistance,result);
+        if (!justified.isEmpty()) {
+          double md=justified.get(0).getDistance();
+          if (minBuildingDistance == 0) {
+            minBuildingDistance=md;
+          }
  else {
-          minBuildingDistance=Math.min(md,minBuildingDistance);
+            minBuildingDistance=Math.min(md,minBuildingDistance);
+          }
+          complete.addAll(justified);
         }
-        complete.addAll(justified);
       }
-    }
  else {
-      complete.add(r);
+        complete.add(r);
+      }
     }
   }
   if (result.isCancelled()) {
