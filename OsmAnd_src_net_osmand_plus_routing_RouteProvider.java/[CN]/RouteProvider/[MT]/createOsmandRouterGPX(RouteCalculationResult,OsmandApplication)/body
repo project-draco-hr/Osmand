@@ -30,7 +30,6 @@
   }
   Route route=new Route();
   gpx.routes.add(route);
-  int collectedTime=0;
   for (int i=cDirInfo; i < directionInfo.size(); i++) {
     RouteDirectionInfo dirInfo=directionInfo.get(i);
     if (dirInfo.routePointOffset >= cRoute) {
@@ -40,9 +39,11 @@
         pt.lat=loc.getLatitude();
         pt.lon=loc.getLongitude();
         int collectedDistance=0;
+        int collectedTime=0;
         for (int j=i + 1; j < directionInfo.size(); j++) {
           if (directionInfo.get(j).getTurnType() != null && directionInfo.get(j).getTurnType().isSkipToSpeak()) {
             collectedDistance+=directionInfo.get(j).getDistance();
+            collectedTime+=directionInfo.get(j).getExpectedTime();
           }
  else {
             break;
@@ -68,9 +69,6 @@
           extensions.put("dest",dirInfo.getDestinationName() + "");
         }
         route.points.add(pt);
-      }
- else {
-        collectedTime+=dirInfo.getExpectedTime();
       }
     }
   }
