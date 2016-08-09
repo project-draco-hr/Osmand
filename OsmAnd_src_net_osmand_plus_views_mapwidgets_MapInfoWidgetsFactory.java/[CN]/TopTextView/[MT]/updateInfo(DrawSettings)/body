@@ -17,7 +17,7 @@
         showNextTurn=true;
         RouteDirectionInfo next=routingHelper.getRouteDirections().get(di);
         type[0]=next.getTurnType();
-        text=RoutingHelper.formatStreetName(next.getStreetName(),next.getRef(),next.getDestinationName(),map.getMyApplication().getString(R.string.towards));
+        text=RoutingHelper.formatStreetName(next.getStreetName(),next.getRef(),next.getDestinationName(),">");
         if (text == null) {
           text="";
         }
@@ -27,10 +27,13 @@
  else   if (map.getMapViewTrackingUtilities().isMapLinkedToLocation() && settings.SHOW_STREET_NAME.get()) {
     RouteDataObject rt=locationProvider.getLastKnownRouteSegment();
     if (rt != null) {
-      text=RoutingHelper.formatStreetName(rt.getName(settings.MAP_PREFERRED_LOCALE.get()),rt.getRef(),rt.getDestinationName(settings.MAP_PREFERRED_LOCALE.get()),map.getMyApplication().getString(R.string.towards));
+      text=RoutingHelper.formatStreetName(rt.getName(settings.MAP_PREFERRED_LOCALE.get()),rt.getRef(),rt.getDestinationName(settings.MAP_PREFERRED_LOCALE.get()),">");
     }
     if (text == null) {
       text="";
+    }
+ else {
+      text="+  " + text;
     }
   }
   if (map.isTopToolbarActive()) {
@@ -66,7 +69,7 @@
         addressText.setCompoundDrawables(null,null,null,null);
       }
     }
-    if (!text.equals(addressText.getText().toString())) {
+    if (!text.equals(addressText.getText().toString()) && !text.equals("+  " + addressText.getText().toString())) {
       if (!text.equals("")) {
         topBar.setContentDescription(text);
       }
