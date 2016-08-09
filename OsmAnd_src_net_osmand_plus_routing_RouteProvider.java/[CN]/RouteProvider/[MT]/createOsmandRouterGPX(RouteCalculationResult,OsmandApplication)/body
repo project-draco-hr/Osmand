@@ -12,13 +12,6 @@
   track.segments.add(trkSegment);
   int cRoute=currentRoute;
   int cDirInfo=currentDirectionInfo;
-  WptPt startpoint=new WptPt();
-  TargetPoint sc=helper.getPointToStart();
-  if (sc != null) {
-    startpoint.lon=sc.getLongitude();
-    startpoint.lat=sc.getLatitude();
-    trkSegment.points.add(startpoint);
-  }
   for (int i=cRoute; i < routeNodes.size(); i++) {
     Location loc=routeNodes.get(i);
     WptPt pt=new WptPt();
@@ -39,7 +32,7 @@
   gpx.routes.add(route);
   for (int i=cDirInfo; i < directionInfo.size(); i++) {
     RouteDirectionInfo dirInfo=directionInfo.get(i);
-    if (dirInfo.routePointOffset >= cRoute) {
+    if (dirInfo.routePointOffset >= cRoute && dirInfo.getTurnType() != null && !dirInfo.getTurnType().isSkipToSpeak()) {
       Location loc=routeNodes.get(dirInfo.routePointOffset);
       WptPt pt=new WptPt();
       pt.lat=loc.getLatitude();
