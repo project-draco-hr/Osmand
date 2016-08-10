@@ -3,6 +3,7 @@
   boolean lookupSlightTurn=addRoads > 0;
   Set<String> addedTurns=new TreeSet<String>();
   int diffTurnRoads=roads;
+  int increaseTurnRoads=0;
   for (  int[] li : lanesInfo) {
     TIntHashSet set=new TIntHashSet();
     if (li != null) {
@@ -10,7 +11,7 @@
         TurnType.collectTurnTypes(li[k],set);
       }
     }
-    diffTurnRoads+=Math.max(set.size() - 1,0);
+    increaseTurnRoads=Math.max(set.size() - 1,0);
   }
   for (int i=0; i < rawLanes.length; i++) {
     int ind=left ? i : (rawLanes.length - i - 1);
@@ -27,9 +28,12 @@
       lanes-=cnt;
       lookupSlightTurn=false;
     }
-    if (lanes < 0 || diffTurnRoads < 0) {
+    if (lanes < 0 || diffTurnRoads + increaseTurnRoads < 0) {
       activeStartIndex=ind;
       break;
+    }
+ else     if (diffTurnRoads < 0 && activeStartIndex < 0) {
+      activeStartIndex=ind;
     }
   }
   return activeStartIndex;
