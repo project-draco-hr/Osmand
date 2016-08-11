@@ -4,64 +4,9 @@
     return file;
   }
   final String FILE_NAME="route_info.html";
-  StringBuilder html=new StringBuilder();
-  html.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
-  html.append("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\">");
-  html.append("<head>");
-  html.append("<title>Route info</title>");
-  html.append("<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />");
-  html.append("<style>");
-  html.append("table, th, td {");
-  html.append("border: 1px solid black;");
-  html.append("border-collapse: collapse;}");
-  html.append("th, td {");
-  html.append("padding: 5px;}");
-  html.append("</style>");
-  html.append("</head>");
-  html.append("<body>");
+  StringBuilder html=generateHtmlPrint(routeInfo,title);
   FileOutputStream fos=null;
   try {
-    if (!TextUtils.isEmpty(title)) {
-      html.append("<h1>");
-      html.append(title);
-      html.append("</h1>");
-    }
-    html.append("<table style=\"width:100%\">");
-    final String NBSP="&nbsp;";
-    final String BR="<br>";
-    for (int i=0; i < routeInfo.getCount(); i++) {
-      RouteDirectionInfo routeDirectionInfo=(RouteDirectionInfo)routeInfo.getItem(i);
-      html.append("<tr>");
-      StringBuilder sb=new StringBuilder();
-      sb.append(OsmAndFormatter.getFormattedDistance(routeDirectionInfo.distance,getMyApplication()));
-      sb.append(", ");
-      sb.append(getTimeDescription(routeDirectionInfo));
-      String distance=sb.toString().replaceAll("\\s",NBSP);
-      html.append("<td>");
-      html.append(distance);
-      html.append("</td>");
-      String description=routeDirectionInfo.getDescriptionRoutePart();
-      html.append("<td>");
-      html.append(String.valueOf(i + 1) + ". " + description);
-      html.append("</td>");
-      RouteInfoAdapter.CumulativeInfo cumulativeInfo=routeInfo.getRouteDirectionCumulativeInfo(i);
-      html.append("<td>");
-      sb=new StringBuilder();
-      sb.append(OsmAndFormatter.getFormattedDistance(cumulativeInfo.distance,getMyApplication()));
-      sb.append(" - ");
-      sb.append(OsmAndFormatter.getFormattedDistance(cumulativeInfo.distance + routeDirectionInfo.distance,getMyApplication()));
-      sb.append(BR);
-      sb.append(Algorithms.formatDuration(cumulativeInfo.time,getMyApplication().accessibilityEnabled()));
-      sb.append(" - ");
-      sb.append(Algorithms.formatDuration(cumulativeInfo.time + routeDirectionInfo.getExpectedTime(),getMyApplication().accessibilityEnabled()));
-      String cumulativeTimeAndDistance=sb.toString().replaceAll("\\s",NBSP);
-      html.append(cumulativeTimeAndDistance);
-      html.append("</td>");
-      html.append("</tr>");
-    }
-    html.append("</table>");
-    html.append("</body>");
-    html.append("</html>");
     file=((OsmandApplication)getApplication()).getAppPath(FILE_NAME);
     fos=new FileOutputStream(file);
     fos.write(html.toString().getBytes("UTF-8"));

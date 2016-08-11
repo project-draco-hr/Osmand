@@ -5,12 +5,28 @@
   }
   if (item.getItemId() == SHARE) {
     final GPXFile gpx=helper.generateGPXFileWithRoute();
-    final Intent sendIntent=new Intent();
-    sendIntent.setAction(Intent.ACTION_SEND);
-    sendIntent.putExtra(Intent.EXTRA_TEXT,GPXUtilities.asString(gpx,getMyApplication()));
-    sendIntent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.share_route_subject));
-    sendIntent.setType("application/gpx+xml");
-    startActivity(sendIntent);
+    final Uri fileUri=Uri.fromFile(new File(gpx.path));
+    File dir=new File(ShowRouteInfoActivity.this.getCacheDir(),"share");
+    if (!dir.exists()) {
+      dir.mkdir();
+    }
+    File dst=new File(dir,"route.gpx");
+    try {
+      FileWriter fw=new FileWriter(dst);
+      GPXUtilities.writeGpx(fw,gpx,getMyApplication());
+      fw.close();
+      final Intent sendIntent=new Intent();
+      sendIntent.setAction(Intent.ACTION_SEND);
+      sendIntent.putExtra(Intent.EXTRA_TEXT,Html.fromHtml(generateHtml(((RouteInfoAdapter)getListAdapter()),helper.getGeneralRouteInformation()).toString()));
+      sendIntent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.share_route_subject));
+      sendIntent.putExtra(Intent.EXTRA_STREAM,fileUri);
+      sendIntent.putExtra(Intent.EXTRA_STREAM,FileProvider.getUriForFile(ShowRouteInfoActivity.this,ShowRouteInfoActivity.this.getPackageName() + ".fileprovider",dst));
+      sendIntent.setType("text/plain");
+      startActivity(sendIntent);
+    }
+ catch (    IOException e) {
+      e.printStackTrace();
+    }
     return true;
   }
   if (item.getItemId() == PRINT) {
