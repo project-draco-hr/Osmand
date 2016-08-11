@@ -1,17 +1,24 @@
 {
   super(new MenuBuilder(app),pointDescription,mapActivity);
   this.transportRoute=transportRoute;
-  toolbarController=new TopToolbarController(TopToolbarViewControllerType.CONTEXT_MENU){
-    @Override public void onBackPressed(    TopToolbarView view){
-      getMapActivity().getContextMenu().backToolbarAction(TransportRouteController.this);
-    }
-    @Override public void onTitlePressed(    TopToolbarView view){
-      showMenuAndRoute(getLatLon(),true);
-    }
-    @Override public void onClosePressed(    TopToolbarView view){
-      getMapActivity().getContextMenu().closeToolbar(TransportRouteController.this);
+  toolbarController=new TransportRouteToolbarController();
+  toolbarController.setTitle(getNameStr());
+  toolbarController.setOnBackButtonClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      mapActivity.getContextMenu().backToolbarAction(TransportRouteController.this);
     }
   }
-;
-  toolbarController.setTitle(getNameStr());
+);
+  toolbarController.setOnTitleClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      showMenuAndRoute(getLatLon(),true);
+    }
+  }
+);
+  toolbarController.setOnCloseButtonClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      mapActivity.getContextMenu().closeToolbar(TransportRouteController.this);
+    }
+  }
+);
 }
