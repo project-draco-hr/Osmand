@@ -39,8 +39,40 @@
       }
     }
   }
+  if (possibleTurns.size() > 1) {
+    TIntIterator it=possibleTurns.iterator();
+    while (it.hasNext()) {
+      int nxt=it.next();
+      if (!TurnType.isSlightTurn(nxt)) {
+        it.remove();
+      }
+    }
+  }
+  int infer=0;
   if (possibleTurns.size() == 1) {
-    int infer=possibleTurns.iterator().next();
+    infer=possibleTurns.iterator().next();
+  }
+ else   if (possibleTurns.size() > 1) {
+    if (rs.keepLeft && rs.keepRight && possibleTurns.contains(TurnType.C)) {
+      infer=TurnType.C;
+    }
+ else     if (rs.keepLeft || rs.keepRight) {
+      TIntIterator it=possibleTurns.iterator();
+      infer=it.next();
+      while (it.hasNext()) {
+        int next=it.next();
+        int orderInfer=TurnType.orderFromLeftToRight(infer);
+        int orderNext=TurnType.orderFromLeftToRight(next);
+        if (rs.keepLeft && orderNext < orderInfer) {
+          infer=next;
+        }
+ else         if (rs.keepRight && orderNext > orderInfer) {
+          infer=next;
+        }
+      }
+    }
+  }
+  if (infer != 0) {
     for (int i=0; i < oLanes.length; i++) {
       if (TurnType.getSecondaryTurn(oLanes[i]) == infer) {
         int pt=TurnType.getPrimaryTurn(oLanes[i]);
@@ -50,7 +82,6 @@
         TurnType.setSecondaryTurn(oLanes,i,pt);
       }
     }
-    return infer;
   }
-  return 0;
+  return infer;
 }
