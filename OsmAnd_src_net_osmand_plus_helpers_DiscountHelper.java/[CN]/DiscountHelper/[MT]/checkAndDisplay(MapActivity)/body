@@ -1,0 +1,27 @@
+{
+  if (mBannerVisible) {
+    showDiscountBanner(mapActivity,mTitle,mDescription,mIcon,mUrl);
+  }
+  if (System.currentTimeMillis() - mLastCheckTime < 1000 * 60 * 60* 24 || !mapActivity.getMyApplication().getSettings().isInternetConnectionAvailable()) {
+    return;
+  }
+  mLastCheckTime=System.currentTimeMillis();
+  new AsyncTask<Void,Void,String>(){
+    @Override protected String doInBackground(    Void... params){
+      try {
+        String res=AndroidNetworkUtils.sendRequest(mapActivity.getMyApplication(),"http://osmand.net/api/motd",null,"Requesting discount info...");
+        return res;
+      }
+ catch (      Exception e) {
+        logError("Requesting discount info error: ",e);
+        return null;
+      }
+    }
+    @Override protected void onPostExecute(    String response){
+      if (response != null) {
+        processDiscountResponse(response,mapActivity);
+      }
+    }
+  }
+.execute();
+}
