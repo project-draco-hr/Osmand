@@ -37,9 +37,6 @@
         if (mapReader.getVersion() != IndexConstants.BINARY_MAP_VERSION) {
           mapReader=null;
         }
-        if (mapReader != null) {
-          renderer.initializeNewResource(progress,f,mapReader);
-        }
       }
  catch (      IOException e) {
         log.error(String.format("File %s could not be read",f.getName()),e);
@@ -73,36 +70,18 @@
           changesManager.indexMainMap(f,dateCreated);
         }
         indexFileNames.put(f.getName(),dateFormat.format(dateCreated));
-        if (!mapReader.getRegionNames().isEmpty() || mapReader.containsPoiData()) {
-          try {
-            RandomAccessFile raf=new RandomAccessFile(f,"r");
-            RegionAddressRepositoryBinary rarb=new RegionAddressRepositoryBinary(this,new BinaryMapIndexReader(raf,mapReader),f.getName());
-            addressMap.put(f.getName(),rarb);
-          }
- catch (          IOException e) {
-            log.error("Exception reading " + f.getAbsolutePath(),e);
-            warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
-          }
+        renderer.initializeNewResource(progress,f,mapReader);
+        BinaryMapReaderResource resource=new BinaryMapReaderResource(f,mapReader);
+        fileReaders.put(f.getName(),resource);
+        if (!mapReader.getRegionNames().isEmpty()) {
+          RegionAddressRepositoryBinary rarb=new RegionAddressRepositoryBinary(this,resource);
+          addressMap.put(f.getName(),rarb);
         }
         if (mapReader.hasTransportData()) {
-          try {
-            RandomAccessFile raf=new RandomAccessFile(f,"r");
-            transportRepositories.put(f.getName(),new TransportIndexRepositoryBinary(new BinaryMapIndexReader(raf,mapReader)));
-          }
- catch (          IOException e) {
-            log.error("Exception reading " + f.getAbsolutePath(),e);
-            warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
-          }
+          transportRepositories.put(f.getName(),new TransportIndexRepositoryBinary(resource));
         }
         if (mapReader.containsRouteData() && (!f.getParentFile().equals(liveDir) || context.getSettings().USE_OSM_LIVE_FOR_ROUTING.get())) {
-          try {
-            RandomAccessFile raf=new RandomAccessFile(f,"r");
-            routingMapFiles.put(f.getName(),new BinaryMapIndexReader(raf,mapReader));
-          }
- catch (          IOException e) {
-            log.error("Exception reading " + f.getAbsolutePath(),e);
-            warnings.add(MessageFormat.format(context.getString(R.string.version_index_is_not_supported),f.getName()));
-          }
+          resource.setUseForRouting(true);
         }
         if (mapReader.containsPoiData()) {
           try {

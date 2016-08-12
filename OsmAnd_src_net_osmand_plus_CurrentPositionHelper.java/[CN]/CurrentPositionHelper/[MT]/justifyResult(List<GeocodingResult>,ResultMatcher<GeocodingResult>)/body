@@ -3,29 +3,33 @@
   double minBuildingDistance=0;
   if (res != null) {
     for (    GeocodingResult r : res) {
-      Collection<RegionAddressRepository> rar=app.getResourceManager().getAddressRepositories();
-      RegionAddressRepository foundRepo=null;
-      for (      RegionAddressRepository repo : rar) {
-        BinaryMapIndexReader reader=repo.getFile();
+      BinaryMapIndexReader foundRepo=null;
+      List<BinaryMapReaderResource> rts=usedReaders;
+      for (      BinaryMapReaderResource rt : rts) {
+        if (rt.isClosed()) {
+          continue;
+        }
+        BinaryMapIndexReader reader=rt.getReader(BinaryMapReaderResourceType.STREET_LOOKUP);
         for (        RouteRegion rb : reader.getRoutingIndexes()) {
           if (r.regionFP == rb.getFilePointer() && r.regionLen == rb.getLength()) {
-            foundRepo=repo;
+            foundRepo=reader;
             break;
           }
-          if (result.isCancelled()) {
-            break;
-          }
-        }
-        if (foundRepo != null || result.isCancelled()) {
-          break;
         }
       }
       if (result.isCancelled()) {
         break;
       }
  else       if (foundRepo != null) {
-        List<GeocodingResult> justified=foundRepo.justifyReverseGeocodingSearch(r,minBuildingDistance,result);
-        if (!justified.isEmpty()) {
+        List<GeocodingResult> justified=null;
+        try {
+          justified=new GeocodingUtilities().justifyReverseGeocodingSearch(r,foundRepo,minBuildingDistance,result);
+        }
+ catch (        IOException e) {
+          log.error("Exception happened during reverse geocoding",e);
+          e.printStackTrace();
+        }
+        if (justified != null && !justified.isEmpty()) {
           double md=justified.get(0).getDistance();
           if (minBuildingDistance == 0) {
             minBuildingDistance=md;

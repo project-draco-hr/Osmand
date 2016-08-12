@@ -1,0 +1,32 @@
+{
+  am=app.getSettings().getApplicationMode();
+  String p;
+  if (am.isDerivedRoutingFrom(ApplicationMode.BICYCLE)) {
+    p=GeneralRouterProfile.BICYCLE.name().toLowerCase();
+  }
+ else   if (am.isDerivedRoutingFrom(ApplicationMode.PEDESTRIAN)) {
+    p=GeneralRouterProfile.PEDESTRIAN.name().toLowerCase();
+  }
+ else   if (am.isDerivedRoutingFrom(ApplicationMode.CAR)) {
+    p=GeneralRouterProfile.CAR.name().toLowerCase();
+  }
+ else {
+    p="geocoding";
+  }
+  BinaryMapIndexReader[] rs=new BinaryMapIndexReader[checkReaders.size()];
+  if (rs.length > 0) {
+    int i=0;
+    for (    BinaryMapReaderResource rep : checkReaders) {
+      rs[i++]=rep.getReader(BinaryMapReaderResourceType.STREET_LOOKUP);
+    }
+    RoutingConfiguration cfg=app.getDefaultRoutingConfig().build(p,10,new HashMap<String,String>());
+    ctx=new RoutePlannerFrontEnd(false).buildRoutingContext(cfg,null,rs);
+    RoutingConfiguration defCfg=app.getDefaultRoutingConfig().build("geocoding",10,new HashMap<String,String>());
+    defCtx=new RoutePlannerFrontEnd(false).buildRoutingContext(defCfg,null,rs);
+  }
+ else {
+    ctx=null;
+    defCtx=null;
+  }
+  usedReaders=checkReaders;
+}
