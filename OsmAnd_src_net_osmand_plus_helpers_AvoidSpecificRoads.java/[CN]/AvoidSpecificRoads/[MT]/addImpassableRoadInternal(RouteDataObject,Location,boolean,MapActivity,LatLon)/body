@@ -1,15 +1,19 @@
 {
-  getBuilder().addImpassableRoad(object,ll);
+  if (!getBuilder().addImpassableRoad(object,ll)) {
+    app.getSettings().removeImpassableRoad(getLocation(object));
+  }
   RoutingHelper rh=app.getRoutingHelper();
   if (rh.isRouteCalculated() || rh.isRouteBeingCalculated()) {
     rh.recalculateRouteDueToSettingsChange();
   }
-  if (showDialog) {
-    showDialog(activity);
+  if (activity != null) {
+    if (showDialog) {
+      showDialog(activity);
+    }
+    MapContextMenu menu=activity.getContextMenu();
+    if (menu.isActive() && menu.getLatLon().equals(loc)) {
+      menu.close();
+    }
+    activity.refreshMap();
   }
-  MapContextMenu menu=activity.getContextMenu();
-  if (menu.isActive() && menu.getLatLon().equals(loc)) {
-    menu.close();
-  }
-  activity.refreshMap();
 }
