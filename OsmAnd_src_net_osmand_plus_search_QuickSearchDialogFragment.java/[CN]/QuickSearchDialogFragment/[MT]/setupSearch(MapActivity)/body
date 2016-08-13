@@ -32,12 +32,18 @@
   SearchSettings settings=searchUICore.getSearchSettings().setOriginalLocation(new LatLon(searchLatLon.getLatitude(),searchLatLon.getLongitude()));
   settings=settings.setLang(locale,false);
   searchUICore.updateSettings(settings);
+  searchUICore.setOnSearchStart(new Runnable(){
+    @Override public void run(){
+      cancelPrev=false;
+    }
+  }
+);
   searchUICore.setOnResultsComplete(new Runnable(){
     @Override public void run(){
       app.runInUIThread(new Runnable(){
         @Override public void run(){
           searching=false;
-          if (!paused) {
+          if (!paused && !cancelPrev) {
             hideProgressBar();
             if (searchUICore.isSearchMoreAvailable(searchUICore.getPhrase())) {
               addMoreButton();
