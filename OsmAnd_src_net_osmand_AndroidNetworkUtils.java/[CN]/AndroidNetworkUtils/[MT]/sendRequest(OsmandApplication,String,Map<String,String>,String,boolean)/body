@@ -31,8 +31,10 @@
       connection.connect();
     }
     if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-      String msg=userOperation + " " + ctx.getString(R.string.failed_op)+ " : "+ connection.getResponseMessage();
-      showToast(ctx,msg);
+      if (toastAllowed) {
+        String msg=userOperation + " " + ctx.getString(R.string.failed_op)+ " : "+ connection.getResponseMessage();
+        showToast(ctx,msg);
+      }
     }
  else {
       StringBuilder responseBody=new StringBuilder();
@@ -62,14 +64,20 @@
     }
   }
  catch (  NullPointerException e) {
-    String msg=ctx.getString(R.string.auth_failed);
-    showToast(ctx,msg);
+    if (toastAllowed) {
+      String msg=ctx.getString(R.string.auth_failed);
+      showToast(ctx,msg);
+    }
   }
 catch (  MalformedURLException e) {
-    showToast(ctx,MessageFormat.format(ctx.getResources().getString(R.string.shared_string_action_template) + ": " + ctx.getResources().getString(R.string.shared_string_unexpected_error),userOperation));
+    if (toastAllowed) {
+      showToast(ctx,MessageFormat.format(ctx.getResources().getString(R.string.shared_string_action_template) + ": " + ctx.getResources().getString(R.string.shared_string_unexpected_error),userOperation));
+    }
   }
 catch (  IOException e) {
-    showToast(ctx,MessageFormat.format(ctx.getResources().getString(R.string.shared_string_action_template) + ": " + ctx.getResources().getString(R.string.shared_string_io_error),userOperation));
+    if (toastAllowed) {
+      showToast(ctx,MessageFormat.format(ctx.getResources().getString(R.string.shared_string_action_template) + ": " + ctx.getResources().getString(R.string.shared_string_io_error),userOperation));
+    }
   }
  finally {
     if (connection != null) {
