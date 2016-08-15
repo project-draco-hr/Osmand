@@ -1,0 +1,133 @@
+{
+  view=inflater.inflate(R.layout.first_usage_wizard_fragment,container,false);
+  AppCompatButton skipButton=(AppCompatButton)view.findViewById(R.id.skip_button);
+  skipButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      closeWizard();
+    }
+  }
+);
+  view.findViewById(R.id.action_button).setVisibility(View.GONE);
+switch (wizardType) {
+case SEARCH_LOCATION:
+    view.findViewById(R.id.search_location_card).setVisibility(View.VISIBLE);
+  view.findViewById(R.id.search_location_action_button).setEnabled(false);
+break;
+case NO_INTERNET:
+view.findViewById(R.id.no_inet_card).setVisibility(View.VISIBLE);
+view.findViewById(R.id.no_inet_action_button).setOnClickListener(new View.OnClickListener(){
+@Override public void onClick(View v){
+startWizard(getActivity());
+}
+}
+);
+break;
+case NO_LOCATION:
+view.findViewById(R.id.no_location_card).setVisibility(View.VISIBLE);
+view.findViewById(R.id.no_location_action_button).setOnClickListener(new View.OnClickListener(){
+@Override public void onClick(View v){
+findLocation(getActivity(),false);
+}
+}
+);
+break;
+case SEARCH_MAP:
+view.findViewById(R.id.search_map_card).setVisibility(View.VISIBLE);
+view.findViewById(R.id.search_map_action_button).setEnabled(false);
+break;
+case MAP_FOUND:
+TextView mapTitle=(TextView)view.findViewById(R.id.map_download_title);
+TextView mapDescription=(TextView)view.findViewById(R.id.map_download_desc);
+IndexItem indexItem=localMapIndexItem != null ? localMapIndexItem : baseMapIndexItem;
+if (indexItem != null) {
+mapTitle.setText(indexItem.getVisibleName(getContext(),getMyApplication().getRegions(),false));
+mapDescription.setText(indexItem.getSizeDescription(getContext()));
+}
+view.findViewById(R.id.map_download_action_button).setOnClickListener(new View.OnClickListener(){
+@Override public void onClick(View v){
+showMapDownloadFragment(getActivity());
+}
+}
+);
+view.findViewById(R.id.map_download_card).setVisibility(View.VISIBLE);
+break;
+case MAP_DOWNLOAD:
+if (localMapIndexItem != null) {
+indexItems.add(localMapIndexItem);
+}
+if (baseMapIndexItem != null) {
+indexItems.add(baseMapIndexItem);
+}
+if (indexItems.size() > 0) {
+final IndexItem item=indexItems.get(0);
+String mapName=item.getVisibleName(getContext(),getMyApplication().getRegions(),false);
+TextView mapNameTextView=(TextView)view.findViewById(R.id.map_downloading_title);
+mapNameTextView.setText(mapName);
+final TextView mapDescriptionTextView=(TextView)view.findViewById(R.id.map_downloading_desc);
+final View progressPadding=view.findViewById(R.id.map_download_padding);
+final View progressLayout=view.findViewById(R.id.map_download_progress_layout);
+mapDescriptionTextView.setText(item.getSizeDescription(getContext()));
+view.findViewById(R.id.map_download_progress_button).setOnClickListener(new View.OnClickListener(){
+@Override public void onClick(View v){
+downloadThread.cancelDownload(item);
+firstMapDownloadCancelled=true;
+mapDescriptionTextView.setText(item.getSizeDescription(getContext()));
+progressPadding.setVisibility(View.VISIBLE);
+progressLayout.setVisibility(View.GONE);
+}
+}
+);
+if (item.isDownloaded() || firstMapDownloadCancelled) {
+progressPadding.setVisibility(View.VISIBLE);
+progressLayout.setVisibility(View.GONE);
+}
+view.findViewById(R.id.map_downloading_layout).setVisibility(View.VISIBLE);
+}
+ else {
+view.findViewById(R.id.map_downloading_layout).setVisibility(View.GONE);
+view.findViewById(R.id.map_downloading_divider).setVisibility(View.GONE);
+}
+if (indexItems.size() > 1) {
+final IndexItem item=indexItems.get(1);
+String mapName=item.getVisibleName(getContext(),getMyApplication().getRegions(),false);
+TextView mapNameTextView=(TextView)view.findViewById(R.id.map2_downloading_title);
+mapNameTextView.setText(mapName);
+final TextView mapDescriptionTextView=(TextView)view.findViewById(R.id.map2_downloading_desc);
+final View progressPadding=view.findViewById(R.id.map2_download_padding);
+final View progressLayout=view.findViewById(R.id.map2_download_progress_layout);
+mapDescriptionTextView.setText(item.getSizeDescription(getContext()));
+view.findViewById(R.id.map2_download_progress_button).setOnClickListener(new View.OnClickListener(){
+@Override public void onClick(View v){
+downloadThread.cancelDownload(item);
+secondMapDownloadCancelled=true;
+mapDescriptionTextView.setText(item.getSizeDescription(getContext()));
+progressPadding.setVisibility(View.VISIBLE);
+progressLayout.setVisibility(View.GONE);
+}
+}
+);
+if (item.isDownloaded() || secondMapDownloadCancelled) {
+progressPadding.setVisibility(View.VISIBLE);
+progressLayout.setVisibility(View.GONE);
+}
+view.findViewById(R.id.map2_downloading_layout).setVisibility(View.VISIBLE);
+}
+ else {
+view.findViewById(R.id.map_downloading_divider).setVisibility(View.GONE);
+view.findViewById(R.id.map2_downloading_layout).setVisibility(View.GONE);
+}
+view.findViewById(R.id.map_downloading_action_button).setOnClickListener(new View.OnClickListener(){
+@Override public void onClick(View v){
+MapActivity mapActivity=(MapActivity)getActivity();
+mapActivity.setMapLocation(location.getLatitude(),location.getLongitude());
+mapActivity.getMapView().setIntZoom(5);
+closeWizard();
+}
+}
+);
+view.findViewById(R.id.map_downloading_card).setVisibility(View.VISIBLE);
+break;
+}
+updateStorageView(view.findViewById(R.id.storage_layout));
+return view;
+}
