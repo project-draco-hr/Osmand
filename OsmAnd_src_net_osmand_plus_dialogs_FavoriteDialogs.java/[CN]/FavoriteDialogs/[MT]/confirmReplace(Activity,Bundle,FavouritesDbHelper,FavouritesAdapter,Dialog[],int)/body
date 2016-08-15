@@ -1,0 +1,25 @@
+{
+  AlertDialog.Builder builder=new AlertDialog.Builder(activity);
+  builder.setTitle(R.string.update_existing);
+  final FavouritePoint fp=favouritesAdapter.getItem(position);
+  builder.setMessage(activity.getString(R.string.replace_favorite_confirmation,fp.getName()));
+  builder.setNegativeButton(R.string.shared_string_yes,null);
+  builder.setPositiveButton(R.string.shared_string_yes,new OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      if (dlgHolder != null && dlgHolder.length > 0 && dlgHolder[0] != null) {
+        dlgHolder[0].dismiss();
+      }
+      FavouritePoint point=(FavouritePoint)args.getSerializable(KEY_FAVORITE);
+      if (helper.editFavourite(fp,point.getLatitude(),point.getLongitude())) {
+        if (activity instanceof MapActivity) {
+          ((MapActivity)activity).getContextMenu().show(new LatLon(point.getLatitude(),point.getLongitude()),fp.getPointDescription(),fp);
+        }
+      }
+      if (activity instanceof MapActivity) {
+        ((MapActivity)activity).getMapView().refreshMap();
+      }
+    }
+  }
+);
+  builder.show();
+}
