@@ -1,0 +1,31 @@
+{
+  IndexItem indexItem=downloadThread.getCurrentDownloadingItem();
+  if (indexItem != null) {
+    int progress=downloadThread.getCurrentDownloadingItemProgress();
+    double mb=indexItem.getArchiveSizeMB();
+    String v;
+    if (progress != -1) {
+      v=getString(R.string.value_downloaded_of_max,mb * progress / 100,mb);
+    }
+ else {
+      v=getString(R.string.file_size_in_mb,mb);
+    }
+    int index=indexItems.indexOf(indexItem);
+    if (index == 0) {
+      if (!firstMapDownloadCancelled) {
+        final TextView mapDescriptionTextView=(TextView)view.findViewById(R.id.map_downloading_desc);
+        ProgressBar progressBar=(ProgressBar)view.findViewById(R.id.map_download_progress_bar);
+        mapDescriptionTextView.setText(v);
+        progressBar.setProgress(progress < 0 ? 0 : progress);
+      }
+    }
+ else     if (index == 1) {
+      if (!secondMapDownloadCancelled) {
+        final TextView mapDescriptionTextView=(TextView)view.findViewById(R.id.map2_downloading_desc);
+        ProgressBar progressBar=(ProgressBar)view.findViewById(R.id.map2_download_progress_bar);
+        mapDescriptionTextView.setText(v);
+        progressBar.setProgress(progress < 0 ? 0 : progress);
+      }
+    }
+  }
+}

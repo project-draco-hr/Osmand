@@ -1,0 +1,31 @@
+{
+  TextView title=(TextView)storageView.findViewById(R.id.storage_title);
+  OsmandSettings settings=getMyApplication().getSettings();
+  int type;
+  if (settings.getExternalStorageDirectoryTypeV19() >= 0) {
+    type=settings.getExternalStorageDirectoryTypeV19();
+  }
+ else {
+    ValueHolder<Integer> vh=new ValueHolder<>();
+    settings.getExternalStorageDirectory(vh);
+    if (vh.value != null && vh.value >= 0) {
+      type=vh.value;
+    }
+ else {
+      type=0;
+    }
+  }
+  title.setText(getString(R.string.storage_place_description,getStorageName(type)));
+  TextView freeSpace=(TextView)storageView.findViewById(R.id.storage_free_space);
+  TextView freeSpaceValue=(TextView)storageView.findViewById(R.id.storage_free_space_value);
+  String freeSpaceStr=getString(R.string.storage_free_space) + ": ";
+  freeSpace.setText(freeSpaceStr);
+  freeSpaceValue.setText(getFreeSpace(settings.getExternalStorageDirectory()));
+  AppCompatButton changeStorageButton=(AppCompatButton)storageView.findViewById(R.id.storage_change_button);
+  changeStorageButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      DataStoragePlaceDialogFragment.showInstance(getActivity().getSupportFragmentManager(),false);
+    }
+  }
+);
+}
