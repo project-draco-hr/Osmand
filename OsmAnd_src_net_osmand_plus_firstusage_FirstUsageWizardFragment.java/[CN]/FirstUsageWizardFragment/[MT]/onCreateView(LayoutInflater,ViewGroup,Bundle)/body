@@ -43,14 +43,21 @@ break;
 case MAP_FOUND:
 TextView mapTitle=(TextView)view.findViewById(R.id.map_download_title);
 TextView mapDescription=(TextView)view.findViewById(R.id.map_download_desc);
-IndexItem indexItem=localMapIndexItem != null ? localMapIndexItem : baseMapIndexItem;
+final IndexItem indexItem=localMapIndexItem != null ? localMapIndexItem : baseMapIndexItem;
 if (indexItem != null) {
 mapTitle.setText(indexItem.getVisibleName(getContext(),getMyApplication().getRegions(),false));
 mapDescription.setText(indexItem.getSizeDescription(getContext()));
 }
 view.findViewById(R.id.map_download_action_button).setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
+boolean spaceEnoughForBoth=validationManager.isSpaceEnoughForDownload(getActivity(),false,localMapIndexItem,baseMapIndexItem);
+boolean spaceEnoughForLocal=validationManager.isSpaceEnoughForDownload(getActivity(),true,localMapIndexItem);
+if (!spaceEnoughForBoth) {
+baseMapIndexItem=null;
+}
+if (spaceEnoughForLocal) {
 showMapDownloadFragment(getActivity());
+}
 }
 }
 );
