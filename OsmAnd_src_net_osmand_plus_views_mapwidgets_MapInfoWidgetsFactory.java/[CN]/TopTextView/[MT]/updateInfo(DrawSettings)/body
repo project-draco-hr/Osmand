@@ -43,8 +43,16 @@
       text="";
     }
  else {
-      type[0]=TurnType.valueOf(TurnType.C,false);
-      turnDrawable.setColor(R.color.color_myloc_distance);
+      if (!Algorithms.isEmpty(text) && locationProvider.getLastKnownLocation() != null) {
+        double dist=CurrentPositionHelper.getOrthogonalDistance(rt,locationProvider.getLastKnownLocation());
+        if (dist < 50) {
+          type[0]=TurnType.valueOf(TurnType.C,false);
+          turnDrawable.setColor(R.color.color_myloc_distance);
+        }
+ else {
+          text=map.getResources().getString(R.string.shared_string_near) + " " + text;
+        }
+      }
     }
   }
   if (map.isTopToolbarActive()) {
