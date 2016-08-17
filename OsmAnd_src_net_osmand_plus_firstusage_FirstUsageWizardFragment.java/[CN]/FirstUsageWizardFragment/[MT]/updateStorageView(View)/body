@@ -25,7 +25,12 @@
     AppCompatButton changeStorageButton=(AppCompatButton)storageView.findViewById(R.id.storage_change_button);
     changeStorageButton.setOnClickListener(new View.OnClickListener(){
       @Override public void onClick(      View v){
-        DataStoragePlaceDialogFragment.showInstance(getActivity().getSupportFragmentManager(),false);
+        if (!DownloadActivity.hasPermissionToWriteExternalStorage(getContext())) {
+          ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},FIRST_USAGE_REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION);
+        }
+ else {
+          DataStoragePlaceDialogFragment.showInstance(getActivity().getSupportFragmentManager(),false);
+        }
       }
     }
 );
