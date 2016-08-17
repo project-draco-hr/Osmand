@@ -4,7 +4,6 @@
   final ContextMenuItem item=cm.getItem(pos);
   if (item.getSelected() != null) {
     item.setColorRes(isChecked ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
-    adapter.notifyDataSetChanged();
   }
   if (itemId == R.string.layer_poi) {
     poiFiltersHelper.clearSelectedPoiFilters();
@@ -38,9 +37,11 @@
       ma.startActivity(intent);
     }
  else {
-      ma.getMapLayers().selectMapLayer(ma.getMapView());
+      ContextMenuItem it=adapter.getItem(pos);
+      ma.getMapLayers().selectMapLayer(ma.getMapView(),it);
     }
   }
+  adapter.notifyDataSetChanged();
   ma.getMapLayers().updateLayers(ma.getMapView());
   ma.getMapView().refreshMap();
   return false;

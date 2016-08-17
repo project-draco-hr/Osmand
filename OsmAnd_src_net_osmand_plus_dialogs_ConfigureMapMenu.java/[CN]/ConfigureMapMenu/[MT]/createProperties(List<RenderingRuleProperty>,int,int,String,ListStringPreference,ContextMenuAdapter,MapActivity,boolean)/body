@@ -15,6 +15,14 @@
     final ItemClickListener clickListener=new ContextMenuAdapter.ItemClickListener(){
       @Override public boolean onContextMenuClick(      ArrayAdapter<ContextMenuItem> a,      int itemId,      int pos,      boolean isChecked){
         if (!isChecked && !useDescription) {
+          if (defaultSettings != null) {
+            defaultSettings.set("");
+            for (int i=0; i < prefs.size(); i++) {
+              if (prefs.get(i).get()) {
+                defaultSettings.addValue(prefs.get(i).getId());
+              }
+            }
+          }
           for (int i=0; i < prefs.size(); i++) {
             prefs.get(i).set(false);
           }
@@ -24,7 +32,7 @@
           activity.getMapLayers().updateLayers(activity.getMapView());
         }
  else {
-          showPreferencesDialog(adapter,a,pos,activity,activity.getString(strId),ps,prefs,useDescription);
+          showPreferencesDialog(adapter,a,pos,activity,activity.getString(strId),ps,prefs,useDescription,defaultSettings,true);
         }
         return false;
       }
@@ -43,7 +51,7 @@
           return clickListener.onContextMenuClick(a,itemId,pos,isChecked);
         }
         @Override public boolean onRowItemClick(        ArrayAdapter<ContextMenuItem> a,        View view,        int itemId,        int pos){
-          showPreferencesDialog(adapter,a,pos,activity,activity.getString(strId),ps,prefs,useDescription);
+          showPreferencesDialog(adapter,a,pos,activity,activity.getString(strId),ps,prefs,useDescription,defaultSettings,false);
           return false;
         }
       }
