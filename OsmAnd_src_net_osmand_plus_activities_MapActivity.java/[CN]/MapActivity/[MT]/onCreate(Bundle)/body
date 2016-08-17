@@ -1,2 +1,92 @@
 {
+  long tm=System.currentTimeMillis();
+  app=getMyApplication();
+  settings=app.getSettings();
+  app.applyTheme(this);
+  supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+  boolean portraitMode=AndroidUiHelper.isOrientationPortrait(this);
+  boolean largeDevice=AndroidUiHelper.isXLargeDevice(this);
+  landscapeLayout=!portraitMode && !largeDevice;
+  mapContextMenu.setMapActivity(this);
+  super.onCreate(savedInstanceState);
+  setContentView(R.layout.main);
+  int statusBarHeight=0;
+  int resourceId=getResources().getIdentifier("status_bar_height","dimen","android");
+  if (resourceId > 0) {
+    statusBarHeight=getResources().getDimensionPixelSize(resourceId);
+  }
+  DisplayMetrics dm=new DisplayMetrics();
+  getWindowManager().getDefaultDisplay().getMetrics(dm);
+  int w=dm.widthPixels;
+  int h=dm.heightPixels - statusBarHeight;
+  mapView=new OsmandMapTileView(this,w,h);
+  if (app.getAppInitializer().checkAppVersionChanged() && WhatsNewDialogFragment.SHOW) {
+    WhatsNewDialogFragment.SHOW=false;
+    new WhatsNewDialogFragment().show(getSupportFragmentManager(),null);
+  }
+  mapActions=new MapActivityActions(this);
+  mapLayers=new MapActivityLayers(this);
+  if (mapViewTrackingUtilities == null) {
+    mapViewTrackingUtilities=new MapViewTrackingUtilities(app);
+  }
+  dashboardOnMap.createDashboardView();
+  checkAppInitialization();
+  parseLaunchIntentLocation();
+  mapView.setTrackBallDelegate(new OsmandMapTileView.OnTrackBallListener(){
+    @Override public boolean onTrackBallEvent(    MotionEvent e){
+      showAndHideMapPosition();
+      return MapActivity.this.onTrackballEvent(e);
+    }
+  }
+);
+  mapView.setAccessibilityActions(new MapAccessibilityActions(this));
+  mapViewTrackingUtilities.setMapView(mapView);
+  downloaderCallback=new IMapDownloaderCallback(){
+    @Override public void tileDownloaded(    DownloadRequest request){
+      if (request != null && !request.error && request.fileToSave != null) {
+        ResourceManager mgr=app.getResourceManager();
+        mgr.tileDownloaded(request);
+      }
+      if (request == null || !request.error) {
+        mapView.tileDownloaded(request);
+      }
+    }
+  }
+;
+  app.getResourceManager().getMapTileDownloader().addDownloaderCallback(downloaderCallback);
+  createProgressBarForRouting();
+  mapLayers.createLayers(mapView);
+  if (settings.FOLLOW_THE_ROUTE.get() && !app.getRoutingHelper().isRouteCalculated() && !app.getRoutingHelper().isRouteBeingCalculated()) {
+    FailSafeFuntions.restoreRoutingMode(this);
+  }
+ else   if (app.getSettings().USE_MAP_MARKERS.get() && !app.getRoutingHelper().isRoutePlanningMode() && !settings.FOLLOW_THE_ROUTE.get()&& app.getTargetPointsHelper().getAllPoints().size() > 0) {
+    app.getRoutingHelper().clearCurrentRoute(null,new ArrayList<LatLon>());
+    app.getTargetPointsHelper().removeAllWayPoints(false,false);
+  }
+  if (!settings.isLastKnownMapLocation()) {
+    net.osmand.Location location=app.getLocationProvider().getFirstTimeRunDefaultLocation();
+    mapViewTrackingUtilities.setMapLinkedToLocation(true);
+    if (location != null) {
+      mapView.setLatLon(location.getLatitude(),location.getLongitude());
+      mapView.setIntZoom(14);
+    }
+  }
+  addDialogProvider(mapActions);
+  OsmandPlugin.onMapActivityCreate(this);
+  gpxImportHelper=new GpxImportHelper(this,getMyApplication(),getMapView());
+  wakeLockHelper=new WakeLockHelper(getMyApplication());
+  if (System.currentTimeMillis() - tm > 50) {
+    System.err.println("OnCreate for MapActivity took " + (System.currentTimeMillis() - tm) + " ms");
+  }
+  mapView.refreshMap(true);
+  if (((app.getAppInitializer().isFirstTime() && Version.isDeveloperVersion(app)) || !app.getResourceManager().isAnyMapIstalled()) && FirstUsageWelcomeFragment.SHOW) {
+    FirstUsageWelcomeFragment.SHOW=false;
+    getSupportFragmentManager().beginTransaction().add(R.id.fragmentContainer,new FirstUsageWelcomeFragment(),FirstUsageWelcomeFragment.TAG).commit();
+  }
+  mapActions.updateDrawerMenu();
+  drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
+  IntentFilter filter=new IntentFilter(Intent.ACTION_SCREEN_OFF);
+  screenOffReceiver=new ScreenOffReceiver();
+  registerReceiver(screenOffReceiver,filter);
+  mIsDestroyed=false;
 }
