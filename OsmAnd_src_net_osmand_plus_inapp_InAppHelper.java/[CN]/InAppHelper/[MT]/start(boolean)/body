@@ -17,10 +17,13 @@
         return;
       }
       if (mHelper == null)       return;
-      if (!isDeveloperVersion && (!mSubscribedToLiveUpdates || !ctx.getSettings().BILLING_PURCHASE_TOKEN_SENT.get() || System.currentTimeMillis() - lastValidationCheckTime > PURCHASE_VALIDATION_PERIOD_MSEC)) {
+      if (forceRequestInventory || (!isDeveloperVersion && (!mSubscribedToLiveUpdates || !ctx.getSettings().BILLING_PURCHASE_TOKEN_SENT.get() || System.currentTimeMillis() - lastValidationCheckTime > PURCHASE_VALIDATION_PERIOD_MSEC))) {
         logDebug("Setup successful. Querying inventory.");
         List<String> skus=new ArrayList<>();
         skus.add(SKU_LIVE_UPDATES);
+        if (forceRequestInventory) {
+          skus.add(SKU_FULL_VERSION_PRICE);
+        }
         mHelper.queryInventoryAsync(true,skus,mGotInventoryListener);
       }
  else {
