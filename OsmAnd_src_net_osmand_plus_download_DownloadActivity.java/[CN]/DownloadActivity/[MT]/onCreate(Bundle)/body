@@ -35,6 +35,12 @@
   mSlidingTabLayout.setOnPageChangeListener(accessibilityAssistant);
   viewPager.setCurrentItem(currentTab);
   visibleBanner=new BannerAndDownloadFreeVersion(findViewById(R.id.mainLayout),this,true);
+  if (Version.isFreeVersion(getMyApplication()) && (!getMyApplication().getSettings().LIVE_UPDATES_PURCHASED.get() || Version.isDeveloperVersion(getMyApplication()))) {
+    inAppHelper=new InAppHelper(getMyApplication(),true);
+    inAppHelper.addListener(this);
+    visibleBanner.setUpdatingPrices(true);
+    inAppHelper.start(true);
+  }
   final Intent intent=getIntent();
   if (intent != null && intent.getExtras() != null) {
     filter=intent.getExtras().getString(FILTER_KEY);
