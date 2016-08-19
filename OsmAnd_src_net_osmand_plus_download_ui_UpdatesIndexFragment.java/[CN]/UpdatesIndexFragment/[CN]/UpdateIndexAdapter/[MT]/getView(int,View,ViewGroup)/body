@@ -1,14 +1,23 @@
 {
   View v=convertView;
+  int viewType=getItemViewType(position);
   if (v == null) {
-    LayoutInflater inflater=LayoutInflater.from(getMyActivity());
-    v=inflater.inflate(R.layout.two_line_with_images_list_item,parent,false);
-    v.setTag(new ItemViewHolder(v,getMyActivity()));
+    if (viewType == INDEX_ITEM) {
+      LayoutInflater inflater=LayoutInflater.from(getMyActivity());
+      v=inflater.inflate(R.layout.two_line_with_images_list_item,parent,false);
+      v.setTag(new ItemViewHolder(v,getMyActivity()));
+    }
+ else     if (viewType == OSM_LIVE_BANNER) {
+      LayoutInflater inflater=LayoutInflater.from(getMyActivity());
+      v=inflater.inflate(R.layout.osm_live_banner_list_item,parent,false);
+    }
   }
-  ItemViewHolder holder=(ItemViewHolder)v.getTag();
-  holder.setShowRemoteDate(true);
-  holder.setShowTypeInDesc(true);
-  holder.setShowParentRegionName(true);
-  holder.bindIndexItem(items.get(position));
+  if (viewType == INDEX_ITEM) {
+    ItemViewHolder holder=(ItemViewHolder)v.getTag();
+    holder.setShowRemoteDate(true);
+    holder.setShowTypeInDesc(true);
+    holder.setShowParentRegionName(true);
+    holder.bindIndexItem(getItem(position));
+  }
   return v;
 }
