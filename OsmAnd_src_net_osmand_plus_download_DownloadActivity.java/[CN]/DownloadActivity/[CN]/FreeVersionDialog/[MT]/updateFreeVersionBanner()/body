@@ -1,19 +1,21 @@
 {
-  if (!shouldShowFreeVersionBanner) {
+  if (!shouldShowFreeVersionBanner(ctx.getMyApplication())) {
     return;
   }
   setMinimizedFreeVersionBanner(false);
-  OsmandSettings settings=application.getSettings();
+  OsmandSettings settings=ctx.getMyApplication().getSettings();
   final Integer mapsDownloaded=settings.NUMBER_OF_FREE_DOWNLOADS.get();
   downloadsLeftProgressBar.setProgress(mapsDownloaded);
   int downloadsLeft=DownloadValidationManager.MAXIMUM_AVAILABLE_FREE_DOWNLOADS - mapsDownloaded;
   downloadsLeft=Math.max(downloadsLeft,0);
   downloadsLeftTextView.setText(ctx.getString(R.string.downloads_left_template,downloadsLeft));
-  freeVersionBanner.findViewById(R.id.bannerTopLayout).setOnClickListener(onCollapseListener);
+  if (!dialog) {
+    freeVersionBanner.findViewById(R.id.bannerTopLayout).setOnClickListener(onCollapseListener);
+  }
   if (InAppHelper.hasPrices() || !updatingPrices) {
     if (!InAppHelper.hasPrices()) {
       fullVersionButton.setText(ctx.getString(R.string.get_for,ctx.getString(R.string.full_version_price)));
-      osmLiveButton.setText(ctx.getString(R.string.get_for_month,ctx.getString(R.string.osm_live_price)));
+      osmLiveButton.setText(ctx.getString(R.string.get_for_month,ctx.getString(R.string.osm_live_default_price)));
     }
  else {
       fullVersionButton.setText(ctx.getString(R.string.get_for,InAppHelper.getFullVersionPrice()));
