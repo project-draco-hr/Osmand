@@ -1,13 +1,21 @@
 {
-  String countryName=selectedCountryItem != null ? selectedCountryItem.getLocalName() : "";
-  String countryDownloadName=selectedCountryItem != null ? selectedCountryItem.getDownloadName() : "";
-  if (Algorithms.isEmpty(email) || !AndroidUtils.isValidEmail(email)) {
-    getMyApplication().showToastMessage(getString(R.string.osm_live_enter_email));
-    return false;
+  String countryName;
+  String countryDownloadName;
+  if (!donation) {
+    countryName="";
+    countryDownloadName=OsmandSettings.BILLING_USER_DONATION_NONE_PARAMETER;
   }
-  if (Algorithms.isEmpty(userName) && !hideUserName) {
-    getMyApplication().showToastMessage(getString(R.string.osm_live_enter_user_name));
-    return false;
+ else {
+    countryName=selectedCountryItem != null ? selectedCountryItem.getLocalName() : "";
+    countryDownloadName=selectedCountryItem != null ? selectedCountryItem.getDownloadName() : OsmandSettings.BILLING_USER_DONATION_WORLD_PARAMETER;
+    if (Algorithms.isEmpty(email) || !AndroidUtils.isValidEmail(email)) {
+      getMyApplication().showToastMessage(getString(R.string.osm_live_enter_email));
+      return false;
+    }
+    if (Algorithms.isEmpty(userName) && !hideUserName) {
+      getMyApplication().showToastMessage(getString(R.string.osm_live_enter_user_name));
+      return false;
+    }
   }
   settings.BILLING_USER_NAME.set(userName);
   settings.BILLING_USER_EMAIL.set(email);
