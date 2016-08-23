@@ -1,0 +1,33 @@
+{
+  SearchRequest<TransportStop> sr=BinaryMapIndexReader.buildSearchTransportRequest(MapUtils.get31TileNumberX(verbose.lonleft),MapUtils.get31TileNumberX(verbose.lonright),MapUtils.get31TileNumberY(verbose.lattop),MapUtils.get31TileNumberY(verbose.latbottom),-1,null);
+  List<TransportStop> stops=index.searchTransportIndex(sr);
+  Map<Long,TransportRoute> rs=new LinkedHashMap<>();
+  List<String> lrs=new ArrayList<>();
+  println("\nStops:");
+  for (  TransportStop s : stops) {
+    lrs.clear();
+    for (    int pnt : s.getReferencesToRoutes()) {
+      TransportRoute route;
+      if (!lrs.contains(pnt)) {
+        TIntObjectHashMap<TransportRoute> pts=index.getTransportRoutes(new int[]{pnt});
+        route=pts.valueCollection().iterator().next();
+        rs.put((long)pnt,route);
+      }
+ else {
+        route=rs.get(pnt);
+      }
+      if (route != null) {
+        lrs.add(route.getRef() + " " + route.getType());
+      }
+    }
+    println("  " + s.getName(verbose.lang) + ": "+ lrs+ " "+ s.getLocation());
+  }
+  println("\nRoutes:");
+  for (  TransportRoute s : rs.values()) {
+    List<String> stopsString=new ArrayList<>();
+    for (    TransportStop st : s.getForwardStops()) {
+      stopsString.add(st.getName(verbose.lang));
+    }
+    println("  " + s.getRef() + " "+ s.getType()+ " "+ s.getName(verbose.lang)+ ": "+ stopsString);
+  }
+}
