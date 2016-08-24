@@ -1,10 +1,7 @@
 {
   HttpURLConnection connection=null;
   try {
-    connection=NetworkUtils.getHttpURLConnection(url);
-    connection.setRequestProperty("Accept-Charset","UTF-8");
-    connection.setRequestProperty("User-Agent",Version.getFullVersion(ctx));
-    connection.setConnectTimeout(15000);
+    String params=null;
     if (parameters != null && parameters.size() > 0) {
       StringBuilder sb=new StringBuilder();
       for (      Map.Entry<String,String> entry : parameters.entrySet()) {
@@ -13,7 +10,13 @@
         }
         sb.append(entry.getKey()).append("=").append(URLEncoder.encode(entry.getValue(),"UTF-8"));
       }
-      String params=sb.toString();
+      params=sb.toString();
+    }
+    connection=NetworkUtils.getHttpURLConnection(params == null || post ? url : url + "&" + params);
+    connection.setRequestProperty("Accept-Charset","UTF-8");
+    connection.setRequestProperty("User-Agent",Version.getFullVersion(ctx));
+    connection.setConnectTimeout(15000);
+    if (params != null && post) {
       connection.setDoInput(true);
       connection.setDoOutput(true);
       connection.setUseCaches(false);
@@ -32,7 +35,7 @@
     }
     if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
       if (toastAllowed) {
-        String msg=userOperation + " " + ctx.getString(R.string.failed_op)+ " : "+ connection.getResponseMessage();
+        String msg=userOperation + " " + ctx.getString(R.string.failed_op)+ ": "+ connection.getResponseMessage();
         showToast(ctx,msg);
       }
     }
