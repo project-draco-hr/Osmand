@@ -1,28 +1,24 @@
 {
-  String ruleOpen=null;
   String ruleClosed=null;
-  for (  OpeningHoursRule r : rules) {
-    if (r.containsPreviousDay(cal) && r.containsMonth(cal)) {
-      if (r.isOpenedForTime(cal,true)) {
-        ruleOpen=r.toLocalRuleString();
-      }
- else {
-        ruleClosed=r.toLocalRuleString();
-      }
+  boolean overlap=false;
+  for (int i=rules.size() - 1; i >= 0; i--) {
+    OpeningHoursRule r=rules.get(i);
+    if (r.hasOverlapTimes()) {
+      overlap=true;
+      break;
     }
   }
-  for (  OpeningHoursRule r : rules) {
-    if (r.containsDay(cal) && r.containsMonth(cal)) {
-      if (r.isOpenedForTime(cal,false)) {
-        ruleOpen=r.toLocalRuleString();
-      }
- else {
+  for (int i=rules.size() - 1; i >= 0; i--) {
+    OpeningHoursRule r=rules.get(i);
+    if (r.contains(cal)) {
+      boolean open=r.isOpenedForTime(cal);
+      if (!open && overlap) {
         ruleClosed=r.toLocalRuleString();
       }
+ else {
+        return r.toLocalRuleString();
+      }
     }
-  }
-  if (ruleOpen != null) {
-    return ruleOpen;
   }
   return ruleClosed;
 }
