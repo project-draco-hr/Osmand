@@ -1,0 +1,182 @@
+{
+  r=r.toLowerCase();
+  final String[] daysStr=new String[]{"mo","tu","we","th","fr","sa","su"};
+  final String[] monthsStr=new String[]{"jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"};
+  final String[] holidayStr=new String[]{"ph","sh"};
+  String sunrise="07:00";
+  String sunset="21:00";
+  String endOfDay="24:00";
+  String localRuleString=r.replaceAll("sunset",sunset).replaceAll("sunrise",sunrise).replaceAll("\\+","-" + endOfDay);
+  BasicOpeningHourRule basic=new BasicOpeningHourRule();
+  boolean[] days=basic.getDays();
+  boolean[] months=basic.getMonths();
+  boolean[] dayMonths=basic.getDayMonths();
+  if ("24/7".equals(localRuleString)) {
+    Arrays.fill(days,true);
+    Arrays.fill(months,true);
+    basic.addTimeRange(0,24 * 60);
+    return basic;
+  }
+  List<Token> tokens=new ArrayList<>();
+  int startWord=0;
+  for (int i=0; i <= localRuleString.length(); i++) {
+    char ch=i == localRuleString.length() ? ' ' : localRuleString.charAt(i);
+    boolean delimiter=false;
+    Token del=null;
+    if (Character.isWhitespace(ch)) {
+      delimiter=true;
+    }
+ else     if (ch == ':') {
+      del=new Token(TokenType.TOKEN_COLON,":");
+    }
+ else     if (ch == '-') {
+      del=new Token(TokenType.TOKEN_DASH,"-");
+    }
+ else     if (ch == ',') {
+      del=new Token(TokenType.TOKEN_COMMA,",");
+    }
+    if (delimiter || del != null) {
+      String wrd=localRuleString.substring(startWord,i).trim();
+      if (wrd.length() > 0) {
+        tokens.add(new Token(TokenType.TOKEN_UNKNOWN,wrd));
+      }
+      startWord=i + 1;
+      if (del != null) {
+        tokens.add(del);
+      }
+    }
+  }
+  for (  Token t : tokens) {
+    if (t.type == TokenType.TOKEN_UNKNOWN) {
+      findInArray(t,daysStr,TokenType.TOKEN_DAY_WEEK);
+    }
+    if (t.type == TokenType.TOKEN_UNKNOWN) {
+      findInArray(t,monthsStr,TokenType.TOKEN_MONTH);
+    }
+    if (t.type == TokenType.TOKEN_UNKNOWN) {
+      findInArray(t,holidayStr,TokenType.TOKEN_HOLIDAY);
+    }
+    if (t.type == TokenType.TOKEN_UNKNOWN && "off".equals(t.text)) {
+      t.type=TokenType.TOKEN_OFF_ON;
+      t.mainNumber=0;
+    }
+    if (t.type == TokenType.TOKEN_UNKNOWN && ("24/7".equals(t.text) || "open".equals(t.text))) {
+      t.type=TokenType.TOKEN_OFF_ON;
+      t.mainNumber=1;
+    }
+  }
+  for (int i=tokens.size() - 1; i >= 0; i--) {
+    if (tokens.get(i).type == TokenType.TOKEN_COLON) {
+      if (i > 0 && i < tokens.size() - 1) {
+        if (tokens.get(i - 1).type == TokenType.TOKEN_UNKNOWN && tokens.get(i - 1).mainNumber != -1 && tokens.get(i + 1).type == TokenType.TOKEN_UNKNOWN && tokens.get(i + 1).mainNumber != -1) {
+          tokens.get(i).mainNumber=60 * tokens.get(i - 1).mainNumber + tokens.get(i + 1).mainNumber;
+          tokens.get(i).type=TokenType.TOKEN_HOUR_MINUTES;
+          tokens.remove(i + 1);
+          tokens.remove(i - 1);
+        }
+      }
+    }
+  }
+  boolean hoursSpecified=false;
+  for (int i=0; i < tokens.size(); i++) {
+    if (tokens.get(i).type == TokenType.TOKEN_HOUR_MINUTES || tokens.get(i).type == TokenType.TOKEN_OFF_ON) {
+      hoursSpecified=true;
+    }
+  }
+  for (int i=0; i < tokens.size(); i++) {
+    if (tokens.get(i).type == TokenType.TOKEN_UNKNOWN && tokens.get(i).mainNumber >= 0) {
+      tokens.get(i).type=hoursSpecified ? TokenType.TOKEN_DAY_MONTH : TokenType.TOKEN_HOUR_MINUTES;
+      if (tokens.get(i).type == TokenType.TOKEN_HOUR_MINUTES) {
+        tokens.get(i).mainNumber=tokens.get(i).mainNumber * 60;
+      }
+ else {
+        tokens.get(i).mainNumber=tokens.get(i).mainNumber - 1;
+      }
+    }
+  }
+  TokenType currentParse=TokenType.TOKEN_UNKNOWN;
+  List<Token[]> listOfPairs=new ArrayList<>();
+  Set<TokenType> presentTokens=new HashSet<>();
+  Token[] currentPair=new Token[2];
+  listOfPairs.add(currentPair);
+  int indexP=0;
+  for (int i=0; i <= tokens.size(); i++) {
+    Token t=i == tokens.size() ? null : tokens.get(i);
+    if (t == null || t.type.ord() > currentParse.ord()) {
+      presentTokens.add(currentParse);
+      if (currentParse == TokenType.TOKEN_MONTH || currentParse == TokenType.TOKEN_DAY_MONTH || currentParse == TokenType.TOKEN_DAY_WEEK || currentParse == TokenType.TOKEN_HOLIDAY) {
+        boolean[] array=(currentParse == TokenType.TOKEN_MONTH) ? basic.getMonths() : (currentParse == TokenType.TOKEN_DAY_MONTH) ? basic.getDayMonths() : basic.getDays();
+        for (        Token[] pair : listOfPairs) {
+          if (pair[0] != null && pair[1] != null) {
+            if (pair[0].mainNumber <= pair[1].mainNumber) {
+              for (int j=pair[0].mainNumber; j <= pair[1].mainNumber; j++) {
+                array[j]=true;
+              }
+            }
+ else {
+              for (int j=pair[0].mainNumber; j < array.length; j++) {
+                array[j]=true;
+              }
+              for (int j=0; j <= pair[1].mainNumber; j++) {
+                array[j]=true;
+              }
+            }
+          }
+ else           if (pair[0] != null) {
+            if (pair[0].type == TokenType.TOKEN_HOLIDAY) {
+              if (pair[0].mainNumber == 0) {
+                basic.publicHoliday=true;
+              }
+ else               if (pair[0].mainNumber == 1) {
+                basic.schoolHoliday=true;
+              }
+            }
+ else {
+              array[pair[0].mainNumber]=true;
+            }
+          }
+        }
+      }
+ else       if (currentParse == TokenType.TOKEN_HOUR_MINUTES) {
+        for (        Token[] pair : listOfPairs) {
+          if (pair[0] != null && pair[1] != null) {
+            basic.addTimeRange(pair[0].mainNumber,pair[1].mainNumber);
+          }
+        }
+      }
+ else       if (currentParse == TokenType.TOKEN_OFF_ON) {
+        Token[] l=listOfPairs.get(0);
+        if (l[0] != null && l[0].mainNumber == 0) {
+          basic.off=true;
+        }
+      }
+      listOfPairs.clear();
+      currentPair=new Token[2];
+      indexP=0;
+      listOfPairs.add(currentPair);
+      currentPair[indexP++]=t;
+      if (t != null) {
+        currentParse=t.type;
+      }
+    }
+ else     if (t.type == TokenType.TOKEN_COMMA) {
+      currentPair=new Token[2];
+      indexP=0;
+      listOfPairs.add(currentPair);
+    }
+ else     if (t.type == TokenType.TOKEN_DASH) {
+    }
+ else     if (t.type.ord() == currentParse.ord()) {
+      if (indexP < 2) {
+        currentPair[indexP++]=t;
+      }
+    }
+  }
+  if (!presentTokens.contains(TokenType.TOKEN_MONTH)) {
+    Arrays.fill(basic.getMonths(),true);
+  }
+  if (!presentTokens.contains(TokenType.TOKEN_DAY_WEEK) && !presentTokens.contains(TokenType.TOKEN_HOLIDAY) && !presentTokens.contains(TokenType.TOKEN_DAY_MONTH)) {
+    Arrays.fill(basic.getDays(),true);
+  }
+  return basic;
+}

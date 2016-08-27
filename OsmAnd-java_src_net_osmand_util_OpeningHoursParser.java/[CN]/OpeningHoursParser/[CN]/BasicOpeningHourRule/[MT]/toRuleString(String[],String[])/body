@@ -1,0 +1,54 @@
+{
+  StringBuilder b=new StringBuilder(25);
+  boolean allMonths=true;
+  for (int i=0; i < months.length; i++) {
+    if (!months[i]) {
+      allMonths=false;
+      break;
+    }
+  }
+  if (!allMonths) {
+    addArray(months,monthNames,b);
+  }
+  boolean allDays=true;
+  for (int i=0; i < dayMonths.length; i++) {
+    if (!dayMonths[i]) {
+      allDays=false;
+      break;
+    }
+  }
+  if (!allDays) {
+    addArray(dayMonths,null,b);
+  }
+  boolean open24_7=true;
+  for (int i=0; i < 7; i++) {
+    if (!days[i]) {
+      open24_7=false;
+      break;
+    }
+  }
+  appendDaysString(b,dayNames);
+  if (startTimes == null || startTimes.size() == 0) {
+    b.append("off");
+  }
+ else {
+    for (int i=0; i < startTimes.size(); i++) {
+      int startTime=startTimes.get(i);
+      int endTime=endTimes.get(i);
+      if (open24_7 && startTime == 0 && endTime / 60 == 24) {
+        return "24/7";
+      }
+      if (i > 0) {
+        b.append(", ");
+      }
+      int stHour=startTime / 60;
+      int stTime=startTime - stHour * 60;
+      int enHour=endTime / 60;
+      int enTime=endTime - enHour * 60;
+      formatTime(stHour,stTime,b);
+      b.append("-");
+      formatTime(enHour,enTime,b);
+    }
+  }
+  return b.toString();
+}
