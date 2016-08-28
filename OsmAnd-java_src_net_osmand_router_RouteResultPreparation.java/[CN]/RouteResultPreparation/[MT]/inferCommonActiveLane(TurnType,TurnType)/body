@@ -1,0 +1,44 @@
+{
+  int[] lanes=currentTurn.getLanes();
+  TIntHashSet turnSet=new TIntHashSet();
+  for (int i=0; i < lanes.length; i++) {
+    if (lanes[i] % 2 == 1) {
+      int singleTurn=TurnType.getPrimaryTurn(lanes[i]);
+      turnSet.add(singleTurn);
+      if (TurnType.getSecondaryTurn(lanes[i]) != 0) {
+        turnSet.add(TurnType.getSecondaryTurn(lanes[i]));
+      }
+      if (TurnType.getTertiaryTurn(lanes[i]) != 0) {
+        turnSet.add(TurnType.getTertiaryTurn(lanes[i]));
+      }
+    }
+  }
+  int singleTurn;
+  if (turnSet.size() == 1) {
+    singleTurn=turnSet.iterator().next();
+  }
+ else   if (currentTurn.goAhead() && nextTurn.goAhead()) {
+    singleTurn=currentTurn.getValue();
+  }
+ else   if (currentTurn.goAhead() && turnSet.contains(nextTurn.getValue()) && (currentTurn.isPossibleLeftTurn() && TurnType.isLeftTurn(nextTurn.getValue())) || (currentTurn.isPossibleRightTurn() && TurnType.isRightTurn(nextTurn.getValue()))) {
+    singleTurn=nextTurn.getValue();
+  }
+ else {
+    singleTurn=currentTurn.getValue();
+  }
+  for (int i=0; i < lanes.length; i++) {
+    if (lanes[i] % 2 == 1 && TurnType.getPrimaryTurn(lanes[i]) != singleTurn) {
+      if (TurnType.getSecondaryTurn(lanes[i]) == singleTurn) {
+        TurnType.setSecondaryTurn(lanes,i,TurnType.getPrimaryTurn(lanes[i]));
+        TurnType.setPrimaryTurn(lanes,i,singleTurn);
+      }
+ else       if (TurnType.getTertiaryTurn(lanes[i]) == singleTurn) {
+        TurnType.setTertiaryTurn(lanes,i,TurnType.getPrimaryTurn(lanes[i]));
+        TurnType.setPrimaryTurn(lanes,i,singleTurn);
+      }
+ else {
+        lanes[i]=lanes[i] - 1;
+      }
+    }
+  }
+}
