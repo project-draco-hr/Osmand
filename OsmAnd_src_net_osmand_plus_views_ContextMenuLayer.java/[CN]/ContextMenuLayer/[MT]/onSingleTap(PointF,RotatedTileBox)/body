@@ -32,6 +32,21 @@
             for (            Entry<String,String> entry : renderedObject.getTags().entrySet()) {
               Log.e("111","tag=" + entry.getKey() + " value="+ entry.getValue());
             }
+            LatLon latLon=tileBox.getLatLonFromPixel(point.x,point.y);
+            boolean objectFound=false;
+            String name=renderedObject.getTags().get("name");
+            if (!Algorithms.isEmpty(name)) {
+              String value=renderedObject.getTags().get(name);
+              Amenity amenity=findAmenity(value,latLon.getLatitude(),latLon.getLongitude());
+              if (amenity != null) {
+                PointDescription pointDescription=new PointDescription(PointDescription.POINT_TYPE_POI,amenity.getName(activity.getMyApplication().getSettings().MAP_PREFERRED_LOCALE.get()));
+                activity.getContextMenu().show(amenity.getLocation(),pointDescription,amenity);
+                objectFound=true;
+              }
+            }
+            if (!objectFound) {
+              activity.getContextMenu().show(latLon,null,null);
+            }
             Log.e("111","------------------");
           }
         }
