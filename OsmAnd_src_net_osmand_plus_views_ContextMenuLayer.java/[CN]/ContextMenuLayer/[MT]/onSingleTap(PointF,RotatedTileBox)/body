@@ -34,30 +34,48 @@
           renderedObjects=nativeLib.searchRenderedObjectsFromContext(rc,(int)(point.x - x),(int)(point.y - y));
         }
         if (renderedObjects != null) {
+          Map<Object,IContextMenuProvider> selectedObjects=new HashMap<>();
+          IContextMenuProvider poiMenuProvider=activity.getMapLayers().getPoiMapLayer();
+          IContextMenuProvider transportStopMenuProvider=activity.getMapLayers().getTransportStopsLayer();
           Log.e("111","found " + renderedObjects.length + " object(s) at x="+ point.x+ " y="+ point.y);
+          LatLon latLon=null;
           for (          RenderedObject renderedObject : renderedObjects) {
             Log.e("111","++++ object=" + renderedObject.getName());
             for (            Entry<String,String> entry : renderedObject.getTags().entrySet()) {
               Log.e("111","tag=" + entry.getKey() + " value="+ entry.getValue());
             }
-            LatLon latLon=tileBox.getLatLonFromPixel(point.x,point.y);
-            boolean objectFound=false;
-            String name=renderedObject.getTags().get("name");
-            if (!Algorithms.isEmpty(name)) {
-              Amenity amenity=findAmenity(name,latLon.getLatitude(),latLon.getLongitude());
-              if (amenity != null) {
-                PointDescription pointDescription=new PointDescription(PointDescription.POINT_TYPE_POI,amenity.getName(activity.getMyApplication().getSettings().MAP_PREFERRED_LOCALE.get()));
-                activity.getContextMenu().show(amenity.getLocation(),pointDescription,amenity);
-                objectFound=true;
-              }
-            }
-            if (!objectFound) {
-              activity.getContextMenu().show(latLon,null,null);
+            if (renderedObject.getX() != null && renderedObject.getX().size() == 1 && renderedObject.getY() != null && renderedObject.getY().size() == 1) {
+              latLon=new LatLon(MapUtils.get31LatitudeY(renderedObject.getY().get(0)),MapUtils.get31LongitudeX(renderedObject.getX().get(0)));
             }
  else {
-              break;
+              latLon=tileBox.getLatLonFromPixel(point.x,point.y);
+            }
+            if (renderedObject.getId() != null) {
+              TransportStop transportStop=findTransportStop(renderedObject.getId() >> 6,latLon.getLatitude(),latLon.getLongitude());
+              if (transportStop != null) {
+                selectedObjects.put(transportStop,transportStopMenuProvider);
+                continue;
+              }
+              Amenity amenity=findAmenity(renderedObject.getId() >> 6,latLon.getLatitude(),latLon.getLongitude());
+              if (amenity != null) {
+                selectedObjects.put(amenity,poiMenuProvider);
+                continue;
+              }
+              if (renderedObject.getX() != null && renderedObject.getX().size() > 1 && renderedObject.getY() != null && renderedObject.getY().size() > 1) {
+                PointF[] points=new PointF[renderedObject.getX().size()];
+                for (int i=0; i < points.length; i++) {
+                  points[i]=new PointF(renderedObject.getX().get(i),renderedObject.getY().get(i));
+                }
+                PointF center=AndroidUtils.centroidForPoly(points);
+                latLon=new LatLon(MapUtils.get31LatitudeY((int)center.y),MapUtils.get31LongitudeX((int)center.x));
+              }
+              selectedObjects.put(renderedObject,null);
             }
             Log.e("111","------------------");
+          }
+          if (selectedObjects.size() > 0 && latLon != null) {
+            showContextMenu(latLon,selectedObjects);
+            return true;
           }
         }
  else {
