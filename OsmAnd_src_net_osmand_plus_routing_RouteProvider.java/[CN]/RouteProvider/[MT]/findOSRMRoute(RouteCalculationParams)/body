@@ -3,9 +3,9 @@
   StringBuilder uri=new StringBuilder();
   String scheme="";
   scheme="http";
-  uri.append(scheme + "://router.project-osrm.org/viaroute?alt=false");
-  uri.append("&loc=").append(String.valueOf(params.start.getLatitude()));
-  uri.append(",").append(String.valueOf(params.start.getLongitude()));
+  uri.append(scheme + "://router.project-osrm.org/route/v1/driving/");
+  uri.append(String.valueOf(params.start.getLongitude()));
+  uri.append(",").append(String.valueOf(params.start.getLatitude()));
   if (params.intermediates != null && params.intermediates.size() > 0) {
     for (    LatLon il : params.intermediates) {
       appendOSRMLoc(uri,il);
@@ -27,7 +27,7 @@
   }
  catch (  IOException e) {
   }
-  List<LatLon> route=GeoPolylineParserUtil.parse(obj.get("route_geometry").toString());
+  List<LatLon> route=GeoPolylineParserUtil.parse(obj.getJSONArray("routes").getJSONObject(0).getString("geometry"));
   if (route.isEmpty()) {
     return new RouteCalculationResult("Route is empty");
   }
