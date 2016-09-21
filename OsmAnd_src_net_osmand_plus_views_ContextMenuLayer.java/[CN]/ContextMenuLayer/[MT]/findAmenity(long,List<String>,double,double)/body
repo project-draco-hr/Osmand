@@ -1,0 +1,47 @@
+{
+  QuadRect rect=MapUtils.calculateLatLonBbox(lat,lon,150);
+  List<Amenity> amenities=activity.getMyApplication().getResourceManager().searchAmenities(new BinaryMapIndexReader.SearchPoiTypeFilter(){
+    @Override public boolean accept(    PoiCategory type,    String subcategory){
+      return true;
+    }
+    @Override public boolean isEmpty(){
+      return false;
+    }
+  }
+,rect.top,rect.left,rect.bottom,rect.right,-1,null);
+  Amenity res=null;
+  for (  Amenity amenity : amenities) {
+    Long amenityId=amenity.getId();
+    if (amenityId != null && amenityId == id) {
+      res=amenity;
+      break;
+    }
+  }
+  if (res == null && (id & 1) == 0) {
+    id++;
+    for (    Amenity amenity : amenities) {
+      Long amenityId=amenity.getId();
+      if (amenityId != null && amenityId == id) {
+        res=amenity;
+        break;
+      }
+    }
+  }
+  if (res == null && names != null && names.size() > 0) {
+    for (    Amenity amenity : amenities) {
+      for (      String name : names) {
+        if (name.equals(amenity.getName())) {
+          res=amenity;
+          break;
+        }
+      }
+      if (res != null) {
+        break;
+      }
+    }
+  }
+  if (res != null && publicTransportTypes.contains(res.getSubType())) {
+    return findNearestTransportStop(lat,lon) == null ? res : null;
+  }
+  return res;
+}
