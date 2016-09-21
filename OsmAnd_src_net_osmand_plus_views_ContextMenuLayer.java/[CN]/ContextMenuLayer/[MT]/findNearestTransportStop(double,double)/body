@@ -1,0 +1,22 @@
+{
+  QuadRect rect=MapUtils.calculateLatLonBbox(lat,lon,50);
+  List<TransportStop> res=activity.getMyApplication().getResourceManager().searchTransportSync(rect.top,rect.left,rect.bottom,rect.right,new ResultMatcher<TransportStop>(){
+    @Override public boolean publish(    TransportStop object){
+      return true;
+    }
+    @Override public boolean isCancelled(){
+      return false;
+    }
+  }
+);
+  if (res.size() > 0) {
+    Collections.sort(res,new Comparator<TransportStop>(){
+      @Override public int compare(      TransportStop stop1,      TransportStop stop2){
+        return Double.compare(MapUtils.getDistance(stop1.getLocation(),lat,lon),MapUtils.getDistance(stop2.getLocation(),lat,lon));
+      }
+    }
+);
+    return res.get(0);
+  }
+  return null;
+}

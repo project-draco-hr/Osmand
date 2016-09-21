@@ -37,13 +37,8 @@
           Map<Object,IContextMenuProvider> selectedObjects=new HashMap<>();
           IContextMenuProvider poiMenuProvider=activity.getMapLayers().getPoiMapLayer();
           IContextMenuProvider transportStopMenuProvider=activity.getMapLayers().getTransportStopsLayer();
-          Log.e("111","found " + renderedObjects.length + " object(s) at x="+ point.x+ " y="+ point.y);
           LatLon latLon=null;
           for (          RenderedObject renderedObject : renderedObjects) {
-            Log.e("111","++++ object=" + renderedObject.getName());
-            for (            Entry<String,String> entry : renderedObject.getTags().entrySet()) {
-              Log.e("111","tag=" + entry.getKey() + " value="+ entry.getValue());
-            }
             if (renderedObject.getX() != null && renderedObject.getX().size() == 1 && renderedObject.getY() != null && renderedObject.getY().size() == 1) {
               latLon=new LatLon(MapUtils.get31LatitudeY(renderedObject.getY().get(0)),MapUtils.get31LongitudeX(renderedObject.getX().get(0)));
             }
@@ -51,35 +46,44 @@
               latLon=tileBox.getLatLonFromPixel(point.x,point.y);
             }
             if (renderedObject.getId() != null) {
-              TransportStop transportStop=findTransportStop(renderedObject.getId() >> 6,latLon.getLatitude(),latLon.getLongitude());
+              TransportStop transportStop=findTransportStop(renderedObject.getId() >> 1,latLon.getLatitude(),latLon.getLongitude());
               if (transportStop != null) {
                 selectedObjects.put(transportStop,transportStopMenuProvider);
                 continue;
               }
-              Amenity amenity=findAmenity(renderedObject.getId() >> 6,latLon.getLatitude(),latLon.getLongitude());
+              List<String> names=new ArrayList<>();
+              if (!Algorithms.isEmpty(renderedObject.getName())) {
+                names.add(renderedObject.getName());
+              }
+              for (              Entry<String,String> entry : renderedObject.getTags().entrySet()) {
+                if (entry.getKey().startsWith("name")) {
+                  names.add(entry.getValue());
+                }
+              }
+              Amenity amenity=findAmenity(renderedObject.getId() >> 6,names,latLon.getLatitude(),latLon.getLongitude());
               if (amenity != null) {
                 selectedObjects.put(amenity,poiMenuProvider);
                 continue;
               }
+              TransportStop nearestTransportStop=findNearestTransportStop(latLon.getLatitude(),latLon.getLongitude());
+              if (nearestTransportStop != null) {
+                selectedObjects.put(nearestTransportStop,transportStopMenuProvider);
+                continue;
+              }
               if (renderedObject.getX() != null && renderedObject.getX().size() > 1 && renderedObject.getY() != null && renderedObject.getY().size() > 1) {
-                PointF[] points=new PointF[renderedObject.getX().size()];
-                for (int i=0; i < points.length; i++) {
-                  points[i]=new PointF(renderedObject.getX().get(i),renderedObject.getY().get(i));
+                List<Node> nodes=new ArrayList<>(renderedObject.getX().size());
+                for (int i=0; i < renderedObject.getX().size(); i++) {
+                  nodes.add(new Node(MapUtils.get31LatitudeY(renderedObject.getY().get(i)),MapUtils.get31LongitudeX(renderedObject.getX().get(i)),0));
                 }
-                PointF center=AndroidUtils.centroidForPoly(points);
-                latLon=new LatLon(MapUtils.get31LatitudeY((int)center.y),MapUtils.get31LongitudeX((int)center.x));
+                latLon=OsmMapUtils.getMathWeightCenterForNodes(nodes);
               }
               selectedObjects.put(renderedObject,null);
             }
-            Log.e("111","------------------");
           }
           if (selectedObjects.size() > 0 && latLon != null) {
             showContextMenu(latLon,selectedObjects);
             return true;
           }
-        }
- else {
-          Log.e("111","objects not found at x=" + point.x + " y="+ point.y);
         }
       }
     }
