@@ -116,7 +116,8 @@
   if (System.currentTimeMillis() - tm > 50) {
     System.err.println("OnCreate for MapActivity took " + (System.currentTimeMillis() - tm) + " ms");
   }
-  if (!permissionDone && !app.getAppInitializer().isFirstTime()) {
+  boolean showWelcomeScreen=((app.getAppInitializer().isFirstTime() && Version.isDeveloperVersion(app)) || !app.getResourceManager().isAnyMapIstalled()) && FirstUsageWelcomeFragment.SHOW;
+  if (!showWelcomeScreen && !permissionDone && !app.getAppInitializer().isFirstTime()) {
     if (!permissionAsked) {
       if (app.isExternalStorageDirectoryReadOnly() && getSupportFragmentManager().findFragmentByTag(DataStoragePlaceDialogFragment.TAG) == null) {
         if (DownloadActivity.hasPermissionToWriteExternalStorage(this)) {
@@ -140,7 +141,7 @@
     }
   }
   enableDrawer();
-  if (((app.getAppInitializer().isFirstTime() && Version.isDeveloperVersion(app)) || !app.getResourceManager().isAnyMapIstalled()) && FirstUsageWelcomeFragment.SHOW) {
+  if (showWelcomeScreen) {
     getSupportFragmentManager().beginTransaction().add(R.id.fragmentContainer,new FirstUsageWelcomeFragment(),FirstUsageWelcomeFragment.TAG).commitAllowingStateLoss();
   }
   FirstUsageWelcomeFragment.SHOW=false;
