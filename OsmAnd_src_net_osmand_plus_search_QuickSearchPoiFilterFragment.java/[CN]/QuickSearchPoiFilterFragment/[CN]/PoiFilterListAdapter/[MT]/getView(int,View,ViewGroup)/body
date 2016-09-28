@@ -1,0 +1,106 @@
+{
+  final PoiFilterListItem item=getItem(position);
+  final PoiFilterListItem nextItem=position < getCount() - 1 ? getItem(position + 1) : null;
+  int viewType=getItemViewType(position);
+  View view;
+  if (convertView == null) {
+    LayoutInflater inflater=(LayoutInflater)app.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    if (viewType == 0) {
+      view=inflater.inflate(R.layout.poi_filter_list_item,null);
+    }
+ else {
+      view=inflater.inflate(R.layout.list_item_divider,null);
+      view.setOnClickListener(null);
+    }
+  }
+ else {
+    view=convertView;
+  }
+  if (viewType == 1) {
+    return view;
+  }
+  final ImageView icon=(ImageView)view.findViewById(R.id.icon);
+  final TextViewEx titleRegular=(TextViewEx)view.findViewById(R.id.titleRegular);
+  final TextViewEx titleBold=(TextViewEx)view.findViewById(R.id.titleBold);
+  final TextViewEx titleButton=(TextViewEx)view.findViewById(R.id.titleButton);
+  final SwitchCompat switchItem=(SwitchCompat)view.findViewById(R.id.switchItem);
+  final CheckBox checkBoxItem=(CheckBox)view.findViewById(R.id.checkboxItem);
+  final ImageView expandItem=(ImageView)view.findViewById(R.id.expandItem);
+  final View divider=view.findViewById(R.id.divider);
+  if (item != null) {
+    if (nextItem != null && nextItem.groupIndex == item.groupIndex) {
+      divider.setVisibility(View.VISIBLE);
+    }
+ else {
+      divider.setVisibility(View.GONE);
+    }
+    if (item.iconId != 0) {
+      icon.setImageDrawable(app.getIconsCache().getThemedIcon(item.iconId));
+      icon.setVisibility(View.VISIBLE);
+    }
+ else {
+      icon.setVisibility(View.GONE);
+    }
+    switchItem.setOnCheckedChangeListener(null);
+    checkBoxItem.setOnCheckedChangeListener(null);
+switch (item.type) {
+case GROUP_HEADER:
+      titleBold.setText(item.text);
+    if (item.expandable) {
+      expandItem.setImageDrawable(item.expanded ? app.getIconsCache().getThemedIcon(R.drawable.ic_action_arrow_up) : app.getIconsCache().getThemedIcon(R.drawable.ic_action_arrow_down));
+      expandItem.setVisibility(View.VISIBLE);
+    }
+ else {
+      expandItem.setVisibility(View.GONE);
+    }
+  titleBold.setVisibility(View.VISIBLE);
+titleButton.setVisibility(View.GONE);
+titleRegular.setVisibility(View.GONE);
+switchItem.setVisibility(View.GONE);
+checkBoxItem.setVisibility(View.GONE);
+break;
+case SWITCH_ITEM:
+titleRegular.setText(item.text);
+titleRegular.setVisibility(View.VISIBLE);
+switchItem.setVisibility(View.VISIBLE);
+switchItem.setChecked(item.checked);
+switchItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+@Override public void onCheckedChanged(CompoundButton buttonView,boolean isChecked){
+toggleSwitch(item,isChecked);
+}
+}
+);
+titleBold.setVisibility(View.GONE);
+titleButton.setVisibility(View.GONE);
+expandItem.setVisibility(View.GONE);
+checkBoxItem.setVisibility(View.GONE);
+break;
+case CHECKBOX_ITEM:
+titleRegular.setText(item.text);
+titleRegular.setVisibility(View.VISIBLE);
+checkBoxItem.setVisibility(View.VISIBLE);
+checkBoxItem.setChecked(item.checked);
+checkBoxItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+@Override public void onCheckedChanged(CompoundButton buttonView,boolean isChecked){
+toggleCheckbox(item,checkBoxItem,isChecked);
+}
+}
+);
+switchItem.setVisibility(View.GONE);
+titleBold.setVisibility(View.GONE);
+titleButton.setVisibility(View.GONE);
+expandItem.setVisibility(View.GONE);
+break;
+case BUTTON_ITEM:
+titleButton.setText(item.text);
+titleButton.setVisibility(View.VISIBLE);
+checkBoxItem.setVisibility(View.GONE);
+switchItem.setVisibility(View.GONE);
+titleBold.setVisibility(View.GONE);
+titleRegular.setVisibility(View.GONE);
+expandItem.setVisibility(View.GONE);
+break;
+}
+}
+return view;
+}

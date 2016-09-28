@@ -1,0 +1,37 @@
+{
+  final OsmandApplication app=getMyApplication();
+  AlertDialog.Builder builder=new AlertDialog.Builder(getContext());
+  builder.setTitle(R.string.access_hint_enter_name);
+  final EditText editText=new EditText(getContext());
+  editText.setHint(R.string.new_filter);
+  editText.setText(filter.getName());
+  final TextView textView=new TextView(getContext());
+  textView.setText(app.getString(R.string.new_filter_desc));
+  textView.setTextAppearance(getContext(),R.style.TextAppearance_ContextMenuSubtitle);
+  LinearLayout ll=new LinearLayout(getContext());
+  ll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT));
+  ll.setOrientation(LinearLayout.VERTICAL);
+  ll.setPadding(AndroidUtils.dpToPx(getContext(),20f),AndroidUtils.dpToPx(getContext(),12f),AndroidUtils.dpToPx(getContext(),20f),AndroidUtils.dpToPx(getContext(),12f));
+  ll.addView(editText,new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT));
+  textView.setPadding(AndroidUtils.dpToPx(getContext(),4f),AndroidUtils.dpToPx(getContext(),6f),AndroidUtils.dpToPx(getContext(),4f),AndroidUtils.dpToPx(getContext(),4f));
+  ll.addView(textView,new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT));
+  builder.setView(ll);
+  builder.setNegativeButton(R.string.shared_string_cancel,null);
+  builder.setPositiveButton(R.string.shared_string_save,new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      PoiUIFilter nFilter=new PoiUIFilter(editText.getText().toString(),null,filter.getAcceptedTypes(),app);
+      applyFilterFields();
+      if (!Algorithms.isEmpty(filter.getFilterByName())) {
+        nFilter.setSavedFilterByName(filter.getFilterByName());
+      }
+      if (app.getPoiFilters().createPoiFilter(nFilter)) {
+        Toast.makeText(getContext(),MessageFormat.format(getContext().getText(R.string.edit_filter_create_message).toString(),editText.getText().toString()),Toast.LENGTH_SHORT).show();
+        ((QuickSearchDialogFragment)getParentFragment()).replaceQueryWithUiFilter(filter);
+        app.getSearchUICore().refreshCustomPoiFilters();
+        QuickSearchPoiFilterFragment.this.dismiss();
+      }
+    }
+  }
+);
+  builder.create().show();
+}

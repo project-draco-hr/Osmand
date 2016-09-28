@@ -1,0 +1,40 @@
+{
+  OsmandApplication app=getMyApplication();
+  String filterByName=filter.getFilterByName();
+  if (!Algorithms.isEmpty(filterByName)) {
+    String keyNameOpen=app.getString(R.string.shared_string_is_open).replace(' ','_').toLowerCase();
+    String keyNameOpen24=app.getString(R.string.shared_string_is_open_24_7).replace(' ','_').toLowerCase();
+    int index=filterByName.indexOf(keyNameOpen);
+    if (index != -1) {
+      selectedPoiAdditionals.add(keyNameOpen);
+      filterByName=filterByName.replaceAll(keyNameOpen,"");
+    }
+    index=filterByName.indexOf(keyNameOpen24);
+    if (index != -1) {
+      selectedPoiAdditionals.add(keyNameOpen24);
+      filterByName=filterByName.replaceAll(keyNameOpen24,"");
+    }
+    Map<String,PoiType> poiAdditionals=filter.getPoiAdditionals();
+    List<PoiType> otherAdditionalCategories=app.getPoiTypes().getOtherMapCategory().getPoiAdditionalsCategorized();
+    if (poiAdditionals != null) {
+      Map<String,Set<String>> additionalsMap=new TreeMap<>();
+      extractPoiAdditionals(poiAdditionals.values(),additionalsMap,true);
+      extractPoiAdditionals(otherAdditionalCategories,additionalsMap,true);
+      if (additionalsMap.size() > 0) {
+        for (        Entry<String,Set<String>> entry : additionalsMap.entrySet()) {
+          for (          String poiTypeName : entry.getValue()) {
+            String keyName=poiTypeName.replace(' ',':').toLowerCase();
+            index=filterByName.indexOf(keyName);
+            if (index != -1) {
+              selectedPoiAdditionals.add(keyName);
+              filterByName=filterByName.replaceAll(keyName,"");
+            }
+          }
+        }
+      }
+    }
+    if (filterByName.trim().length() > 0 && Algorithms.isEmpty(nameFilterText)) {
+      nameFilterText=filterByName.trim();
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  for (  PoiType poiType : poiAdditionals) {
+    String category=poiType.getPoiAdditionalCategoryTranslation();
+    if (category == null) {
+      category="";
+    }
+    if (collapsedCategories.contains(category) && !extractAll) {
+      if (!additionalsMap.containsKey(category)) {
+        additionalsMap.put(category,new TreeSet<String>());
+      }
+      continue;
+    }
+    boolean showAll=showAllCategories.contains(category) || extractAll;
+    String name=poiType.getTranslation();
+    String keyName=name.replace(' ',':').toLowerCase();
+    if (showAll || poiType.isTopVisible() || selectedPoiAdditionals.contains(keyName)) {
+      Set<String> adds=additionalsMap.get(category);
+      if (adds == null) {
+        adds=new TreeSet<>();
+        additionalsMap.put(category,adds);
+      }
+      adds.add(name);
+    }
+  }
+}

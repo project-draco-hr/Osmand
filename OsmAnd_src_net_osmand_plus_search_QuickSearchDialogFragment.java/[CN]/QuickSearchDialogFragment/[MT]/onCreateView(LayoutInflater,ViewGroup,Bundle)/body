@@ -53,6 +53,39 @@
   buttonToolbarView=view.findViewById(R.id.button_toolbar_layout);
   buttonToolbarImage=(ImageView)view.findViewById(R.id.buttonToolbarImage);
   buttonToolbarImage.setImageDrawable(app.getIconsCache().getThemedIcon(R.drawable.ic_action_marker_dark));
+  buttonToolbarFilter=(ImageButton)view.findViewById(R.id.filterButton);
+  buttonToolbarFilter.setImageDrawable(app.getIconsCache().getThemedIcon(R.drawable.ic_action_filter_dark));
+  buttonToolbarFilter.setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      SearchPhrase searchPhrase=searchUICore.getPhrase();
+      if (searchPhrase.isLastWord(POI_TYPE)) {
+        String filterId=null;
+        String filterByName=searchPhrase.getUnknownSearchPhrase();
+        Object object=searchPhrase.getLastSelectedWord().getResult().object;
+        if (object instanceof PoiUIFilter) {
+          PoiUIFilter model=(PoiUIFilter)object;
+          if (!Algorithms.isEmpty(model.getSavedFilterByName())) {
+            model.setFilterByName(model.getSavedFilterByName());
+          }
+          filterId=model.getFilterId();
+        }
+ else         if (object instanceof AbstractPoiType) {
+          AbstractPoiType abstractPoiType=(AbstractPoiType)object;
+          PoiUIFilter custom=app.getPoiFilters().getFilterById(PoiUIFilter.STD_PREFIX + abstractPoiType.getKeyName());
+          if (custom != null) {
+            custom.setFilterByName(null);
+            custom.clearFilter();
+            custom.updateTypesToAccept(abstractPoiType);
+            filterId=custom.getFilterId();
+          }
+        }
+        if (filterId != null) {
+          QuickSearchPoiFilterFragment.showDialog(QuickSearchDialogFragment.this,filterByName,filterId);
+        }
+      }
+    }
+  }
+);
   buttonToolbarText=(TextView)view.findViewById(R.id.buttonToolbarTitle);
   view.findViewById(R.id.buttonToolbar).setOnClickListener(new OnClickListener(){
     @Override public void onClick(    View v){
@@ -60,7 +93,7 @@
       if (foundPartialLocation) {
         QuickSearchCoordinatesFragment.showDialog(QuickSearchDialogFragment.this,searchPhrase.getUnknownSearchWord());
       }
- else       if (searchPhrase.isNoSelectedType() || searchPhrase.isLastWord(ObjectType.POI_TYPE)) {
+ else       if (searchPhrase.isNoSelectedType() || searchPhrase.isLastWord(POI_TYPE)) {
         PoiUIFilter filter;
         if (searchPhrase.isNoSelectedType()) {
           filter=app.getPoiFilters().getSearchByNamePOIFilter();

@@ -1,0 +1,146 @@
+{
+  final OsmandApplication app=getMyApplication();
+  if (getArguments() != null) {
+    filterId=getArguments().getString(QUICK_SEARCH_POI_FILTER_ID_KEY);
+    nameFilterText=getArguments().getString(QUICK_SEARCH_POI_FILTER_BY_NAME_KEY);
+  }
+ else   if (savedInstanceState != null) {
+    filterId=savedInstanceState.getString(QUICK_SEARCH_POI_FILTER_ID_KEY);
+    nameFilterText=savedInstanceState.getString(QUICK_SEARCH_POI_FILTER_BY_NAME_KEY);
+    ArrayList<String> selectedList=savedInstanceState.getStringArrayList(QUICK_SEARCH_POI_FILTER_SELECTED_ADDITIONALS);
+    if (selectedList != null) {
+      selectedPoiAdditionals.addAll(selectedList);
+    }
+    ArrayList<String> collapsedList=savedInstanceState.getStringArrayList(QUICK_SEARCH_POI_FILTER_COLLAPSED_CATEGORIES);
+    if (collapsedList != null) {
+      collapsedCategories.addAll(collapsedList);
+    }
+    ArrayList<String> showAllList=savedInstanceState.getStringArrayList(QUICK_SEARCH_POI_FILTER_SHOW_ALL_CATEGORIES);
+    if (showAllList != null) {
+      showAllCategories.addAll(showAllList);
+    }
+  }
+  if (filterId != null) {
+    filter=app.getPoiFilters().getFilterById(filterId);
+  }
+  if (filter == null) {
+    filter=app.getPoiFilters().getCustomPOIFilter();
+    filter.clearFilter();
+  }
+  if (selectedPoiAdditionals.size() == 0) {
+    processFilterFields();
+  }
+  view=inflater.inflate(R.layout.search_poi_filter,container,false);
+  Toolbar toolbar=(Toolbar)view.findViewById(R.id.toolbar);
+  toolbar.setNavigationIcon(app.getIconsCache().getIcon(R.drawable.ic_action_remove_dark));
+  toolbar.setNavigationContentDescription(R.string.shared_string_close);
+  toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      dismiss();
+    }
+  }
+);
+  ImageButton moreButton=(ImageButton)view.findViewById(R.id.moreButton);
+  moreButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      IconsCache iconsCache=app.getIconsCache();
+      final PopupMenu optionsMenu=new PopupMenu(getContext(),v);
+      DirectionsDialogs.setupPopUpMenuIcon(optionsMenu);
+      MenuItem item;
+      item=optionsMenu.getMenu().add(R.string.save_filter).setIcon(iconsCache.getThemedIcon(R.drawable.ic_action_save));
+      item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+        @Override public boolean onMenuItemClick(        MenuItem item){
+          saveFilter();
+          return true;
+        }
+      }
+);
+      if (!filter.isStandardFilter()) {
+        item=optionsMenu.getMenu().add(R.string.delete_filter).setIcon(iconsCache.getThemedIcon(R.drawable.ic_action_delete_dark));
+        item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+          @Override public boolean onMenuItemClick(          MenuItem item){
+            deleteFilter();
+            return true;
+          }
+        }
+);
+      }
+      optionsMenu.show();
+    }
+  }
+);
+  listView=(ListView)view.findViewById(android.R.id.list);
+  listView.setBackgroundColor(getResources().getColor(app.getSettings().isLightContent() ? R.color.ctx_menu_info_view_bg_light : R.color.ctx_menu_info_view_bg_dark));
+  View editTextView=inflater.inflate(R.layout.poi_filter_list_item,listView,false);
+  editText=(EditText)editTextView.findViewById(R.id.editText);
+  editText.setText(nameFilterText);
+  editText.addTextChangedListener(new TextWatcher(){
+    @Override public void beforeTextChanged(    CharSequence s,    int start,    int count,    int after){
+    }
+    @Override public void onTextChanged(    CharSequence s,    int start,    int before,    int count){
+    }
+    @Override public void afterTextChanged(    Editable s){
+      nameFilterText=s.toString();
+    }
+  }
+);
+  editText.setVisibility(View.VISIBLE);
+  final ImageView textEditIcon=(ImageView)editTextView.findViewById(R.id.icon);
+  textEditIcon.setImageDrawable(app.getIconsCache().getThemedIcon(R.drawable.ic_action_search_dark));
+  textEditIcon.setVisibility(View.VISIBLE);
+  editTextView.findViewById(R.id.titleBold).setVisibility(View.GONE);
+  editTextView.findViewById(R.id.titleButton).setVisibility(View.GONE);
+  editTextView.findViewById(R.id.expandItem).setVisibility(View.GONE);
+  editTextView.findViewById(R.id.titleRegular).setVisibility(View.GONE);
+  editTextView.findViewById(R.id.switchItem).setVisibility(View.GONE);
+  editTextView.findViewById(R.id.checkboxItem).setVisibility(View.GONE);
+  listView.addHeaderView(editTextView);
+  View bottomShadowView=inflater.inflate(R.layout.card_bottom_divider,listView,false);
+  listView.addFooterView(bottomShadowView);
+  View applyFilterButtonView=inflater.inflate(R.layout.list_item_button,listView,false);
+  AppCompatButton applyFilterButton=(AppCompatButton)applyFilterButtonView.findViewById(R.id.button);
+  applyFilterButton.setText(app.getString(R.string.apply_filters));
+  applyFilterButton.setOnClickListener(new View.OnClickListener(){
+    @Override public void onClick(    View v){
+      applyFilterFields();
+      ((QuickSearchDialogFragment)getParentFragment()).replaceQueryWithUiFilter(filter);
+      dismiss();
+    }
+  }
+);
+  listView.addFooterView(applyFilterButtonView);
+  adapter=new PoiFilterListAdapter(getMyApplication(),getListItems());
+  listView.setAdapter(adapter);
+  listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+    @Override public void onItemClick(    AdapterView<?> parent,    View view,    int position,    long id){
+      PoiFilterListItem item=adapter.getItem(position - listView.getHeaderViewsCount());
+      if (item != null) {
+switch (item.type) {
+case GROUP_HEADER:
+          if (item.category != null) {
+            if (collapsedCategories.contains(item.category)) {
+              collapsedCategories.remove(item.category);
+            }
+ else {
+              collapsedCategories.add(item.category);
+            }
+            updateListView();
+          }
+        break;
+case CHECKBOX_ITEM:
+      CheckBox checkBox=(CheckBox)view.findViewById(R.id.checkboxItem);
+    adapter.toggleCheckbox(item,checkBox,!checkBox.isChecked());
+  break;
+case BUTTON_ITEM:
+if (item.category != null) {
+  showAllCategories.add(item.category);
+  updateListView();
+}
+break;
+}
+}
+}
+}
+);
+return view;
+}

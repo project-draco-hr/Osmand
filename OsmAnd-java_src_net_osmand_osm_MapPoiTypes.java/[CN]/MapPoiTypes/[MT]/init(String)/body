@@ -21,6 +21,7 @@
     PoiCategory lastCategory=null;
     PoiFilter lastFilter=null;
     PoiType lastType=null;
+    String lastPoiAdditionalCategory=null;
     while ((tok=parser.next()) != XmlPullParser.END_DOCUMENT) {
       if (tok == XmlPullParser.START_TAG) {
         String name=parser.getName();
@@ -50,12 +51,17 @@
           if (lastCategory == null) {
             lastCategory=getOtherMapCategory();
           }
-          PoiType baseType=parsePoiAdditional(parser,lastCategory,lastFilter,lastType,null,null);
+          PoiType baseType=parsePoiAdditional(parser,lastCategory,lastFilter,lastType,null,null,lastPoiAdditionalCategory);
           if ("true".equals(parser.getAttributeValue("","lang"))) {
             for (            String lng : MapRenderingTypes.langs) {
-              parsePoiAdditional(parser,lastCategory,lastFilter,lastType,lng,baseType);
+              parsePoiAdditional(parser,lastCategory,lastFilter,lastType,lng,baseType,lastPoiAdditionalCategory);
             }
-            parsePoiAdditional(parser,lastCategory,lastFilter,lastType,"en",baseType);
+            parsePoiAdditional(parser,lastCategory,lastFilter,lastType,"en",baseType,lastPoiAdditionalCategory);
+          }
+        }
+ else         if (name.equals("poi_additional_category")) {
+          if (lastPoiAdditionalCategory == null) {
+            lastPoiAdditionalCategory=parser.getAttributeValue("","name");
           }
         }
  else         if (name.equals("poi_type")) {
@@ -87,6 +93,9 @@
         }
  else         if (name.equals("poi_category")) {
           lastCategory=null;
+        }
+ else         if (name.equals("poi_additional_category")) {
+          lastPoiAdditionalCategory=null;
         }
       }
     }
