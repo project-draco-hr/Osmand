@@ -60,7 +60,7 @@
       SearchPhrase searchPhrase=searchUICore.getPhrase();
       if (searchPhrase.isLastWord(POI_TYPE)) {
         String filterId=null;
-        String filterByName=searchPhrase.getUnknownSearchPhrase();
+        String filterByName=searchPhrase.getUnknownSearchPhrase().trim();
         Object object=searchPhrase.getLastSelectedWord().getResult().object;
         if (object instanceof PoiUIFilter) {
           PoiUIFilter model=(PoiUIFilter)object;
@@ -228,7 +228,12 @@
       String newQueryText=s.toString();
       updateClearButtonAndHint();
       updateClearButtonVisibility(true);
-      updateTabbarVisibility(newQueryText.length() == 0);
+      boolean textEmpty=newQueryText.length() == 0;
+      updateTabbarVisibility(textEmpty);
+      if (textEmpty && poiFilterApplied) {
+        poiFilterApplied=false;
+        reloadCategories();
+      }
       if (!searchQuery.equalsIgnoreCase(newQueryText)) {
         searchQuery=newQueryText;
         if (Algorithms.isEmpty(searchQuery)) {
