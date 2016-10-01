@@ -1,0 +1,77 @@
+{
+  final int index=listView.getFirstVisiblePosition();
+  View v=listView.getChildAt(0);
+  final int top=(v == null) ? 0 : v.getTop();
+  AlertDialog.Builder builder=new AlertDialog.Builder(getContext());
+  final LinkedHashMap<String,String> subCategories=new LinkedHashMap<String,String>();
+  Set<String> acceptedCategories=filter.getAcceptedSubtypes(poiCategory);
+  if (acceptedCategories != null) {
+    for (    String s : acceptedCategories) {
+      subCategories.put(s,Algorithms.capitalizeFirstLetterAndLowercase(s));
+    }
+  }
+  for (  PoiType pt : poiCategory.getPoiTypes()) {
+    subCategories.put(pt.getKeyName(),pt.getTranslation());
+  }
+  final String[] array=subCategories.keySet().toArray(new String[0]);
+  final Collator cl=Collator.getInstance();
+  cl.setStrength(Collator.SECONDARY);
+  Arrays.sort(array,0,array.length,new Comparator<String>(){
+    @Override public int compare(    String object1,    String object2){
+      String v1=subCategories.get(object1);
+      String v2=subCategories.get(object2);
+      return cl.compare(v1,v2);
+    }
+  }
+);
+  final String[] visibleNames=new String[array.length];
+  final boolean[] selected=new boolean[array.length];
+  for (int i=0; i < array.length; i++) {
+    final String subcategory=array[i];
+    visibleNames[i]=subCategories.get(subcategory);
+    if (acceptedCategories == null) {
+      selected[i]=true;
+    }
+ else {
+      selected[i]=acceptedCategories.contains(subcategory);
+    }
+  }
+  builder.setTitle(poiCategory.getTranslation());
+  builder.setCancelable(true);
+  builder.setNegativeButton(getContext().getText(R.string.shared_string_cancel),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      dialog.dismiss();
+    }
+  }
+);
+  builder.setPositiveButton(getContext().getText(R.string.shared_string_apply),new DialogInterface.OnClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which){
+      LinkedHashSet<String> accepted=new LinkedHashSet<String>();
+      for (int i=0; i < selected.length; i++) {
+        if (selected[i]) {
+          accepted.add(array[i]);
+        }
+      }
+      if (subCategories.size() == accepted.size()) {
+        filter.selectSubTypesToAccept(poiCategory,null);
+      }
+ else       if (accepted.size() == 0) {
+        filter.setTypeToAccept(poiCategory,false);
+      }
+ else {
+        filter.selectSubTypesToAccept(poiCategory,accepted);
+      }
+      saveFilter();
+      listAdapter.notifyDataSetChanged();
+      listView.setSelectionFromTop(index,top);
+    }
+  }
+);
+  builder.setMultiChoiceItems(visibleNames,selected,new DialogInterface.OnMultiChoiceClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int item,    boolean isChecked){
+      selected[item]=isChecked;
+    }
+  }
+);
+  builder.show();
+}
