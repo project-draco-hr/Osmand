@@ -2,7 +2,7 @@
   final int index=listView.getFirstVisiblePosition();
   View v=listView.getChildAt(0);
   final int top=(v == null) ? 0 : v.getTop();
-  AlertDialog.Builder builder=new AlertDialog.Builder(getContext());
+  final AlertDialog.Builder builder=new AlertDialog.Builder(getContext());
   final LinkedHashMap<String,String> subCategories=new LinkedHashMap<String,String>();
   Set<String> acceptedCategories=filter.getAcceptedSubtypes(poiCategory);
   if (acceptedCategories != null) {
@@ -26,17 +26,26 @@
 );
   final String[] visibleNames=new String[array.length];
   final boolean[] selected=new boolean[array.length];
+  boolean allSelected=true;
   for (int i=0; i < array.length; i++) {
     final String subcategory=array[i];
     visibleNames[i]=subCategories.get(subcategory);
-    if (acceptedCategories == null) {
+    if (acceptedCategories == null || selectAll) {
       selected[i]=true;
     }
  else {
+      if (allSelected) {
+        allSelected=false;
+      }
       selected[i]=acceptedCategories.contains(subcategory);
     }
   }
-  builder.setTitle(poiCategory.getTranslation());
+  View titleView=LayoutInflater.from(getActivity()).inflate(R.layout.subcategories_dialog_title,null);
+  TextView titleTextView=(TextView)titleView.findViewById(R.id.title);
+  titleTextView.setText(poiCategory.getTranslation());
+  SwitchCompat check=(SwitchCompat)titleView.findViewById(R.id.check);
+  check.setChecked(allSelected);
+  builder.setCustomTitle(titleView);
   builder.setCancelable(true);
   builder.setNegativeButton(getContext().getText(R.string.shared_string_cancel),new DialogInterface.OnClickListener(){
     @Override public void onClick(    DialogInterface dialog,    int which){
@@ -73,5 +82,19 @@
     }
   }
 );
-  builder.show();
+  final AlertDialog dialog=builder.show();
+  check.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+    @Override public void onCheckedChanged(    CompoundButton buttonView,    boolean isChecked){
+      if (isChecked) {
+        Arrays.fill(selected,true);
+      }
+ else {
+        Arrays.fill(selected,false);
+      }
+      for (int i=0; i < selected.length; i++) {
+        dialog.getListView().setItemChecked(i,selected[i]);
+      }
+    }
+  }
+);
 }

@@ -32,6 +32,7 @@
     hidden=savedInstanceState.getBoolean(QUICK_SEARCH_HIDDEN_KEY,false);
     toolbarTitle=savedInstanceState.getString(QUICK_SEARCH_TOOLBAR_TITLE_KEY);
     toolbarVisible=savedInstanceState.getBoolean(QUICK_SEARCH_TOOLBAR_VISIBLE_KEY,false);
+    fabVisible=savedInstanceState.getBoolean(QUICK_SEARCH_FAB_VISIBLE_KEY,false);
   }
   if (searchQuery == null && arguments != null) {
     searchQuery=arguments.getString(QUICK_SEARCH_QUERY_KEY);
@@ -233,6 +234,10 @@
       if (textEmpty && poiFilterApplied) {
         poiFilterApplied=false;
         reloadCategories();
+        if (fabVisible) {
+          fabVisible=false;
+          updateFab();
+        }
       }
       if (!searchQuery.equalsIgnoreCase(newQueryText)) {
         searchQuery=newQueryText;
@@ -271,6 +276,14 @@
     }
   }
 );
+  fab=view.findViewById(R.id.fab);
+  fab.setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View v){
+      saveCustomFilter();
+    }
+  }
+);
+  updateFab();
   setupSearch(mapActivity);
   return view;
 }
