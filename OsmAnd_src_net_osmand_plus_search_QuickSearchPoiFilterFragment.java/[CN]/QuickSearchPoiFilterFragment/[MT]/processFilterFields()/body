@@ -14,12 +14,14 @@
       selectedPoiAdditionals.add(keyNameOpen24);
       filterByName=filterByName.replaceAll(keyNameOpen24,"");
     }
+    MapPoiTypes poiTypes=app.getPoiTypes();
     Map<String,PoiType> poiAdditionals=filter.getPoiAdditionals();
-    List<PoiType> otherAdditionalCategories=app.getPoiTypes().getOtherMapCategory().getPoiAdditionalsCategorized();
+    Set<String> excludedPoiAdditionalCategories=getExcludedPoiAdditionalCategories();
+    List<PoiType> otherAdditionalCategories=poiTypes.getOtherMapCategory().getPoiAdditionalsCategorized();
     if (poiAdditionals != null) {
       Map<String,Set<String>> additionalsMap=new TreeMap<>();
-      extractPoiAdditionals(poiAdditionals.values(),additionalsMap,true);
-      extractPoiAdditionals(otherAdditionalCategories,additionalsMap,true);
+      extractPoiAdditionals(poiAdditionals.values(),additionalsMap,excludedPoiAdditionalCategories,true);
+      extractPoiAdditionals(otherAdditionalCategories,additionalsMap,excludedPoiAdditionalCategories,true);
       if (additionalsMap.size() > 0) {
         for (        Entry<String,Set<String>> entry : additionalsMap.entrySet()) {
           for (          String poiTypeName : entry.getValue()) {

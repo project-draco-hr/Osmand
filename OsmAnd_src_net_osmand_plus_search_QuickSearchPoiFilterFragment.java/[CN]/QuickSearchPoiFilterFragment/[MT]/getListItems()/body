@@ -9,11 +9,12 @@
   String keyNameOpen24=app.getString(R.string.shared_string_is_open_24_7).replace(' ','_').toLowerCase();
   items.add(new PoiFilterListItem(PoiFilterListItemType.SWITCH_ITEM,0,app.getString(R.string.shared_string_is_open_24_7),groupId,false,false,selectedPoiAdditionals.contains(keyNameOpen24),null,keyNameOpen24));
   Map<String,PoiType> poiAdditionals=filter.getPoiAdditionals();
+  Set<String> excludedPoiAdditionalCategories=getExcludedPoiAdditionalCategories();
   List<PoiType> otherAdditionalCategories=poiTypes.getOtherMapCategory().getPoiAdditionalsCategorized();
   if (poiAdditionals != null) {
     Map<String,Set<String>> additionalsMap=new TreeMap<>();
-    extractPoiAdditionals(poiAdditionals.values(),additionalsMap,false);
-    extractPoiAdditionals(otherAdditionalCategories,additionalsMap,false);
+    extractPoiAdditionals(poiAdditionals.values(),additionalsMap,excludedPoiAdditionalCategories,false);
+    extractPoiAdditionals(otherAdditionalCategories,additionalsMap,excludedPoiAdditionalCategories,false);
     if (additionalsMap.size() > 0) {
       for (      Entry<String,Set<String>> entry : additionalsMap.entrySet()) {
         String category=entry.getKey();
@@ -22,9 +23,12 @@
         boolean showAll=showAllCategories.contains(category);
         items.add(new PoiFilterListItem(PoiFilterListItemType.DIVIDER,0,null,-1,false,false,false,null,null));
         String categoryIconStr=poiTypes.getPoiAdditionalCategoryIcon(category);
-        int categoryIconId=0;
+        int categoryIconId;
         if (!Algorithms.isEmpty(categoryIconStr)) {
           categoryIconId=getResources().getIdentifier(categoryIconStr,"drawable",app.getPackageName());
+        }
+ else {
+          categoryIconId=RenderingIcons.getBigIconResourceId(category);
         }
         if (categoryIconId == 0) {
           categoryIconId=R.drawable.ic_action_folder_stroke;
