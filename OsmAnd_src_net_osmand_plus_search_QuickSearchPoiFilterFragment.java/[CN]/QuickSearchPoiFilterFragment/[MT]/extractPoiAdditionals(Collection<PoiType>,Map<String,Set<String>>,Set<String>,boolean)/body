@@ -1,18 +1,32 @@
 {
+  Set<String> topTrueOnlyCategories=new LinkedHashSet<>();
+  for (  PoiType poiType : poiAdditionals) {
+    String category=poiType.getPoiAdditionalCategory();
+    if (category != null) {
+      topTrueOnlyCategories.add(category);
+    }
+  }
   for (  PoiType poiType : poiAdditionals) {
     String category=poiType.getPoiAdditionalCategory();
     if (category == null) {
       category="";
     }
+    if (excludedPoiAdditionalCategories != null && excludedPoiAdditionalCategories.contains(category)) {
+      continue;
+    }
     if (collapsedCategories.contains(category) && !extractAll) {
       if (!additionalsMap.containsKey(category)) {
         additionalsMap.put(category,new TreeSet<String>());
       }
+      topTrueOnlyCategories.remove(category);
       continue;
     }
     boolean showAll=showAllCategories.contains(category) || extractAll;
     String name=poiType.getTranslation();
     String keyName=name.replace(' ',':').toLowerCase();
+    if (!poiType.isTopVisible()) {
+      topTrueOnlyCategories.remove(category);
+    }
     if (showAll || poiType.isTopVisible() || selectedPoiAdditionals.contains(keyName)) {
       Set<String> adds=additionalsMap.get(category);
       if (adds == null) {
@@ -20,6 +34,11 @@
         additionalsMap.put(category,adds);
       }
       adds.add(name);
+    }
+  }
+  for (  String category : topTrueOnlyCategories) {
+    if (!showAllCategories.contains(category)) {
+      showAllCategories.add(category);
     }
   }
 }
