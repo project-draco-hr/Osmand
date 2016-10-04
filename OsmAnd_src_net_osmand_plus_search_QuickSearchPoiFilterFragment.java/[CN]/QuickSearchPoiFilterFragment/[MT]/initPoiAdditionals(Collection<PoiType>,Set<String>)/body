@@ -1,0 +1,47 @@
+{
+  Set<String> selectedCategories=new LinkedHashSet<>();
+  Set<String> topTrueOnlyCategories=new LinkedHashSet<>();
+  Set<String> topFalseOnlyCategories=new LinkedHashSet<>();
+  for (  PoiType poiType : poiAdditionals) {
+    String category=poiType.getPoiAdditionalCategory();
+    if (category != null) {
+      topTrueOnlyCategories.add(category);
+      topFalseOnlyCategories.add(category);
+    }
+  }
+  for (  PoiType poiType : poiAdditionals) {
+    String category=poiType.getPoiAdditionalCategory();
+    if (category == null) {
+      category="";
+    }
+    if (excludedPoiAdditionalCategories != null && excludedPoiAdditionalCategories.contains(category)) {
+      topTrueOnlyCategories.remove(category);
+      topFalseOnlyCategories.remove(category);
+      continue;
+    }
+    if (!poiType.isTopVisible()) {
+      topTrueOnlyCategories.remove(category);
+    }
+ else {
+      topFalseOnlyCategories.remove(category);
+    }
+    String name=poiType.getTranslation();
+    String keyName=name.replace(' ',':').toLowerCase();
+    if (selectedPoiAdditionals.contains(keyName)) {
+      selectedCategories.add(category);
+    }
+  }
+  for (  String category : topTrueOnlyCategories) {
+    if (!showAllCategories.contains(category)) {
+      showAllCategories.add(category);
+    }
+  }
+  for (  String category : topFalseOnlyCategories) {
+    if (!collapsedCategories.contains(category) && !showAllCategories.contains(category)) {
+      if (!selectedCategories.contains(category)) {
+        collapsedCategories.add(category);
+      }
+      showAllCategories.add(category);
+    }
+  }
+}
