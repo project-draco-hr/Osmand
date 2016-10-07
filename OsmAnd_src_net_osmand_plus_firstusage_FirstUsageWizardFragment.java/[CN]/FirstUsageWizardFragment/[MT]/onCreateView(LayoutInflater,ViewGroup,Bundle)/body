@@ -8,23 +8,28 @@
   AppCompatButton skipButton=(AppCompatButton)view.findViewById(R.id.skip_button);
   skipButton.setOnClickListener(new View.OnClickListener(){
     @Override public void onClick(    View v){
-      AlertDialog.Builder builder=new AlertDialog.Builder(getContext());
-      builder.setTitle(getString(R.string.skip_map_downloading));
-      builder.setMessage(getString(R.string.skip_map_downloading_desc,getString(R.string.index_settings)));
-      builder.setNegativeButton(R.string.shared_string_skip,new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          closeWizard();
-        }
+      if (wizardType == WizardType.MAP_DOWNLOAD) {
+        closeWizard();
       }
-);
-      builder.setNeutralButton(R.string.shared_string_cancel,null);
-      builder.setPositiveButton(R.string.shared_string_select,new DialogInterface.OnClickListener(){
-        @Override public void onClick(        DialogInterface dialog,        int which){
-          searchCountryMap();
+ else {
+        AlertDialog.Builder builder=new AlertDialog.Builder(getContext());
+        builder.setTitle(getString(R.string.skip_map_downloading));
+        builder.setMessage(getString(R.string.skip_map_downloading_desc,getString(R.string.index_settings)));
+        builder.setNegativeButton(R.string.shared_string_skip,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            closeWizard();
+          }
         }
-      }
 );
-      builder.show();
+        builder.setNeutralButton(R.string.shared_string_cancel,null);
+        builder.setPositiveButton(R.string.shared_string_select,new DialogInterface.OnClickListener(){
+          @Override public void onClick(          DialogInterface dialog,          int which){
+            searchCountryMap();
+          }
+        }
+);
+        builder.show();
+      }
     }
   }
 );
@@ -184,10 +189,7 @@ view.findViewById(R.id.map2_downloading_layout).setVisibility(View.GONE);
 }
 view.findViewById(R.id.map_downloading_action_button).setOnClickListener(new View.OnClickListener(){
 @Override public void onClick(View v){
-MapActivity mapActivity=(MapActivity)getActivity();
-mapActivity.setMapLocation(location.getLatitude(),location.getLongitude());
-mapActivity.getMapView().setIntZoom(13);
-closeWizard();
+showOnMap(new LatLon(location.getLatitude(),location.getLongitude()),13);
 }
 }
 );
