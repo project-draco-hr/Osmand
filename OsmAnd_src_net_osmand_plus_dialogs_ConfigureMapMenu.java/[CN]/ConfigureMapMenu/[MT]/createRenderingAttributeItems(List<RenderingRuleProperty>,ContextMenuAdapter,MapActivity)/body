@@ -151,7 +151,16 @@
     @Override public boolean onContextMenuClick(    final ArrayAdapter<ContextMenuItem> ad,    int itemId,    final int pos,    boolean isChecked){
       final OsmandMapTileView view=activity.getMapView();
       AlertDialog.Builder b=new AlertDialog.Builder(view.getContext());
-      b.setTitle(R.string.map_preferred_locale);
+      View titleView=LayoutInflater.from(activity).inflate(R.layout.language_dialog_title,null);
+      SwitchCompat check=(SwitchCompat)titleView.findViewById(R.id.check);
+      check.setChecked(view.getSettings().MAP_TRANSLITERATE_NAMES.get());
+      b.setCustomTitle(titleView);
+      check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        @Override public void onCheckedChanged(        CompoundButton buttonView,        boolean isChecked){
+          view.getSettings().MAP_TRANSLITERATE_NAMES.set(isChecked);
+        }
+      }
+);
       final String[] txtIds=getSortedMapNamesIds(activity,mapNamesIds,getMapNamesValues(activity,mapNamesIds));
       final String[] txtValues=getMapNamesValues(activity,txtIds);
       int selected=-1;
