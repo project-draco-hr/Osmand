@@ -1,5 +1,54 @@
 {
+  LatLon customLatLon=null;
   Map<Object,IContextMenuProvider> selectedObjects=selectObjectsForContextMenu(tileBox,point,false);
+  NativeOsmandLibrary nativeLib=NativeOsmandLibrary.getLoadedLibrary();
+  if (nativeLib != null) {
+    MapRenderRepositories maps=activity.getMyApplication().getResourceManager().getRenderer();
+    RenderingContext rc=maps.getVisibleRenderingContext();
+    RenderedObject[] renderedObjects=null;
+    if (rc.zoom == tileBox.getZoom()) {
+      double lat=MapUtils.get31LatitudeY((int)(rc.topY * rc.tileDivisor));
+      double lon=MapUtils.get31LongitudeX((int)(rc.leftX * rc.tileDivisor));
+      float x=tileBox.getPixXFromLatLon(lat,lon);
+      float y=tileBox.getPixYFromLatLon(lat,lon);
+      renderedObjects=nativeLib.searchRenderedObjectsFromContext(rc,(int)(point.x - x),(int)(point.y - y));
+    }
+    if (renderedObjects != null) {
+      IContextMenuProvider poiMenuProvider=activity.getMapLayers().getPoiMapLayer();
+      for (      RenderedObject renderedObject : renderedObjects) {
+        if (renderedObject.getX() != null && renderedObject.getX().size() == 1 && renderedObject.getY() != null && renderedObject.getY().size() == 1) {
+          customLatLon=new LatLon(MapUtils.get31LatitudeY(renderedObject.getY().get(0)),MapUtils.get31LongitudeX(renderedObject.getX().get(0)));
+        }
+ else {
+          customLatLon=tileBox.getLatLonFromPixel(point.x,point.y);
+        }
+        if (renderedObject.getId() != null) {
+          List<String> names=new ArrayList<>();
+          if (!Algorithms.isEmpty(renderedObject.getName())) {
+            names.add(renderedObject.getName());
+          }
+          for (          Entry<String,String> entry : renderedObject.getTags().entrySet()) {
+            if (entry.getKey().startsWith("name")) {
+              names.add(entry.getValue());
+            }
+          }
+          Amenity amenity=findAmenity(renderedObject.getId() >> 7,names,customLatLon.getLatitude(),customLatLon.getLongitude());
+          if (amenity != null) {
+            selectedObjects.put(amenity,poiMenuProvider);
+            continue;
+          }
+          if (renderedObject.getX() != null && renderedObject.getX().size() > 1 && renderedObject.getY() != null && renderedObject.getY().size() > 1) {
+            List<Node> nodes=new ArrayList<>(renderedObject.getX().size());
+            for (int i=0; i < renderedObject.getX().size(); i++) {
+              nodes.add(new Node(MapUtils.get31LatitudeY(renderedObject.getY().get(i)),MapUtils.get31LongitudeX(renderedObject.getX().get(i)),0));
+            }
+            customLatLon=OsmMapUtils.getMathWeightCenterForNodes(nodes);
+          }
+          selectedObjects.put(renderedObject,null);
+        }
+      }
+    }
+  }
   if (selectedObjects.size() == 1) {
     Object selectedObj=selectedObjects.keySet().iterator().next();
     LatLon latLon=null;
@@ -8,6 +57,9 @@
     if (provider != null) {
       latLon=provider.getObjectLocation(selectedObj);
       pointDescription=provider.getObjectName(selectedObj);
+    }
+    if (latLon == null) {
+      latLon=customLatLon;
     }
     if (latLon == null) {
       latLon=getLatLon(point,tileBox);

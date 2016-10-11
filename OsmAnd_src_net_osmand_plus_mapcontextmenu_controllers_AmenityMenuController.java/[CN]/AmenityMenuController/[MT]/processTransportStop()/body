@@ -1,0 +1,27 @@
+{
+  routes=new ArrayList<>();
+  List<TransportIndexRepository> reps=getMapActivity().getMyApplication().getResourceManager().searchTransportRepositories(amenity.getLocation().getLatitude(),amenity.getLocation().getLongitude());
+  boolean useEnglishNames=getMapActivity().getMyApplication().getSettings().usingEnglishNames();
+  for (  TransportIndexRepository t : reps) {
+    ArrayList<TransportStop> ls=new ArrayList<>();
+    QuadRect ll=MapUtils.calculateLatLonBbox(amenity.getLocation().getLatitude(),amenity.getLocation().getLongitude(),150);
+    t.searchTransportStops(ll.top,ll.left,ll.bottom,ll.right,-1,ls,null);
+    for (    TransportStop tstop : ls) {
+      addRoutes(useEnglishNames,t,tstop,(int)MapUtils.getDistance(tstop.getLocation(),amenity.getLocation()));
+    }
+  }
+  Collections.sort(routes,new Comparator<TransportStopRoute>(){
+    @Override public int compare(    TransportStopRoute o1,    TransportStopRoute o2){
+      if (o1.distance != o2.distance) {
+        return Algorithms.compare(o1.distance,o2.distance);
+      }
+      int i1=Algorithms.extractFirstIntegerNumber(o1.desc);
+      int i2=Algorithms.extractFirstIntegerNumber(o2.desc);
+      if (i1 != i2) {
+        return Algorithms.compare(i1,i2);
+      }
+      return o1.desc.compareTo(o2.desc);
+    }
+  }
+);
+}
