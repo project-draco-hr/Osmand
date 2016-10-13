@@ -1,0 +1,125 @@
+{
+  AlertDialog.Builder bld=new AlertDialog.Builder(activity);
+  boolean[] checkedItems=new boolean[prefs.size()];
+  final boolean[] tempPrefs=new boolean[prefs.size()];
+  for (int i=0; i < prefs.size(); i++) {
+    tempPrefs[i]=checkedItems[i]=defaultSettings != null && useDefault ? defaultSettings.containsValue(prefs.get(i).getId()) : prefs.get(i).get();
+  }
+  final String[] vals=new String[ps.size()];
+  for (int i=0; i < ps.size(); i++) {
+    RenderingRuleProperty p=ps.get(i);
+    String propertyName=SettingsActivity.getStringPropertyName(activity,p.getAttrName(),p.getName());
+    vals[i]=propertyName;
+  }
+  bld.setMultiChoiceItems(vals,checkedItems,new OnMultiChoiceClickListener(){
+    @Override public void onClick(    DialogInterface dialog,    int which,    boolean isChecked){
+      tempPrefs[which]=isChecked;
+    }
+  }
+);
+  bld.setTitle(category);
+  bld.setNegativeButton(R.string.shared_string_cancel,new DialogInterface.OnClickListener(){
+    public void onClick(    DialogInterface dialog,    int whichButton){
+      boolean selected=false;
+      for (int i=0; i < prefs.size(); i++) {
+        selected|=prefs.get(i).get();
+      }
+      adapter.getItem(pos).setSelected(selected);
+      adapter.getItem(pos).setColorRes(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
+      a.notifyDataSetInvalidated();
+    }
+  }
+);
+  bld.setPositiveButton(R.string.shared_string_ok,new DialogInterface.OnClickListener(){
+    public void onClick(    DialogInterface dialog,    int whichButton){
+      boolean selected=false;
+      for (int i=0; i < prefs.size(); i++) {
+        prefs.get(i).set(tempPrefs[i]);
+        selected|=tempPrefs[i];
+      }
+      final List<OsmandSettings.CommonPreference<String>> includedPrefs=new ArrayList<>();
+      if (customRulesIncluded != null) {
+        for (        RenderingRuleProperty p : customRulesIncluded) {
+          if (p.getAttrName().equals(HIKING_ROUTES_OSMC_ATTR)) {
+            final OsmandSettings.CommonPreference<String> pref=activity.getMyApplication().getSettings().getCustomRenderProperty(p.getAttrName());
+            includedPrefs.add(pref);
+            if (hikingRouteOSMCValue == 0) {
+              pref.set("");
+            }
+ else {
+              pref.set(p.getPossibleValues()[hikingRouteOSMCValue - 1]);
+              selected=true;
+            }
+            break;
+          }
+        }
+      }
+      if (adapter != null) {
+        if (useDescription) {
+          adapter.getItem(pos).setDescription(getDescription(prefs,includedPrefs));
+        }
+ else {
+          adapter.getItem(pos).setSelected(selected);
+        }
+        adapter.getItem(pos).setColorRes(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
+      }
+      a.notifyDataSetInvalidated();
+      refreshMapComplete(activity);
+      activity.getMapLayers().updateLayers(activity.getMapView());
+    }
+  }
+);
+  final AlertDialog dialog=bld.create();
+  if (customRulesIncluded != null) {
+    for (    RenderingRuleProperty p : customRulesIncluded) {
+      if (!p.isBoolean()) {
+        final OsmandSettings.CommonPreference<String> pref=activity.getMyApplication().getSettings().getCustomRenderProperty(p.getAttrName());
+        OsmandApplication app=activity.getMyApplication();
+        LayoutInflater inflater=(LayoutInflater)app.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View spinnerView=inflater.inflate(R.layout.spinner_rule_layout,null);
+        TextView title=(TextView)spinnerView.findViewById(R.id.title);
+        final Spinner spinner=(Spinner)spinnerView.findViewById(R.id.spinner);
+        TextView description=(TextView)spinnerView.findViewById(R.id.description);
+        ImageView dropDownIcon=(ImageView)spinnerView.findViewById(R.id.dropDownIcon);
+        dropDownIcon.setImageDrawable(app.getIconsCache().getIcon(R.drawable.ic_action_arrow_drop_down,app.getSettings().isLightContent()));
+        dropDownIcon.setOnClickListener(new View.OnClickListener(){
+          @Override public void onClick(          View v){
+            spinner.performClick();
+          }
+        }
+);
+        title.setText(p.getName());
+        description.setText(p.getDescription());
+        int i=Arrays.asList(p.getPossibleValues()).indexOf(pref.get());
+        if (i >= 0) {
+          i++;
+        }
+ else         if (Algorithms.isEmpty(pref.get())) {
+          i=0;
+        }
+        String[] possibleValuesString=new String[p.getPossibleValues().length + 1];
+        possibleValuesString[0]=SettingsActivity.getStringPropertyValue(activity,p.getDefaultValueDescription());
+        for (int j=0; j < p.getPossibleValues().length; j++) {
+          possibleValuesString[j + 1]=SettingsActivity.getStringPropertyValue(activity,p.getPossibleValues()[j]);
+        }
+        StringSpinnerArrayAdapter arrayAdapter=new StringSpinnerArrayAdapter(activity);
+        for (        String val : possibleValuesString) {
+          arrayAdapter.add(val);
+        }
+        spinner.setAdapter(arrayAdapter);
+        hikingRouteOSMCValue=i;
+        spinner.setSelection(i);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+          @Override public void onItemSelected(          AdapterView<?> parent,          View view,          int position,          long id){
+            hikingRouteOSMCValue=position;
+          }
+          @Override public void onNothingSelected(          AdapterView<?> parent){
+          }
+        }
+);
+        dialog.getListView().addFooterView(spinnerView);
+      }
+    }
+  }
+  dialog.show();
+}
