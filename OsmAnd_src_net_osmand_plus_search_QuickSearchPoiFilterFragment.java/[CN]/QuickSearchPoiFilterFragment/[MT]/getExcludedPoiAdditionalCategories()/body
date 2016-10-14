@@ -2,16 +2,25 @@
   MapPoiTypes poiTypes=getMyApplication().getPoiTypes();
   Set<String> excludedPoiAdditionalCategories=new LinkedHashSet<>();
   for (  Entry<PoiCategory,LinkedHashSet<String>> entry : filter.getAcceptedTypes().entrySet()) {
-    for (    PoiFilter f : entry.getKey().getPoiFilters()) {
-      for (      PoiType t : f.getPoiTypes()) {
-        collectExcludedCategories(poiTypes,t,null,excludedPoiAdditionalCategories);
+    if (entry.getKey().getExcludedPoiAdditionalCategories() != null) {
+      excludedPoiAdditionalCategories.addAll(entry.getKey().getExcludedPoiAdditionalCategories());
+    }
+    if (entry.getValue() != null) {
+      for (      String keyName : entry.getValue()) {
+        PoiType poiType=poiTypes.getPoiTypeByKey(keyName);
+        if (poiType != null) {
+          collectExcludedPoiAdditionalCategories(poiType,excludedPoiAdditionalCategories);
+          PoiFilter poiFilter=poiType.getFilter();
+          if (poiFilter != null) {
+            collectExcludedPoiAdditionalCategories(poiFilter,excludedPoiAdditionalCategories);
+          }
+          PoiCategory poiCategory=poiType.getCategory();
+          if (poiCategory != null) {
+            collectExcludedPoiAdditionalCategories(poiCategory,excludedPoiAdditionalCategories);
+          }
+        }
       }
-      collectExcludedCategories(poiTypes,f,null,excludedPoiAdditionalCategories);
     }
-    for (    PoiType t : entry.getKey().getPoiTypes()) {
-      collectExcludedCategories(poiTypes,t,null,excludedPoiAdditionalCategories);
-    }
-    collectExcludedCategories(poiTypes,entry.getKey(),entry.getValue(),excludedPoiAdditionalCategories);
   }
   return excludedPoiAdditionalCategories;
 }
