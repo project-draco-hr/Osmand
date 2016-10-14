@@ -1,19 +1,24 @@
 {
   float mapRotate=mapActivity.getMapView().getRotate();
+  boolean showCompass=forceShowCompass || mapRotate != 0 || settings.ROTATE_MAP.get() != OsmandSettings.ROTATE_MAP_NONE || mapActivity.getMapLayers().getMapInfoLayer().getMapInfoControls().isVisible("compass");
   if (mapRotate != cachedRotate) {
     cachedRotate=mapRotate;
     compassHud.iv.invalidate();
+    compassHud.updateVisibility(showCompass);
   }
   if (settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_NONE) {
     compassHud.setIconResId(isNight ? R.drawable.map_compass_niu_white : R.drawable.map_compass_niu);
     compassHud.iv.setContentDescription(mapActivity.getString(R.string.rotate_map_none_opt));
+    compassHud.updateVisibility(showCompass);
   }
  else   if (settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_BEARING) {
     compassHud.setIconResId(isNight ? R.drawable.map_compass_bearing_white : R.drawable.map_compass_bearing);
     compassHud.iv.setContentDescription(mapActivity.getString(R.string.rotate_map_bearing_opt));
+    compassHud.updateVisibility(true);
   }
  else {
     compassHud.setIconResId(isNight ? R.drawable.map_compass_white : R.drawable.map_compass);
     compassHud.iv.setContentDescription(mapActivity.getString(R.string.rotate_map_compass_opt));
+    compassHud.updateVisibility(true);
   }
 }
