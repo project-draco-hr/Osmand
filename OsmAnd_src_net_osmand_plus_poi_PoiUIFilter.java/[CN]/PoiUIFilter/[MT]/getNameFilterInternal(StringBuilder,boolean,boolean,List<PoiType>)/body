@@ -9,14 +9,26 @@
         }
       }
       if (poiAdditionals != null) {
-        Iterator<Entry<PoiType,String>> it=poiAdditionals.entrySet().iterator();
-        while (it.hasNext()) {
-          Entry<PoiType,String> e=it.next();
-          String inf=a.getAdditionalInfo(e.getKey().getKeyName());
-          if (inf == null) {
-            return false;
+        Map<String,List<PoiType>> poiAdditionalCategoriesMap=new HashMap<>();
+        for (        PoiType pt : poiAdditionals) {
+          String category=pt.getPoiAdditionalCategory();
+          List<PoiType> types=poiAdditionalCategoriesMap.get(category);
+          if (types == null) {
+            types=new ArrayList<>();
+            poiAdditionalCategoriesMap.put(category,types);
           }
- else           if (e.getValue() != null && !e.getValue().equalsIgnoreCase(inf)) {
+          types.add(pt);
+        }
+        for (        List<PoiType> types : poiAdditionalCategoriesMap.values()) {
+          boolean acceptedAnyInCategory=false;
+          for (          PoiType p : types) {
+            String inf=a.getAdditionalInfo(p.getKeyName());
+            if (inf != null) {
+              acceptedAnyInCategory=true;
+              break;
+            }
+          }
+          if (!acceptedAnyInCategory) {
             return false;
           }
         }
