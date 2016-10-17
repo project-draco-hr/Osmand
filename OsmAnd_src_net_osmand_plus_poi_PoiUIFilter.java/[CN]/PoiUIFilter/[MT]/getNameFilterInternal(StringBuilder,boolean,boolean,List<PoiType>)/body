@@ -9,6 +9,7 @@
         }
       }
       if (poiAdditionals != null) {
+        Map<PoiType,PoiType> textPoiAdditionalsMap=new HashMap<>();
         Map<String,List<PoiType>> poiAdditionalCategoriesMap=new HashMap<>();
         for (        PoiType pt : poiAdditionals) {
           String category=pt.getPoiAdditionalCategory();
@@ -18,6 +19,13 @@
             poiAdditionalCategoriesMap.put(category,types);
           }
           types.add(pt);
+          String osmTag=pt.getOsmTag();
+          if (osmTag.length() < pt.getKeyName().length()) {
+            PoiType textPoiType=poiTypes.getTextPoiAdditionalByKey(osmTag);
+            if (textPoiType != null) {
+              textPoiAdditionalsMap.put(pt,textPoiType);
+            }
+          }
         }
         for (        List<PoiType> types : poiAdditionalCategoriesMap.values()) {
           boolean acceptedAnyInCategory=false;
@@ -26,6 +34,25 @@
             if (inf != null) {
               acceptedAnyInCategory=true;
               break;
+            }
+ else {
+              PoiType textPoiType=textPoiAdditionalsMap.get(p);
+              if (textPoiType != null) {
+                inf=a.getAdditionalInfo(textPoiType.getKeyName());
+                if (!Algorithms.isEmpty(inf)) {
+                  String[] items=inf.split(";");
+                  String val=p.getOsmValue().trim().toLowerCase();
+                  for (                  String item : items) {
+                    if (item.trim().toLowerCase().equals(val)) {
+                      acceptedAnyInCategory=true;
+                      break;
+                    }
+                  }
+                  if (acceptedAnyInCategory) {
+                    break;
+                  }
+                }
+              }
             }
           }
           if (!acceptedAnyInCategory) {
