@@ -9,20 +9,24 @@
     }
     if (collapsedCategories.contains(category) && !extractAll) {
       if (!additionalsMap.containsKey(category)) {
-        additionalsMap.put(category,new TreeSet<String>());
+        additionalsMap.put(category,new ArrayList<PoiType>());
       }
       continue;
     }
     boolean showAll=showAllCategories.contains(category) || extractAll;
-    String name=poiType.getTranslation();
-    String keyName=name.replace(' ',':').toLowerCase();
-    if (showAll || poiType.isTopVisible() || selectedPoiAdditionals.contains(keyName)) {
-      Set<String> adds=additionalsMap.get(category);
+    String keyName=poiType.getKeyName().replace('_',':').toLowerCase();
+    if (!poiAdditionalsTranslations.containsKey(poiType)) {
+      poiAdditionalsTranslations.put(poiType,poiType.getTranslation());
+    }
+    if (showAll || poiType.isTopVisible() || selectedPoiAdditionals.contains(keyName.replace(' ',':'))) {
+      List<PoiType> adds=additionalsMap.get(category);
       if (adds == null) {
-        adds=new TreeSet<>();
+        adds=new ArrayList<>();
         additionalsMap.put(category,adds);
       }
-      adds.add(name);
+      if (!adds.contains(poiType)) {
+        adds.add(poiType);
+      }
     }
   }
 }
