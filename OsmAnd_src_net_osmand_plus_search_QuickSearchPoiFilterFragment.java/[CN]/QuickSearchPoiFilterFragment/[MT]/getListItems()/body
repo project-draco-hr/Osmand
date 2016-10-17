@@ -14,11 +14,11 @@
     items.add(new PoiFilterListItem(PoiFilterListItemType.SWITCH_ITEM,0,app.getString(R.string.shared_string_is_open_24_7),groupId,false,false,selectedPoiAdditionals.contains(keyNameOpen24),null,keyNameOpen24));
   }
   if (poiAdditionals != null) {
-    Map<String,Set<String>> additionalsMap=new TreeMap<>();
+    Map<String,List<PoiType>> additionalsMap=new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     extractPoiAdditionals(poiAdditionals.values(),additionalsMap,excludedPoiAdditionalCategories,false);
     extractPoiAdditionals(otherAdditionalCategories,additionalsMap,excludedPoiAdditionalCategories,false);
     if (additionalsMap.size() > 0) {
-      for (      Entry<String,Set<String>> entry : additionalsMap.entrySet()) {
+      for (      Entry<String,List<PoiType>> entry : additionalsMap.entrySet()) {
         String category=entry.getKey();
         String categoryLocalizedName=poiTypes.getPoiTranslation(category);
         boolean expanded=!collapsedCategories.contains(category);
@@ -36,13 +36,26 @@
           categoryIconId=R.drawable.ic_action_folder_stroke;
         }
         items.add(new PoiFilterListItem(PoiFilterListItemType.GROUP_HEADER,categoryIconId,categoryLocalizedName,++groupId,true,expanded,false,category,null));
-        List<String> poiTypeNames=new ArrayList<>(entry.getValue());
-        Collections.sort(poiTypeNames);
-        for (        String poiTypeName : poiTypeNames) {
-          String keyName=poiTypeName.replace(' ',':').toLowerCase();
-          items.add(new PoiFilterListItem(PoiFilterListItemType.CHECKBOX_ITEM,0,poiTypeName,groupId,false,false,selectedPoiAdditionals.contains(keyName),category,keyName));
+        List<PoiType> categoryPoiAdditionals=new ArrayList<>(entry.getValue());
+        Collections.sort(categoryPoiAdditionals,new Comparator<PoiType>(){
+          @Override public int compare(          PoiType p1,          PoiType p2){
+            String firstPoiTypeTranslation=poiAdditionalsTranslations.get(p1);
+            String secondPoiTypeTranslation=poiAdditionalsTranslations.get(p2);
+            if (firstPoiTypeTranslation != null && secondPoiTypeTranslation != null) {
+              return firstPoiTypeTranslation.compareTo(secondPoiTypeTranslation);
+            }
+ else {
+              return 0;
+            }
+          }
         }
-        if (!showAll && poiTypeNames.size() > 0) {
+);
+        for (        PoiType poiType : categoryPoiAdditionals) {
+          String keyName=poiType.getKeyName().replace('_',':').toLowerCase();
+          String translation=poiAdditionalsTranslations.get(poiType);
+          items.add(new PoiFilterListItem(PoiFilterListItemType.CHECKBOX_ITEM,0,translation,groupId,false,false,selectedPoiAdditionals.contains(keyName),category,keyName));
+        }
+        if (!showAll && categoryPoiAdditionals.size() > 0) {
           items.add(new PoiFilterListItem(PoiFilterListItemType.BUTTON_ITEM,0,app.getString(R.string.shared_string_show_all).toUpperCase(),groupId,false,false,false,category,null));
         }
       }
