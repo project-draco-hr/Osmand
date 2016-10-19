@@ -9,10 +9,27 @@
   String scheme=uri.getScheme();
   if (scheme == null)   return null;
  else   scheme=scheme.toLowerCase(Locale.US);
-  if ("http".equals(scheme) || "https".equals(scheme)) {
+  if ("http".equals(scheme) || "https".equals(scheme) || "google.navigation".equals(scheme)) {
     String host=uri.getHost();
-    if (host == null)     return null;
- else     host=host.toLowerCase(Locale.US);
+    Map<String,String> params=getQueryParameters(uri);
+    if ("google.navigation".equals(scheme)) {
+      host=scheme;
+      if (uri.getSchemeSpecificPart() == null) {
+        return null;
+      }
+ else       if (!uri.getSchemeSpecificPart().contains("=")) {
+        params=getQueryParameters("q=" + uri.getSchemeSpecificPart());
+      }
+ else {
+        params=getQueryParameters(uri.getSchemeSpecificPart());
+      }
+    }
+ else     if (host == null) {
+      return null;
+    }
+ else {
+      host=host.toLowerCase(Locale.US);
+    }
     String path=uri.getPath();
     if (path == null) {
       path="";
@@ -63,7 +80,6 @@
         }
       }
  else       if (host.startsWith("map.baidu.")) {
-        Map<String,String> params=getQueryParameters(uri);
         String zm=params.get("l");
         String[] vls=silentSplit(params.get("c"),",");
         if (vls != null && vls.length >= 2) {
@@ -74,7 +90,6 @@
         }
       }
  else       if (simpleDomains.contains(host)) {
-        Map<String,String> params=getQueryParameters(uri);
         if (uri.getQuery() == null && params.size() == 0) {
           params=getQueryParameters(path.substring(1));
         }
@@ -92,7 +107,6 @@
         }
       }
  else       if (host.matches("(?:www\\.)?(?:maps\\.)?yandex\\.[a-z]+")) {
-        Map<String,String> params=getQueryParameters(uri);
         String ll=params.get("ll");
         if (ll != null) {
           Matcher matcher=commaSeparatedPairPattern.matcher(ll);
@@ -106,7 +120,6 @@
         String latString=null;
         String lonString=null;
         String z=String.valueOf(GeoParsedPoint.NO_ZOOM);
-        Map<String,String> params=getQueryParameters(uri);
         if (params.containsKey("q")) {
           System.out.println("q=" + params.get("q"));
           Matcher matcher=commaSeparatedPairPattern.matcher(params.get("q"));
@@ -181,7 +194,6 @@
         }
       }
  else       if (host.equals("here.com") || host.endsWith(".here.com")) {
-        Map<String,String> params=getQueryParameters(uri);
         String z=String.valueOf(GeoParsedPoint.NO_ZOOM);
         String label=null;
         if (params.containsKey("msg")) {
@@ -208,7 +220,6 @@
         }
       }
  else       if (host.endsWith(".qq.com")) {
-        Map<String,String> params=getQueryParameters(uri);
         String x=null;
         String y=null;
         String z=String.valueOf(GeoParsedPoint.NO_ZOOM);
@@ -263,7 +274,6 @@
         if (x != null && y != null)         return new GeoParsedPoint(y,x,z,label);
       }
  else       if (host.equals("maps.apple.com")) {
-        Map<String,String> params=getQueryParameters(uri);
         String z=String.valueOf(GeoParsedPoint.NO_ZOOM);
         String label=null;
         if (params.containsKey("q")) {
