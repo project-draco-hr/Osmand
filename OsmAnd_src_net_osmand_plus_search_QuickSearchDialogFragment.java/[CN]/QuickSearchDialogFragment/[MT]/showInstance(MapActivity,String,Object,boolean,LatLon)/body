@@ -1,0 +1,43 @@
+{
+  try {
+    if (mapActivity.isActivityDestroyed()) {
+      return false;
+    }
+    Bundle bundle=new Bundle();
+    if (object != null) {
+      bundle.putBoolean(QUICK_SEARCH_RUN_SEARCH_FIRST_TIME_KEY,true);
+      String objectLocalizedName=searchQuery;
+      if (object instanceof PoiCategory) {
+        PoiCategory c=(PoiCategory)object;
+        objectLocalizedName=c.getTranslation();
+        SearchUICore searchUICore=mapActivity.getMyApplication().getSearchUICore().getCore();
+        SearchPhrase phrase=searchUICore.resetPhrase(objectLocalizedName + " ");
+        SearchResult sr=new SearchResult(phrase);
+        sr.localeName=objectLocalizedName;
+        sr.object=c;
+        sr.priority=SEARCH_AMENITY_TYPE_PRIORITY;
+        sr.priorityDistance=0;
+        sr.objectType=ObjectType.POI_TYPE;
+        searchUICore.selectSearchResult(sr);
+        bundle.putBoolean(QUICK_SEARCH_PHRASE_DEFINED_KEY,true);
+      }
+      searchQuery=objectLocalizedName.trim() + " ";
+    }
+ else     if (!Algorithms.isEmpty(searchQuery)) {
+      bundle.putBoolean(QUICK_SEARCH_RUN_SEARCH_FIRST_TIME_KEY,true);
+    }
+    bundle.putString(QUICK_SEARCH_QUERY_KEY,searchQuery);
+    bundle.putBoolean(QUICK_SEARCH_SHOW_CATEGORIES_KEY,showCategories);
+    if (latLon != null) {
+      bundle.putDouble(QUICK_SEARCH_LAT_KEY,latLon.getLatitude());
+      bundle.putDouble(QUICK_SEARCH_LON_KEY,latLon.getLongitude());
+    }
+    QuickSearchDialogFragment fragment=new QuickSearchDialogFragment();
+    fragment.setArguments(bundle);
+    fragment.show(mapActivity.getSupportFragmentManager(),TAG);
+    return true;
+  }
+ catch (  RuntimeException e) {
+    return false;
+  }
+}
