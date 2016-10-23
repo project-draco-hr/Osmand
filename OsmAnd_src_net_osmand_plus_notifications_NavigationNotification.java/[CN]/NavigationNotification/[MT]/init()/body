@@ -1,0 +1,26 @@
+{
+  leftSide=app.getSettings().DRIVING_REGION.get().leftHandDriving;
+  app.registerReceiver(new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      RoutingHelper routingHelper=app.getRoutingHelper();
+      routingHelper.setRoutePlanningMode(true);
+      routingHelper.setFollowingMode(false);
+      routingHelper.setPauseNaviation(true);
+    }
+  }
+,new IntentFilter(OSMAND_PAUSE_NAVIGATION_SERVICE_ACTION));
+  app.registerReceiver(new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      RoutingHelper routingHelper=app.getRoutingHelper();
+      routingHelper.setRoutePlanningMode(false);
+      routingHelper.setFollowingMode(true);
+    }
+  }
+,new IntentFilter(OSMAND_RESUME_NAVIGATION_SERVICE_ACTION));
+  app.registerReceiver(new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      app.stopNavigation();
+    }
+  }
+,new IntentFilter(OSMAND_STOP_NAVIGATION_SERVICE_ACTION));
+}

@@ -15,6 +15,8 @@ synchronized (RoutingHelper.this) {
       currentRunningJob=this;
     }
   }
+  lastRouteCalcError=null;
+  lastRouteCalcErrorShort=null;
   RouteCalculationResult res=provider.calculateRouteImpl(params);
   if (params.calculationProgress.isCancelled) {
 synchronized (RoutingHelper.this) {
@@ -43,15 +45,22 @@ synchronized (RoutingHelper.this) {
     setNewRoute(prev,res,params.start);
   }
  else   if (onlineSourceWithoutInternet) {
-    showMessage(app.getString(R.string.error_calculating_route) + ":\n" + app.getString(R.string.internet_connection_required_for_online_route));
+    lastRouteCalcError=app.getString(R.string.error_calculating_route) + ":\n" + app.getString(R.string.internet_connection_required_for_online_route);
+    lastRouteCalcErrorShort=app.getString(R.string.error_calculating_route);
+    showMessage(lastRouteCalcError);
   }
  else {
     if (res.getErrorMessage() != null) {
-      showMessage(app.getString(R.string.error_calculating_route) + ":\n" + res.getErrorMessage());
+      lastRouteCalcError=app.getString(R.string.error_calculating_route) + ":\n" + res.getErrorMessage();
+      lastRouteCalcErrorShort=app.getString(R.string.error_calculating_route);
+      showMessage(lastRouteCalcError);
     }
  else {
-      showMessage(app.getString(R.string.empty_route_calculated));
+      lastRouteCalcError=app.getString(R.string.empty_route_calculated);
+      lastRouteCalcErrorShort=app.getString(R.string.empty_route_calculated);
+      showMessage(lastRouteCalcError);
     }
   }
+  app.getNotificationHelper().refreshNotification(NAVIGATION);
   lastTimeEvaluatedRoute=System.currentTimeMillis();
 }
