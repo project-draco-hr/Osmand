@@ -33,9 +33,14 @@ catch (    IllegalArgumentException e) {
     pendingIntent=PendingIntent.getBroadcast(this,0,new Intent(this,OnNavigationServiceAlarmReceiver.class),PendingIntent.FLAG_UPDATE_CURRENT);
     alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,SystemClock.elapsedRealtime() + 500,serviceOffInterval,pendingIntent);
   }
-  Builder ntf=app.getNotificationHelper().buildNotificationInStatusBar();
-  if (ntf != null) {
-    startForeground(NotificationHelper.NOTIFICATION_SERVICE_ID,ntf.build());
+  OsmandNotification osmandNotification=app.getNotificationHelper().getTopNotification();
+  if (osmandNotification != null) {
+    Builder notification=osmandNotification.buildNotification();
+    if (notification != null) {
+      Notification n=notification.build();
+      osmandNotification.setupNotification(n);
+      startForeground(osmandNotification.getUniqueId(),n);
+    }
   }
   return START_REDELIVER_INTENT;
 }

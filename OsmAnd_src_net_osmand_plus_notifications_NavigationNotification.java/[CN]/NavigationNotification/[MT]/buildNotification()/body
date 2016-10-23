@@ -1,0 +1,78 @@
+{
+  NavigationService service=app.getNavigationService();
+  String notificationTitle;
+  StringBuilder notificationText=new StringBuilder();
+  color=0;
+  icon=R.drawable.ic_action_start_navigation;
+  turnBitmap=null;
+  RoutingHelper routingHelper=app.getRoutingHelper();
+  boolean followingMode=routingHelper.isFollowingMode() || app.getLocationProvider().getLocationSimulation().isRouteAnimating();
+  if (service != null && (service.getUsedBy() & USED_BY_NAVIGATION) != 0) {
+    color=app.getResources().getColor(R.color.osmand_orange);
+    String distanceStr=app.getString(R.string.route_distance) + OsmAndFormatter.getFormattedDistance(app.getRoutingHelper().getLeftDistance(),app);
+    String durationStr=app.getString(R.string.access_arrival_time) + ": " + SimpleDateFormat.getTimeInstance(DateFormat.SHORT).format(new Date(System.currentTimeMillis() + app.getRoutingHelper().getLeftTime() * 1000));
+    TurnType turnType=null;
+    boolean deviatedFromRoute;
+    int turnImminent=0;
+    int nextTurnDistance=0;
+    RouteDirectionInfo ri=null;
+    if (routingHelper.isRouteCalculated() && followingMode) {
+      deviatedFromRoute=routingHelper.isDeviatedFromRoute();
+      if (deviatedFromRoute) {
+        turnImminent=0;
+        turnType=TurnType.valueOf(TurnType.OFFR,leftSide);
+        nextTurnDistance=(int)routingHelper.getRouteDeviation();
+      }
+ else {
+        NextDirectionInfo r=routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(),true);
+        if (r != null && r.distanceTo > 0 && r.directionInfo != null) {
+          ri=r.directionInfo;
+          turnType=r.directionInfo.getTurnType();
+          nextTurnDistance=r.distanceTo;
+          turnImminent=r.imminent;
+        }
+      }
+      TurnDrawable drawable=new TurnDrawable(app,false);
+      int height=(int)app.getResources().getDimension(android.R.dimen.notification_large_icon_height);
+      int width=(int)app.getResources().getDimension(android.R.dimen.notification_large_icon_width);
+      drawable.setBounds(0,0,width,height);
+      drawable.setTurnType(turnType);
+      drawable.setTurnImminent(turnImminent,deviatedFromRoute);
+      turnBitmap=drawableToBitmap(drawable);
+      notificationTitle=OsmAndFormatter.getFormattedDistance(nextTurnDistance,app) + " ??? " + RouteCalculationResult.toString(turnType,app);
+      if (ri != null && !Algorithms.isEmpty(ri.getDescriptionRoutePart())) {
+        notificationText.append(ri.getDescriptionRoutePart());
+        notificationText.append("\n");
+      }
+      notificationText.append(distanceStr).append(" ??? ").append(durationStr);
+    }
+ else {
+      notificationTitle=app.getString(R.string.shared_string_navigation);
+      String error=routingHelper.getLastRouteCalcErrorShort();
+      if (Algorithms.isEmpty(error)) {
+        notificationText.append("Route calculation...");
+      }
+ else {
+        notificationText.append(error);
+      }
+    }
+  }
+ else {
+    return null;
+  }
+  final Builder notificationBuilder=createBuilder().setContentTitle(notificationTitle).setStyle(new BigTextStyle().bigText(notificationText)).setLargeIcon(turnBitmap);
+  Intent stopIntent=new Intent(OSMAND_STOP_NAVIGATION_SERVICE_ACTION);
+  PendingIntent stopPendingIntent=PendingIntent.getBroadcast(app,0,stopIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+  notificationBuilder.addAction(R.drawable.ic_action_remove_dark,app.getString(R.string.shared_string_control_stop),stopPendingIntent);
+  if (routingHelper.isRouteCalculated() && followingMode) {
+    Intent pauseIntent=new Intent(OSMAND_PAUSE_NAVIGATION_SERVICE_ACTION);
+    PendingIntent pausePendingIntent=PendingIntent.getBroadcast(app,0,pauseIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+    notificationBuilder.addAction(R.drawable.ic_pause,app.getString(R.string.shared_string_pause),pausePendingIntent);
+  }
+ else {
+    Intent resumeIntent=new Intent(OSMAND_STOP_NAVIGATION_SERVICE_ACTION);
+    PendingIntent resumePendingIntent=PendingIntent.getBroadcast(app,0,resumeIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+    notificationBuilder.addAction(R.drawable.ic_play_dark,app.getString(R.string.shared_string_continue),resumePendingIntent);
+  }
+  return notificationBuilder;
+}

@@ -1,6 +1,7 @@
 {
   super.onDestroy();
-  ((OsmandApplication)getApplication()).setNavigationService(null);
+  final OsmandApplication app=(OsmandApplication)getApplication();
+  app.setNavigationService(null);
   usedBy=0;
   LocationManager locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
   try {
@@ -17,6 +18,11 @@
   }
   AlarmManager alarmManager=(AlarmManager)getSystemService(ALARM_SERVICE);
   alarmManager.cancel(pendingIntent);
-  ((OsmandApplication)getApplication()).getNotificationHelper().removeServiceNotification();
   stopForeground(Boolean.TRUE);
+  app.runInUIThread(new Runnable(){
+    @Override public void run(){
+      app.getNotificationHelper().refreshNotifications();
+    }
+  }
+,500);
 }
