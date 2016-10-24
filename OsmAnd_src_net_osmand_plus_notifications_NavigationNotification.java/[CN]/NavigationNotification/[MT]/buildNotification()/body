@@ -32,14 +32,16 @@
           turnImminent=r.imminent;
         }
       }
-      TurnDrawable drawable=new TurnDrawable(app,false);
-      int height=(int)app.getResources().getDimension(android.R.dimen.notification_large_icon_height);
-      int width=(int)app.getResources().getDimension(android.R.dimen.notification_large_icon_width);
-      drawable.setBounds(0,0,width,height);
-      drawable.setTurnType(turnType);
-      drawable.setTurnImminent(turnImminent,deviatedFromRoute);
-      turnBitmap=drawableToBitmap(drawable);
-      notificationTitle=OsmAndFormatter.getFormattedDistance(nextTurnDistance,app) + " ??? " + RouteCalculationResult.toString(turnType,app);
+      if (turnType != null) {
+        TurnDrawable drawable=new TurnDrawable(app,false);
+        int height=(int)app.getResources().getDimension(android.R.dimen.notification_large_icon_height);
+        int width=(int)app.getResources().getDimension(android.R.dimen.notification_large_icon_width);
+        drawable.setBounds(0,0,width,height);
+        drawable.setTurnType(turnType);
+        drawable.setTurnImminent(turnImminent,deviatedFromRoute);
+        turnBitmap=drawableToBitmap(drawable);
+      }
+      notificationTitle=OsmAndFormatter.getFormattedDistance(nextTurnDistance,app) + (turnType != null ? " ??? " + RouteCalculationResult.toString(turnType,app) : "");
       if (ri != null && !Algorithms.isEmpty(ri.getDescriptionRoutePart())) {
         notificationText.append(ri.getDescriptionRoutePart());
         notificationText.append("\n");
