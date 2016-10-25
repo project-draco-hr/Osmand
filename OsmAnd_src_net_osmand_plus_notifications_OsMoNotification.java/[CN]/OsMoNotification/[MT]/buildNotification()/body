@@ -1,11 +1,37 @@
 {
+  OsMoPlugin osMoPlugin=OsmandPlugin.getEnabledPlugin(OsMoPlugin.class);
+  if (osMoPlugin == null) {
+    return null;
+  }
   String notificationTitle;
   String notificationText;
   color=0;
   icon=R.drawable.ic_osmo_dark;
   color=app.getResources().getColor(R.color.osmand_orange);
-  notificationTitle=Version.getAppName(app);
-  notificationText=app.getString(R.string.osmo);
+  notificationTitle=app.getString(R.string.osmo_plugin_name);
+  notificationText=app.getString(R.string.osmo_service_running);
   final Builder notificationBuilder=createBuilder().setContentTitle(notificationTitle).setStyle(new BigTextStyle().bigText(notificationText));
+  if (osMoPlugin.getService().isEnabled()) {
+    Intent stopServiceIntent=new Intent(OSMAND_STOP_OSMO_SERVICE_ACTION);
+    PendingIntent stopServicePendingIntent=PendingIntent.getBroadcast(app,0,stopServiceIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+    notificationBuilder.addAction(R.drawable.ic_action_rec_stop,app.getString(R.string.shared_string_control_stop),stopServicePendingIntent);
+    if (osMoPlugin.getTracker() != null) {
+      if (osMoPlugin.getTracker().isEnabledTracker()) {
+        Intent stopShareLocatiponIntent=new Intent(OSMAND_STOP_SHARE_LOCATION_ACTION);
+        PendingIntent stopShareLocatiponIntentPendingIntent=PendingIntent.getBroadcast(app,0,stopShareLocatiponIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+        notificationBuilder.addAction(R.drawable.ic_action_remove_dark,app.getString(R.string.osmo_pause_location),stopShareLocatiponIntentPendingIntent);
+      }
+ else {
+        Intent startShareLocationIntent=new Intent(OSMAND_START_SHARE_LOCATION_ACTION);
+        PendingIntent startShareLocationPendingIntent=PendingIntent.getBroadcast(app,0,startShareLocationIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+        notificationBuilder.addAction(R.drawable.ic_action_gshare_dark,app.getString(R.string.osmo_share_location),startShareLocationPendingIntent);
+      }
+    }
+  }
+ else {
+    Intent startServiceIntent=new Intent(OSMAND_START_OSMO_SERVICE_ACTION);
+    PendingIntent startServicePendingIntent=PendingIntent.getBroadcast(app,0,startServiceIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+    notificationBuilder.addAction(R.drawable.ic_play_dark,app.getString(R.string.shared_string_control_start),startServicePendingIntent);
+  }
   return notificationBuilder;
 }

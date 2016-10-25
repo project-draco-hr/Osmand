@@ -1,0 +1,53 @@
+{
+  app.registerReceiver(new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      OsMoPlugin osMoPlugin=OsmandPlugin.getEnabledPlugin(OsMoPlugin.class);
+      if (osMoPlugin != null) {
+        osMoPlugin.getService().connect(true);
+        osMoPlugin.refreshMap();
+      }
+    }
+  }
+,new IntentFilter(OSMAND_START_OSMO_SERVICE_ACTION));
+  app.registerReceiver(new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      OsMoPlugin osMoPlugin=OsmandPlugin.getEnabledPlugin(OsMoPlugin.class);
+      if (osMoPlugin != null) {
+        osMoPlugin.getTracker().disableTracker();
+        osMoPlugin.getService().disconnect();
+        if (app.getNavigationService() != null) {
+          app.getNavigationService().stopIfNeeded(app,NavigationService.USED_BY_LIVE);
+        }
+        osMoPlugin.refreshMap();
+      }
+    }
+  }
+,new IntentFilter(OSMAND_STOP_OSMO_SERVICE_ACTION));
+  app.registerReceiver(new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      OsMoPlugin osMoPlugin=OsmandPlugin.getEnabledPlugin(OsMoPlugin.class);
+      if (osMoPlugin != null) {
+        osMoPlugin.getService().connect(true);
+        if (osMoPlugin.getTracker() != null) {
+          osMoPlugin.getTracker().enableTracker();
+        }
+        app.startNavigationService(NavigationService.USED_BY_LIVE,0);
+      }
+    }
+  }
+,new IntentFilter(OSMAND_START_SHARE_LOCATION_ACTION));
+  app.registerReceiver(new BroadcastReceiver(){
+    @Override public void onReceive(    Context context,    Intent intent){
+      OsMoPlugin osMoPlugin=OsmandPlugin.getEnabledPlugin(OsMoPlugin.class);
+      if (osMoPlugin != null) {
+        if (osMoPlugin.getTracker() != null) {
+          osMoPlugin.getTracker().disableTracker();
+        }
+        if (app.getNavigationService() != null) {
+          app.getNavigationService().stopIfNeeded(app,NavigationService.USED_BY_LIVE);
+        }
+      }
+    }
+  }
+,new IntentFilter(OSMAND_STOP_SHARE_LOCATION_ACTION));
+}
