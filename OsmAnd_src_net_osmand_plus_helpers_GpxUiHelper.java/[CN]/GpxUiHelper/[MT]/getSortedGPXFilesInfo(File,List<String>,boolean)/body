@@ -1,0 +1,25 @@
+{
+  final List<GPXInfo> list=new ArrayList<>();
+  readGpxDirectory(dir,list,"",absolutePath);
+  if (selectedGpxList != null) {
+    for (    GPXInfo info : list) {
+      for (      String fileName : selectedGpxList) {
+        if (fileName.endsWith(info.getFileName())) {
+          info.setSelected(true);
+          break;
+        }
+      }
+    }
+  }
+  Collections.sort(list,new Comparator<GPXInfo>(){
+    @Override public int compare(    GPXInfo i1,    GPXInfo i2){
+      int res=i1.isSelected() == i2.isSelected() ? 0 : i1.isSelected() ? -1 : 1;
+      if (res != 0) {
+        return res;
+      }
+      return -i1.getFileName().compareTo(i2.getFileName());
+    }
+  }
+);
+  return list;
+}
