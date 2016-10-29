@@ -1,0 +1,17 @@
+{
+  int defaultColor=-1;
+  RenderingRule gpxRule=renderer.getRenderingAttributeRule("gpx");
+  if (gpxRule != null && gpxRule.getIfElseChildren().size() > 0) {
+    List<RenderingRule> rules=renderer.getRenderingAttributeRule("gpx").getIfElseChildren().get(0).getIfElseChildren();
+    for (    RenderingRule r : rules) {
+      String cName=r.getStringPropertyValue(CURRENT_TRACK_COLOR_ATTR);
+      if (!Algorithms.isEmpty(cName) && cName.equals(colorName)) {
+        return r.getIntPropertyValue(COLOR_ATTR);
+      }
+      if (cName == null && defaultColor == -1) {
+        defaultColor=r.getIntPropertyValue(COLOR_ATTR);
+      }
+    }
+  }
+  return defaultColor;
+}

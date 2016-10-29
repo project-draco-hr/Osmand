@@ -1,0 +1,31 @@
+{
+  super(context,R.layout.rendering_prop_menu_item);
+  app=(OsmandApplication)getContext().getApplicationContext();
+  RenderingRuleProperty trackWidthProp=null;
+  RenderingRuleProperty trackColorProp=null;
+  RenderingRulesStorage renderer=app.getRendererRegistry().getCurrentSelectedRenderer();
+  if (renderer != null) {
+    trackWidthProp=renderer.PROPS.getCustomRule(CURRENT_TRACK_WIDTH_ATTR);
+    trackColorProp=renderer.PROPS.getCustomRule(CURRENT_TRACK_COLOR_ATTR);
+  }
+  if (trackWidthProp != null) {
+    final OsmandSettings.CommonPreference<String> pref=app.getSettings().getCustomRenderProperty(CURRENT_TRACK_WIDTH_ATTR);
+    AppearanceListItem item=new AppearanceListItem(CURRENT_TRACK_WIDTH_ATTR,"",SettingsActivity.getStringPropertyValue(getContext(),trackWidthProp.getDefaultValueDescription()));
+    add(item);
+    for (int j=0; j < trackWidthProp.getPossibleValues().length; j++) {
+      item=new AppearanceListItem(CURRENT_TRACK_WIDTH_ATTR,trackWidthProp.getPossibleValues()[j],SettingsActivity.getStringPropertyValue(getContext(),trackWidthProp.getPossibleValues()[j]));
+      add(item);
+    }
+    item.setLastItem(true);
+  }
+  if (trackColorProp != null) {
+    final OsmandSettings.CommonPreference<String> pref=app.getSettings().getCustomRenderProperty(CURRENT_TRACK_COLOR_ATTR);
+    AppearanceListItem item=new AppearanceListItem(CURRENT_TRACK_COLOR_ATTR,"",SettingsActivity.getStringPropertyValue(getContext(),trackColorProp.getDefaultValueDescription()),parseTrackColor(renderer,""));
+    add(item);
+    for (int j=0; j < trackColorProp.getPossibleValues().length; j++) {
+      item=new AppearanceListItem(CURRENT_TRACK_COLOR_ATTR,trackColorProp.getPossibleValues()[j],SettingsActivity.getStringPropertyValue(getContext(),trackColorProp.getPossibleValues()[j]),parseTrackColor(renderer,trackColorProp.getPossibleValues()[j]));
+      add(item);
+    }
+    item.setLastItem(true);
+  }
+}

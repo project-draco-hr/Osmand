@@ -1,0 +1,35 @@
+{
+  AppearanceListItem item=getItem(position);
+  View v=convertView;
+  if (v == null) {
+    v=LayoutInflater.from(getContext()).inflate(R.layout.rendering_prop_menu_item,null);
+  }
+  if (item != null) {
+    TextView textView=(TextView)v.findViewById(R.id.text1);
+    textView.setText(item.localizedValue);
+    if (item.attrName == CURRENT_TRACK_WIDTH_ATTR) {
+      int iconId;
+      if (item.value.equals("bold")) {
+        iconId=R.drawable.ic_action_gpx_width_bold;
+      }
+ else       if (item.value.equals("medium")) {
+        iconId=R.drawable.ic_action_gpx_width_medium;
+      }
+ else {
+        iconId=R.drawable.ic_action_gpx_width_thin;
+      }
+      textView.setCompoundDrawablesWithIntrinsicBounds(null,null,app.getIconsCache().getIcon(iconId,R.color.gpx_track_width_prop),null);
+    }
+ else {
+      if (item.color == -1) {
+        textView.setCompoundDrawablesWithIntrinsicBounds(null,null,app.getIconsCache().getThemedIcon(R.drawable.ic_action_circle),null);
+      }
+ else {
+        textView.setCompoundDrawablesWithIntrinsicBounds(null,null,app.getIconsCache().getPaintedIcon(R.drawable.ic_action_circle,item.color),null);
+      }
+    }
+    textView.setCompoundDrawablePadding(AndroidUtils.dpToPx(getContext(),10f));
+    v.findViewById(R.id.divider).setVisibility(item.lastItem && position < getCount() - 1 ? View.VISIBLE : View.GONE);
+  }
+  return v;
+}

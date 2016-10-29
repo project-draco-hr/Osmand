@@ -1,0 +1,22 @@
+{
+  if (activity instanceof MapActivity) {
+    final MapActivity mapActivity=(MapActivity)activity;
+    ActivityResultListener listener=new ActivityResultListener(OPEN_GPX_DOCUMENT_REQUEST,new OnActivityResultListener(){
+      @Override public void onResult(      int resultCode,      Intent resultData){
+        if (resultCode == Activity.RESULT_OK) {
+          if (resultData != null) {
+            Uri uri=resultData.getData();
+            if (mapActivity.getGpxImportHelper().handleGpxImport(uri)) {
+              dialog.dismiss();
+            }
+          }
+        }
+      }
+    }
+);
+    Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+    intent.setType("*/*");
+    mapActivity.registerActivityResultListener(listener);
+    activity.startActivityForResult(intent,OPEN_GPX_DOCUMENT_REQUEST);
+  }
+}

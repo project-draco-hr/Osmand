@@ -1,16 +1,16 @@
 {
   OsmandApplication app=(OsmandApplication)activity.getApplication();
   final File dir=app.getAppPath(IndexConstants.GPX_INDEX_DIR);
-  final List<String> list=getSortedGPXFilenames(dir,false);
+  final List<GPXInfo> list=getSortedGPXFilesInfo(dir,false);
   if (list.isEmpty()) {
     Toast.makeText(activity,R.string.gpx_files_not_found,Toast.LENGTH_LONG).show();
   }
   if (!list.isEmpty() || showCurrentGpx) {
     if (showCurrentGpx) {
-      list.add(0,activity.getString(R.string.show_current_gpx_title));
+      list.add(0,new GPXInfo(activity.getString(R.string.show_current_gpx_title),0,0));
     }
     final ContextMenuAdapter adapter=createGpxContextMenuAdapter(list,null,showCurrentGpx);
-    return createDialog(activity,showCurrentGpx,multipleChoice,callbackWithObject,list,adapter);
+    return createDialog(activity,showCurrentGpx,multipleChoice,false,callbackWithObject,list,adapter);
   }
   return null;
 }
