@@ -1,2 +1,28 @@
 {
+  final OsmandApplication app=map.getMyApplication();
+  final OsmAndLocationProvider loc=app.getLocationProvider();
+  final TextInfoWidget gpsInfoControl=new TextInfoWidget(map){
+    private int u=-1;
+    private int f=-1;
+    @Override public boolean updateInfo(    DrawSettings d){
+      GPSInfo gpsInfo=loc.getGPSInfo();
+      if (gpsInfo.usedSatellites != u || gpsInfo.foundSatellites != f) {
+        u=gpsInfo.usedSatellites;
+        f=gpsInfo.foundSatellites;
+        setText(gpsInfo.usedSatellites + "/" + gpsInfo.foundSatellites,"");
+        return true;
+      }
+      return false;
+    }
+  }
+;
+  gpsInfoControl.setIcons(R.drawable.widget_gps_info_day,R.drawable.widget_gps_info_night);
+  gpsInfoControl.setText(null,null);
+  gpsInfoControl.setOnClickListener(new OnClickListener(){
+    @Override public void onClick(    View view){
+      new StartGPSStatus(map).run();
+    }
+  }
+);
+  return gpsInfoControl;
 }
